@@ -57,6 +57,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 **Authentication** - COMPLETE
 
 - Register, login (JWT), profile
+- Password recovery via emailed reset link — shipped 2026-10-11 (`.specs/features/password-recovery/`)
 - Per-user data scoping
 
 **Transactions** - COMPLETE
