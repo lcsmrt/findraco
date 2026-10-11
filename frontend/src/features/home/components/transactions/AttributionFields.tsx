@@ -83,8 +83,8 @@ export const AttributionFields = ({
               className={cn(
                 "flex-1 border",
                 attributionMode === value
-                  ? "border-primary/30 bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
-                  : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary hover:bg-transparent",
+                  ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
+                  : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
               )}
             >
               {label}
@@ -143,8 +143,8 @@ export const AttributionFields = ({
                 className={cn(
                   "flex-1 border",
                   watch("splitMode") === "EQUAL"
-                    ? "border-primary/30 bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary hover:bg-transparent",
+                    ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
+                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
                 )}
               >
                 Equal
@@ -157,8 +157,8 @@ export const AttributionFields = ({
                 className={cn(
                   "flex-1 border",
                   watch("splitMode") === "EXACT"
-                    ? "border-primary/30 bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary hover:bg-transparent",
+                    ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
+                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
                 )}
               >
                 Exact

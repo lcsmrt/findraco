@@ -147,7 +147,7 @@ export function StandardCombobox<T extends WithId>({
                 onCreateOption(searchTerm);
                 if (!isSearchControlled) setInternalSearch("");
               }}
-              className="text-primary hover:bg-accent flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-sm"
+              className="text-primary-ink hover:bg-accent flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-sm"
             >
               <PlusIcon className="h-3.5 w-3.5 shrink-0" />
               Create &ldquo;{searchTerm}&rdquo;

@@ -1,5 +1,4 @@
 import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
-import { Button } from "@/components/button/Button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,12 +7,12 @@ import {
   DropdownMenuTrigger,
 } from "../dropdown/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
-import { LogOut, Moon, Sun } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { clearStorage } from "@/lib/storage";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "@/app/routing/paths";
 import { useAuth } from "@/app/providers/AuthProvider";
-import { useTheme } from "@/app/providers/ThemeProvider";
+import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { PlanSwitcher } from "@/features/plans/components/PlanSwitcher";
 
@@ -21,7 +20,6 @@ export const Navbar = () => {
   const navigate = useNavigate();
 
   const { user } = useAuth();
-  const { toggleTheme } = useTheme();
 
   const logout = () => {
     clearStorage();
@@ -36,11 +34,7 @@ export const Navbar = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" onClick={toggleTheme}>
-          <Sun className="dark:hidden" />
-          <Moon className="hidden dark:block" />
-          <span className="sr-only">Toggle theme</span>
-        </Button>
+        <ThemeToggle />
 
         <DropdownMenu>
           <DropdownMenuTrigger className="hover:cursor-pointer focus:outline-none">

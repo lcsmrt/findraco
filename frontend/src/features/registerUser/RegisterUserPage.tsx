@@ -1,6 +1,5 @@
 import { useRegisterUser } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
-import { AppVersion } from "@/components/appVersion/AppVersion";
 import { Button } from "@/components/button/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
@@ -62,17 +61,6 @@ export const RegisterUser = () => {
 
   return (
     <>
-      <header className="flex flex-1 items-end gap-3">
-        <img
-          src={"/findraco-logo-128.png"}
-          alt="findraco logo"
-          className="h-12"
-          style={{
-            filter: "drop-shadow(0 0 10px hsl(var(--primary) / 0.7))",
-          }}
-        />
-        <span className="text-foreground text-2xl font-bold">findraco</span>
-      </header>
 
       <form
         id="register-user-form"
@@ -80,7 +68,7 @@ export const RegisterUser = () => {
         onSubmit={onSubmit}
         autoComplete="off"
       >
-        <h1 className="text-foreground text-2xl font-bold">Register</h1>
+        <h1 className="text-foreground text-2xl font-bold">Create your account</h1>
 
         <div className="flex w-full flex-col gap-3">
           <Field>
@@ -98,7 +86,7 @@ export const RegisterUser = () => {
             <FieldLabel htmlFor="email-register-user">Email</FieldLabel>
             <Input
               id="email-register-user"
-              placeholder="Email"
+              placeholder="you@example.com"
               className="bg-card/70"
               autoComplete="off"
               {...register("email")}
@@ -110,7 +98,6 @@ export const RegisterUser = () => {
             <InputGroup className="bg-card/70">
               <InputGroupInput
                 id="password-register-user"
-                placeholder="Password"
                 type={isPasswordVisible ? "text" : "password"}
                 autoComplete="new-password"
                 {...register("password")}
@@ -168,11 +155,6 @@ export const RegisterUser = () => {
           </Button>
         </div>
       </form>
-
-      <footer className="flex flex-1 flex-col items-center justify-end">
-        <p className="text-muted-foreground text-xs">© 2026 Nameless Comp</p>
-        <AppVersion />
-      </footer>
     </>
   );
 };

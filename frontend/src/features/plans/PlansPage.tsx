@@ -118,7 +118,7 @@ export const PlansPage = () => {
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-medium">{plan.name}</span>
-                  {isActive && <CheckIcon className="text-primary h-4 w-4" />}
+                  {isActive && <CheckIcon className="text-primary-ink h-4 w-4" />}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   <Badge variant="secondary">{ROLE_LABELS[plan.myRole]}</Badge>

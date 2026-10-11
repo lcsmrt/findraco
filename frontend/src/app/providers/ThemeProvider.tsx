@@ -47,11 +47,7 @@ type ThemeProviderProps = {
 };
 
 export const ThemeProvider = ({ children }: ThemeProviderProps) => {
-  const [theme, setThemeState] = useState<Theme>("system");
-
-  useEffect(() => {
-    setThemeState(getStoredTheme());
-  }, []);
+  const [theme, setThemeState] = useState<Theme>(getStoredTheme);
 
   useEffect(() => {
     applyTheme(theme);

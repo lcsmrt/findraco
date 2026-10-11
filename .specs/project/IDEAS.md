@@ -168,6 +168,7 @@ Small things that make daily use on a phone much better.
 - Swipe actions on transaction list.
 - Daily reminder with smart timing.
 - Offline-first: write now, sync later.
+- **Sign in with Google + device-aware greeting** — when Google login lands, remember the last account on this device (first name + avatar) and show "Welcome back, <name>" with a "Not you?" link; first-time visitors keep the plain "Sign in". Avoids greeting strangers as returning users.
 
 ## 10. Ecosystem & "Blue Sky"
 
@@ -176,6 +177,7 @@ Ideas that are valuable but likely further out or dependent on external factors.
 - **Calendar integration** — show due dates and income on Google/Apple Calendar.
 - **Multi-currency / travel mode** — log expenses in USD/EUR with daily exchange rate.
 - **Light gamification** — streaks for staying within budget (kept subtle).
+- **Mascot + financial literacy lessons** — a Duolingo-style dragon mascot guiding short lessons on household budgeting and investing; the mascot reacts to the user's hoard (celebrates goals, worries about overspending).
 - **Integration marketplace** — accountants, Notion, YNAB import.
 - **Subscription / freemium model** — auto-sync, advanced AI, unlimited invites as paid tiers.
 

@@ -1,6 +1,5 @@
 import { useForgotPassword } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
-import { AppVersion } from "@/components/appVersion/AppVersion";
 import { Button } from "@/components/button/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
@@ -42,17 +41,6 @@ export const ForgotPassword = () => {
 
   return (
     <>
-      <header className="flex flex-1 items-end gap-3">
-        <img
-          src={"/findraco-logo-128.png"}
-          alt="findraco logo"
-          className="h-12"
-          style={{
-            filter: "drop-shadow(0 0 10px hsl(var(--primary) / 0.7))",
-          }}
-        />
-        <span className="text-foreground text-2xl font-bold">findraco</span>
-      </header>
 
       <form
         id="forgot-password-form"
@@ -78,7 +66,7 @@ export const ForgotPassword = () => {
                 <FieldLabel htmlFor="email-forgot-password">Email</FieldLabel>
                 <Input
                   id="email-forgot-password"
-                  placeholder="Email"
+                  placeholder="you@example.com"
                   className="bg-card/70"
                   {...register("email")}
                 />
@@ -105,11 +93,6 @@ export const ForgotPassword = () => {
           Back to sign in
         </Button>
       </form>
-
-      <footer className="flex flex-1 flex-col items-center justify-end">
-        <p className="text-muted-foreground text-xs">© 2026 Nameless Comp</p>
-        <AppVersion />
-      </footer>
     </>
   );
 };

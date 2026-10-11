@@ -24,12 +24,12 @@ const Toaster = ({ ...props }: ToasterProps) => {
           </div>
         ),
         info: (
-          <div className="flex size-6 items-center justify-center rounded-full bg-primary/15 text-primary">
+          <div className="flex size-6 items-center justify-center rounded-full bg-primary/15 text-primary-ink">
             <InfoIcon className="size-4" />
           </div>
         ),
         warning: (
-          <div className="flex size-6 items-center justify-center rounded-full bg-accent/15 text-accent">
+          <div className="flex size-6 items-center justify-center rounded-full bg-primary/15 text-primary-ink">
             <TriangleAlertIcon className="size-4" />
           </div>
         ),

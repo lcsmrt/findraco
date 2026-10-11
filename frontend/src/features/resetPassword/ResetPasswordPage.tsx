@@ -3,7 +3,6 @@ import {
   useValidatePasswordResetToken,
 } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
-import { AppVersion } from "@/components/appVersion/AppVersion";
 import { Button } from "@/components/button/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import {
@@ -98,7 +97,6 @@ export const ResetPassword = () => {
             <InputGroup className="bg-card/70">
               <InputGroupInput
                 id="password-reset-password"
-                placeholder="New password"
                 type={isPasswordVisible ? "text" : "password"}
                 {...register("password")}
               />
@@ -128,7 +126,6 @@ export const ResetPassword = () => {
             <InputGroup className="bg-card/70">
               <InputGroupInput
                 id="confirm-password-reset-password"
-                placeholder="Confirm new password"
                 type={isPasswordVisible ? "text" : "password"}
                 {...register("confirmPassword")}
               />
@@ -150,17 +147,6 @@ export const ResetPassword = () => {
 
   return (
     <>
-      <header className="flex flex-1 items-end gap-3">
-        <img
-          src={"/findraco-logo-128.png"}
-          alt="findraco logo"
-          className="h-12"
-          style={{
-            filter: "drop-shadow(0 0 10px hsl(var(--primary) / 0.7))",
-          }}
-        />
-        <span className="text-foreground text-2xl font-bold">findraco</span>
-      </header>
 
       <form
         id="reset-password-form"
@@ -180,11 +166,6 @@ export const ResetPassword = () => {
           Back to sign in
         </Button>
       </form>
-
-      <footer className="flex flex-1 flex-col items-center justify-end">
-        <p className="text-muted-foreground text-xs">© 2026 Nameless Comp</p>
-        <AppVersion />
-      </footer>
     </>
   );
 };

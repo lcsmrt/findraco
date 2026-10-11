@@ -912,8 +912,8 @@ export const TransactionFormDrawer = ({
                           className={cn(
                             "flex-1 border",
                             watch("recurrenceMode") === "INSTALLMENT"
-                              ? "border-primary/30 bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
-                              : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary hover:bg-transparent",
+                              ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
+                              : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
                           )}
                         >
                           Installments
@@ -932,8 +932,8 @@ export const TransactionFormDrawer = ({
                           className={cn(
                             "flex-1 border",
                             watch("recurrenceMode") === "RECURRING"
-                              ? "border-primary/30 bg-primary/15 text-primary hover:bg-primary/20 hover:text-primary"
-                              : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary hover:bg-transparent",
+                              ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
+                              : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
                           )}
                         >
                           Recurring
