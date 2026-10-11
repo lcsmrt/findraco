@@ -7,7 +7,7 @@ Behavioral bias, not checklist. Read before every implementation.
 ## Before Coding
 
 - State assumptions explicitly. If uncertain, ask.
-- Multiple interpretations exist? Present all—don't pick silently.
+- Multiple interpretations exist? Present all-don't pick silently.
 - Simpler approach exists? Say so. Push back when warranted.
 - Something unclear? Stop. Name what's confusing. Ask.
 - User's approach seems wrong? Disagree honestly. Don't be sycophantic.
@@ -24,21 +24,12 @@ Behavioral bias, not checklist. Read before every implementation.
 - No error handling for impossible scenarios
 - 200 lines that could be 50? Rewrite it.
 
-### Comments
-
-- Default to no inline comments. Well-named identifiers already say what code does.
-- Add one ONLY when the WHY is non-obvious: a hidden constraint, a subtle invariant, a workaround for a specific bug, behavior that would surprise a reader.
-- No narration ("this loops over X"), no section-divider banners (`// --- helpers ---`), no restating the assertion in a trailing comment.
-- Integration tests documenting a real/discovered behavior gap are a legitimate exception — but keep it to the one line that states the surprising fact, not a walkthrough of how the test proves it.
-- If removing a comment wouldn't confuse a future reader, don't write it.
-- Exception — doc comments: a JSDoc (`/** ... */` in TS/JS) or Javadoc (`/** ... */` in Java) block on a function, method, class, or type is fine to write and keep even when it "just" restates params/return/purpose. It renders in IDE hover/autocomplete at every call site, which is value the WHY-only bar doesn't capture. This exception covers doc-comment blocks specifically — plain `//` narration right next to code is still held to the WHY-only bar above.
-
 ### Surgical Changes
 
 - Don't "improve" adjacent code, comments, or formatting
 - Don't refactor things that aren't broken
 - Match existing style, even if you'd do differently
-- Unrelated dead code noticed? Mention it—don't delete it
+- Unrelated dead code noticed? Mention it-don't delete it
 - Remove ONLY imports/variables/functions YOUR changes orphaned
 - Don't remove pre-existing dead code unless asked
 
@@ -47,9 +38,9 @@ Behavioral bias, not checklist. Read before every implementation.
 - NEVER weaken an existing test assertion to make it pass
 - NEVER delete a test to reduce failure count
 - NEVER use the test framework's skip/disable/pending mechanism to bypass a failing test
-- NEVER modify tests written in the RED phase during GREEN phase
+- NEVER modify a task's tests afterward to make the implementation pass
 - If a test is genuinely wrong, STOP and confirm with the user before changing it
-- Tests are the spec — implementation conforms to tests, not the other way around
+- Tests are the spec - implementation conforms to tests, not the other way around
 
 ### Goal-Driven
 
@@ -63,3 +54,19 @@ Behavioral bias, not checklist. Read before every implementation.
 
 Ask: "Would senior engineer call this overcomplicated?"
 If yes → simplify before proceeding.
+
+---
+
+## Writing Voice (specs, ADRs, reports, commits, summaries)
+
+The artifacts this skill produces should read like a decided engineer wrote them, not like generated boilerplate.
+
+- **Lead with the verdict.** Validation reports and chat summaries open with PASS/FAIL and the one thing that matters, not a warm-up paragraph.
+- **Decisions are definitive.** An ADR or a recorded decision states what you chose: "we will", not "we might" or "we should probably". If it still hedges, it is not a decision yet.
+- **Cut filler and mechanical hedging.** Drop "it is worth noting", "as you can see", "in order to", and reflexive "may/might/could" on claims you are actually sure about. Reserve hedging for genuine uncertainty; using it everywhere signals nothing.
+- **One idea per sentence; short sentences.** Prefer the plain verb over the nominalization ("evaluated", not "performed an evaluation of"). Keep subject-verb-object near the front.
+- **Do not announce the phase.** Produce the artifact; do not narrate "I will now run Specify."
+- **Avoid the em dash as a default connector.** A comma, colon, or two sentences usually read cleaner.
+- **Writing in Portuguese:** keep sentences short; do not carry the long, multi-clause subordinate structure of Portuguese into the artifact. Plain and direct beats formal.
+
+None of this means dumbing down the content - only the prose carrying it.
