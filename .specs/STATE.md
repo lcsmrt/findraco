@@ -61,10 +61,10 @@
 ## Handoff
 
 - **Feature**: Rebrand finSight → findraco — visual design iteration (`.specs/features/rebrand-findraco/`)
-- **Phase / Task**: Post-T12 polish; design pass committed on `feat/rebrand-design` (not merged, not deployed)
-- **Completed**: warm charcoal dark theme, amber primary in both themes + `primary-ink` text token, Tailwind v4 `dark:` variant fixed to follow `.dark`, flat auth background, shared `AuthLayout` header/footer + `ThemeToggle`, auth copy/placeholders, themed 404; mascot exploration parked in `mascot-wip.md`; current coin logo kept
+- **Phase / Task**: Design pass shipped — merged to `main` and deployed 2026-10-11
+- **Completed**: warm charcoal dark theme, amber primary in both themes + `primary-ink` text token, Tailwind v4 `dark:` variant fixed to follow `.dark`, flat auth background, shared `AuthLayout` header/footer + `ThemeToggle`, auth copy/placeholders, themed 404, dashboard chart polish; mascot exploration parked in `mascot-wip.md`; current coin logo kept
 - **In-progress** (file:line): none
-- **Next step**: User decides whether to merge `feat/rebrand-design` into `main` (deploys to prod). Leftover polish: mobile category chart labels squeeze bars, single-month trend chart shows loose dots, "By Person" uses mono font
+- **Next step**: Verify the deploy in prod (both themes); then pick the next ROADMAP item. Mascot/logo resumes later from `mascot-wip.md`
 - **Blockers**: none; logged-in checks need the DB tunnel — dev DB has a `design-review@findraco.local` test account with sample data
 - **Uncommitted files**: none
-- **Branch**: feat/rebrand-design
+- **Branch**: main
