@@ -9,6 +9,8 @@ import { PrivateRoute } from "./PrivateRoute";
 import { NotFound } from "@/features/notFound/NotFoundPage";
 import { PlansPage } from "@/features/plans/PlansPage";
 import { AcceptInvitationPage } from "@/features/plans/AcceptInvitationPage";
+import { ForgotPassword } from "@/features/forgotPassword/ForgotPasswordPage";
+import { ResetPassword } from "@/features/resetPassword/ResetPasswordPage";
 
 export const AppRouter = () => {
   return (
@@ -16,6 +18,8 @@ export const AppRouter = () => {
       <Route element={<AuthLayout />}>
         <Route path={PATHS.login} element={<Login />} />
         <Route path={PATHS.registerUser} element={<RegisterUser />} />
+        <Route path={PATHS.forgotPassword} element={<ForgotPassword />} />
+        <Route path={PATHS.resetPassword} element={<ResetPassword />} />
       </Route>
 
       <Route element={<PrivateRoute />}>

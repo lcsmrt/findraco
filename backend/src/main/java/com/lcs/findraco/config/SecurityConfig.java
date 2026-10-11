@@ -47,7 +47,11 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, ApiRoutes.USER).permitAll()
                         .requestMatchers(HttpMethod.GET, ApiRoutes.INVITATION + "/*").permitAll()
                         .requestMatchers(
-                                ApiRoutes.AUTH + "/login", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"
+                                ApiRoutes.AUTH + "/login",
+                                ApiRoutes.AUTH + "/forgot-password",
+                                ApiRoutes.AUTH + "/reset-password",
+                                ApiRoutes.AUTH + "/reset-password/validate",
+                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

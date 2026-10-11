@@ -119,6 +119,14 @@ export const Login = () => {
               <FieldError>{errors.password.message}</FieldError>
             )}
           </Field>
+          <Button
+            type="button"
+            variant="link"
+            className="h-fit self-end p-0 text-sm"
+            onClick={() => navigate(PATHS.forgotPassword)}
+          >
+            Forgot password?
+          </Button>
         </div>
 
         <div className="w-full">

@@ -54,4 +54,9 @@ public class UserService {
         return userRepository.save(user);
     }
 
+    @Transactional
+    public void changePassword(User user, String rawPassword) {
+        user.setPassword(encoder.encode(rawPassword));
+        userRepository.save(user);
+    }
 }
