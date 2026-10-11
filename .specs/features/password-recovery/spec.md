@@ -124,7 +124,7 @@ All three are public (`permitAll`).
 | PWR-06 | P1 recover | `POST /auth/reset-password` sets BCrypt password, consumes token, `204` | Implemented |
 | PWR-07 | P1 stale | Invalid / expired / used token → `400` (typed exception in `UserExceptions`) | Implemented |
 | PWR-08 | P1 recover | Email service: Spring `JavaMailSender` over SMTP from env; no `SMTP_HOST` → log the link | Implemented |
-| PWR-09 | P1 recover | Env: `APP_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`; documented in `.env.example`, `.env.production.example`, `docker-compose.yml` | Implemented |
+| PWR-09 | P1 recover | Env: `APP_URL`, `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`; documented in `.env.example`, `.env.production.example`, `docker-compose.yml` | Implemented |
 | PWR-10 | P1 recover | "Forgot password?" link on the login page | Implemented |
 | PWR-11 | P1 recover | `/forgot-password` page: email field → neutral confirmation + back-to-login | Implemented |
 | PWR-12 | P1 stale | `/reset-password?token=` validates on load; invalid → message + link to request a new one, no form | Implemented |

@@ -57,7 +57,9 @@ jobs:
           }')
 
           # Generous timeout: this rebuilds both images (Maven + pnpm) on the VPS.
-          curl -fsS -X PUT \
+          # The response is the full stack, Env included (DB password, JWT secret,
+          # SMTP password) — never let it reach the public job log.
+          curl -fsS -o /dev/null -X PUT \
             --connect-timeout 20 --max-time 900 --retry 4 --retry-delay 15 --retry-all-errors \
             -H "X-API-Key: $API_KEY" \
             -H 'Content-Type: application/json' \
