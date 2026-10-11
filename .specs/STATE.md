@@ -61,10 +61,10 @@
 ## Handoff
 
 - **Feature**: Rebrand finSight → findraco — visual design iteration (`.specs/features/rebrand-findraco/`)
-- **Phase / Task**: Post-T12 polish; functional rename done and deployed 2026-10-11 (stack `findraco`, id 74)
-- **Completed**: T1–T12 (rename, gold-hoard light/dark theme + toggle, logo/favicon, themed 404)
-- **In-progress** (file:line): none — design tokens live in `frontend/src/index.css:3` (`@theme inline`), `:58` (light `:root`), `:117` (`.dark`); toggle in `frontend/src/app/providers/ThemeProvider.tsx` + `components/navbar/Navbar.tsx`
-- **Next step**: Ask the user what looks worst (palette/contrast, screens, components, identity) or screenshot every screen in both themes and build a critique list for them to prioritize; work on branch `feat/rebrand-design` (every push to `main` deploys to prod).
-- **Blockers**: Logged-in screens need the DB tunnel (`ssh -N -L 5432:localhost:5432 vps`), which the user runs.
+- **Phase / Task**: Post-T12 polish; design pass committed on `feat/rebrand-design` (not merged, not deployed)
+- **Completed**: warm charcoal dark theme, amber primary in both themes + `primary-ink` text token, Tailwind v4 `dark:` variant fixed to follow `.dark`, flat auth background, shared `AuthLayout` header/footer + `ThemeToggle`, auth copy/placeholders, themed 404; mascot exploration parked in `mascot-wip.md`; current coin logo kept
+- **In-progress** (file:line): none
+- **Next step**: User decides whether to merge `feat/rebrand-design` into `main` (deploys to prod). Leftover polish: mobile category chart labels squeeze bars, single-month trend chart shows loose dots, "By Person" uses mono font
+- **Blockers**: none; logged-in checks need the DB tunnel — dev DB has a `design-review@findraco.local` test account with sample data
 - **Uncommitted files**: none
-- **Branch**: main
+- **Branch**: feat/rebrand-design

@@ -8,7 +8,8 @@ user — none of the generated options was approved. Reference images live in `m
 
 - **The app palette stays amber/charcoal.** The mascot's teal is NOT adopted as a UI brand color.
   If the mascot returns, its colors must fit the existing palette, not the other way round.
-- The current coin logo is kept (refined) until the mascot is settled.
+- The current coin logo (`frontend/public/findraco-logo-128.png`) stays as-is. Refinement attempts
+  (flat recolor, dragon-eye coin face — `07`) were rejected as too menacing; revisit with the mascot.
 
 ## Direction learned
 
@@ -37,3 +38,4 @@ user — none of the generated options was approved. Reference images live in `m
 | `04-geometric-mischief-levels.png` | Outline-free, 4 mischief levels |
 | `05-geometric-poses-angry.png` | Pose sheet, angry-at-receipt variant (preferred) |
 | `06-geometric-poses-soft.png` | Pose sheet, sad-at-receipt variant |
+| `07-coin-logo-eye-rejected.png` | Coin logo redesign with dragon eye — rejected (menacing) |
