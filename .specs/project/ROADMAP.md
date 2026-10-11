@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current Milestone:** M5 — Capture Every Day (post-MVP refinement)
-**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; **Rebrand finSight → findraco ✅ SHIPPED 2026-08-16** (`.specs/features/rebrand-findraco/`); remaining M4 refinements and M5 daily-capture tracks are now the active backlog.
+**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; **Rebrand finSight → findraco 🚧 IN PROGRESS** — functional rename deployed 2026-10-11; visual design still being iterated and validated by the user (`.specs/features/rebrand-findraco/`); remaining M4 refinements and M5 daily-capture tracks are now the active backlog.
 
 > **Raw ideas bucket:** See [`IDEAS.md`](./IDEAS.md) for a separate, non-canonical collection of future product ideas captured during brainstorming. Those ideas are not yet triaged or committed; review and migrate only the accepted ones into this roadmap.
 
