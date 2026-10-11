@@ -28,6 +28,8 @@ type ChartEntry = {
 };
 
 const WARNING_THRESHOLD = 0.8;
+const LABEL_CHAR_WIDTH = 7;
+const LABEL_MAX_WIDTH = 140;
 
 function roundedRect(
   x: number,
@@ -54,9 +56,9 @@ function roundedRect(
 }
 
 const STATUS_COLORS: Record<Status, string> = {
-  "no-limit": "var(--chart-2)",
+  "no-limit": "var(--primary)",
   ok: "var(--success)",
-  warning: "#f59e0b",
+  warning: "#f97316",
   over: "var(--destructive)",
 };
 
@@ -211,6 +213,12 @@ export const CategorySpendingChart = ({ data }: CategorySpendingChartProps) => {
   );
 
   const chartHeight = Math.max(280, chartData.length * 48);
+  const labelWidth = Math.min(
+    LABEL_MAX_WIDTH,
+    Math.max(...chartData.map((entry) => entry.categoryName.length)) *
+      LABEL_CHAR_WIDTH +
+      12,
+  );
 
   return (
     <Card>
@@ -241,7 +249,7 @@ export const CategorySpendingChart = ({ data }: CategorySpendingChartProps) => {
               <YAxis
                 type="category"
                 dataKey="categoryName"
-                width={200}
+                width={labelWidth}
                 tickLine={false}
                 axisLine={false}
                 tick={{ fontSize: 12 }}

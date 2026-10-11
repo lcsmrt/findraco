@@ -25,11 +25,18 @@ const chartConfig: ChartConfig = {
   expenses: { label: "Expenses", color: "var(--destructive)" },
 };
 
+const compactCurrency = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+  notation: "compact",
+});
+
 export const MonthlyTrendChart = ({ data }: MonthlyTrendChartProps) => {
   const chartData = data.map((d) => ({
     ...d,
     label: format(new Date(d.year, d.month - 1, 1), "MMM/yy"),
   }));
+  const dot = chartData.length === 1 ? { r: 4 } : false;
 
   return (
     <Card>
@@ -46,11 +53,16 @@ export const MonthlyTrendChart = ({ data }: MonthlyTrendChartProps) => {
             <LineChart data={chartData}>
               <CartesianGrid strokeDasharray="3 3" vertical={false} />
               <XAxis dataKey="label" tickLine={false} axisLine={false} />
-              <YAxis tickLine={false} axisLine={false} />
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={64}
+                tickFormatter={(v: number) => compactCurrency.format(v)}
+              />
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
-              <Line type="monotone" dataKey="income" stroke="var(--color-income)" strokeWidth={2} dot={false} />
-              <Line type="monotone" dataKey="expenses" stroke="var(--color-expenses)" strokeWidth={2} dot={false} />
+              <Line type="monotone" dataKey="income" stroke="var(--color-income)" strokeWidth={2} dot={dot} />
+              <Line type="monotone" dataKey="expenses" stroke="var(--color-expenses)" strokeWidth={2} dot={dot} />
             </LineChart>
           </ChartContainer>
         )}

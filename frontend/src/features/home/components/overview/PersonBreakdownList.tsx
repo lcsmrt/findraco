@@ -34,13 +34,13 @@ export const PersonBreakdownList = ({ data }: PersonBreakdownListProps) => {
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div>
                     <p className="text-muted-foreground text-xs">Income</p>
-                    <p className="font-mono font-medium tabular-nums text-success">
+                    <p className="font-medium tabular-nums text-success">
                       {formatCurrency(person.income, "BRL")}
                     </p>
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs">Expense</p>
-                    <p className="font-mono font-medium tabular-nums text-destructive">
+                    <p className="font-medium tabular-nums text-destructive">
                       {formatCurrency(person.expense, "BRL")}
                     </p>
                   </div>
@@ -48,7 +48,7 @@ export const PersonBreakdownList = ({ data }: PersonBreakdownListProps) => {
                     <p className="text-muted-foreground text-xs">Net</p>
                     <p
                       className={cn(
-                        "font-mono font-medium tabular-nums",
+                        "font-medium tabular-nums",
                         person.net >= 0 ? "text-success" : "text-destructive",
                       )}
                     >
