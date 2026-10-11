@@ -1,4 +1,5 @@
 import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
+import { Button } from "@/components/button/Button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,11 +8,12 @@ import {
   DropdownMenuTrigger,
 } from "../dropdown/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
-import { LogOut } from "lucide-react";
+import { LogOut, Moon, Sun } from "lucide-react";
 import { clearStorage } from "@/lib/storage";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "@/app/routing/paths";
 import { useAuth } from "@/app/providers/AuthProvider";
+import { useTheme } from "@/app/providers/ThemeProvider";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { PlanSwitcher } from "@/features/plans/components/PlanSwitcher";
 
@@ -19,6 +21,7 @@ export const Navbar = () => {
   const navigate = useNavigate();
 
   const { user } = useAuth();
+  const { toggleTheme } = useTheme();
 
   const logout = () => {
     clearStorage();
@@ -28,33 +31,41 @@ export const Navbar = () => {
   return (
     <nav className="border-border bg-background fixed z-20 flex h-16 w-full items-center justify-between border-b px-4">
       <div className="flex items-center gap-4">
-        <img src={"/finsigh-icon.png"} alt="FinSight Logo" className="h-8" />
+        <img src={"/findraco-logo-128.png"} alt="findraco logo" className="h-8" />
         <PlanSwitcher />
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger className="hover:cursor-pointer focus:outline-none">
-          <Avatar size="lg">
-            <AvatarFallback>
-              {getFirstAndLastInitials(user?.name ?? "")}
-            </AvatarFallback>
-          </Avatar>
-        </DropdownMenuTrigger>
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="icon" onClick={toggleTheme}>
+          <Sun className="dark:hidden" />
+          <Moon className="hidden dark:block" />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
 
-        <DropdownMenuContent>
-          <DropdownMenuItem
-            className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
-            onClick={logout}
-          >
-            Logout
-            <LogOut className="text-foreground" />
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
-          <div className="flex justify-center px-2 py-1.5">
-            <AppVersion />
-          </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger className="hover:cursor-pointer focus:outline-none">
+            <Avatar size="lg">
+              <AvatarFallback>
+                {getFirstAndLastInitials(user?.name ?? "")}
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
+              onClick={logout}
+            >
+              Logout
+              <LogOut className="text-foreground" />
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <div className="flex justify-center px-2 py-1.5">
+              <AppVersion />
+            </div>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </nav>
   );
 };

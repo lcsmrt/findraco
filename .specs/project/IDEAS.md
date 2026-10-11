@@ -19,10 +19,10 @@ The biggest usage drop-off is forgetting to log a transaction. Anything that low
   - One-tap confirmation inbox inside the app.
 
 - **Voice assistants (Siri / Google Assistant)**
-  - Shortcuts / Action Blocks: *"Log 30 reais of gasolina in finSight"* → API call.
+  - Shortcuts / Action Blocks: *"Log 30 reais of gasolina in findraco"* → API call.
 
 - **Mobile share extension / quick actions**
-  - Share a receipt from the bank app to finSight → pre-filled draft.
+  - Share a receipt from the bank app to findraco → pre-filled draft.
   - Home-screen long-press action: "New expense".
 
 - **PWA / mobile-first web**
@@ -93,7 +93,7 @@ AI is most useful as silent automation, not as a fancy dashboard.
 
 ## 5. Planning, Goals & Reserves
 
-Turn finSight from a tracker into a planner.
+Turn findraco from a tracker into a planner.
 
 - **Goals / envelopes**
   - Emergency fund, travel, car, home.
@@ -188,7 +188,7 @@ Before moving anything to `ROADMAP.md`, score each idea along:
 1. **User friction removed** — Does it make daily capture or review noticeably easier?
 2. **Data dependency** — Does it need clean/complete data to be useful? (Insights need good capture first.)
 3. **Implementation cost** — Days, weeks, or months? Any external dependency (Meta approval, bank API, App Store)?
-4. **Strategic fit** — Does it move finSight toward being a planner, or just add noise?
+4. **Strategic fit** — Does it move findraco toward being a planner, or just add noise?
 5. **Risk / privacy surface** — Does it touch sensitive financial data or third-party services?
 
 A simple first cut:

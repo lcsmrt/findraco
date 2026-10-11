@@ -6,22 +6,19 @@ export const NotFound = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-background flex h-screen flex-col items-center justify-center gap-8">
-      <div className="flex flex-col items-center">
-        <h1 className="text-primary text-4xl font-bold">404</h1>
-        <h1 className="text-center text-lg">
-          The page you tried to access does not exist. <br />
-          But on the bright side, you can enjoy Bingus.
-        </h1>
-        <Button
-          variant="link"
-          className="text-base"
-          onClick={() => navigate(PATHS.home)}
-        >
-          (Or go back to Home...)
-        </Button>
+    <div className="bg-background flex h-screen flex-col items-center justify-center gap-6 px-4">
+      <img
+        src="/findraco-logo-128.png"
+        alt="findraco logo"
+        className="h-24"
+      />
+      <div className="flex flex-col items-center gap-2">
+        <h1 className="text-foreground text-3xl font-bold">Page not found</h1>
+        <p className="text-muted-foreground text-center">
+          The page you tried to access does not exist.
+        </p>
       </div>
-      <img src="/assets/bingus.webp" alt="bingus my beloved" className="w-60" />
+      <Button onClick={() => navigate(PATHS.home)}>Go back home</Button>
     </div>
   );
 };

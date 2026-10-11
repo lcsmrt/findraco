@@ -62,16 +62,16 @@ export const RegisterUser = () => {
 
   return (
     <>
-      <header className="flex flex-1 items-end gap-2">
+      <header className="flex flex-1 items-end gap-3">
         <img
-          src={"/finsigh-icon.png"}
-          alt="FinSight logo"
+          src={"/findraco-logo-128.png"}
+          alt="findraco logo"
           className="h-12"
           style={{
-            imageRendering: "pixelated",
             filter: "drop-shadow(0 0 10px hsl(var(--primary) / 0.7))",
           }}
         />
+        <span className="text-foreground text-2xl font-bold">findraco</span>
       </header>
 
       <form
@@ -138,7 +138,7 @@ export const RegisterUser = () => {
 
         <div className="w-full">
           <p className="text-muted-foreground text-center text-sm">
-            By clicking Sign up, you agree to FinSight’s{" "}
+            By clicking Sign up, you agree to findraco’s{" "}
             <strong>Terms of Service</strong> and acknowledge that you are
             subject to our <strong>Privacy Policy</strong>.
           </p>

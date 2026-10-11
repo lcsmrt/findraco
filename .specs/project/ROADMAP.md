@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current Milestone:** M5 — Capture Every Day (post-MVP refinement)
-**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; remaining M4 refinements and M5 daily-capture tracks are now the active backlog.
+**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; **Rebrand finSight → findraco ✅ SHIPPED 2026-08-16** (`.specs/features/rebrand-findraco/`); remaining M4 refinements and M5 daily-capture tracks are now the active backlog.
 
 > **Raw ideas bucket:** See [`IDEAS.md`](./IDEAS.md) for a separate, non-canonical collection of future product ideas captured during brainstorming. Those ideas are not yet triaged or committed; review and migrate only the accepted ones into this roadmap.
 
@@ -130,7 +130,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 
 ## M5 — Capture Every Day (current)
 
-**Goal:** Remove the friction of getting a real-world expense into finSight, so the ledger stays complete without manual typing.
+**Goal:** Remove the friction of getting a real-world expense into findraco, so the ledger stays complete without manual typing.
 
 **User insight (2026-08-01):** the highest-value next step is making day-to-day capture effortless — reading invoices (NFs) and allowing quick notes via WhatsApp.
 
@@ -144,7 +144,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 
 **M5-02 — WhatsApp quick-capture**
 
-- A user can forward or send a message (text, image, or voice-to-text) to a finSight number/bot and have it parsed into a draft transaction.
+- A user can forward or send a message (text, image, or voice-to-text) to a findraco number/bot and have it parsed into a draft transaction.
 - Draft goes to an inbox inside the app for one-tap confirm/edit.
 - Lower initial scope: text only, single transaction per message, no natural-language parsing beyond simple patterns (amount, description, date defaults to today).
 

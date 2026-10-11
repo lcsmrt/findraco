@@ -30,7 +30,7 @@ jobs:
 
           [[ "$STACK_ID" =~ ^[0-9]+$ ]] || {
             echo "STACK_ID is still a placeholder. Open the stack in Portainer and"
-            echo "copy the id from the URL (…/docker/stacks/finsight?id=<STACK_ID>…)."
+            echo "copy the id from the URL (…/docker/stacks/findraco?id=<STACK_ID>…)."
             exit 1
           }
 

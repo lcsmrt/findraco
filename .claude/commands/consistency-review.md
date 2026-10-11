@@ -1,9 +1,9 @@
 ---
-description: Audit finsight (backend Java + frontend TS) for drift against the documented standards. Report-only, findings ranked by confidence.
+description: Audit findraco (backend Java + frontend TS) for drift against the documented standards. Report-only, findings ranked by confidence.
 argument-hint: [scope — e.g. "backend", "frontend", a path, or blank for full]
 ---
 
-Run a consistency review of the finsight codebase against the **written** standards. This is a
+Run a consistency review of the findraco codebase against the **written** standards. This is a
 **report-only** audit — do NOT fix anything in this pass; reporting and fixing are separate steps.
 
 ## Scope

@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { finsightApi } from "../clients/finsightApi";
+import { findracoApi } from "../clients/findracoApi";
 import {
   CreatePlanRequest,
   Plan,
@@ -29,7 +29,7 @@ const mapPlan = (raw: RawPlan): Plan => ({
 });
 
 const getPlans = async (): Promise<Plan[]> => {
-  const { data } = await finsightApi.get<RawPlan[]>("/plan");
+  const { data } = await findracoApi.get<RawPlan[]>("/plan");
   return data.map(mapPlan);
 };
 
@@ -42,7 +42,7 @@ export const useGetPlans = (options?: QueryOptions<Plan[]>) => {
 };
 
 const getPlan = async (id: number): Promise<Plan> => {
-  const { data } = await finsightApi.get<RawPlan>(`/plan/${id}`);
+  const { data } = await findracoApi.get<RawPlan>(`/plan/${id}`);
   return mapPlan(data);
 };
 
@@ -56,7 +56,7 @@ export const useGetPlan = (id?: number, options?: QueryOptions<Plan>) => {
 };
 
 const getPlanMembers = async (planId: number): Promise<PlanMember[]> => {
-  const { data } = await finsightApi.get<PlanMember[]>(
+  const { data } = await findracoApi.get<PlanMember[]>(
     `/plan/${planId}/members`,
   );
   return data;
@@ -75,7 +75,7 @@ export const useGetPlanMembers = (
 };
 
 const createPlan = async (payload: CreatePlanRequest): Promise<Plan> => {
-  const { data } = await finsightApi.post<RawPlan>("/plan", payload.body);
+  const { data } = await findracoApi.post<RawPlan>("/plan", payload.body);
   return mapPlan(data);
 };
 
@@ -101,7 +101,7 @@ export const useCreatePlan = (
 const updateMemberRole = async (
   payload: UpdateMemberRoleRequest,
 ): Promise<PlanMember> => {
-  const { data } = await finsightApi.put<PlanMember>(
+  const { data } = await findracoApi.put<PlanMember>(
     `/plan/${payload.params.planId}/members/${payload.params.userId}`,
     payload.body,
   );
@@ -131,7 +131,7 @@ export const useUpdateMemberRole = (
 };
 
 const removeMember = async (payload: RemoveMemberRequest): Promise<void> => {
-  await finsightApi.delete(
+  await findracoApi.delete(
     `/plan/${payload.params.planId}/members/${payload.params.userId}`,
   );
 };
@@ -159,7 +159,7 @@ export const useRemoveMember = (
 };
 
 const renamePlan = async (payload: UpdatePlanRequest): Promise<Plan> => {
-  const { data } = await finsightApi.put<RawPlan>(
+  const { data } = await findracoApi.put<RawPlan>(
     `/plan/${payload.params.planId}`,
     payload.body,
   );
@@ -186,7 +186,7 @@ export const useRenamePlan = (
 };
 
 const deletePlan = async (planId: number): Promise<void> => {
-  await finsightApi.delete(`/plan/${planId}`);
+  await findracoApi.delete(`/plan/${planId}`);
 };
 
 export const useDeletePlan = (options?: MutationOptions<void, number>) => {
@@ -208,7 +208,7 @@ export const useDeletePlan = (options?: MutationOptions<void, number>) => {
 };
 
 const leavePlan = async (planId: number): Promise<void> => {
-  await finsightApi.post(`/plan/${planId}/leave`);
+  await findracoApi.post(`/plan/${planId}/leave`);
 };
 
 export const useLeavePlan = (options?: MutationOptions<void, number>) => {
@@ -232,7 +232,7 @@ export const useLeavePlan = (options?: MutationOptions<void, number>) => {
 const transferOwnership = async (
   payload: TransferOwnershipRequest,
 ): Promise<void> => {
-  await finsightApi.post(
+  await findracoApi.post(
     `/plan/${payload.params.planId}/transfer`,
     payload.body,
   );

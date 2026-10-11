@@ -13,9 +13,9 @@
     </parent>
 
     <groupId>com.lcs</groupId>
-    <artifactId>finsight</artifactId>
+    <artifactId>findraco</artifactId>
     <version>0.0.3-SNAPSHOT</version>
-    <name>finsight</name>
+    <name>findraco</name>
     <description>API for an expenses management application.</description>
 
     <properties>
@@ -156,9 +156,9 @@
                                 <rule>
                                     <element>CLASS</element>
                                     <includes>
-                                        <include>com.lcs.finsight.services.SplitResolver</include>
-                                        <include>com.lcs.finsight.services.CategoryBreakdownAssembler</include>
-                                        <include>com.lcs.finsight.security.PlanAuthorization</include>
+                                        <include>com.lcs.findraco.services.SplitResolver</include>
+                                        <include>com.lcs.findraco.services.CategoryBreakdownAssembler</include>
+                                        <include>com.lcs.findraco.security.PlanAuthorization</include>
                                     </includes>
                                     <limits>
                                         <limit>

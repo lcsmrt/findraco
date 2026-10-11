@@ -1,10 +1,10 @@
 services:
-  finsight-api:
+  findraco-api:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    image: finsight-api
-    container_name: finsight-api
+    image: findraco-api
+    container_name: findraco-api
     # Host networking: the PostgreSQL instance only listens on the VPS's
     # localhost, so the API shares that localhost. It exposes port 3000 there.
     network_mode: host
@@ -16,12 +16,12 @@ services:
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
     restart: unless-stopped
 
-  finsight-web:
+  findraco-web:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-    image: finsight-web
-    container_name: finsight-web
+    image: findraco-web
+    container_name: findraco-web
     # The only publicly exposed port: nginx serves the SPA and proxies /api to
     # the API on the host (see frontend/nginx.conf).
     ports:
@@ -29,5 +29,5 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     depends_on:
-      - finsight-api
+      - findraco-api
     restart: unless-stopped

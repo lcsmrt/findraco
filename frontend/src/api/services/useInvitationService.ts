@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { finsightApi } from "../clients/finsightApi";
+import { findracoApi } from "../clients/findracoApi";
 import {
   AcceptInvitationResponse,
   CreateInvitationRequest,
@@ -14,7 +14,7 @@ import { buildMutationOptions } from "../utils/buildMutationOptions";
 const createInvitation = async (
   payload: CreateInvitationRequest,
 ): Promise<Invitation> => {
-  const { data } = await finsightApi.post<Invitation>(
+  const { data } = await findracoApi.post<Invitation>(
     `/plan/${payload.params.planId}/invitation`,
     payload.body,
   );
@@ -36,7 +36,7 @@ export const useCreateInvitation = (
 const getInvitationPreview = async (
   token: string,
 ): Promise<InvitationPreview> => {
-  const { data } = await finsightApi.get<InvitationPreview>(
+  const { data } = await findracoApi.get<InvitationPreview>(
     `/invitation/${token}`,
   );
   return data;
@@ -56,7 +56,7 @@ export const useGetInvitationPreview = (
 };
 
 const getPlanInvitations = async (planId: number): Promise<Invitation[]> => {
-  const { data } = await finsightApi.get<Invitation[]>(
+  const { data } = await findracoApi.get<Invitation[]>(
     `/plan/${planId}/invitation`,
   );
   return data;
@@ -77,7 +77,7 @@ export const useGetPlanInvitations = (
 const revokeInvitation = async (
   payload: RevokeInvitationRequest,
 ): Promise<void> => {
-  await finsightApi.delete(
+  await findracoApi.delete(
     `/plan/${payload.params.planId}/invitation/${payload.params.invitationId}`,
   );
 };
@@ -106,7 +106,7 @@ export const useRevokeInvitation = (
 const acceptInvitation = async (
   token: string,
 ): Promise<AcceptInvitationResponse> => {
-  const { data } = await finsightApi.post<AcceptInvitationResponse>(
+  const { data } = await findracoApi.post<AcceptInvitationResponse>(
     `/invitation/${token}/accept`,
   );
   return data;

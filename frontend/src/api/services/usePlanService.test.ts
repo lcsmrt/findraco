@@ -2,11 +2,11 @@ import { createElement, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
-import { finsightApi } from "../clients/finsightApi";
+import { findracoApi } from "../clients/findracoApi";
 import { useRenamePlan, useUpdateMemberRole } from "./usePlanService";
 
-vi.mock("../clients/finsightApi", () => ({
-  finsightApi: {
+vi.mock("../clients/findracoApi", () => ({
+  findracoApi: {
     get: vi.fn(),
     post: vi.fn(),
     put: vi.fn(),
@@ -14,7 +14,7 @@ vi.mock("../clients/finsightApi", () => ({
   },
 }));
 
-const mockedApi = finsightApi as unknown as {
+const mockedApi = findracoApi as unknown as {
   get: Mock;
   post: Mock;
   put: Mock;

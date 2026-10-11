@@ -1,8 +1,8 @@
-# finSight
+# findraco
 
 **Vision:** A personal finance tracker that turns raw bank transactions into clear insight — where the money went, and where it's headed.
 **For:** Individuals managing their own finances (initially the author), importing real bank data (Nubank CSV) rather than manual entry.
-**Solves:** Bank apps show the past but not the future. finSight aggregates income/expenses, categorizes spending against limits, and (next) projects future cash so the user knows how much money they'll have.
+**Solves:** Bank apps show the past but not the future. findraco aggregates income/expenses, categorizes spending against limits, and (next) projects future cash so the user knows how much money they'll have.
 
 ## Goals
 

@@ -1,4 +1,4 @@
-# finSight
+# findraco
 
 Personal-finance app: Spring Boot API (`backend`) + React/TS SPA (`frontend`).
 
@@ -33,7 +33,7 @@ Personal-finance app: Spring Boot API (`backend`) + React/TS SPA (`frontend`).
   built from the entity; map by hand.
 - Exceptions: nested in `XxxExceptions`, one per semantic, each mapped in `GlobalExceptionHandler` with an
   explicit status. Error bodies use RFC 7807 `ProblemDetail` (own `type` URIs, field errors under an
-  `errors` extension). _finsight migration pending — see `.specs/quick/error-contract-problemdetail-migration.md`._
+  `errors` extension). _ProblemDetail migration pending — see `.specs/quick/error-contract-problemdetail-migration.md`._
 - Constructor injection only (no field `@Autowired`). Routes as `ApiRoutes` constants. All user-data
   queries plan-scoped.
 - Tests: unit `*Test` / integration `*IT` — see `.specs/codebase/TESTING.md`.

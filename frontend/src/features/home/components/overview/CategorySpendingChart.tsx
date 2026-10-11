@@ -56,7 +56,7 @@ function roundedRect(
 const STATUS_COLORS: Record<Status, string> = {
   "no-limit": "var(--chart-2)",
   ok: "var(--success)",
-  warning: "oklch(0.75 0.18 55)",
+  warning: "#f59e0b",
   over: "var(--destructive)",
 };
 

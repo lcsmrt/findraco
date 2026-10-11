@@ -143,7 +143,7 @@ export const OverviewTab = () => {
           value={customRange}
           onChange={setCustomRange}
           placeholder="Custom period"
-          className={cn(isCustomActive && "border-pink-400")}
+          className={cn(isCustomActive && "border-primary")}
         />
         {showMemberPicker && (
           <div className="min-w-48">

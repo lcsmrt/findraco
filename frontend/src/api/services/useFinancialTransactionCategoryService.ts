@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { finsightApi } from "../clients/finsightApi";
+import { findracoApi } from "../clients/findracoApi";
 import {
   CreateFinancialTransactionCategoryRequest,
   FinancialTransactionCategory,
@@ -20,7 +20,7 @@ const getFinancialTransactionCategories = async (
   params?: PagedRequest<PagedFinancialTransactionCategoriesFilter, FinancialTransactionCategorySortBy>,
 ): Promise<PagedResponse<FinancialTransactionCategory>> => {
   const query = buildPagedQuery(params);
-  const { data } = await finsightApi.get(
+  const { data } = await findracoApi.get(
     `/plan/${planId}/financial-transaction-category?${query}`,
   );
   return data;
@@ -43,7 +43,7 @@ const createFinancialTransactionCategory = async (
   planId: number,
   payload: CreateFinancialTransactionCategoryRequest,
 ): Promise<FinancialTransactionCategory> => {
-  const { data } = await finsightApi.post(
+  const { data } = await findracoApi.post(
     `/plan/${planId}/financial-transaction-category`,
     payload.body,
   );
@@ -76,7 +76,7 @@ const updateFinancialTransactionCategory = async (
   payload: UpdateFinancialTransactionCategoryRequest,
 ): Promise<FinancialTransactionCategory> => {
   const { params, body } = payload;
-  const { data } = await finsightApi.put(
+  const { data } = await findracoApi.put(
     `/plan/${planId}/financial-transaction-category/${params.id}`,
     body,
   );
@@ -108,7 +108,7 @@ const deleteFinancialTransactionCategory = async (
   planId: number,
   id: number,
 ): Promise<void> => {
-  await finsightApi.delete(
+  await findracoApi.delete(
     `/plan/${planId}/financial-transaction-category/${id}`,
   );
 };

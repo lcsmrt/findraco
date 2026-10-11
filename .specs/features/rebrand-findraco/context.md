@@ -9,9 +9,9 @@
 ## Feature Boundary
 
 Rename finSight → findraco across all functional surfaces, remake the theme (light + dark)
-around a gold-hoard dragon identity, and replace the logo with an agent-drawn
-wordmark + simple icon. Historical `.specs` docs, the DB, and the Portainer stack are
-explicitly out of scope.
+around a gold-hoard dragon identity, and replace the logo with a user-provided
+dragon-wing-and-coin image (no text wordmark). Historical `.specs` docs, the DB, and the
+Portainer stack are explicitly out of scope.
 
 ---
 
@@ -35,11 +35,14 @@ explicitly out of scope.
 - Class strategy (`.dark`) — `dark:` variants already half-wired in components.
 - Theme toggle in the navbar; `prefers-color-scheme` default; localStorage persistence.
 
-### Logo: wordmark + simple icon
+### Logo: user-provided image, no wordmark
 
-- Stylized lowercase "findraco" wordmark with a minimal dragon-wing or coin accent,
-  drawn by the agent as SVG. Safest, least mascot-forward option — chosen by user.
-- Favicon: proper generated icon set from the SVG mark.
+- Dragon wing curled around a gold coin, transparent-background PNG — provided by the user,
+  copied to `frontend/public/findraco-logo.png`. The image is the whole mark; there is no
+  stylized "findraco" text logo.
+- Transparent background reads on both parchment and charcoal-navy themes.
+- Favicon: proper generated icon set from the logo image.
+- Supersedes the earlier agent-drawn SVG decision (those draft SVGs are deleted).
 
 ### 404 and easter eggs
 
@@ -49,7 +52,8 @@ explicitly out of scope.
 ### Agent's Discretion
 
 - Exact oklch token values for both palettes (within the gold-hoard direction).
-- Exact wordmark letterforms and the wing/coin accent shape.
+- Favicon generation tooling and sizes; optional downscaled web-size copy of the logo PNG.
+- Whether plain-text "findraco" (body font, not artwork) sits next to the icon in the navbar.
 - Toggle UI details (icon choice, placement within navbar).
 
 ---
@@ -57,13 +61,12 @@ explicitly out of scope.
 ## Specific References
 
 - Brand metaphor: dragon "hoarding" — users hoard and guard their treasure (money).
-- Name: **findraco** — always lowercase in the wordmark (agent's discretion in prose:
-  "findraco" to match the wordmark).
+- Name: **findraco** — lowercase in prose and any plain-text brand mentions.
 
 ---
 
 ## Deferred Ideas
 
-- Real commissioned dragon mascot artwork (could replace the simple icon later).
+- Real commissioned dragon mascot artwork (could replace the current logo image later).
 - Renaming the local repo dir / GitHub repo — user's manual step.
 - Portainer env var rename (`VITE_FINDRACO_API_URL`) — deploy-time checklist item.

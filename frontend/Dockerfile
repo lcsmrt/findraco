@@ -9,9 +9,9 @@ ENV HUSKY=0
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY backend/package.json backend/
 COPY frontend/package.json frontend/
-RUN pnpm install --frozen-lockfile --filter finsight-frontend...
+RUN pnpm install --frozen-lockfile --filter findraco-frontend...
 COPY frontend frontend
-RUN pnpm --filter finsight-frontend build
+RUN pnpm --filter findraco-frontend build
 
 FROM nginx:1.27-alpine AS runtime
 COPY frontend/nginx.conf /etc/nginx/conf.d/default.conf

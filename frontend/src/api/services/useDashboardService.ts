@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { finsightApi } from "../clients/finsightApi";
+import { findracoApi } from "../clients/findracoApi";
 import { DashboardFilter, DashboardSummaryResponse } from "../dtos";
 import { QueryOptions } from "../types/queryOptions";
 import { usePlanContext } from "@/app/providers/PlanProvider";
@@ -8,7 +8,7 @@ const getDashboardSummary = async (
   planId: number,
   params: DashboardFilter,
 ): Promise<DashboardSummaryResponse> => {
-  const { data } = await finsightApi.get<DashboardSummaryResponse>(
+  const { data } = await findracoApi.get<DashboardSummaryResponse>(
     `/plan/${planId}/dashboard`,
     { params },
   );

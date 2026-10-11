@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { finsightApi } from "../clients/finsightApi";
+import { findracoApi } from "../clients/findracoApi";
 import {
   CreateFinancialTransactionRequest,
   CreateFinancialTransactionSeriesRequest,
@@ -28,7 +28,7 @@ const getFinancialTransactions = async (
   >,
 ): Promise<PagedResponse<FinancialTransaction>> => {
   const query = buildPagedQuery(params);
-  const { data } = await finsightApi.get(
+  const { data } = await findracoApi.get(
     `/plan/${planId}/financial-transaction?${query}`,
   );
   return data;
@@ -54,7 +54,7 @@ const createFinancialTransaction = async (
   planId: number,
   payload: CreateFinancialTransactionRequest,
 ): Promise<FinancialTransaction> => {
-  const { data } = await finsightApi.post(
+  const { data } = await findracoApi.post(
     `/plan/${planId}/financial-transaction`,
     payload.body,
   );
@@ -87,7 +87,7 @@ const updateFinancialTransaction = async (
   payload: UpdateFinancialTransactionRequest,
 ): Promise<FinancialTransaction> => {
   const { params, body } = payload;
-  const { data } = await finsightApi.put(
+  const { data } = await findracoApi.put(
     `/plan/${planId}/financial-transaction/${params.id}`,
     body,
   );
@@ -121,7 +121,7 @@ const importNubankCsv = async (
 ): Promise<{ imported: number }> => {
   const formData = new FormData();
   formData.append("file", file);
-  const { data } = await finsightApi.post(
+  const { data } = await findracoApi.post(
     `/plan/${planId}/financial-transaction/import`,
     formData,
     {
@@ -152,7 +152,7 @@ const createFinancialTransactionSeries = async (
   planId: number,
   payload: CreateFinancialTransactionSeriesRequest,
 ): Promise<FinancialTransactionSeriesResponse> => {
-  const { data } = await finsightApi.post(
+  const { data } = await findracoApi.post(
     `/plan/${planId}/financial-transaction/series`,
     payload.body,
   );
@@ -188,7 +188,7 @@ const deleteFinancialTransactionSeries = async (
   if (pivotOccurrenceId != null) {
     query.set("pivotOccurrenceId", String(pivotOccurrenceId));
   }
-  await finsightApi.delete(
+  await findracoApi.delete(
     `/plan/${planId}/financial-transaction/series/${seriesId}?${query}`,
   );
 };
@@ -222,7 +222,7 @@ const getFinancialTransactionSeries = async (
   planId: number,
   seriesId: string,
 ): Promise<RecurrenceDefinitionResponse> => {
-  const { data } = await finsightApi.get(
+  const { data } = await findracoApi.get(
     `/plan/${planId}/financial-transaction/series/${seriesId}`,
   );
   return data;
@@ -247,7 +247,7 @@ const updateFinancialTransactionSeries = async (
   payload: UpdateFinancialTransactionSeriesRequest,
 ): Promise<FinancialTransactionSeriesResponse> => {
   const { params, body } = payload;
-  const { data } = await finsightApi.put(
+  const { data } = await findracoApi.put(
     `/plan/${planId}/financial-transaction/series/${params.seriesId}`,
     body,
   );
@@ -282,7 +282,7 @@ const deleteFinancialTransaction = async (
   planId: number,
   id: number,
 ): Promise<void> => {
-  await finsightApi.delete(`/plan/${planId}/financial-transaction/${id}`);
+  await findracoApi.delete(`/plan/${planId}/financial-transaction/${id}`);
 };
 
 export const useDeleteFinancialTransaction = (

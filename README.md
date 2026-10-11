@@ -1,4 +1,4 @@
-# finSight
+# findraco
 
 Personal finance tracker: import real bank transactions, understand where the money went, and see upcoming bills by registering recurring/installment commitments.
 
@@ -30,8 +30,8 @@ pnpm dev
 
 `pnpm dev` runs every workspace package's `dev` script in parallel: `./mvnw
 spring-boot:run` in `backend/` and `vite` in `frontend/` (reads `.env.development` →
-talks to localhost:3000). Run them individually with `pnpm --filter finsight-backend dev`
-or `pnpm --filter finsight-frontend dev`.
+talks to localhost:3000). Run them individually with `pnpm --filter findraco-backend dev`
+or `pnpm --filter findraco-frontend dev`.
 
 See each app's README for details:
 - [Backend README](./backend/README.md) — env vars, endpoints, tests
@@ -44,10 +44,10 @@ One Docker stack for both apps, run on the VPS through Portainer. See
 
 | Service | Image | Networking |
 | ------- | ----- | ---------- |
-| `finsight-api` | [`backend/Dockerfile`](./backend/Dockerfile) — Maven build → JRE | host network, port 3000 (not published) |
-| `finsight-web` | [`frontend/Dockerfile`](./frontend/Dockerfile) — Vite build → nginx | publishes `${WEB_PORT}` → 80 |
+| `findraco-api` | [`backend/Dockerfile`](./backend/Dockerfile) — Maven build → JRE | host network, port 3000 (not published) |
+| `findraco-web` | [`frontend/Dockerfile`](./frontend/Dockerfile) — Vite build → nginx | publishes `${WEB_PORT}` → 80 |
 
-`finsight-web` is the only public entry point: nginx serves the built SPA and
+`findraco-web` is the only public entry point: nginx serves the built SPA and
 proxies `/api/` to the API on the host, so the browser stays same-origin (no CORS,
 no IP baked into the bundle). Variables are documented in
 [`.env.production.example`](./.env.production.example); real values live in the

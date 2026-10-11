@@ -1,4 +1,4 @@
-import { setAccessTokenAccessor } from "@/api/clients/finsightApi";
+import { setAccessTokenAccessor } from "@/api/clients/findracoApi";
 import { useGetUserProfile } from "@/api/services/useAuthService";
 import { User } from "@/api/dtos/user";
 import {

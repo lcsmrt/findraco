@@ -6,32 +6,35 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
+import { resolveTheme, useTheme } from "@/app/providers/ThemeProvider";
 
 const Toaster = ({ ...props }: ToasterProps) => {
+  const { theme } = useTheme();
+
   return (
     <Sonner
-      theme="dark"
+      theme={resolveTheme(theme)}
       className="toaster group"
       position="bottom-left"
       closeButton
       icons={{
         success: (
-          <div className="flex size-6 items-center justify-center rounded-full bg-emerald-500/15 text-emerald-600">
+          <div className="flex size-6 items-center justify-center rounded-full bg-success/15 text-success">
             <CircleCheckIcon className="size-4" />
           </div>
         ),
         info: (
-          <div className="flex size-6 items-center justify-center rounded-full bg-blue-500/15 text-blue-600">
+          <div className="flex size-6 items-center justify-center rounded-full bg-primary/15 text-primary">
             <InfoIcon className="size-4" />
           </div>
         ),
         warning: (
-          <div className="flex size-6 items-center justify-center rounded-full bg-amber-500/15 text-amber-600">
+          <div className="flex size-6 items-center justify-center rounded-full bg-accent/15 text-accent">
             <TriangleAlertIcon className="size-4" />
           </div>
         ),
         error: (
-          <div className="flex size-6 items-center justify-center rounded-full bg-red-500/15 text-red-600">
+          <div className="flex size-6 items-center justify-center rounded-full bg-destructive/15 text-destructive">
             <OctagonXIcon className="size-4" />
           </div>
         ),

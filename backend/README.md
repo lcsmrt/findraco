@@ -1,4 +1,4 @@
-# finSight Backend
+# findraco Backend
 
 Spring Boot REST API for personal finance management. Built as a learning project to explore backend development with Java.
 
@@ -26,7 +26,7 @@ Spring Boot REST API for personal finance management. Built as a learning projec
 ## Project Structure
 
 ```
-src/main/java/com/lcs/finsight/
+src/main/java/com/lcs/findraco/
   config/           Spring and OpenAPI configuration
   controllers/      REST controllers
   dtos/
@@ -78,7 +78,7 @@ The API starts on **http://localhost:3000** (configurable via `SERVER_PORT`).
 
 Swagger UI: **http://localhost:3000/swagger-ui.html**
 
-Recurring/installment endpoints (base `/api/finsight/financial-transaction`):
+Recurring/installment endpoints (base `/api/findraco/financial-transaction`):
 
 - `POST /series` — create a series. Body: `{ type, amount, description, categoryId?, mode: "INSTALLMENT" | "RECURRING", startDate, parcelsNumber?, interval?: "MONTHLY", endDate? }`. `amount` is per occurrence; `INSTALLMENT` needs `parcelsNumber`, `RECURRING` needs `interval` + `endDate`. Returns `{ seriesId, count, occurrences[] }`.
 - `DELETE /series/{seriesId}` — delete all occurrences of a series.
@@ -99,4 +99,4 @@ Planning artifacts (specs, design, tasks, codebase map) live in [`../.specs/`](.
 
 ## Frontend
 
-See [finSight Frontend](../frontend) for the React SPA that consumes this API.
+See [findraco Frontend](../frontend) for the React SPA that consumes this API.

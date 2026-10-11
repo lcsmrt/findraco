@@ -1,4 +1,4 @@
-# finSight Frontend
+# findraco Frontend
 
 React + TypeScript SPA for personal finance management.
 
@@ -41,7 +41,7 @@ src/
 ### Prerequisites
 
 - **Node.js** (project uses Vite 6 / React 19)
-- The [finSight Backend](../backend) running locally on port **3000**
+- The [findraco Backend](../backend) running locally on port **3000**
 
 ### Run locally
 
@@ -49,16 +49,16 @@ From the repo root (pnpm workspace):
 
 ```bash
 pnpm install
-pnpm --filter finsight-frontend dev   # or just `pnpm dev` to start backend + frontend together
+pnpm --filter findraco-frontend dev   # or just `pnpm dev` to start backend + frontend together
 ```
 
 The dev server reads `.env.development` (already committed), which points at the local backend:
 
 ```
-VITE_FINSIGHT_API_URL=http://localhost:3000/api/finsight
+VITE_FINDRACO_API_URL=http://localhost:3000/api/findraco
 ```
 
-No extra env setup is needed for local development — just make sure the backend is up first. The production build needs no env file at all: without the variable the axios client falls back to the same-origin `/api/finsight`, which the nginx container proxies to the API.
+No extra env setup is needed for local development — just make sure the backend is up first. The production build needs no env file at all: without the variable the axios client falls back to the same-origin `/api/findraco`, which the nginx container proxies to the API.
 
 ### Other commands
 
@@ -82,4 +82,4 @@ Component/form/API conventions are documented in [`CLAUDE.md`](./CLAUDE.md) and 
 
 ## Backend
 
-See [finSight Backend](../backend) for the Spring Boot API that powers this application.
+See [findraco Backend](../backend) for the Spring Boot API that powers this application.

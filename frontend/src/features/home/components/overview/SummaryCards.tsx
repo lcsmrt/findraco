@@ -17,7 +17,7 @@ export const SummaryCards = ({ data }: SummaryCardsProps) => {
           <CardTitle className="text-muted-foreground text-sm font-medium">Income</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold text-green-600">{formatCurrency(totalIncome, "BRL")}</p>
+          <p className="text-2xl font-bold text-success">{formatCurrency(totalIncome, "BRL")}</p>
         </CardContent>
       </Card>
 
@@ -26,7 +26,7 @@ export const SummaryCards = ({ data }: SummaryCardsProps) => {
           <CardTitle className="text-muted-foreground text-sm font-medium">Expenses</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl font-bold text-red-600">{formatCurrency(totalExpenses, "BRL")}</p>
+          <p className="text-2xl font-bold text-destructive">{formatCurrency(totalExpenses, "BRL")}</p>
         </CardContent>
       </Card>
 
@@ -35,7 +35,7 @@ export const SummaryCards = ({ data }: SummaryCardsProps) => {
           <CardTitle className="text-muted-foreground text-sm font-medium">Balance</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className={cn("text-2xl font-bold", netBalance >= 0 ? "text-green-600" : "text-red-600")}>
+          <p className={cn("text-2xl font-bold", netBalance >= 0 ? "text-success" : "text-destructive")}>
             {formatCurrency(netBalance, "BRL")}
           </p>
         </CardContent>

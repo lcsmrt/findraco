@@ -1,5 +1,5 @@
 import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
-import { finsightApi } from "../clients/finsightApi";
+import { findracoApi } from "../clients/findracoApi";
 import { RegisterUserRequest, User } from "../dtos/user";
 import { MutationOptions } from "../types/mutationOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
@@ -12,7 +12,7 @@ import { LoginRequest, LoginResponse } from "../dtos";
  */
 const login = async (params: LoginRequest): Promise<LoginResponse> => {
   const { body } = params;
-  const { data } = await finsightApi.post("/auth/login", body);
+  const { data } = await findracoApi.post("/auth/login", body);
   return data;
 };
 
@@ -33,7 +33,7 @@ export const useLogin = (
  * @returns User data.
  */
 const getUserProfile = async (): Promise<User> => {
-  const { data } = await finsightApi.get("/user/me");
+  const { data } = await findracoApi.get("/user/me");
   return data;
 };
 
@@ -57,7 +57,7 @@ export const useGetUserProfile = (
  */
 const registerUser = async (params: RegisterUserRequest): Promise<User> => {
   const { body } = params;
-  const { data } = await finsightApi.post("/user", body);
+  const { data } = await findracoApi.post("/user", body);
   return data;
 };
 
