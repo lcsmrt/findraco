@@ -1,0 +1,70 @@
+# STATE
+
+## Decisions
+
+### AD-001
+- **Decision**: Manage all work through the `tlc-spec-driven` skill and the `.specs/` tree (upgraded to v3.3.0 on 2026-10-11).
+- **Reason**: Project resumed after a gap; wanted structure and traceability that weren't used at the start.
+- **Trade-off**: Upfront documentation effort before feature code.
+- **Scope**: All features, both apps.
+- **Date**: 2026-07-05
+- **Status**: active
+
+### AD-002
+- **Decision**: Recurring/installment commitments generate concrete future `FinancialTransaction` rows sharing a `seriesId` — no statistical forecast or projection math; the existing dashboard shows the look-ahead for free.
+- **Reason**: The user wants "expense X, 12 parcels" to become 12 real transactions; simpler, explainable, dashboard-compatible.
+- **Trade-off**: One-off/variable spending is never anticipated; bulk rows instead of a computed view.
+- **Scope**: Recurrence, dashboard. (v1's "must have an end date" was later relaxed by recurrence-model-v2's rolling 12-month window for open-ended RECURRING series.)
+- **Date**: 2026-07-05
+- **Status**: active
+
+### AD-003
+- **Decision**: An installment can be registered mid-way via total `N` + current parcel `k`; the generator produces parcels `k..N`, labelled `k/N`, starting at parcel `k`'s month; the implied end is shown read-only.
+- **Reason**: The generator always assumed parcel 1, mislabelling or double-counting purchases already partly imported from the Nubank CSV.
+- **Trade-off**: No automatic dedup against CSV imports — the user picks `k`.
+- **Scope**: Installment series (backend generator, frontend form).
+- **Date**: 2026-07-11
+- **Status**: active
+
+### AD-004
+- **Decision**: Sharing is modelled as **Shared Plans** — a `Plan` owns transactions and categories; users join via `PlanMembership` with a role (OWNER/EDITOR/CONTRIBUTOR/VIEWER); access is two-layer (plan role × row ownership via `created_by`). Every user gets an auto-created, shareable default plan.
+- **Reason**: "Share like a spreadsheet" with partial rights; a household model can't express read-only or own-rows-only.
+- **Trade-off**: More entities and an authorization layer; required adopting Flyway for the destructive re-scope.
+- **Scope**: All plan-scoped data (transactions, categories, dashboard), authorization.
+- **Date**: 2026-07-11
+- **Status**: active
+
+### AD-005
+- **Decision**: Plan-scoped requests carry the plan as a path variable (`/plan/{planId}/...`), resolved into a `PlanContext` that verifies membership; the plan stays out of the JWT.
+- **Reason**: Structural scoping can't be forgotten (no cross-plan leak); switching plans needs no re-login.
+- **Trade-off**: All scoped routes nested under the plan prefix; frontend query keys include the active plan.
+- **Scope**: `ApiRoutes`, controllers, frontend service hooks.
+- **Date**: 2026-07-12
+- **Status**: active
+
+### AD-006
+- **Decision**: Deleting a plan is a soft delete (`plans.deleted_at`); dependent rows are never cascaded. Archived plans are filtered by explicit per-finder `deleted_at IS NULL`, not a global `@SQLRestriction` (which would break `membership.getPlan()` loads).
+- **Reason**: A hard cascade delete was too risky; soft delete is reversible and keeps history.
+- **Trade-off**: Archived rows accumulate until a purge exists (ROADMAP M4-07).
+- **Scope**: Plan lifecycle, every plan read path.
+- **Date**: 2026-07-12
+- **Status**: active
+
+### AD-007
+- **Decision**: Line items (`TransactionItem`) are an additive child of a transaction, each with its own category; the category breakdown follows a partition invariant `spent[C] = A[C] − B[C] + I[C]` (uncategorized items and the un-itemized remainder stay on the parent category), computed in the pure `CategoryBreakdownAssembler`. Sums are loose (`0 ≤ Σitems ≤ amount`).
+- **Reason**: "Cleaning vs. food inside one grocery run" needs the item to be the unit of category truth; loose sums avoid forcing full itemization.
+- **Trade-off**: The category-keyed dashboard query and limit evaluation became item-aware; top-line totals never move.
+- **Scope**: Transactions, dashboard category breakdown and limits.
+- **Date**: 2026-07-15
+- **Status**: active
+
+## Handoff
+
+- **Feature**: Rebrand finSight → findraco — visual design iteration (`.specs/features/rebrand-findraco/`)
+- **Phase / Task**: Post-T12 polish; functional rename done and deployed 2026-10-11 (stack `findraco`, id 74)
+- **Completed**: T1–T12 (rename, gold-hoard light/dark theme + toggle, logo/favicon, themed 404)
+- **In-progress** (file:line): none — design tokens live in `frontend/src/index.css:3` (`@theme inline`), `:58` (light `:root`), `:117` (`.dark`); toggle in `frontend/src/app/providers/ThemeProvider.tsx` + `components/navbar/Navbar.tsx`
+- **Next step**: Ask the user what looks worst (palette/contrast, screens, components, identity) or screenshot every screen in both themes and build a critique list for them to prioritize; work on branch `feat/rebrand-design` (every push to `main` deploys to prod).
+- **Blockers**: Logged-in screens need the DB tunnel (`ssh -N -L 5432:localhost:5432 vps`), which the user runs.
+- **Uncommitted files**: none
+- **Branch**: main

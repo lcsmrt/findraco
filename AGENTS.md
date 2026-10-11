@@ -77,4 +77,5 @@ Before working on a specific layer, read the matching skill first:
 
 ## Project State
 
-Current work, blockers, and deferred ideas live in `.specs/project/STATE.md`.
+Project decisions and the latest pause handoff live in `.specs/STATE.md`; roadmap, backlog and open todos in
+`.specs/project/ROADMAP.md`; environment gotchas in `.specs/codebase/CONCERNS.md`.

@@ -57,7 +57,8 @@ Portainer stack, never in the repo.
 
 This project is planned and built with the `tlc-spec-driven` workflow. All planning artifacts live in [`.specs/`](./.specs):
 
-- `.specs/project/` — vision (`PROJECT.md`), roadmap (`ROADMAP.md`), and cross-session memory (`STATE.md` — **read this first when resuming**)
+- `.specs/STATE.md` — project decisions (`AD-NNN`) and the latest pause **Handoff** — **read this first when resuming**
+- `.specs/project/` — vision (`PROJECT.md`), roadmap and open todos (`ROADMAP.md`), raw ideas (`IDEAS.md`)
 - `.specs/codebase/` — brownfield map of the code (stack, architecture, conventions, testing, concerns)
 - `.specs/features/<name>/` — per-feature `spec.md` → `design.md` → `tasks.md`
 

@@ -53,11 +53,11 @@
 - What changed: A real Testcontainers-Postgres integration harness (`AbstractIntegrationTest` + `TestContainersConfig` + `TestAuthHelper` + `Fixtures`) now backs 10 `*IT` integration test classes covering the previously-unguarded critical paths: split invariant + per-user filtering (`SplitInvariantIT`), item-aware dashboard partition invariant (`DashboardPartitionIT`), the full plan-role×ownership authz matrix incl. fail-closed writes and non-member 404s (`PlanAuthorizationMatrixIT`), register/login/cross-plan-denial (`AuthenticationIT`), transaction PUT full-replace + validation guards (`TransactionCrudIT`), series generation/edit-scopes/guards (`SeriesEditIT`), the full Flyway chain on an empty DB (`MigrationsIT`), CSV import dedup (`CsvImportIT`), and invitation lifecycle (`InvitationLifecycleIT`). Plus 5 pre-existing `*Test` unit-test classes for the pure-logic layer (`SplitResolver`, `CategoryBreakdownAssembler`, `SeriesRegenerator`, `RecurringTransactionGenerator`, `PlanAuthorization`). JaCoCo gates branch coverage ≥0.80 on the three invariant-bearing classes; `mvn verify` fails if that regresses. Details: `.specs/codebase/TESTING.md`.
 - Amended 2026-07-25: the harness was moved off Testcontainers onto the `dev_finsight` database over the SSH tunnel (`TestContainersConfig` deleted), so the suite now **does** depend on `.env` + the tunnel and **empties `dev_finsight`** on every run. `MigrationsIT` correspondingly no longer proves the chain applies to a genuinely empty DB — it asserts the applied set matches the files on disk. Coverage of app behavior is unchanged.
 - Residual gap: coverage is real but not exhaustive — controllers/services not yet touched by an `*IT` (e.g. category CRUD, dashboard's monthly-trend/person-breakdown endpoints) still rely on manual verification. Lower priority than before; add incrementally as those areas change.
-- Two real (pre-existing, unrelated to the harness) bugs were **found** while writing these tests, not yet fixed — see `.specs/project/STATE.md` B-002 (login with an unknown email returns 500 instead of 401) and B-003 (negative top-level transaction amount is accepted, not rejected).
+- Two real (pre-existing, unrelated to the harness) bugs were **found** while writing these tests — B-002 (login with an unknown email returned 500 instead of 401) and B-003 (negative top-level transaction amount was accepted); both fixed 2026-07-19 (`b23d940`, `c62e7be8`).
 
 **Frontend — PARTIALLY RESOLVED 2026-07-17 (test-foundation feature):**
 
-- What changed: A `unit` vitest project (jsdom, `npm run test`) now runs alongside the existing `storybook` project. Real logic tests exist for: `CreatePlanDialog`'s zod schema, `TransactionFormDrawer`'s schema/defaults/payload-mapping/edit-reset for both plain and series/recurring modes, and `usePlanService`'s URL-scoping + cache-invalidation behavior. The `Dropdown.stories.tsx` Base UI compound-component bug class (STATE.md L-002) now has an automated `play`-function regression guard, red/green-proven against the original failure mode.
+- What changed: A `unit` vitest project (jsdom, `npm run test`) now runs alongside the existing `storybook` project. Real logic tests exist for: `CreatePlanDialog`'s zod schema, `TransactionFormDrawer`'s schema/defaults/payload-mapping/edit-reset for both plain and series/recurring modes, and `usePlanService`'s URL-scoping + cache-invalidation behavior. The `Dropdown.stories.tsx` Base UI compound-component bug class (L-002 below) now has an automated `play`-function regression guard, red/green-proven against the original failure mode.
 - Residual gap: most other feature components/hooks under `frontend/src/features/**` and `src/api/**` still have no dedicated tests (only the two forms and one service hook above). Coverage is real but narrow — extend incrementally as those areas change.
 - Risk: Medium → Low-Medium (down from Medium — the highest-risk flows named in the original entry, form validation and one auth-scoped data hook, now have coverage; the general "most things still untested" risk remains).
 - Priority: Medium.
@@ -81,6 +81,19 @@
   - **Flyway:** README lists Flyway, but no migration tooling exists (see Tech Debt above). Impact: covered under the HIGH migration concern.
   - **Env var names:** README's "Getting Started" documents `DB_URL`/`DB_USERNAME`/`DB_PASSWORD`/`JWT_SECRET`, but the app actually reads `SPRING_DATASOURCE_URL`/`_USERNAME`/`_PASSWORD` and `JWT_SECRET_KEY` (`application.properties`, `.env.example`). Impact: **LOW** — misleads new setup; align README with `.env.example`.
 - Fix approach: Update the README to match reality (Java 17, port 3000, correct env keys) and either adopt Flyway or drop the claim.
+
+## Environment & Process Gotchas
+
+Lessons from past sessions (moved here from the old `.specs/project/STATE.md` on 2026-10-11; IDs kept because older specs cite them). They are environment/process knowledge, not verification signals, so they don't belong in the skill's `lessons.json`.
+
+- **L-001 — Reconcile tasks against the code at phase boundaries.** A green compile once hid that T6/T7 were marked done but never written. Compile ≠ complete.
+- **L-002 — Frontend build-green ≠ runtime-correct for Base UI.** Compound components (e.g. `Menu.GroupLabel` needs a `Menu.Group`) fail only at render. Check in a browser or a story with a `play` function; mirror the primitive's own story for nesting.
+- **L-003 — The DB is the SSH tunnel, not a local Postgres.** Before declaring the DB down, check `ss -tlnp | grep 5432`; `systemctl status postgresql` is irrelevant here.
+- **L-004 — Re-check "next available" numbers at the start of Execute.** Planned migration V5 was taken by the time Execute ran; always `ls db/migration/` (and re-verify line refs) before T1, and log drift as a `SPEC_DEVIATION`.
+- **L-005 — A listening tunnel isn't a live tunnel.** Probe the DB with `timeout 10-15`; exit 124 means a stale tunnel. If it recurs after a reconnect, surface it instead of retrying.
+- **L-006 — Non-default dev ports need `ALLOWED_ORIGINS`.** A Vite instance on a port other than 5173 is blocked by CORS and only shows a generic "An error occurred" toast.
+- **L-007 — A migration on disk can be applied before it's committed.** Any backend instance booting against the same DB (e.g. the user's own dev server reloading) runs Flyway. Check `flyway_schema_history` on the real DB before assuming a clean baseline.
+- _L-008 (Testcontainers + Docker Desktop env vars) is obsolete since Testcontainers was removed on 2026-07-25._
 
 ---
 

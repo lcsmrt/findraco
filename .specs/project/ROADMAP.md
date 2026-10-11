@@ -45,6 +45,15 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 | — | Open-ended installments | Installments are bounded by definition; the need is covered by in-progress installments (RECUR-10). |
 | — | Native mobile app | WhatsApp capture gives 90% of the mobile value without a separate app build. |
 
+## Open Todos
+
+Operational follow-ups that aren't features (moved from the old `STATE.md` on 2026-10-11).
+
+- [ ] **Rotate the prod DB password of the `dev` Postgres user** — leaked through the public Actions log of every deploy from 2026-07-25 to 2026-10-11 (fixed in `589acf0`, logs deleted). Waiting on a talk with Iuri; then update `SPRING_DATASOURCE_PASSWORD` in the `findraco` stack and redeploy. `JWT_SECRET_KEY` and the Gmail app password were already rotated 2026-10-11.
+- [ ] Run `PasswordRecoveryIT` (`./mvnw verify`, tunnel up) — written 2026-10-11, never executed.
+- [ ] Migrate `.specs/features/*` specs to the v3 skill format (EARS ACs, `## Assumptions & Open Questions`) when they're next touched — `validate_spec.py` flags the old format.
+- [ ] Low priority: backend dotenv filename is `.env.${spring.profiles.active:.local}` → resolves oddly (`.env..local`) with no active profile; confirm how `.env` is actually loaded locally.
+
 ---
 
 ## M1 — Track & Understand (shipped)
