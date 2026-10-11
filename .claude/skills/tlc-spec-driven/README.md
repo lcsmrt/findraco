@@ -204,7 +204,7 @@ These trigger patterns help the agent recognize your intent, but you don't need 
 | `Map codebase`, `Analyze existing code`      | Create 7 brownfield docs for existing projects        |
 | `Document concerns`, `Find tech debt`        | Identify and document codebase risks                  |
 | `Record decision`, `Log blocker`, `Add todo` | Add entries to STATE.md                               |
-| `Pause work`, `End session`                  | Create handoff for session continuity                 |
+| `Pause work`, `End session`                  | Hand over a copy-paste prompt for the next session    |
 | `Resume work`, `Continue`                    | Load previous state and continue                      |
 
 ### Feature-Level (auto-sized)
@@ -303,15 +303,16 @@ Agent: Quick Task: Persist dark mode preference
 ```
 You: Pause work
 
-Agent: ✅ Created .specs/HANDOFF.md
-       - Feature: user-authentication
-       - Completed: T1, T2 (committed)
-       - In progress: T3 (70%)
-       - Next session: Continue T3, then T4
+Agent: Paste this into the next session:
+       ```
+       Resume user-authentication: T1, T2 committed; T3 at 70%
+       (src/services/auth.service.ts:45). Read .specs/features/user-authentication/tasks.md
+       and .specs/project/STATE.md, finish T3, then T4.
+       ```
 
 --- Later, new session ---
 
-You: Resume work
+You: [pastes the prompt]
 
 Agent: Resuming user-authentication at T3
        - Completed: T1 (auth interface), T2 (token storage)
@@ -432,7 +433,7 @@ A: Each task produces exactly one commit following [Conventional Commits 1.0.0](
 A: Yes! Say `"Quick fix: [description]"` for bug fixes, config changes, or small tweaks. You get quality guardrails (verify + commit) without the planning overhead.
 
 **Q: What happens if I close my session mid-task?**
-A: Say `"Pause work"` before ending your session. This creates a handoff document. Next session, say `"Resume work"` to continue exactly where you left off.
+A: Say `"Pause work"` before ending your session. You get a handoff prompt in chat (no file is written). Paste it into the next session to continue exactly where you left off.
 
 **Q: Does this work with any tech stack?**
 A: Yes! The skill is completely stack-agnostic. It works with any language, framework, or architecture.

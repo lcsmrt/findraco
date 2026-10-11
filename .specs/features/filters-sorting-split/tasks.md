@@ -2,7 +2,7 @@
 
 **Spec**: `./spec.md`
 **Design**: none (skipped — no new pattern; all changes extend existing filter/sort/aggregation mechanisms; confirmed with user 2026-07-16)
-**Status**: Approved (2026-07-16) → execute in a fresh session (see `./handoff-execute.md`)
+**Status**: Approved (2026-07-16) → executed 2026-07-16 (see Progress Log)
 
 > **No migration this round.** `transaction_participants` (V6) and `share_amount` already exist. Every change is a query/param/UI edit — no Flyway version, no schema change. If any task thinks it needs a column, STOP: the design is wrong.
 
