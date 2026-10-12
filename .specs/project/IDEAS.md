@@ -1,7 +1,7 @@
 # Product Ideas — Not Canonical Roadmap
 
 **Status:** Raw backlog — ideas collected from a product brainstorm, not yet triaged or committed.  
-**Last updated:** 2026-08-02  
+**Last updated:** 2026-10-11  
 **Next step:** Review, score, and move accepted items into [`ROADMAP.md`](./ROADMAP.md) under the proper milestone.
 
 > This file is intentionally separate from `ROADMAP.md`. It captures "what could be great" without implying delivery order or commitment. Use it as input for prioritization exercises (MoSCoW, RICE, ICE, Kano), then migrate only the accepted items to the canonical roadmap.
@@ -144,6 +144,14 @@ Complete the Shared Plans experience.
 
 - **Activity notifications**
   - "Livia added R$150 in Supermercado."
+
+- **Reimbursements linked to an expense (net category spend)**
+  - Problem: when someone outside the plan pays back part of an expense (a friend splits a pizza, a sister repays her gym plan), today it is logged as a CREDIT in a catch-all income category ("Divisão"). That inflates both the expense category (and its spending limit) and total income.
+  - Idea: record "received back R$ X from <person>" on the expense itself. The expense keeps the gross amount paid; category totals, spending limits and dashboard expenses use the **net** amount; the reimbursement no longer counts as income.
+  - Covers partial repayments, full pass-throughs (a bill paid for someone else nets to zero) and merchant refunds/chargebacks.
+  - Later: an optional "to receive" state (expected vs. received) for money still owed.
+  - Migration: existing "Divisão" credits can be linked to the expense they repay.
+  - Not the same as Expense Splitting, which only splits between plan members.
 
 ## 8. Data, Privacy & Export
 
