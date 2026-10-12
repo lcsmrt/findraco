@@ -60,11 +60,11 @@
 
 ## Handoff
 
-- **Feature**: none in progress — priorities reset 2026-10-11 (see ROADMAP Must have)
-- **Phase / Task**: Rebrand shipped and verified in prod (both themes)
-- **Completed**: `docs/dev-test-account` merged to `main` and pushed
+- **Feature**: M5-03 Filter persistence (`.specs/features/filter-persistence/`)
+- **Phase / Task**: Specify + Design + Tasks approved 2026-10-11; Execute not started (next: T1)
+- **Completed**: spec (all assumptions confirmed), design (URL = source of truth, localStorage write-through mirror per user+plan, render-time gate, category-by-id with cache seeding), tasks T1–T9
 - **In-progress** (file:line): none
-- **Next step**: Spec the next item — M5-03 persist filters across tabs (smallest), M5-04 categories revamp, M5-05 Claude MCP connector
+- **Next step**: Execute T1–T9 (9 tasks → sub-agent offer: 2 workers = Phase 1, Phases 2–3), then Verifier
 - **Blockers**: none. Dev login: personal account is `lcsmrtakd@gmail.com`; reset emails land in Mailpit (`localhost:8025`, container `checklist-mailpit`); test account `test@findraco.local` / `Findraco#2026` (see `backend/README.md`)
 - **Uncommitted files**: none
 - **Branch**: main
