@@ -1,12 +1,16 @@
 package com.lcs.findraco.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.lcs.findraco.models.Plan;
+import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -19,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Proves the FULL Flyway chain (V1..latest) is applied on the test database and that
@@ -85,6 +91,71 @@ class MigrationsIT extends AbstractIntegrationTest {
                 .as("every applied migration must report state SUCCESS")
                 .extracting(MigrationInfo::getState)
                 .containsOnly(MigrationState.SUCCESS);
+    }
+
+    /**
+     * V11 (categories revamp): a category row written with only the pre-V11 columns, i.e. what
+     * every existing category looks like after the migration, is a root with no owner and no
+     * per-member limits.
+     */
+    @Test
+    void existingCategoriesBecomeRootsWithNoOwnerAndNoMemberLimits() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        Plan plan = fixtures.aPlan(fixtures.aUser());
+        Long categoryId = insertLegacyCategory(jdbc, plan, "Groceries");
+
+        Map<String, Object> row = jdbc.queryForMap(
+                "SELECT parent_id, owner_user_id FROM financial_transaction_categories WHERE id = ?", categoryId);
+        assertThat(row.get("parent_id")).isNull();
+        assertThat(row.get("owner_user_id")).isNull();
+
+        Integer memberLimits = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM category_member_limits WHERE category_id = ?", Integer.class, categoryId);
+        assertThat(memberLimits).isZero();
+    }
+
+    @Test
+    void memberLimitForTheSameCategoryAndMemberTwiceIsRejectedByTheDatabase() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User member = fixtures.aUser();
+        Plan plan = fixtures.aPlan(member);
+        Long categoryId = insertLegacyCategory(jdbc, plan, "Groceries");
+
+        insertMemberLimit(jdbc, categoryId, member.getId(), "260.00");
+
+        assertThatThrownBy(() -> insertMemberLimit(jdbc, categoryId, member.getId(), "140.00"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("uk_cml_category_member");
+    }
+
+    @Test
+    void negativeMemberLimitAmountIsRejectedByTheDatabase() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User member = fixtures.aUser();
+        Plan plan = fixtures.aPlan(member);
+        Long categoryId = insertLegacyCategory(jdbc, plan, "Groceries");
+
+        assertThatThrownBy(() -> insertMemberLimit(jdbc, categoryId, member.getId(), "-0.01"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_cml_amount_non_negative");
+
+        insertMemberLimit(jdbc, categoryId, member.getId(), "0.00");
+        Integer stored = jdbc.queryForObject(
+                "SELECT COUNT(*) FROM category_member_limits WHERE category_id = ?", Integer.class, categoryId);
+        assertThat(stored).isEqualTo(1);
+    }
+
+    private static Long insertLegacyCategory(JdbcTemplate jdbc, Plan plan, String description) {
+        return jdbc.queryForObject(
+                "INSERT INTO financial_transaction_categories (plan_id, type, description, spending_limit) "
+                        + "VALUES (?, 'DEBIT', ?, 400.00) RETURNING id",
+                Long.class, plan.getId(), description);
+    }
+
+    private static void insertMemberLimit(JdbcTemplate jdbc, Long categoryId, Long memberId, String amount) {
+        jdbc.update(
+                "INSERT INTO category_member_limits (category_id, member_user_id, amount) VALUES (?, ?, ?::numeric)",
+                categoryId, memberId, amount);
     }
 
     private List<String> migrationVersionsOnDisk() throws IOException {

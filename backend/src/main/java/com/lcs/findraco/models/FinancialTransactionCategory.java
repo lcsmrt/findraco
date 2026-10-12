@@ -3,6 +3,8 @@ package com.lcs.findraco.models;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "financial_transaction_categories")
@@ -20,6 +22,17 @@ public class FinancialTransactionCategory {
 
     private String description;
     private BigDecimal spendingLimit;
+
+    @ManyToOne
+    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_ftc_parent"))
+    private FinancialTransactionCategory parent;
+
+    @ManyToOne
+    @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_ftc_owner"))
+    private User owner;
+
+    @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CategoryMemberLimit> memberLimits = new ArrayList<>();
 
     public FinancialTransactionCategory() {
     }
@@ -54,5 +67,25 @@ public class FinancialTransactionCategory {
 
     public void setSpendingLimit(BigDecimal spendingLimit) {
         this.spendingLimit = spendingLimit;
+    }
+
+    public FinancialTransactionCategory getParent() {
+        return parent;
+    }
+
+    public void setParent(FinancialTransactionCategory parent) {
+        this.parent = parent;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
+    }
+
+    public List<CategoryMemberLimit> getMemberLimits() {
+        return memberLimits;
     }
 }

@@ -85,10 +85,12 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Migration applies on the full Flyway chain; `ddl-auto=validate` passes
-- [ ] `MigrationsIT` asserts existing categories become roots with no owner and no member limits
-- [ ] Unique `(category_id, member_user_id)` and `amount >= 0` constraints rejected at DB level (IT)
-- [ ] Full gate passes
+- [ ] Migration applies on the full Flyway chain; `ddl-auto=validate` passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] `MigrationsIT` asserts existing categories become roots with no owner and no member limits (written, not run)
+- [x] Unique `(category_id, member_user_id)` and `amount >= 0` constraints rejected at DB level (IT) (written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+
+> SPEC_DEVIATION: migration is `V11__category_hierarchy_owner_member_limits.sql`; `V10` was already taken by `V10__create_password_reset_tokens.sql`.
 
 **Tests**: integration
 **Gate**: full
