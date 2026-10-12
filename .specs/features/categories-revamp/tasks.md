@@ -458,9 +458,8 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Expand/collapse works on roots with children; roots without children unchanged
-- [ ] Build gate passes
-- [ ] Build gate passes
+- [x] Expand/collapse works on roots with children; roots without children unchanged
+- [x] Build gate passes (build ok; 218 tests; lint: 0 new errors, 23 pre-existing)
 
 **Tests**: none
 **Gate**: build

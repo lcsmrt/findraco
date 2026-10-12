@@ -12,12 +12,16 @@ import {
 } from "@/components/chart/Chart";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency } from "@/utils/string/formatters";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 
 type Status = "no-limit" | "ok" | "warning" | "over";
 
 type ChartEntry = {
+  categoryId: number;
+  /** Y-axis label: expand marker on roots with children, indent on children. */
+  label: string;
+  hasChildren: boolean;
   categoryName: string;
   spent: number;
   limit?: number;
@@ -70,8 +74,31 @@ function getStatus(spent: number, limit?: number): Status {
 }
 
 interface CategorySpendingChartProps {
+  /** Root categories with rolled-up spend; children are shown on expand. */
   data: CategoryBreakdown[];
 }
+
+const toEntry = (
+  entry: CategoryBreakdown,
+  label: string,
+  hasChildren: boolean,
+): ChartEntry => {
+  const status = getStatus(entry.spent, entry.limit);
+  const remainingBar =
+    entry.limit != null && status !== "over" ? entry.limit - entry.spent : 0;
+  return {
+    categoryId: entry.categoryId,
+    label,
+    hasChildren,
+    categoryName: entry.categoryName,
+    spent: entry.spent,
+    limit: entry.limit,
+    remaining: entry.remaining,
+    spentBar: entry.spent,
+    remainingBar,
+    status,
+  };
+};
 
 interface BarShapeBaseProps {
   x?: number;
@@ -198,24 +225,43 @@ const chartConfig: ChartConfig = {
 };
 
 export const CategorySpendingChart = ({ data }: CategorySpendingChartProps) => {
+  const [expandedIds, setExpandedIds] = useState<ReadonlySet<number>>(
+    () => new Set(),
+  );
+
   const chartData = useMemo<ChartEntry[]>(
     () =>
-      data.map((entry) => {
-        const status = getStatus(entry.spent, entry.limit);
-        const spentBar = entry.spent;
-        const remainingBar =
-          entry.limit != null && status !== "over"
-            ? entry.limit - entry.spent
-            : 0;
-        return { ...entry, spentBar, remainingBar, status };
+      data.flatMap((root) => {
+        const hasChildren = root.children.length > 0;
+        const expanded = hasChildren && expandedIds.has(root.categoryId);
+        const marker = hasChildren ? (expanded ? "▾ " : "▸ ") : "";
+        const rootEntry = toEntry(root, `${marker}${root.categoryName}`, hasChildren);
+        if (!expanded) return [rootEntry];
+        return [
+          rootEntry,
+          ...root.children.map((child) =>
+            toEntry(child, `↳ ${child.categoryName}`, false),
+          ),
+        ];
       }),
-    [data],
+    [data, expandedIds],
   );
+
+  const toggleRoot = (index: number | undefined) => {
+    const entry = index != null ? chartData[index] : undefined;
+    if (!entry?.hasChildren) return;
+    setExpandedIds((current) => {
+      const next = new Set(current);
+      if (next.has(entry.categoryId)) next.delete(entry.categoryId);
+      else next.add(entry.categoryId);
+      return next;
+    });
+  };
 
   const chartHeight = Math.max(280, chartData.length * 48);
   const labelWidth = Math.min(
     LABEL_MAX_WIDTH,
-    Math.max(...chartData.map((entry) => entry.categoryName.length)) *
+    Math.max(...chartData.map((entry) => entry.label.length)) *
       LABEL_CHAR_WIDTH +
       12,
   );
@@ -236,7 +282,16 @@ export const CategorySpendingChart = ({ data }: CategorySpendingChartProps) => {
             style={{ height: chartHeight }}
             className="w-full"
           >
-            <BarChart data={chartData} layout="vertical" barSize={18}>
+            <BarChart
+              data={chartData}
+              layout="vertical"
+              barSize={18}
+              onClick={(state) => toggleRoot(state?.activeTooltipIndex)}
+              className={cn(
+                chartData.some((entry) => entry.hasChildren) &&
+                  "[&_.recharts-surface]:cursor-pointer",
+              )}
+            >
               <XAxis
                 type="number"
                 tickLine={false}
@@ -248,7 +303,7 @@ export const CategorySpendingChart = ({ data }: CategorySpendingChartProps) => {
               />
               <YAxis
                 type="category"
-                dataKey="categoryName"
+                dataKey="label"
                 width={labelWidth}
                 tickLine={false}
                 axisLine={false}
