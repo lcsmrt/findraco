@@ -65,6 +65,6 @@
 - **Completed**: warm-neutral light palette (`#f5f3ec` bg) and warm-gray dark palette (`#262624` bg), Claude-inspired neutrals with amber `#f59e0b` primary + `primary-ink` text token; Tailwind v4 `dark:` variant fixed to follow `.dark`; flat auth background, bordered auth card, shared `AuthLayout` header/footer + `ThemeToggle`; themed 404; dashboard chart polish; transactions table as a single card surface; mascot exploration parked in `mascot-wip.md`; current coin logo kept
 - **In-progress** (file:line): none
 - **Next step**: Verify prod in both themes; then pick the next ROADMAP item. Mascot/logo resumes later from `mascot-wip.md`
-- **Blockers**: none. Dev login: personal account is `lcsmrtakd@gmail.com`; reset emails land in Mailpit (`localhost:8025`, container `checklist-mailpit`); test account `design-review@findraco.local` has sample data
+- **Blockers**: none. Dev login: personal account is `lcsmrtakd@gmail.com`; reset emails land in Mailpit (`localhost:8025`, container `checklist-mailpit`); test account `test@findraco.local` / `Findraco#2026` (see `backend/README.md`)
 - **Uncommitted files**: none
 - **Branch**: main

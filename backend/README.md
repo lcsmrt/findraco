@@ -74,6 +74,18 @@ JWT_SECRET_KEY=generate_with__openssl_rand_-base64_64
 
 The API starts on **http://localhost:3000** (configurable via `SERVER_PORT`).
 
+### Local test account
+
+The dev database (`dev_finsight`) has a shared account for manual and visual testing, with a few
+categories (some with spending limits) and sample transactions:
+
+| Email                 | Password        | Name      |
+| --------------------- | --------------- | --------- |
+| `test@findraco.local` | `Findraco#2026` | Test User |
+
+It only exists in the dev database — never create it in production. Password-reset emails in dev are
+captured by Mailpit (UI at http://localhost:8025, see `.env.example`), not delivered to a real inbox.
+
 ### API documentation
 
 Swagger UI: **http://localhost:3000/swagger-ui.html**
