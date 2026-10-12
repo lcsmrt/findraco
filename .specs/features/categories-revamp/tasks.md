@@ -85,10 +85,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Migration applies on the full Flyway chain; `ddl-auto=validate` passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Migration applies on the full Flyway chain; `ddl-auto=validate` passes
 - [x] `MigrationsIT` asserts existing categories become roots with no owner and no member limits (written, not run)
 - [x] Unique `(category_id, member_user_id)` and `amount >= 0` constraints rejected at DB level (IT) (written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 > SPEC_DEVIATION: migration is `V11__category_hierarchy_owner_member_limits.sql`; `V10` was already taken by `V10__create_password_reset_tokens.sql`.
 
@@ -114,7 +114,7 @@ T21 → T22 → T23 → T24
 
 - [x] New `CategoryHierarchyIT`: one test per AC of P1 Sub 1–6 with the exact status code (written, not run)
 - [x] Non-OWNER create/update with `parentId` still rejected as today (written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 **Tests**: integration
 **Gate**: full
@@ -138,7 +138,7 @@ T21 → T22 → T23 → T24
 
 - [x] `CategoryDeleteIT` covers: unused delete 204; parent with children 409; in use without target 409 with counts; reassign moves all three reference kinds then 204; each invalid target 400; foreign target 404 (written, not run)
 - [x] Failure midway leaves every reference unchanged (rollback asserted) (written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 **Tests**: integration
 **Gate**: full
@@ -211,9 +211,9 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `DashboardPartitionIT` still passes unchanged for flat data (top-line totals and per-category numbers identical) — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] `DashboardPartitionIT` still passes unchanged for flat data (top-line totals and per-category numbers identical)
 - [x] New IT cases: parent rollup in the dashboard; member filter now applies to item portions (gap at `DashboardService.java:73-76` closed) (written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 > Note: `CategoryBreakdownAssembler`, its test (ported in T5) and the three old category queries are removed here, now that the dashboard no longer uses them. Active member ids are not fetched yet: nothing reads them before T18.
 
@@ -238,7 +238,7 @@ T21 → T22 → T23 → T24
 **Done when**:
 
 - [x] `CategorySpendingIT`: tree shape grouped by type, children nested, spend/limit/percent/overLimit per row; VIEWER can read; non-member gets 404 (written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 **Tests**: integration
 **Gate**: full
@@ -261,7 +261,7 @@ T21 → T22 → T23 → T24
 **Done when**:
 
 - [x] `TransactionCrudIT` (or new IT) case: filtering by a parent returns parent and child transactions; filtering by a child returns only the child's (new `TransactionCategoryFilterIT`, written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 **Tests**: integration
 **Gate**: full
@@ -484,7 +484,7 @@ T21 → T22 → T23 → T24
 **Done when**:
 
 - [x] `CategoryMemberLimitIT`: one test per P2 AC 1–3, 7–10 and 11–13; member removed then re-invited → entry active again with the same amount (17 tests, written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 > Note: `memberLimits` omitted (null) keeps the stored entries; a list (even empty) replaces them as a set. A former member's entry is kept when sent back unchanged, deleted when omitted, and rejected (400) when its amount changes. While entries exist the stored plain limit is cleared. Category endpoints now return DTOs built in the service (active member ids are needed for `active`/`effectiveLimit`); the category embedded in transaction responses leaves `memberLimits`/`effectiveLimit` null. Until T21, the "owned" rule reads the stored owner (or the parent's).
 
@@ -586,7 +586,7 @@ T21 → T22 → T23 → T24
 **Done when**:
 
 - [x] `CategoryOwnerIT`: one test per P3 AC 1–4, 7, 8; removed owner shows `ownerActive=false`, rejoin restores it (12 tests, written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] Full gate passes
 
 > Note: `ownerId` follows the full-replace PUT (null clears it), so `CategoryMemberLimitIT`'s owned-category update now resends `ownerId`. A former owner is kept only when sent back unchanged. Setting an owner on a root whose children have per-member limits is rejected (400) since children inherit the owner. The category embedded in transaction responses also carries `ownerId`/`ownerName` (`ownerActive` null).
 
@@ -716,7 +716,7 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec ame
 **Done when**:
 
 - [x] 4 new `CategorySpendingIT` tests covering the cases above; the "service passes an empty active-member set" mutation fails the P2 and P3 tests (`active`, `limit`, `ownerActive` asserted) (written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile gate passed)
+- [x] Full gate passes
 
 **Tests**: integration
 **Gate**: full
@@ -739,7 +739,7 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec ame
 **Done when**:
 
 - [x] `CategoryDeleteIT`: counts 2 / 1 / 3 for a category used by each kind (read by a VIEWER); 0 / 0 / 0 for an unused category; 404 for another plan's category (written, not run)
-- [ ] Full gate passes — PENDING: needs DB tunnel (compile gate passed)
+- [x] Full gate passes
 
 **Tests**: integration
 **Gate**: full
@@ -748,7 +748,7 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec ame
 
 ### F4: Delete dialog asks for a target up front
 
-**What**: `useGetCategoryUsage` service hook (key `["financialTransactionCategoryUsage", planId, id]`, invalidated by category and transaction mutations). `DeleteCategoryDialog` loads the counts on open, shows them, and requires a target when any count is above zero before sending the delete; the targetless-probe-then-409 flow and its T13 `SPEC_DEVIATION` are removed (an unexpected 409 is shown as an error message).
+**What**: `useGetCategoryUsage` service hook (key `["categoryUsage", planId, id]`, invalidated by category and transaction mutations). `DeleteCategoryDialog` loads the counts on open, shows them, and requires a target when any count is above zero before sending the delete; the targetless-probe-then-409 flow and its T13 `SPEC_DEVIATION` are removed (an unexpected 409 is shown as an error message).
 **Where**: `frontend/src/api/services/useFinancialTransactionCategoryService.ts` (+ test), `frontend/src/api/services/useFinancialTransactionService.ts` (usage invalidation), `frontend/src/api/dtos/financialTransactionCategory.ts`, `frontend/src/features/home/components/categories/DeleteCategoryDialog.tsx` (+ logic test)
 **Depends on**: F3
 **Reuses**: T13 dialog and target picker

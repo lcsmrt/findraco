@@ -59,7 +59,7 @@ public class FinancialTransactionCategoryController {
         return ResponseEntity.ok(categoryService.getUsage(id, ctx));
     }
 
-        @Operation(summary = "Fetches all transaction categories for the plan")
+    @Operation(summary = "Fetches all transaction categories for the plan")
     @GetMapping
     public ResponseEntity<PagedResponseDto<FinancialTransactionCategoryResponseDto>> getAllCategories(
             @ParameterObject @ModelAttribute @Valid FinancialTransactionCategoryFilterDto filter,

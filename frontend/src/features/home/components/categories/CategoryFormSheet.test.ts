@@ -283,6 +283,15 @@ describe("memberLimitShares", () => {
     expect(shares.get(20)).toBe(35);
   });
 
+  it("gives every member a 0% share when the total is 0", () => {
+    const shares = memberLimitShares([
+      row(10, "Lucas", maskCurrency("0")),
+      row(20, "Livia", maskCurrency("0")),
+    ]);
+    expect(shares.get(10)).toBe(0);
+    expect(shares.get(20)).toBe(0);
+  });
+
   it("leaves out former members and members without an amount", () => {
     const shares = memberLimitShares([
       row(10, "Lucas", maskCurrency("10000")),

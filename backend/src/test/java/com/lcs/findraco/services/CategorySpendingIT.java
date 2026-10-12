@@ -256,10 +256,12 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
         JsonNode row = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Professional");
         assertThat(row.get("ownerId").asLong()).isEqualTo(partner.getId());
+        assertThat(row.get("ownerActive").isBoolean()).isTrue();
         assertThat(row.get("ownerActive").asBoolean()).isFalse();
         assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("70.00");
         assertThat(row.get("children")).singleElement().satisfies(child -> {
             assertThat(child.get("ownerId").asLong()).isEqualTo(partner.getId());
+            assertThat(child.get("ownerActive").isBoolean()).isTrue();
             assertThat(child.get("ownerActive").asBoolean()).isFalse();
         });
         assertThat(memberRow(row, owner).get("spent").decimalValue()).isEqualByComparingTo("30.00");
