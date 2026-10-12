@@ -237,8 +237,8 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `CategorySpendingIT`: tree shape grouped by type, children nested, spend/limit/percent/overLimit per row; VIEWER can read; non-member gets 404
-- [ ] Full gate passes
+- [x] `CategorySpendingIT`: tree shape grouped by type, children nested, spend/limit/percent/overLimit per row; VIEWER can read; non-member gets 404 (written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
 
 **Tests**: integration
 **Gate**: full

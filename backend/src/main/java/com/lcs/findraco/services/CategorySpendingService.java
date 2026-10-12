@@ -1,16 +1,19 @@
 package com.lcs.findraco.services;
 
+import com.lcs.findraco.dtos.request.CategorySpendingFilterDto;
 import com.lcs.findraco.dtos.response.CategorySpendingDto;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
+import com.lcs.findraco.security.PlanContext;
 import com.lcs.findraco.services.ItemShareAllocator.Allocation;
 import com.lcs.findraco.services.ItemShareAllocator.MemberFact;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,15 +31,31 @@ public class CategorySpendingService {
     private final FinancialTransactionCategoryRepository categoryRepository;
     private final ItemShareAllocator itemShareAllocator;
     private final CategorySpendingAssembler assembler;
+    private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
+    private final Clock clock;
 
     public CategorySpendingService(FinancialTransactionRepository transactionRepository,
                                    FinancialTransactionCategoryRepository categoryRepository,
                                    ItemShareAllocator itemShareAllocator,
-                                   CategorySpendingAssembler assembler) {
+                                   CategorySpendingAssembler assembler,
+                                   OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
+                                   Clock clock) {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.itemShareAllocator = itemShareAllocator;
         this.assembler = assembler;
+        this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
+        this.clock = clock;
+    }
+
+    /**
+     * The Categories tab (CAT-01/02): every category of the plan for the period. Open-ended series are
+     * topped up first, as the dashboard does, so the tab and the Overview read the same transactions.
+     */
+    @Transactional(readOnly = true)
+    public List<CategorySpendingDto> getSpending(CategorySpendingFilterDto filter, PlanContext ctx) {
+        openEndedSeriesTopUpService.topUp(ctx.getPlan(), LocalDate.now(clock));
+        return compute(ctx.getPlan(), filter.getStartDate(), filter.getEndDate(), null);
     }
 
     /** Every category of the plan (DEBIT then CREDIT trees, zero spend included) for the period. */
