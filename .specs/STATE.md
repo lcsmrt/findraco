@@ -62,9 +62,9 @@
 
 - **Feature**: Rebrand finSight → findraco — visual design iteration (`.specs/features/rebrand-findraco/`)
 - **Phase / Task**: Design pass shipped — merged to `main` and deployed 2026-10-11
-- **Completed**: warm charcoal dark theme, amber primary in both themes + `primary-ink` text token, Tailwind v4 `dark:` variant fixed to follow `.dark`, flat auth background, shared `AuthLayout` header/footer + `ThemeToggle`, auth copy/placeholders, themed 404, dashboard chart polish; mascot exploration parked in `mascot-wip.md`; current coin logo kept
+- **Completed**: warm-neutral light palette (`#f5f3ec` bg) and warm-gray dark palette (`#262624` bg), Claude-inspired neutrals with amber `#f59e0b` primary + `primary-ink` text token; Tailwind v4 `dark:` variant fixed to follow `.dark`; flat auth background, bordered auth card, shared `AuthLayout` header/footer + `ThemeToggle`; themed 404; dashboard chart polish; transactions table as a single card surface; mascot exploration parked in `mascot-wip.md`; current coin logo kept
 - **In-progress** (file:line): none
-- **Next step**: Verify the deploy in prod (both themes); then pick the next ROADMAP item. Mascot/logo resumes later from `mascot-wip.md`
-- **Blockers**: none; logged-in checks need the DB tunnel — dev DB has a `design-review@findraco.local` test account with sample data
+- **Next step**: Verify prod in both themes; then pick the next ROADMAP item. Mascot/logo resumes later from `mascot-wip.md`
+- **Blockers**: none. Dev login: personal account is `lcsmrtakd@gmail.com`; reset emails land in Mailpit (`localhost:8025`, container `checklist-mailpit`); test account `design-review@findraco.local` has sample data
 - **Uncommitted files**: none
 - **Branch**: main
