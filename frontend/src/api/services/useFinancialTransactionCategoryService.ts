@@ -1,7 +1,15 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  QueryClient,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
 import { findracoApi } from "../clients/findracoApi";
 import {
+  CategorySpending,
+  CategorySpendingFilter,
   CreateFinancialTransactionCategoryRequest,
+  DeleteFinancialTransactionCategoryRequest,
   FinancialTransactionCategory,
   FinancialTransactionCategorySortBy,
   PagedFinancialTransactionCategoriesFilter,
@@ -37,6 +45,37 @@ export const useGetFinancialTransactionCategories = (
     ...options,
     enabled: activePlanId != null && (options?.enabled ?? true),
   });
+};
+
+const getCategorySpending = async (
+  planId: number,
+  params: CategorySpendingFilter,
+): Promise<CategorySpending[]> => {
+  const { data } = await findracoApi.get<CategorySpending[]>(
+    `/plan/${planId}/financial-transaction-category/spending`,
+    { params },
+  );
+  return data;
+};
+
+export const useGetCategorySpending = (
+  params: CategorySpendingFilter,
+  options?: QueryOptions<CategorySpending[]>,
+) => {
+  const { activePlanId } = usePlanContext();
+  return useQuery({
+    queryFn: () => getCategorySpending(activePlanId!, params),
+    queryKey: ["categorySpending", activePlanId, params],
+    ...options,
+    enabled: activePlanId != null && (options?.enabled ?? true),
+  });
+};
+
+/** Every category mutation changes the category list, the spending tree and the dashboard breakdown. */
+const invalidateCategoryViews = (queryClient: QueryClient) => {
+  queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
+  queryClient.invalidateQueries({ queryKey: ["categorySpending"] });
+  queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
 };
 
 const getFinancialTransactionCategory = async (
@@ -96,7 +135,7 @@ export const useCreateFinancialTransactionCategory = (
     ...buildMutationOptions({ successMessage: "Category created successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
+        invalidateCategoryViews(queryClient);
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -129,7 +168,7 @@ export const useUpdateFinancialTransactionCategory = (
     ...buildMutationOptions({ successMessage: "Category updated successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
+        invalidateCategoryViews(queryClient);
         queryClient.invalidateQueries({
           queryKey: financialTransactionCategoryKey(activePlanId, variables.params.id),
         });
@@ -141,28 +180,33 @@ export const useUpdateFinancialTransactionCategory = (
 
 const deleteFinancialTransactionCategory = async (
   planId: number,
-  id: number,
+  { id, reassignTo }: DeleteFinancialTransactionCategoryRequest,
 ): Promise<void> => {
   await findracoApi.delete(
     `/plan/${planId}/financial-transaction-category/${id}`,
+    reassignTo != null ? { params: { reassignTo } } : undefined,
   );
 };
 
 export const useDeleteFinancialTransactionCategory = (
-  options?: MutationOptions<void, number>,
+  options?: MutationOptions<void, DeleteFinancialTransactionCategoryRequest>,
 ) => {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
-    mutationFn: (id: number) =>
-      deleteFinancialTransactionCategory(activePlanId!, id),
+    mutationFn: (payload: DeleteFinancialTransactionCategoryRequest) =>
+      deleteFinancialTransactionCategory(activePlanId!, payload),
     ...buildMutationOptions({ successMessage: "Category deleted successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
+        invalidateCategoryViews(queryClient);
         queryClient.invalidateQueries({
-          queryKey: financialTransactionCategoryKey(activePlanId, variables),
+          queryKey: financialTransactionCategoryKey(activePlanId, variables.id),
         });
+        if (variables.reassignTo != null) {
+          // Reassignment moved transactions to another category.
+          queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        }
         options?.onSuccess?.(data, variables);
       },
     }),

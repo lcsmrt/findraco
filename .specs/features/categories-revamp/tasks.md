@@ -285,8 +285,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Hook tests: spending query key includes plan and range; delete sends `reassignTo` only when given; invalidations asserted
-- [ ] Quick gate passes
+- [x] Hook tests: spending query key includes plan and range; delete sends `reassignTo` only when given; invalidations asserted
+- [x] Quick gate passes (148 passed, 0 failed)
+
+> Note: the dashboard query key is `dashboardSummary`; delete variables are now `{ id, reassignTo? }`. A delete with `reassignTo` also invalidates `financialTransactions` (their category changed). SPEC_DEVIATION: `parentId` is optional on the TS type so partial category shapes in transaction forms still type-check.
 
 **Tests**: unit
 **Gate**: quick

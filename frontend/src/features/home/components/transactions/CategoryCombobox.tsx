@@ -74,7 +74,7 @@ export const CategoryCombobox = ({
       variant: "destructive",
     });
     if (confirmed) {
-      deleteMutation.mutate(cat.id);
+      deleteMutation.mutate({ id: cat.id });
       if (value?.id === cat.id) onValueChange(null);
     }
   };

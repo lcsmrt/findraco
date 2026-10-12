@@ -125,7 +125,7 @@ export const CategoriesManageDialog = ({
         variant: "destructive",
       });
       if (confirmed) {
-        deleteFinancialTransactionCategory(cat.id);
+        deleteFinancialTransactionCategory({ id: cat.id });
       }
     },
     [confirm, deleteFinancialTransactionCategory],

@@ -1,10 +1,14 @@
+/** A root category with rolled-up spend; `children` holds its subcategories. */
 export type CategoryBreakdown = {
+  categoryId: number;
+  parentId: number | null;
   categoryName: string;
   spent: number;
   limit?: number;
   remaining?: number;
   percentUsed?: number;
   overLimit?: boolean;
+  children: CategoryBreakdown[];
 };
 
 export type MonthlyTrend = {
