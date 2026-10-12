@@ -40,13 +40,20 @@ const notFound = () =>
     status: 404,
   } as AxiosResponse);
 
-/** Routes GETs: members always resolve; the category resolves or 404s. */
-const mockApi = ({ categoryExists = true } = {}) =>
+const serverError = () =>
+  new AxiosError("Server error", "ERR_BAD_RESPONSE", undefined, undefined, {
+    status: 500,
+  } as AxiosResponse);
+
+const networkError = () => new AxiosError("Network Error", "ERR_NETWORK");
+
+/** Routes GETs: members always resolve; the category resolves or fails with `categoryError`. */
+const mockApi = ({ categoryExists = true, categoryError = notFound } = {}) =>
   mockedGet.mockImplementation(async (url: string) => {
     if (url === MEMBERS_URL) return { data: members };
     if (url === CATEGORY_URL) {
       if (categoryExists) return { data: groceries };
-      throw notFound();
+      throw categoryError();
     }
     throw new Error(`Unexpected GET ${url}`);
   });
@@ -58,8 +65,9 @@ const LocationProbe = () => {
 };
 
 const setup = (url: string) => {
+  // Same retry default as the app's client, without the delay.
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+    defaultOptions: { queries: { retry: 1, retryDelay: 0 } },
   });
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
@@ -69,10 +77,11 @@ const setup = (url: string) => {
       </MemoryRouter>
     </QueryClientProvider>
   );
-  return renderHook(
+  const hook = renderHook(
     () => ({ chips: useTransactionFilterChips(), home: useHomeFilters() }),
     { wrapper: Wrapper },
   );
+  return Object.assign(hook, { queryClient });
 };
 
 const labels = (result: ReturnType<typeof setup>["result"]) =>
@@ -152,6 +161,26 @@ describe("useTransactionFilterChips", () => {
     await waitFor(() => expect(params()).toEqual({ plan: "5", type: "DEBIT" }));
     expect(result.current.home.transactions.filter.categoryId).toBeUndefined();
     expect(labels(result)).toEqual(["Debit"]);
+    expect(categoryRequests()).toBe(1);
+  });
+
+  it.each([
+    ["a server error (500)", serverError],
+    ["a network error", networkError],
+  ])("keeps the category filter when fetching it fails with %s", async (_, error) => {
+    mockApi({ categoryExists: false, categoryError: error });
+    const { result, queryClient } = setup("/?plan=5&category=12&type=DEBIT");
+
+    await waitFor(() =>
+      expect(
+        queryClient.getQueryState(["financialTransactionCategory", 5, 12])
+          ?.status,
+      ).toBe("error"),
+    );
+    await act(async () => {});
+
+    expect(params()).toEqual({ plan: "5", category: "12", type: "DEBIT" });
+    expect(result.current.home.transactions.filter.categoryId).toBe(12);
   });
 
   it("drops a member who is not in the plan once members are loaded", async () => {

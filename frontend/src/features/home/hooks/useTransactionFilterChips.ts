@@ -36,7 +36,10 @@ export const useTransactionFilterChips = () => {
     activePlanId ?? undefined,
   );
   const { data: category = null, error: categoryError } =
-    useGetFinancialTransactionCategory(filter.categoryId ?? null);
+    useGetFinancialTransactionCategory(filter.categoryId ?? null, {
+      // A missing category will not reappear; other errors get the usual single retry.
+      retry: (failureCount, error) => !isNotFound(error) && failureCount < 1,
+    });
 
   const planMember =
     filter.memberId != null

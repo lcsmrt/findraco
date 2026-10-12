@@ -338,8 +338,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Tests: 404 drops; 500 / network error keeps (kills M9); 404 causes exactly one request
-- [ ] Quick gate passes
+- [x] Tests: 404 drops; 500 / network error keeps (kills M9); 404 causes exactly one request
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
