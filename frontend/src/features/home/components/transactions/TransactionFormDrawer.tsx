@@ -282,6 +282,29 @@ export function ownerDefaultAttribution({
   };
 }
 
+type AttributionValues = Pick<
+  TransactionFormValues,
+  "attributionMode" | "splitMode" | "participants"
+>;
+
+/**
+ * The participants a newly selected category sets (CAT-17, P3 AC 6): its active
+ * owner at 100%, otherwise the form's default participants (`defaults`, from
+ * `buildDefaultValues`). Null — leave them as they are — in edit mode or once
+ * the participants were edited by hand.
+ */
+export function categoryAttribution({
+  mode,
+  defaults,
+  ...input
+}: OwnerDefaultInput & {
+  mode: TransactionFormDrawerProps["mode"];
+  defaults: AttributionValues;
+}): AttributionValues | null {
+  if (mode === "edit" || input.participantsTouched) return null;
+  return ownerDefaultAttribution(input) ?? defaults;
+}
+
 function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split("T")[0].split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -555,8 +578,11 @@ export const TransactionFormDrawer = ({
     category: FinancialTransactionCategory | null | undefined,
   ) => {
     setValue("category", category);
-    if (isEditing || !canAttributeToOthers) return;
-    const attribution = ownerDefaultAttribution({
+    if (!canAttributeToOthers) return;
+    const defaults = buildDefaultValues(transaction, currentUserId, definition);
+    const attribution = categoryAttribution({
+      mode,
+      defaults,
       category,
       members,
       currentUserId,

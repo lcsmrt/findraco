@@ -787,8 +787,10 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec ame
 
 **Done when**:
 
-- [ ] Tests: owned → owner; owned then unowned → default; owned then another owned → new owner; after a manual participant edit → no change; edit mode → no change
-- [ ] Quick gate + build pass; lint no new errors
+- [x] Tests (`categoryAttribution`): owned → owner; owned then unowned / cleared / former owner → default; owned then another owned → new owner; duplicate restores the duplicated transaction's participants; after a manual participant edit → no change; edit mode → no change
+- [x] Quick gate + build pass; lint no new errors (frontend 268 passed, build ok, lint 23 pre-existing errors, 0 new)
+
+> Note: the T24 test "leaves the participants as they are for an unowned category" was renamed to "has no owner attribution for an unowned category" (assertions unchanged): `ownerDefaultAttribution` still returns null there, and restoring the defaults is now `categoryAttribution`'s job (amended P3 AC 6).
 
 **Tests**: unit
 **Gate**: quick + build

@@ -4,6 +4,7 @@ import { maskCurrency } from "@/utils/string/masks";
 import {
   TransactionFormValues,
   buildDefaultValues,
+  categoryAttribution,
   ownerDefaultAttribution,
   toPayload,
   transactionFormSchema,
@@ -268,7 +269,7 @@ describe("ownerDefaultAttribution — owned category default participant (CAT-17
     ).toBeNull();
   });
 
-  it("leaves the participants as they are for an unowned category", () => {
+  it("has no owner attribution for an unowned category", () => {
     expect(
       ownerDefaultAttribution({
         category: { ownerId: null },
@@ -291,5 +292,106 @@ describe("ownerDefaultAttribution — owned category default participant (CAT-17
         participantsTouched: false,
       }),
     ).toBeNull();
+  });
+});
+
+describe("categoryAttribution — participants follow the selected category (CAT-17, P3 AC 6)", () => {
+  const me: PlanMember = { userId: 1, name: "Lucas", email: "l@x.com", role: "OWNER" };
+  const partner: PlanMember = { userId: 2, name: "Livia", email: "v@x.com", role: "EDITOR" };
+  const third: PlanMember = { userId: 4, name: "Rafa", email: "r@x.com", role: "EDITOR" };
+  const members = [me, partner, third];
+  const pick = ({ attributionMode, splitMode, participants }: TransactionFormValues) => ({
+    attributionMode,
+    splitMode,
+    participants,
+  });
+  const createDefaults = pick(buildDefaultValues(undefined, 1, undefined));
+
+  /** Applies a category selection to the form's attribution like the drawer does. */
+  const select = (
+    current: ReturnType<typeof pick>,
+    ownerId: number | null | undefined,
+    {
+      mode = "create",
+      defaults = createDefaults,
+      participantsTouched = false,
+    }: {
+      mode?: "create" | "edit" | "duplicate";
+      defaults?: ReturnType<typeof pick>;
+      participantsTouched?: boolean;
+    } = {},
+  ) =>
+    categoryAttribution({
+      mode,
+      defaults,
+      category: ownerId === undefined ? null : { ownerId },
+      members,
+      currentUserId: 1,
+      participantsTouched,
+    }) ?? current;
+
+  const livia = {
+    attributionMode: "SOMEONE",
+    splitMode: "EQUAL",
+    participants: [{ memberId: 2, memberName: "Livia", shareAmount: undefined }],
+  };
+
+  it("sets the owner of an owned category at 100%", () => {
+    expect(select(createDefaults, 2)).toEqual(livia);
+  });
+
+  it("restores the default participants when an unowned category replaces an owned one", () => {
+    const owned = select(createDefaults, 2);
+    expect(select(owned, null)).toEqual({ attributionMode: "ME", splitMode: "EQUAL", participants: [] });
+  });
+
+  it("restores the default participants when the category is cleared", () => {
+    expect(select(select(createDefaults, 2), undefined)).toEqual(createDefaults);
+  });
+
+  it("restores the default participants when the new category's owner is a former member", () => {
+    expect(select(select(createDefaults, 2), 3)).toEqual(createDefaults);
+  });
+
+  it("switches to the new owner when another owned category is selected", () => {
+    expect(select(select(createDefaults, 2), 4)).toEqual({
+      attributionMode: "SOMEONE",
+      splitMode: "EQUAL",
+      participants: [{ memberId: 4, memberName: "Rafa", shareAmount: undefined }],
+    });
+  });
+
+  it("restores the duplicated transaction's participants as the default when duplicating", () => {
+    const duplicated: FinancialTransaction = {
+      ...baseTransaction,
+      participants: [{ id: 4, name: "Rafa", shareAmount: 150.5 }],
+    };
+    const defaults = pick(buildDefaultValues(duplicated, 1, undefined));
+    const owned = select(defaults, 2, { mode: "duplicate", defaults });
+    expect(owned).toEqual(livia);
+    expect(select(owned, null, { mode: "duplicate", defaults })).toEqual({
+      attributionMode: "SOMEONE",
+      splitMode: "EQUAL",
+      participants: [{ memberId: 4, memberName: "Rafa", shareAmount: maskCurrency("15050") }],
+    });
+  });
+
+  it("changes nothing after a manual participant edit", () => {
+    const manual = {
+      attributionMode: "SPLIT" as const,
+      splitMode: "EQUAL" as const,
+      participants: [
+        { memberId: 1, memberName: "Lucas", shareAmount: undefined },
+        { memberId: 4, memberName: "Rafa", shareAmount: undefined },
+      ],
+    };
+    expect(select(manual, 2, { participantsTouched: true })).toBe(manual);
+    expect(select(manual, null, { participantsTouched: true })).toBe(manual);
+  });
+
+  it("never changes the participants in edit mode", () => {
+    const editing = pick(buildDefaultValues(baseTransaction, 1, undefined));
+    expect(select(editing, 2, { mode: "edit", defaults: editing })).toBe(editing);
+    expect(select(editing, null, { mode: "edit", defaults: createDefaults })).toBe(editing);
   });
 });
