@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 5,
+  "next_id": 10,
   "lessons": [
     {
       "id": "L-001",
@@ -76,6 +76,96 @@
       ],
       "created": "2026-10-12T02:31:17Z",
       "last_seen": "2026-10-12T02:31:17Z"
+    },
+    {
+      "id": "L-005",
+      "key": "ac_gap::carry every status flag the spec requires a view to show such as former member on each response dto that view reads not only on the crud response",
+      "text": "Carry every status flag the spec requires a view to show, such as former member, on each response DTO that view reads, not only on the CRUD response",
+      "signal": "ac_gap",
+      "scope": "api-dtos",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P3 AC7 / frontend/src/features/home/components/categories/CategoryTreeRow.tsx:137 (api-dtos)"
+      ],
+      "created": "2026-10-12T18:23:53Z",
+      "last_seen": "2026-10-12T18:23:53Z"
+    },
+    {
+      "id": "L-006",
+      "key": "ac_gap::give each ac bearing route an integration test that seeds the feature s new settings not only a pure logic test fed hand built rows",
+      "text": "Give each AC-bearing route an integration test that seeds the feature's new settings, not only a pure-logic test fed hand-built rows",
+      "signal": "ac_gap",
+      "scope": "backend-it",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "CAT-12 AC6, CAT-16 AC5 / backend CategorySpendingIT (no per-member or owner case) (backend-it)"
+      ],
+      "created": "2026-10-12T18:23:53Z",
+      "last_seen": "2026-10-12T18:23:53Z"
+    },
+    {
+      "id": "L-007",
+      "key": "spec_deviation::when a ui ac requires asking the user before a request confirm at design time that the api exposes the data needed to decide up front",
+      "text": "When a UI AC requires asking the user before a request, confirm at design time that the API exposes the data needed to decide up front",
+      "signal": "spec_deviation",
+      "scope": "frontend",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tasks.md T13 SPEC_DEVIATION / P1 Sub AC17 (frontend)"
+      ],
+      "created": "2026-10-12T18:23:53Z",
+      "last_seen": "2026-10-12T18:23:53Z"
+    },
+    {
+      "id": "L-008",
+      "key": "spec_precision_gap::state the rounding precision of every displayed percentage in the ac",
+      "text": "State the rounding precision of every displayed percentage in the AC",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P2 AC4 memberLimitShares rounding (spec)"
+      ],
+      "created": "2026-10-12T18:23:53Z",
+      "last_seen": "2026-10-12T18:23:53Z"
+    },
+    {
+      "id": "L-009",
+      "key": "spec_precision_gap::for a form default driven by a selection state what happens when the selection changes again and whether the default applies in edit mode",
+      "text": "For a form default driven by a selection, state what happens when the selection changes again and whether the default applies in edit mode",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P3 AC6 ownerDefaultAttribution (spec)"
+      ],
+      "created": "2026-10-12T18:23:53Z",
+      "last_seen": "2026-10-12T18:23:53Z"
     }
   ]
 }
