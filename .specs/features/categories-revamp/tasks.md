@@ -184,10 +184,12 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Every case of `CategoryBreakdownAssemblerTest` ported and passing against the new class
-- [ ] New cases: parent rolls up children; child evaluated alone; parent without limit + child with limit; zero-spend rows; R$ 0 limit with R$ 0 spend not over
-- [ ] JaCoCo include switched to the new class; branch ≥ 0.80
-- [ ] Quick gate passes
+- [x] Every case of `CategoryBreakdownAssemblerTest` ported and passing against the new class (6/6, via `assembleOverview`)
+- [x] New cases: parent rolls up children; child evaluated alone; parent without limit + child with limit; zero-spend rows; R$ 0 limit with R$ 0 spend not over
+- [x] JaCoCo include switched to the new class; branch ≥ 0.80 (24/26 = 0.92)
+- [x] Quick gate passes (13 passed, 0 failed; old test still 6/6)
+
+> Note: `DashboardService` still calls `CategoryBreakdownAssembler` until T6 rewires it, so the old class and `CategoryBreakdownAssemblerTest` are deleted in T6 (all cases already ported here).
 
 **Tests**: unit
 **Gate**: quick

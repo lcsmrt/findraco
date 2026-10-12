@@ -163,7 +163,7 @@
                                     <element>CLASS</element>
                                     <includes>
                                         <include>com.lcs.findraco.services.SplitResolver</include>
-                                        <include>com.lcs.findraco.services.CategoryBreakdownAssembler</include>
+                                        <include>com.lcs.findraco.services.CategorySpendingAssembler</include>
                                         <include>com.lcs.findraco.services.ItemShareAllocator</include>
                                         <include>com.lcs.findraco.security.PlanAuthorization</include>
                                     </includes>
