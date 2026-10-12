@@ -102,7 +102,8 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 14. IF an OWNER deletes a category that has children THEN the system SHALL reject the request with 409.  <!-- unwanted -->
 15. WHEN an OWNER deletes a category in use with a target category of the same type and plan THEN the system SHALL move every transaction, item and recurrence definition to the target and delete the category in one transaction.  <!-- event-driven -->
 16. IF the delete target is the category itself, one of its children, or of a different type THEN the system SHALL reject the request with 400.  <!-- unwanted -->
-17. WHEN an OWNER deletes a category in use from the tab THEN the UI SHALL ask for a target category before sending the delete.  <!-- event-driven -->
+17. WHEN an OWNER opens the delete dialog for a category THEN the UI SHALL show how many transactions, items and recurrence definitions use it (from a usage endpoint) and, when any is above zero, SHALL require a target category before sending the delete.  <!-- event-driven -->
+18. WHEN a client requests a category's usage THEN the system SHALL return the counts of transactions, items and recurrence definitions referencing it.  <!-- event-driven -->
 
 **Independent Test**: Create Food > Delivery and Food > Dining out, set a R$ 400 limit on Food and R$ 200 on Delivery, add transactions to each; the Food row shows the sum against R$ 400, Delivery shows only its own spend against R$ 200.
 
@@ -119,7 +120,7 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 1. WHEN an OWNER sets per-member limits on a DEBIT category THEN the system SHALL store one absolute amount per listed member.  <!-- event-driven -->
 2. WHILE a category has per-member limits the system SHALL report the category limit as the sum of those amounts.  <!-- state-driven -->
 3. WHILE a category has per-member limits the system SHALL ignore any plain limit sent for that category.  <!-- state-driven -->
-4. WHEN per-member limits are shown THEN the system SHALL display each member's share of the total as a percentage, read-only.  <!-- event-driven -->
+4. WHEN per-member limits are shown THEN the system SHALL display each member's share of the total as a read-only percentage rounded to one decimal place (0 when the total is 0).  <!-- event-driven -->
 5. The system SHALL compute a member's spend in a category as the sum of that member's participation shares on the category's transactions, with item amounts attributed in proportion to those shares.  <!-- ubiquitous -->
 6. WHEN the Categories tab shows a category with per-member limits THEN each member's row SHALL display their spend, their limit and an over-limit mark when their spend exceeds their limit.  <!-- event-driven -->
 7. IF a per-member limit names a user who is not an active member of the plan THEN the system SHALL reject the request with 400.  <!-- unwanted -->
@@ -147,7 +148,7 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 3. IF an owner is sent for a child category THEN the system SHALL reject the request with 400.  <!-- unwanted -->
 4. IF the owner is not an active member of the plan THEN the system SHALL reject the request with 400.  <!-- unwanted -->
 5. WHEN the Categories tab shows an owned category THEN its spend SHALL be the owner's participation spend and its limit SHALL be evaluated against that spend.  <!-- event-driven -->
-6. WHEN a user creates a transaction in an owned category without having edited the participants THEN the form SHALL set the owner as the single 100% participant.  <!-- event-driven -->
+6. WHILE creating a transaction whose participants were not edited by hand, WHEN the user selects a category THEN the form SHALL set the participants from the newly selected category: its active owner at 100% if it has one, otherwise the form's default participants.  <!-- complex -->
 7. WHILE a category's owner is not an active member of the plan the system SHALL keep the ownership, show the owner as "former member", and allow the OWNER to clear or change it; when that user rejoins, the ownership applies again.  <!-- state-driven -->
 8. The system SHALL show owned categories and their transactions to every plan member.  <!-- ubiquitous -->
 
@@ -195,7 +196,7 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 | CAT-07 | P1 Sub (AC 7–10, rollup and limits) | Tasks | In Tasks |
 | CAT-08 | P1 Sub (AC 11, Overview breakdown) | Tasks | In Tasks |
 | CAT-09 | P1 Sub (AC 12–13, filter and picker) | Tasks | In Tasks |
-| CAT-10 | P1 Sub (AC 14–17) + Edge (delete in use), delete with reassignment | Tasks | In Tasks |
+| CAT-10 | P1 Sub (AC 14–18) + Edge (delete in use), delete with reassignment and usage counts | Tasks | In Tasks |
 | CAT-11 | P2 Member (AC 1–4, store, sum, display) | Tasks | In Tasks |
 | CAT-12 | P2 Member (AC 5–6, spend by shares, per-member rows) | Tasks | In Tasks |
 | CAT-13 | P2 Member (AC 7–10, validation) | Tasks | In Tasks |
