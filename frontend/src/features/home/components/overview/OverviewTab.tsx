@@ -1,26 +1,25 @@
 import { useGetDashboardSummary } from "@/api/services/useDashboardService";
-import { useGetPlanMembers } from "@/api/services/usePlanService";
-import { usePlanContext } from "@/app/providers/PlanProvider";
 import { Button } from "@/components/button/Button";
 import { DateRangePicker } from "@/components/input/DatePicker";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { cn } from "@/lib/mergeClasses";
 import { differenceInCalendarMonths, format, parseISO } from "date-fns";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import {
   resolvePeriodDates,
   type Period,
 } from "../../filters/homeFilterParams";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
+import {
+  useOverviewMemberFilter,
+  type MemberOption,
+} from "../../hooks/useOverviewMemberFilter";
 import { CategorySpendingChart } from "./CategorySpendingChart";
 import { MonthlyTrendChart } from "./MonthlyTrendChart";
 import { PersonBreakdownList } from "./PersonBreakdownList";
 import { SummaryCards } from "./SummaryCards";
-
-// StandardCombobox requires an `id`; PlanMember keys on `userId`, so members are adapted to this shape.
-type MemberOption = { id: number; name: string };
 
 const PERIOD_LABELS: Record<Period, string> = {
   "this-month": "This month",
@@ -31,30 +30,9 @@ const PERIOD_LABELS: Record<Period, string> = {
 
 export const OverviewTab = () => {
   const { overview, updateOverview } = useHomeFilters();
-  const { period, customRange, memberId } = overview;
-
-  const { activePlanId } = usePlanContext();
-  const { data: members = [], isSuccess: membersLoaded } = useGetPlanMembers(
-    activePlanId ?? undefined,
-  );
-  const memberOptions = useMemo<MemberOption[]>(
-    () => members.map((m) => ({ id: m.userId, name: m.name })),
-    [members],
-  );
-  const showMemberPicker = memberOptions.length > 1;
-  const selectedMember =
-    memberOptions.find((m) => m.id === memberId) ?? null;
-  const isMemberStale = membersLoaded && memberId != null && !selectedMember;
-  // The member filter is ignored on single-member plans; until members load it is
-  // applied as-is so the dashboard is not fetched twice for the common case.
-  const effectiveMemberId =
-    memberId != null && (!membersLoaded || showMemberPicker) && !isMemberStale
-      ? memberId
-      : null;
-
-  useEffect(() => {
-    if (isMemberStale) updateOverview((o) => ({ ...o, memberId: null }));
-  }, [isMemberStale, updateOverview]);
+  const { period, customRange } = overview;
+  const { memberOptions, showMemberPicker, selectedMember, effectiveMemberId } =
+    useOverviewMemberFilter();
 
   const isCustomActive = customRange != null;
   const customFrom = customRange?.from;

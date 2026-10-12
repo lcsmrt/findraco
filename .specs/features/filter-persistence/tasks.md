@@ -374,9 +374,9 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Tests kill M10 (single-member guard) and cover stale Overview member drop
-- [ ] Test: a filter/sort/size change resets the page to the first page
-- [ ] Build gate passes
+- [x] Tests kill M10 (single-member guard) and cover stale Overview member drop
+- [x] Test: a filter/sort/size change resets the page to the first page
+- [x] Build gate passes
 
 **Tests**: unit
 **Gate**: build

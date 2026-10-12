@@ -24,9 +24,9 @@ import { Sorting } from "@/components/table/components/TableHeader";
 import { useDebounce } from "@/hooks/useDebounce";
 import { PlusIcon, SearchIcon, TagIcon, UploadIcon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { serializeTransactionFilters } from "../../filters/homeFilterParams";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
+import { useTransactionsPage } from "../../hooks/useTransactionsPage";
 import { CategoriesManageDialog } from "./CategoriesManageDialog";
 import { useSeriesScope } from "./SeriesScopeDialog";
 import {
@@ -64,12 +64,7 @@ export const TransactionsTab = () => {
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
   const { filter, sort, size } = transactions;
 
-  // The page is not part of the URL: it resets to 0 whenever filters, sort or size change.
-  const filtersKey = new URLSearchParams(
-    serializeTransactionFilters(transactions),
-  ).toString();
-  const [pageState, setPageState] = useState({ key: filtersKey, page: 0 });
-  const page = pageState.key === filtersKey ? pageState.page : 0;
+  const [page, onPageChange] = useTransactionsPage(transactions);
 
   // Typing draft for the search box, debounced into the `q` param.
   const urlDescription = filter.description ?? "";
@@ -119,9 +114,6 @@ export const TransactionsTab = () => {
     setDescription("");
     clearTransactions();
   };
-
-  const onPageChange = (p: number) =>
-    setPageState({ key: filtersKey, page: p });
 
   const onPageSizeChange = (s: number) =>
     updateTransactions((t) => ({ ...t, size: s }));
