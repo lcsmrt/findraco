@@ -273,10 +273,10 @@ T8 → T9
 
 **Done when**:
 
-- [ ] Search input keeps a local draft, debounced 400 ms into `q`
-- [ ] `useTransactionFilters.ts` removed, no references left
+- [x] Search input keeps a local draft, debounced 400 ms into `q`
+- [x] `useTransactionFilters.ts` removed, no references left
 - [ ] Manual check in the dev app: every spec Independent Test passes
-- [ ] Build gate passes
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build

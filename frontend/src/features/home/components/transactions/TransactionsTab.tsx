@@ -1,4 +1,7 @@
-import { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import {
+  FinancialTransaction,
+  FinancialTransactionSortBy,
+} from "@/api/dtos/financialTransaction";
 import {
   useDeleteFinancialTransaction,
   useDeleteFinancialTransactionSeries,
@@ -17,29 +20,120 @@ import {
   InputGroupInput,
 } from "@/components/input/base/InputGroup";
 import { Table, TableContent, TablePagination } from "@/components/table";
+import { Sorting } from "@/components/table/components/TableHeader";
+import { useDebounce } from "@/hooks/useDebounce";
 import { PlusIcon, SearchIcon, TagIcon, UploadIcon, XIcon } from "lucide-react";
-import { useRef, useState } from "react";
-import { useTransactionFilters } from "../../hooks/useTransactionFilters";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { serializeTransactionFilters } from "../../filters/homeFilterParams";
+import { useHomeFilters } from "../../hooks/useHomeFilters";
+import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
 import { CategoriesManageDialog } from "./CategoriesManageDialog";
 import { useSeriesScope } from "./SeriesScopeDialog";
-import { TransactionFilterPopover } from "./TransactionFilterPopover";
+import {
+  AppliedFilters,
+  TransactionFilterPopover,
+} from "./TransactionFilterPopover";
 import { TransactionFormDrawer } from "./TransactionFormDrawer";
 import { buildTransactionColumns, InlineSaveBody } from "./transactionColumns";
 
+const SEARCH_DEBOUNCE_MS = 400;
+
+// Table column key -> API sort field, and back.
+const SORTABLE_FIELDS: Record<string, FinancialTransactionSortBy> = {
+  startDate: "startDate",
+  amount: "amount",
+  description: "description",
+  category: "category",
+  participants: "attributedTo",
+};
+const SORT_COLUMNS: Record<
+  FinancialTransactionSortBy,
+  keyof FinancialTransaction
+> = {
+  startDate: "startDate",
+  endDate: "endDate",
+  amount: "amount",
+  description: "description",
+  category: "category",
+  attributedTo: "participants",
+};
+
 export const TransactionsTab = () => {
-  const {
-    queryParams,
-    chips,
-    description,
-    setDescription,
-    appliedFilters,
-    onApplyFilters,
-    onClearFilters,
-    onPageChange,
-    onPageSizeChange,
-    sorting,
-    onSortChange,
-  } = useTransactionFilters();
+  const { transactions, updateTransactions, clearTransactions } =
+    useHomeFilters();
+  const { chips, category, member, seedCategory } = useTransactionFilterChips();
+  const { filter, sort, size } = transactions;
+
+  // The page is not part of the URL: it resets to 0 whenever filters, sort or size change.
+  const filtersKey = new URLSearchParams(
+    serializeTransactionFilters(transactions),
+  ).toString();
+  const [pageState, setPageState] = useState({ key: filtersKey, page: 0 });
+  const page = pageState.key === filtersKey ? pageState.page : 0;
+
+  // Typing draft for the search box, debounced into the `q` param.
+  const urlDescription = filter.description ?? "";
+  const [description, setDescription] = useState(urlDescription);
+  const debouncedDescription = useDebounce(description, SEARCH_DEBOUNCE_MS);
+  useEffect(() => {
+    // Only once typing has settled, so a stale debounced value never overwrites `q`.
+    if (
+      debouncedDescription === description &&
+      debouncedDescription !== urlDescription
+    ) {
+      updateTransactions((t) => ({
+        ...t,
+        filter: { ...t.filter, description: debouncedDescription || undefined },
+      }));
+    }
+  }, [debouncedDescription, description, urlDescription, updateTransactions]);
+
+  const queryParams = {
+    page,
+    size,
+    filter,
+    ...(sort ? { sort } : {}),
+  };
+
+  const sorting = useMemo<Sorting<FinancialTransaction>[]>(
+    () =>
+      sort ? [{ by: SORT_COLUMNS[sort.by], direction: sort.direction }] : [],
+    [sort],
+  );
+
+  const appliedFilters: AppliedFilters = {
+    filter,
+    categoryForDisplay: category,
+    memberForDisplay: member,
+  };
+
+  const onApplyFilters = (applied: AppliedFilters) => {
+    if (applied.categoryForDisplay) seedCategory(applied.categoryForDisplay);
+    updateTransactions((t) => ({
+      ...t,
+      filter: { ...applied.filter, description: t.filter.description },
+    }));
+  };
+
+  const onClearFilters = () => {
+    setDescription("");
+    clearTransactions();
+  };
+
+  const onPageChange = (p: number) =>
+    setPageState({ key: filtersKey, page: p });
+
+  const onPageSizeChange = (s: number) =>
+    updateTransactions((t) => ({ ...t, size: s }));
+
+  const onSortChange = (next: Sorting<FinancialTransaction>[]) => {
+    const active = next[0];
+    const by = active ? SORTABLE_FIELDS[active.by as string] : undefined;
+    updateTransactions((t) => ({
+      ...t,
+      sort: by ? { by, direction: active.direction } : null,
+    }));
+  };
 
   const { data: financialTransactionsData, isLoading: isLoadingTransactions } =
     useGetFinancialTransactions(queryParams);
