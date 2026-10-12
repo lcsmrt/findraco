@@ -68,11 +68,16 @@
 
 ## Handoff
 
-- **Feature**: M5-03 Filter persistence (`.specs/features/filter-persistence/`) — merged to `main` and deployed 2026-10-11
-- **Phase / Task**: Execute done T1–T15; Verifier iteration 2 PASS (139 tests, 15/15 mutants killed). T9 manual check: user spot-checked locally, full check to be done in prod (bullet left unticked until then)
-- **Completed**: URL-as-source-of-truth filters for both home tabs, localStorage mirror per user+plan, render-time gate (restore, plan switch, cross-plan links), category-by-id with cache seeding, logout keeps filters/theme
+- **Feature**: M5-04 Categories revamp (`.specs/features/categories-revamp/`). Branch `feat/categories-revamp`, not pushed or merged
+- **Phase / Task**: Execute. T1–T24 and fix tasks F1–F5 (verification iteration 1) are committed. Verifier iteration 1 = FAIL (`validation.md`); gaps 1–4 have been addressed since then
+- **Completed**: Backend (V11 schema, hierarchy rules, delete with reassignment + usage endpoint, `ItemShareAllocator`, `CategorySpendingService`/assembler, `/spending`, per-member limits, owners, dormant former members). Frontend (Categories tab, form sheet, delete dialog with usage counts, grouped picker/filter/chart, per-member rows, owner badge, participants follow the category). Unit tests green: frontend 268, backend pure unit tests green
 - **In-progress** (file:line): none
-- **Next step**: user confirms prod check → tick T9 manual bullet. Then next ROADMAP item: M5-04 categories revamp (then M5-06 period navigator month-only, M5-05 Claude MCP)
-- **Blockers**: none. Dev login: personal account is `lcsmrtakd@gmail.com`; reset emails land in Mailpit (`localhost:8025`, container `checklist-mailpit`); test account `test@findraco.local` / `Findraco#2026` (see `backend/README.md`)
+- **Next step**: with the DB tunnel up:
+  1. `cd backend && ./mvnw verify` (all new `*IT` + JaCoCo); fix failures.
+  2. Tick the PENDING "Full gate passes" boxes in `tasks.md`.
+  3. Re-dispatch the Verifier (iteration 2) with the IT gate and the 12 IT-level mutations listed in `validation.md`.
+  4. Re-seed `dev_finsight`, run the app, and hand it to the user for hands-on UAT. The user wants to judge by using the screens, not by reading reports, so keep updates short.
+  5. Update `.specs/codebase/TESTING.md`: it still names `CategoryBreakdownAssembler`.
+- **Blockers**: DB tunnel down (2026-10-12). `npm run lint` already fails on main with 23 errors in storybook/table files; branch adds none
 - **Uncommitted files**: none
-- **Branch**: main
+- **Branch**: feat/categories-revamp
