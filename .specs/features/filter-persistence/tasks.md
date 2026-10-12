@@ -317,11 +317,11 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Saved storage reflects a filter change made after mount
-- [ ] Link to another member plan → that plan becomes active, URL filters applied, no request with mixed plan/filters
-- [ ] User switching plan while on home → new plan's saved state (no bounce back to the URL's plan)
-- [ ] Link to a non-member plan → active plan's saved state
-- [ ] Quick gate passes
+- [x] Saved storage reflects a filter change made after mount
+- [x] Link to another member plan → that plan becomes active, URL filters applied, no request with mixed plan/filters
+- [x] User switching plan while on home → new plan's saved state (no bounce back to the URL's plan)
+- [x] Link to a non-member plan → active plan's saved state
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
