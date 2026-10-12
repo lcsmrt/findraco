@@ -160,9 +160,9 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `ItemShareAllocatorTest`: 60/40 split on a R$ 30 item → 18/12; R$ 10 over 33.34/33.33/33.33 sums to exactly 10.00; tie broken by member id; single participant gets all; zero-amount transaction handled
-- [ ] Class added to the JaCoCo branch ≥ 0.80 rule in `backend/pom.xml`
-- [ ] Quick gate passes
+- [x] `ItemShareAllocatorTest`: 60/40 split on a R$ 30 item → 18/12; R$ 10 over 33.34/33.33/33.33 sums to exactly 10.00; tie broken by member id; single participant gets all; zero-amount transaction handled
+- [x] Class added to the JaCoCo branch ≥ 0.80 rule in `backend/pom.xml` (branch coverage 22/22)
+- [x] Quick gate passes (7 passed, 0 failed)
 
 **Tests**: unit
 **Gate**: quick
