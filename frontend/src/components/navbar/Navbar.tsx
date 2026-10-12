@@ -8,7 +8,7 @@ import {
 } from "../dropdown/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
 import { LogOut } from "lucide-react";
-import { clearStorage } from "@/lib/storage";
+import { clearSessionStorage } from "@/lib/storage";
 import { useNavigate } from "react-router-dom";
 import { PATHS } from "@/app/routing/paths";
 import { useAuth } from "@/app/providers/AuthProvider";
@@ -22,7 +22,7 @@ export const Navbar = () => {
   const { user } = useAuth();
 
   const logout = () => {
-    clearStorage();
+    clearSessionStorage();
     navigate(PATHS.login, { replace: true });
   };
 

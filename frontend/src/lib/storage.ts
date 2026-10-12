@@ -39,3 +39,13 @@ export function removeItemFromStorage(key: keyof typeof STORAGE_KEYS): void {
 export function clearStorage(): void {
   localStorage.clear();
 }
+
+/**
+ * Removes only the session keys (auth token, user, active plan). Unlike
+ * `clearStorage`, keeps unrelated entries such as saved home filters and the theme.
+ */
+export function clearSessionStorage(): void {
+  (Object.keys(STORAGE_KEYS) as (keyof typeof STORAGE_KEYS)[]).forEach(
+    removeItemFromStorage,
+  );
+}

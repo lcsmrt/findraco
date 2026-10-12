@@ -126,9 +126,9 @@ T8 → T9
 
 **Done when**:
 
-- [ ] After `clearSessionStorage()`, auth keys are gone and `homeFilters:*` and the theme key remain
-- [ ] `Navbar.tsx` call site switched
-- [ ] Quick gate passes
+- [x] After `clearSessionStorage()`, auth keys are gone and `homeFilters:*` and the theme key remain
+- [x] `Navbar.tsx` call site switched
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
