@@ -10,4 +10,7 @@ import java.util.List;
 @Repository
 public interface CategoryMemberLimitRepository extends JpaRepository<CategoryMemberLimit, Long> {
     List<CategoryMemberLimit> findAllByCategory(FinancialTransactionCategory category);
+
+    /** Whether any child of {@code parent} has per-member limits. */
+    boolean existsByCategory_Parent(FinancialTransactionCategory parent);
 }

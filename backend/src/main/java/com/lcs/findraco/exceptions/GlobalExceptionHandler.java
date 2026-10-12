@@ -108,9 +108,11 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnCreditException.class,
             FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnOwnedException.class,
             FinancialTransactionCategoryExceptions.CategoryMemberLimitDuplicateMemberException.class,
-            FinancialTransactionCategoryExceptions.CategoryMemberLimitInactiveMemberException.class
+            FinancialTransactionCategoryExceptions.CategoryMemberLimitInactiveMemberException.class,
+            FinancialTransactionCategoryExceptions.CategoryOwnerOnChildException.class,
+            FinancialTransactionCategoryExceptions.CategoryOwnerInactiveMemberException.class
     })
-    public ResponseEntity<ErrorResponseDto> handleCategoryMemberLimitInvariant(
+    public ResponseEntity<ErrorResponseDto> handleCategoryMemberInvariant(
             RuntimeException exception,
             HttpServletRequest request
     ) {

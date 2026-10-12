@@ -20,6 +20,9 @@ public class FinancialTransactionCategoryRequestDto {
 
     private Long parentId;
 
+    /** The member the category belongs to; roots only (a child inherits its parent's). Null = shared. */
+    private Long ownerId;
+
     /**
      * Per-member limits, replaced as a set. Null keeps the stored entries unchanged; an empty list
      * removes them all.
@@ -41,6 +44,10 @@ public class FinancialTransactionCategoryRequestDto {
 
     public Long getParentId() {
         return parentId;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
     }
 
     public List<MemberLimitDto> getMemberLimits() {

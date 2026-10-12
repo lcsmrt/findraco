@@ -213,7 +213,9 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         professional.setOwner(owner);
         categoryRepository.save(professional);
 
-        update(plan, owner, professional.getId(), body("DEBIT", "Professional", null, limits(owner.getId(), "100.00")))
+        Map<String, Object> ownedUpdate = body("DEBIT", "Professional", null, limits(owner.getId(), "100.00"));
+        ownedUpdate.put("ownerId", owner.getId()); // PUT is a full replace: the owner is resent (CAT-15)
+        update(plan, owner, professional.getId(), ownedUpdate)
                 .andExpect(status().isBadRequest());
         create(plan, owner, body("DEBIT", "Courses", null, limits(owner.getId(), "100.00"), professional.getId()))
                 .andExpect(status().isBadRequest());

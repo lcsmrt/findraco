@@ -11,6 +11,7 @@ import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanMembership;
 import com.lcs.findraco.models.User;
+import com.lcs.findraco.repositories.CategoryMemberLimitRepository;
 import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
 import com.lcs.findraco.repositories.PlanMembershipRepository;
@@ -39,6 +40,7 @@ public class FinancialTransactionCategoryService {
     private final FinancialTransactionRepository transactionRepository;
     private final TransactionItemRepository transactionItemRepository;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
+    private final CategoryMemberLimitRepository memberLimitRepository;
     private final PlanMembershipRepository planMembershipRepository;
     private final PlanAuthorization planAuthorization;
 
@@ -47,12 +49,14 @@ public class FinancialTransactionCategoryService {
             FinancialTransactionRepository transactionRepository,
             TransactionItemRepository transactionItemRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
+            CategoryMemberLimitRepository memberLimitRepository,
             PlanMembershipRepository planMembershipRepository,
             PlanAuthorization planAuthorization) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.transactionItemRepository = transactionItemRepository;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
+        this.memberLimitRepository = memberLimitRepository;
         this.planMembershipRepository = planMembershipRepository;
         this.planAuthorization = planAuthorization;
     }
@@ -100,6 +104,7 @@ public class FinancialTransactionCategoryService {
         category.setDescription(dto.getDescription());
         category.setParent(resolveParent(null, dto, ctx));
         Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
+        category.setOwner(resolveOwner(category, dto, activeMembers));
         applyLimits(category, dto, activeMembers);
 
         return new FinancialTransactionCategoryResponseDto(categoryRepository.save(category), activeMembers.keySet());
@@ -124,9 +129,41 @@ public class FinancialTransactionCategoryService {
         existingCategory.setDescription(dto.getDescription());
         existingCategory.setParent(parent);
         Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
+        existingCategory.setOwner(resolveOwner(existingCategory, dto, activeMembers));
+        if (existingCategory.getOwner() != null && hasChildren
+                && memberLimitRepository.existsByCategory_Parent(existingCategory)) {
+            // Children inherit the owner, and an owned category cannot have per-member limits.
+            throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnOwnedException();
+        }
         applyLimits(existingCategory, dto, activeMembers);
 
         return new FinancialTransactionCategoryResponseDto(categoryRepository.save(existingCategory), activeMembers.keySet());
+    }
+
+    /**
+     * Resolves the requested owner (CAT-15): roots only, and an active member. The stored owner is
+     * kept when sent back after they left the plan, so a former member's ownership stays dormant
+     * until the OWNER clears or changes it (CAT-14). Parent must already be set.
+     */
+    private User resolveOwner(FinancialTransactionCategory category,
+                              FinancialTransactionCategoryRequestDto dto,
+                              Map<Long, User> activeMembers) {
+        Long ownerId = dto.getOwnerId();
+        if (ownerId == null) {
+            return null;
+        }
+        if (category.getParent() != null) {
+            throw new FinancialTransactionCategoryExceptions.CategoryOwnerOnChildException();
+        }
+        User owner = activeMembers.get(ownerId);
+        if (owner != null) {
+            return owner;
+        }
+        User stored = category.getOwner();
+        if (stored != null && stored.getId().equals(ownerId)) {
+            return stored;
+        }
+        throw new FinancialTransactionCategoryExceptions.CategoryOwnerInactiveMemberException(ownerId);
     }
 
     /** Active members of the plan by user id. A user without a membership row is a former member (CAT-14). */

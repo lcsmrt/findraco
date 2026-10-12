@@ -79,4 +79,16 @@ public class FinancialTransactionCategoryExceptions {
             super("User " + memberId + " is not an active member of the plan.");
         }
     }
+
+    public static class CategoryOwnerOnChildException extends RuntimeException {
+        public CategoryOwnerOnChildException() {
+            super("A subcategory has its parent's owner and cannot set its own.");
+        }
+    }
+
+    public static class CategoryOwnerInactiveMemberException extends RuntimeException {
+        public CategoryOwnerInactiveMemberException(Long ownerId) {
+            super("User " + ownerId + " is not an active member of the plan.");
+        }
+    }
 }

@@ -585,8 +585,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `CategoryOwnerIT`: one test per P3 AC 1–4, 7, 8; removed owner shows `ownerActive=false`, rejoin restores it
-- [ ] Full gate passes
+- [x] `CategoryOwnerIT`: one test per P3 AC 1–4, 7, 8; removed owner shows `ownerActive=false`, rejoin restores it (12 tests, written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+
+> Note: `ownerId` follows the full-replace PUT (null clears it), so `CategoryMemberLimitIT`'s owned-category update now resends `ownerId`. A former owner is kept only when sent back unchanged. Setting an owner on a root whose children have per-member limits is rejected (400) since children inherit the owner. The category embedded in transaction responses also carries `ownerId`/`ownerName` (`ownerActive` null).
 
 **Tests**: integration
 **Gate**: full
