@@ -35,6 +35,9 @@ Every filter on the home screen lives in component-local state, and `HomePage` u
 | Stale references | A remembered category or member that no longer exists in the plan is dropped silently | Deleted category / member who left the plan must not break the screen | n |
 | Storage unavailable | Fall back to URL + in-memory state with no error shown | Private mode / blocked storage must not break filtering | n |
 
+| Clear scope | "Clear filters" removes popover filters and the description search (`q`); sort and page size are kept | Sort/size are display preferences, not filters (user decision 2026-10-11) | y |
+| Link to another of the user's plans | Opening a home URL whose `plan` is another plan the user belongs to switches the active plan to it and applies the URL filters; a `plan` the user doesn't belong to is ignored (active plan's saved state) | A shared/bookmarked link should open what it promises (user decision 2026-10-11) | y |
+
 **Open questions:** none - all resolved or logged above (required before the spec is confirmed).
 
 ---
@@ -56,7 +59,7 @@ Every filter on the home screen lives in component-local state, and `HomePage` u
 5. WHEN filters are restored on Transactions THEN the system SHALL show the first page of results.
 6. WHEN the user changes a filter THEN the system SHALL replace the current browser history entry instead of pushing a new one.
 7. WHEN the user switches home tabs THEN the system SHALL push a new browser history entry so Back returns to the previous tab.
-8. WHEN the user clicks "Clear filters" on Transactions THEN the system SHALL remove all Transactions filter params from the URL and from the saved state.
+8. WHEN the user clicks "Clear filters" on Transactions THEN the system SHALL remove the type, category, member, date range, amount range and description search params from the URL and from the saved state, and SHALL keep sort and page size.
 
 **Independent Test**: Set a category + date filter on Transactions, set "Last 3M" + a member on Overview, switch tabs both ways and visit `/plans`; both tabs come back with their filters.
 
@@ -107,7 +110,9 @@ Every filter on the home screen lives in component-local state, and `HomePage` u
 **Acceptance Criteria**:
 
 1. WHEN a user opens a home URL containing valid filter params for a plan they belong to THEN the system SHALL render the tab and filters encoded in the URL, including the filter chips with the category and member names.
-2. IF a URL param holds an unparseable value (non-numeric id, malformed date, unknown period token, unknown sort field) THEN the system SHALL ignore that param and apply the default for it.
+2. WHEN a user opens a home URL whose `plan` is another plan they belong to THEN the system SHALL make that plan the active plan and apply the URL filters.
+3. IF a home URL's `plan` is a plan the user does not belong to THEN the system SHALL ignore the URL params and restore the active plan's saved state.
+4. IF a URL param holds an unparseable value (non-numeric id, malformed date, unknown period token, unknown sort field) THEN the system SHALL ignore that param and apply the default for it.
 
 **Independent Test**: Copy the URL of a filtered Transactions view, open it in a private window after logging in; the same filters and chips appear.
 
@@ -115,7 +120,9 @@ Every filter on the home screen lives in component-local state, and `HomePage` u
 
 ## Edge Cases
 
-- IF a restored or URL category id does not belong to the active plan's categories THEN the system SHALL drop the category filter and remove it from the URL and saved state.
+- IF fetching a restored or URL category returns 404 THEN the system SHALL drop the category filter and remove it from the URL and saved state.
+- IF fetching the category fails with any other error THEN the system SHALL keep the category filter.
+- WHEN the filter popover is applied before the category name has loaded THEN the system SHALL keep the category filter.
 - IF a restored or URL member id is not a current member of the active plan THEN the system SHALL drop the member filter and remove it from the URL and saved state.
 - IF the restored custom range has `from` after `to` THEN the system SHALL discard the custom range and fall back to `this-month`.
 - WHEN the active plan has a single member THEN the system SHALL hide the Overview member picker and ignore any saved Overview member filter (current behaviour preserved).

@@ -1,0 +1,81 @@
+{
+  "schema": 1,
+  "promote_threshold": 2,
+  "window_days": 45,
+  "quarantine_threshold": 2,
+  "next_id": 5,
+  "lessons": [
+    {
+      "id": "L-001",
+      "key": "surviving_mutant::for a write through persistence effect assert storage reflects a state change made after mount not only the initial save",
+      "text": "For a write-through persistence effect, assert storage reflects a state change made after mount, not only the initial save",
+      "signal": "surviving_mutant",
+      "scope": "frontend-hooks",
+      "status": "candidate",
+      "features": [
+        "filter-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M1 frontend/src/features/home/filters/HomeFiltersGate.tsx:44 (frontend-hooks)"
+      ],
+      "created": "2026-10-12T02:31:17Z",
+      "last_seen": "2026-10-12T02:31:17Z"
+    },
+    {
+      "id": "L-002",
+      "key": "surviving_mutant::when behavior depends on a specific error status test a different error status and assert the behavior does not trigger",
+      "text": "When behavior depends on a specific error status, test a different error status and assert the behavior does not trigger",
+      "signal": "surviving_mutant",
+      "scope": "frontend-hooks",
+      "status": "candidate",
+      "features": [
+        "filter-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M9 frontend/src/features/home/hooks/useTransactionFilterChips.ts:60 (frontend-hooks)"
+      ],
+      "created": "2026-10-12T02:31:17Z",
+      "last_seen": "2026-10-12T02:31:17Z"
+    },
+    {
+      "id": "L-003",
+      "key": "ac_gap::move ac bearing branching out of build only ui components into a pure helper or hook so it can be unit tested",
+      "text": "Move AC-bearing branching out of build-only UI components into a pure helper or hook so it can be unit tested",
+      "signal": "ac_gap",
+      "scope": "frontend-components",
+      "status": "candidate",
+      "features": [
+        "filter-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P1-Nav AC5, edge single-member; frontend/src/features/home/components/overview/OverviewTab.tsx:51 (frontend-components)"
+      ],
+      "created": "2026-10-12T02:31:17Z",
+      "last_seen": "2026-10-12T02:31:17Z"
+    },
+    {
+      "id": "L-004",
+      "key": "spec_precision_gap::when a spec says clear filters state explicitly whether sort and page size are reset",
+      "text": "When a spec says clear filters, state explicitly whether sort and page size are reset",
+      "signal": "spec_precision_gap",
+      "scope": "frontend",
+      "status": "candidate",
+      "features": [
+        "filter-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "P1-Nav AC8 frontend/src/features/home/hooks/useHomeFilters.ts:84 (frontend)"
+      ],
+      "created": "2026-10-12T02:31:17Z",
+      "last_seen": "2026-10-12T02:31:17Z"
+    }
+  ]
+}

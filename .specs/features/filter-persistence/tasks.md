@@ -57,6 +57,12 @@ T5 → T6 → T7
 T8 → T9
 ```
 
+### Phase 4: Verification fixes (validation.md iteration 1)
+
+```
+T10 → T11 → T12 → T13 → T14
+```
+
 ---
 
 ## Task Breakdown
@@ -279,4 +285,98 @@ T8 → T9
 - [x] Build gate passes
 
 **Tests**: none
+**Gate**: build
+
+---
+
+### T10: Clear keeps sort and page size
+
+**What**: `clearTransactions` removes type/category/member/dates/amounts/`q` and keeps `sort`/`size`.
+**Where**: `frontend/src/features/home/hooks/useHomeFilters.ts`
+**Depends on**: None
+**Reuses**: T1 `TRANSACTION_PARAM_KEYS`
+**Requirement**: FPERS-04
+
+**Done when**:
+
+- [ ] Test asserts filters + `q` removed and `sort`/`size` kept
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### T11: Gate saves on change + cross-plan links
+
+**What**: Test that a URL change after mount is saved (kills mutant M1); implement the revised mismatch rule from design.md (active-plan change → saved state of new plan; URL/first mount with another member plan → switch active plan, keep URL filters; non-member plan → active plan's saved state).
+**Where**: `frontend/src/features/home/filters/HomeFiltersGate.tsx`
+**Depends on**: T10
+**Reuses**: `usePlanContext().plans`, `setActivePlanId`
+**Requirement**: FPERS-05, FPERS-08, FPERS-09
+
+**Done when**:
+
+- [ ] Saved storage reflects a filter change made after mount
+- [ ] Link to another member plan → that plan becomes active, URL filters applied, no request with mixed plan/filters
+- [ ] User switching plan while on home → new plan's saved state (no bounce back to the URL's plan)
+- [ ] Link to a non-member plan → active plan's saved state
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### T12: Drop stale category only on 404
+
+**What**: Chips hook drops the category filter only on HTTP 404; other errors keep it; the singular category query does not retry on 404.
+**Where**: `frontend/src/features/home/hooks/useTransactionFilterChips.ts`
+**Depends on**: T11
+**Reuses**: T4 hook
+**Requirement**: FPERS-10
+
+**Done when**:
+
+- [ ] Tests: 404 drops; 500 / network error keeps (kills M9); 404 causes exactly one request
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### T13: Popover keeps category before its name loads
+
+**What**: Applying the filter popover while the category display object is not yet loaded preserves `categoryId` (pure draft mapping extracted and tested).
+**Where**: `frontend/src/features/home/components/transactions/TransactionFilterPopover.tsx`
+**Depends on**: T12
+**Reuses**: existing `toDraft`/`fromDraft`
+**Requirement**: FPERS-10
+
+**Done when**:
+
+- [ ] Test: applied state with `categoryId` and no display object round-trips through draft → apply with `categoryId` intact; explicitly clearing the category still removes it
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### T14: Extract and test Overview member + page-reset rules
+
+**What**: Move the Overview member rules (ignore when ≤1 member; drop a member no longer in the plan) and the Transactions page-reset-on-filter-change rule out of the components into tested hooks/helpers.
+**Where**: `frontend/src/features/home/hooks/useOverviewMemberFilter.ts`
+**Depends on**: T13
+**Reuses**: `useHomeFilters`, `useGetPlanMembers`
+**Requirement**: FPERS-02 (AC5), FPERS-10
+
+**Done when**:
+
+- [ ] Tests kill M10 (single-member guard) and cover stale Overview member drop
+- [ ] Test: a filter/sort/size change resets the page to the first page
+- [ ] Build gate passes
+
+**Tests**: unit
 **Gate**: build

@@ -18,6 +18,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 | M5-03 | **Persist filters across tabs** | Filters reset when switching tabs; keeping them removes constant re-filtering. | User — 2026-10-11 |
 | M5-04 | **Categories revamp** | Categories get their own tab; explore subcategories (parent/child) and per-person categories. Scope to be shaped in spec. | User — 2026-10-11 |
 | M5-05 | **Claude MCP connector** | Remote MCP server so Claude can read and modify plan data from chat — "the chat where I send things"; replaces WhatsApp capture for now. | User — 2026-10-11 |
+| M5-06 | **Period navigator** | Arrow navigation between periods with a click-to-pick custom range; arrows step by the selected granularity (month → month, quarter → quarter, year → year, custom range → shift by its length). | User — 2026-10-11 |
 | M4-03 | **Expense Items P2** | Quantity input + itemized indicator in the transactions table; closes the visible gap left by P1. | M4 deferred |
 | M4-04 | **Expense Items P3** | Replicate items across series occurrences so a recurring grocery run stays itemized. | M4 deferred |
 

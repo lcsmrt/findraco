@@ -65,4 +65,5 @@ Synchronous decision during render, before tabs mount:
 - Rejected: storing labels in storage (goes stale on rename, useless for shared URLs); fetching the whole category list (paged/unbounded, more data than one row).
 
 ## Decisions within the spec's assumptions
-- A shared link whose `plan` is not the active plan is treated as a plan mismatch (restores the active plan's state) — switching the active plan from a URL is out of scope.
+- ~~A shared link whose `plan` is not the active plan is treated as a plan mismatch~~ — revised after verification (user decision): the gate distinguishes the two mismatch causes. If the **active plan changed** since the gate last rendered (user switched plans) → load the new plan's saved state. If the **URL changed / first mount** and `plan` is another plan the user belongs to → switch the active plan to it (effect; render nothing until settled) and keep the URL filters. Unknown plan → active plan's saved state.
+- Clear removes filters + `q`, keeps `sort`/`size` (user decision).
