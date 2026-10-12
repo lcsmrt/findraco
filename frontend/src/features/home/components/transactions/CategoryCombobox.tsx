@@ -1,11 +1,7 @@
 import { FinancialTransactionCategory } from "@/api/dtos";
 import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
-import {
-  useDeleteFinancialTransactionCategory,
-  useGetFinancialTransactionCategories,
-} from "@/api/services/useFinancialTransactionCategoryService";
+import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
 import { Button } from "@/components/button/Button";
-import { useConfirm } from "@/components/dialog/useConfirmDialog";
 import {
   Combobox,
   ComboboxContent,
@@ -18,13 +14,53 @@ import {
 } from "@/components/input/base/Combobox";
 import { InputGroupButton } from "@/components/input/base/InputGroup";
 import { Spinner } from "@/components/spinner/Spinner";
-import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/mergeClasses";
-import { PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
-import { useState } from "react";
-import { useCategoryFormSheet } from "../categories/CategoryFormSheet";
+import { PlusIcon, XIcon } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  ALL_CATEGORIES_PAGE_SIZE,
+  useCategoryFormSheet,
+} from "../categories/CategoryFormSheet";
 
-interface CategoryComboboxProps {
+export type CategoryOption = {
+  category: FinancialTransactionCategory;
+  isChild: boolean;
+};
+
+/**
+ * Orders categories as roots by name, each followed by its children by name.
+ * A child whose parent is not in the list is shown as a root. Search keeps the
+ * parent of a matching child visible so the child stays under it.
+ */
+export const groupCategoryOptions = (
+  categories: FinancialTransactionCategory[],
+  search = "",
+): CategoryOption[] => {
+  const query = search.trim().toLowerCase();
+  const matches = (c: FinancialTransactionCategory) =>
+    !query || c.description.toLowerCase().includes(query);
+  const byName = (a: FinancialTransactionCategory, b: FinancialTransactionCategory) =>
+    a.description.localeCompare(b.description);
+  const ids = new Set(categories.map((c) => c.id));
+  const isRoot = (c: FinancialTransactionCategory) =>
+    c.parentId == null || !ids.has(c.parentId);
+
+  return categories
+    .filter(isRoot)
+    .sort(byName)
+    .flatMap((root) => {
+      const children = categories
+        .filter((c) => !isRoot(c) && c.parentId === root.id && matches(c))
+        .sort(byName);
+      if (!matches(root) && children.length === 0) return [];
+      return [
+        { category: root, isChild: false },
+        ...children.map((category) => ({ category, isChild: true })),
+      ];
+    });
+};
+
+type CategoryComboboxProps = {
   id?: string;
   value: FinancialTransactionCategory | null | undefined;
   onValueChange: (
@@ -34,7 +70,7 @@ interface CategoryComboboxProps {
   disabled?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
-}
+};
 
 export const CategoryCombobox = ({
   id,
@@ -46,38 +82,24 @@ export const CategoryCombobox = ({
   onOpenChange,
 }: CategoryComboboxProps) => {
   const anchor = useComboboxAnchor();
-  const confirm = useConfirm();
-  const { openCreate, openEdit } = useCategoryFormSheet();
+  const { openCreate } = useCategoryFormSheet();
 
   const [search, setSearch] = useState("");
-  const debouncedSearch = useDebounce(search);
 
-  const { data: categories, isFetching } = useGetFinancialTransactionCategories({
-    filter: { description: debouncedSearch.trim() || undefined, type },
+  const { data: categories, isLoading } = useGetFinancialTransactionCategories({
+    size: ALL_CATEGORIES_PAGE_SIZE,
+    filter: { type },
   });
 
-  const deleteMutation = useDeleteFinancialTransactionCategory();
-
-  const displayedItems = categories?.content ?? [];
-
-  const handleDelete = async (
-    cat: FinancialTransactionCategory,
-    e: React.MouseEvent,
-  ) => {
-    e.stopPropagation();
-    const confirmed = await confirm({
-      title: "Confirm Deletion",
-      description:
-        "Are you sure you want to delete this category? This action cannot be undone.",
-      confirmLabel: "Delete",
-      cancelLabel: "Cancel",
-      variant: "destructive",
-    });
-    if (confirmed) {
-      deleteMutation.mutate({ id: cat.id });
-      if (value?.id === cat.id) onValueChange(null);
-    }
-  };
+  const options = useMemo(
+    () => groupCategoryOptions(categories?.content ?? [], search),
+    [categories, search],
+  );
+  const displayedItems = useMemo(() => options.map((o) => o.category), [options]);
+  const childIds = useMemo(
+    () => new Set(options.filter((o) => o.isChild).map((o) => o.category.id)),
+    [options],
+  );
 
   const handleOpenCreate = async () => {
     const created = await openCreate({ description: search.trim(), type });
@@ -87,19 +109,15 @@ export const CategoryCombobox = ({
     }
   };
 
-  const handleOpenEdit = async (cat: FinancialTransactionCategory) => {
-    const updated = await openEdit(cat);
-    if (updated && value?.id === updated.id) {
-      onValueChange(updated);
-    }
-  };
-
   const showClear = value !== null;
 
   return (
     <Combobox
       id={id}
       items={displayedItems}
+      // Items arrive grouped and searched; the default filter would hide the
+      // parent of a matching child.
+      filter={null}
       value={value}
       onValueChange={(v) => {
         onValueChange(v);
@@ -150,7 +168,7 @@ export const CategoryCombobox = ({
           showTrigger={false}
           disabled={disabled}
         />
-        {isFetching || search !== debouncedSearch ? (
+        {isLoading ? (
           <div className="text-muted-foreground flex items-center justify-center py-4">
             <Spinner />
           </div>
@@ -175,37 +193,16 @@ export const CategoryCombobox = ({
             <ComboboxItem
               key={String(cat.id)}
               value={cat}
-              className="group/cat px-2"
+              className={cn("px-2", childIds.has(cat.id) && "pl-6")}
             >
-              <div className="flex min-w-0 flex-1 items-center justify-between gap-1">
-                <span className="flex-1 truncate">{cat.description}</span>
-                <div className="flex items-center gap-0.5 opacity-0 group-hover/cat:opacity-100">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:bg-background rounded p-1 hover:cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void handleOpenEdit(cat);
-                    }}
-                  >
-                    <PencilIcon className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:bg-background rounded p-1 hover:cursor-pointer"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      void handleDelete(cat, e);
-                    }}
-                  >
-                    <Trash2Icon className="h-3 w-3" />
-                  </Button>
-                </div>
-              </div>
+              <span
+                className={cn(
+                  "flex-1 truncate",
+                  !childIds.has(cat.id) && "font-medium",
+                )}
+              >
+                {cat.description}
+              </span>
             </ComboboxItem>
           )}
         </ComboboxList>

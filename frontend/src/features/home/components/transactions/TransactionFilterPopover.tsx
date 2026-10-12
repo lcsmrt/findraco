@@ -22,9 +22,10 @@ import {
   PopoverTrigger,
 } from "@/components/popover/Popover";
 import { SlidersHorizontalIcon } from "lucide-react";
-import { useDebounce } from "@/hooks/useDebounce";
 import { maskCurrency } from "@/utils/string/masks";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/CategoryFormSheet";
+import { groupCategoryOptions } from "./CategoryCombobox";
 import {
   fromDraft,
   toDraft,
@@ -77,13 +78,23 @@ export const TransactionFilterPopover = ({
     toDraft(appliedFilters),
   );
   const [categorySearch, setCategorySearch] = useState("");
-  const debouncedCategorySearch = useDebounce(categorySearch);
 
-  const { data: categoriesData, isFetching: isFetchingCategories } =
-    useGetFinancialTransactionCategories({
-      filter: { description: debouncedCategorySearch.trim() || undefined },
-    });
-  const categories = categoriesData?.content ?? [];
+  const { data: categoriesData, isLoading: isLoadingCategories } =
+    useGetFinancialTransactionCategories({ size: ALL_CATEGORIES_PAGE_SIZE });
+  // Grouped like the transaction form's picker; children carry their parent's
+  // name because this shared combobox renders plain labels.
+  const categoryOptions = useMemo(
+    () => groupCategoryOptions(categoriesData?.content ?? [], categorySearch),
+    [categoriesData, categorySearch],
+  );
+  const categories = categoryOptions.map((o) => o.category);
+  const parentNames = new Map(
+    (categoriesData?.content ?? []).map((c) => [c.id, c.description]),
+  );
+  const categoryLabel = (c: (typeof categories)[number]) => {
+    const parentName = c.parentId != null ? parentNames.get(c.parentId) : undefined;
+    return parentName ? `${parentName} › ${c.description}` : c.description;
+  };
 
   const handleOpenChange = (o: boolean) => {
     if (o) setDraft(toDraft(appliedFilters));
@@ -147,12 +158,12 @@ export const TransactionFilterPopover = ({
               items={categories}
               value={draft.category}
               onValueChange={(v) => setDraft((d) => withDraftCategory(d, v))}
-              itemLabel={(c) => c.description}
+              itemLabel={categoryLabel}
               placeholder="All categories"
               clearable
               searchValue={categorySearch}
               onSearchChange={setCategorySearch}
-              loading={isFetchingCategories || categorySearch !== debouncedCategorySearch}
+              loading={isLoadingCategories}
             />
           </Field>
 

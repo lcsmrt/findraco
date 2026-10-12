@@ -432,9 +432,11 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Unit tests for `groupCategoryOptions` (children under parents, orphans as roots, search keeps a matching child's parent visible)
-- [ ] No edit/delete paths left in the combobox
-- [ ] Quick gate passes
+- [x] Unit tests for `groupCategoryOptions` (children under parents, orphans as roots, search keeps a matching child's parent visible)
+- [x] No edit/delete paths left in the combobox
+- [x] Quick gate passes (218 passed, 0 failed)
+
+> Note: the combobox now loads the plan's categories once (size 100, by type) and searches on the client, so a child's parent is always known; quick create opens `CategoryFormSheet` (which has the parent field). The transaction filter popover (also named by CAT-09 AC 13) uses the same grouping, with children labelled "Parent › Child".
 
 **Tests**: unit
 **Gate**: quick
