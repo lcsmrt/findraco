@@ -483,8 +483,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `CategoryMemberLimitIT`: one test per P2 AC 1–3, 7–10 and 11–13; member removed then re-invited → entry active again with the same amount
-- [ ] Full gate passes
+- [x] `CategoryMemberLimitIT`: one test per P2 AC 1–3, 7–10 and 11–13; member removed then re-invited → entry active again with the same amount (17 tests, written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+
+> Note: `memberLimits` omitted (null) keeps the stored entries; a list (even empty) replaces them as a set. A former member's entry is kept when sent back unchanged, deleted when omitted, and rejected (400) when its amount changes. While entries exist the stored plain limit is cleared. Category endpoints now return DTOs built in the service (active member ids are needed for `active`/`effectiveLimit`); the category embedded in transaction responses leaves `memberLimits`/`effectiveLimit` null. Until T21, the "owned" rule reads the stored owner (or the parent's).
 
 **Tests**: integration
 **Gate**: full

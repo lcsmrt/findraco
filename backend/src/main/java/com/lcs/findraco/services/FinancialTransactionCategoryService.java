@@ -2,11 +2,18 @@ package com.lcs.findraco.services;
 
 import com.lcs.findraco.dtos.request.FinancialTransactionCategoryFilterDto;
 import com.lcs.findraco.dtos.request.FinancialTransactionCategoryRequestDto;
+import com.lcs.findraco.dtos.request.MemberLimitDto;
+import com.lcs.findraco.dtos.response.FinancialTransactionCategoryResponseDto;
 import com.lcs.findraco.exceptions.FinancialTransactionCategoryExceptions;
+import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
+import com.lcs.findraco.models.Plan;
+import com.lcs.findraco.models.PlanMembership;
+import com.lcs.findraco.models.User;
 import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
+import com.lcs.findraco.repositories.PlanMembershipRepository;
 import com.lcs.findraco.repositories.RecurrenceDefinitionRepository;
 import com.lcs.findraco.repositories.TransactionItemRepository;
 import com.lcs.findraco.security.PlanAuthorization;
@@ -18,8 +25,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
 public class FinancialTransactionCategoryService {
@@ -28,6 +39,7 @@ public class FinancialTransactionCategoryService {
     private final FinancialTransactionRepository transactionRepository;
     private final TransactionItemRepository transactionItemRepository;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
+    private final PlanMembershipRepository planMembershipRepository;
     private final PlanAuthorization planAuthorization;
 
     public FinancialTransactionCategoryService(
@@ -35,11 +47,13 @@ public class FinancialTransactionCategoryService {
             FinancialTransactionRepository transactionRepository,
             TransactionItemRepository transactionItemRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
+            PlanMembershipRepository planMembershipRepository,
             PlanAuthorization planAuthorization) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.transactionItemRepository = transactionItemRepository;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
+        this.planMembershipRepository = planMembershipRepository;
         this.planAuthorization = planAuthorization;
     }
 
@@ -47,6 +61,11 @@ public class FinancialTransactionCategoryService {
     public FinancialTransactionCategory findById(Long id, PlanContext ctx) {
         return categoryRepository.findByIdAndPlan(id, ctx.getPlan())
                 .orElseThrow(() -> new FinancialTransactionCategoryExceptions.FinancialTransactionCategoryNotFoundException(id));
+    }
+
+    @Transactional(readOnly = true)
+    public FinancialTransactionCategoryResponseDto getById(Long id, PlanContext ctx) {
+        return new FinancialTransactionCategoryResponseDto(findById(id, ctx), activeMembers(ctx.getPlan()).keySet());
     }
 
     private static final Set<String> SORTABLE_FIELDS = Set.of("description", "spendingLimit");
@@ -57,7 +76,7 @@ public class FinancialTransactionCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<FinancialTransactionCategory> findAllByPlanPaged(FinancialTransactionCategoryFilterDto filter, PlanContext ctx) {
+    public Page<FinancialTransactionCategoryResponseDto> findAllByPlanPaged(FinancialTransactionCategoryFilterDto filter, PlanContext ctx) {
         PageRequest pageable = filter.toPageable(SORTABLE_FIELDS);
 
         Specification<FinancialTransactionCategory> spec = Specification.allOf(
@@ -65,11 +84,13 @@ public class FinancialTransactionCategoryService {
                 FinancialTransactionCategorySpecification.descriptionContains(filter.getDescription()),
                 FinancialTransactionCategorySpecification.typeEquals(filter.getType()));
 
-        return categoryRepository.findAll(spec, pageable);
+        Set<Long> activeMemberIds = activeMembers(ctx.getPlan()).keySet();
+        return categoryRepository.findAll(spec, pageable)
+                .map(category -> new FinancialTransactionCategoryResponseDto(category, activeMemberIds));
     }
 
     @Transactional
-    public FinancialTransactionCategory create(FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
+    public FinancialTransactionCategoryResponseDto create(FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
         FinancialTransactionCategory category = new FinancialTransactionCategory();
@@ -77,14 +98,15 @@ public class FinancialTransactionCategoryService {
         category.setPlan(ctx.getPlan());
         category.setType(dto.getType());
         category.setDescription(dto.getDescription());
-        category.setSpendingLimit(dto.getType() == FinancialTransactionType.CREDIT ? null : dto.getSpendingLimit());
         category.setParent(resolveParent(null, dto, ctx));
+        Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
+        applyLimits(category, dto, activeMembers);
 
-        return categoryRepository.save(category);
+        return new FinancialTransactionCategoryResponseDto(categoryRepository.save(category), activeMembers.keySet());
     }
 
     @Transactional
-    public FinancialTransactionCategory update(Long id, FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
+    public FinancialTransactionCategoryResponseDto update(Long id, FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
         FinancialTransactionCategory existingCategory = findById(id, ctx);
@@ -100,10 +122,85 @@ public class FinancialTransactionCategoryService {
 
         existingCategory.setType(dto.getType());
         existingCategory.setDescription(dto.getDescription());
-        existingCategory.setSpendingLimit(dto.getType() == FinancialTransactionType.CREDIT ? null : dto.getSpendingLimit());
         existingCategory.setParent(parent);
+        Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
+        applyLimits(existingCategory, dto, activeMembers);
 
-        return categoryRepository.save(existingCategory);
+        return new FinancialTransactionCategoryResponseDto(categoryRepository.save(existingCategory), activeMembers.keySet());
+    }
+
+    /** Active members of the plan by user id. A user without a membership row is a former member (CAT-14). */
+    private Map<Long, User> activeMembers(Plan plan) {
+        return planMembershipRepository.findAllByPlan(plan).stream()
+                .map(PlanMembership::getUser)
+                .collect(Collectors.toMap(User::getId, Function.identity()));
+    }
+
+    /**
+     * Applies the plain limit and the per-member limits (CAT-11, CAT-13, CAT-14). Type, parent and
+     * owner must already be set. While per-member entries exist the plain limit sent is ignored and
+     * the stored one cleared, so the category limit is always the sum of the active entries.
+     */
+    private void applyLimits(FinancialTransactionCategory category,
+                             FinancialTransactionCategoryRequestDto dto,
+                             Map<Long, User> activeMembers) {
+        if (dto.getMemberLimits() != null) {
+            replaceMemberLimits(category, dto.getMemberLimits(), activeMembers);
+        }
+        if (category.getMemberLimits().isEmpty()) {
+            category.setSpendingLimit(category.getType() == FinancialTransactionType.CREDIT ? null : dto.getSpendingLimit());
+            return;
+        }
+        if (category.getType() == FinancialTransactionType.CREDIT) {
+            throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnCreditException();
+        }
+        if (effectiveOwner(category) != null) {
+            throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnOwnedException();
+        }
+        category.setSpendingLimit(null);
+    }
+
+    /**
+     * Replaces the per-member entries as a set. Entries are updated in place (never deleted and
+     * re-inserted) so the unique (category, member) constraint holds within one flush. A former
+     * member's stored entry is kept when sent back unchanged and deleted when omitted; it can never be
+     * created or changed (CAT-13 AC 7, CAT-14).
+     */
+    private void replaceMemberLimits(FinancialTransactionCategory category,
+                                     List<MemberLimitDto> requested,
+                                     Map<Long, User> activeMembers) {
+        Map<Long, CategoryMemberLimit> stored = category.getMemberLimits().stream()
+                .collect(Collectors.toMap(entry -> entry.getMember().getId(), Function.identity()));
+        Set<Long> kept = new HashSet<>();
+        for (MemberLimitDto request : requested) {
+            Long memberId = request.getMemberId();
+            if (!kept.add(memberId)) {
+                throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitDuplicateMemberException(memberId);
+            }
+            CategoryMemberLimit existing = stored.get(memberId);
+            User member = activeMembers.get(memberId);
+            if (member == null) {
+                if (existing == null || existing.getAmount().compareTo(request.getAmount()) != 0) {
+                    throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitInactiveMemberException(memberId);
+                }
+                continue;
+            }
+            if (existing != null) {
+                existing.setAmount(request.getAmount());
+                continue;
+            }
+            CategoryMemberLimit entry = new CategoryMemberLimit();
+            entry.setCategory(category);
+            entry.setMember(member);
+            entry.setAmount(request.getAmount());
+            category.getMemberLimits().add(entry);
+        }
+        category.getMemberLimits().removeIf(entry -> !kept.contains(entry.getMember().getId()));
+    }
+
+    /** A child has its parent's owner (CAT-15 AC 2). */
+    private static User effectiveOwner(FinancialTransactionCategory category) {
+        return category.getParent() == null ? category.getOwner() : category.getParent().getOwner();
     }
 
     /**

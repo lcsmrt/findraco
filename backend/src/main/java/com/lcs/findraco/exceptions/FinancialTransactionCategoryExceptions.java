@@ -55,4 +55,28 @@ public class FinancialTransactionCategoryExceptions {
             super("Invalid target category: " + reason);
         }
     }
+
+    public static class CategoryMemberLimitsOnCreditException extends RuntimeException {
+        public CategoryMemberLimitsOnCreditException() {
+            super("Income categories cannot have per-member limits.");
+        }
+    }
+
+    public static class CategoryMemberLimitsOnOwnedException extends RuntimeException {
+        public CategoryMemberLimitsOnOwnedException() {
+            super("A category that belongs to one member cannot have per-member limits.");
+        }
+    }
+
+    public static class CategoryMemberLimitDuplicateMemberException extends RuntimeException {
+        public CategoryMemberLimitDuplicateMemberException(Long memberId) {
+            super("Member " + memberId + " is listed more than once in the per-member limits.");
+        }
+    }
+
+    public static class CategoryMemberLimitInactiveMemberException extends RuntimeException {
+        public CategoryMemberLimitInactiveMemberException(Long memberId) {
+            super("User " + memberId + " is not an active member of the plan.");
+        }
+    }
 }

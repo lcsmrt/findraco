@@ -105,6 +105,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
+            FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnCreditException.class,
+            FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnOwnedException.class,
+            FinancialTransactionCategoryExceptions.CategoryMemberLimitDuplicateMemberException.class,
+            FinancialTransactionCategoryExceptions.CategoryMemberLimitInactiveMemberException.class
+    })
+    public ResponseEntity<ErrorResponseDto> handleCategoryMemberLimitInvariant(
+            RuntimeException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
+    @ExceptionHandler({
             FinancialTransactionCategoryExceptions.CategoryHasChildrenException.class,
             FinancialTransactionCategoryExceptions.CategoryInUseException.class
     })

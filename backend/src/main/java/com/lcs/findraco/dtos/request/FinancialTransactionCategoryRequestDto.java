@@ -1,10 +1,12 @@
 package com.lcs.findraco.dtos.request;
 
 import com.lcs.findraco.models.FinancialTransactionType;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class FinancialTransactionCategoryRequestDto {
 
@@ -17,6 +19,13 @@ public class FinancialTransactionCategoryRequestDto {
     private BigDecimal spendingLimit;
 
     private Long parentId;
+
+    /**
+     * Per-member limits, replaced as a set. Null keeps the stored entries unchanged; an empty list
+     * removes them all.
+     */
+    @Valid
+    private List<MemberLimitDto> memberLimits;
 
     public FinancialTransactionType getType() {
         return type;
@@ -32,5 +41,9 @@ public class FinancialTransactionCategoryRequestDto {
 
     public Long getParentId() {
         return parentId;
+    }
+
+    public List<MemberLimitDto> getMemberLimits() {
+        return memberLimits;
     }
 }

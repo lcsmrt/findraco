@@ -47,7 +47,7 @@ public class FinancialTransactionCategoryController {
     public ResponseEntity<FinancialTransactionCategoryResponseDto> getCategory(
             @PathVariable Long id,
             PlanContext ctx) {
-        return ResponseEntity.ok(new FinancialTransactionCategoryResponseDto(categoryService.findById(id, ctx)));
+        return ResponseEntity.ok(categoryService.getById(id, ctx));
     }
 
     @Operation(summary = "Fetches all transaction categories for the plan")
@@ -56,7 +56,7 @@ public class FinancialTransactionCategoryController {
             @ParameterObject @ModelAttribute @Valid FinancialTransactionCategoryFilterDto filter,
             PlanContext ctx) {
         return ResponseEntity.ok(new PagedResponseDto<>(
-                categoryService.findAllByPlanPaged(filter, ctx).map(FinancialTransactionCategoryResponseDto::new)
+                categoryService.findAllByPlanPaged(filter, ctx)
         ));
     }
 
@@ -65,7 +65,7 @@ public class FinancialTransactionCategoryController {
     public ResponseEntity<FinancialTransactionCategoryResponseDto> createCategory(
             @RequestBody @Valid FinancialTransactionCategoryRequestDto dto,
             PlanContext ctx) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new FinancialTransactionCategoryResponseDto(categoryService.create(dto, ctx)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(dto, ctx));
     }
 
     @Operation(summary = "Updates a transaction category for the plan")
@@ -74,7 +74,7 @@ public class FinancialTransactionCategoryController {
             @PathVariable Long id,
             @RequestBody @Valid FinancialTransactionCategoryRequestDto dto,
             PlanContext ctx) {
-        return ResponseEntity.ok(new FinancialTransactionCategoryResponseDto(categoryService.update(id, dto, ctx)));
+        return ResponseEntity.ok(categoryService.update(id, dto, ctx));
     }
 
     @Operation(summary = "Deletes a transaction category, optionally moving its transactions, items and recurrences to another category")
