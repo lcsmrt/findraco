@@ -533,8 +533,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Schema/mapper tests: duplicate member rejected; negative rejected; percent computed; disabled for CREDIT and owned; removing a former member drops it from the payload
-- [ ] Quick gate passes
+- [x] Schema/mapper tests: duplicate member rejected; negative rejected; percent computed; disabled for CREDIT and owned; removing a former member drops it from the payload
+- [x] Quick gate passes (233 passed, 0 failed)
+
+> Note: the limit UI lives in a new `CategoryLimitFields.tsx` (mode toggle, one row per active member, former members greyed with remove). Existing `CategoryFormSheet.test.ts` fixtures/expectations gained the new `limitMode`/`memberLimits` fields (shape change, no assertion weakened). Single mode sends `memberLimits: []` (clears entries). Until T23, "owned" is read from the stored owner of the category or its parent.
 
 **Tests**: unit
 **Gate**: quick

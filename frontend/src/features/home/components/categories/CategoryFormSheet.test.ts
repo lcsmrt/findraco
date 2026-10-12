@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { maskCurrency } from "@/utils/string/masks";
+import type { PlanMember } from "@/api/dtos/plan";
 import {
   buildDefaultValues,
+  buildMemberLimitRows,
   createCategoryFormSchema,
+  memberLimitShares,
   parentOptions,
   toPayload,
   type CategoryFormValues,
+  type MemberLimitRow,
 } from "./CategoryFormSheet";
 
 const cat = (
@@ -34,6 +38,8 @@ const values = (overrides: Partial<CategoryFormValues> = {}): CategoryFormValues
   description: "Groceries",
   parentId: null,
   spendingLimit: "",
+  limitMode: "single",
+  memberLimits: [],
   ...overrides,
 });
 
@@ -151,6 +157,8 @@ describe("buildDefaultValues", () => {
       description: "Delivery",
       parentId: 1,
       spendingLimit: maskCurrency("20000"),
+      limitMode: "single",
+      memberLimits: [],
     });
   });
 
@@ -169,6 +177,8 @@ describe("buildDefaultValues", () => {
       description: "Gym",
       parentId: null,
       spendingLimit: "",
+      limitMode: "single",
+      memberLimits: [],
     });
   });
 
@@ -178,6 +188,8 @@ describe("buildDefaultValues", () => {
       description: "",
       parentId: null,
       spendingLimit: "",
+      limitMode: "single",
+      memberLimits: [],
     });
   });
 });
@@ -191,6 +203,7 @@ describe("toPayload", () => {
       description: "Delivery",
       parentId: 1,
       spendingLimit: 200.5,
+      memberLimits: [],
     });
   });
 
@@ -200,6 +213,7 @@ describe("toPayload", () => {
       description: "Groceries",
       parentId: null,
       spendingLimit: undefined,
+      memberLimits: [],
     });
   });
 
@@ -207,5 +221,192 @@ describe("toPayload", () => {
     expect(
       toPayload(values({ type: "CREDIT", spendingLimit: maskCurrency("10000") })).spendingLimit,
     ).toBeUndefined();
+  });
+});
+
+// ---- Per-member limits (CAT-11, CAT-13, CAT-14) ----
+
+const lucas: PlanMember = { userId: 10, name: "Lucas", email: "l@x.com", role: "OWNER" };
+const livia: PlanMember = { userId: 20, name: "Livia", email: "v@x.com", role: "EDITOR" };
+
+const row = (
+  memberId: number,
+  memberName: string,
+  amount: string,
+  active = true,
+): MemberLimitRow => ({ memberId, memberName, amount, active });
+
+const groceries = cat(6, "Groceries", {
+  memberLimits: [
+    { memberId: 10, memberName: "Lucas", amount: 260, active: true },
+    { memberId: 30, memberName: "Ana", amount: 50, active: false },
+  ],
+  effectiveLimit: 260,
+});
+
+describe("buildMemberLimitRows", () => {
+  it("lists every active member with their stored amount, then former members' entries", () => {
+    expect(buildMemberLimitRows(groceries, [lucas, livia])).toEqual([
+      row(20, "Livia", ""),
+      row(10, "Lucas", maskCurrency("26000")),
+      row(30, "Ana", maskCurrency("5000"), false),
+    ]);
+  });
+
+  it("lists active members with no amount for a new category", () => {
+    expect(buildMemberLimitRows(null, [lucas])).toEqual([row(10, "Lucas", "")]);
+  });
+});
+
+describe("buildDefaultValues with per-member limits", () => {
+  it("starts in per member mode when the category has entries", () => {
+    const defaults = buildDefaultValues(groceries, undefined, [lucas, livia]);
+    expect(defaults.limitMode).toBe("perMember");
+    expect(defaults.memberLimits).toHaveLength(3);
+  });
+});
+
+describe("memberLimitShares", () => {
+  it("computes each active member's read-only share of the total (260 / 140 → 65% / 35%)", () => {
+    const shares = memberLimitShares([
+      row(10, "Lucas", maskCurrency("26000")),
+      row(20, "Livia", maskCurrency("14000")),
+    ]);
+    expect(shares.get(10)).toBe(65);
+    expect(shares.get(20)).toBe(35);
+  });
+
+  it("leaves out former members and members without an amount", () => {
+    const shares = memberLimitShares([
+      row(10, "Lucas", maskCurrency("10000")),
+      row(20, "Livia", ""),
+      row(30, "Ana", maskCurrency("10000"), false),
+    ]);
+    expect(shares.get(10)).toBe(100);
+    expect(shares.has(20)).toBe(false);
+    expect(shares.has(30)).toBe(false);
+  });
+
+  it("rounds to one decimal", () => {
+    const shares = memberLimitShares([
+      row(10, "Lucas", maskCurrency("10000")),
+      row(20, "Livia", maskCurrency("20000")),
+    ]);
+    expect(shares.get(10)).toBe(33.3);
+    expect(shares.get(20)).toBe(66.7);
+  });
+});
+
+describe("createCategoryFormSchema with per-member limits", () => {
+  const perMember = (rows: MemberLimitRow[], overrides: Partial<CategoryFormValues> = {}) =>
+    values({ limitMode: "perMember", memberLimits: rows, ...overrides });
+
+  it("accepts one amount per member", () => {
+    expect(
+      createCategoryFormSchema(categories).safeParse(
+        perMember([row(10, "Lucas", maskCurrency("26000")), row(20, "Livia", "")]),
+      ).success,
+    ).toBe(true);
+  });
+
+  it("rejects the same member twice", () => {
+    expect(
+      issuesOf(
+        createCategoryFormSchema(categories).safeParse(
+          perMember([row(10, "Lucas", "R$ 1,00"), row(10, "Lucas", "R$ 2,00")]),
+        ),
+      ),
+    ).toEqual([{ path: "memberLimits.1.memberId", message: "Each member can have only one limit" }]);
+  });
+
+  it("rejects a negative amount", () => {
+    expect(
+      issuesOf(createCategoryFormSchema(categories).safeParse(perMember([row(10, "Lucas", "-1,00")]))),
+    ).toEqual([{ path: "memberLimits.0.amount", message: "Amount cannot be negative" }]);
+  });
+
+  it("is not allowed on a CREDIT category", () => {
+    expect(
+      issuesOf(
+        createCategoryFormSchema(categories).safeParse(
+          perMember([row(10, "Lucas", "R$ 1,00")], { type: "CREDIT" }),
+        ),
+      ),
+    ).toEqual([{ path: "limitMode", message: "Income categories cannot have per-member limits" }]);
+  });
+
+  it("is not allowed on an owned category or a child of one", () => {
+    const owned = cat(7, "Professional", { ownerId: 10 });
+    const withOwned = [...categories, owned];
+    const message = "A category that belongs to one member cannot have per-member limits";
+    expect(
+      issuesOf(
+        createCategoryFormSchema(withOwned, owned).safeParse(
+          perMember([row(10, "Lucas", "R$ 1,00")], { description: "Professional" }),
+        ),
+      ),
+    ).toEqual([{ path: "limitMode", message }]);
+    expect(
+      issuesOf(
+        createCategoryFormSchema(withOwned).safeParse(
+          perMember([row(10, "Lucas", "R$ 1,00")], { parentId: 7 }),
+        ),
+      ),
+    ).toEqual([{ path: "limitMode", message }]);
+  });
+});
+
+describe("toPayload with per-member limits", () => {
+  it("sends every member with an amount and no plain limit", () => {
+    expect(
+      toPayload(
+        values({
+          limitMode: "perMember",
+          spendingLimit: maskCurrency("99900"),
+          memberLimits: [
+            row(10, "Lucas", maskCurrency("26000")),
+            row(20, "Livia", maskCurrency("14000")),
+            row(40, "Bia", ""),
+          ],
+        }),
+      ),
+    ).toEqual({
+      type: "DEBIT",
+      description: "Groceries",
+      parentId: null,
+      spendingLimit: undefined,
+      memberLimits: [
+        { memberId: 10, amount: 260 },
+        { memberId: 20, amount: 140 },
+      ],
+    });
+  });
+
+  it("keeps a former member's entry unchanged until it is removed", () => {
+    const rows = [row(10, "Lucas", maskCurrency("26000")), row(30, "Ana", maskCurrency("5000"), false)];
+    expect(toPayload(values({ limitMode: "perMember", memberLimits: rows })).memberLimits).toEqual([
+      { memberId: 10, amount: 260 },
+      { memberId: 30, amount: 50 },
+    ]);
+    const removed = rows.filter((r) => r.memberId !== 30);
+    expect(toPayload(values({ limitMode: "perMember", memberLimits: removed })).memberLimits).toEqual([
+      { memberId: 10, amount: 260 },
+    ]);
+  });
+
+  it("clears the per-member entries in single mode", () => {
+    const payload = toPayload(
+      values({ spendingLimit: maskCurrency("30000"), memberLimits: [row(10, "Lucas", maskCurrency("26000"))] }),
+    );
+    expect(payload.spendingLimit).toBe(300);
+    expect(payload.memberLimits).toEqual([]);
+  });
+
+  it("sends no per-member entries for a CREDIT category", () => {
+    expect(
+      toPayload(
+        values({ type: "CREDIT", limitMode: "perMember", memberLimits: [row(10, "Lucas", "R$ 1,00")] }),
+      ).memberLimits,
+    ).toEqual([]);
   });
 });

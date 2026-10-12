@@ -39,6 +39,8 @@ export type CreateFinancialTransactionCategoryRequest = {
     description: string;
     spendingLimit?: number;
     parentId?: number | null;
+    /** Replaced as a set; omitted keeps the stored entries, [] removes them. */
+    memberLimits?: { memberId: number; amount: number }[];
   };
 };
 
