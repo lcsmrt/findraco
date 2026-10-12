@@ -27,7 +27,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
 import { useTransactionsPage } from "../../hooks/useTransactionsPage";
-import { CategoriesManageDialog } from "./CategoriesManageDialog";
 import { useSeriesScope } from "./SeriesScopeDialog";
 import {
   AppliedFilters,
@@ -59,7 +58,7 @@ const SORT_COLUMNS: Record<
 };
 
 export const TransactionsTab = () => {
-  const { transactions, updateTransactions, clearTransactions } =
+  const { transactions, updateTransactions, clearTransactions, setTab } =
     useHomeFilters();
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
   const { filter, sort, size } = transactions;
@@ -155,7 +154,6 @@ export const TransactionsTab = () => {
       };
 
   const [drawerState, setDrawerState] = useState<DrawerState>({ open: false });
-  const [isCategoriesDialogOpen, setIsCategoriesDialogOpen] = useState(false);
 
   const handleImportClick = () => fileInputRef.current?.click();
 
@@ -278,10 +276,7 @@ export const TransactionsTab = () => {
           </div>
 
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsCategoriesDialogOpen(true)}
-            >
+            <Button variant="outline" onClick={() => setTab("categories")}>
               <TagIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Manage Categories</span>
             </Button>
@@ -369,11 +364,6 @@ export const TransactionsTab = () => {
             : undefined
         }
         mode={drawerState.open ? drawerState.mode : "create"}
-      />
-
-      <CategoriesManageDialog
-        open={isCategoriesDialogOpen}
-        onOpenChange={setIsCategoriesDialogOpen}
       />
     </>
   );

@@ -406,10 +406,11 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Tab order Overview, Transactions, Categories; VIEWER sees no actions; over-limit rows marked
-- [ ] No imports of the deleted dialogs remain
-- [ ] Build gate passes
-- [ ] Build gate passes
+- [x] Tab order Overview, Transactions, Categories; VIEWER sees no actions; over-limit rows marked
+- [x] No imports of the deleted dialogs remain
+- [x] Build gate passes (build ok; 211 tests; lint: 0 new errors, 23 pre-existing errors in stories/table files)
+
+> Note: the Overview period buttons were extracted into `components/PeriodPicker.tsx` and shared with the tab. `CategoryFormSheetProvider` replaces `CategoryFormDialogProvider` in `AppProvider`; the combobox now opens the sheet (its edit/delete paths go in T15).
 
 **Tests**: none
 **Gate**: build

@@ -5,7 +5,7 @@ import { PlanProvider } from "./PlanProvider";
 import { TanStackQueryProvider } from "./TanStackQueryProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { ConfirmDialogProvider } from "@/components/dialog/useConfirmDialog";
-import { CategoryFormDialogProvider } from "@/features/home/components/transactions/CategoryFormDialog";
+import { CategoryFormSheetProvider } from "@/features/home/components/categories/CategoryFormSheet";
 import { SeriesScopeDialogProvider } from "@/features/home/components/transactions/SeriesScopeDialog";
 
 type AppProviderProps = {
@@ -21,9 +21,9 @@ export const AppProvider = ({ children }: AppProviderProps) => {
             <PlanProvider>
               <ConfirmDialogProvider>
                 <SeriesScopeDialogProvider>
-                  <CategoryFormDialogProvider>
+                  <CategoryFormSheetProvider>
                     {children}
-                  </CategoryFormDialogProvider>
+                  </CategoryFormSheetProvider>
                 </SeriesScopeDialogProvider>
               </ConfirmDialogProvider>
             </PlanProvider>

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/mergeClasses";
+import { CategoriesTab } from "./components/categories/CategoriesTab";
 import { OverviewTab } from "./components/overview/OverviewTab";
 import { TransactionsTab } from "./components/transactions/TransactionsTab";
 import { Button } from "@/components/button/Button";
@@ -9,6 +10,7 @@ import { useHomeFilters } from "./hooks/useHomeFilters";
 const tabs: { key: HomeTab; label: string }[] = [
   { key: "overview", label: "Overview" },
   { key: "transactions", label: "Transactions" },
+  { key: "categories", label: "Categories" },
 ];
 
 export const Home = () => (
@@ -40,7 +42,9 @@ const HomeTabs = () => {
         ))}
       </div>
 
-      {activeTab === "overview" ? <OverviewTab /> : <TransactionsTab />}
+      {activeTab === "overview" && <OverviewTab />}
+      {activeTab === "transactions" && <TransactionsTab />}
+      {activeTab === "categories" && <CategoriesTab />}
     </div>
   );
 };

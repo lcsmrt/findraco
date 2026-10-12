@@ -22,7 +22,7 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { cn } from "@/lib/mergeClasses";
 import { PencilIcon, PlusIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useState } from "react";
-import { useCategoryFormDialog } from "./CategoryFormDialog";
+import { useCategoryFormSheet } from "../categories/CategoryFormSheet";
 
 interface CategoryComboboxProps {
   id?: string;
@@ -47,7 +47,7 @@ export const CategoryCombobox = ({
 }: CategoryComboboxProps) => {
   const anchor = useComboboxAnchor();
   const confirm = useConfirm();
-  const { openCreate, openEdit } = useCategoryFormDialog();
+  const { openCreate, openEdit } = useCategoryFormSheet();
 
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search);
@@ -80,7 +80,7 @@ export const CategoryCombobox = ({
   };
 
   const handleOpenCreate = async () => {
-    const created = await openCreate(search.trim(), type);
+    const created = await openCreate({ description: search.trim(), type });
     if (created) {
       onValueChange(created);
       setSearch("");

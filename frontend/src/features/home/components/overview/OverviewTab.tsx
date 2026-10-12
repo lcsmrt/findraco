@@ -1,17 +1,13 @@
 import { useGetDashboardSummary } from "@/api/services/useDashboardService";
-import { Button } from "@/components/button/Button";
-import { DateRangePicker } from "@/components/input/DatePicker";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { Skeleton } from "@/components/skeleton/Skeleton";
-import { cn } from "@/lib/mergeClasses";
-import { format, parseISO } from "date-fns";
 import { useMemo } from "react";
-import type { DateRange } from "react-day-picker";
 import {
   resolvePeriodDates,
   type Period,
 } from "../../filters/homeFilterParams";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
+import { PeriodPicker } from "../PeriodPicker";
 import { countMonths, scaleTreeLimits } from "../../utils/scaleLimits";
 import {
   useOverviewMemberFilter,
@@ -22,29 +18,14 @@ import { MonthlyTrendChart } from "./MonthlyTrendChart";
 import { PersonBreakdownList } from "./PersonBreakdownList";
 import { SummaryCards } from "./SummaryCards";
 
-const PERIOD_LABELS: Record<Period, string> = {
-  "this-month": "This month",
-  "last-3m": "Last 3M",
-  "last-6m": "Last 6M",
-  "this-year": "This year",
-};
-
 export const OverviewTab = () => {
   const { overview, updateOverview } = useHomeFilters();
   const { period, customRange } = overview;
   const { memberOptions, showMemberPicker, selectedMember, effectiveMemberId } =
     useOverviewMemberFilter();
 
-  const isCustomActive = customRange != null;
   const customFrom = customRange?.from;
   const customTo = customRange?.to;
-  const pickerRange = useMemo<DateRange | undefined>(
-    () =>
-      customFrom && customTo
-        ? { from: parseISO(customFrom), to: parseISO(customTo) }
-        : undefined,
-    [customFrom, customTo],
-  );
 
   const filter = useMemo(() => {
     const dates =
@@ -72,17 +53,8 @@ export const OverviewTab = () => {
   const handlePeriodClick = (p: Period) =>
     updateOverview((o) => ({ ...o, period: p, customRange: null }));
 
-  const handleCustomRangeChange = (range: DateRange | undefined) => {
-    const from = range?.from;
-    const to = range?.to ?? from;
-    updateOverview((o) => ({
-      ...o,
-      customRange:
-        from && to
-          ? { from: format(from, "yyyy-MM-dd"), to: format(to, "yyyy-MM-dd") }
-          : null,
-    }));
-  };
+  const handleCustomRangeChange = (range: { from: string; to: string } | null) =>
+    updateOverview((o) => ({ ...o, customRange: range }));
 
   const handleMemberChange = (member: MemberOption | null) =>
     updateOverview((o) => ({ ...o, memberId: member?.id ?? null }));
@@ -90,20 +62,11 @@ export const OverviewTab = () => {
   return (
     <div className="flex flex-col gap-6 px-4">
       <div className="flex flex-wrap items-center gap-2">
-        {(Object.keys(PERIOD_LABELS) as Period[]).map((p) => (
-          <Button
-            key={p}
-            variant={period === p && !isCustomActive ? "default" : "outline"}
-            onClick={() => handlePeriodClick(p)}
-          >
-            {PERIOD_LABELS[p]}
-          </Button>
-        ))}
-        <DateRangePicker
-          value={pickerRange}
-          onChange={handleCustomRangeChange}
-          placeholder="Custom period"
-          className={cn(isCustomActive && "border-primary")}
+        <PeriodPicker
+          period={period}
+          customRange={customRange}
+          onPeriodChange={handlePeriodClick}
+          onCustomRangeChange={handleCustomRangeChange}
         />
         {showMemberPicker && (
           <div className="min-w-48">
