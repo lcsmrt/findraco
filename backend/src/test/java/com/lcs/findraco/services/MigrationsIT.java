@@ -87,8 +87,11 @@ class MigrationsIT extends AbstractIntegrationTest {
                 .as("every V*.sql file on disk must be applied, in order, with none missing/renamed/extra")
                 .containsExactlyElementsOf(versionsOnDisk);
 
+        // A database adopted via baseline-on-migrate reports its baseline row as BASELINE.
         assertThat(applied)
-                .as("every applied migration must report state SUCCESS")
+                .as("every applied migration must report state SUCCESS (or BASELINE for the baseline row)")
+                .filteredOn(info -> info.getState() != MigrationState.BASELINE
+                        || !info.getVersion().equals(flyway.getConfiguration().getBaselineVersion()))
                 .extracting(MigrationInfo::getState)
                 .containsOnly(MigrationState.SUCCESS);
     }
