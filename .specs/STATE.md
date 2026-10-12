@@ -60,11 +60,11 @@
 
 ## Handoff
 
-- **Feature**: M5-03 Filter persistence (`.specs/features/filter-persistence/`), branch `feat/filter-persistence` (not pushed)
-- **Phase / Task**: Execute done T1–T15; Verifier iteration 2 PASS (139 tests, 15/15 mutants killed); waiting on user's manual browser check (T9 last bullet)
+- **Feature**: M5-03 Filter persistence (`.specs/features/filter-persistence/`) — merged to `main` and deployed 2026-10-11
+- **Phase / Task**: Execute done T1–T15; Verifier iteration 2 PASS (139 tests, 15/15 mutants killed). T9 manual check: user spot-checked locally, full check to be done in prod (bullet left unticked until then)
 - **Completed**: URL-as-source-of-truth filters for both home tabs, localStorage mirror per user+plan, render-time gate (restore, plan switch, cross-plan links), category-by-id with cache seeding, logout keeps filters/theme
 - **In-progress** (file:line): none
-- **Next step**: user runs spec Independent Tests in the dev app → tick T9 manual bullet → merge to `main` + push (needs user go-ahead). Then next ROADMAP item: M5-04 categories revamp, M5-06 period navigator (month-only), M5-05 Claude MCP
+- **Next step**: user confirms prod check → tick T9 manual bullet. Then next ROADMAP item: M5-04 categories revamp (then M5-06 period navigator month-only, M5-05 Claude MCP)
 - **Blockers**: none. Dev login: personal account is `lcsmrtakd@gmail.com`; reset emails land in Mailpit (`localhost:8025`, container `checklist-mailpit`); test account `test@findraco.local` / `Findraco#2026` (see `backend/README.md`)
 - **Uncommitted files**: none
-- **Branch**: feat/filter-persistence
+- **Branch**: main

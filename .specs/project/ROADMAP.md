@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current Milestone:** M5 — Capture Every Day (post-MVP refinement)
-**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; Rebrand finSight → findraco ✅ SHIPPED 2026-10-11 (both themes verified in prod). **Priorities reset 2026-10-11:** filter persistence, categories revamp and a Claude MCP connector come first; the MCP connector makes Claude the chat-capture channel, so WhatsApp is parked.
+**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; Rebrand finSight → findraco ✅ SHIPPED 2026-10-11 (both themes verified in prod). M5-03 Filter persistence ✅ SHIPPED 2026-10-11. **Priorities reset 2026-10-11:** filter persistence, categories revamp and a Claude MCP connector come first; the MCP connector makes Claude the chat-capture channel, so WhatsApp is parked.
 
 > **Raw ideas bucket:** See [`IDEAS.md`](./IDEAS.md) for a separate, non-canonical collection of future product ideas captured during brainstorming. Those ideas are not yet triaged or committed; review and migrate only the accepted ones into this roadmap.
 
@@ -15,7 +15,6 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 
 | # | Feature | Why | Source |
 | - | ------- | --- | ------ |
-| M5-03 | **Persist filters across tabs** | Filters reset when switching tabs; keeping them removes constant re-filtering. | User — 2026-10-11 |
 | M5-04 | **Categories revamp** | Categories get their own tab; explore subcategories (parent/child) and per-person categories. Scope to be shaped in spec. | User — 2026-10-11 |
 | M5-05 | **Claude MCP connector** | Remote MCP server so Claude can read and modify plan data from chat — "the chat where I send things"; replaces WhatsApp capture for now. | User — 2026-10-11 |
 | M5-06 | **Period navigator (month)** | Prev/next arrows step one month; clicking the current month opens a custom-range picker. Later: step by quarter/semester/year when that granularity is selected (parked 2026-10-11 — start with month only). | User — 2026-10-11 |
