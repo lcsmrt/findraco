@@ -136,9 +136,9 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `CategoryDeleteIT` covers: unused delete 204; parent with children 409; in use without target 409 with counts; reassign moves all three reference kinds then 204; each invalid target 400; foreign target 404
-- [ ] Failure midway leaves every reference unchanged (rollback asserted)
-- [ ] Full gate passes
+- [x] `CategoryDeleteIT` covers: unused delete 204; parent with children 409; in use without target 409 with counts; reassign moves all three reference kinds then 204; each invalid target 400; foreign target 404 (written, not run)
+- [x] Failure midway leaves every reference unchanged (rollback asserted) (written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
 
 **Tests**: integration
 **Gate**: full

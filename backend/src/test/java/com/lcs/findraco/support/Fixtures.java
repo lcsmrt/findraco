@@ -72,7 +72,14 @@ public class Fixtures {
     }
 
     public FinancialTransaction aTransaction(Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type) {
+        return aTransaction(plan, createdBy, amount, type, null);
+    }
+
+    /** A single-participant (createdBy at 100%) transaction dated today in the given category. */
+    public FinancialTransaction aTransaction(Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type,
+                                             FinancialTransactionCategory category) {
         FinancialTransaction transaction = new FinancialTransaction();
+        transaction.setCategory(category);
         transaction.setPlan(plan);
         transaction.setCreatedBy(createdBy);
         transaction.setType(type);

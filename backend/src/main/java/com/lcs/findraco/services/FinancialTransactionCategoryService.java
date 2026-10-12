@@ -6,6 +6,9 @@ import com.lcs.findraco.exceptions.FinancialTransactionCategoryExceptions;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.repositories.FinancialTransactionRepository;
+import com.lcs.findraco.repositories.RecurrenceDefinitionRepository;
+import com.lcs.findraco.repositories.TransactionItemRepository;
 import com.lcs.findraco.security.PlanAuthorization;
 import com.lcs.findraco.security.PlanContext;
 import com.lcs.findraco.specifications.FinancialTransactionCategorySpecification;
@@ -22,12 +25,21 @@ import java.util.Set;
 public class FinancialTransactionCategoryService {
 
     private final FinancialTransactionCategoryRepository categoryRepository;
+    private final FinancialTransactionRepository transactionRepository;
+    private final TransactionItemRepository transactionItemRepository;
+    private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final PlanAuthorization planAuthorization;
 
     public FinancialTransactionCategoryService(
             FinancialTransactionCategoryRepository categoryRepository,
+            FinancialTransactionRepository transactionRepository,
+            TransactionItemRepository transactionItemRepository,
+            RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             PlanAuthorization planAuthorization) {
         this.categoryRepository = categoryRepository;
+        this.transactionRepository = transactionRepository;
+        this.transactionItemRepository = transactionItemRepository;
+        this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.planAuthorization = planAuthorization;
     }
 
@@ -117,11 +129,57 @@ public class FinancialTransactionCategoryService {
         return parent;
     }
 
+    /**
+     * Deletes a category (CAT-10). A given target is validated first (not in the plan → 404; itself,
+     * one of its children or another type → 400). A category with children is never deleted (409).
+     * A category still referenced by transactions, items or recurrence definitions needs a target
+     * (409 without one); every reference is moved to the target and the category deleted in this
+     * one transaction, so a failure midway leaves every reference unchanged.
+     */
     @Transactional
-    public void delete(Long id, PlanContext ctx) {
+    public void delete(Long id, Long reassignToId, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
         FinancialTransactionCategory category = findById(id, ctx);
+        FinancialTransactionCategory target = reassignToId == null ? null : resolveReassignTarget(category, reassignToId, ctx);
+
+        if (categoryRepository.existsByParent(category)) {
+            throw new FinancialTransactionCategoryExceptions.CategoryHasChildrenException(id);
+        }
+
+        long transactions = transactionRepository.countByCategory(category);
+        long items = transactionItemRepository.countByCategory(category);
+        long recurrenceDefinitions = recurrenceDefinitionRepository.countByCategory(category);
+        boolean inUse = transactions + items + recurrenceDefinitions > 0;
+
+        if (inUse && target == null) {
+            throw new FinancialTransactionCategoryExceptions.CategoryInUseException(id, transactions, items, recurrenceDefinitions);
+        }
+        if (inUse) {
+            transactionRepository.reassignCategory(category, target);
+            transactionItemRepository.reassignCategory(category, target);
+            recurrenceDefinitionRepository.reassignCategory(category, target);
+        }
+
         categoryRepository.delete(category);
+    }
+
+    private FinancialTransactionCategory resolveReassignTarget(FinancialTransactionCategory category,
+                                                               Long reassignToId,
+                                                               PlanContext ctx) {
+        FinancialTransactionCategory target = findById(reassignToId, ctx);
+        if (target.getId().equals(category.getId())) {
+            throw new FinancialTransactionCategoryExceptions.CategoryInvalidReassignTargetException(
+                    "a category cannot be moved into itself.");
+        }
+        if (target.getParent() != null && target.getParent().getId().equals(category.getId())) {
+            throw new FinancialTransactionCategoryExceptions.CategoryInvalidReassignTargetException(
+                    "a category cannot be moved into one of its subcategories.");
+        }
+        if (target.getType() != category.getType()) {
+            throw new FinancialTransactionCategoryExceptions.CategoryInvalidReassignTargetException(
+                    "the target must have the same type.");
+        }
+        return target;
     }
 }

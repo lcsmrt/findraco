@@ -36,4 +36,23 @@ public class FinancialTransactionCategoryExceptions {
             super("The type of a category that has subcategories cannot be changed.");
         }
     }
+
+    public static class CategoryHasChildrenException extends RuntimeException {
+        public CategoryHasChildrenException(Long id) {
+            super("Category " + id + " has subcategories. Move or delete them before deleting it.");
+        }
+    }
+
+    public static class CategoryInUseException extends RuntimeException {
+        public CategoryInUseException(Long id, long transactions, long items, long recurrenceDefinitions) {
+            super("Category " + id + " is in use by " + transactions + " transaction(s), " + items + " item(s) and "
+                    + recurrenceDefinitions + " recurrence definition(s). Choose a category to move them to.");
+        }
+    }
+
+    public static class CategoryInvalidReassignTargetException extends RuntimeException {
+        public CategoryInvalidReassignTargetException(String reason) {
+            super("Invalid target category: " + reason);
+        }
+    }
 }

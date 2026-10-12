@@ -1,10 +1,12 @@
 package com.lcs.findraco.repositories;
 
 import com.lcs.findraco.models.FinancialTransaction;
+import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -24,6 +26,13 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
     Optional<FinancialTransaction> findByIdAndPlan(Long id, Plan plan);
 
     List<FinancialTransaction> findAllByPlanAndSeriesId(Plan plan, String seriesId);
+
+    long countByCategory(FinancialTransactionCategory category);
+
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE FinancialTransaction ft SET ft.category = :target WHERE ft.category = :source")
+    int reassignCategory(@Param("source") FinancialTransactionCategory source,
+                         @Param("target") FinancialTransactionCategory target);
 
     @Query("SELECT ft.externalId FROM FinancialTransaction ft WHERE ft.plan = :plan AND ft.externalId IN :externalIds")
     Set<String> findExistingExternalIds(@Param("plan") Plan plan, @Param("externalIds") Collection<String> externalIds);

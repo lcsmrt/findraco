@@ -61,12 +61,13 @@ public class FinancialTransactionCategoryController {
         return ResponseEntity.ok(new FinancialTransactionCategoryResponseDto(categoryService.update(id, dto, ctx)));
     }
 
-    @Operation(summary = "Deletes a transaction category")
+    @Operation(summary = "Deletes a transaction category, optionally moving its transactions, items and recurrences to another category")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(
             @PathVariable Long id,
+            @RequestParam(required = false) Long reassignTo,
             PlanContext ctx) {
-        categoryService.delete(id, ctx);
+        categoryService.delete(id, reassignTo, ctx);
         return ResponseEntity.noContent().build();
     }
 }
