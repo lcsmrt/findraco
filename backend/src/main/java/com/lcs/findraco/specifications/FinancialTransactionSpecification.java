@@ -30,11 +30,21 @@ public class FinancialTransactionSpecification {
         return (root, query, cb) -> cb.equal(root.get("type"), type);
     }
 
-    public static Specification<FinancialTransaction> categoryEquals(Long categoryId) {
+    /**
+     * Matches transactions in the category or in any of its children (CAT-09), so filtering by a
+     * parent returns the parent's and its children's transactions. LEFT join: a category is never
+     * duplicated (many-to-one), and the join does not interfere with the category-name ordering.
+     */
+    public static Specification<FinancialTransaction> categoryInTree(Long categoryId) {
         if (categoryId == null) {
             return (root, query, cb) -> null;
         }
-        return (root, query, cb) -> cb.equal(root.get("category").get("id"), categoryId);
+        return (root, query, cb) -> {
+            Join<Object, Object> category = root.join("category", JoinType.LEFT);
+            return cb.or(
+                    cb.equal(category.get("id"), categoryId),
+                    cb.equal(category.get("parent").get("id"), categoryId));
+        };
     }
 
     /**

@@ -260,8 +260,8 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `TransactionCrudIT` (or new IT) case: filtering by a parent returns parent and child transactions; filtering by a child returns only the child's
-- [ ] Full gate passes
+- [x] `TransactionCrudIT` (or new IT) case: filtering by a parent returns parent and child transactions; filtering by a child returns only the child's (new `TransactionCategoryFilterIT`, written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
 
 **Tests**: integration
 **Gate**: full

@@ -120,7 +120,7 @@ public class FinancialTransactionService {
         List<Specification<FinancialTransaction>> specs = new ArrayList<>(List.of(
                 FinancialTransactionSpecification.belongsToPlan(ctx.getPlan()),
                 FinancialTransactionSpecification.typeEquals(filter.getType()),
-                FinancialTransactionSpecification.categoryEquals(filter.getCategoryId()),
+                FinancialTransactionSpecification.categoryInTree(filter.getCategoryId()),
                 FinancialTransactionSpecification.hasParticipant(filter.getMemberId()),
                 FinancialTransactionSpecification.matchesSearchTerm(filter.getDescription()),
                 FinancialTransactionSpecification.startDateFrom(filter.getStartDateFrom()),
