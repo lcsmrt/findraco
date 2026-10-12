@@ -356,8 +356,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Schema/mapper tests: parent options filtered by type and root-ness; type change blocked with children; CREDIT clears limit; payload shape matches the API
-- [ ] Quick gate passes
+- [x] Schema/mapper tests: parent options filtered by type and root-ness; type change blocked with children; CREDIT clears limit; payload shape matches the API
+- [x] Quick gate passes (200 passed, 0 failed)
+
+> Note: the file also exports `CategoryFormSheetProvider` / `useCategoryFormSheet` (openCreate/openEdit), the replacement for `CategoryFormDialogProvider`; T14 mounts it and deletes the dialog.
 
 **Tests**: unit
 **Gate**: quick
