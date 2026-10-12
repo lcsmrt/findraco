@@ -76,11 +76,11 @@ T8 → T9
 
 **Done when**:
 
-- [ ] Round-trip parse(serialize(x)) = x for every field in the design's URL table; defaults are omitted on serialize
-- [ ] Unparseable values (non-numeric id, malformed date, unknown period/type/sort) fall back to that field's default
-- [ ] Custom range with `from > to` falls back to `this-month`
-- [ ] `resolvePeriodDates` resolves each preset relative to the injected `now` (saved `this-month` in a later month yields the later month)
-- [ ] Quick gate passes
+- [x] Round-trip parse(serialize(x)) = x for every field in the design's URL table; defaults are omitted on serialize
+- [x] Unparseable values (non-numeric id, malformed date, unknown period/type/sort) fall back to that field's default
+- [x] Custom range with `from > to` falls back to `this-month`
+- [x] `resolvePeriodDates` resolves each preset relative to the injected `now` (saved `this-month` in a later month yields the later month)
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
