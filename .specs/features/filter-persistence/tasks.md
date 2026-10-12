@@ -356,8 +356,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Test: applied state with `categoryId` and no display object round-trips through draft → apply with `categoryId` intact; explicitly clearing the category still removes it
-- [ ] Quick gate passes
+- [x] Test: applied state with `categoryId` and no display object round-trips through draft → apply with `categoryId` intact; explicitly clearing the category still removes it
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick

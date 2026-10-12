@@ -1,7 +1,6 @@
 import type {
   FinancialTransactionType,
   PagedFinancialTransactionsFilter,
-  FinancialTransactionCategory,
   PlanMember,
 } from "@/api/dtos";
 import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
@@ -22,15 +21,21 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/popover/Popover";
-import { format, parseISO } from "date-fns";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { maskCurrency } from "@/utils/string/masks";
 import { useState } from "react";
-import type { DateRange } from "react-day-picker";
+import {
+  fromDraft,
+  toDraft,
+  TYPE_ALL,
+  withDraftCategory,
+  type AppliedFilters,
+  type FilterDraft,
+  type MemberOption,
+} from "./transactionFilterDraft";
 
-const ISO = "yyyy-MM-dd";
-const TYPE_ALL = "ALL" as const;
+export type { AppliedFilters };
 
 const TYPE_LABELS: Record<FinancialTransactionType | typeof TYPE_ALL, string> = {
   ALL: "All",
@@ -38,67 +43,10 @@ const TYPE_LABELS: Record<FinancialTransactionType | typeof TYPE_ALL, string> = 
   DEBIT: "Debit",
 };
 
-// StandardCombobox requires an `id`; PlanMember keys on `userId`, so members are adapted to this shape.
-type MemberOption = { id: number; name: string };
-
 const toMemberOption = (member: PlanMember): MemberOption => ({
   id: member.userId,
   name: member.name,
 });
-
-type FilterDraft = {
-  type: FinancialTransactionType | typeof TYPE_ALL;
-  category: FinancialTransactionCategory | null;
-  member: MemberOption | null;
-  dateRange: DateRange | undefined;
-  amountMin: string;
-  amountMax: string;
-};
-
-export type AppliedFilters = {
-  filter: PagedFinancialTransactionsFilter;
-  categoryForDisplay: FinancialTransactionCategory | null;
-  memberForDisplay: MemberOption | null;
-};
-
-function toDraft(applied: AppliedFilters): FilterDraft {
-  const { filter, categoryForDisplay, memberForDisplay } = applied;
-  return {
-    type: filter.type ?? TYPE_ALL,
-    category: categoryForDisplay,
-    member: memberForDisplay,
-    dateRange:
-      filter.startDateFrom || filter.startDateTo
-        ? {
-            from: filter.startDateFrom
-              ? parseISO(filter.startDateFrom)
-              : undefined,
-            to: filter.startDateTo ? parseISO(filter.startDateTo) : undefined,
-          }
-        : undefined,
-    amountMin: filter.amountMin != null ? maskCurrency(String(Math.round(filter.amountMin * 100))) : "",
-    amountMax: filter.amountMax != null ? maskCurrency(String(Math.round(filter.amountMax * 100))) : "",
-  };
-}
-
-function fromDraft(draft: FilterDraft): AppliedFilters {
-  const filter: PagedFinancialTransactionsFilter = {};
-  if (draft.type !== TYPE_ALL) filter.type = draft.type;
-  if (draft.category) filter.categoryId = draft.category.id;
-  if (draft.member) filter.memberId = draft.member.id;
-  if (draft.dateRange?.from)
-    filter.startDateFrom = format(draft.dateRange.from, ISO);
-  if (draft.dateRange?.to) filter.startDateTo = format(draft.dateRange.to, ISO);
-  const minDigits = draft.amountMin.replace(/\D/g, "");
-  const maxDigits = draft.amountMax.replace(/\D/g, "");
-  if (minDigits) filter.amountMin = parseInt(minDigits, 10) / 100;
-  if (maxDigits) filter.amountMax = parseInt(maxDigits, 10) / 100;
-  return {
-    filter,
-    categoryForDisplay: draft.category,
-    memberForDisplay: draft.member,
-  };
-}
 
 export function countActiveFilters(
   filter: PagedFinancialTransactionsFilter,
@@ -197,7 +145,7 @@ export const TransactionFilterPopover = ({
             <StandardCombobox
               items={categories}
               value={draft.category}
-              onValueChange={(v) => setDraft((d) => ({ ...d, category: v }))}
+              onValueChange={(v) => setDraft((d) => withDraftCategory(d, v))}
               itemLabel={(c) => c.description}
               placeholder="All categories"
               clearable
