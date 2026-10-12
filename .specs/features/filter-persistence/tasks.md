@@ -174,10 +174,10 @@ T8 → T9
 
 **Done when**:
 
-- [ ] Updating a filter changes the URL and does not add a history entry; switching tab adds one
-- [ ] Updating one tab's filters leaves the other tab's params intact
-- [ ] Clear removes every Transactions param and nothing else
-- [ ] Quick gate passes
+- [x] Updating a filter changes the URL and does not add a history entry; switching tab adds one
+- [x] Updating one tab's filters leaves the other tab's params intact
+- [x] Clear removes every Transactions param and nothing else
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
