@@ -150,7 +150,7 @@ export const ResetPassword = () => {
 
       <form
         id="reset-password-form"
-        className="bg-card ring-primary/15 flex w-full max-w-xl flex-col items-center gap-5 rounded-lg p-5 ring-1"
+        className="bg-card border-border flex w-full max-w-xl flex-col items-center gap-5 rounded-lg border p-5 shadow-md"
         onSubmit={onSubmit}
       >
         <h1 className="text-foreground text-2xl font-bold">Reset password</h1>
