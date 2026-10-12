@@ -17,7 +17,7 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 | ------- | ------ |
 | Private categories (hidden from other members) | User chose "visible, but owned"; hiding rows changes authorization and dashboard totals. Stays in IDEAS ("Finer privacy controls"). |
 | More than two levels | User chose parent > child only. |
-| Automatic conversion of existing "Parent - Child" names | One-off data cleanup; the user reorganizes in the new tab (rename + set parent). |
+| Automatic conversion of existing "Parent - Child" names | The user reorganizes by hand in the new tab (rename + set parent); confirmed 2026-10-12. |
 | Percent-based per-member limit input | User chose absolute amount per member; the percent split is shown read-only. |
 | Category icons / colors | Not requested. |
 | Automatic categorization | Separate IDEAS item. |
@@ -34,7 +34,7 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 | Transactions on a parent | Transactions and items may use a parent directly; parent spend = direct spend + all children's spend | User accepted the recommended rollup | y |
 | Parent vs. child limit | A parent limit is consumed by the parent's direct spend plus all children; a child limit is independent, consumed by the child's own spend only, and never adds to or changes the parent limit | User decision ("child limit is just a narrower view") | y |
 | Per-member spend measure | A member's spend in a category is the sum of their participation `share_amount` on transactions in that category, not `created_by` | Matches the existing person breakdown and expense splitting (a 50/50 rent counts half each) | y |
-| Per-member spend with line items | An item's amount is attributed to members in the same proportion as the parent transaction's participation shares | Items have no split of their own (AD-007); proportional keeps per-member totals equal to the category total | y |
+| Per-member spend with line items | An item's amount is attributed to members in the same proportion as the parent transaction's participation shares | Items have no split of their own (AD-007); proportional keeps per-member totals equal to the category total; cents allocated by largest remainder. Provisional: user wants to revisit (IDEAS.md "Item-level splits") | y |
 | Per-member limits model | Limits are entered as an absolute amount per member; the category limit equals their sum and is not editable separately while per-member limits exist | User decision | y |
 | Members without a per-member limit | A member with no entry has no individual limit; their spend still counts toward the category spend and the category (sum) limit | Avoids hidden zero limits; the total stays honest | n |
 | Owned category visibility | Every member sees owned categories and their transactions; only attribution and limits are the owner's | User decision | y |

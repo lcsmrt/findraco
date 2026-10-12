@@ -58,6 +58,14 @@
 - **Date**: 2026-07-15
 - **Status**: active
 
+### AD-008
+- **Decision**: Category spend is computed per category × member from participation shares. A line item's amount is attributed to the transaction's participants in proportion to their shares, allocated in integer cents by the largest remainder method. Category settings tied to a member (per-member limits, ownership) are kept dormant when that member leaves the plan, never deleted, and apply again on rejoin.
+- **Reason**: Per-member limits and owned categories need a member axis on the item-aware breakdown; penny-exact allocation keeps Σ members == category total; keeping member data matches how transactions already survive removal.
+- **Trade-off**: Items cannot be assigned to one member explicitly; the proportional rule is provisional (IDEAS "Item-level splits").
+- **Scope**: Category breakdown (dashboard + Categories tab), category limits, plan membership.
+- **Date**: 2026-10-12
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: M5-03 Filter persistence (`.specs/features/filter-persistence/`) — merged to `main` and deployed 2026-10-11

@@ -153,6 +153,12 @@ Complete the Shared Plans experience.
   - Migration: existing "Divisão" credits can be linked to the expense they repay.
   - Not the same as Expense Splitting, which only splits between plan members.
 
+- **Item-level splits (revisit the item × member rule)**
+  - Raised 2026-10-12 during M5-04 (categories revamp); the user is not satisfied with the current rule and wants to come back to it.
+  - Today (M5-04, AD-008): a line item has no split of its own; its amount is attributed to members in proportion to the transaction's participation shares, allocated in cents by largest remainder.
+  - Alternative: items carry their own participants (Splitwise "by items" — e.g. "Cleaning is 100% Lívia's"), with the proportional rule as the fallback for items left unassigned. Needs an item split UI and an item-participants table.
+  - Open question: should the transaction split then be derived from the items (Splitwise) or stay independent (AD-007)?
+
 ## 8. Data, Privacy & Export
 
 Trust and ownership of data.

@@ -60,3 +60,4 @@ Logged in the spec's Assumptions table: per-member spend measured by participati
 - Percent-based entry for per-member limits.
 - Automatic conversion of existing "Parent - Child" names.
 - Hiding / archiving categories (YNAB, Actual Budget pattern).
+- Item-level splits: the proportional item × member rule is provisional; user wants to revisit (IDEAS.md "Item-level splits").
