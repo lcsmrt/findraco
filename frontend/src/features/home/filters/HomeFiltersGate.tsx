@@ -4,6 +4,7 @@ import { loadHomeFilters, saveHomeFilters } from "@/lib/filterStorage";
 import { useEffect, useRef, type ReactNode } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import {
+  CATEGORIES_PARAM_KEYS,
   OVERVIEW_PARAM_KEYS,
   PLAN_PARAM,
   parsePlanParam,
@@ -16,6 +17,7 @@ const HOME_PARAM_KEYS = [
   TAB_PARAM,
   ...OVERVIEW_PARAM_KEYS,
   ...TRANSACTION_PARAM_KEYS,
+  ...CATEGORIES_PARAM_KEYS,
 ];
 
 type HomeFiltersGateProps = {

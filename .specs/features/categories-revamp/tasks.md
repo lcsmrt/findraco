@@ -310,8 +310,8 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Round-trip and fallback tests for the new params; tab param accepts `categories`; saved state restores the categories period
-- [ ] Quick gate passes
+- [x] Round-trip and fallback tests for the new params; tab param accepts `categories`; saved state restores the categories period
+- [x] Quick gate passes (165 passed, 0 failed)
 
 **Tests**: unit
 **Gate**: quick

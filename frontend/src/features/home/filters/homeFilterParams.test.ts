@@ -1,12 +1,15 @@
 import { describe, expect, it } from "vitest";
 import {
+  parseCategoriesFilters,
   parseOverviewFilters,
   parseTab,
   parseTransactionFilters,
   resolvePeriodDates,
+  serializeCategoriesFilters,
   serializeOverviewFilters,
   serializeTab,
   serializeTransactionFilters,
+  type CategoriesFilters,
   type OverviewFilters,
   type TransactionFilters,
 } from "./homeFilterParams";
@@ -192,8 +195,87 @@ describe("tab codec", () => {
     expect(parseTab(params(serializeTab("transactions")))).toBe("transactions");
   });
 
+  it("round-trips categories", () => {
+    expect(serializeTab("categories")).toEqual({ tab: "categories" });
+    expect(parseTab(params(serializeTab("categories")))).toBe("categories");
+  });
+
   it("falls back to overview for an unknown tab", () => {
     expect(parseTab(params({ tab: "settings" }))).toBe("overview");
+  });
+});
+
+describe("categories codec", () => {
+  const DEFAULT_CATEGORIES: CategoriesFilters = {
+    period: "this-month",
+    customRange: null,
+  };
+
+  it.each(["this-month", "last-3m", "last-6m", "this-year"] as const)(
+    "round-trips preset %s",
+    (period) => {
+      const filters: CategoriesFilters = { period, customRange: null };
+      expect(
+        parseCategoriesFilters(params(serializeCategoriesFilters(filters))),
+      ).toEqual(filters);
+    },
+  );
+
+  it("round-trips a custom range under its own param names", () => {
+    const filters: CategoriesFilters = {
+      period: "this-month",
+      customRange: { from: "2026-09-01", to: "2026-09-30" },
+    };
+    const serialized = serializeCategoriesFilters(filters);
+    expect(serialized).toEqual({
+      categoriesPeriod: "custom",
+      categoriesPeriodFrom: "2026-09-01",
+      categoriesPeriodTo: "2026-09-30",
+    });
+    expect(parseCategoriesFilters(params(serialized))).toEqual(filters);
+  });
+
+  it("serializes last-3m as categoriesPeriod", () => {
+    expect(
+      serializeCategoriesFilters({ period: "last-3m", customRange: null }),
+    ).toEqual({ categoriesPeriod: "last-3m" });
+  });
+
+  it("omits defaults on serialize", () => {
+    expect(serializeCategoriesFilters(DEFAULT_CATEGORIES)).toEqual({});
+  });
+
+  it("returns defaults for empty params", () => {
+    expect(parseCategoriesFilters(params({}))).toEqual(DEFAULT_CATEGORIES);
+  });
+
+  it("falls back to this-month for an unknown period token", () => {
+    expect(
+      parseCategoriesFilters(params({ categoriesPeriod: "last-decade" })),
+    ).toEqual(DEFAULT_CATEGORIES);
+  });
+
+  it("falls back to this-month when the custom range is inverted or malformed", () => {
+    expect(
+      parseCategoriesFilters(
+        params({
+          categoriesPeriod: "custom",
+          categoriesPeriodFrom: "2026-09-30",
+          categoriesPeriodTo: "2026-09-01",
+        }),
+      ),
+    ).toEqual(DEFAULT_CATEGORIES);
+    expect(
+      parseCategoriesFilters(
+        params({ categoriesPeriod: "custom", categoriesPeriodFrom: "2026-13-01" }),
+      ),
+    ).toEqual(DEFAULT_CATEGORIES);
+  });
+
+  it("is independent of the Overview period", () => {
+    const both = params({ period: "this-year", categoriesPeriod: "last-6m" });
+    expect(parseCategoriesFilters(both).period).toBe("last-6m");
+    expect(parseOverviewFilters(both).period).toBe("this-year");
   });
 });
 

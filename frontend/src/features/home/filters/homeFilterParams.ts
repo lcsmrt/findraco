@@ -15,7 +15,7 @@ import {
 } from "date-fns";
 
 export type Period = "this-month" | "last-3m" | "last-6m" | "this-year";
-export type HomeTab = "overview" | "transactions";
+export type HomeTab = "overview" | "transactions" | "categories";
 export type SortDirection = "asc" | "desc";
 
 export type OverviewFilters = {
@@ -23,6 +23,12 @@ export type OverviewFilters = {
   /** Absolute range; when set it takes precedence over `period`. */
   customRange: { from: string; to: string } | null;
   memberId: number | null;
+};
+
+export type CategoriesFilters = {
+  period: Period;
+  /** Absolute range; when set it takes precedence over `period`. */
+  customRange: { from: string; to: string } | null;
 };
 
 export type TransactionFilters = {
@@ -43,6 +49,11 @@ export const OVERVIEW_PARAM_KEYS = [
   "periodTo",
   "overviewMember",
 ] as const;
+export const CATEGORIES_PARAM_KEYS = [
+  "categoriesPeriod",
+  "categoriesPeriodFrom",
+  "categoriesPeriodTo",
+] as const;
 export const TRANSACTION_PARAM_KEYS = [
   "type",
   "category",
@@ -56,6 +67,7 @@ export const TRANSACTION_PARAM_KEYS = [
   "size",
 ] as const;
 
+const TABS: readonly HomeTab[] = ["overview", "transactions", "categories"];
 const PERIODS: readonly Period[] = [
   "this-month",
   "last-3m",
@@ -107,7 +119,7 @@ export const parsePlanParam = (params: URLSearchParams): number | null =>
   parseId(params.get(PLAN_PARAM));
 
 export const parseTab = (params: URLSearchParams): HomeTab =>
-  params.get(TAB_PARAM) === "transactions" ? "transactions" : DEFAULT_TAB;
+  TABS.find((t) => t === params.get(TAB_PARAM)) ?? DEFAULT_TAB;
 
 export const serializeTab = (tab: HomeTab): Record<string, string> =>
   tab === DEFAULT_TAB ? {} : { [TAB_PARAM]: tab };
@@ -144,6 +156,39 @@ export const serializeOverviewFilters = (
   }
   if (filters.memberId != null) out.overviewMember = String(filters.memberId);
   return out;
+};
+
+export const parseCategoriesFilters = (
+  params: URLSearchParams,
+): CategoriesFilters => {
+  const rawPeriod = params.get("categoriesPeriod");
+
+  if (rawPeriod === "custom") {
+    const from = parseDate(params.get("categoriesPeriodFrom"));
+    const to = parseDate(params.get("categoriesPeriodTo"));
+    if (from && to && from <= to) {
+      return { period: DEFAULT_PERIOD, customRange: { from, to } };
+    }
+    return { period: DEFAULT_PERIOD, customRange: null };
+  }
+
+  const period = PERIODS.find((p) => p === rawPeriod) ?? DEFAULT_PERIOD;
+  return { period, customRange: null };
+};
+
+export const serializeCategoriesFilters = (
+  filters: CategoriesFilters,
+): Record<string, string> => {
+  if (filters.customRange) {
+    return {
+      categoriesPeriod: "custom",
+      categoriesPeriodFrom: filters.customRange.from,
+      categoriesPeriodTo: filters.customRange.to,
+    };
+  }
+  return filters.period !== DEFAULT_PERIOD
+    ? { categoriesPeriod: filters.period }
+    : {};
 };
 
 export const parseTransactionFilters = (

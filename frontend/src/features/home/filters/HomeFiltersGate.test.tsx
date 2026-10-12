@@ -113,6 +113,43 @@ describe("HomeFiltersGate", () => {
     expect(childRenders.every((s) => s === "?plan=5")).toBe(true);
   });
 
+  it("restores the saved Categories tab and period", () => {
+    localStorage.setItem(
+      "homeFilters:1:5",
+      "plan=5&tab=categories&categoriesPeriod=last-6m",
+    );
+
+    renderAt("/");
+
+    expect(params()).toEqual({
+      plan: "5",
+      tab: "categories",
+      categoriesPeriod: "last-6m",
+    });
+    expect(filters.tab).toBe("categories");
+    expect(filters.categories).toEqual({ period: "last-6m", customRange: null });
+  });
+
+  it("saves a Categories period change", () => {
+    renderAt("/?plan=5&tab=categories");
+
+    act(() =>
+      filters.updateCategories((c) => ({ ...c, period: "this-year" })),
+    );
+
+    expect(localStorage.getItem("homeFilters:1:5")).toBe(
+      "plan=5&tab=categories&categoriesPeriod=this-year",
+    );
+  });
+
+  it("applies a Categories period link that has no plan to the active plan", () => {
+    localStorage.setItem("homeFilters:1:5", "plan=5&member=3");
+
+    renderAt("/?categoriesPeriod=last-3m");
+
+    expect(params()).toEqual({ categoriesPeriod: "last-3m", plan: "5" });
+  });
+
   it("applies URL params for the active plan and saves them as the new state", () => {
     localStorage.setItem("homeFilters:1:5", "plan=5&member=3");
 
