@@ -69,15 +69,10 @@
 ## Handoff
 
 - **Feature**: M5-04 Categories revamp (`.specs/features/categories-revamp/`). Branch `feat/categories-revamp`, not pushed or merged
-- **Phase / Task**: Execute. T1–T24 and fix tasks F1–F5 (verification iteration 1) are committed. Verifier iteration 1 = FAIL (`validation.md`); gaps 1–4 have been addressed since then
-- **Completed**: Backend (V11 schema, hierarchy rules, delete with reassignment + usage endpoint, `ItemShareAllocator`, `CategorySpendingService`/assembler, `/spending`, per-member limits, owners, dormant former members). Frontend (Categories tab, form sheet, delete dialog with usage counts, grouped picker/filter/chart, per-member rows, owner badge, participants follow the category). Unit tests green: frontend 268, backend pure unit tests green
+- **Phase / Task**: Validate. Verifier iteration 3 = PASS (`validation.md`); full backend `./mvnw verify` and frontend tests green. First hands-on UAT done by the user (OK overall)
+- **Completed**: T1–T24, F1–F5, verifier gap fix (zero-total member shares). `dev_finsight` re-seeded (`test@findraco.local` owner, `partner@findraco.local` editor, password `Findraco#2026`)
 - **In-progress** (file:line): none
-- **Next step**: with the DB tunnel up:
-  1. `cd backend && ./mvnw verify` (all new `*IT` + JaCoCo); fix failures.
-  2. Tick the PENDING "Full gate passes" boxes in `tasks.md`.
-  3. Re-dispatch the Verifier (iteration 2) with the IT gate and the 12 IT-level mutations listed in `validation.md`.
-  4. Re-seed `dev_finsight`, run the app, and hand it to the user for hands-on UAT. The user wants to judge by using the screens, not by reading reports, so keep updates short.
-  5. Update `.specs/codebase/TESTING.md`: it still names `CategoryBreakdownAssembler`.
-- **Blockers**: DB tunnel down (2026-10-12). `npm run lint` already fails on main with 23 errors in storybook/table files; branch adds none
+- **Next step**: UI/UX polish round with the user. Agreed first item: make per-member limit status visible: (1) "View as" member filter on the Categories tab (that member's spend vs their own limit; categories without a personal limit show spend only, limit marked shared, no % bar); (2) same rule on the member-filtered Overview (today it compares a member's share against the whole category limit, `CategorySpendingAssembler` `Limits.forRow`); (3) unfiltered: badge naming who is over, member rows expanded by default when a category has per-member limits. Then ship; next roadmap item is M5-05 Claude MCP connector
+- **Blockers**: none (DB tunnel up 2026-10-12). `npm run lint` fails on main with 23 pre-existing storybook/table errors; branch adds none
 - **Uncommitted files**: none
 - **Branch**: feat/categories-revamp
