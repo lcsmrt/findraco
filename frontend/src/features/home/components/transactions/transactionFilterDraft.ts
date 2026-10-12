@@ -19,6 +19,8 @@ export type FilterDraft = {
   /** Kept apart from `category`, which is null until the category name has loaded. */
   categoryId: number | null;
   category: FinancialTransactionCategory | null;
+  /** Kept apart from `member`, which is null until the plan members have loaded. */
+  memberId: number | null;
   member: MemberOption | null;
   dateRange: DateRange | undefined;
   amountMin: string;
@@ -37,6 +39,7 @@ export function toDraft(applied: AppliedFilters): FilterDraft {
     type: filter.type ?? TYPE_ALL,
     categoryId: filter.categoryId ?? null,
     category: categoryForDisplay,
+    memberId: filter.memberId ?? null,
     member: memberForDisplay,
     dateRange:
       filter.startDateFrom || filter.startDateTo
@@ -57,11 +60,16 @@ export const withDraftCategory = (
   category: FinancialTransactionCategory | null,
 ): FilterDraft => ({ ...draft, category, categoryId: category?.id ?? null });
 
+export const withDraftMember = (
+  draft: FilterDraft,
+  member: MemberOption | null,
+): FilterDraft => ({ ...draft, member, memberId: member?.id ?? null });
+
 export function fromDraft(draft: FilterDraft): AppliedFilters {
   const filter: PagedFinancialTransactionsFilter = {};
   if (draft.type !== TYPE_ALL) filter.type = draft.type;
   if (draft.categoryId != null) filter.categoryId = draft.categoryId;
-  if (draft.member) filter.memberId = draft.member.id;
+  if (draft.memberId != null) filter.memberId = draft.memberId;
   if (draft.dateRange?.from)
     filter.startDateFrom = format(draft.dateRange.from, ISO);
   if (draft.dateRange?.to) filter.startDateTo = format(draft.dateRange.to, ISO);

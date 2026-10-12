@@ -60,7 +60,7 @@ T8 → T9
 ### Phase 4: Verification fixes (validation.md iteration 1)
 
 ```
-T10 → T11 → T12 → T13 → T14
+T10 → T11 → T12 → T13 → T14 → T15
 ```
 
 ---
@@ -380,3 +380,21 @@ T10 → T11 → T12 → T13 → T14
 
 **Tests**: unit
 **Gate**: build
+
+---
+
+### T15: Popover keeps member before members load
+
+**What**: Same pattern as T13 for the member picker: the draft holds `memberId` apart from the display object (`withDraftMember`).
+**Where**: `frontend/src/features/home/components/transactions/transactionFilterDraft.ts`
+**Depends on**: T14
+**Reuses**: T13 pattern
+**Requirement**: FPERS-10
+
+**Done when**:
+
+- [x] Test: applied `memberId` with no display object survives draft → apply; clearing the member removes it; picking a member applies it
+- [x] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick

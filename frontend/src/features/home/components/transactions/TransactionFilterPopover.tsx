@@ -30,6 +30,7 @@ import {
   toDraft,
   TYPE_ALL,
   withDraftCategory,
+  withDraftMember,
   type AppliedFilters,
   type FilterDraft,
   type MemberOption,
@@ -161,7 +162,7 @@ export const TransactionFilterPopover = ({
               <StandardCombobox
                 items={members.map(toMemberOption)}
                 value={draft.member}
-                onValueChange={(v) => setDraft((d) => ({ ...d, member: v }))}
+                onValueChange={(v) => setDraft((d) => withDraftMember(d, v))}
                 itemLabel={(m) => m.name}
                 placeholder="All members"
                 clearable
