@@ -3,6 +3,7 @@ package com.lcs.findraco.services;
 import com.lcs.findraco.dtos.request.FinancialTransactionCategoryFilterDto;
 import com.lcs.findraco.dtos.request.FinancialTransactionCategoryRequestDto;
 import com.lcs.findraco.dtos.request.MemberLimitDto;
+import com.lcs.findraco.dtos.response.CategoryUsageDto;
 import com.lcs.findraco.dtos.response.FinancialTransactionCategoryResponseDto;
 import com.lcs.findraco.exceptions.FinancialTransactionCategoryExceptions;
 import com.lcs.findraco.models.CategoryMemberLimit;
@@ -65,6 +66,19 @@ public class FinancialTransactionCategoryService {
     public FinancialTransactionCategory findById(Long id, PlanContext ctx) {
         return categoryRepository.findByIdAndPlan(id, ctx.getPlan())
                 .orElseThrow(() -> new FinancialTransactionCategoryExceptions.FinancialTransactionCategoryNotFoundException(id));
+    }
+
+    /** Usage counts of a category of the plan (CAT-10, P1 Sub AC 18); not in the plan → 404. Any member may read it. */
+    @Transactional(readOnly = true)
+    public CategoryUsageDto getUsage(Long id, PlanContext ctx) {
+        return usageOf(findById(id, ctx));
+    }
+
+    private CategoryUsageDto usageOf(FinancialTransactionCategory category) {
+        return new CategoryUsageDto(
+                transactionRepository.countByCategory(category),
+                transactionItemRepository.countByCategory(category),
+                recurrenceDefinitionRepository.countByCategory(category));
     }
 
     @Transactional(readOnly = true)
@@ -281,15 +295,13 @@ public class FinancialTransactionCategoryService {
             throw new FinancialTransactionCategoryExceptions.CategoryHasChildrenException(id);
         }
 
-        long transactions = transactionRepository.countByCategory(category);
-        long items = transactionItemRepository.countByCategory(category);
-        long recurrenceDefinitions = recurrenceDefinitionRepository.countByCategory(category);
-        boolean inUse = transactions + items + recurrenceDefinitions > 0;
+        CategoryUsageDto usage = usageOf(category);
 
-        if (inUse && target == null) {
-            throw new FinancialTransactionCategoryExceptions.CategoryInUseException(id, transactions, items, recurrenceDefinitions);
+        if (usage.inUse() && target == null) {
+            throw new FinancialTransactionCategoryExceptions.CategoryInUseException(
+                    id, usage.getTransactions(), usage.getItems(), usage.getRecurrenceDefinitions());
         }
-        if (inUse) {
+        if (usage.inUse()) {
             transactionRepository.reassignCategory(category, target);
             transactionItemRepository.reassignCategory(category, target);
             recurrenceDefinitionRepository.reassignCategory(category, target);

@@ -672,7 +672,7 @@ T21 → T22 → T23 → T24
 
 ## Fix tasks (verification iteration 1)
 
-Gaps 1 and 2 from `validation.md` (FAIL, iteration 1).
+Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec amendment in `50472da` (P1 Sub AC 17–18, P3 AC 6).
 
 ### F1: Former owner shown in the Categories tab
 
@@ -720,6 +720,76 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1).
 
 **Tests**: integration
 **Gate**: full
+
+---
+
+### F3: Category usage endpoint
+
+**What**: `GET {FINANCIAL_TRANSACTION_CATEGORY}/{id}/usage` → `CategoryUsageDto { transactions, items, recurrenceDefinitions }` (longs), plan-scoped (404 when not in the plan), readable by any member. Reuses the three `countByCategory` queries the delete already runs for its 409 message (now one shared `usageOf` helper).
+**Where**: `backend/src/main/java/com/lcs/findraco/dtos/response/CategoryUsageDto.java`, `backend/src/main/java/com/lcs/findraco/services/FinancialTransactionCategoryService.java`, `backend/src/main/java/com/lcs/findraco/controllers/FinancialTransactionCategoryController.java`, `backend/src/test/java/com/lcs/findraco/services/CategoryDeleteIT.java`
+**Depends on**: None
+**Reuses**: T3 count queries
+**Requirement**: CAT-10 (P1 Sub AC 18)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `backend-endpoint`
+
+**Done when**:
+
+- [x] `CategoryDeleteIT`: counts 2 / 1 / 3 for a category used by each kind (read by a VIEWER); 0 / 0 / 0 for an unused category; 404 for another plan's category (written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile gate passed)
+
+**Tests**: integration
+**Gate**: full
+
+---
+
+### F4: Delete dialog asks for a target up front
+
+**What**: `useGetCategoryUsage` service hook (key `["financialTransactionCategoryUsage", planId, id]`, invalidated by category and transaction mutations). `DeleteCategoryDialog` loads the counts on open, shows them, and requires a target when any count is above zero before sending the delete; the targetless-probe-then-409 flow and its T13 `SPEC_DEVIATION` are removed (an unexpected 409 is shown as an error message).
+**Where**: `frontend/src/api/services/useFinancialTransactionCategoryService.ts` (+ test), `frontend/src/api/dtos/financialTransactionCategory.ts`, `frontend/src/features/home/components/categories/DeleteCategoryDialog.tsx` (+ logic test)
+**Depends on**: F3
+**Reuses**: T13 dialog and target picker
+**Requirement**: CAT-10 (P1 Sub AC 17)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `api-integration`
+
+**Done when**:
+
+- [ ] Hook test: query key includes plan and id; GET `.../{id}/usage`
+- [ ] Logic test: target required iff any count > 0; no delete request without a target when required
+- [ ] Quick gate + build pass; lint no new errors
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+
+### F5: Participants follow the selected category
+
+**What**: In `TransactionFormDrawer`, while creating (incl. duplicate) and the participants were not edited by hand, selecting a category sets the participants from it: active owner at 100%, otherwise (no owner, former owner, cleared) the form's default participants. Edit mode never changes participants automatically.
+**Where**: `frontend/src/features/home/components/transactions/TransactionFormDrawer.tsx` (+ test)
+**Depends on**: None
+**Reuses**: T24 owner default
+**Requirement**: CAT-16 (P3 AC 6, amended)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `form-creation`
+
+**Done when**:
+
+- [ ] Tests: owned → owner; owned then unowned → default; owned then another owned → new owner; after a manual participant edit → no change; edit mode → no change
+- [ ] Quick gate + build pass; lint no new errors
+
+**Tests**: unit
+**Gate**: quick + build
 
 ---
 

@@ -4,6 +4,7 @@ import com.lcs.findraco.dtos.request.CategorySpendingFilterDto;
 import com.lcs.findraco.dtos.request.FinancialTransactionCategoryFilterDto;
 import com.lcs.findraco.dtos.request.FinancialTransactionCategoryRequestDto;
 import com.lcs.findraco.dtos.response.CategorySpendingDto;
+import com.lcs.findraco.dtos.response.CategoryUsageDto;
 import com.lcs.findraco.dtos.response.FinancialTransactionCategoryResponseDto;
 import com.lcs.findraco.dtos.response.PagedResponseDto;
 import com.lcs.findraco.security.PlanContext;
@@ -50,7 +51,15 @@ public class FinancialTransactionCategoryController {
         return ResponseEntity.ok(categoryService.getById(id, ctx));
     }
 
-    @Operation(summary = "Fetches all transaction categories for the plan")
+    @Operation(summary = "Counts the transactions, items and recurrence definitions that use a transaction category")
+    @GetMapping("/{id}/usage")
+    public ResponseEntity<CategoryUsageDto> getCategoryUsage(
+            @PathVariable Long id,
+            PlanContext ctx) {
+        return ResponseEntity.ok(categoryService.getUsage(id, ctx));
+    }
+
+        @Operation(summary = "Fetches all transaction categories for the plan")
     @GetMapping
     public ResponseEntity<PagedResponseDto<FinancialTransactionCategoryResponseDto>> getAllCategories(
             @ParameterObject @ModelAttribute @Valid FinancialTransactionCategoryFilterDto filter,

@@ -2,6 +2,7 @@ package com.lcs.findraco.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,6 +11,7 @@ import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
+import com.lcs.findraco.models.PlanRole;
 import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.models.RecurrenceMode;
 import com.lcs.findraco.models.TransactionItem;
@@ -31,7 +33,8 @@ import org.springframework.test.web.servlet.ResultActions;
 
 /**
  * Through-the-API proof of category delete with reassignment (spec P1 "Two-level subcategories"
- * AC 14-16 and the "delete in use" edge case; CAT-10).
+ * AC 14-16 and the "delete in use" edge case; CAT-10), and of the usage counts the delete dialog
+ * reads first (AC 18).
  */
 class CategoryDeleteIT extends AbstractIntegrationTest {
 
@@ -218,6 +221,67 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         assertThat(transactionCategoryId(jdbc, direct.getId())).isEqualTo(source.getId());
         assertThat(itemCategoryId(jdbc, withItem.getId())).isEqualTo(source.getId());
         assertThat(definitionCategoryId(jdbc, definition.getId())).isEqualTo(source.getId());
+    }
+
+    // AC 18: one count per reference kind, readable by any member (here a VIEWER).
+    @Test
+    void usageCountsTransactionsItemsAndRecurrenceDefinitionsForAnyMember() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User viewer = fixtures.aUser();
+        fixtures.addMember(plan, viewer, PlanRole.VIEWER);
+        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
+        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
+        fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, source);
+        transactionWithItem(plan, owner, other, source);
+        recurrenceDefinition(plan, owner, source);
+        recurrenceDefinition(plan, owner, source);
+        recurrenceDefinition(plan, owner, source);
+
+        JsonNode usage = readUsage(fetchUsage(plan, viewer, source.getId()).andExpect(status().isOk()));
+
+        assertThat(usage.get("transactions").asLong()).isEqualTo(2L);
+        assertThat(usage.get("items").asLong()).isEqualTo(1L);
+        assertThat(usage.get("recurrenceDefinitions").asLong()).isEqualTo(3L);
+    }
+
+    // AC 18: an unused category reports zero for every kind.
+    @Test
+    void usageOfAnUnusedCategoryIsZero() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        FinancialTransactionCategory unused = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Unused");
+        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
+        fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, other);
+
+        JsonNode usage = readUsage(fetchUsage(plan, owner, unused.getId()).andExpect(status().isOk()));
+
+        assertThat(usage.get("transactions").asLong()).isZero();
+        assertThat(usage.get("items").asLong()).isZero();
+        assertThat(usage.get("recurrenceDefinitions").asLong()).isZero();
+    }
+
+    // AC 18 + privacy rule: a category of another plan → 404.
+    @Test
+    void usageOfACategoryFromAnotherPlanRespondsWith404() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User otherOwner = fixtures.aUser();
+        Plan otherPlan = fixtures.aPlan(otherOwner);
+        FinancialTransactionCategory foreign = fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Groceries");
+        fixtures.aTransaction(otherPlan, otherOwner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, foreign);
+
+        fetchUsage(plan, owner, foreign.getId()).andExpect(status().isNotFound());
+    }
+
+    private ResultActions fetchUsage(Plan plan, User asUser, Long id) throws Exception {
+        return mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}/usage", plan.getId(), id)
+                .with(testAuthHelper.asUser(asUser)));
+    }
+
+    private JsonNode readUsage(ResultActions result) throws Exception {
+        return objectMapper.readTree(result.andReturn().getResponse().getContentAsString());
     }
 
     private ResultActions deleteCategory(Plan plan, User asUser, Long id, Long reassignTo) throws Exception {
