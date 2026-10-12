@@ -102,9 +102,9 @@ T8 → T9
 
 **Done when**:
 
-- [ ] Different users / plans never read each other's state
-- [ ] A throwing `localStorage` (getItem/setItem) makes save a no-op and load return `null`, no exception escapes
-- [ ] Quick gate passes
+- [x] Different users / plans never read each other's state
+- [x] A throwing `localStorage` (getItem/setItem) makes save a no-op and load return `null`, no exception escapes
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
