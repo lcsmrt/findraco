@@ -1,32 +1,42 @@
 package com.lcs.findraco.services;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
+import com.lcs.findraco.models.TransactionParticipant;
 import com.lcs.findraco.models.User;
+import com.lcs.findraco.repositories.CategoryMemberLimitRepository;
 import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 
 /**
  * Through-the-API proof of {@code GET .../financial-transaction-category/spending} (spec P1 "Categories
  * tab" AC 2-3 and 8; CAT-01, CAT-02): every category of the plan as DEBIT then CREDIT trees, children
- * nested, with the period's spend and limit usage per row, readable by any plan member.
+ * nested, with the period's spend and limit usage per row, readable by any plan member. Also the
+ * per-member rows (P2 AC 2, 5-6, 11-12; CAT-12, CAT-14), owned rows (P3 AC 5, 7; CAT-14, CAT-16) and
+ * former members end to end, so the service's active-member wiring is exercised for real.
  */
 class CategorySpendingIT extends AbstractIntegrationTest {
 
@@ -40,6 +50,9 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
     @Autowired
     private FinancialTransactionRepository transactionRepository;
+
+    @Autowired
+    private CategoryMemberLimitRepository memberLimitRepository;
 
     @Test
     void returnsDebitThenCreditTreesWithNestedChildrenAndLimitUsagePerRow() throws Exception {
@@ -131,6 +144,132 @@ class CategorySpendingIT extends AbstractIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // P2 independent test (AC 2, 5, 6): limit = sum of the entries; each member's share against their own limit.
+    @Test
+    void perMemberLimitsSumToTheRowLimitAndEachMemberSpendsTheirShare() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User partner = fixtures.aUser();
+        fixtures.addMember(plan, partner, PlanRole.EDITOR);
+        FinancialTransactionCategory groceries = withMemberLimits(
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries"),
+                Map.of(owner, "260.00", partner, "140.00"));
+        aSplitTransaction(plan, owner, groceries, "100.00", Map.of(owner, "50.00", partner, "50.00"));
+
+        JsonNode row = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Groceries");
+
+        assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("100.00");
+        assertThat(row.get("limit").decimalValue()).isEqualByComparingTo("400.00");
+        assertThat(row.get("percentUsed").decimalValue()).isEqualByComparingTo("25.00");
+        assertThat(row.get("overLimit").asBoolean()).isFalse();
+        assertThat(row.get("members")).hasSize(2);
+
+        JsonNode mine = memberRow(row, owner);
+        assertThat(mine.get("spent").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(mine.get("limit").decimalValue()).isEqualByComparingTo("260.00");
+        assertThat(mine.get("remaining").decimalValue()).isEqualByComparingTo("210.00");
+        assertThat(mine.get("overLimit").asBoolean()).isFalse();
+        assertThat(mine.get("active").asBoolean()).isTrue();
+
+        JsonNode theirs = memberRow(row, partner);
+        assertThat(theirs.get("spent").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(theirs.get("limit").decimalValue()).isEqualByComparingTo("140.00");
+        assertThat(theirs.get("remaining").decimalValue()).isEqualByComparingTo("90.00");
+        assertThat(theirs.get("overLimit").asBoolean()).isFalse();
+        assertThat(theirs.get("active").asBoolean()).isTrue();
+    }
+
+    // P2 AC 11-12 (CAT-14): a removed member's entry is listed inactive and left out of the sum; rejoining restores it.
+    @Test
+    void removedMembersEntryIsInactiveAndOutOfTheSumUntilTheyRejoin() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User partner = fixtures.aUser();
+        fixtures.addMember(plan, partner, PlanRole.EDITOR);
+        FinancialTransactionCategory groceries = withMemberLimits(
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries"),
+                Map.of(owner, "260.00", partner, "140.00"));
+        aSplitTransaction(plan, owner, groceries, "100.00", Map.of(owner, "50.00", partner, "50.00"));
+
+        removeMember(plan, owner, partner).andExpect(status().isNoContent());
+
+        JsonNode removed = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Groceries");
+        assertThat(removed.get("spent").decimalValue()).isEqualByComparingTo("100.00");
+        assertThat(removed.get("limit").decimalValue()).isEqualByComparingTo("260.00");
+        assertThat(memberRow(removed, owner).get("active").asBoolean()).isTrue();
+        JsonNode former = memberRow(removed, partner);
+        assertThat(former.get("active").asBoolean()).isFalse();
+        assertThat(former.get("limit").decimalValue()).isEqualByComparingTo("140.00");
+        assertThat(former.get("spent").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(former.get("remaining").isNull()).isTrue();
+        assertThat(former.get("percentUsed").isNull()).isTrue();
+        assertThat(former.get("overLimit").isNull()).isTrue();
+
+        rejoin(plan, owner, partner);
+
+        JsonNode rejoined = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Groceries");
+        assertThat(rejoined.get("limit").decimalValue()).isEqualByComparingTo("400.00");
+        JsonNode back = memberRow(rejoined, partner);
+        assertThat(back.get("active").asBoolean()).isTrue();
+        assertThat(back.get("limit").decimalValue()).isEqualByComparingTo("140.00");
+        assertThat(back.get("remaining").decimalValue()).isEqualByComparingTo("90.00");
+    }
+
+    // P3 independent test (AC 5; CAT-16): an owned row counts the owner's share only; the other share is listed without a limit.
+    @Test
+    void ownedCategoryCountsTheOwnersShareOnly() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User partner = fixtures.aUser();
+        fixtures.addMember(plan, partner, PlanRole.EDITOR);
+        FinancialTransactionCategory professional = owned(
+                withLimit(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional"), "100.00"), owner);
+        aSplitTransaction(plan, owner, professional, "100.00", Map.of(owner, "70.00", partner, "30.00"));
+
+        JsonNode row = rowNamed(readSpending(fetchSpending(plan, partner).andExpect(status().isOk())), "Professional");
+
+        assertThat(row.get("ownerId").asLong()).isEqualTo(owner.getId());
+        assertThat(row.get("ownerActive").asBoolean()).isTrue();
+        assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("70.00");
+        assertThat(row.get("limit").decimalValue()).isEqualByComparingTo("100.00");
+        assertThat(row.get("percentUsed").decimalValue()).isEqualByComparingTo("70.00");
+        assertThat(row.get("members")).hasSize(1);
+        JsonNode other = memberRow(row, partner);
+        assertThat(other.get("spent").decimalValue()).isEqualByComparingTo("30.00");
+        assertThat(other.get("limit").isNull()).isTrue();
+        assertThat(other.get("active").asBoolean()).isTrue();
+    }
+
+    // P3 AC 7 (CAT-14): a removed owner is reported as a former member and still attributes their spend.
+    @Test
+    void removedOwnerIsReportedInactiveAndStillCountsTheirShare() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User partner = fixtures.aUser();
+        fixtures.addMember(plan, partner, PlanRole.EDITOR);
+        FinancialTransactionCategory professional = owned(
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional"), partner);
+        fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Courses", professional);
+        aSplitTransaction(plan, partner, professional, "100.00", Map.of(partner, "70.00", owner, "30.00"));
+
+        removeMember(plan, owner, partner).andExpect(status().isNoContent());
+
+        JsonNode row = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Professional");
+        assertThat(row.get("ownerId").asLong()).isEqualTo(partner.getId());
+        assertThat(row.get("ownerActive").asBoolean()).isFalse();
+        assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("70.00");
+        assertThat(row.get("children")).singleElement().satisfies(child -> {
+            assertThat(child.get("ownerId").asLong()).isEqualTo(partner.getId());
+            assertThat(child.get("ownerActive").asBoolean()).isFalse();
+        });
+        assertThat(memberRow(row, owner).get("spent").decimalValue()).isEqualByComparingTo("30.00");
+
+        rejoin(plan, owner, partner);
+
+        JsonNode rejoined = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Professional");
+        assertThat(rejoined.get("ownerActive").asBoolean()).isTrue();
+    }
+
     private record Seed(FinancialTransactionCategory food, FinancialTransactionCategory delivery) {}
 
     /**
@@ -157,6 +296,80 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     private FinancialTransactionCategory withLimit(FinancialTransactionCategory category, String limit) {
         category.setSpendingLimit(new BigDecimal(limit));
         return categoryRepository.save(category);
+    }
+
+    private FinancialTransactionCategory withMemberLimits(FinancialTransactionCategory category, Map<User, String> amounts) {
+        amounts.forEach((member, amount) -> {
+            CategoryMemberLimit entry = new CategoryMemberLimit();
+            entry.setCategory(category);
+            entry.setMember(member);
+            entry.setAmount(new BigDecimal(amount));
+            memberLimitRepository.save(entry);
+        });
+        return category;
+    }
+
+    private FinancialTransactionCategory owned(FinancialTransactionCategory category, User owner) {
+        category.setOwner(owner);
+        return categoryRepository.save(category);
+    }
+
+    /** A transaction dated today split across members by the given share amounts. */
+    private void aSplitTransaction(Plan plan, User createdBy, FinancialTransactionCategory category, String amount,
+                                   Map<User, String> shares) {
+        FinancialTransaction transaction = new FinancialTransaction();
+        transaction.setCategory(category);
+        transaction.setPlan(plan);
+        transaction.setCreatedBy(createdBy);
+        transaction.setType(FinancialTransactionType.DEBIT);
+        transaction.setAmount(new BigDecimal(amount));
+        transaction.setDescription("Split transaction");
+        transaction.setStartDate(TODAY);
+        shares.forEach((member, share) -> {
+            TransactionParticipant participant = new TransactionParticipant();
+            participant.setTransaction(transaction);
+            participant.setMember(member);
+            participant.setShareAmount(new BigDecimal(share));
+            transaction.getParticipants().add(participant);
+        });
+        transactionRepository.save(transaction);
+    }
+
+    private ResultActions removeMember(Plan plan, User asUser, User member) throws Exception {
+        return mockMvc.perform(delete(ApiRoutes.PLAN + "/{id}/members/{userId}", plan.getId(), member.getId())
+                .with(testAuthHelper.asUser(asUser)));
+    }
+
+    /** The removed member accepts a new link invitation from the plan OWNER. */
+    private void rejoin(Plan plan, User owner, User member) throws Exception {
+        Map<String, Object> body = new HashMap<>();
+        body.put("role", PlanRole.EDITOR.name());
+        body.put("type", "LINK");
+        String token = readSpending(mockMvc.perform(post(ApiRoutes.PLAN_INVITATION, plan.getId())
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isCreated())).get("token").asText();
+        mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(member)))
+                .andExpect(status().isCreated());
+    }
+
+    private static JsonNode rowNamed(JsonNode tree, String name) {
+        for (JsonNode row : tree) {
+            if (row.get("name").asText().equals(name)) {
+                return row;
+            }
+        }
+        throw new AssertionError("No spending row named " + name + " in " + tree);
+    }
+
+    private static JsonNode memberRow(JsonNode row, User member) {
+        for (JsonNode entry : row.get("members")) {
+            if (entry.get("memberId").asLong() == member.getId()) {
+                return entry;
+            }
+        }
+        throw new AssertionError("No member row for " + member.getId() + " in " + row);
     }
 
     private ResultActions fetchSpending(Plan plan, User asUser) throws Exception {

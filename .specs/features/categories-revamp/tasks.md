@@ -700,6 +700,29 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1).
 
 ---
 
+### F2: `/spending` IT for per-member, owned and former-member rows
+
+**What**: `CategorySpendingIT` cases through the real endpoint: the P2 independent test (Groceries 260/140 → limit 400, a 50/50 R$100 transaction gives each member 50 against their own limit); the P3 independent test (owned row counts the owner's 70 only, the other 30 listed without a limit); a removed member's entry `active=false` and out of the sum, active again with the same amount after rejoining; a removed owner reported `ownerActive=false` on the root and its child, true again after rejoining.
+**Where**: `backend/src/test/java/com/lcs/findraco/services/CategorySpendingIT.java`
+**Depends on**: F1
+**Reuses**: `CategoryMemberLimitIT` / `CategoryOwnerIT` remove and rejoin helpers
+**Requirement**: CAT-12 (P2 AC 6), CAT-14 (P2 AC 11-12, P3 AC 7), CAT-16 (P3 AC 5)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] 4 new `CategorySpendingIT` tests covering the cases above; the "service passes an empty active-member set" mutation fails the P2 and P3 tests (`active`, `limit`, `ownerActive` asserted) (written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile gate passed)
+
+**Tests**: integration
+**Gate**: full
+
+---
+
 ## Phase Execution Map
 
 ```
