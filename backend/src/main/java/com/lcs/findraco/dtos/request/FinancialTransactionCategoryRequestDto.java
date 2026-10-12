@@ -16,6 +16,8 @@ public class FinancialTransactionCategoryRequestDto {
 
     private BigDecimal spendingLimit;
 
+    private Long parentId;
+
     public FinancialTransactionType getType() {
         return type;
     }
@@ -26,5 +28,9 @@ public class FinancialTransactionCategoryRequestDto {
 
     public BigDecimal getSpendingLimit() {
         return spendingLimit;
+    }
+
+    public Long getParentId() {
+        return parentId;
     }
 }

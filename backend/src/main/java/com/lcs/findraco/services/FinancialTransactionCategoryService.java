@@ -66,6 +66,7 @@ public class FinancialTransactionCategoryService {
         category.setType(dto.getType());
         category.setDescription(dto.getDescription());
         category.setSpendingLimit(dto.getType() == FinancialTransactionType.CREDIT ? null : dto.getSpendingLimit());
+        category.setParent(resolveParent(null, dto, ctx));
 
         return categoryRepository.save(category);
     }
@@ -75,12 +76,45 @@ public class FinancialTransactionCategoryService {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
         FinancialTransactionCategory existingCategory = findById(id, ctx);
+        boolean hasChildren = categoryRepository.existsByParent(existingCategory);
+        if (hasChildren && dto.getType() != existingCategory.getType()) {
+            throw new FinancialTransactionCategoryExceptions.CategoryWithChildrenTypeChangeException();
+        }
+
+        FinancialTransactionCategory parent = resolveParent(existingCategory, dto, ctx);
+        if (parent != null && hasChildren) {
+            throw new FinancialTransactionCategoryExceptions.CategoryWithChildrenCannotHaveParentException();
+        }
 
         existingCategory.setType(dto.getType());
         existingCategory.setDescription(dto.getDescription());
         existingCategory.setSpendingLimit(dto.getType() == FinancialTransactionType.CREDIT ? null : dto.getSpendingLimit());
+        existingCategory.setParent(parent);
 
         return categoryRepository.save(existingCategory);
+    }
+
+    /**
+     * Resolves and validates the requested parent (two-level hierarchy, CAT-06). Returns null when no
+     * parent is requested. {@code self} is null on create.
+     */
+    private FinancialTransactionCategory resolveParent(FinancialTransactionCategory self,
+                                                       FinancialTransactionCategoryRequestDto dto,
+                                                       PlanContext ctx) {
+        if (dto.getParentId() == null) {
+            return null;
+        }
+        FinancialTransactionCategory parent = findById(dto.getParentId(), ctx);
+        if (self != null && parent.getId().equals(self.getId())) {
+            throw new FinancialTransactionCategoryExceptions.CategoryParentIsItselfException();
+        }
+        if (parent.getParent() != null) {
+            throw new FinancialTransactionCategoryExceptions.CategoryParentIsChildException(parent.getId());
+        }
+        if (parent.getType() != dto.getType()) {
+            throw new FinancialTransactionCategoryExceptions.CategoryParentTypeMismatchException();
+        }
+        return parent;
     }
 
     @Transactional

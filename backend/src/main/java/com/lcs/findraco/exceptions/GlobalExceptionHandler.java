@@ -85,6 +85,24 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
+    @ExceptionHandler({
+            FinancialTransactionCategoryExceptions.CategoryParentIsChildException.class,
+            FinancialTransactionCategoryExceptions.CategoryParentIsItselfException.class,
+            FinancialTransactionCategoryExceptions.CategoryWithChildrenCannotHaveParentException.class,
+            FinancialTransactionCategoryExceptions.CategoryParentTypeMismatchException.class,
+            FinancialTransactionCategoryExceptions.CategoryWithChildrenTypeChangeException.class
+    })
+    public ResponseEntity<ErrorResponseDto> handleCategoryHierarchyInvariant(
+            RuntimeException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    }
+
     @ExceptionHandler(UserExceptions.EmailAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDto> handleEmailAlreadyUsed(
             UserExceptions.EmailAlreadyExistsException exception,

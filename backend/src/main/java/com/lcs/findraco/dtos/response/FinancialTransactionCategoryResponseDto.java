@@ -10,12 +10,14 @@ public class FinancialTransactionCategoryResponseDto {
     private final FinancialTransactionType type;
     private final String description;
     private final BigDecimal spendingLimit;
+    private final Long parentId;
 
     public FinancialTransactionCategoryResponseDto(FinancialTransactionCategory category) {
         this.id = category.getId();
         this.type = category.getType();
         this.description = category.getDescription();
         this.spendingLimit = category.getSpendingLimit();
+        this.parentId = category.getParent() == null ? null : category.getParent().getId();
     }
 
     public Long getId() {
@@ -32,5 +34,9 @@ public class FinancialTransactionCategoryResponseDto {
 
     public BigDecimal getSpendingLimit() {
         return spendingLimit;
+    }
+
+    public Long getParentId() {
+        return parentId;
     }
 }

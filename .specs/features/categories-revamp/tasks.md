@@ -112,9 +112,9 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] New `CategoryHierarchyIT`: one test per AC of P1 Sub 1–6 with the exact status code
-- [ ] Non-OWNER create/update with `parentId` still rejected as today
-- [ ] Full gate passes
+- [x] New `CategoryHierarchyIT`: one test per AC of P1 Sub 1–6 with the exact status code (written, not run)
+- [x] Non-OWNER create/update with `parentId` still rejected as today (written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
 
 **Tests**: integration
 **Gate**: full

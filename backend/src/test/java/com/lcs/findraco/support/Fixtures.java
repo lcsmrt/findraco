@@ -1,12 +1,14 @@
 package com.lcs.findraco.support;
 
 import com.lcs.findraco.models.FinancialTransaction;
+import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanMembership;
 import com.lcs.findraco.models.PlanRole;
 import com.lcs.findraco.models.TransactionParticipant;
 import com.lcs.findraco.models.User;
+import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
 import com.lcs.findraco.repositories.PlanMembershipRepository;
 import com.lcs.findraco.repositories.PlanRepository;
@@ -34,6 +36,9 @@ public class Fixtures {
 
     @Autowired
     private FinancialTransactionRepository financialTransactionRepository;
+
+    @Autowired
+    private FinancialTransactionCategoryRepository financialTransactionCategoryRepository;
 
     public User aUser() {
         return aUser("user-" + UUID.randomUUID() + "@test.com");
@@ -82,5 +87,19 @@ public class Fixtures {
         transaction.getParticipants().add(participant);
 
         return financialTransactionRepository.save(transaction);
+    }
+
+    public FinancialTransactionCategory aCategory(Plan plan, FinancialTransactionType type, String description) {
+        return aCategory(plan, type, description, null);
+    }
+
+    public FinancialTransactionCategory aCategory(Plan plan, FinancialTransactionType type, String description,
+                                                  FinancialTransactionCategory parent) {
+        FinancialTransactionCategory category = new FinancialTransactionCategory();
+        category.setPlan(plan);
+        category.setType(type);
+        category.setDescription(description);
+        category.setParent(parent);
+        return financialTransactionCategoryRepository.save(category);
     }
 }

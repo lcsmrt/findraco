@@ -15,4 +15,6 @@ public interface FinancialTransactionCategoryRepository extends JpaRepository<Fi
     List<FinancialTransactionCategory> findAllByPlan(Plan plan);
 
     Optional<FinancialTransactionCategory> findByIdAndPlan(Long id, Plan plan);
+
+    boolean existsByParent(FinancialTransactionCategory parent);
 }
