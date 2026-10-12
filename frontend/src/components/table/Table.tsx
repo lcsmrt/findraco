@@ -16,6 +16,7 @@ type TableProps<T> = {
   children: ReactNode;
   getRowCanExpand?: (row: Row<T>) => boolean;
   border?: "none" | "x" | "y" | "all";
+  className?: string;
 };
 
 interface TableContextType {
@@ -31,6 +32,7 @@ export const TableRoot = <T,>({
   children,
   getRowCanExpand,
   border = "y",
+  className,
 }: TableProps<T>) => {
   const expandable = !!getRowCanExpand;
 
@@ -78,6 +80,7 @@ export const TableRoot = <T,>({
           border === "x" && "border-x border-border",
           border === "y" && "border-y border-border",
           border === "all" && "border border-border",
+          className,
         )}
       >
         {children}

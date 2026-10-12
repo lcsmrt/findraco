@@ -254,6 +254,8 @@ export const TransactionsTab = () => {
 
       <Table
         tableId="financialTransactionsTable"
+        border="all"
+        className="mx-2 w-auto rounded-lg shadow-sm"
         data={financialTransactionsData?.content || []}
         columns={columns}
       >

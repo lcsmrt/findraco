@@ -6,7 +6,7 @@ const TableBase = React.forwardRef<HTMLTableElement, React.HTMLAttributes<HTMLTa
     <table
       ref={ref}
       role="table"
-      className={cn("bg-background relative caption-bottom text-sm", className)}
+      className={cn("bg-card relative caption-bottom text-sm", className)}
       {...props}
     />
   ),
@@ -19,7 +19,7 @@ const TableHeaderBase = React.forwardRef<
   <thead
     ref={ref}
     role="rowgroup"
-    className={cn("bg-background [&_tr]:border-b", className)}
+    className={cn("bg-card [&_tr]:border-b", className)}
     {...props}
   />
 ));
@@ -40,7 +40,7 @@ const TableFooterBase = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <tfoot ref={ref} role="rowgroup" className={cn("bg-background border-t", className)} {...props} />
+  <tfoot ref={ref} role="rowgroup" className={cn("bg-card border-t", className)} {...props} />
 ));
 
 const TableRowBase = React.forwardRef<
@@ -51,7 +51,7 @@ const TableRowBase = React.forwardRef<
     ref={ref}
     role="row"
     className={cn(
-      "group/row even:bg-muted/40 data-[state=selected]:bg-muted h-10 border-b transition-colors last:border-0",
+      "group/row even:bg-muted/30 data-[state=selected]:bg-muted h-10 border-b transition-colors last:border-0",
       className,
     )}
     {...props}
