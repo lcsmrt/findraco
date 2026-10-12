@@ -1,23 +1,32 @@
 # Categories Revamp Validation
 
-## Validation: categories-revamp - FAIL
+## Validation: categories-revamp - PASS
 
-**Result**: FAIL (iteration 2) - one minor gap. The amended P2 AC 4 clause "0 when the total is 0" has no assertion, and its mutant survives (`CategoryFormSheet.tsx:235`). Everything else passes. The full gate is green: `./mvnw verify` 238 run with 0 failed, JaCoCo met; frontend 268 passed. All 5 iteration-1 fixes are verified, and 18 of the 19 backend IT-layer mutants were killed by the ITs. The 19th, M19, is killed by the unit test.
+**Result**: PASS (iteration 3). The iteration-2 gap (P2 AC 4 "0 when the total is 0") is closed by `9119578`: `CategoryFormSheet.test.ts:286` asserts `shares.get(10)` and `shares.get(20)` are `0` for two R$ 0 rows, and mutant F7 is now killed. The optional `ownerActive` hardening also landed: `CategorySpendingIT` now kills M18/M19 on its own. Full frontend suite 269 passed. Interactive UAT is still pending (user-facing).
 
 **Date**: 2026-10-12
-**Spec**: `.specs/features/categories-revamp/spec.md` (amended in `50472da`: P1 Sub AC 17/18, P2 AC 4, P3 AC 6)
-**Diff range**: `main...feat/categories-revamp` (feature commits `e756dda`/`675a151`..`e027f5c`, HEAD `e027f5c`)
-**Verifier**: independent sub-agent (author ≠ verifier), iteration 2 of max 3
+**Spec**: `.specs/features/categories-revamp/spec.md` (amended in `50472da`)
+**Diff range**: `main...feat/categories-revamp`, HEAD `9119578`
+**Verifier**: independent sub-agent (author ≠ verifier), iteration 3 of max 3 (narrow re-check)
 
 ### Iteration history
 
-- **Iteration 1 (FAIL, `c6aebdb`)**: there were 3 problems.
-  - Gap 1: a former owner was not marked in the tab (P3 AC 7).
-  - Gap 2: no `/spending` IT covered per-member or owned rows.
-  - Deviation: the delete dialog probed with a targetless delete (P1 Sub AC 17).
+- **Iteration 1 (FAIL, `c6aebdb`)**: former owner not marked (P3 AC 7), no `/spending` IT for per-member/owned rows, targetless delete probe (P1 Sub AC 17). Fixed by F1-F5 (`7858a34`..`21194f5`) and spec amendment `50472da`.
+- **Iteration 2 (FAIL, `5be07b8`)**: everything verified (backend 238/0, JaCoCo met; frontend 268; 25/26 mutants killed) except P2 AC 4 zero-total clause, whose mutant F7 survived.
+- **Iteration 3 (this report, narrow)**: re-checked only `9119578` (new zero-total test, `isBoolean()` checks at `CategorySpendingIT.java:259,263`, controller indentation, docs). The detailed iteration-2 tables below remain valid, with the rows updated.
 
-  There were also 2 spec-precision gaps, and every `*IT` was pending because the DB tunnel was down. The fixes are `7858a34` (F1 `ownerActive`), `e290a9f` (F2 `/spending` ITs), `8e8fa45` (F3 usage endpoint), `a805acd` (F4 dialog reads the usage counts), `21194f5` (F5 participants follow the category) and the spec amendment `50472da`. `e027f5c` made `MigrationsIT` accept the `BASELINE` state for the baseline row only.
-- **Iteration 2 (this report)**: all of the above are verified. One new minor gap was found through the amended P2 AC 4.
+### Iteration 3 checks
+
+Isolation: `git worktree add --detach <scratchpad>/wt HEAD`, `frontend/node_modules` symlinked, `backend/.env` sourced (datasource `dev_finsight`). Each mutant restored with `git checkout` in the scratch; worktree removed with `--force` and pruned; real tree `git status --porcelain` identical to its pre-check baseline.
+
+| Check | Command | Outcome |
+| ----- | ------- | ------- |
+| Spec anchor | read P2 AC 4 (`spec.md:123`) vs new test | ✅ test expects `0` for every member when the total is 0, which is the spec outcome |
+| F7 re-run | drop `total === 0 ? 0 :` in `CategoryFormSheet.tsx:235`; `npx vitest run …/CategoryFormSheet.test.ts` | ✅ **killed**: "gives every member a 0% share when the total is 0" failed (1 failed / 45 passed) |
+| M18/M19 re-run | `CategorySpendingDto` ctor: non-true `ownerActive` → `null`; `./mvnw -q verify -Dit.test=CategorySpendingIT …` | ✅ **killed by the IT**: `removedOwnerIsReportedInactiveAndStillCountsTheirShare` failed (body shows `"ownerActive":null`) |
+| Frontend full | `npm test` (real code) | ✅ 19 files, **269 passed**, 0 failed (+1 vs iteration 2) |
+
+The backend full gate was not re-run: `9119578` touches backend only by adding two assertions to an IT (verified green except under mutation) and a whitespace-only indent fix in `FinancialTransactionCategoryController.java`.
 
 ---
 
@@ -106,7 +115,7 @@ Edge cases:
 | 1 | one amount per member | `CategoryMemberLimitIT.java:52` | ✅ |
 | 2 | limit = sum | `CategoryMemberLimitIT.java:79`; through `/spending` `CategorySpendingIT.java:162` `limit == 400` | ✅ |
 | 3 | plain limit ignored | `CategoryMemberLimitIT.java:99` | ✅ |
-| 4 (amended) | read-only %, **one decimal**, **0 when total is 0** | `CategoryFormSheet.test.ts:282` 65/35, `:297-303` 33.3/66.7. **No assertion for a zero total**: mutant F7 (removing `total === 0 ? 0 :` at `CategoryFormSheet.tsx:235`, which yields `NaN`) **survived** | ❌ GAP (minor) |
+| 4 (amended) | read-only %, **one decimal**, **0 when total is 0** | `CategoryFormSheet.test.ts:282` 65/35, `:286-293` zero total → `0` for each member (iteration 3), `:306-313` 33.3/66.7 | ✅ (F7 killed) |
 | 5 | member spend = shares, items proportional | `CategorySpendingIT.java:168,175` 50/50 of R$100; `ItemShareAllocatorTest`; `DashboardPartitionIT.java:309` (M12 killed) | ✅ |
 | 6 | per-member rows: spend, limit, over mark | `CategorySpendingIT.java:166-179` spend 50, limits 260/140, remaining, overLimit false, active true; over = true in `CategorySpendingAssemblerTest.java:301-309` (M11 killed) | ✅ |
 | 7 | non-active member → 400 | `CategoryMemberLimitIT.java:158` | ✅ |
@@ -131,7 +140,7 @@ Edge cases:
 | 8 | visible to every member | `CategoryOwnerIT.java:218` | ✅ |
 
 **Status**:
-- ❌ 1 minor gap: the zero-total clause of P2 AC 4.
+- ✅ No gaps. The iteration-2 zero-total gap (P2 AC 4) is fixed and verified in iteration 3.
 - Iteration-1 gap 1 (P3 AC 7) is fixed and verified.
 - Iteration-1 gap 2 (no `/spending` IT for per-member/owned rows) is fixed and verified.
 - The AC 17 deviation is resolved by the spec amendment plus F3/F4.
@@ -170,7 +179,7 @@ Edge cases:
 | M15 | `…Service.update` | drop the "has children cannot get a parent" check | ✅ `categoryWithChildrenGivenAParentIsRejectedWith400` |
 | M16 | `…Service.resolveParent` | drop the type-mismatch check | ✅ `parentOfDifferentTypeIsRejectedWith400` |
 | M17 | `…Service.delete` | in-use without a target no longer rejected | ✅ `categoryInUseWithoutTargetIsRejectedWith409ReportingCounts` |
-| M18/M19 | `CategorySpendingAssembler` owned row | inactive owner → `ownerActive = null` instead of `false` | ⚠️ **survives `CategorySpendingIT`**, because `JsonNode.asBoolean()` reads null as false (`CategorySpendingIT.java:259,263`). ✅ Killed by the unit tests `CategorySpendingAssemblerTest.dormantOwnerStillAttributesTheirSpend:526` and `formerOwnerIsReportedInactiveOnTheRootAndItsChildren:541` |
+| M18/M19 | `CategorySpendingAssembler` owned row | inactive owner → `ownerActive = null` instead of `false` | ✅ Iteration 3: killed by `CategorySpendingIT.removedOwnerIsReportedInactiveAndStillCountsTheirShare` (new `isBoolean()` checks at `:259,263`); also killed by `CategorySpendingAssemblerTest:526,541` |
 
 **Frontend (unit project, fix commits)**
 
@@ -182,11 +191,11 @@ Edge cases:
 | F4 | `DeleteCategoryDialog.tsx:47` | recurrences ignored by `isCategoryInUse` | ✅ 2 tests |
 | F5 | `DeleteCategoryDialog.tsx:61` | submit a plain delete while the counts are unknown | ✅ "cannot submit before the usage counts are known" |
 | F6 | `useFinancialTransactionCategoryService.ts:88` | wrong usage URL | ✅ "GETs the plan-scoped usage counts of the category" |
-| F7 | `CategoryFormSheet.tsx:235` | drop the `total === 0 ? 0 :` guard (0/0 → `NaN`) | ❌ **Survived** (268/268 passed) |
+| F7 | `CategoryFormSheet.tsx:235` | drop the `total === 0 ? 0 :` guard (0/0 → `NaN`) | ✅ Iteration 3: "gives every member a 0% share when the total is 0" (survived in iteration 2) |
 
 **Sensor depth**: expanded (≥5; core domain / data integrity).
 
-**Result**: 26 injected, 25 killed, 1 survived (F7). M18/M19 counts as killed at suite level. The 24 iteration-1 mutants (unit layer) were not re-run, because their code is unchanged except for the F1 assembler line, which M14/M19 cover.
+**Result**: 26 injected, 26 killed, 0 survived (F7 and M18/M19 re-run and killed in iteration 3). The 24 iteration-1 mutants (unit layer) were not re-run, because their code is unchanged except for the F1 assembler line, which M14/M19 cover.
 
 ---
 
@@ -195,8 +204,8 @@ Edge cases:
 | Principle | Status |
 | --------- | ------ |
 | Minimum code / surgical / no scope creep | ✅ The fix commits touch only what F1-F5 required |
-| Matches patterns | ✅ Typed DTO, `PlanContext`, service hook + query key, `buildMutationOptions` invalidation. Cosmetic: the `@Operation` after the new usage endpoint is over-indented by 4 spaces (`FinancialTransactionCategoryController.java:62`) |
-| Spec-anchored outcome check | ⚠️ P2 AC 4 zero-total clause not asserted |
+| Matches patterns | ✅ Typed DTO, `PlanContext`, service hook + query key, `buildMutationOptions` invalidation. Iteration-2 indentation nit fixed in `9119578` |
+| Spec-anchored outcome check | ✅ All ACs asserted or static + UAT |
 | Per-layer coverage (routes: happy + edge + error) | ✅ `/spending` now covers per-member, owned and former-member cases; `/usage` covers happy, zero and foreign 404 |
 | Every test maps to an AC / edge / Done-when | ✅ |
 | Guidelines | `CLAUDE.md`, `.specs/codebase/TESTING.md` |
@@ -207,13 +216,7 @@ Doc nit: the F4 text in `tasks.md:751` names the query key `["financialTransacti
 
 ## Fix Plans
 
-### Fix 1 (Minor): assert the zero-total share (P2 AC 4, amended)
-- **Root cause**: the `total === 0 ? 0 :` branch in `memberLimitShares` (`frontend/src/features/home/components/categories/CategoryFormSheet.tsx:235`) has no test, so removing it (which produces `NaN%`) goes unnoticed.
-- **Fix task**: in `CategoryFormSheet.test.ts` under `describe("memberLimitShares")`, add `it("reports 0 for every member when the total is 0")` with two active rows of `maskCurrency("0")` and expect `shares.get(10)` and `shares.get(20)` to be `0`.
-- **Done when**: mutant F7 is killed and `npm test` is green.
-
-### Optional hardening (non-blocking)
-- `CategorySpendingIT.java:259,263`: assert `row.get("ownerActive").isBoolean()` (or use `isEqualTo(BooleanNode.FALSE)`), so the IT also rejects `null`. The unit test already covers this.
+None. Iteration-2 Fix 1 and the optional `ownerActive` hardening were both applied in `9119578` and verified.
 
 ---
 
@@ -237,18 +240,17 @@ Note: `./mvnw verify` truncated `dev_finsight`, so the data must be re-seeded fi
 
 | Requirement | New status |
 | ----------- | ---------- |
-| CAT-01, CAT-02, CAT-03, CAT-06, CAT-07, CAT-09, CAT-10, CAT-12, CAT-13, CAT-14, CAT-15, CAT-16, CAT-17 | ✅ Verified (presentational parts → UAT) |
+| CAT-01, CAT-02, CAT-03, CAT-06, CAT-11, CAT-07, CAT-09, CAT-10, CAT-12, CAT-13, CAT-14, CAT-15, CAT-16, CAT-17 | ✅ Verified (presentational parts → UAT) |
 | CAT-04, CAT-05, CAT-08 | ✅ Verified at API/logic level · UI by UAT |
-| CAT-11 | ❌ Needs fix (Fix 1: zero-total share assertion) |
 
 ---
 
 ## Summary
 
-**Overall**: ❌ Not ready. One minor gap, which needs a one-test fix.
+**Overall**: ✅ Ready, pending the interactive UAT.
 
-**Spec-anchored check**: 1 gap (P2 AC 4 zero-total). Every other AC matches the spec outcome, or is static and in the UAT list.
-**Sensor**: 26 injected, 25 killed, 1 survived (F7).
-**Gate**: backend 238 passed / 0 failed (JaCoCo met); frontend 268 passed / 0 failed; build ok; 0 new lint errors.
+**Spec-anchored check**: 0 gaps. Every AC matches the spec outcome, or is static and in the UAT list.
+**Sensor**: 26 injected, 26 killed, 0 survived.
+**Gate**: iteration 2 backend 238 passed / 0 failed (JaCoCo met), build ok, 0 new lint errors; iteration 3 frontend 269 passed / 0 failed, `CategorySpendingIT` green on real code.
 
-**Next steps**: Fix 1 → re-verify (iteration 3: re-run F7 and `npm test`) → interactive UAT → tick the `tasks.md` full-gate boxes.
+**Next steps**: interactive UAT (re-seed `dev_finsight` first) → tick the `tasks.md` full-gate boxes.
