@@ -51,37 +51,31 @@ public interface FinancialTransactionRepository extends JpaRepository<FinancialT
             @Param("endDate") LocalDate endDate,
             @Param("memberId") Long memberId);
 
-    @Query("SELECT ft.category.id, ft.category.description, COALESCE(SUM(tp.shareAmount), 0), ft.category.spendingLimit " +
+    // Query A of the category partition, per category x member: each member's participation share of
+    // the categorized transactions in the period (optional memberId; null → every member).
+    @Query("SELECT ft.category.id, tp.member.id, COALESCE(SUM(tp.shareAmount), 0) " +
            "FROM FinancialTransaction ft JOIN ft.participants tp " +
            "WHERE ft.plan = :plan AND ft.type = :type AND ft.category IS NOT NULL " +
            "AND ft.startDate >= :startDate AND ft.startDate <= :endDate " +
            "AND (:memberId IS NULL OR tp.member.id = :memberId) " +
-           "GROUP BY ft.category.id, ft.category.description, ft.category.spendingLimit " +
-           "ORDER BY SUM(tp.shareAmount) DESC")
-    List<Object[]> findCategoryBreakdown(
+           "GROUP BY ft.category.id, tp.member.id")
+    List<Object[]> findCategoryMemberFacts(
             @Param("plan") Plan plan,
             @Param("type") FinancialTransactionType type,
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate,
             @Param("memberId") Long memberId);
 
-    @Query("SELECT ft.category.id, COALESCE(SUM(it.amount), 0) " +
-           "FROM FinancialTransaction ft JOIN ft.items it " +
-           "WHERE ft.plan = :plan AND ft.type = :type AND ft.category IS NOT NULL AND it.category IS NOT NULL " +
-           "AND ft.startDate >= :startDate AND ft.startDate <= :endDate " +
-           "GROUP BY ft.category.id")
-    List<Object[]> findCategorizedItemSumsByParentCategory(
-            @Param("plan") Plan plan,
-            @Param("type") FinancialTransactionType type,
-            @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate);
-
-    @Query("SELECT it.category.id, it.category.description, it.category.spendingLimit, COALESCE(SUM(it.amount), 0) " +
-           "FROM FinancialTransaction ft JOIN ft.items it " +
+    // One row per categorized item x participant of its transaction, unaggregated, for
+    // ItemShareAllocator: [itemId, itemCategoryId, transactionCategoryId (nullable), itemAmount,
+    // memberId, shareAmount]. The transaction's category is LEFT-joined so uncategorized
+    // transactions still attribute their items.
+    @Query("SELECT it.id, it.category.id, c.id, it.amount, tp.member.id, tp.shareAmount " +
+           "FROM FinancialTransaction ft JOIN ft.items it JOIN ft.participants tp LEFT JOIN ft.category c " +
            "WHERE ft.plan = :plan AND ft.type = :type AND it.category IS NOT NULL " +
            "AND ft.startDate >= :startDate AND ft.startDate <= :endDate " +
-           "GROUP BY it.category.id, it.category.description, it.category.spendingLimit")
-    List<Object[]> findCategorizedItemSumsByItemCategory(
+           "ORDER BY it.id, tp.member.id")
+    List<Object[]> findCategorizedItemParticipantRows(
             @Param("plan") Plan plan,
             @Param("type") FinancialTransactionType type,
             @Param("startDate") LocalDate startDate,

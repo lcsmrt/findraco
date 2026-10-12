@@ -5,10 +5,8 @@ import com.lcs.findraco.dtos.response.CategoryBreakdownDto;
 import com.lcs.findraco.dtos.response.DashboardSummaryResponseDto;
 import com.lcs.findraco.dtos.response.MonthlyTrendDto;
 import com.lcs.findraco.dtos.response.PersonBreakdownDto;
-import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
-import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
 import com.lcs.findraco.security.PlanContext;
 import org.springframework.stereotype.Service;
@@ -26,19 +24,16 @@ import java.util.Map;
 public class DashboardService {
 
     private final FinancialTransactionRepository financialTransactionRepository;
-    private final FinancialTransactionCategoryRepository financialTransactionCategoryRepository;
-    private final CategoryBreakdownAssembler categoryBreakdownAssembler;
+    private final CategorySpendingService categorySpendingService;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
     private final Clock clock;
 
     public DashboardService(FinancialTransactionRepository financialTransactionRepository,
-                             FinancialTransactionCategoryRepository financialTransactionCategoryRepository,
-                             CategoryBreakdownAssembler categoryBreakdownAssembler,
+                             CategorySpendingService categorySpendingService,
                              OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
                              Clock clock) {
         this.financialTransactionRepository = financialTransactionRepository;
-        this.financialTransactionCategoryRepository = financialTransactionCategoryRepository;
-        this.categoryBreakdownAssembler = categoryBreakdownAssembler;
+        this.categorySpendingService = categorySpendingService;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
         this.clock = clock;
     }
@@ -68,19 +63,9 @@ public class DashboardService {
     }
 
     private List<CategoryBreakdownDto> buildCategoryBreakdown(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rowsA = financialTransactionRepository.findCategoryBreakdown(
-                plan, FinancialTransactionType.DEBIT, startDate, endDate, memberId);
-        // Item-sum queries (B/I) remain plan-total: items are an independent axis from participants and
-        // carry no share attribution. When filtered by member, A is member-scoped while B/I are full item
-        // amounts — a documented Round-2 gap. It is inert today (no live items) and cannot affect the
-        // unfiltered numbers (memberId == null path is unchanged).
-        List<Object[]> rowsB = financialTransactionRepository.findCategorizedItemSumsByParentCategory(
-                plan, FinancialTransactionType.DEBIT, startDate, endDate);
-        List<Object[]> rowsI = financialTransactionRepository.findCategorizedItemSumsByItemCategory(
-                plan, FinancialTransactionType.DEBIT, startDate, endDate);
-        List<FinancialTransactionCategory> limitCategories = financialTransactionCategoryRepository.findAllByPlan(plan);
-
-        return categoryBreakdownAssembler.assemble(rowsA, rowsB, rowsI, limitCategories);
+        return categorySpendingService.computeOverview(plan, startDate, endDate, memberId).stream()
+                .map(CategoryBreakdownDto::new)
+                .toList();
     }
 
     private record MonthKey(int year, int month) {}

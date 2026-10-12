@@ -3,6 +3,7 @@ package com.lcs.findraco.services;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -11,6 +12,7 @@ import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
+import com.lcs.findraco.models.PlanRole;
 import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.models.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.models.RecurrenceInterval;
@@ -251,6 +253,94 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         assertThat(dashboard.get("totalExpenses").decimalValue()).isEqualByComparingTo(expectedTotalExpenses);
     }
 
+    /**
+     * CAT-07/CAT-08 (spec P1 Sub AC 7 and 11): the Overview lists the root with its direct spend plus
+     * its children's, the child nested under it. Edge case: once the child's parent is cleared, its
+     * spend no longer rolls into the former parent.
+     */
+    @Test
+    void parentRollsUpChildSpendInTheDashboardUntilTheChildBecomesRoot() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        long foodId = createCategory(plan, owner, "DEBIT", "Food").get("id").asLong();
+        long deliveryId = createCategory(plan, owner, Map.of(
+                "type", "DEBIT", "description", "Delivery", "parentId", foodId)).get("id").asLong();
+
+        createTransaction(plan, owner, Map.of(
+                "type", "DEBIT", "amount", new BigDecimal("40.00"), "description", "Market",
+                "startDate", TODAY.toString(), "categoryId", foodId));
+        createTransaction(plan, owner, Map.of(
+                "type", "DEBIT", "amount", new BigDecimal("60.00"), "description", "Pizza",
+                "startDate", TODAY.toString(), "categoryId", deliveryId));
+
+        JsonNode breakdown = fetchDashboard(plan, owner).get("categoryBreakdown");
+
+        assertThat(breakdown).hasSize(1);
+        JsonNode food = breakdown.get(0);
+        assertThat(food.get("categoryId").asLong()).isEqualTo(foodId);
+        assertThat(food.get("parentId").isNull()).isTrue();
+        assertThat(food.get("categoryName").asText()).isEqualTo("Food");
+        assertThat(food.get("spent").decimalValue()).isEqualByComparingTo("100.00");
+        assertThat(food.get("children")).hasSize(1);
+        JsonNode delivery = food.get("children").get(0);
+        assertThat(delivery.get("categoryId").asLong()).isEqualTo(deliveryId);
+        assertThat(delivery.get("parentId").asLong()).isEqualTo(foodId);
+        assertThat(delivery.get("spent").decimalValue()).isEqualByComparingTo("60.00");
+
+        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}", plan.getId(), deliveryId)
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("type", "DEBIT", "description", "Delivery"))))
+                .andExpect(status().isOk());
+
+        JsonNode afterMove = fetchDashboard(plan, owner).get("categoryBreakdown");
+        assertThat(afterMove).hasSize(2);
+        assertThat(categorySpent(afterMove, "Food")).isEqualByComparingTo("40.00");
+        assertThat(categorySpent(afterMove, "Delivery")).isEqualByComparingTo("60.00");
+    }
+
+    /**
+     * AD-008 / CAT-12: with a member filter, item portions follow the member too (the gap formerly
+     * documented in DashboardService). R$ 100 split 60/40 with a R$ 30 Cleaning item: the partner's
+     * portion of the item is R$ 12, so their Groceries spend is 40 - 12 and their Cleaning spend 12.
+     */
+    @Test
+    void memberFilterAppliesToItemPortions() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User partner = fixtures.aUser();
+        fixtures.addMember(plan, partner, PlanRole.EDITOR);
+
+        long groceriesId = createCategory(plan, owner, "DEBIT", "Groceries").get("id").asLong();
+        long cleaningId = createCategory(plan, owner, "DEBIT", "Cleaning").get("id").asLong();
+
+        createTransaction(plan, owner, Map.of(
+                "type", "DEBIT",
+                "amount", new BigDecimal("100.00"),
+                "description", "Grocery run",
+                "startDate", TODAY.toString(),
+                "categoryId", groceriesId,
+                "splitMode", "EXACT",
+                "participants", List.of(
+                        Map.of("memberId", owner.getId(), "shareAmount", new BigDecimal("60.00")),
+                        Map.of("memberId", partner.getId(), "shareAmount", new BigDecimal("40.00"))),
+                "items", List.of(
+                        Map.of("description", "Cleaning supplies", "amount", new BigDecimal("30.00"), "categoryId", cleaningId))));
+
+        JsonNode partnerBreakdown = fetchDashboard(plan, owner, partner.getId()).get("categoryBreakdown");
+        assertThat(categorySpent(partnerBreakdown, "Groceries")).isEqualByComparingTo("28.00");
+        assertThat(categorySpent(partnerBreakdown, "Cleaning")).isEqualByComparingTo("12.00");
+
+        JsonNode ownerBreakdown = fetchDashboard(plan, owner, owner.getId()).get("categoryBreakdown");
+        assertThat(categorySpent(ownerBreakdown, "Groceries")).isEqualByComparingTo("42.00");
+        assertThat(categorySpent(ownerBreakdown, "Cleaning")).isEqualByComparingTo("18.00");
+
+        JsonNode unfiltered = fetchDashboard(plan, owner).get("categoryBreakdown");
+        assertThat(categorySpent(unfiltered, "Groceries")).isEqualByComparingTo("70.00");
+        assertThat(categorySpent(unfiltered, "Cleaning")).isEqualByComparingTo("30.00");
+    }
+
     private RecurrenceDefinition anOpenEndedDefinition(Plan plan, User owner, FinancialTransactionCategory category,
                                                          LocalDate start, String description, BigDecimal amount) {
         RecurrenceDefinition definition = new RecurrenceDefinition();
@@ -277,9 +367,13 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     }
 
     private JsonNode createCategory(Plan plan, User asUser, String type, String description) throws Exception {
-        String requestBody = objectMapper.writeValueAsString(Map.of(
+        return createCategory(plan, asUser, Map.of(
                 "type", type,
                 "description", description));
+    }
+
+    private JsonNode createCategory(Plan plan, User asUser, Map<String, Object> body) throws Exception {
+        String requestBody = objectMapper.writeValueAsString(body);
 
         MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
@@ -306,6 +400,18 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
 
     private JsonNode fetchDashboard(Plan plan, User asUser) throws Exception {
         return fetchDashboard(plan, asUser, TODAY.minusDays(1), TODAY.plusDays(1));
+    }
+
+    private JsonNode fetchDashboard(Plan plan, User asUser, Long memberId) throws Exception {
+        MvcResult result = mockMvc.perform(get(ApiRoutes.DASHBOARD, plan.getId())
+                        .with(testAuthHelper.asUser(asUser))
+                        .param("startDate", TODAY.minusDays(1).toString())
+                        .param("endDate", TODAY.plusDays(1).toString())
+                        .param("memberId", memberId.toString()))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        return objectMapper.readTree(result.getResponse().getContentAsString());
     }
 
     private JsonNode fetchDashboard(Plan plan, User asUser, LocalDate startDate, LocalDate endDate) throws Exception {

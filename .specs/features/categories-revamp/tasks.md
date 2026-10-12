@@ -211,9 +211,11 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `DashboardPartitionIT` still passes unchanged for flat data (top-line totals and per-category numbers identical)
-- [ ] New IT cases: parent rollup in the dashboard; member filter now applies to item portions (gap at `DashboardService.java:73-76` closed)
-- [ ] Full gate passes
+- [ ] `DashboardPartitionIT` still passes unchanged for flat data (top-line totals and per-category numbers identical) — PENDING: needs DB tunnel (compile + unit gates passed)
+- [x] New IT cases: parent rollup in the dashboard; member filter now applies to item portions (gap at `DashboardService.java:73-76` closed) (written, not run)
+- [ ] Full gate passes — PENDING: needs DB tunnel (compile + unit gates passed)
+
+> Note: `CategoryBreakdownAssembler`, its test (ported in T5) and the three old category queries are removed here, now that the dashboard no longer uses them. Active member ids are not fetched yet: nothing reads them before T18.
 
 **Tests**: integration
 **Gate**: full
