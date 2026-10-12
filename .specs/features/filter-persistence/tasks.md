@@ -150,9 +150,9 @@ T8 → T9
 
 **Done when**:
 
-- [ ] No request when `id` is null; one request for a given (plan, id) across re-renders
-- [ ] Exported key builder used for cache seeding by T7
-- [ ] Quick gate passes
+- [x] No request when `id` is null; one request for a given (plan, id) across re-renders
+- [x] Exported key builder used for cache seeding by T7
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick

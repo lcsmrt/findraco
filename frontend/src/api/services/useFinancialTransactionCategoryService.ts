@@ -39,6 +39,38 @@ export const useGetFinancialTransactionCategories = (
   });
 };
 
+const getFinancialTransactionCategory = async (
+  planId: number,
+  id: number,
+): Promise<FinancialTransactionCategory> => {
+  const { data } = await findracoApi.get(
+    `/plan/${planId}/financial-transaction-category/${id}`,
+  );
+  return data;
+};
+
+const CATEGORY_STALE_TIME_MS = 5 * 60 * 1000;
+
+export const financialTransactionCategoryKey = (
+  planId: number | null,
+  id: number | null,
+) => ["financialTransactionCategory", planId, id] as const;
+
+export const useGetFinancialTransactionCategory = (
+  id: number | null,
+  options?: QueryOptions<FinancialTransactionCategory>,
+) => {
+  const { activePlanId } = usePlanContext();
+  return useQuery({
+    queryFn: () => getFinancialTransactionCategory(activePlanId!, id!),
+    queryKey: financialTransactionCategoryKey(activePlanId, id),
+    // Fresh long enough that a seeded (setQueryData) category is not refetched on mount.
+    staleTime: CATEGORY_STALE_TIME_MS,
+    ...options,
+    enabled: activePlanId != null && id != null && (options?.enabled ?? true),
+  });
+};
+
 const createFinancialTransactionCategory = async (
   planId: number,
   payload: CreateFinancialTransactionCategoryRequest,
