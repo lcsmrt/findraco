@@ -225,10 +225,10 @@ T8 → T9
 
 **Done when**:
 
-- [ ] Chip labels match today's (type, category name, member name, date range, amount range)
-- [ ] Seeded category → zero category requests
-- [ ] Category 404 / member not in plan → filter removed from URL
-- [ ] Quick gate passes
+- [x] Chip labels match today's (type, category name, member name, date range, amount range)
+- [x] Seeded category → zero category requests
+- [x] Category 404 / member not in plan → filter removed from URL
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick

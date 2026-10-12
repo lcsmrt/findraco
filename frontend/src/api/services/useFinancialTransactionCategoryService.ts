@@ -130,6 +130,9 @@ export const useUpdateFinancialTransactionCategory = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
+        queryClient.invalidateQueries({
+          queryKey: financialTransactionCategoryKey(activePlanId, variables.params.id),
+        });
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -157,6 +160,9 @@ export const useDeleteFinancialTransactionCategory = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
+        queryClient.invalidateQueries({
+          queryKey: financialTransactionCategoryKey(activePlanId, variables),
+        });
         options?.onSuccess?.(data, variables);
       },
     }),
