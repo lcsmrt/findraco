@@ -299,8 +299,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Test asserts filters + `q` removed and `sort`/`size` kept
-- [ ] Quick gate passes
+- [x] Test asserts filters + `q` removed and `sort`/`size` kept
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick

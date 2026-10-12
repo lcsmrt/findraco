@@ -26,6 +26,11 @@ const withParams = (
   return next;
 };
 
+/** Clear removes filters and the search; sort and page size are display preferences. */
+const CLEARABLE_TRANSACTION_PARAM_KEYS = TRANSACTION_PARAM_KEYS.filter(
+  (key) => key !== "sort" && key !== "size",
+);
+
 /**
  * Home filter state derived from the URL query string (single source of truth).
  * Filter updates replace the history entry; tab switches push a new one.
@@ -81,9 +86,10 @@ export const useHomeFilters = () => {
 
   const clearTransactions = useCallback(
     () =>
-      setSearchParams((prev) => withParams(prev, TRANSACTION_PARAM_KEYS, {}), {
-        replace: true,
-      }),
+      setSearchParams(
+        (prev) => withParams(prev, CLEARABLE_TRANSACTION_PARAM_KEYS, {}),
+        { replace: true },
+      ),
     [setSearchParams],
   );
 

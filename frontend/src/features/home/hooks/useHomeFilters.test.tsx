@@ -137,7 +137,7 @@ describe("useHomeFilters", () => {
     });
   });
 
-  it("clear removes every Transactions param and nothing else", async () => {
+  it("clear removes the Transactions filters and search, keeping sort, page size and other params", async () => {
     setup(
       "/?plan=1&tab=transactions&period=last-3m&overviewMember=7&type=CREDIT&category=12&member=3&from=2026-10-01&to=2026-10-31&min=1&max=99.5&q=market&sort=amount.asc&size=25",
     );
@@ -149,8 +149,14 @@ describe("useHomeFilters", () => {
       tab: "transactions",
       period: "last-3m",
       overviewMember: "7",
+      sort: "amount.asc",
+      size: "25",
     });
-    expect(hook.transactions).toEqual({ filter: {}, sort: null, size: 10 });
+    expect(hook.transactions).toEqual({
+      filter: {},
+      sort: { by: "amount", direction: "asc" },
+      size: 25,
+    });
 
     await goBack();
     expect(location.pathname).toBe("/other");
