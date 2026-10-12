@@ -141,7 +141,7 @@ Every filter on the home screen lives in component-local state, and `HomePage` u
 | FPERS-06 | P1: Reload (AC 4–5, relative vs absolute periods) | Tasks | In Tasks |
 | FPERS-07 | P1: Reload (AC 6–7, defaults & storage failure) | Tasks | In Tasks |
 | FPERS-08 | P1: Per-plan (AC 1–3) | Tasks | In Tasks |
-| FPERS-09 | P2: Shareable URL (AC 1–2) | Tasks | In Tasks |
+| FPERS-09 | P2: Shareable URL (AC 1–4) | Tasks | In Tasks |
 | FPERS-10 | Edge cases (stale ids, bad range, single member) | Tasks | In Tasks |
 
 **Coverage:** 10 total, 10 mapped to tasks, 0 unmapped
