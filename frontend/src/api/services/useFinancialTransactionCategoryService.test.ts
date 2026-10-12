@@ -188,6 +188,7 @@ describe("useGetCategorySpending", () => {
       type: "DEBIT",
       ownerId: null,
       ownerName: null,
+      ownerActive: null,
       spent: 300,
       limit: 400,
       remaining: 100,

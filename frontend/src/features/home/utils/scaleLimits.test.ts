@@ -157,6 +157,7 @@ describe("scaleTreeLimits with per-member rows", () => {
       type: "DEBIT",
       ownerId: null,
       ownerName: null,
+      ownerActive: null,
       spent: 0,
       limit: null,
       remaining: null,

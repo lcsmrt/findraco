@@ -223,6 +223,10 @@ class CategorySpendingAssemblerTest {
         assertThat(result).extracting(CategorySpendingDto::getType).containsExactly(
                 FinancialTransactionType.DEBIT, FinancialTransactionType.DEBIT, FinancialTransactionType.CREDIT);
         assertThat(result).allSatisfy(row -> assertThat(row.getSpent()).isEqualByComparingTo("0"));
+        assertThat(result).allSatisfy(row -> {
+            assertThat(row.getOwnerId()).isNull();
+            assertThat(row.getOwnerActive()).isNull();
+        });
         assertThat(byName(result, "food").getChildren()).singleElement()
                 .satisfies(child -> {
                     assertThat(child.getName()).isEqualTo("Delivery");
@@ -454,6 +458,7 @@ class CategorySpendingAssemblerTest {
 
         assertThat(row.getOwnerId()).isEqualTo(MEMBER);
         assertThat(row.getOwnerName()).isEqualTo("Lucas");
+        assertThat(row.getOwnerActive()).isTrue();
         assertThat(row.getSpent()).isEqualByComparingTo("120");
         assertThat(row.getLimit()).isEqualByComparingTo("100");
         assertThat(row.getRemaining()).isEqualByComparingTo("-20");
@@ -499,6 +504,7 @@ class CategorySpendingAssemblerTest {
 
         assertThat(root.getSpent()).isEqualByComparingTo("50");
         assertThat(child.getOwnerId()).isEqualTo(MEMBER);
+        assertThat(child.getOwnerActive()).isTrue();
         assertThat(child.getSpent()).isEqualByComparingTo("40");
         assertThat(child.getPercentUsed()).isEqualByComparingTo("80.00");
         assertThat(child.getMembers()).extracting(CategorySpendingDto.Member::getMemberId).containsExactly(OTHER_MEMBER);
@@ -517,8 +523,27 @@ class CategorySpendingAssemblerTest {
                 rowsA, List.of(), List.of(), List.of(professional), Set.of(OTHER_MEMBER), NAMES, null).get(0);
 
         assertThat(row.getOwnerId()).isEqualTo(MEMBER);
+        assertThat(row.getOwnerActive()).isFalse();
         assertThat(row.getSpent()).isEqualByComparingTo("70");
         assertThat(row.getPercentUsed()).isEqualByComparingTo("70.00");
+    }
+
+    /** P3 AC 7: a former owner is reported inactive on the root and on the children that inherit the owner. */
+    @Test
+    void formerOwnerIsReportedInactiveOnTheRootAndItsChildren() {
+        FinancialTransactionCategory professional = debit(1L, "Professional", null, null);
+        professional.setOwner(user(MEMBER, "Lucas"));
+        FinancialTransactionCategory courses = debit(2L, "Courses", null, professional);
+
+        CategorySpendingDto root = assembler.assemble(
+                List.of(), List.of(), List.of(), List.of(professional, courses), Set.of(OTHER_MEMBER), NAMES, null).get(0);
+
+        assertThat(root.getOwnerActive()).isFalse();
+        assertThat(root.getChildren()).singleElement().satisfies(child -> {
+            assertThat(child.getOwnerId()).isEqualTo(MEMBER);
+            assertThat(child.getOwnerName()).isEqualTo("Lucas");
+            assertThat(child.getOwnerActive()).isFalse();
+        });
     }
 
     /** CAT-16 + AD-008: a former member's share in an owned category is listed as inactive. */

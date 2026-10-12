@@ -81,6 +81,8 @@ export type CategorySpending = {
   type: FinancialTransactionType;
   ownerId: number | null;
   ownerName: string | null;
+  /** false when the owner left the plan (CAT-14); null without an owner. Children inherit the parent's. */
+  ownerActive: boolean | null;
   spent: number;
   limit: number | null;
   remaining: number | null;

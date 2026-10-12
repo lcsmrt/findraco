@@ -32,8 +32,9 @@ import java.util.function.Predicate;
  * their own amount. Entries of users who are not active members are dormant: listed, but left out of
  * the sum and of evaluation (CAT-11, CAT-12, CAT-14). With a member filter, a row with an active entry
  * for that member shows the member's own limit. An owned category (a child inherits its parent's owner)
- * counts the owner's spend only, even after the owner left the plan; the other members' shares are
- * listed as per-member rows without a limit (CAT-16). No Spring context or repository is needed;
+ * counts the owner's spend only, even after the owner left the plan (the row then reports
+ * {@code ownerActive=false}, inherited by the children); the other members' shares are
+ * listed as per-member rows without a limit (CAT-14, CAT-16). No Spring context or repository is needed;
  * inputs are plain query rows and entities.
  */
 @Component
@@ -152,7 +153,7 @@ public class CategorySpendingAssembler {
                         entry.getAmount(),
                         limits.isActive(entry)))
                 .toList();
-        return new CategorySpendingDto(category, spent, limits.forRow(category), members, children);
+        return new CategorySpendingDto(category, null, spent, limits.forRow(category), members, children);
     }
 
     /**
@@ -173,7 +174,8 @@ public class CategorySpendingAssembler {
                         null,
                         limits.activeMemberIds().contains(share.getKey())))
                 .toList();
-        return new CategorySpendingDto(category, spent, limits.forRow(category), others, children);
+        boolean ownerActive = limits.activeMemberIds().contains(owner.getId());
+        return new CategorySpendingDto(category, ownerActive, spent, limits.forRow(category), others, children);
     }
 
     /** Limit rules shared by every row: effective limit, dormancy and the member filter. */

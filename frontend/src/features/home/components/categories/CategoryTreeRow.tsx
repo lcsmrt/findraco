@@ -134,9 +134,14 @@ export const CategoryTreeRow = ({
           >
             {row.name}
           </span>
-          {row.ownerName && (
-            <Badge variant="outline">{row.ownerName}</Badge>
-          )}
+          {row.ownerName &&
+            (row.ownerActive === false ? (
+              <Badge variant="outline" className="text-muted-foreground opacity-70">
+                {row.ownerName} (former member)
+              </Badge>
+            ) : (
+              <Badge variant="outline">{row.ownerName}</Badge>
+            ))}
           {status === "over" && <Badge variant="destructive">Over limit</Badge>}
           {members.length > 0 && (
             <Button

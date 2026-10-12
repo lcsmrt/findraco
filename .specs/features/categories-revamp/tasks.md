@@ -670,6 +670,36 @@ T21 → T22 → T23 → T24
 
 ---
 
+## Fix tasks (verification iteration 1)
+
+Gaps 1 and 2 from `validation.md` (FAIL, iteration 1).
+
+### F1: Former owner shown in the Categories tab
+
+**What**: `ownerActive` (null without an owner) on `CategorySpendingDto`, computed from the active member ids already used for dormancy; children inherit the parent's value. The TS `CategorySpending` type carries it and `CategoryTreeRow` greys the owner badge with "(former member)" when `ownerActive === false`.
+**Where**: `backend/src/main/java/com/lcs/findraco/dtos/response/CategorySpendingDto.java`, `backend/src/main/java/com/lcs/findraco/services/CategorySpendingAssembler.java`, `frontend/src/api/dtos/financialTransactionCategory.ts`, `frontend/src/features/home/components/categories/CategoryTreeRow.tsx`
+**Depends on**: None
+**Reuses**: T22 assembler, T23 owner badge
+**Requirement**: CAT-14 (P3 AC 7)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] `CategorySpendingAssemblerTest`: `ownerActive` true for an active owner (root and inheriting child), false for a former owner (root and inheriting child), null without an owner
+- [x] Owner badge greyed with "(former member)" when `ownerActive === false` (presentational, no render test by design)
+- [x] Quick gate passes (assembler 29 passed, 0 failed; test-compile ok; frontend 251 passed, build ok, lint 23 pre-existing errors, 0 new)
+
+> Note: the badge logic is a one-line inline condition, not a helper, so no frontend unit test was added. Two frontend fixtures gained `ownerActive: null` for the new required field.
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
 ## Phase Execution Map
 
 ```

@@ -21,6 +21,7 @@ public class CategorySpendingDto {
     private final FinancialTransactionType type;
     private final Long ownerId;
     private final String ownerName;
+    private final Boolean ownerActive;
     private final BigDecimal spent;
     private final BigDecimal limit;
     private final BigDecimal remaining;
@@ -29,8 +30,12 @@ public class CategorySpendingDto {
     private final List<Member> members;
     private final List<CategorySpendingDto> children;
 
-    public CategorySpendingDto(FinancialTransactionCategory category, BigDecimal spent, BigDecimal limit,
-                               List<Member> members, List<CategorySpendingDto> children) {
+    /**
+     * @param ownerActive whether the owner (the parent's, for a child) is a current member of the plan;
+     *                    null when the category has no owner. A former owner is shown as such (CAT-14).
+     */
+    public CategorySpendingDto(FinancialTransactionCategory category, Boolean ownerActive, BigDecimal spent,
+                               BigDecimal limit, List<Member> members, List<CategorySpendingDto> children) {
         this.categoryId = category.getId();
         this.parentId = category.getParent() == null ? null : category.getParent().getId();
         this.name = category.getDescription();
@@ -38,6 +43,7 @@ public class CategorySpendingDto {
         User owner = category.getParent() == null ? category.getOwner() : category.getParent().getOwner();
         this.ownerId = owner == null ? null : owner.getId();
         this.ownerName = owner == null ? null : owner.getName();
+        this.ownerActive = owner == null ? null : ownerActive;
         this.spent = spent;
         this.limit = limit;
         this.remaining = remaining(spent, limit);
@@ -107,6 +113,7 @@ public class CategorySpendingDto {
     public FinancialTransactionType getType() { return type; }
     public Long getOwnerId() { return ownerId; }
     public String getOwnerName() { return ownerName; }
+    public Boolean getOwnerActive() { return ownerActive; }
     public BigDecimal getSpent() { return spent; }
     public BigDecimal getLimit() { return limit; }
     public BigDecimal getRemaining() { return remaining; }
