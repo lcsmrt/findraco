@@ -59,7 +59,7 @@
 }
 
 :root {
-  --background: #f5ecd7;
+  --background: #f9f1dd;
   --foreground: #1f1b14;
   --card: #fffcf5;
   --card-foreground: #1f1b14;
@@ -70,7 +70,7 @@
   --primary-ink: #a14a07;
   --secondary: #efe2c4;
   --secondary-foreground: #451a03;
-  --muted: #ece0c4;
+  --muted: #efe4ca;
   --muted-foreground: #6b6258;
   --accent: #f3e3bd;
   --accent-foreground: #451a03;
@@ -90,7 +90,7 @@
   --sidebar-foreground: #1f1b14;
   --sidebar-primary: #f59e0b;
   --sidebar-primary-foreground: #1f1405;
-  --sidebar-accent: #ece0c4;
+  --sidebar-accent: #efe4ca;
   --sidebar-accent-foreground: #451a03;
   --sidebar-border: #d6c6a8;
   --sidebar-ring: #f59e0b;
