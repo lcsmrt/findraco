@@ -4,7 +4,7 @@ import { DateRangePicker } from "@/components/input/DatePicker";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { cn } from "@/lib/mergeClasses";
-import { differenceInCalendarMonths, format, parseISO } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { useMemo } from "react";
 import type { DateRange } from "react-day-picker";
 import {
@@ -12,6 +12,7 @@ import {
   type Period,
 } from "../../filters/homeFilterParams";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
+import { countMonths, scaleTreeLimits } from "../../utils/scaleLimits";
 import {
   useOverviewMemberFilter,
   type MemberOption,
@@ -57,37 +58,16 @@ export const OverviewTab = () => {
 
   const { data, isLoading } = useGetDashboardSummary(filter);
 
-  const monthCount = useMemo(() => {
-    const start = parseISO(filter.startDate);
-    const end = parseISO(filter.endDate);
-    return differenceInCalendarMonths(end, start) + 1;
-  }, [filter]);
+  const monthCount = countMonths(filter.startDate, filter.endDate);
 
-  const scaledCategoryBreakdown = useMemo(() => {
-    if (!data) return [];
-    // SPEC_DEVIATION: remaining/percentUsed/overLimit are recomputed here
-    // instead of using the backend values as-is, because the limit is
-    // scaled to the selected period (monthCount) client-side, so the
-    // backend's single-month evaluation would be inconsistent with the
-    // scaled limit shown in the UI.
-    return data.categoryBreakdown.map((entry) => {
-      const limit = entry.limit != null ? entry.limit * monthCount : undefined;
-      if (limit == null) {
-        return {
-          ...entry,
-          limit: undefined,
-          remaining: undefined,
-          percentUsed: undefined,
-          overLimit: undefined,
-        };
-      }
-      const remaining = limit - entry.spent;
-      const percentUsed =
-        limit === 0 ? 0 : Math.round((entry.spent / limit) * 10000) / 100;
-      const overLimit = entry.spent > limit;
-      return { ...entry, limit, remaining, percentUsed, overLimit };
-    });
-  }, [data, monthCount]);
+  // SPEC_DEVIATION: remaining/percentUsed/overLimit are recomputed on the
+  // client instead of using the backend values as-is, because the limit is
+  // scaled to the selected period (monthCount) client-side, so the backend's
+  // single-month evaluation would be inconsistent with the scaled limit shown.
+  const scaledCategoryBreakdown = useMemo(
+    () => (data ? scaleTreeLimits(data.categoryBreakdown, monthCount) : []),
+    [data, monthCount],
+  );
 
   const handlePeriodClick = (p: Period) =>
     updateOverview((o) => ({ ...o, period: p, customRange: null }));

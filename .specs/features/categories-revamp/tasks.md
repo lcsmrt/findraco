@@ -333,8 +333,8 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Unit tests: 1-month, 3-month and custom ranges scale limits like today; Overview output unchanged
-- [ ] Quick gate passes
+- [x] Unit tests: 1-month, 3-month and custom ranges scale limits like today; Overview output unchanged
+- [x] Quick gate passes (179 passed, 0 failed)
 
 **Tests**: unit
 **Gate**: quick
