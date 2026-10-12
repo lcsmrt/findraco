@@ -6,24 +6,18 @@ import { DateRangePicker } from "@/components/input/DatePicker";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { cn } from "@/lib/mergeClasses";
-import {
-  differenceInCalendarMonths,
-  endOfMonth,
-  endOfYear,
-  format,
-  parseISO,
-  startOfMonth,
-  startOfYear,
-  subMonths,
-} from "date-fns";
-import { useMemo, useState } from "react";
+import { differenceInCalendarMonths, format, parseISO } from "date-fns";
+import { useEffect, useMemo } from "react";
 import type { DateRange } from "react-day-picker";
+import {
+  resolvePeriodDates,
+  type Period,
+} from "../../filters/homeFilterParams";
+import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { CategorySpendingChart } from "./CategorySpendingChart";
 import { MonthlyTrendChart } from "./MonthlyTrendChart";
 import { PersonBreakdownList } from "./PersonBreakdownList";
 import { SummaryCards } from "./SummaryCards";
-
-type Period = "this-month" | "last-3m" | "last-6m" | "this-year";
 
 // StandardCombobox requires an `id`; PlanMember keys on `userId`, so members are adapted to this shape.
 type MemberOption = { id: number; name: string };
@@ -35,58 +29,53 @@ const PERIOD_LABELS: Record<Period, string> = {
   "this-year": "This year",
 };
 
-const getPeriodDates = (period: Period) => {
-  const now = new Date();
-  const fmt = (d: Date) => format(d, "yyyy-MM-dd");
-  switch (period) {
-    case "this-month":
-      return {
-        startDate: fmt(startOfMonth(now)),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "last-3m":
-      return {
-        startDate: fmt(startOfMonth(subMonths(now, 2))),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "last-6m":
-      return {
-        startDate: fmt(startOfMonth(subMonths(now, 5))),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "this-year":
-      return { startDate: fmt(startOfYear(now)), endDate: fmt(endOfYear(now)) };
-  }
-};
-
 export const OverviewTab = () => {
-  const [period, setPeriod] = useState<Period>("this-month");
-  const [customRange, setCustomRange] = useState<DateRange | undefined>();
-  const [selectedMember, setSelectedMember] = useState<MemberOption | null>(
-    null,
-  );
+  const { overview, updateOverview } = useHomeFilters();
+  const { period, customRange, memberId } = overview;
 
   const { activePlanId } = usePlanContext();
-  const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
+  const { data: members = [], isSuccess: membersLoaded } = useGetPlanMembers(
+    activePlanId ?? undefined,
+  );
   const memberOptions = useMemo<MemberOption[]>(
     () => members.map((m) => ({ id: m.userId, name: m.name })),
     [members],
   );
   const showMemberPicker = memberOptions.length > 1;
+  const selectedMember =
+    memberOptions.find((m) => m.id === memberId) ?? null;
+  const isMemberStale = membersLoaded && memberId != null && !selectedMember;
+  // The member filter is ignored on single-member plans; until members load it is
+  // applied as-is so the dashboard is not fetched twice for the common case.
+  const effectiveMemberId =
+    memberId != null && (!membersLoaded || showMemberPicker) && !isMemberStale
+      ? memberId
+      : null;
 
-  const isCustomActive = !!(customRange?.from && customRange?.to);
+  useEffect(() => {
+    if (isMemberStale) updateOverview((o) => ({ ...o, memberId: null }));
+  }, [isMemberStale, updateOverview]);
+
+  const isCustomActive = customRange != null;
+  const customFrom = customRange?.from;
+  const customTo = customRange?.to;
+  const pickerRange = useMemo<DateRange | undefined>(
+    () =>
+      customFrom && customTo
+        ? { from: parseISO(customFrom), to: parseISO(customTo) }
+        : undefined,
+    [customFrom, customTo],
+  );
 
   const filter = useMemo(() => {
-    const dates = isCustomActive
-      ? {
-          startDate: format(customRange!.from!, "yyyy-MM-dd"),
-          endDate: format(customRange!.to!, "yyyy-MM-dd"),
-        }
-      : getPeriodDates(period);
-    return selectedMember
-      ? { ...dates, memberId: selectedMember.id }
+    const dates =
+      customFrom && customTo
+        ? { startDate: customFrom, endDate: customTo }
+        : resolvePeriodDates(period, new Date());
+    return effectiveMemberId != null
+      ? { ...dates, memberId: effectiveMemberId }
       : dates;
-  }, [period, isCustomActive, customRange, selectedMember]);
+  }, [period, customFrom, customTo, effectiveMemberId]);
 
   const { data, isLoading } = useGetDashboardSummary(filter);
 
@@ -122,10 +111,23 @@ export const OverviewTab = () => {
     });
   }, [data, monthCount]);
 
-  const handlePeriodClick = (p: Period) => {
-    setPeriod(p);
-    setCustomRange(undefined);
+  const handlePeriodClick = (p: Period) =>
+    updateOverview((o) => ({ ...o, period: p, customRange: null }));
+
+  const handleCustomRangeChange = (range: DateRange | undefined) => {
+    const from = range?.from;
+    const to = range?.to ?? from;
+    updateOverview((o) => ({
+      ...o,
+      customRange:
+        from && to
+          ? { from: format(from, "yyyy-MM-dd"), to: format(to, "yyyy-MM-dd") }
+          : null,
+    }));
   };
+
+  const handleMemberChange = (member: MemberOption | null) =>
+    updateOverview((o) => ({ ...o, memberId: member?.id ?? null }));
 
   return (
     <div className="flex flex-col gap-6 px-4">
@@ -140,8 +142,8 @@ export const OverviewTab = () => {
           </Button>
         ))}
         <DateRangePicker
-          value={customRange}
-          onChange={setCustomRange}
+          value={pickerRange}
+          onChange={handleCustomRangeChange}
           placeholder="Custom period"
           className={cn(isCustomActive && "border-primary")}
         />
@@ -150,7 +152,7 @@ export const OverviewTab = () => {
             <StandardCombobox
               items={memberOptions}
               value={selectedMember}
-              onValueChange={setSelectedMember}
+              onValueChange={handleMemberChange}
               itemLabel={(m) => m.name}
               placeholder="All members"
               clearable

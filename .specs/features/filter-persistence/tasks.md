@@ -250,8 +250,8 @@ T8 → T9
 
 **Done when**:
 
-- [ ] `HomePage.tsx` and `OverviewTab.tsx` hold no filter `useState`
-- [ ] Build gate passes
+- [x] `HomePage.tsx` and `OverviewTab.tsx` hold no filter `useState`
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build

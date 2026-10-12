@@ -1,18 +1,24 @@
 import { cn } from "@/lib/mergeClasses";
-import { useState } from "react";
 import { OverviewTab } from "./components/overview/OverviewTab";
 import { TransactionsTab } from "./components/transactions/TransactionsTab";
 import { Button } from "@/components/button/Button";
+import { HomeFiltersGate } from "./filters/HomeFiltersGate";
+import type { HomeTab } from "./filters/homeFilterParams";
+import { useHomeFilters } from "./hooks/useHomeFilters";
 
-type Tab = "overview" | "transactions";
-
-const tabs: { key: Tab; label: string }[] = [
+const tabs: { key: HomeTab; label: string }[] = [
   { key: "overview", label: "Overview" },
   { key: "transactions", label: "Transactions" },
 ];
 
-export const Home = () => {
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
+export const Home = () => (
+  <HomeFiltersGate>
+    <HomeTabs />
+  </HomeFiltersGate>
+);
+
+const HomeTabs = () => {
+  const { tab: activeTab, setTab: setActiveTab } = useHomeFilters();
 
   return (
     <div className="flex flex-col gap-6 py-4">
