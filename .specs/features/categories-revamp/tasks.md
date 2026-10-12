@@ -381,8 +381,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Unit tests for `eligibleDeleteTargets`; dialog cannot submit an in-use delete without a target
-- [ ] Quick gate passes
+- [x] Unit tests for `eligibleDeleteTargets`; dialog cannot submit an in-use delete without a target
+- [x] Quick gate passes (211 passed, 0 failed)
+
+> SPEC_DEVIATION: no endpoint reports reference counts, so "in use" is learned from the API's 409 on a first delete without target (which deletes nothing); the dialog then requires a target before sending `reassignTo`.
 
 **Tests**: unit
 **Gate**: quick
