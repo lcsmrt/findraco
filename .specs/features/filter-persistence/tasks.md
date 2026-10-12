@@ -199,11 +199,11 @@ T8 → T9
 
 **Done when**:
 
-- [ ] No params + saved state → URL becomes saved state with `plan`; children never render with default params first
-- [ ] No params + nothing saved → `?plan=<active>` (defaults)
-- [ ] URL params with matching `plan` win and are saved
-- [ ] `plan` mismatch → active plan's saved state is loaded (switch back restores the previous plan's filters)
-- [ ] Quick gate passes
+- [x] No params + saved state → URL becomes saved state with `plan`; children never render with default params first
+- [x] No params + nothing saved → `?plan=<active>` (defaults)
+- [x] URL params with matching `plan` win and are saved
+- [x] `plan` mismatch → active plan's saved state is loaded (switch back restores the previous plan's filters)
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
