@@ -635,8 +635,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Schema/mapper tests: owner hidden for children; owner and per-member mode mutually exclusive
-- [ ] Quick gate passes
+- [x] Schema/mapper tests: owner hidden for children; owner and per-member mode mutually exclusive
+- [x] Quick gate passes (246 passed, 0 failed)
+
+> Note: the owner select ("Belongs to") shows only for roots; choosing a parent clears it, and choosing an owner switches the limit to single. The row's owner badge was already in place (T14). The owned check now reads the form's `ownerId` instead of the stored owner, so the T19 owned-category test sets `ownerId: 10` in its values, and the exact-shape fixtures gained `ownerId` (no assertion weakened).
 
 **Tests**: unit
 **Gate**: quick

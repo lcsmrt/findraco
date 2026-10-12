@@ -7,6 +7,7 @@ import {
   buildMemberLimitRows,
   createCategoryFormSchema,
   memberLimitShares,
+  ownerOptions,
   parentOptions,
   toPayload,
   type CategoryFormValues,
@@ -37,6 +38,7 @@ const values = (overrides: Partial<CategoryFormValues> = {}): CategoryFormValues
   type: "DEBIT",
   description: "Groceries",
   parentId: null,
+  ownerId: null,
   spendingLimit: "",
   limitMode: "single",
   memberLimits: [],
@@ -156,6 +158,7 @@ describe("buildDefaultValues", () => {
       type: "DEBIT",
       description: "Delivery",
       parentId: 1,
+      ownerId: null,
       spendingLimit: maskCurrency("20000"),
       limitMode: "single",
       memberLimits: [],
@@ -176,6 +179,7 @@ describe("buildDefaultValues", () => {
       type: "CREDIT",
       description: "Gym",
       parentId: null,
+      ownerId: null,
       spendingLimit: "",
       limitMode: "single",
       memberLimits: [],
@@ -187,6 +191,7 @@ describe("buildDefaultValues", () => {
       type: "DEBIT",
       description: "",
       parentId: null,
+      ownerId: null,
       spendingLimit: "",
       limitMode: "single",
       memberLimits: [],
@@ -202,6 +207,7 @@ describe("toPayload", () => {
       type: "DEBIT",
       description: "Delivery",
       parentId: 1,
+      ownerId: null,
       spendingLimit: 200.5,
       memberLimits: [],
     });
@@ -212,6 +218,7 @@ describe("toPayload", () => {
       type: "DEBIT",
       description: "Groceries",
       parentId: null,
+      ownerId: null,
       spendingLimit: undefined,
       memberLimits: [],
     });
@@ -342,7 +349,7 @@ describe("createCategoryFormSchema with per-member limits", () => {
     expect(
       issuesOf(
         createCategoryFormSchema(withOwned, owned).safeParse(
-          perMember([row(10, "Lucas", "R$ 1,00")], { description: "Professional" }),
+          perMember([row(10, "Lucas", "R$ 1,00")], { description: "Professional", ownerId: 10 }),
         ),
       ),
     ).toEqual([{ path: "limitMode", message }]);
@@ -374,6 +381,7 @@ describe("toPayload with per-member limits", () => {
       type: "DEBIT",
       description: "Groceries",
       parentId: null,
+      ownerId: null,
       spendingLimit: undefined,
       memberLimits: [
         { memberId: 10, amount: 260 },
@@ -408,5 +416,72 @@ describe("toPayload with per-member limits", () => {
         values({ type: "CREDIT", limitMode: "perMember", memberLimits: [row(10, "Lucas", "R$ 1,00")] }),
       ).memberLimits,
     ).toEqual([]);
+  });
+});
+
+// ---- Owner (CAT-15) ----
+
+describe("ownerOptions", () => {
+  it("offers the active members by name", () => {
+    expect(ownerOptions([lucas, livia])).toEqual([
+      { id: 20, name: "Livia", active: true },
+      { id: 10, name: "Lucas", active: true },
+    ]);
+  });
+
+  it("keeps a root's former owner as an option", () => {
+    const owned = cat(7, "Professional", { ownerId: 30, ownerName: "Ana", ownerActive: false });
+    expect(ownerOptions([lucas], owned)).toEqual([
+      { id: 10, name: "Lucas", active: true },
+      { id: 30, name: "Ana", active: false },
+    ]);
+  });
+
+  it("does not offer a child's inherited owner", () => {
+    const child = cat(8, "Courses", { parentId: 7, ownerId: 30, ownerName: "Ana" });
+    expect(ownerOptions([lucas], child).map((o) => o.id)).toEqual([10]);
+  });
+});
+
+describe("createCategoryFormSchema with an owner", () => {
+  it("accepts an owner on a root", () => {
+    expect(createCategoryFormSchema(categories).safeParse(values({ ownerId: 10 })).success).toBe(true);
+  });
+
+  it("rejects an owner on a child", () => {
+    expect(
+      issuesOf(createCategoryFormSchema(categories).safeParse(values({ parentId: 1, ownerId: 10 }))),
+    ).toEqual([{ path: "ownerId", message: "A subcategory has its parent's owner" }]);
+  });
+
+  it("makes the owner and per-member mode mutually exclusive", () => {
+    const message = "A category that belongs to one member cannot have per-member limits";
+    expect(
+      issuesOf(
+        createCategoryFormSchema(categories).safeParse(
+          values({ ownerId: 10, limitMode: "perMember", memberLimits: [row(10, "Lucas", "R$ 1,00")] }),
+        ),
+      ),
+    ).toEqual([{ path: "limitMode", message }]);
+    expect(
+      createCategoryFormSchema(categories, cat(7, "Professional", { ownerId: 10 })).safeParse(
+        values({ description: "Professional", ownerId: null, limitMode: "perMember", memberLimits: [] }),
+      ).success,
+    ).toBe(true);
+  });
+});
+
+describe("owner in buildDefaultValues and toPayload", () => {
+  it("takes a root's own owner", () => {
+    expect(buildDefaultValues(cat(7, "Professional", { ownerId: 10 })).ownerId).toBe(10);
+  });
+
+  it("leaves a child's inherited owner out of the form", () => {
+    expect(buildDefaultValues(cat(8, "Courses", { parentId: 7, ownerId: 10 })).ownerId).toBeNull();
+  });
+
+  it("sends the owner for a root and never for a child", () => {
+    expect(toPayload(values({ ownerId: 10 })).ownerId).toBe(10);
+    expect(toPayload(values({ parentId: 1, ownerId: 10 })).ownerId).toBeNull();
   });
 });

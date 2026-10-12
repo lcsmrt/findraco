@@ -15,8 +15,8 @@ export type FinancialTransactionCategory = {
   // SPEC_DEVIATION: optional (design: required) so the partial category shapes
   // embedded in transaction forms still type-check; null/undefined = root.
   parentId?: number | null;
-  // Owner and per-member limit fields arrive with the owned-category and
-  // per-member-limit phases; optional until the API sends them.
+  // Optional: categories embedded in transactions carry no membership data
+  // (ownerActive, memberLimits and effectiveLimit are null there).
   ownerId?: number | null;
   ownerName?: string | null;
   ownerActive?: boolean | null;
@@ -39,6 +39,8 @@ export type CreateFinancialTransactionCategoryRequest = {
     description: string;
     spendingLimit?: number;
     parentId?: number | null;
+    /** Roots only; a child inherits its parent's owner. */
+    ownerId?: number | null;
     /** Replaced as a set; omitted keeps the stored entries, [] removes them. */
     memberLimits?: { memberId: number; amount: number }[];
   };

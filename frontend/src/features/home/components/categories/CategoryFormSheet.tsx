@@ -67,13 +67,33 @@ export const parentOptions = (
 /** The owner a category would have: a child inherits its parent's (CAT-15). */
 export const effectiveOwnerId = (
   parentId: number | null,
+  ownerId: number | null,
   categories: FinancialTransactionCategory[],
-  editing?: FinancialTransactionCategory | null,
 ): number | null => {
   if (parentId != null) {
     return categories.find((c) => c.id === parentId)?.ownerId ?? null;
   }
-  return editing?.ownerId ?? null;
+  return ownerId;
+};
+
+export type OwnerOption = { id: number; name: string; active: boolean };
+
+/**
+ * Members a root can belong to: the active members, plus the current owner
+ * when they left the plan, so the OWNER can keep that ownership (CAT-14).
+ */
+export const ownerOptions = (
+  members: PlanMember[],
+  category?: FinancialTransactionCategory | null,
+): OwnerOption[] => {
+  const options: OwnerOption[] = members
+    .map((member) => ({ id: member.userId, name: member.name, active: true }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const ownerId = category?.parentId == null ? category?.ownerId : null;
+  if (ownerId != null && !options.some((o) => o.id === ownerId)) {
+    options.push({ id: ownerId, name: category?.ownerName ?? "", active: false });
+  }
+  return options;
 };
 
 const memberLimitRowSchema = z.object({
@@ -91,6 +111,7 @@ const categoryFormBaseSchema = z.object({
   type: z.enum(["DEBIT", "CREDIT"]),
   description: z.string().trim().min(1, "Name is required"),
   parentId: z.number().nullable(),
+  ownerId: z.number().nullable(),
   spendingLimit: z.string(),
   limitMode: z.enum(["single", "perMember"]),
   memberLimits: z.array(memberLimitRowSchema),
@@ -108,7 +129,14 @@ export const createCategoryFormSchema = (
   editing?: FinancialTransactionCategory | null,
 ) =>
   categoryFormBaseSchema.superRefine((values, ctx) => {
-    refineMemberLimits(values, ctx, categories, editing);
+    refineMemberLimits(values, ctx, categories);
+    if (values.parentId != null && values.ownerId != null) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "A subcategory has its parent's owner",
+        path: ["ownerId"],
+      });
+    }
     const hasChildren =
       editing != null && categoryHasChildren(editing.id, categories);
     if (hasChildren && values.type !== editing.type) {
@@ -142,7 +170,6 @@ const refineMemberLimits = (
   values: CategoryFormValues,
   ctx: z.RefinementCtx,
   categories: FinancialTransactionCategory[],
-  editing?: FinancialTransactionCategory | null,
 ) => {
   if (values.limitMode !== "perMember") return;
   if (values.type === "CREDIT") {
@@ -153,7 +180,7 @@ const refineMemberLimits = (
     });
     return;
   }
-  if (effectiveOwnerId(values.parentId, categories, editing) != null) {
+  if (effectiveOwnerId(values.parentId, values.ownerId, categories) != null) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
       message: "A category that belongs to one member cannot have per-member limits",
@@ -259,6 +286,8 @@ export const buildDefaultValues = (
       type: category.type,
       description: category.description,
       parentId: category.parentId ?? null,
+      // A child reports its parent's owner; only a root's owner is its own.
+      ownerId: category.parentId == null ? (category.ownerId ?? null) : null,
       spendingLimit:
         category.spendingLimit != null ? maskAmount(category.spendingLimit) : "",
       limitMode: category.memberLimits?.length ? "perMember" : "single",
@@ -269,6 +298,7 @@ export const buildDefaultValues = (
     type: defaults?.type ?? "DEBIT",
     description: defaults?.description ?? "",
     parentId: null,
+    ownerId: null,
     spendingLimit: "",
     limitMode: "single",
     memberLimits,
@@ -288,6 +318,7 @@ export const toPayload = (
     type: values.type,
     description: values.description.trim(),
     parentId: values.parentId,
+    ownerId: values.parentId == null ? values.ownerId : null,
     // Income categories carry no limit.
     spendingLimit:
       values.type === "DEBIT" && !perMember
@@ -388,7 +419,10 @@ export const CategoryFormSheet = ({
     editing != null && categoryHasChildren(editing.id, categories);
   const options = parentOptions(categories, type, editing?.id);
   const selectedParent = options.find((c) => c.id === parentId) ?? null;
-  const isOwned = effectiveOwnerId(parentId, categories, editing) != null;
+  const ownerId = watch("ownerId");
+  const isOwned = effectiveOwnerId(parentId, ownerId, categories) != null;
+  const owners = ownerOptions(members, editing);
+  const selectedOwner = owners.find((o) => o.id === ownerId) ?? null;
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -444,11 +478,13 @@ export const CategoryFormSheet = ({
                 id="category-parent"
                 items={options}
                 value={selectedParent}
-                onValueChange={(parent) =>
+                onValueChange={(parent) => {
                   setValue("parentId", parent?.id ?? null, {
                     shouldValidate: true,
-                  })
-                }
+                  });
+                  // A subcategory takes its parent's owner (CAT-15).
+                  if (parent) setValue("ownerId", null);
+                }}
                 itemLabel={(c) => c.description}
                 placeholder="None (top level)"
                 emptyMessage="No top-level categories"
@@ -462,6 +498,39 @@ export const CategoryFormSheet = ({
               )}
               <FieldError errors={[errors.parentId]} />
             </Field>
+
+            {parentId == null && (
+              <Field>
+                <FieldLabel htmlFor="category-owner">
+                  Belongs to{" "}
+                  <span className="text-muted-foreground font-normal">
+                    (optional)
+                  </span>
+                </FieldLabel>
+                <StandardCombobox
+                  id="category-owner"
+                  items={owners}
+                  value={selectedOwner}
+                  onValueChange={(owner) => {
+                    setValue("ownerId", owner?.id ?? null, {
+                      shouldValidate: true,
+                    });
+                    // An owned category has a single limit (CAT-13).
+                    if (owner) setValue("limitMode", "single");
+                  }}
+                  itemLabel={(o) => (o.active ? o.name : `${o.name} (former member)`)}
+                  placeholder="Shared (everyone)"
+                  emptyMessage="No members"
+                  disabled={isPending}
+                  clearable
+                />
+                <p className="text-muted-foreground text-xs">
+                  Its spend and limit are this member's. Subcategories belong
+                  to the same member.
+                </p>
+                <FieldError errors={[errors.ownerId]} />
+              </Field>
+            )}
 
             {type === "DEBIT" && (
               <CategoryLimitFields
