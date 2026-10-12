@@ -558,8 +558,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Build gate passes; manual check of a 2-member category in the tab
-- [ ] Build gate passes
+- [ ] Build gate passes; manual check of a 2-member category in the tab — PENDING: manual check needs the API + DB tunnel (build gate passed)
+- [x] Build gate passes (build ok; 237 tests; lint: 0 new errors, 23 pre-existing)
+
+> Note: per-member rows open from a members toggle on the row; former members are greyed with a "Former member" badge and no usage. `scaleTreeLimits` now also scales `members[].limit` via a tested `scaleMemberLimit` (a former member's amount is scaled but never evaluated).
 
 **Tests**: none
 **Gate**: build

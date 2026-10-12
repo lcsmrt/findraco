@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import type { CategoryBreakdown } from "@/api/dtos";
+import type { CategoryBreakdown, CategorySpending, CategorySpendingMember } from "@/api/dtos";
 import { resolvePeriodDates } from "../filters/homeFilterParams";
-import { countMonths, scaleLimit, scaleTreeLimits } from "./scaleLimits";
+import { countMonths, scaleLimit, scaleMemberLimit, scaleTreeLimits } from "./scaleLimits";
 
 const now = new Date(2026, 9, 11); // 2026-10-11
 
@@ -116,5 +116,70 @@ describe("scaleTreeLimits", () => {
       percentUsed: 62.5,
       overLimit: false,
     });
+  });
+});
+
+const member = (overrides: Partial<CategorySpendingMember>): CategorySpendingMember => ({
+  memberId: 10,
+  name: "Lucas",
+  spent: 0,
+  limit: null,
+  remaining: null,
+  percentUsed: null,
+  overLimit: null,
+  active: true,
+  ...overrides,
+});
+
+describe("scaleMemberLimit", () => {
+  it("scales an active member's limit by the month count and evaluates their spend", () => {
+    expect(scaleMemberLimit(member({ spent: 300, limit: 260, remaining: -40, percentUsed: 115.38, overLimit: true }), 2))
+      .toEqual(member({ spent: 300, limit: 520, remaining: 220, percentUsed: 57.69, overLimit: false }));
+  });
+
+  it("scales a former member's amount but leaves it unevaluated", () => {
+    expect(scaleMemberLimit(member({ spent: 500, limit: 140, active: false }), 3)).toEqual(
+      member({ spent: 500, limit: 420, remaining: null, percentUsed: null, overLimit: null, active: false }),
+    );
+  });
+
+  it("keeps a member without a limit unevaluated", () => {
+    expect(scaleMemberLimit(member({ spent: 50 }), 2)).toEqual(member({ spent: 50 }));
+  });
+});
+
+describe("scaleTreeLimits with per-member rows", () => {
+  it("scales the members of every node", () => {
+    const spendingNode = (overrides: Partial<CategorySpending>): CategorySpending => ({
+      categoryId: 1,
+      parentId: null,
+      name: "Food",
+      type: "DEBIT",
+      ownerId: null,
+      ownerName: null,
+      spent: 0,
+      limit: null,
+      remaining: null,
+      percentUsed: null,
+      overLimit: null,
+      members: [],
+      children: [],
+      ...overrides,
+    });
+    const child = spendingNode({
+      categoryId: 2,
+      parentId: 1,
+      name: "Delivery",
+      spent: 90,
+      members: [member({ spent: 90, limit: 100 })],
+    });
+    const [root] = scaleTreeLimits(
+      [spendingNode({ spent: 130, limit: 300, members: [member({ spent: 100, limit: 200 })], children: [child] })],
+      3,
+    );
+
+    expect(root.limit).toBe(900);
+    expect(root.members[0]).toMatchObject({ limit: 600, remaining: 500, percentUsed: 16.67, overLimit: false });
+    expect(root.children[0].members[0]).toMatchObject({ limit: 300, remaining: 210, percentUsed: 30, overLimit: false });
   });
 });
