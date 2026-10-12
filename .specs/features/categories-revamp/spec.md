@@ -186,27 +186,27 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| CAT-01 | P1 Tab (AC 1–2, tabs and grouped tree) | Design | Pending |
-| CAT-02 | P1 Tab (AC 3, 8, row content and over-limit mark) | Design | Pending |
-| CAT-03 | P1 Tab (AC 4–5, period) | Design | Pending |
-| CAT-04 | P1 Tab (AC 6–7, role gating) | Design | Pending |
-| CAT-05 | P1 Tab (AC 9, dialog replaced) | Design | Pending |
-| CAT-06 | P1 Sub (AC 1–6, hierarchy rules) | Design | Pending |
-| CAT-07 | P1 Sub (AC 7–10, rollup and limits) | Design | Pending |
-| CAT-08 | P1 Sub (AC 11, Overview breakdown) | Design | Pending |
-| CAT-09 | P1 Sub (AC 12–13, filter and picker) | Design | Pending |
-| CAT-10 | P1 Sub (AC 14–17) + Edge (delete in use), delete with reassignment | Design | Pending |
-| CAT-11 | P2 Member (AC 1–4, store, sum, display) | Design | Pending |
-| CAT-12 | P2 Member (AC 5–6, spend by shares, per-member rows) | Design | Pending |
-| CAT-13 | P2 Member (AC 7–10, validation) | Design | Pending |
-| CAT-14 | P2 Member (AC 11–13) + P3 Owned (AC 7), dormant data for former members | Design | Pending |
-| CAT-15 | P3 Owned (AC 1–4, owner rules) | Design | Pending |
-| CAT-16 | P3 Owned (AC 5, 8, owner spend and visibility) | Design | Pending |
-| CAT-17 | P3 Owned (AC 6, default participant) | Design | Pending |
+| CAT-01 | P1 Tab (AC 1–2, tabs and grouped tree) | Tasks | In Tasks |
+| CAT-02 | P1 Tab (AC 3, 8, row content and over-limit mark) | Tasks | In Tasks |
+| CAT-03 | P1 Tab (AC 4–5, period) | Tasks | In Tasks |
+| CAT-04 | P1 Tab (AC 6–7, role gating) | Tasks | In Tasks |
+| CAT-05 | P1 Tab (AC 9, dialog replaced) | Tasks | In Tasks |
+| CAT-06 | P1 Sub (AC 1–6, hierarchy rules) | Tasks | In Tasks |
+| CAT-07 | P1 Sub (AC 7–10, rollup and limits) | Tasks | In Tasks |
+| CAT-08 | P1 Sub (AC 11, Overview breakdown) | Tasks | In Tasks |
+| CAT-09 | P1 Sub (AC 12–13, filter and picker) | Tasks | In Tasks |
+| CAT-10 | P1 Sub (AC 14–17) + Edge (delete in use), delete with reassignment | Tasks | In Tasks |
+| CAT-11 | P2 Member (AC 1–4, store, sum, display) | Tasks | In Tasks |
+| CAT-12 | P2 Member (AC 5–6, spend by shares, per-member rows) | Tasks | In Tasks |
+| CAT-13 | P2 Member (AC 7–10, validation) | Tasks | In Tasks |
+| CAT-14 | P2 Member (AC 11–13) + P3 Owned (AC 7), dormant data for former members | Tasks | In Tasks |
+| CAT-15 | P3 Owned (AC 1–4, owner rules) | Tasks | In Tasks |
+| CAT-16 | P3 Owned (AC 5, 8, owner spend and visibility) | Tasks | In Tasks |
+| CAT-17 | P3 Owned (AC 6, default participant) | Tasks | In Tasks |
 
 **ID format:** `CAT-NN`; each ID covers the AC range named in its row.
 
-**Coverage:** 17 total, 0 mapped to tasks, 17 unmapped ⚠️ (mapped in Tasks)
+**Coverage:** 17 total, 17 mapped to tasks, 0 unmapped
 
 ---
 
