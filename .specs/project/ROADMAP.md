@@ -1,7 +1,7 @@
 # Roadmap
 
 **Current Milestone:** M5 — Capture Every Day (post-MVP refinement)
-**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; **Rebrand finSight → findraco 🚧 IN PROGRESS** — functional rename deployed 2026-10-11; visual design still being iterated and validated by the user (`.specs/features/rebrand-findraco/`); remaining M4 refinements and M5 daily-capture tracks are now the active backlog.
+**Status:** M1–M3 ✅ SHIPPED; M4 Shared Plans P1 + Expense Items P1 ✅ SHIPPED; Rebrand finSight → findraco ✅ SHIPPED 2026-10-11 (both themes verified in prod). **Priorities reset 2026-10-11:** filter persistence, categories revamp and a Claude MCP connector come first; the MCP connector makes Claude the chat-capture channel, so WhatsApp is parked.
 
 > **Raw ideas bucket:** See [`IDEAS.md`](./IDEAS.md) for a separate, non-canonical collection of future product ideas captured during brainstorming. Those ideas are not yet triaged or committed; review and migrate only the accepted ones into this roadmap.
 
@@ -15,8 +15,9 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 
 | # | Feature | Why | Source |
 | - | ------- | --- | ------ |
-| M5-01 | **Invoice (NF) import / reader** | Eliminates the biggest daily friction: typing purchases manually. User-flagged as the top day-to-day need. | New — M5 |
-| M5-02 | **WhatsApp quick-capture bot** | Lets a user register a transaction by forwarding a message or texting a bot — lowest-friction capture when away from the app. | New — M5 |
+| M5-03 | **Persist filters across tabs** | Filters reset when switching tabs; keeping them removes constant re-filtering. | User — 2026-10-11 |
+| M5-04 | **Categories revamp** | Categories get their own tab; explore subcategories (parent/child) and per-person categories. Scope to be shaped in spec. | User — 2026-10-11 |
+| M5-05 | **Claude MCP connector** | Remote MCP server so Claude can read and modify plan data from chat — "the chat where I send things"; replaces WhatsApp capture for now. | User — 2026-10-11 |
 | M4-03 | **Expense Items P2** | Quantity input + itemized indicator in the transactions table; closes the visible gap left by P1. | M4 deferred |
 | M4-04 | **Expense Items P3** | Replicate items across series occurrences so a recurring grocery run stays itemized. | M4 deferred |
 
@@ -24,6 +25,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 
 | # | Feature | Why | Source |
 | - | ------- | --- | ------ |
+| M5-01 | **Invoice (NF) import / reader** | Eliminates typing purchases manually; partly covered once Claude can read a receipt and create transactions via MCP (M5-05). | New — M5 |
 | M4-05 | **Server-sent invite emails** | Removes the manual link-copy step from Shared Plans; needed for real multi-user adoption. | STATE.md deferred |
 | M4-06 | **Alerts / notifications** | Warn when balance goes negative or a category limit is projected to break; turns the dashboard from informative to actionable. | M4 deferred / Future |
 | M4-07 | **Permanent plan deletion + retention** | Soft-delete is done; owners need a real purge (and possibly restore) affordance. | STATE.md deferred |
@@ -43,6 +45,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 | - | ------- | ---------- |
 | — | Statistical forecasting / averages | Superseded by AD-002's deterministic materialized-rows model; revisit only if user explicitly asks for projections. |
 | — | Open-ended installments | Installments are bounded by definition; the need is covered by in-progress installments (RECUR-10). |
+| M5-02 | WhatsApp quick-capture bot | Superseded for now by the Claude MCP connector (M5-05) as the chat-capture channel; revisit if Claude-based capture falls short. |
 | — | Native mobile app | WhatsApp capture gives 90% of the mobile value without a separate app build. |
 
 ## Open Todos

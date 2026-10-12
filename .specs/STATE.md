@@ -60,11 +60,11 @@
 
 ## Handoff
 
-- **Feature**: Rebrand finSight → findraco — visual design iteration (`.specs/features/rebrand-findraco/`)
-- **Phase / Task**: Design pass shipped — merged to `main` and deployed 2026-10-11
-- **Completed**: warm-neutral light palette (`#f5f3ec` bg) and warm-gray dark palette (`#262624` bg), Claude-inspired neutrals with amber `#f59e0b` primary + `primary-ink` text token; Tailwind v4 `dark:` variant fixed to follow `.dark`; flat auth background, bordered auth card, shared `AuthLayout` header/footer + `ThemeToggle`; themed 404; dashboard chart polish; transactions table as a single card surface; mascot exploration parked in `mascot-wip.md`; current coin logo kept
+- **Feature**: none in progress — priorities reset 2026-10-11 (see ROADMAP Must have)
+- **Phase / Task**: Rebrand shipped and verified in prod (both themes)
+- **Completed**: `docs/dev-test-account` merged to `main` and pushed
 - **In-progress** (file:line): none
-- **Next step**: Verify prod in both themes; then pick the next ROADMAP item. Mascot/logo resumes later from `mascot-wip.md`
+- **Next step**: Spec the next item — M5-03 persist filters across tabs (smallest), M5-04 categories revamp, M5-05 Claude MCP connector
 - **Blockers**: none. Dev login: personal account is `lcsmrtakd@gmail.com`; reset emails land in Mailpit (`localhost:8025`, container `checklist-mailpit`); test account `test@findraco.local` / `Findraco#2026` (see `backend/README.md`)
 - **Uncommitted files**: none
 - **Branch**: main
