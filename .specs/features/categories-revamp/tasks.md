@@ -508,8 +508,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Unit tests: 260/140 → limit 400, 65/35 percent; 50/50 R$ 100 adds 50 each; member without entry counts in total only; dormant entry excluded; member-filtered row uses the member's limit; parent per-member rollup
-- [ ] Quick gate passes
+- [x] Unit tests: 260/140 → limit 400, 65/35 percent; 50/50 R$ 100 adds 50 each; member without entry counts in total only; dormant entry excluded; member-filtered row uses the member's limit; parent per-member rollup
+- [x] Quick gate passes (23 passed, 0 failed; branch coverage 41/44 incl. nested records)
+
+> Note: the 65/35 share is not a backend field: the rows carry 260/140 and the share percent is computed read-only in the form (T19). A dormant member row keeps its amount as `limit` but `remaining`/`percentUsed`/`overLimit` are null. `CategorySpendingService` now fetches active member ids via `PlanMembershipRepository.findAllByPlan`; the Overview also lists a category whose only limit is per member.
 
 **Tests**: unit
 **Gate**: quick

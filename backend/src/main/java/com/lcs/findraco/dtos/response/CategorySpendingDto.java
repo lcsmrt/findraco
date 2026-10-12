@@ -47,7 +47,11 @@ public class CategorySpendingDto {
         this.children = List.copyOf(children);
     }
 
-    /** One member's spend inside a category, against that member's own limit. */
+    /**
+     * One member's spend inside a category, against that member's own limit. A former member's entry
+     * ({@code active=false}) shows its stored amount but is not evaluated: remaining, percentUsed and
+     * overLimit are null (CAT-14).
+     */
     public static class Member {
         private final Long memberId;
         private final String name;
@@ -63,9 +67,10 @@ public class CategorySpendingDto {
             this.name = name;
             this.spent = spent;
             this.limit = limit;
-            this.remaining = remaining(spent, limit);
-            this.percentUsed = percentUsed(spent, limit);
-            this.overLimit = overLimit(spent, limit);
+            BigDecimal evaluated = active ? limit : null;
+            this.remaining = remaining(spent, evaluated);
+            this.percentUsed = percentUsed(spent, evaluated);
+            this.overLimit = overLimit(spent, evaluated);
             this.active = active;
         }
 
