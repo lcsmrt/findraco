@@ -4,6 +4,7 @@ import com.lcs.findraco.dtos.response.CategorySpendingDto;
 import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
+import com.lcs.findraco.models.User;
 import com.lcs.findraco.services.ItemShareAllocator.MemberFact;
 import org.springframework.stereotype.Component;
 
@@ -30,8 +31,10 @@ import java.util.function.Predicate;
  * are none; each entry also gets a per-member row comparing that member's (rolled-up) spend with
  * their own amount. Entries of users who are not active members are dormant: listed, but left out of
  * the sum and of evaluation (CAT-11, CAT-12, CAT-14). With a member filter, a row with an active entry
- * for that member shows the member's own limit. No Spring context or repository is needed; inputs are
- * plain query rows and entities.
+ * for that member shows the member's own limit. An owned category (a child inherits its parent's owner)
+ * counts the owner's spend only, even after the owner left the plan; the other members' shares are
+ * listed as per-member rows without a limit (CAT-16). No Spring context or repository is needed;
+ * inputs are plain query rows and entities.
  */
 @Component
 public class CategorySpendingAssembler {
@@ -51,6 +54,7 @@ public class CategorySpendingAssembler {
      * @param added      I facts (item portions added to the item's category)
      * @param categories      every category of the plan
      * @param activeMemberIds user ids of the plan's current members
+     * @param memberNames     display name by user id, for every member that has spend facts
      * @param memberId        the member filter, or null for the whole plan
      */
     public List<CategorySpendingDto> assemble(List<Object[]> rowsA,
@@ -58,9 +62,10 @@ public class CategorySpendingAssembler {
                                               List<MemberFact> added,
                                               List<FinancialTransactionCategory> categories,
                                               Set<Long> activeMemberIds,
+                                              Map<Long, String> memberNames,
                                               Long memberId) {
         Facts facts = Facts.of(rowsA, removed, added);
-        Limits limits = new Limits(activeMemberIds, memberId);
+        Limits limits = new Limits(activeMemberIds, memberNames, memberId);
         List<CategorySpendingDto> roots = buildTree(facts, limits, categories, category -> true, BY_NAME);
 
         List<CategorySpendingDto> result = new ArrayList<>();
@@ -79,9 +84,10 @@ public class CategorySpendingAssembler {
                                                       List<MemberFact> added,
                                                       List<FinancialTransactionCategory> categories,
                                                       Set<Long> activeMemberIds,
+                                                      Map<Long, String> memberNames,
                                                       Long memberId) {
         Facts facts = Facts.of(rowsA, removed, added);
-        Limits limits = new Limits(activeMemberIds, memberId);
+        Limits limits = new Limits(activeMemberIds, memberNames, memberId);
         Predicate<FinancialTransactionCategory> listed =
                 category -> facts.hasActivity(category.getId()) || limits.effective(category) != null;
         List<FinancialTransactionCategory> debit = categories.stream()
@@ -132,6 +138,10 @@ public class CategorySpendingAssembler {
     /** One row from its spend per member (own for a child, rolled up for a root). */
     private static CategorySpendingDto node(FinancialTransactionCategory category, Map<Long, BigDecimal> spentByMember,
                                             Limits limits, List<CategorySpendingDto> children) {
+        User owner = category.getParent() == null ? category.getOwner() : category.getParent().getOwner();
+        if (owner != null) {
+            return ownedNode(category, owner, spentByMember, limits, children);
+        }
         BigDecimal spent = spentByMember.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
         List<CategorySpendingDto.Member> members = category.getMemberLimits().stream()
                 .sorted(Comparator.comparing(entry -> entry.getMember().getId()))
@@ -145,8 +155,29 @@ public class CategorySpendingAssembler {
         return new CategorySpendingDto(category, spent, limits.forRow(category), members, children);
     }
 
+    /**
+     * An owned row (CAT-16): the owner's spend against the category limit; every other member with a
+     * share is listed without a limit, so nothing is hidden.
+     */
+    private static CategorySpendingDto ownedNode(FinancialTransactionCategory category, User owner,
+                                                 Map<Long, BigDecimal> spentByMember, Limits limits,
+                                                 List<CategorySpendingDto> children) {
+        BigDecimal spent = spentByMember.getOrDefault(owner.getId(), BigDecimal.ZERO);
+        List<CategorySpendingDto.Member> others = spentByMember.entrySet().stream()
+                .filter(share -> !share.getKey().equals(owner.getId()) && share.getValue().signum() != 0)
+                .sorted(Map.Entry.comparingByKey())
+                .map(share -> new CategorySpendingDto.Member(
+                        share.getKey(),
+                        limits.memberNames().get(share.getKey()),
+                        share.getValue(),
+                        null,
+                        limits.activeMemberIds().contains(share.getKey())))
+                .toList();
+        return new CategorySpendingDto(category, spent, limits.forRow(category), others, children);
+    }
+
     /** Limit rules shared by every row: effective limit, dormancy and the member filter. */
-    private record Limits(Set<Long> activeMemberIds, Long memberId) {
+    private record Limits(Set<Long> activeMemberIds, Map<Long, String> memberNames, Long memberId) {
 
         boolean isActive(CategoryMemberLimit entry) {
             return activeMemberIds.contains(entry.getMember().getId());

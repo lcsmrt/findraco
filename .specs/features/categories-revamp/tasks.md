@@ -610,8 +610,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] Unit tests: owner-only spend; inherited by children; non-owner share listed but not counted; dormant owner still attributes historic spend
-- [ ] Quick gate passes
+- [x] Unit tests: owner-only spend; inherited by children; non-owner share listed but not counted; dormant owner still attributes historic spend
+- [x] Quick gate passes (28 passed, 0 failed; branch coverage 49/52)
+
+> Note: the assembler now also takes `memberNames` (id → name) for the non-owner rows; `CategorySpendingService` builds it from the memberships plus `UserRepository.findAllById` for former members with spend facts.
 
 **Tests**: unit
 **Gate**: quick

@@ -8,6 +8,7 @@ import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
 import com.lcs.findraco.repositories.PlanMembershipRepository;
+import com.lcs.findraco.repositories.UserRepository;
 import com.lcs.findraco.security.PlanContext;
 import com.lcs.findraco.services.ItemShareAllocator.Allocation;
 import com.lcs.findraco.services.ItemShareAllocator.MemberFact;
@@ -17,10 +18,12 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * The single source of category spend (AD-008): the Overview breakdown and the Categories tab both
@@ -33,6 +36,7 @@ public class CategorySpendingService {
     private final FinancialTransactionRepository transactionRepository;
     private final FinancialTransactionCategoryRepository categoryRepository;
     private final PlanMembershipRepository planMembershipRepository;
+    private final UserRepository userRepository;
     private final ItemShareAllocator itemShareAllocator;
     private final CategorySpendingAssembler assembler;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
@@ -41,6 +45,7 @@ public class CategorySpendingService {
     public CategorySpendingService(FinancialTransactionRepository transactionRepository,
                                    FinancialTransactionCategoryRepository categoryRepository,
                                    PlanMembershipRepository planMembershipRepository,
+                                   UserRepository userRepository,
                                    ItemShareAllocator itemShareAllocator,
                                    CategorySpendingAssembler assembler,
                                    OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
@@ -48,6 +53,7 @@ public class CategorySpendingService {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.planMembershipRepository = planMembershipRepository;
+        this.userRepository = userRepository;
         this.itemShareAllocator = itemShareAllocator;
         this.assembler = assembler;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
@@ -69,12 +75,14 @@ public class CategorySpendingService {
     public List<CategorySpendingDto> compute(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         Facts debit = facts(plan, FinancialTransactionType.DEBIT, startDate, endDate, memberId);
         Facts credit = facts(plan, FinancialTransactionType.CREDIT, startDate, endDate, memberId);
+        Members members = members(plan, debit, credit);
         return assembler.assemble(
                 concat(debit.rowsA(), credit.rowsA()),
                 concat(debit.removed(), credit.removed()),
                 concat(debit.added(), credit.added()),
                 categoryRepository.findAllByPlanWithDetails(plan),
-                activeMemberIds(plan),
+                members.activeIds(),
+                members.names(),
                 memberId);
     }
 
@@ -83,15 +91,37 @@ public class CategorySpendingService {
     public List<CategorySpendingDto> computeOverview(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         Facts debit = facts(plan, FinancialTransactionType.DEBIT, startDate, endDate, memberId);
         List<FinancialTransactionCategory> categories = categoryRepository.findAllByPlanWithDetails(plan);
+        Members members = members(plan, debit);
         return assembler.assembleOverview(debit.rowsA(), debit.removed(), debit.added(), categories,
-                activeMemberIds(plan), memberId);
+                members.activeIds(), members.names(), memberId);
     }
 
-    /** Membership rows are hard-deleted on removal, so a user without one is a former member (CAT-14). */
-    private Set<Long> activeMemberIds(Plan plan) {
-        return planMembershipRepository.findAllByPlan(plan).stream()
-                .map(membership -> membership.getUser().getId())
-                .collect(Collectors.toSet());
+    private record Members(Set<Long> activeIds, Map<Long, String> names) {}
+
+    /**
+     * Active member ids and the display name of every member with spend facts. Membership rows are
+     * hard-deleted on removal, so a user without one is a former member (CAT-14) whose name is
+     * looked up separately.
+     */
+    private Members members(Plan plan, Facts... facts) {
+        Map<Long, String> names = new HashMap<>();
+        Set<Long> activeIds = new HashSet<>();
+        planMembershipRepository.findAllByPlan(plan).forEach(membership -> {
+            activeIds.add(membership.getUser().getId());
+            names.put(membership.getUser().getId(), membership.getUser().getName());
+        });
+        Set<Long> missing = new HashSet<>();
+        for (Facts fact : facts) {
+            fact.rowsA().forEach(row -> missing.add((Long) row[1]));
+            fact.removed().forEach(memberFact -> missing.add(memberFact.memberId()));
+            fact.added().forEach(memberFact -> missing.add(memberFact.memberId()));
+        }
+        missing.removeAll(names.keySet());
+        missing.remove(null);
+        if (!missing.isEmpty()) {
+            userRepository.findAllById(missing).forEach(user -> names.put(user.getId(), user.getName()));
+        }
+        return new Members(activeIds, names);
     }
 
     private record Facts(List<Object[]> rowsA, List<MemberFact> removed, List<MemberFact> added) {}

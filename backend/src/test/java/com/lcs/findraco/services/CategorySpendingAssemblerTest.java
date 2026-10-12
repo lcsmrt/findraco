@@ -11,6 +11,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -21,6 +22,7 @@ class CategorySpendingAssemblerTest {
     private static final Long OTHER_MEMBER = 200L;
     private static final Set<Long> NO_MEMBERS = Set.of();
     private static final Set<Long> BOTH_MEMBERS = Set.of(MEMBER, OTHER_MEMBER);
+    private static final Map<Long, String> NAMES = Map.of(MEMBER, "Lucas", OTHER_MEMBER, "Livia");
 
     private final CategorySpendingAssembler assembler = new CategorySpendingAssembler();
 
@@ -36,7 +38,7 @@ class CategorySpendingAssemblerTest {
         List<MemberFact> added = List.of(fact(2L, MEMBER, "90"), fact(3L, MEMBER, "40"));
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
-                rowsA, removed, added, List.of(groceries, food, cleaning), NO_MEMBERS, null);
+                rowsA, removed, added, List.of(groceries, food, cleaning), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(3);
         assertThat(byName(result, "Groceries").getSpent()).isEqualByComparingTo("20");
@@ -51,7 +53,7 @@ class CategorySpendingAssemblerTest {
         FinancialTransactionCategory utilities = debit(10L, "Utilities", null, null);
         List<Object[]> rowsA = List.<Object[]>of(a(10L, MEMBER, "75"));
 
-        List<CategorySpendingDto> result = assembler.assembleOverview(rowsA, List.of(), List.of(), List.of(utilities), NO_MEMBERS, null);
+        List<CategorySpendingDto> result = assembler.assembleOverview(rowsA, List.of(), List.of(), List.of(utilities), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         CategorySpendingDto row = result.get(0);
@@ -64,7 +66,7 @@ class CategorySpendingAssemblerTest {
         FinancialTransactionCategory subscriptions = debit(5L, "Subscriptions", "100", null);
         List<MemberFact> added = List.of(fact(5L, MEMBER, "25"));
 
-        List<CategorySpendingDto> result = assembler.assembleOverview(List.of(), List.of(), added, List.of(subscriptions), NO_MEMBERS, null);
+        List<CategorySpendingDto> result = assembler.assembleOverview(List.of(), List.of(), added, List.of(subscriptions), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         CategorySpendingDto row = result.get(0);
@@ -83,7 +85,7 @@ class CategorySpendingAssemblerTest {
         List<MemberFact> added = List.of(fact(7L, MEMBER, "120"), fact(8L, MEMBER, "80"));
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
-                rowsA, removed, added, List.of(entertainment, movies, snacks), NO_MEMBERS, null);
+                rowsA, removed, added, List.of(entertainment, movies, snacks), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(3);
         assertThat(byName(result, "Entertainment").getSpent()).isEqualByComparingTo("0");
@@ -96,7 +98,7 @@ class CategorySpendingAssemblerTest {
         FinancialTransactionCategory fuel = debit(11L, "Fuel", null, null);
         List<MemberFact> added = List.of(fact(11L, MEMBER, "30"), fact(11L, MEMBER, "45"));
 
-        List<CategorySpendingDto> result = assembler.assembleOverview(List.of(), List.of(), added, List.of(fuel), NO_MEMBERS, null);
+        List<CategorySpendingDto> result = assembler.assembleOverview(List.of(), List.of(), added, List.of(fuel), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getSpent()).isEqualByComparingTo("75");
@@ -109,7 +111,7 @@ class CategorySpendingAssemblerTest {
         FinancialTransactionCategory income = category(22L, FinancialTransactionType.CREDIT, "Salary", "2000", null);
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
-                List.of(), List.of(), List.of(), List.of(emergencyFund, noLimit, income), NO_MEMBERS, null);
+                List.of(), List.of(), List.of(), List.of(emergencyFund, noLimit, income), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         CategorySpendingDto backfilled = result.get(0);
@@ -133,7 +135,7 @@ class CategorySpendingAssemblerTest {
                 a(3L, OTHER_MEMBER, "30"));
 
         List<CategorySpendingDto> result = assembler.assemble(
-                rowsA, List.of(), List.of(), List.of(food, delivery, diningOut), NO_MEMBERS, null);
+                rowsA, List.of(), List.of(), List.of(food, delivery, diningOut), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         CategorySpendingDto foodRow = result.get(0);
@@ -156,7 +158,7 @@ class CategorySpendingAssemblerTest {
         FinancialTransactionCategory delivery = debit(2L, "Delivery", "200", food);
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "10"), a(2L, MEMBER, "250"));
 
-        CategorySpendingDto foodRow = assembler.assemble(rowsA, List.of(), List.of(), List.of(food, delivery), NO_MEMBERS, null).get(0);
+        CategorySpendingDto foodRow = assembler.assemble(rowsA, List.of(), List.of(), List.of(food, delivery), NO_MEMBERS, NAMES, null).get(0);
         CategorySpendingDto deliveryRow = foodRow.getChildren().get(0);
 
         assertThat(deliveryRow.getSpent()).isEqualByComparingTo("250");
@@ -178,7 +180,7 @@ class CategorySpendingAssemblerTest {
         List<MemberFact> removed = List.of(fact(2L, MEMBER, "40"));
         List<MemberFact> added = List.of(fact(3L, MEMBER, "40"));
 
-        List<CategorySpendingDto> result = assembler.assemble(rowsA, removed, added, List.of(food, groceries, cleaning), NO_MEMBERS, null);
+        List<CategorySpendingDto> result = assembler.assemble(rowsA, removed, added, List.of(food, groceries, cleaning), NO_MEMBERS, NAMES, null);
 
         assertThat(byName(result, "Food").getSpent()).isEqualByComparingTo("110");
         assertThat(byName(result, "Food").getChildren().get(0).getSpent()).isEqualByComparingTo("110");
@@ -192,7 +194,7 @@ class CategorySpendingAssemblerTest {
         FinancialTransactionCategory home = debit(2L, "Home", "100", shopping);
         List<Object[]> rowsA = List.<Object[]>of(a(2L, MEMBER, "80"));
 
-        CategorySpendingDto shoppingRow = assembler.assemble(rowsA, List.of(), List.of(), List.of(shopping, home), NO_MEMBERS, null).get(0);
+        CategorySpendingDto shoppingRow = assembler.assemble(rowsA, List.of(), List.of(), List.of(shopping, home), NO_MEMBERS, NAMES, null).get(0);
         CategorySpendingDto homeRow = shoppingRow.getChildren().get(0);
 
         assertThat(shoppingRow.getSpent()).isEqualByComparingTo("80");
@@ -215,7 +217,7 @@ class CategorySpendingAssemblerTest {
         FinancialTransactionCategory delivery = debit(5L, "Delivery", null, food);
 
         List<CategorySpendingDto> result = assembler.assemble(
-                List.of(), List.of(), List.of(), List.of(salary, bonus, rent, food, delivery), NO_MEMBERS, null);
+                List.of(), List.of(), List.of(), List.of(salary, bonus, rent, food, delivery), NO_MEMBERS, NAMES, null);
 
         assertThat(result).extracting(CategorySpendingDto::getName).containsExactly("food", "Rent", "Salary");
         assertThat(result).extracting(CategorySpendingDto::getType).containsExactly(
@@ -234,7 +236,7 @@ class CategorySpendingAssemblerTest {
     void zeroLimitWithZeroSpendIsNotOverLimit() {
         FinancialTransactionCategory savings = debit(1L, "Savings", "0", null);
 
-        CategorySpendingDto row = assembler.assemble(List.of(), List.of(), List.of(), List.of(savings), NO_MEMBERS, null).get(0);
+        CategorySpendingDto row = assembler.assemble(List.of(), List.of(), List.of(), List.of(savings), NO_MEMBERS, NAMES, null).get(0);
 
         assertThat(row.getSpent()).isEqualByComparingTo("0");
         assertThat(row.getPercentUsed()).isEqualByComparingTo("0");
@@ -253,7 +255,7 @@ class CategorySpendingAssemblerTest {
         List<Object[]> rowsA = List.of(a(2L, MEMBER, "30"), a(3L, MEMBER, "70"));
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
-                rowsA, List.of(), List.of(), List.of(food, delivery, diningOut, snacks, idle), NO_MEMBERS, null);
+                rowsA, List.of(), List.of(), List.of(food, delivery, diningOut, snacks, idle), NO_MEMBERS, NAMES, null);
 
         assertThat(result).extracting(CategorySpendingDto::getName).containsExactly("Food");
         assertThat(result.get(0).getSpent()).isEqualByComparingTo("100");
@@ -271,7 +273,7 @@ class CategorySpendingAssemblerTest {
         limit(groceries, OTHER_MEMBER, "Livia", "140");
 
         CategorySpendingDto row = assembler.assemble(
-                List.of(), List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, null).get(0);
+                List.of(), List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, NAMES, null).get(0);
 
         assertThat(row.getLimit()).isEqualByComparingTo("400");
         assertThat(row.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
@@ -291,7 +293,7 @@ class CategorySpendingAssemblerTest {
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "50"), a(1L, OTHER_MEMBER, "50"));
 
         CategorySpendingDto row = assembler.assemble(
-                rowsA, List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, null).get(0);
+                rowsA, List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, NAMES, null).get(0);
 
         assertThat(row.getSpent()).isEqualByComparingTo("100");
         assertThat(row.getLimit()).isEqualByComparingTo("300");
@@ -316,7 +318,7 @@ class CategorySpendingAssemblerTest {
         List<MemberFact> removed = List.of(fact(1L, MEMBER, "18"));
         List<MemberFact> added = List.of(fact(1L, MEMBER, "5"));
 
-        CategorySpendingDto row = assembler.assemble(rowsA, removed, added, List.of(groceries), BOTH_MEMBERS, null).get(0);
+        CategorySpendingDto row = assembler.assemble(rowsA, removed, added, List.of(groceries), BOTH_MEMBERS, NAMES, null).get(0);
 
         assertThat(member(row, MEMBER).getSpent()).isEqualByComparingTo("47");
     }
@@ -329,7 +331,7 @@ class CategorySpendingAssemblerTest {
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "100"), a(1L, OTHER_MEMBER, "30"));
 
         CategorySpendingDto row = assembler.assemble(
-                rowsA, List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, null).get(0);
+                rowsA, List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, NAMES, null).get(0);
 
         assertThat(row.getSpent()).isEqualByComparingTo("130");
         assertThat(row.getLimit()).isEqualByComparingTo("260");
@@ -346,7 +348,7 @@ class CategorySpendingAssemblerTest {
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "100"), a(1L, OTHER_MEMBER, "200"));
 
         CategorySpendingDto row = assembler.assemble(
-                rowsA, List.of(), List.of(), List.of(groceries), Set.of(MEMBER), null).get(0);
+                rowsA, List.of(), List.of(), List.of(groceries), Set.of(MEMBER), NAMES, null).get(0);
 
         assertThat(row.getLimit()).isEqualByComparingTo("260");
         assertThat(row.getSpent()).isEqualByComparingTo("300");
@@ -367,7 +369,7 @@ class CategorySpendingAssemblerTest {
         limit(groceries, OTHER_MEMBER, "Livia", "140");
 
         CategorySpendingDto row = assembler.assemble(
-                List.of(), List.of(), List.of(), List.of(groceries), Set.of(MEMBER), null).get(0);
+                List.of(), List.of(), List.of(), List.of(groceries), Set.of(MEMBER), NAMES, null).get(0);
 
         assertThat(row.getLimit()).isNull();
         assertThat(row.getOverLimit()).isNull();
@@ -383,7 +385,7 @@ class CategorySpendingAssemblerTest {
         List<Object[]> rowsA = List.of(a(1L, OTHER_MEMBER, "70"), a(2L, OTHER_MEMBER, "500"));
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
-                rowsA, List.of(), List.of(), List.of(groceries, rent), BOTH_MEMBERS, OTHER_MEMBER);
+                rowsA, List.of(), List.of(), List.of(groceries, rent), BOTH_MEMBERS, NAMES, OTHER_MEMBER);
 
         CategorySpendingDto groceriesRow = byName(result, "Groceries");
         assertThat(groceriesRow.getLimit()).isEqualByComparingTo("140");
@@ -399,7 +401,7 @@ class CategorySpendingAssemblerTest {
         limit(groceries, OTHER_MEMBER, "Livia", "140");
 
         CategorySpendingDto row = assembler.assemble(
-                List.of(), List.of(), List.of(), List.of(groceries), Set.of(MEMBER), OTHER_MEMBER).get(0);
+                List.of(), List.of(), List.of(), List.of(groceries), Set.of(MEMBER), NAMES, OTHER_MEMBER).get(0);
 
         assertThat(row.getLimit()).isEqualByComparingTo("260");
     }
@@ -414,7 +416,7 @@ class CategorySpendingAssemblerTest {
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "40"), a(2L, MEMBER, "60"), a(2L, OTHER_MEMBER, "30"));
 
         CategorySpendingDto foodRow = assembler.assemble(
-                rowsA, List.of(), List.of(), List.of(food, delivery), BOTH_MEMBERS, null).get(0);
+                rowsA, List.of(), List.of(), List.of(food, delivery), BOTH_MEMBERS, NAMES, null).get(0);
 
         assertThat(foodRow.getSpent()).isEqualByComparingTo("130");
         assertThat(foodRow.getLimit()).isEqualByComparingTo("300");
@@ -433,9 +435,106 @@ class CategorySpendingAssemblerTest {
         limit(groceries, MEMBER, "Lucas", "260");
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
-                List.of(), List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, null);
+                List.of(), List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, NAMES, null);
 
         assertThat(result).singleElement().satisfies(row -> assertThat(row.getLimit()).isEqualByComparingTo("260"));
+    }
+
+    // ---- Owned categories (CAT-16) ----
+
+    /** P3 AC 5: an owned category's spend is the owner's share, evaluated against its limit. */
+    @Test
+    void ownedCategoryCountsTheOwnersSpendOnly() {
+        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        professional.setOwner(user(MEMBER, "Lucas"));
+        List<Object[]> rowsA = List.of(a(1L, MEMBER, "120"), a(1L, OTHER_MEMBER, "30"));
+
+        CategorySpendingDto row = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(professional), BOTH_MEMBERS, NAMES, null).get(0);
+
+        assertThat(row.getOwnerId()).isEqualTo(MEMBER);
+        assertThat(row.getOwnerName()).isEqualTo("Lucas");
+        assertThat(row.getSpent()).isEqualByComparingTo("120");
+        assertThat(row.getLimit()).isEqualByComparingTo("100");
+        assertThat(row.getRemaining()).isEqualByComparingTo("-20");
+        assertThat(row.getPercentUsed()).isEqualByComparingTo("120.00");
+        assertThat(row.getOverLimit()).isTrue();
+    }
+
+    /** Design risk table: other members' shares in an owned category are listed without a limit, not counted. */
+    @Test
+    void nonOwnerSharesAreListedWithoutALimit() {
+        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        professional.setOwner(user(MEMBER, "Lucas"));
+        List<Object[]> rowsA = List.of(a(1L, MEMBER, "50"), a(1L, OTHER_MEMBER, "30"), a(1L, 300L, "0"));
+
+        CategorySpendingDto row = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(professional), BOTH_MEMBERS, NAMES, null).get(0);
+
+        assertThat(row.getSpent()).isEqualByComparingTo("50");
+        assertThat(row.getMembers()).singleElement().satisfies(other -> {
+            assertThat(other.getMemberId()).isEqualTo(OTHER_MEMBER);
+            assertThat(other.getName()).isEqualTo("Livia");
+            assertThat(other.getSpent()).isEqualByComparingTo("30");
+            assertThat(other.getLimit()).isNull();
+            assertThat(other.getRemaining()).isNull();
+            assertThat(other.getPercentUsed()).isNull();
+            assertThat(other.getOverLimit()).isNull();
+            assertThat(other.isActive()).isTrue();
+        });
+    }
+
+    /** P3 AC 2 + 5: children inherit the owner; each row and the rollup count the owner's spend only. */
+    @Test
+    void childrenOfAnOwnedRootCountTheOwnersSpendOnly() {
+        FinancialTransactionCategory professional = debit(1L, "Professional", null, null);
+        professional.setOwner(user(MEMBER, "Lucas"));
+        FinancialTransactionCategory courses = debit(2L, "Courses", "50", professional);
+        List<Object[]> rowsA = List.of(
+                a(1L, MEMBER, "10"), a(2L, MEMBER, "40"), a(2L, OTHER_MEMBER, "25"));
+
+        CategorySpendingDto root = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(professional, courses), BOTH_MEMBERS, NAMES, null).get(0);
+        CategorySpendingDto child = root.getChildren().get(0);
+
+        assertThat(root.getSpent()).isEqualByComparingTo("50");
+        assertThat(child.getOwnerId()).isEqualTo(MEMBER);
+        assertThat(child.getSpent()).isEqualByComparingTo("40");
+        assertThat(child.getPercentUsed()).isEqualByComparingTo("80.00");
+        assertThat(child.getMembers()).extracting(CategorySpendingDto.Member::getMemberId).containsExactly(OTHER_MEMBER);
+        assertThat(root.getMembers()).singleElement()
+                .satisfies(other -> assertThat(other.getSpent()).isEqualByComparingTo("25"));
+    }
+
+    /** P3 AC 7: a former owner's ownership is dormant, but their historic spend still counts as the row's. */
+    @Test
+    void dormantOwnerStillAttributesTheirSpend() {
+        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        professional.setOwner(user(MEMBER, "Lucas"));
+        List<Object[]> rowsA = List.of(a(1L, MEMBER, "70"), a(1L, OTHER_MEMBER, "10"));
+
+        CategorySpendingDto row = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(professional), Set.of(OTHER_MEMBER), NAMES, null).get(0);
+
+        assertThat(row.getOwnerId()).isEqualTo(MEMBER);
+        assertThat(row.getSpent()).isEqualByComparingTo("70");
+        assertThat(row.getPercentUsed()).isEqualByComparingTo("70.00");
+    }
+
+    /** CAT-16 + AD-008: a former member's share in an owned category is listed as inactive. */
+    @Test
+    void formerMembersShareInAnOwnedCategoryIsListedInactive() {
+        FinancialTransactionCategory professional = debit(1L, "Professional", null, null);
+        professional.setOwner(user(MEMBER, "Lucas"));
+        List<Object[]> rowsA = List.of(a(1L, MEMBER, "70"), a(1L, OTHER_MEMBER, "10"));
+
+        CategorySpendingDto row = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(professional), Set.of(MEMBER), NAMES, null).get(0);
+
+        assertThat(row.getMembers()).singleElement().satisfies(other -> {
+            assertThat(other.getMemberId()).isEqualTo(OTHER_MEMBER);
+            assertThat(other.isActive()).isFalse();
+        });
     }
 
     private static CategorySpendingDto.Member member(CategorySpendingDto row, Long memberId) {
