@@ -15,6 +15,8 @@ import {
   useUpdateFinancialTransaction,
   useUpdateFinancialTransactionSeries,
 } from "@/api/services/useFinancialTransactionService";
+import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { PlanMember } from "@/api/dtos/plan";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { usePlanContext } from "@/app/providers/PlanProvider";
@@ -42,8 +44,8 @@ import { maskCurrency } from "@/utils/string/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format } from "date-fns";
 import { PlusIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
-import { useEffect, useRef } from "react";
-import { useForm } from "react-hook-form";
+import { useCallback, useEffect, useRef } from "react";
+import { useForm, type UseFormSetValue } from "react-hook-form";
 import { z } from "zod";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
@@ -241,6 +243,43 @@ function deriveAttributionMode(
     return participants[0].id === currentUserId ? "ME" : "SOMEONE";
   }
   return "SPLIT";
+}
+
+type OwnerDefaultInput = {
+  category: Pick<FinancialTransactionCategory, "ownerId"> | null | undefined;
+  members: PlanMember[];
+  currentUserId?: number;
+  /** True once the user changed the attribution or participants by hand. */
+  participantsTouched: boolean;
+};
+
+/**
+ * The attribution an owned category implies (CAT-17): its owner as the single
+ * 100% participant. Null when the participants were edited by hand, the
+ * category is not owned, or the owner is no longer a member of the plan.
+ */
+export function ownerDefaultAttribution({
+  category,
+  members,
+  currentUserId,
+  participantsTouched,
+}: OwnerDefaultInput): Pick<
+  TransactionFormValues,
+  "attributionMode" | "splitMode" | "participants"
+> | null {
+  if (participantsTouched) return null;
+  const owner = members.find((member) => member.userId === category?.ownerId);
+  if (!owner) return null;
+  if (owner.userId === currentUserId) {
+    return { attributionMode: "ME", splitMode: "EQUAL", participants: [] };
+  }
+  return {
+    attributionMode: "SOMEONE",
+    splitMode: "EQUAL",
+    participants: [
+      { memberId: owner.userId, memberName: owner.name, shareAmount: undefined },
+    ],
+  };
 }
 
 function parseLocalDate(value: string): Date {
@@ -501,8 +540,36 @@ export const TransactionFormDrawer = ({
   });
 
   const originalParcelsNumberRef = useRef<string | undefined>(undefined);
+  const participantsTouchedRef = useRef(false);
+
+  // Every attribution change made through AttributionFields is a manual edit.
+  const setAttributionValue = useCallback<UseFormSetValue<TransactionFormValues>>(
+    (name, value, options) => {
+      participantsTouchedRef.current = true;
+      setValue(name, value, options);
+    },
+    [setValue],
+  );
+
+  const handleCategoryChange = (
+    category: FinancialTransactionCategory | null | undefined,
+  ) => {
+    setValue("category", category);
+    if (isEditing || !canAttributeToOthers) return;
+    const attribution = ownerDefaultAttribution({
+      category,
+      members,
+      currentUserId,
+      participantsTouched: participantsTouchedRef.current,
+    });
+    if (!attribution) return;
+    setValue("attributionMode", attribution.attributionMode);
+    setValue("splitMode", attribution.splitMode);
+    setValue("participants", attribution.participants);
+  };
 
   useEffect(() => {
+    participantsTouchedRef.current = false;
     reset(buildDefaultValues(transaction, currentUserId, definition));
     originalParcelsNumberRef.current =
       definition?.mode === "INSTALLMENT"
@@ -661,7 +728,7 @@ export const TransactionFormDrawer = ({
               <CategoryCombobox
                 id="transaction-category"
                 value={watch("category") ?? null}
-                onValueChange={(v) => setValue("category", v)}
+                onValueChange={handleCategoryChange}
                 type={watch("type")}
                 disabled={isPending}
               />
@@ -802,7 +869,7 @@ export const TransactionFormDrawer = ({
             {showAttribution && (
               <AttributionFields
                 watch={watch}
-                setValue={setValue}
+                setValue={setAttributionValue}
                 errors={errors}
                 members={members}
                 currentUserId={currentUserId}

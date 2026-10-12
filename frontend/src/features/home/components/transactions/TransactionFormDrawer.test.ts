@@ -4,9 +4,11 @@ import { maskCurrency } from "@/utils/string/masks";
 import {
   TransactionFormValues,
   buildDefaultValues,
+  ownerDefaultAttribution,
   toPayload,
   transactionFormSchema,
 } from "./TransactionFormDrawer";
+import type { PlanMember } from "@/api/dtos/plan";
 
 const validValues: TransactionFormValues = {
   type: "DEBIT",
@@ -216,5 +218,78 @@ describe("edit-mode reset — plain transaction", () => {
     expect(editDefaults.description).toBe("Rent");
     expect(editDefaults.amount).toBe(maskCurrency("15050"));
     expect(editDefaults).not.toEqual(createDefaults);
+  });
+});
+
+describe("ownerDefaultAttribution — owned category default participant (CAT-17)", () => {
+  const me: PlanMember = { userId: 1, name: "Lucas", email: "l@x.com", role: "OWNER" };
+  const partner: PlanMember = { userId: 2, name: "Livia", email: "v@x.com", role: "EDITOR" };
+  const members = [me, partner];
+
+  it("sets another member who owns the category as the single 100% participant", () => {
+    const attribution = ownerDefaultAttribution({
+      category: { ownerId: 2 },
+      members,
+      currentUserId: 1,
+      participantsTouched: false,
+    });
+    expect(attribution).toEqual({
+      attributionMode: "SOMEONE",
+      splitMode: "EQUAL",
+      participants: [{ memberId: 2, memberName: "Livia", shareAmount: undefined }],
+    });
+    expect(
+      toPayload({ ...validValues, ...attribution! }, true, 1).participants,
+    ).toEqual([{ memberId: 2 }]);
+  });
+
+  it("attributes to the current user when they own the category", () => {
+    const attribution = ownerDefaultAttribution({
+      category: { ownerId: 1 },
+      members,
+      currentUserId: 1,
+      participantsTouched: false,
+    });
+    expect(attribution).toEqual({ attributionMode: "ME", splitMode: "EQUAL", participants: [] });
+    const splitBefore: TransactionFormValues = { ...validValues, attributionMode: "SPLIT" };
+    expect(toPayload({ ...splitBefore, ...attribution! }, true, 1).participants).toEqual([
+      { memberId: 1 },
+    ]);
+  });
+
+  it("is not applied after a manual participant edit", () => {
+    expect(
+      ownerDefaultAttribution({
+        category: { ownerId: 2 },
+        members,
+        currentUserId: 1,
+        participantsTouched: true,
+      }),
+    ).toBeNull();
+  });
+
+  it("leaves the participants as they are for an unowned category", () => {
+    expect(
+      ownerDefaultAttribution({
+        category: { ownerId: null },
+        members,
+        currentUserId: 1,
+        participantsTouched: false,
+      }),
+    ).toBeNull();
+    expect(
+      ownerDefaultAttribution({ category: null, members, currentUserId: 1, participantsTouched: false }),
+    ).toBeNull();
+  });
+
+  it("is not applied when the owner is no longer a member of the plan", () => {
+    expect(
+      ownerDefaultAttribution({
+        category: { ownerId: 3 },
+        members,
+        currentUserId: 1,
+        participantsTouched: false,
+      }),
+    ).toBeNull();
   });
 });

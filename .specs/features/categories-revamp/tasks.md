@@ -660,8 +660,10 @@ T21 → T22 → T23 → T24
 
 **Done when**:
 
-- [ ] `TransactionFormDrawer.test.ts`: owner applied when untouched; not applied after a manual participant edit; unowned category leaves participants as they are
-- [ ] Quick gate passes
+- [x] `TransactionFormDrawer.test.ts`: owner applied when untouched; not applied after a manual participant edit; unowned category leaves participants as they are
+- [x] Quick gate passes (251 passed, 0 failed; phase build also ok, lint: 0 new errors, 23 pre-existing)
+
+> Note: "participants not dirty" is tracked by a ref set by every attribution change made through `AttributionFields` (its `setValue` calls do not mark RHF dirty state), reset when the form resets. The default applies on create/duplicate only (not edit), and not when the owner left the plan.
 
 **Tests**: unit
 **Gate**: quick
