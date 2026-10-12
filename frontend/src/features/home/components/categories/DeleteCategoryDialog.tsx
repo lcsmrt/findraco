@@ -1,8 +1,12 @@
 import {
+  CategoryUsage,
   DeleteFinancialTransactionCategoryRequest,
   FinancialTransactionCategory,
 } from "@/api/dtos";
-import { useDeleteFinancialTransactionCategory } from "@/api/services/useFinancialTransactionCategoryService";
+import {
+  useDeleteFinancialTransactionCategory,
+  useGetCategoryUsage,
+} from "@/api/services/useFinancialTransactionCategoryService";
 import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
 import { Button } from "@/components/button/Button";
 import {
@@ -35,23 +39,41 @@ export const eligibleDeleteTargets = (
     )
     .sort((a, b) => a.description.localeCompare(b.description));
 
+/** True when any transaction, item or recurrence definition still uses the category. */
+export const isCategoryInUse = ({
+  transactions,
+  items,
+  recurrenceDefinitions,
+}: CategoryUsage) => transactions + items + recurrenceDefinitions > 0;
+
 export type DeleteState = {
   hasChildren: boolean;
-  /** Set once the API reported the category is still referenced. */
-  inUse: boolean;
+  /** Usage counts from the API; null while they load. */
+  usage: CategoryUsage | null;
   targetId: number | null;
 };
 
 /** The delete to send, or null while the dialog must not submit. */
 export const buildDeleteRequest = (
   categoryId: number,
-  { hasChildren, inUse, targetId }: DeleteState,
+  { hasChildren, usage, targetId }: DeleteState,
 ): DeleteFinancialTransactionCategoryRequest | null => {
-  if (hasChildren) return null;
-  if (inUse) {
+  if (hasChildren || usage == null) return null;
+  if (isCategoryInUse(usage)) {
     return targetId == null ? null : { id: categoryId, reassignTo: targetId };
   }
   return { id: categoryId };
+};
+
+/** "3 transactions, 1 item and 0 recurrence definitions" for the dialog. */
+export const describeUsage = ({
+  transactions,
+  items,
+  recurrenceDefinitions,
+}: CategoryUsage) => {
+  const count = (n: number, one: string, many: string) =>
+    `${n} ${n === 1 ? one : many}`;
+  return `${count(transactions, "transaction", "transactions")}, ${count(items, "item", "items")} and ${count(recurrenceDefinitions, "recurrence definition", "recurrence definitions")}`;
 };
 
 /** Tells the two 409s of a category delete apart. */
@@ -72,52 +94,50 @@ type DeleteCategoryDialogProps = {
   categories: FinancialTransactionCategory[];
 };
 
-const INITIAL_STATE = { inUse: false, targetId: null, conflict: null };
-
 export const DeleteCategoryDialog = ({
   open,
   onOpenChange,
   category,
   categories,
 }: DeleteCategoryDialogProps) => {
-  const [{ inUse, targetId, conflict }, setState] = useState<{
-    inUse: boolean;
-    targetId: number | null;
-    conflict: string | null;
-  }>(INITIAL_STATE);
+  const [targetId, setTargetId] = useState<number | null>(null);
+  const [conflict, setConflict] = useState<string | null>(null);
 
   useEffect(() => {
-    setState(INITIAL_STATE);
+    setTargetId(null);
+    setConflict(null);
   }, [category, open]);
+
+  const {
+    data: usage,
+    isError: usageFailed,
+    refetch: refetchUsage,
+  } = useGetCategoryUsage(category?.id ?? null, { enabled: open });
 
   const { mutate: deleteCategory, isPending } =
     useDeleteFinancialTransactionCategory({
       showErrorToast: false,
       onSuccess: () => onOpenChange(false),
       onError: (error) => {
-        const kind = classifyDeleteError(error);
         const message = resolveErrorMessage({ error });
-        if (kind === "in-use") {
-          setState((s) => ({ ...s, inUse: true, conflict: message }));
-        } else if (kind === "has-children") {
-          setState((s) => ({ ...s, conflict: message }));
-        } else {
+        if (classifyDeleteError(error) == null) {
           toast.error(message);
+          return;
         }
+        // The category changed since the dialog opened (a child or a reference
+        // was added): show why and reload the counts.
+        setConflict(message);
+        refetchUsage();
       },
     });
 
   if (!category) return null;
 
-  const hasChildren =
-    categoryHasChildren(category.id, categories) ||
-    (conflict != null && !inUse);
-  // SPEC_DEVIATION: "in use" is learned from the API's 409, since no endpoint
-  // reports reference counts; that first request deletes nothing, so the
-  // target is still chosen before any category is removed (CAT-10 AC 17).
+  const hasChildren = categoryHasChildren(category.id, categories);
+  const inUse = usage != null && isCategoryInUse(usage);
   const request = buildDeleteRequest(category.id, {
     hasChildren,
-    inUse,
+    usage: usage ?? null,
     targetId,
   });
   const targets = eligibleDeleteTargets(category, categories);
@@ -131,14 +151,18 @@ export const DeleteCategoryDialog = ({
           <DialogDescription>
             {hasChildren
               ? "This category has subcategories. Move them to another category or delete them before deleting it."
-              : inUse
-                ? "This category is in use. Choose a category to receive its transactions, items and recurrences; then it is deleted."
-                : "Are you sure you want to delete this category? This action cannot be undone."}
+              : usage == null
+                ? usageFailed
+                  ? "Could not check where this category is used. Close and try again."
+                  : "Checking where this category is used..."
+                : inUse
+                  ? `This category is used by ${describeUsage(usage)}. Choose a category to receive them; then it is deleted.`
+                  : "This category is not used by any transaction, item or recurrence definition. Are you sure you want to delete it? This action cannot be undone."}
           </DialogDescription>
         </DialogHeader>
 
-        {conflict && inUse && (
-          <p className="text-muted-foreground text-sm">{conflict}</p>
+        {conflict && (
+          <p className="text-destructive text-sm">{conflict}</p>
         )}
 
         {inUse && !hasChildren && (
@@ -148,9 +172,7 @@ export const DeleteCategoryDialog = ({
               id="delete-category-target"
               items={targets}
               value={selectedTarget}
-              onValueChange={(target) =>
-                setState((s) => ({ ...s, targetId: target?.id ?? null }))
-              }
+              onValueChange={(target) => setTargetId(target?.id ?? null)}
               itemLabel={(c) => c.description}
               placeholder="Select a category..."
               emptyMessage="No other category of this type"

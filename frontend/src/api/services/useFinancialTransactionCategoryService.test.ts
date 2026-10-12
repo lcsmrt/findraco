@@ -4,10 +4,12 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
 import { findracoApi } from "../clients/findracoApi";
 import {
+  categoryUsageKey,
   financialTransactionCategoryKey,
   useCreateFinancialTransactionCategory,
   useDeleteFinancialTransactionCategory,
   useGetCategorySpending,
+  useGetCategoryUsage,
   useGetFinancialTransactionCategory,
   useUpdateFinancialTransactionCategory,
 } from "./useFinancialTransactionCategoryService";
@@ -342,5 +344,58 @@ describe("every category mutation refreshes categories, spending and dashboard",
     expect(
       seededKeys.map((key) => queryClient.getQueryState(key)?.isInvalidated),
     ).toEqual([true, true, true]);
+  });
+});
+
+describe("useGetCategoryUsage", () => {
+  it("GETs the plan-scoped usage counts of the category", async () => {
+    const counts = { transactions: 3, items: 1, recurrenceDefinitions: 0 };
+    mockedGet.mockResolvedValue({ data: counts });
+    const { Wrapper, queryClient } = createWrapper();
+
+    const { result } = renderHook(() => useGetCategoryUsage(12), {
+      wrapper: Wrapper,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockedGet).toHaveBeenCalledWith(
+      "/plan/5/financial-transaction-category/12/usage",
+    );
+    expect(result.current.data).toEqual(counts);
+    expect(queryClient.getQueryData(["categoryUsage", 5, 12])).toEqual(counts);
+  });
+
+  it("keys the counts by plan and category", () => {
+    expect(categoryUsageKey(5, 12)).toEqual(["categoryUsage", 5, 12]);
+    expect(categoryUsageKey(6, 12)).not.toEqual(categoryUsageKey(5, 12));
+  });
+
+  it("does not fetch without a category or while disabled", () => {
+    const { Wrapper } = createWrapper();
+
+    renderHook(() => useGetCategoryUsage(null), { wrapper: Wrapper });
+    renderHook(() => useGetCategoryUsage(12, { enabled: false }), {
+      wrapper: Wrapper,
+    });
+
+    expect(mockedGet).not.toHaveBeenCalled();
+  });
+
+  it("is refreshed after a category is deleted", async () => {
+    mockedDelete.mockResolvedValue({});
+    const { Wrapper, queryClient } = createWrapper();
+    queryClient.setQueryData(categoryUsageKey(5, 1), {
+      transactions: 0,
+      items: 0,
+      recurrenceDefinitions: 0,
+    });
+
+    const { result } = renderHook(() => useDeleteFinancialTransactionCategory(), {
+      wrapper: Wrapper,
+    });
+    result.current.mutate({ id: 12, reassignTo: 1 });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(queryClient.getQueryState(categoryUsageKey(5, 1))?.isInvalidated).toBe(true);
   });
 });

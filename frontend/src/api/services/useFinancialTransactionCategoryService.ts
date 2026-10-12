@@ -8,6 +8,7 @@ import { findracoApi } from "../clients/findracoApi";
 import {
   CategorySpending,
   CategorySpendingFilter,
+  CategoryUsage,
   CreateFinancialTransactionCategoryRequest,
   DeleteFinancialTransactionCategoryRequest,
   FinancialTransactionCategory,
@@ -76,6 +77,33 @@ const invalidateCategoryViews = (queryClient: QueryClient) => {
   queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
   queryClient.invalidateQueries({ queryKey: ["categorySpending"] });
   queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
+  queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+};
+
+const getCategoryUsage = async (
+  planId: number,
+  id: number,
+): Promise<CategoryUsage> => {
+  const { data } = await findracoApi.get<CategoryUsage>(
+    `/plan/${planId}/financial-transaction-category/${id}/usage`,
+  );
+  return data;
+};
+
+export const categoryUsageKey = (planId: number | null, id: number | null) =>
+  ["categoryUsage", planId, id] as const;
+
+export const useGetCategoryUsage = (
+  id: number | null,
+  options?: QueryOptions<CategoryUsage>,
+) => {
+  const { activePlanId } = usePlanContext();
+  return useQuery({
+    queryFn: () => getCategoryUsage(activePlanId!, id!),
+    queryKey: categoryUsageKey(activePlanId, id),
+    ...options,
+    enabled: activePlanId != null && id != null && (options?.enabled ?? true),
+  });
 };
 
 const getFinancialTransactionCategory = async (

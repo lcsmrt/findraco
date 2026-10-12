@@ -1,10 +1,12 @@
 import { AxiosError, AxiosHeaders } from "axios";
 import { describe, expect, it } from "vitest";
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { CategoryUsage, FinancialTransactionCategory } from "@/api/dtos";
 import {
   buildDeleteRequest,
   classifyDeleteError,
+  describeUsage,
   eligibleDeleteTargets,
+  isCategoryInUse,
 } from "./DeleteCategoryDialog";
 
 const cat = (
@@ -59,28 +61,76 @@ describe("eligibleDeleteTargets", () => {
   });
 });
 
+const usage = (
+  transactions: number,
+  items: number,
+  recurrenceDefinitions: number,
+): CategoryUsage => ({ transactions, items, recurrenceDefinitions });
+
+const unused = usage(0, 0, 0);
+
+describe("isCategoryInUse", () => {
+  it("is not in use when every count is zero", () => {
+    expect(isCategoryInUse(unused)).toBe(false);
+  });
+
+  it("is in use when any single count is above zero", () => {
+    expect(isCategoryInUse(usage(1, 0, 0))).toBe(true);
+    expect(isCategoryInUse(usage(0, 1, 0))).toBe(true);
+    expect(isCategoryInUse(usage(0, 0, 1))).toBe(true);
+  });
+});
+
+describe("describeUsage", () => {
+  it("shows every count, singular or plural", () => {
+    expect(describeUsage(usage(3, 1, 0))).toBe(
+      "3 transactions, 1 item and 0 recurrence definitions",
+    );
+    expect(describeUsage(usage(1, 2, 1))).toBe(
+      "1 transaction, 2 items and 1 recurrence definition",
+    );
+  });
+});
+
 describe("buildDeleteRequest", () => {
-  it("sends a plain delete for a category not known to be in use", () => {
+  it("sends a plain delete for a category no one uses", () => {
     expect(
-      buildDeleteRequest(4, { hasChildren: false, inUse: false, targetId: null }),
+      buildDeleteRequest(4, { hasChildren: false, usage: unused, targetId: null }),
     ).toEqual({ id: 4 });
   });
 
-  it("cannot submit an in-use delete without a target", () => {
+  it("cannot submit before the usage counts are known", () => {
     expect(
-      buildDeleteRequest(4, { hasChildren: false, inUse: true, targetId: null }),
+      buildDeleteRequest(4, { hasChildren: false, usage: null, targetId: null }),
     ).toBeNull();
+    expect(
+      buildDeleteRequest(4, { hasChildren: false, usage: null, targetId: 1 }),
+    ).toBeNull();
+  });
+
+  it("cannot submit an in-use delete without a target, whichever count is above zero", () => {
+    for (const counts of [usage(2, 0, 0), usage(0, 1, 0), usage(0, 0, 1)]) {
+      expect(
+        buildDeleteRequest(4, { hasChildren: false, usage: counts, targetId: null }),
+      ).toBeNull();
+    }
   });
 
   it("reassigns to the chosen target for an in-use category", () => {
     expect(
-      buildDeleteRequest(4, { hasChildren: false, inUse: true, targetId: 1 }),
+      buildDeleteRequest(4, { hasChildren: false, usage: usage(3, 1, 1), targetId: 1 }),
     ).toEqual({ id: 4, reassignTo: 1 });
+  });
+
+  it("ignores a chosen target when the category is unused", () => {
+    expect(
+      buildDeleteRequest(4, { hasChildren: false, usage: unused, targetId: 1 }),
+    ).toEqual({ id: 4 });
   });
 
   it("cannot submit while the category has children", () => {
     expect(
-      buildDeleteRequest(1, { hasChildren: true, inUse: false, targetId: 4 }),
+      buildDeleteRequest(1, { hasChildren: true, usage: unused, targetId: 4 }),
     ).toBeNull();
   });
 });

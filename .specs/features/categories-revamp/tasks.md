@@ -749,7 +749,7 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec ame
 ### F4: Delete dialog asks for a target up front
 
 **What**: `useGetCategoryUsage` service hook (key `["financialTransactionCategoryUsage", planId, id]`, invalidated by category and transaction mutations). `DeleteCategoryDialog` loads the counts on open, shows them, and requires a target when any count is above zero before sending the delete; the targetless-probe-then-409 flow and its T13 `SPEC_DEVIATION` are removed (an unexpected 409 is shown as an error message).
-**Where**: `frontend/src/api/services/useFinancialTransactionCategoryService.ts` (+ test), `frontend/src/api/dtos/financialTransactionCategory.ts`, `frontend/src/features/home/components/categories/DeleteCategoryDialog.tsx` (+ logic test)
+**Where**: `frontend/src/api/services/useFinancialTransactionCategoryService.ts` (+ test), `frontend/src/api/services/useFinancialTransactionService.ts` (usage invalidation), `frontend/src/api/dtos/financialTransactionCategory.ts`, `frontend/src/features/home/components/categories/DeleteCategoryDialog.tsx` (+ logic test)
 **Depends on**: F3
 **Reuses**: T13 dialog and target picker
 **Requirement**: CAT-10 (P1 Sub AC 17)
@@ -761,9 +761,11 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec ame
 
 **Done when**:
 
-- [ ] Hook test: query key includes plan and id; GET `.../{id}/usage`
-- [ ] Logic test: target required iff any count > 0; no delete request without a target when required
-- [ ] Quick gate + build pass; lint no new errors
+- [x] Hook test: query key includes plan and id; GET `.../{id}/usage`; not fetched without an id or while closed; invalidated by a category delete
+- [x] Logic test: target required iff any count > 0; no delete request before the counts load or without a target when required; counts shown as text (`describeUsage`)
+- [x] Quick gate + build pass; lint no new errors (frontend 260 passed, build ok, lint 23 pre-existing errors, 0 new)
+
+> Note: the T13 `buildDeleteRequest` tests were updated, not removed: their input changed from the 409-learned `inUse` flag to the usage counts (amended P1 Sub AC 17). `classifyDeleteError` stays for a 409 raised by a change after the dialog opened (shown as an error, counts reloaded). The T13 `SPEC_DEVIATION` is resolved.
 
 **Tests**: unit
 **Gate**: quick + build

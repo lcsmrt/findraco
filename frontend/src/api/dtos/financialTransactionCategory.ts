@@ -57,6 +57,13 @@ export type DeleteFinancialTransactionCategoryRequest = {
   reassignTo?: number;
 };
 
+/** How many references a category has (`GET .../{id}/usage`); the delete dialog needs a target when any is above zero. */
+export type CategoryUsage = {
+  transactions: number;
+  items: number;
+  recurrenceDefinitions: number;
+};
+
 export type CategorySpendingFilter = {
   startDate: string;
   endDate: string;

@@ -76,6 +76,7 @@ export const useCreateFinancialTransaction = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -109,6 +110,7 @@ export const useUpdateFinancialTransaction = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -142,6 +144,7 @@ export const useImportNubankCsv = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -174,6 +177,7 @@ export const useCreateFinancialTransactionSeries = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -205,6 +209,7 @@ export const useDeleteFinancialTransactionSeries = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
         queryClient.invalidateQueries({
           queryKey: [
             "financialTransactionSeries",
@@ -269,6 +274,7 @@ export const useUpdateFinancialTransactionSeries = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
         queryClient.invalidateQueries({
           queryKey: ["financialTransactionSeries", activePlanId, variables.params.seriesId],
         });
@@ -296,6 +302,7 @@ export const useDeleteFinancialTransaction = (
       ...options,
       onSuccess: (data, variables) => {
         queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
         options?.onSuccess?.(data, variables);
       },
     }),
