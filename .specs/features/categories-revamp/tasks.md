@@ -1109,8 +1109,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: groups keep the page's order, one group per calendar day, local-date safe (no UTC shift)
-- [ ] Quick gate + build pass; lint no new errors
+- [x] Unit: groups keep the page's order, one group per calendar day, local-date safe (no UTC shift)
+- [x] Quick gate + build pass; lint no new errors (`groupByDay` 4, frontend 318 passed, 0 failed; build ok; lint 23 pre-existing errors, 0 new; list, edit footer and unchanged desktop table checked with headless screenshots at 390px and 1280px, light and dark)
+
+> Note: when the page order interleaves days (e.g. sorted by amount), each day still gets one group, placed at its first transaction. Day headings read "Fri, 9 Oct 2026". The row's second line is "category · people" (names joined). The mobile list renders its own `TablePagination` (not sticky) on the same page state. Footer Delete closes the drawer and runs the tab's `handleDelete` (confirm or series scope); Duplicate switches the open drawer to duplicate mode via `handleDuplicate`. The UTC-shift test pins `TZ=America/Sao_Paulo` for its block.
 
 **Tests**: unit
 **Gate**: quick + build

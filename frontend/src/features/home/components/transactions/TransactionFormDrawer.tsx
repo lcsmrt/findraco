@@ -43,7 +43,13 @@ import { formatCurrency } from "@/utils/string/formatters";
 import { maskCurrency } from "@/utils/string/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format } from "date-fns";
-import { PlusIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
+import {
+  CopyIcon,
+  PlusIcon,
+  SaveIcon,
+  Trash2Icon,
+  XIcon,
+} from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { useForm, type UseFormSetValue } from "react-hook-form";
 import { z } from "zod";
@@ -232,6 +238,9 @@ interface TransactionFormDrawerProps {
   onOpenChange: (open: boolean) => void;
   transaction?: FinancialTransaction;
   mode: "create" | "edit" | "duplicate";
+  /** Edit footer, narrow screens (UX-02 AC 5). */
+  onDuplicate?: (transaction: FinancialTransaction) => void;
+  onDelete?: (transaction: FinancialTransaction) => void;
 }
 
 function deriveAttributionMode(
@@ -521,6 +530,8 @@ export const TransactionFormDrawer = ({
   onOpenChange,
   transaction,
   mode,
+  onDuplicate,
+  onDelete,
 }: TransactionFormDrawerProps) => {
   const isEditing = mode === "edit";
   const isSeriesEdit = isEditing && !!transaction?.seriesId;
@@ -1162,6 +1173,34 @@ export const TransactionFormDrawer = ({
         </form>
 
         <SheetFooter>
+          {isEditing && transaction && (onDuplicate || onDelete) && (
+            <div className="flex gap-2 sm:hidden">
+              {onDelete && (
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="text-destructive hover:text-destructive flex-1"
+                  disabled={isPending}
+                  onClick={() => onDelete(transaction)}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                  Delete
+                </Button>
+              )}
+              {onDuplicate && (
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="flex-1"
+                  disabled={isPending}
+                  onClick={() => onDuplicate(transaction)}
+                >
+                  <CopyIcon className="h-4 w-4" />
+                  Duplicate
+                </Button>
+              )}
+            </div>
+          )}
           <Button
             variant="outline"
             type="button"

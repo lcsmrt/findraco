@@ -33,6 +33,7 @@ import {
   TransactionFilterPopover,
 } from "./TransactionFilterPopover";
 import { TransactionFormDrawer } from "./TransactionFormDrawer";
+import { TransactionMobileList } from "./TransactionMobileList";
 import { buildTransactionColumns, InlineSaveBody } from "./transactionColumns";
 
 const SEARCH_DEBOUNCE_MS = 400;
@@ -333,25 +334,37 @@ export const TransactionsTab = () => {
         )}
       </div>
 
-      <Table
-        tableId="financialTransactionsTable"
-        border="all"
-        className="mx-2 w-auto rounded-lg shadow-sm"
-        data={financialTransactionsData?.content || []}
-        columns={columns}
-      >
-        <TableContent
-          sorting={sorting}
-          onSortChange={onSortChange}
-          emptyState="No transactions found."
-          isLoading={isLoadingTransactions}
-        />
-        <TablePagination
-          pagination={pagination}
-          onPageChange={onPageChange}
-          onPageSizeChange={onPageSizeChange}
-        />
-      </Table>
+      <TransactionMobileList
+        className="sm:hidden"
+        transactions={financialTransactionsData?.content || []}
+        isLoading={isLoadingTransactions}
+        pagination={pagination}
+        onPageChange={onPageChange}
+        onPageSizeChange={onPageSizeChange}
+        onEdit={handleEdit}
+      />
+
+      <div className="hidden sm:block">
+        <Table
+          tableId="financialTransactionsTable"
+          border="all"
+          className="mx-2 w-auto rounded-lg shadow-sm"
+          data={financialTransactionsData?.content || []}
+          columns={columns}
+        >
+          <TableContent
+            sorting={sorting}
+            onSortChange={onSortChange}
+            emptyState="No transactions found."
+            isLoading={isLoadingTransactions}
+          />
+          <TablePagination
+            pagination={pagination}
+            onPageChange={onPageChange}
+            onPageSizeChange={onPageSizeChange}
+          />
+        </Table>
+      </div>
 
       <TransactionFormDrawer
         open={drawerState.open}
@@ -364,6 +377,11 @@ export const TransactionsTab = () => {
             : undefined
         }
         mode={drawerState.open ? drawerState.mode : "create"}
+        onDuplicate={handleDuplicate}
+        onDelete={(transaction) => {
+          setDrawerState({ open: false });
+          void handleDelete(transaction);
+        }}
       />
     </>
   );
