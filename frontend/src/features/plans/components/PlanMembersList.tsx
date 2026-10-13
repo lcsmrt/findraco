@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/input/base/Select";
 import { Spinner } from "@/components/spinner/Spinner";
+import { cn } from "@/lib/mergeClasses";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { Trash2Icon } from "lucide-react";
 import { usePlanContext } from "@/app/providers/PlanProvider";
@@ -86,24 +87,28 @@ export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
       {members.map((member) => (
         <li
           key={member.userId}
-          className="border-border flex items-center justify-between gap-3 rounded-lg border p-3"
+          className={cn(
+            "border-border flex items-center justify-between gap-3 rounded-lg border p-3",
+            // The role select does not fit beside a long name on a phone, so it drops below.
+            canManage(member) && "flex-col items-stretch sm:flex-row sm:items-center",
+          )}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <Avatar>
               <AvatarFallback>
                 {getFirstAndLastInitials(member.name)}
               </AvatarFallback>
             </Avatar>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">{member.name}</span>
-              <span className="text-muted-foreground text-xs">
+            <div className="flex min-w-0 flex-col">
+              <span className="truncate text-sm font-medium">{member.name}</span>
+              <span className="text-muted-foreground truncate text-xs">
                 {member.email}
               </span>
             </div>
           </div>
 
           {canManage(member) ? (
-            <div className="flex items-center gap-2">
+            <div className="flex shrink-0 items-center justify-end gap-2">
               <Select
                 value={member.role}
                 onValueChange={(value) =>
@@ -134,7 +139,9 @@ export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
               </Button>
             </div>
           ) : (
-            <Badge variant="secondary">{ROLE_LABELS[member.role]}</Badge>
+            <Badge variant="secondary" className="shrink-0">
+              {ROLE_LABELS[member.role]}
+            </Badge>
           )}
         </li>
       ))}

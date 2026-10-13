@@ -136,3 +136,4 @@ The user picked these for discussion, then chose to ship the decisions above fir
 
 - Per-person settlement ("who owes whom"); the per-person net balance was dropped with the By Person card.
 - PWA / installable app → ROADMAP M5-07.
+- Member-chosen colour: each member picks their own identity colour (today it is assigned by user-id order, UX-04 AC 2). User asked for it on 2026-10-13, after the colour palette shipped.

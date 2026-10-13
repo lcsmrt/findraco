@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/Card";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency } from "@/utils/string/formatters";
+import { formatCurrency, getFirstName } from "@/utils/string/formatters";
 import { ChevronRightIcon, TriangleAlertIcon, TriangleIcon } from "lucide-react";
 import { useState } from "react";
 import { MemberDot } from "./MemberDot";
@@ -107,12 +107,15 @@ const MemberLine = ({ members }: MemberLineProps) => (
       <span
         key={member.memberId}
         className={cn(
-          "inline-flex items-center gap-1.5 whitespace-nowrap tabular-nums",
+          "inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums",
           member.dimmed && "opacity-50",
         )}
       >
         <MemberDot color={member.color} />
-        {member.name} {money(member.amount)}
+        <span className="min-w-0 truncate" title={member.name}>
+          {getFirstName(member.name)}
+        </span>
+        <span className="shrink-0">{money(member.amount)}</span>
       </span>
     ))}
   </span>
@@ -128,7 +131,7 @@ const RowDetails = ({ row }: RowBodyProps) => {
     <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5 text-xs tabular-nums">
       <MemberDot color={row.focus.color} />
       <span className="min-w-0">
-        {row.focus.name} {money(row.focus.spent)} of {money(row.focus.of)}
+        {getFirstName(row.focus.name)} {money(row.focus.spent)} of {money(row.focus.of)}
         {row.focus.sharedLimit != null && ` · shared limit ${money(row.focus.sharedLimit)}`}
       </span>
     </span>
@@ -179,7 +182,7 @@ const RowHeader = ({ row, expandable, expanded }: RowHeaderProps) => (
           )}
         >
           <MemberDot color={row.owner.color} className="size-1.5" />
-          {row.owner.name}
+          <span title={row.owner.name}>{getFirstName(row.owner.name)}</span>
           {!row.owner.active && " (former member)"}
         </span>
       )}
@@ -198,8 +201,8 @@ const SubRow = ({ sub }: SubRowProps) => (
     <div className="flex items-center justify-between gap-3 text-xs">
       <span className="flex min-w-0 items-center gap-1.5">
         <MemberDot color={sub.color} />
-        <span className="truncate">
-          {sub.name}
+        <span className="truncate" title={sub.name}>
+          {getFirstName(sub.name)}
           {!sub.active && <span className="text-muted-foreground"> (former member)</span>}
         </span>
       </span>

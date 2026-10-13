@@ -40,3 +40,10 @@ export const getFirstAndLastInitials = (name: string): string => {
 
   return firstInitial + lastInitial;
 };
+
+/**
+ * Receives a full name and returns its first name, for compact spots such as legends and chips.
+ * @param name Full name of a person.
+ * @returns The first name, or the trimmed input when it has a single word.
+ */
+export const getFirstName = (name: string): string => name.trim().split(/\s+/)[0] ?? name;

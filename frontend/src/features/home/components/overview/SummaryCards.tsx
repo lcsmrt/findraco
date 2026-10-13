@@ -1,6 +1,6 @@
 import { Card, CardContent } from "@/components/card/Card";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency } from "@/utils/string/formatters";
+import { formatCurrency, getFirstName } from "@/utils/string/formatters";
 import { MemberDot } from "./MemberDot";
 import type { SummaryFigure, SummaryView } from "./summaryView";
 
@@ -38,12 +38,15 @@ const MemberAmounts = ({ figure, className }: MemberAmountsProps) =>
         <span
           key={segment.memberId}
           className={cn(
-            "inline-flex items-center gap-1.5 whitespace-nowrap tabular-nums",
+            "inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums",
             segment.dimmed && "opacity-50",
           )}
         >
           <MemberDot color={segment.color} />
-          {segment.name} {money(segment.amount)}
+          <span className="min-w-0 truncate" title={segment.name}>
+            {getFirstName(segment.name)}
+          </span>
+          <span className="shrink-0">{money(segment.amount)}</span>
         </span>
       ))}
     </div>

@@ -1,5 +1,6 @@
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { cn } from "@/lib/mergeClasses";
+import { getFirstName } from "@/utils/string/formatters";
 import type { ReactNode } from "react";
 import type { MemberOption } from "../../hooks/useOverviewMemberFilter";
 import type { MemberColorOf } from "../../utils/memberColors";
@@ -10,13 +11,15 @@ const MAX_CHIPS = 4;
 
 type ChipProps = {
   selected: boolean;
+  title?: string;
   onClick: () => void;
   children: ReactNode;
 };
 
-const Chip = ({ selected, onClick, children }: ChipProps) => (
+const Chip = ({ selected, title, onClick, children }: ChipProps) => (
   <button
     type="button"
+    title={title}
     aria-pressed={selected}
     onClick={onClick}
     className={cn(
@@ -88,9 +91,10 @@ export const MemberFilterChips = ({
           key={member.id}
           selected={member.id === selectedId}
           onClick={() => onChange(member)}
+          title={member.name}
         >
           <MemberDot color={colorOf(member.id)} />
-          {member.name}
+          {getFirstName(member.name)}
         </Chip>
       ))}
     </div>
