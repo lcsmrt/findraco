@@ -1037,8 +1037,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: parsing a URL with `categoriesPeriod` yields no error and no categories period; serialization emits none; existing filter tests updated, not deleted
-- [ ] Quick gate passes
+- [x] Unit: parsing a URL with `categoriesPeriod` yields no error and no categories period; serialization emits none; existing filter tests updated, not deleted
+- [x] Quick gate passes (frontend 305 passed, 0 failed; build ok; lint 23 pre-existing errors, 0 new)
+
+> Note: the Categories codec is gone, so its 11 round-trip cases (`homeFilterParams.test.ts` "categories codec") were rewritten as 3 cases for the amended outcome (legacy params parse and are ignored, no codec exported, serialization emits none); the hook and gate cases now load legacy params instead of writing them. A link carrying only `categoriesPeriod` no longer counts as home params, so the gate restores the plan's saved state. `PeriodPicker.tsx` lost its last user and is deleted. To keep the build green, `CategoriesTab` drops the picker here and reads the current month until U10 removes spend from it.
 
 **Tests**: unit
 **Gate**: quick

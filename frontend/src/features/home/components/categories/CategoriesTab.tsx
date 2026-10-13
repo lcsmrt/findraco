@@ -14,13 +14,8 @@ import {
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import {
-  resolvePeriodDates,
-  type Period,
-} from "../../filters/homeFilterParams";
-import { useHomeFilters } from "../../hooks/useHomeFilters";
+import { resolvePeriodDates } from "../../filters/homeFilterParams";
 import { countMonths, scaleTreeLimits } from "../../utils/scaleLimits";
-import { PeriodPicker } from "../PeriodPicker";
 import {
   ALL_CATEGORIES_PAGE_SIZE,
   useCategoryFormSheet,
@@ -83,21 +78,12 @@ const CategorySection = ({
 );
 
 export const CategoriesTab = () => {
-  const { categories: filters, updateCategories } = useHomeFilters();
-  const { period, customRange } = filters;
   const { activePlan } = usePlanContext();
   const canManage = activePlan?.myRole === "OWNER";
   const { openCreate, openEdit } = useCategoryFormSheet();
 
-  const customFrom = customRange?.from;
-  const customTo = customRange?.to;
-  const range = useMemo(
-    () =>
-      customFrom && customTo
-        ? { startDate: customFrom, endDate: customTo }
-        : resolvePeriodDates(period, new Date()),
-    [period, customFrom, customTo],
-  );
+  // Interim until the management-only rewrite (U10): no period selector.
+  const range = useMemo(() => resolvePeriodDates("this-month", new Date()), []);
 
   const { data: spending, isLoading } = useGetCategorySpending(range);
   const { data: categoriesPage } = useGetFinancialTransactionCategories(
@@ -132,24 +118,9 @@ export const CategoriesTab = () => {
   const handleDelete = (categoryId: number) =>
     setDeleting(findCategory(categoryId) ?? null);
 
-  const handlePeriodChange = (p: Period) =>
-    updateCategories((c) => ({ ...c, period: p, customRange: null }));
-
-  const handleCustomRangeChange = (
-    next: { from: string; to: string } | null,
-  ) => updateCategories((c) => ({ ...c, customRange: next }));
-
   return (
     <div className="flex flex-col gap-6 px-4">
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <PeriodPicker
-            period={period}
-            customRange={customRange}
-            onPeriodChange={handlePeriodChange}
-            onCustomRangeChange={handleCustomRangeChange}
-          />
-        </div>
+      <div className="flex flex-wrap items-center justify-end gap-2">
         {canManage && (
           <Button onClick={() => void openCreate()}>
             <PlusIcon className="h-4 w-4" />

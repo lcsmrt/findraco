@@ -162,44 +162,25 @@ describe("useHomeFilters", () => {
     expect(location.pathname).toBe("/other");
   });
 
-  it("writes a Categories period change to the URL without adding a history entry, leaving other params intact", async () => {
-    setup("/?plan=1&tab=categories&period=last-3m&q=market");
-
-    act(() =>
-      hook.updateCategories((c) => ({
-        ...c,
-        customRange: { from: "2026-09-01", to: "2026-09-30" },
-      })),
+  it("loads a legacy categoriesPeriod link without a Categories period and keeps it out of updates", () => {
+    setup(
+      "/?plan=1&tab=categories&period=last-3m&categoriesPeriod=custom&categoriesPeriodFrom=2026-09-01&categoriesPeriodTo=2026-09-30",
     );
 
+    expect(hook.tab).toBe("categories");
+    expect(hook.overview.period).toBe("last-3m");
+    expect("categories" in hook).toBe(false);
+    expect("updateCategories" in hook).toBe(false);
+
+    act(() => hook.updateOverview((o) => ({ ...o, period: "last-6m" })));
     expect(currentParams()).toEqual({
       plan: "1",
       tab: "categories",
-      period: "last-3m",
-      q: "market",
+      period: "last-6m",
       categoriesPeriod: "custom",
       categoriesPeriodFrom: "2026-09-01",
       categoriesPeriodTo: "2026-09-30",
     });
-    expect(hook.categories).toEqual({
-      period: "this-month",
-      customRange: { from: "2026-09-01", to: "2026-09-30" },
-    });
-    expect(hook.overview.period).toBe("last-3m");
-
-    act(() =>
-      hook.updateCategories(() => ({ period: "last-6m", customRange: null })),
-    );
-    expect(currentParams()).toEqual({
-      plan: "1",
-      tab: "categories",
-      period: "last-3m",
-      q: "market",
-      categoriesPeriod: "last-6m",
-    });
-
-    await goBack();
-    expect(location.pathname).toBe("/other");
   });
 
   it("switches to the Categories tab", () => {

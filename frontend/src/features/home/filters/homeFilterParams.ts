@@ -25,12 +25,6 @@ export type OverviewFilters = {
   memberId: number | null;
 };
 
-export type CategoriesFilters = {
-  period: Period;
-  /** Absolute range; when set it takes precedence over `period`. */
-  customRange: { from: string; to: string } | null;
-};
-
 export type TransactionFilters = {
   filter: PagedFinancialTransactionsFilter;
   sort: { by: FinancialTransactionSortBy; direction: SortDirection } | null;
@@ -48,11 +42,6 @@ export const OVERVIEW_PARAM_KEYS = [
   "periodFrom",
   "periodTo",
   "overviewMember",
-] as const;
-export const CATEGORIES_PARAM_KEYS = [
-  "categoriesPeriod",
-  "categoriesPeriodFrom",
-  "categoriesPeriodTo",
 ] as const;
 export const TRANSACTION_PARAM_KEYS = [
   "type",
@@ -156,39 +145,6 @@ export const serializeOverviewFilters = (
   }
   if (filters.memberId != null) out.overviewMember = String(filters.memberId);
   return out;
-};
-
-export const parseCategoriesFilters = (
-  params: URLSearchParams,
-): CategoriesFilters => {
-  const rawPeriod = params.get("categoriesPeriod");
-
-  if (rawPeriod === "custom") {
-    const from = parseDate(params.get("categoriesPeriodFrom"));
-    const to = parseDate(params.get("categoriesPeriodTo"));
-    if (from && to && from <= to) {
-      return { period: DEFAULT_PERIOD, customRange: { from, to } };
-    }
-    return { period: DEFAULT_PERIOD, customRange: null };
-  }
-
-  const period = PERIODS.find((p) => p === rawPeriod) ?? DEFAULT_PERIOD;
-  return { period, customRange: null };
-};
-
-export const serializeCategoriesFilters = (
-  filters: CategoriesFilters,
-): Record<string, string> => {
-  if (filters.customRange) {
-    return {
-      categoriesPeriod: "custom",
-      categoriesPeriodFrom: filters.customRange.from,
-      categoriesPeriodTo: filters.customRange.to,
-    };
-  }
-  return filters.period !== DEFAULT_PERIOD
-    ? { categoriesPeriod: filters.period }
-    : {};
 };
 
 export const parseTransactionFilters = (

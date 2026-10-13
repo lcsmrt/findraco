@@ -1,15 +1,13 @@
 import { describe, expect, it } from "vitest";
+import * as homeFilterParams from "./homeFilterParams";
 import {
-  parseCategoriesFilters,
   parseOverviewFilters,
   parseTab,
   parseTransactionFilters,
   resolvePeriodDates,
-  serializeCategoriesFilters,
   serializeOverviewFilters,
   serializeTab,
   serializeTransactionFilters,
-  type CategoriesFilters,
   type OverviewFilters,
   type TransactionFilters,
 } from "./homeFilterParams";
@@ -205,77 +203,39 @@ describe("tab codec", () => {
   });
 });
 
-describe("categories codec", () => {
-  const DEFAULT_CATEGORIES: CategoriesFilters = {
-    period: "this-month",
-    customRange: null,
-  };
+// UX-01 AC 1: the Categories tab has no period; links saved before still load.
+describe("legacy Categories period params", () => {
+  const legacy = params({
+    tab: "categories",
+    period: "this-year",
+    categoriesPeriod: "custom",
+    categoriesPeriodFrom: "2026-09-01",
+    categoriesPeriodTo: "2026-09-30",
+  });
 
-  it.each(["this-month", "last-3m", "last-6m", "this-year"] as const)(
-    "round-trips preset %s",
-    (period) => {
-      const filters: CategoriesFilters = { period, customRange: null };
-      expect(
-        parseCategoriesFilters(params(serializeCategoriesFilters(filters))),
-      ).toEqual(filters);
-    },
-  );
-
-  it("round-trips a custom range under its own param names", () => {
-    const filters: CategoriesFilters = {
-      period: "this-month",
-      customRange: { from: "2026-09-01", to: "2026-09-30" },
-    };
-    const serialized = serializeCategoriesFilters(filters);
-    expect(serialized).toEqual({
-      categoriesPeriod: "custom",
-      categoriesPeriodFrom: "2026-09-01",
-      categoriesPeriodTo: "2026-09-30",
+  it("parses a URL with categoriesPeriod without error and ignores it", () => {
+    expect(parseTab(legacy)).toBe("categories");
+    expect(parseOverviewFilters(legacy)).toEqual({
+      period: "this-year",
+      customRange: null,
+      memberId: null,
     });
-    expect(parseCategoriesFilters(params(serialized))).toEqual(filters);
+    expect(parseTransactionFilters(legacy)).toEqual(DEFAULT_TRANSACTIONS);
   });
 
-  it("serializes last-3m as categoriesPeriod", () => {
-    expect(
-      serializeCategoriesFilters({ period: "last-3m", customRange: null }),
-    ).toEqual({ categoriesPeriod: "last-3m" });
+  it("has no Categories period codec", () => {
+    expect("parseCategoriesFilters" in homeFilterParams).toBe(false);
+    expect("serializeCategoriesFilters" in homeFilterParams).toBe(false);
+    expect("CATEGORIES_PARAM_KEYS" in homeFilterParams).toBe(false);
   });
 
-  it("omits defaults on serialize", () => {
-    expect(serializeCategoriesFilters(DEFAULT_CATEGORIES)).toEqual({});
-  });
-
-  it("returns defaults for empty params", () => {
-    expect(parseCategoriesFilters(params({}))).toEqual(DEFAULT_CATEGORIES);
-  });
-
-  it("falls back to this-month for an unknown period token", () => {
-    expect(
-      parseCategoriesFilters(params({ categoriesPeriod: "last-decade" })),
-    ).toEqual(DEFAULT_CATEGORIES);
-  });
-
-  it("falls back to this-month when the custom range is inverted or malformed", () => {
-    expect(
-      parseCategoriesFilters(
-        params({
-          categoriesPeriod: "custom",
-          categoriesPeriodFrom: "2026-09-30",
-          categoriesPeriodTo: "2026-09-01",
-        }),
-      ),
-    ).toEqual(DEFAULT_CATEGORIES);
-    expect(
-      parseCategoriesFilters(
-        params({ categoriesPeriod: "custom", categoriesPeriodFrom: "2026-13-01" }),
-      ),
-    ).toEqual(DEFAULT_CATEGORIES);
-  });
-
-  it("is independent of the Overview period", () => {
-    const both = params({ period: "this-year", categoriesPeriod: "last-6m" });
-    expect(parseCategoriesFilters(both).period).toBe("last-6m");
-    expect(parseOverviewFilters(both).period).toBe("this-year");
+  it("serializes no categories period", () => {
+    const serialized = {
+      ...serializeTab(parseTab(legacy)),
+      ...serializeOverviewFilters(parseOverviewFilters(legacy)),
+      ...serializeTransactionFilters(parseTransactionFilters(legacy)),
+    };
+    expect(serialized).toEqual({ tab: "categories", period: "this-year" });
   });
 });
 
