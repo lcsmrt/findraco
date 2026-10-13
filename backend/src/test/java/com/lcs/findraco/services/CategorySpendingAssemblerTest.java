@@ -631,6 +631,21 @@ class CategorySpendingAssemblerTest {
         assertThat(sumOfMembers(row)).isEqualByComparingTo(row.getSpent());
     }
 
+    /** UX-04 AC 1: a former member with spend and no limit entry is listed inactive on a plain row. */
+    @Test
+    void formerMembersSpendOnAPlainCategoryIsListedInactive() {
+        FinancialTransactionCategory groceries = debit(1L, "Groceries", "300", null);
+        List<Object[]> rowsA = List.of(a(1L, MEMBER, "90"), a(1L, OTHER_MEMBER, "40"));
+
+        CategorySpendingDto row = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(groceries), Set.of(MEMBER), NAMES, null).get(0);
+
+        assertThat(member(row, OTHER_MEMBER).getSpent()).isEqualByComparingTo("40");
+        assertThat(member(row, OTHER_MEMBER).getLimit()).isNull();
+        assertThat(member(row, OTHER_MEMBER).isActive()).isFalse();
+        assertThat(member(row, MEMBER).isActive()).isTrue();
+    }
+
     /** UX-04 AC 1: an owned row lists the owner and the others with limit null; the row's spend stays the owner's. */
     @Test
     void ownedRowListsOwnerAndOthersWithoutLimits() {

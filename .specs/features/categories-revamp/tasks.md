@@ -1119,6 +1119,56 @@ U9 → U10 → U11 → U12
 
 ---
 
+## Fix tasks (UX verification iteration 1)
+
+Gaps 1 and 2 from `validation.md` "UX polish round — iteration 1" (FAIL).
+
+### F6: Former member's spend-only row is inactive
+
+**What**: `CategorySpendingAssemblerTest` case: plain category, spend by a former member with no limit entry → listed with `limit` null and `active` false (kills mutant B3).
+**Where**: `backend/src/test/java/com/lcs/findraco/services/CategorySpendingAssemblerTest.java`
+**Depends on**: None
+**Reuses**: U1 tests
+**Requirement**: UX-04 (AC 1)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] New test passes; with `activeMemberIds().contains(member)` → `true` at `CategorySpendingAssembler.java:162` it fails (checked by hand, reverted)
+- [x] Quick gate passes (`CategorySpendingAssemblerTest`)
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### F7: Focused member's dot keeps their colour
+
+**What**: `MemberFocus` carries the selected member's `color`; the Overview row uses it, so a member with no spend in a row still shows their colour instead of grey.
+**Where**: `frontend/src/features/home/components/overview/spendingRows.ts` (+ test), `frontend/src/features/home/components/overview/CategorySpendingList.tsx`
+**Depends on**: None
+**Reuses**: U5 `colorOf`
+**Requirement**: UX-04 (AC 2, 7)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] `spendingRows` tests assert the focus colour (incl. a member with 0 spend)
+- [x] Quick gate + build pass
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+
 ## Phase Execution Map
 
 ```
