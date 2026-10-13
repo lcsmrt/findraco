@@ -30,6 +30,12 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+  --color-member-1: var(--member-1);
+  --color-member-2: var(--member-2);
+  --color-member-3: var(--member-3);
+  --color-member-4: var(--member-4);
+  --color-member-5: var(--member-5);
+  --color-member-6: var(--member-6);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -86,6 +92,13 @@
   --chart-3: #fbbf24;
   --chart-4: #b45309;
   --chart-5: #78350f;
+  /* Member identity colours (UX-04 AC 2): distinct hues, none amber/red so they never read as a status. */
+  --member-1: #2a78d6;
+  --member-2: #e87ba4;
+  --member-3: #008300;
+  --member-4: #0891b2;
+  --member-5: #6250d6;
+  --member-6: #1baf7a;
   --sidebar: #fcfbf8;
   --sidebar-foreground: #1f1d1a;
   --sidebar-primary: #f59e0b;
@@ -146,6 +159,12 @@
   --chart-3: #fcd34d;
   --chart-4: #d97706;
   --chart-5: #92400e;
+  --member-1: #3987e5;
+  --member-2: #d55181;
+  --member-3: #3fae3f;
+  --member-4: #1ba3c0;
+  --member-5: #9085e9;
+  --member-6: #199e70;
   --sidebar: #222220;
   --sidebar-foreground: #f5f4ef;
   --sidebar-primary: #f59e0b;

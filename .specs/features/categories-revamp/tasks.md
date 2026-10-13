@@ -888,9 +888,11 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: colour is stable regardless of input order; wraps modulo palette; unknown user → neutral
-- [ ] Hook test: GET `.../dashboard/trend` with start, end and memberId; key includes plan and params
-- [ ] Quick gate passes
+- [x] Unit: colour is stable regardless of input order; wraps modulo palette; unknown user → neutral
+- [x] Hook test: GET `.../dashboard/trend` with start, end and memberId; key includes plan and params
+- [x] Quick gate passes (frontend 275 passed, 0 failed; new files lint clean)
+
+> SPEC_DEVIATION: the palette is six new `--member-1..6` tokens (light and dark in `index.css`), not `--chart-1..5` + one extra. Reason: the `--chart-*` tokens are five shades of amber, indistinguishable as identities and the same hue as the warning status (UX-03 AC 4). The new hues (blue, pink, green, cyan, violet, aqua) skip amber and red and pass the dataviz palette validator on the card surface in both themes.
 
 **Tests**: unit
 **Gate**: quick
