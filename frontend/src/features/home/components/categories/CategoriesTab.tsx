@@ -1,8 +1,5 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
-import {
-  useGetCategorySpending,
-  useGetFinancialTransactionCategories,
-} from "@/api/services/useFinancialTransactionCategoryService";
+import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
 import { usePlanContext } from "@/app/providers/PlanProvider";
 import { Button } from "@/components/button/Button";
 import {
@@ -12,61 +9,82 @@ import {
   CardTitle,
 } from "@/components/card/Card";
 import { Skeleton } from "@/components/skeleton/Skeleton";
+import { cn } from "@/lib/mergeClasses";
 import { PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { resolvePeriodDates } from "../../filters/homeFilterParams";
-import { countMonths, scaleTreeLimits } from "../../utils/scaleLimits";
+import { useMemberColors, type MemberColorOf } from "../../utils/memberColors";
 import {
   ALL_CATEGORIES_PAGE_SIZE,
   useCategoryFormSheet,
 } from "./CategoryFormSheet";
-import { CategoryTreeRow, type CategoryRowData } from "./CategoryTreeRow";
+import { buildCategoryTree, type CategoryTreeRoot } from "./categoryTree";
+import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./CategoryTreeRow";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
+
+const SECTION_TITLES = { DEBIT: "Expenses", CREDIT: "Income" } as const;
 
 type CategorySectionProps = {
   title: string;
-  rows: CategoryRowData[];
+  roots: CategoryTreeRoot[];
+  colorOf: MemberColorOf;
   canManage: boolean;
-  onEdit: (categoryId: number) => void;
-  onDelete: (categoryId: number) => void;
+  onEdit: (category: FinancialTransactionCategory) => void;
+  onDelete: (category: FinancialTransactionCategory) => void;
+  onAddChild: (root: FinancialTransactionCategory) => void;
 };
 
 const CategorySection = ({
   title,
-  rows,
+  roots,
+  colorOf,
   canManage,
   onEdit,
   onDelete,
+  onAddChild,
 }: CategorySectionProps) => (
   <Card>
     <CardHeader>
       <CardTitle>{title}</CardTitle>
     </CardHeader>
     <CardContent>
-      {rows.length === 0 ? (
+      {roots.length === 0 ? (
         <p className="text-muted-foreground flex h-16 items-center justify-center text-sm">
           No categories yet.
         </p>
       ) : (
         <div className="flex flex-col">
-          {rows.map((root) => (
-            <div key={root.categoryId} className="border-b last:border-0">
+          <div
+            className={cn(
+              "text-muted-foreground hidden border-b pb-2 text-xs font-medium",
+              CATEGORY_GRID_COLUMNS,
+            )}
+          >
+            <span>Name</span>
+            <span>Owner</span>
+            <span className="text-right">Monthly limit</span>
+            <span>Per member</span>
+            <span className="sr-only">Actions</span>
+          </div>
+          {roots.map((root) => (
+            <div key={root.category.id} className="border-b last:border-0">
               <CategoryTreeRow
-                row={root}
+                category={root.category}
+                colorOf={colorOf}
                 canManage={canManage}
                 onEdit={onEdit}
                 onDelete={onDelete}
-                className={root.children.length > 0 ? "border-0" : undefined}
+                onAddChild={onAddChild}
               />
-              {root.children.map((child) => (
+              {root.children.map((child, index) => (
                 <CategoryTreeRow
-                  key={child.categoryId}
-                  row={child}
-                  isChild
+                  key={child.id}
+                  category={child}
+                  child={{ isLast: index === root.children.length - 1 }}
+                  colorOf={colorOf}
                   canManage={canManage}
                   onEdit={onEdit}
                   onDelete={onDelete}
-                  className="border-0 border-t border-dashed"
+                  onAddChild={onAddChild}
                 />
               ))}
             </div>
@@ -77,79 +95,61 @@ const CategorySection = ({
   </Card>
 );
 
+/** Category management: structure and configured limits, no spend (UX-01). */
 export const CategoriesTab = () => {
   const { activePlan } = usePlanContext();
   const canManage = activePlan?.myRole === "OWNER";
   const { openCreate, openEdit } = useCategoryFormSheet();
+  const colorOf = useMemberColors();
 
-  // Interim until the management-only rewrite (U10): no period selector.
-  const range = useMemo(() => resolvePeriodDates("this-month", new Date()), []);
-
-  const { data: spending, isLoading } = useGetCategorySpending(range);
-  const { data: categoriesPage } = useGetFinancialTransactionCategories(
-    { size: ALL_CATEGORIES_PAGE_SIZE },
-    { enabled: canManage },
-  );
+  const { data: categoriesPage, isLoading } =
+    useGetFinancialTransactionCategories({ size: ALL_CATEGORIES_PAGE_SIZE });
   const categories = useMemo(
     () => categoriesPage?.content ?? [],
     [categoriesPage],
   );
-
-  const monthCount = countMonths(range.startDate, range.endDate);
-  const rows = useMemo(
-    () => (spending ? scaleTreeLimits(spending, monthCount) : []),
-    [spending, monthCount],
-  );
-  const expenseRows = rows.filter((r) => r.type === "DEBIT");
-  const incomeRows = rows.filter((r) => r.type === "CREDIT");
+  const sections = useMemo(() => buildCategoryTree(categories), [categories]);
 
   const [deleting, setDeleting] = useState<FinancialTransactionCategory | null>(
     null,
   );
 
-  const findCategory = (categoryId: number) =>
-    categories.find((c) => c.id === categoryId);
+  const handleEdit = (category: FinancialTransactionCategory) =>
+    void openEdit(category);
 
-  const handleEdit = (categoryId: number) => {
-    const category = findCategory(categoryId);
-    if (category) void openEdit(category);
-  };
-
-  const handleDelete = (categoryId: number) =>
-    setDeleting(findCategory(categoryId) ?? null);
+  const handleAddChild = (root: FinancialTransactionCategory) =>
+    void openCreate({ type: root.type });
 
   return (
     <div className="flex flex-col gap-6 px-4">
-      <div className="flex flex-wrap items-center justify-end gap-2">
-        {canManage && (
+      {canManage && (
+        <div className="flex flex-wrap items-center justify-end gap-2">
           <Button onClick={() => void openCreate()}>
             <PlusIcon className="h-4 w-4" />
             New Category
           </Button>
-        )}
-      </div>
+        </div>
+      )}
 
-      {isLoading || !spending ? (
+      {isLoading || !categoriesPage ? (
         <div className="flex flex-col gap-6">
           <Skeleton className="h-64" />
           <Skeleton className="h-32" />
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          <CategorySection
-            title="Expenses"
-            rows={expenseRows}
-            canManage={canManage}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-          <CategorySection
-            title="Income"
-            rows={incomeRows}
-            canManage={canManage}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          {sections.map((section) => (
+            <CategorySection
+              key={section.type}
+              title={SECTION_TITLES[section.type]}
+              roots={section.roots}
+              colorOf={colorOf}
+              canManage={canManage}
+              onEdit={handleEdit}
+              onDelete={setDeleting}
+              onAddChild={handleAddChild}
+            />
+          ))}
         </div>
       )}
 

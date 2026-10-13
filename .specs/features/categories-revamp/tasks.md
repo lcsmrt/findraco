@@ -1061,8 +1061,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: tree sorted case-insensitively; children grouped under their root; Expenses before Income; orphan child (parent missing) shown as root
-- [ ] Quick gate + build pass
+- [x] Unit: tree sorted case-insensitively; children grouped under their root; Expenses before Income; orphan child (parent missing) shown as root
+- [x] Quick gate + build pass (`categoryTree` 6, frontend 311 passed, 0 failed; build ok; lint 23 pre-existing errors, 0 new; checked with headless screenshots at 390px and 1280px, light and dark, with a hovered root)
+
+> Note: the Monthly limit column shows `effectiveLimit` (the per-member sum, or the plain limit). A child shows its parent's owner, as the API reports it. Owners and per-member entries carry the member's colour dot; a former member's dot is neutral and the text greyed with "(former member)". The ＋ icon opens the create form with the root's type only; U11 adds the parent prefill. Read-only roles get the same rows with plain (non-button) mobile rows and no action icons.
 
 **Tests**: unit
 **Gate**: quick + build
