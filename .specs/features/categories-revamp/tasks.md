@@ -1011,8 +1011,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: one-month period → 6 months ending at it; 12-month period → its 12 months; missing months zero; in-period flags; crosses year boundary
-- [ ] Quick gate + build pass
+- [x] Unit: one-month period → 6 months ending at it; 12-month period → its 12 months; missing months zero; in-period flags; crosses year boundary
+- [x] Quick gate + build pass (frontend 314 passed, 0 failed; build ok; lint 23 pre-existing errors, 0 new)
+
+> Note: months outside the selected period are drawn at 30% opacity and their tick label muted; in-period ticks are bold. Bar animation is off: with recharts 2 the bars did not redraw after the member filter changed the data (seen in headless screenshots). The trend requests whole calendar months (window start to the end of the last month).
 
 **Tests**: unit
 **Gate**: quick + build
