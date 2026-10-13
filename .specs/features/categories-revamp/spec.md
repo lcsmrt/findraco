@@ -156,6 +156,78 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 
 ---
 
+## Amendment: UX polish round (2026-10-12)
+
+Decisions in `context.md` → "Amendment: UX polish round". The Categories tab becomes management-only; all tracking moves to the Overview, which replaces the category chart with a list that shows who spent. The Transactions tab gets a mobile list.
+
+**Superseded ACs:** P1 Tab AC 3–5 (spend, percent and period on the Categories tab) → UX-01 and UX-03; P1 Sub AC 11 (Overview chart) → UX-03; P2 AC 6 and P3 AC 5 (per-member and owned rows) now apply to the Overview list → UX-04. P1 Tab AC 8 (over-limit mark) moves to the Overview → UX-03. All other ACs stand.
+
+### UX: Categories tab is management-only
+
+**Acceptance Criteria**:
+
+1. The Categories tab SHALL NOT show a period selector, spend, percent used or usage bars.  <!-- ubiquitous -->
+2. WHEN the Categories tab is shown on a wide screen (≥ `sm`) THEN each row SHALL show the name, owner, monthly limit and per-member limits as absolute amounts in aligned columns, with "—" for an empty value.  <!-- event-driven -->
+3. The Categories tab SHALL list every category always expanded: roots sorted alphabetically, each followed by its children sorted alphabetically, children indented under a tree guide.  <!-- ubiquitous -->
+4. WHILE the user's plan role is not OWNER the Categories tab SHALL show the same rows with no actions.  <!-- state-driven -->
+5. WHILE an owner or a per-member limit entry belongs to a former member the Categories tab SHALL show it greyed as "former member".  <!-- state-driven -->
+
+### UX: Row actions and mobile lists
+
+**Acceptance Criteria**:
+
+1. WHILE the screen is wide and the user is an OWNER, WHEN a Categories row is hovered or focused THEN it SHALL reveal Edit and Delete icons, plus New subcategory on root rows.  <!-- complex -->
+2. WHEN the user picks New subcategory on a root THEN the create form SHALL open with that root as the parent.  <!-- event-driven -->
+3. WHILE the screen is narrow (< `sm`) and the user is an OWNER, WHEN a Categories row is tapped THEN its edit form SHALL open, and the form footer SHALL offer Delete and, on a root, New subcategory.  <!-- complex -->
+4. WHILE the screen is narrow the Transactions tab SHALL show a list instead of the table: rows grouped by day under a date heading, each row showing description, category, participants and signed amount.  <!-- state-driven -->
+5. WHILE the screen is narrow, WHEN a transaction row is tapped THEN its edit form SHALL open, and the form footer SHALL offer Duplicate and Delete.  <!-- complex -->
+6. WHILE the screen is wide the Transactions tab SHALL keep the current table, in-cell editing and hover action icons.  <!-- state-driven -->
+
+### UX: Overview spending list
+
+**Acceptance Criteria**:
+
+1. The Overview SHALL show expense categories as a list, not a chart: roots sorted alphabetically, each root's children sorted alphabetically.  <!-- ubiquitous -->
+2. WHEN a row has a limit THEN it SHALL show "spent of limit", a usage bar and its status text; WHEN a row has no limit THEN it SHALL show its spend with no bar and no track.  <!-- event-driven -->
+3. The system SHALL classify a row with a limit as over when spend > limit, warning when spend ≥ 80% of the limit, and ok otherwise.  <!-- ubiquitous -->
+4. WHEN a row's status is shown THEN ok SHALL read "remaining X" muted, warning "⚠ remaining X" in amber, and over "▲ over by X" in red.  <!-- event-driven -->
+5. WHEN a row is over THEN its bar SHALL mark the limit with a vertical tick and hatch the part beyond it.  <!-- event-driven -->
+6. WHEN the Overview loads THEN a root with children SHALL be collapsed unless one of its children is in warning or over, in which case it SHALL be expanded.  <!-- event-driven -->
+7. WHEN the user clicks or taps anywhere on a root row that has children THEN the system SHALL toggle its children.  <!-- event-driven -->
+8. The Overview SHALL show percentages as integers.  <!-- ubiquitous -->
+9. The Overview SHALL scale monthly limits to the number of months in the selected period (existing rule).  <!-- ubiquitous -->
+
+### UX: Per-person on the Overview
+
+**Acceptance Criteria**:
+
+1. WHEN a client requests category spending THEN the system SHALL list, for every category, each member with spend in it or with a per-member limit entry, with their spend, their own limit (null without one) and whether they are an active member.  <!-- event-driven -->
+2. The system SHALL give each plan member a fixed colour from a palette, by their position in the plan's member list ordered by user id.  <!-- ubiquitous -->
+3. WHILE no member is selected the Overview SHALL draw each category bar as segments in the members' colours sized by their spend, with a line listing each member's spend.  <!-- state-driven -->
+4. WHILE a category has per-member limits the Overview SHALL show one sub-row per member, always visible, with that member's spend against their own limit and its status.  <!-- state-driven -->
+5. WHEN the Overview shows an owned category THEN its row SHALL show an owner pill and a bar in the owner's colour holding the owner's spend.  <!-- event-driven -->
+6. WHILE a member is selected, WHEN a category has a per-member limit for them THEN the row SHALL show that member's spend against their own limit.  <!-- complex -->
+7. WHILE a member is selected, WHEN a category has no per-member limit for them THEN the row SHALL keep the whole-category bar against the category limit, highlight the member's segment, dim the others, and read "<member> X of Y · shared limit L"; it SHALL NOT evaluate the member's spend against the whole limit.  <!-- complex -->
+8. WHILE the plan has 2 to 4 members the Overview SHALL offer the member filter as chips ("All" plus one per member with their colour dot); WHILE it has more than 4 it SHALL offer a combobox with colour dots; WHILE it has 1 it SHALL offer none.  <!-- state-driven -->
+9. The Overview SHALL NOT show the By Person card.  <!-- ubiquitous -->
+
+### UX: Overview summary, trend and period
+
+**Acceptance Criteria**:
+
+1. The Overview summary SHALL show Income, Expenses and Balance; Income and Expenses SHALL each show a bar segmented by member colours and each member's amount.  <!-- ubiquitous -->
+2. WHILE a member is selected the summary SHALL show that member's totals and highlight their segment.  <!-- state-driven -->
+3. WHILE the screen is narrow the summary SHALL be one block with Balance on top and Income and Expenses side by side; WHILE wide it SHALL be three cards in a row.  <!-- state-driven -->
+4. The Overview SHALL show Income and Expenses as grouped bars per month for the 6 calendar months ending at the selected period's last month, or for every month of the selected period when it spans more than 6, after the category list.  <!-- ubiquitous -->
+5. WHEN a month in the trend has no transactions THEN it SHALL show zero bars; WHEN a month lies inside the selected period THEN it SHALL be highlighted.  <!-- event-driven -->
+6. WHILE a member is selected the trend SHALL show that member's amounts.  <!-- state-driven -->
+7. WHEN a client requests the monthly trend for a date range and optional member THEN the system SHALL return income and expenses per month for that range.  <!-- event-driven -->
+8. The Overview period control SHALL show the selected period as "October 2026" for one calendar month or "Aug – Oct 2026" for a longer range, with previous and next arrows that shift the period by its length in months.  <!-- ubiquitous -->
+9. WHEN the user opens the range menu THEN it SHALL offer This month, Last 3 months, Last 6 months, This year and Custom.  <!-- event-driven -->
+10. The Overview period SHALL persist in the URL and local storage using the existing home filter mechanism.  <!-- ubiquitous -->
+
+---
+
 ## Edge Cases
 
 - IF an OWNER deletes a category referenced by any transaction, item or recurrence definition without a target THEN the system SHALL reject the request with 409 and report the reference count, instead of today's server error.
@@ -204,10 +276,15 @@ Categories are a flat list managed from a dialog buried in the Transactions tab.
 | CAT-15 | P3 Owned (AC 1–4, owner rules) | Tasks | In Tasks |
 | CAT-16 | P3 Owned (AC 5, 8, owner spend and visibility) | Tasks | In Tasks |
 | CAT-17 | P3 Owned (AC 6, default participant) | Tasks | In Tasks |
+| UX-01 | UX Categories tab (AC 1–5) | Tasks | In Tasks |
+| UX-02 | UX Row actions and mobile lists (AC 1–6) | Tasks | In Tasks |
+| UX-03 | UX Overview spending list (AC 1–9) | Tasks | In Tasks |
+| UX-04 | UX Per-person (AC 1–9) | Tasks | In Tasks |
+| UX-05 | UX Summary, trend and period (AC 1–10) | Tasks | In Tasks |
 
-**ID format:** `CAT-NN`; each ID covers the AC range named in its row.
+**ID format:** `CAT-NN` and `UX-NN` (UX polish round); each ID covers the AC range named in its row. CAT-02, CAT-03, CAT-08 and the display parts of CAT-12 / CAT-16 are superseded where the amendment says so.
 
-**Coverage:** 17 total, 17 mapped to tasks, 0 unmapped
+**Coverage:** 22 total, 22 mapped to tasks, 0 unmapped
 
 ---
 

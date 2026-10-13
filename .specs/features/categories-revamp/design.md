@@ -273,3 +273,49 @@ type CategorySpending = {
 | Limits period | Monthly, scaled by months on the client (existing Overview behavior) | No change to how limits are understood |
 
 **Project-level decision to record on approval:** AD-008. Category spend is computed per category × member from participation shares, with items attributed proportionally to those shares; former members' category settings are kept dormant, not deleted. It extends AD-007 and does not supersede it.
+
+---
+
+## Amendment: UX polish round (2026-10-12)
+
+Spec: UX-01..UX-05. Decisions: `context.md` → "Amendment: UX polish round".
+
+### Data flow
+
+- **Overview category list** reads `GET .../financial-transaction-category/spending` (the `CategorySpendingDto` tree, unfiltered), keeps the DEBIT roots, and applies the member filter **client-side**. Unfiltered data is required to draw the other members' dimmed segments (UX-04 AC 7). The dashboard `categoryBreakdown` stays in the API but the Overview stops reading it.
+- **Summary** reads `GET .../dashboard` **without `memberId`**; totals per member come from `personBreakdown`, and with a member selected the summary shows that member's `income` / `expense` / net (client-side). One request serves both states.
+- **Trend** reads a new `GET .../dashboard/trend?startDate&endDate&memberId` returning `List<MonthlyTrendDto>` (reuses `DashboardService.buildMonthlyTrend`, made package-visible or moved to a small method on the service). The frontend computes the 6-month window and fills missing months with zeros.
+
+### Backend changes
+
+- `CategorySpendingAssembler`: `members` lists, for every non-owned category, each member with spend facts in the row **or** with a limit entry (today: limit entries only), sorted by member id; `limit` is their own entry or null; `active` as today. Owned categories keep today's semantics (row spend = owner's) and list every member with spend, owner included, with `limit` null. Children report their own members; roots roll up per member as today (`rolledUp`).
+- `DashboardController` + `DashboardService.getTrend(filter, ctx)`; `ApiRoutes.DASHBOARD + "/trend"`; same `DashboardFilterDto` (start, end, memberId), same `PlanContext` scoping, any member may read.
+
+### Frontend components
+
+| Unit | Kind | Notes |
+| ---- | ---- | ----- |
+| `utils/memberColors.ts` | pure + hook `useMemberColors()` | Palette of 6 CSS vars (`--chart-1..5` + one extra token); index = position in plan members sorted by `userId`, modulo palette. |
+| `utils/periodNavigator.ts` | pure | `periodLabel(range)` ("October 2026" / "Aug – Oct 2026"), `shiftRange(range, ±1)` by the range's month length, `presetRange(preset, now)`. Months are calendar months; a custom range not aligned to months shifts by its month count anyway. |
+| `components/PeriodNavigator.tsx` | presentational | ‹ label › + "Range ▾" dropdown (This month, Last 3 months, Last 6 months, This year, Custom → existing date-range picker). Writes the existing Overview `period` / `customRange` filter fields: arrows always produce a `customRange`; presets set `period`. |
+| `overview/spendingRows.ts` | pure | From the `CategorySpending` DEBIT tree + months + selected member + colours → view rows: sorted, status (`ok`/`warning`/`over`/`none`), remaining/overBy, integer percent, segments (memberId, amount, colour, dimmed), member sub-rows, owner pill, default-expanded root ids. Limit scaling via existing `scaleTreeLimits`. |
+| `overview/CategorySpendingList.tsx` | presentational | Replaces `CategorySpendingChart.tsx` (deleted). Whole root row is a button (`aria-expanded`), lucide `ChevronRight` rotating. Bar: HTML flex segments; over → tick at `limit/spent` and a red hatched overflow (CSS `repeating-linear-gradient`). |
+| `overview/MemberFilterChips.tsx` | presentational | Chips for 2–4 members, else the existing `StandardCombobox` with dots. Uses `useOverviewMemberFilter`. |
+| `overview/SummaryCards.tsx` | presentational (rewrite) | Desktop 3 cards; `< sm` single block. Per-member segments from `personBreakdown`. Pure helper `summaryView(data, memberId, colours)` (tested). `PersonBreakdownList.tsx` deleted. |
+| `overview/MonthlyTrendChart.tsx` | rewrite | Recharts grouped `BarChart`; pure `trendWindow(range)` + `fillTrendMonths(data, window, selected)` (tested). Hook `useGetDashboardTrend` in `useDashboardService.ts`. |
+| `categories/CategoriesTab.tsx`, `CategoryTreeRow.tsx` | rewrite | Data from `useGetFinancialTransactionCategories` for every role (no spending call, no period). Pure `buildCategoryTree(categories)` (sorted, roots then children; tested). Desktop grid columns; `< sm` stacked list, row tap → `openEdit` (OWNER). Hover icons ✎ 🗑 ＋ (＋ roots only). |
+| `CategoryFormSheet.tsx` | extend | `openCreate({ parentId })` prefill; edit-mode footer gains Delete (opens the existing `DeleteCategoryDialog`) and, for roots, New subcategory, shown below `sm` only. |
+| `transactions/TransactionMobileList.tsx` | new | Rendered `sm:hidden`; the table wrapper gets `hidden sm:block`. Pure `groupByDay(transactions)` (tested). Same page data and pagination as the table. Tap → existing edit flow. |
+| `TransactionFormDrawer.tsx` | extend | Edit-mode footer gains Duplicate and Delete (below `sm` only), reusing the tab's existing handlers passed as props. |
+| `filters/homeFilterParams.ts` | trim | Categories period (`categoriesPeriod`, `CategoriesFilters.period`/`customRange`) removed; unknown params ignored on parse so old URLs still load. |
+
+Responsive switching is CSS-only (`sm:` breakpoint), no media-query hook: both layouts render, one is hidden.
+
+### Testing
+
+Pure helpers carry the logic and get vitest unit tests anchored to UX ACs; presentational components are build-gated (existing matrix). Backend: `CategorySpendingAssemblerTest` for the members rule, `CategorySpendingIT` for the endpoint shape, `DashboardTrendIT` (or a case in the existing dashboard IT) for the trend endpoint.
+
+### Risks
+
+- Client-side member filtering of the category list relies on `members` covering all spend; the assembler change makes Σ members.spent == row.spent for non-owned rows (asserted in tests).
+- Rendering both mobile and desktop transaction layouts doubles DOM for one page (≤ 50 rows); acceptable.

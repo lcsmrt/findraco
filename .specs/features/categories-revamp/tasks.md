@@ -797,6 +797,304 @@ Gaps 1 and 2 from `validation.md` (FAIL, iteration 1); F3–F5 from the spec ame
 
 ---
 
+
+## UX polish round (2026-10-12)
+
+Spec amendment UX-01..UX-05; design amendment "UX polish round". Batches: Phases 5–6 (U1–U8), Phase 7 (U9–U12).
+
+### Phase 5: UX backend
+
+```
+U1 → U2
+```
+
+### Phase 6: UX Overview
+
+```
+U3 → U4 → U5 → U6 → U7 → U8
+```
+
+### Phase 7: UX Categories and Transactions
+
+```
+U9 → U10 → U11 → U12
+```
+
+<!-- Phase 5: UX backend -->
+
+### U1: Members on every category row
+
+**What**: `CategorySpendingAssembler` lists, for every non-owned category, each member with spend facts or a limit entry (sorted by member id; own limit or null; `active`). Owned categories list every member with spend, owner included, `limit` null; row spend unchanged (owner's).
+**Where**: `backend/src/main/java/com/lcs/findraco/services/CategorySpendingAssembler.java`, `backend/src/test/java/com/lcs/findraco/services/CategorySpendingAssemblerTest.java`, `backend/src/test/java/com/lcs/findraco/services/CategorySpendingIT.java`
+**Depends on**: None
+**Reuses**: T18/T22 assembler
+**Requirement**: UX-04 (AC 1)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Unit: a category without limit entries lists every member with spend; Σ members.spent == row.spent for non-owned rows (root rolled up and child); a member with a limit entry and no spend is listed with spent 0; owned row lists owner and others with limit null and row spend = owner's
+- [ ] IT: `/spending` returns the members of a plain category with spend for both members
+- [ ] Full gate passes
+
+**Tests**: unit + integration
+**Gate**: full
+
+---
+### U2: Dashboard trend endpoint
+
+**What**: `GET {DASHBOARD}/trend?startDate&endDate&memberId` → `List<MonthlyTrendDto>`, reusing the monthly trend query; plan-scoped, readable by any member.
+**Where**: `backend/src/main/java/com/lcs/findraco/controllers/DashboardController.java`, `backend/src/main/java/com/lcs/findraco/services/DashboardService.java`, dashboard IT under `backend/src/test/java/com/lcs/findraco/`
+**Depends on**: U1
+**Reuses**: `buildMonthlyTrend`, `DashboardFilterDto`
+**Requirement**: UX-05 (AC 7)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `backend-endpoint`
+
+**Done when**:
+
+- [ ] IT: income and expenses per month for a 3-month range; memberId restricts to that member's shares; 404/403 behaviour for another plan matches the dashboard summary
+- [ ] Full gate passes
+
+**Tests**: integration
+**Gate**: full
+
+---
+<!-- Phase 6: UX Overview -->
+
+### U3: Member colours and trend hook
+
+**What**: `utils/memberColors.ts`: palette + `memberColorIndex(members, userId)` (position in members sorted by userId, modulo palette) and `useMemberColors()`. `useGetDashboardTrend(filter)` in `useDashboardService.ts` (key includes plan, range, member) and the `MonthlyTrend` wire type reuse.
+**Where**: `frontend/src/features/home/utils/memberColors.ts` (+ test), `frontend/src/api/services/useDashboardService.ts` (+ test)
+**Depends on**: U2
+**Reuses**: `useGetPlanMembers`, existing dashboard hook pattern
+**Requirement**: UX-04 (AC 2), UX-05 (AC 7)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `api-integration`
+
+**Done when**:
+
+- [ ] Unit: colour is stable regardless of input order; wraps modulo palette; unknown user → neutral
+- [ ] Hook test: GET `.../dashboard/trend` with start, end and memberId; key includes plan and params
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+### U4: Period navigator
+
+**What**: Pure `periodNavigator.ts` (`periodLabel`, `shiftRange`, `presetRange`) and `PeriodNavigator.tsx` (‹ label › + Range menu: This month, Last 3 months, Last 6 months, This year, Custom). Replaces `PeriodPicker` on the Overview; writes the existing Overview `period` / `customRange` fields (arrows produce a `customRange`).
+**Where**: `frontend/src/features/home/utils/periodNavigator.ts` (+ test), `frontend/src/features/home/components/PeriodNavigator.tsx`, `frontend/src/features/home/components/overview/OverviewTab.tsx`
+**Depends on**: U3
+**Reuses**: `resolvePeriodDates`, existing date-range picker in `PeriodPicker`
+**Requirement**: UX-05 (AC 8–10)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Unit: label 'October 2026' for one calendar month, 'Aug – Oct 2026' for a range, year shown on both ends across years; shift ±1 moves by the range's month count (1, 3, 6, 12), across year boundaries; presets resolve like `resolvePeriodDates`
+- [ ] Quick gate + build pass
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+### U5: Overview spending rows model
+
+**What**: Pure `spendingRows.ts`: from the DEBIT `CategorySpending` tree, month count, selected member and colours → sorted view rows with status, remaining/overBy, integer percent, member segments (dimmed when another member is selected), member sub-rows for per-member limits, owner pill, and the default-expanded root ids.
+**Where**: `frontend/src/features/home/components/overview/spendingRows.ts` (+ test)
+**Depends on**: U4
+**Reuses**: `scaleTreeLimits`, `usageStatus` thresholds
+**Requirement**: UX-03 (AC 1–4, 6, 8–9), UX-04 (AC 3–7)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Unit: alphabetical roots and children; over / warning (≥80%) / ok / none; remaining vs overBy; integer percent; no-limit row has no bar; roots auto-expanded only when a child is warning/over
+- [ ] Unit: unfiltered segments sum to spend in member colours; per-member sub-rows with own status; owned row single owner segment + pill
+- [ ] Unit: member selected with own limit → their spend vs their limit; without → whole-category bar vs category limit, their segment highlighted, others dimmed, never their share vs the whole limit
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+### U6: Overview list, member chips and wiring
+
+**What**: `CategorySpendingList.tsx` (replaces and deletes `CategorySpendingChart.tsx`): row-wide toggle button with chevron, segmented bar, limit tick + hatched overflow, status text, member line and sub-rows. `MemberFilterChips.tsx` (2–4 members chips, >4 combobox with dots, 1 none). `OverviewTab` reads `/spending` unfiltered for the list.
+**Where**: `frontend/src/features/home/components/overview/CategorySpendingList.tsx`, `frontend/src/features/home/components/overview/MemberFilterChips.tsx`, `frontend/src/features/home/components/overview/OverviewTab.tsx`
+**Depends on**: U5
+**Reuses**: `useGetCategorySpending`, `useOverviewMemberFilter`
+**Requirement**: UX-03 (AC 2, 5, 7), UX-04 (AC 8)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `component-creation`
+
+**Done when**:
+
+- [ ] Rows, toggle, bar and chips render per spec at 390px and 1280px (presentational, build-gated)
+- [ ] Build gate passes; lint no new errors
+
+**Tests**: none
+**Gate**: build
+
+---
+### U7: Summary block with members
+
+**What**: Pure `summaryView(dashboard, memberId, colours)` + rewritten `SummaryCards.tsx`: desktop three cards, `< sm` one block (Balance on top, Income and Expenses side by side), each with member segments and amounts. Dashboard fetched without `memberId`. Delete `PersonBreakdownList.tsx`.
+**Where**: `frontend/src/features/home/components/overview/summaryView.ts` (+ test), `frontend/src/features/home/components/overview/SummaryCards.tsx`, `frontend/src/features/home/components/overview/OverviewTab.tsx`
+**Depends on**: U6
+**Reuses**: `personBreakdown`
+**Requirement**: UX-04 (AC 9), UX-05 (AC 1–3)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Unit: unfiltered totals and per-member segments; member selected → that member's income, expense and balance with their segment highlighted
+- [ ] Quick gate + build pass
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+### U8: Six-month trend bars
+
+**What**: Pure `trendWindow(range)` and `fillTrendMonths(data, window, selectedRange)`; `MonthlyTrendChart.tsx` rewritten as grouped Income/Expense bars with in-period months highlighted, placed after the category list, fed by `useGetDashboardTrend` with the member filter.
+**Where**: `frontend/src/features/home/components/overview/trendMonths.ts` (+ test), `frontend/src/features/home/components/overview/MonthlyTrendChart.tsx`, `frontend/src/features/home/components/overview/OverviewTab.tsx`
+**Depends on**: U7
+**Reuses**: U3 hook
+**Requirement**: UX-05 (AC 4–6)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Unit: one-month period → 6 months ending at it; 12-month period → its 12 months; missing months zero; in-period flags; crosses year boundary
+- [ ] Quick gate + build pass
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+<!-- Phase 7: UX Categories and Transactions -->
+
+### U9: Drop the Categories period filter
+
+**What**: Remove `categoriesPeriod` / `CategoriesFilters.period` / `customRange` from home filters; old URLs with `categoriesPeriod` still load (ignored).
+**Where**: `frontend/src/features/home/filters/homeFilterParams.ts` (+ test), `frontend/src/features/home/hooks/useHomeFilters.ts` (+ test)
+**Depends on**: None
+**Reuses**: M5-03 filter persistence
+**Requirement**: UX-01 (AC 1)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Unit: parsing a URL with `categoriesPeriod` yields no error and no categories period; serialization emits none; existing filter tests updated, not deleted
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+### U10: Management-only Categories tab
+
+**What**: Pure `buildCategoryTree(categories)` (alphabetical roots, children under them). `CategoriesTab` + `CategoryTreeRow` rewritten: data from `useGetFinancialTransactionCategories` for every role; desktop aligned columns Name | Owner | Monthly limit | Per member | actions (hover ✎ 🗑, ＋ on roots); `< sm` stacked rows, tap → edit (OWNER); tree guide; former members greyed.
+**Where**: `frontend/src/features/home/components/categories/categoryTree.ts` (+ test), `frontend/src/features/home/components/categories/CategoriesTab.tsx`, `frontend/src/features/home/components/categories/CategoryTreeRow.tsx`
+**Depends on**: U9
+**Reuses**: `useCategoryFormSheet`, `DeleteCategoryDialog`
+**Requirement**: UX-01 (AC 1–5), UX-02 (AC 1–2)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `component-creation`
+
+**Done when**:
+
+- [ ] Unit: tree sorted case-insensitively; children grouped under their root; Expenses before Income; orphan child (parent missing) shown as root
+- [ ] Quick gate + build pass
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+### U11: Category form footer and parent prefill
+
+**What**: `openCreate({ parentId })` prefills the parent; in edit mode below `sm` the footer offers Delete (opens `DeleteCategoryDialog`) and, for a root, New subcategory.
+**Where**: `frontend/src/features/home/components/categories/CategoryFormSheet.tsx` (+ test), `frontend/src/features/home/components/categories/CategoriesTab.tsx`
+**Depends on**: U10
+**Reuses**: existing sheet and dialog
+**Requirement**: UX-02 (AC 2–3)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `form-creation`
+
+**Done when**:
+
+- [ ] Unit: create with a parentId starts with that parent and its type; without keeps today's defaults
+- [ ] Quick gate + build pass
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+### U12: Transactions mobile list
+
+**What**: Pure `groupByDay(transactions)`; `TransactionMobileList.tsx` rendered `sm:hidden` (table wrapper `hidden sm:block`), day headings, description, category, participants, signed amount; tap → existing edit. `TransactionFormDrawer` edit footer gains Duplicate and Delete below `sm`.
+**Where**: `frontend/src/features/home/components/transactions/groupByDay.ts` (+ test), `frontend/src/features/home/components/transactions/TransactionMobileList.tsx`, `frontend/src/features/home/components/transactions/TransactionsTab.tsx`, `frontend/src/features/home/components/transactions/TransactionFormDrawer.tsx`
+**Depends on**: U11
+**Reuses**: tab handlers `handleEdit` / `handleDuplicate` / `handleDelete`, pagination
+**Requirement**: UX-02 (AC 4–6)
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `component-creation`
+
+**Done when**:
+
+- [ ] Unit: groups keep the page's order, one group per calendar day, local-date safe (no UTC shift)
+- [ ] Quick gate + build pass; lint no new errors
+
+**Tests**: unit
+**Gate**: quick + build
+
+---
+
 ## Phase Execution Map
 
 ```
@@ -806,9 +1104,12 @@ Phase 1:  T1 → T2 → T3 → T4 → T5 → T6 → T7 → T8
 Phase 2:  T9 → T10 → T11 → T12 → T13 → T14 → T15 → T16
 Phase 3:  T17 → T18 → T19 → T20
 Phase 4:  T21 → T22 → T23 → T24
+Phase 5:  U1 → U2
+Phase 6:  U3 → U4 → U5 → U6 → U7 → U8
+Phase 7:  U9 → U10 → U11 → U12
 ```
 
-Batches (~7 tasks, whole phases): Phase 1 (8) · Phase 2 (8) · Phases 3 + 4 (8).
+Batches (~7 tasks, whole phases): Phase 1 (8) · Phase 2 (8) · Phases 3 + 4 (8) · Phases 5 + 6 (8) · Phase 7 (4).
 
 ## Diagram-Definition Cross-Check
 
