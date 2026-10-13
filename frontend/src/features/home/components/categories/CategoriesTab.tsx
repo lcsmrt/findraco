@@ -118,7 +118,7 @@ export const CategoriesTab = () => {
     void openEdit(category);
 
   const handleAddChild = (root: FinancialTransactionCategory) =>
-    void openCreate({ type: root.type });
+    void openCreate({ parentId: root.id });
 
   return (
     <div className="flex flex-col gap-6 px-4">

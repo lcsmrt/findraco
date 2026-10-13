@@ -29,7 +29,7 @@ import {
 } from "@/components/sheet/Sheet";
 import { maskCurrency } from "@/utils/string/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { SaveIcon, XIcon } from "lucide-react";
+import { PlusIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
 import {
   createContext,
   useContext,
@@ -43,6 +43,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { TransactionTypeToggle } from "../transactions/TransactionTypeToggle";
 import { CategoryLimitFields } from "./CategoryLimitFields";
+import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
 
 const NO_MEMBERS: PlanMember[] = [];
 
@@ -273,12 +274,15 @@ export const buildMemberLimitRows = (
 export type CategoryFormDefaults = {
   description?: string;
   type?: FinancialTransactionType;
+  /** Starts a subcategory of this root; the type follows the parent (UX-02 AC 2). */
+  parentId?: number;
 };
 
 export const buildDefaultValues = (
   category?: FinancialTransactionCategory | null,
   defaults?: CategoryFormDefaults,
   members: PlanMember[] = [],
+  categories: FinancialTransactionCategory[] = [],
 ): CategoryFormValues => {
   const memberLimits = buildMemberLimitRows(category, members);
   if (category) {
@@ -294,10 +298,14 @@ export const buildDefaultValues = (
       memberLimits,
     };
   }
+  const parent =
+    defaults?.parentId != null
+      ? categories.find((c) => c.id === defaults.parentId)
+      : undefined;
   return {
-    type: defaults?.type ?? "DEBIT",
+    type: defaults?.type ?? parent?.type ?? "DEBIT",
     description: defaults?.description ?? "",
-    parentId: null,
+    parentId: defaults?.parentId ?? null,
     ownerId: null,
     spendingLimit: "",
     limitMode: "single",
@@ -340,6 +348,8 @@ type CategoryFormSheetProps = {
   category?: FinancialTransactionCategory | null;
   defaults?: CategoryFormDefaults;
   onSuccess?: (category: FinancialTransactionCategory) => void;
+  /** Edit footer, narrow screens: opens a create form under this root (UX-02 AC 3). */
+  onNewSubcategory?: (root: FinancialTransactionCategory) => void;
 };
 
 export const CategoryFormSheet = ({
@@ -349,6 +359,7 @@ export const CategoryFormSheet = ({
   category,
   defaults,
   onSuccess,
+  onNewSubcategory,
 }: CategoryFormSheetProps) => {
   const isEditing = mode === "edit";
   const editing = isEditing ? category : null;
@@ -382,12 +393,17 @@ export const CategoryFormSheet = ({
     formState: { errors },
   } = useForm<CategoryFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: buildDefaultValues(editing, defaults, members),
+    defaultValues: buildDefaultValues(editing, defaults, members, categories),
   });
 
   useEffect(() => {
-    reset(buildDefaultValues(editing, defaults, members));
-  }, [editing, defaults, members, open, reset]);
+    reset(buildDefaultValues(editing, defaults, members, categories));
+  }, [editing, defaults, members, categories, open, reset]);
+
+  // Kept after the sheet closes, so the delete dialog outlives it.
+  const [deleting, setDeleting] = useState<FinancialTransactionCategory | null>(
+    null,
+  );
 
   const { mutate: createCategory, isPending: isCreating } =
     useCreateFinancialTransactionCategory({
@@ -425,152 +441,191 @@ export const CategoryFormSheet = ({
   const selectedOwner = owners.find((o) => o.id === ownerId) ?? null;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right">
-        <SheetHeader>
-          <SheetTitle>{isEditing ? "Edit Category" : "New Category"}</SheetTitle>
-        </SheetHeader>
+    <>
+      <Sheet open={open} onOpenChange={onOpenChange}>
+        <SheetContent side="right">
+          <SheetHeader>
+            <SheetTitle>{isEditing ? "Edit Category" : "New Category"}</SheetTitle>
+          </SheetHeader>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-2"
-        >
-          <FieldGroup>
-            <Field>
-              <FieldLabel htmlFor="category-type">Type</FieldLabel>
-              <TransactionTypeToggle
-                value={type}
-                onChange={(v) => {
-                  setValue("type", v, { shouldValidate: true });
-                  setValue("parentId", null);
-                  if (v === "CREDIT") setValue("spendingLimit", "");
-                }}
-                disabled={isPending || hasChildren}
-              />
-              {hasChildren && (
-                <p className="text-muted-foreground text-xs">
-                  A category with subcategories cannot change type.
-                </p>
-              )}
-              <FieldError errors={[errors.type]} />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="category-description">Name</FieldLabel>
-              <Input
-                id="category-description"
-                placeholder="e.g., Food, Transport, Entertainment"
-                disabled={isPending}
-                aria-invalid={!!errors.description}
-                {...register("description")}
-              />
-              <FieldError errors={[errors.description]} />
-            </Field>
-
-            <Field>
-              <FieldLabel htmlFor="category-parent">
-                Parent{" "}
-                <span className="text-muted-foreground font-normal">
-                  (optional)
-                </span>
-              </FieldLabel>
-              <StandardCombobox
-                id="category-parent"
-                items={options}
-                value={selectedParent}
-                onValueChange={(parent) => {
-                  setValue("parentId", parent?.id ?? null, {
-                    shouldValidate: true,
-                  });
-                  // A subcategory takes its parent's owner (CAT-15).
-                  if (parent) setValue("ownerId", null);
-                }}
-                itemLabel={(c) => c.description}
-                placeholder="None (top level)"
-                emptyMessage="No top-level categories"
-                disabled={isPending || hasChildren}
-                clearable
-              />
-              {hasChildren && (
-                <p className="text-muted-foreground text-xs">
-                  A category with subcategories stays at the top level.
-                </p>
-              )}
-              <FieldError errors={[errors.parentId]} />
-            </Field>
-
-            {parentId == null && (
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-2"
+          >
+            <FieldGroup>
               <Field>
-                <FieldLabel htmlFor="category-owner">
-                  Belongs to{" "}
+                <FieldLabel htmlFor="category-type">Type</FieldLabel>
+                <TransactionTypeToggle
+                  value={type}
+                  onChange={(v) => {
+                    setValue("type", v, { shouldValidate: true });
+                    setValue("parentId", null);
+                    if (v === "CREDIT") setValue("spendingLimit", "");
+                  }}
+                  disabled={isPending || hasChildren}
+                />
+                {hasChildren && (
+                  <p className="text-muted-foreground text-xs">
+                    A category with subcategories cannot change type.
+                  </p>
+                )}
+                <FieldError errors={[errors.type]} />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="category-description">Name</FieldLabel>
+                <Input
+                  id="category-description"
+                  placeholder="e.g., Food, Transport, Entertainment"
+                  disabled={isPending}
+                  aria-invalid={!!errors.description}
+                  {...register("description")}
+                />
+                <FieldError errors={[errors.description]} />
+              </Field>
+
+              <Field>
+                <FieldLabel htmlFor="category-parent">
+                  Parent{" "}
                   <span className="text-muted-foreground font-normal">
                     (optional)
                   </span>
                 </FieldLabel>
                 <StandardCombobox
-                  id="category-owner"
-                  items={owners}
-                  value={selectedOwner}
-                  onValueChange={(owner) => {
-                    setValue("ownerId", owner?.id ?? null, {
+                  id="category-parent"
+                  items={options}
+                  value={selectedParent}
+                  onValueChange={(parent) => {
+                    setValue("parentId", parent?.id ?? null, {
                       shouldValidate: true,
                     });
-                    // An owned category has a single limit (CAT-13).
-                    if (owner) setValue("limitMode", "single");
+                    // A subcategory takes its parent's owner (CAT-15).
+                    if (parent) setValue("ownerId", null);
                   }}
-                  itemLabel={(o) => (o.active ? o.name : `${o.name} (former member)`)}
-                  placeholder="Shared (everyone)"
-                  emptyMessage="No members"
-                  disabled={isPending}
+                  itemLabel={(c) => c.description}
+                  placeholder="None (top level)"
+                  emptyMessage="No top-level categories"
+                  disabled={isPending || hasChildren}
                   clearable
                 />
-                <p className="text-muted-foreground text-xs">
-                  Its spend and limit are this member's. Subcategories belong
-                  to the same member.
-                </p>
-                <FieldError errors={[errors.ownerId]} />
+                {hasChildren && (
+                  <p className="text-muted-foreground text-xs">
+                    A category with subcategories stays at the top level.
+                  </p>
+                )}
+                <FieldError errors={[errors.parentId]} />
               </Field>
-            )}
 
-            {type === "DEBIT" && (
-              <CategoryLimitFields
-                register={register}
-                watch={watch}
-                setValue={setValue}
-                errors={errors}
-                shares={memberLimitShares(watch("memberLimits"))}
-                perMemberDisabledReason={
-                  isOwned
-                    ? "A category that belongs to one member has a single limit."
-                    : undefined
-                }
-                disabled={isPending}
-              />
-            )}
-          </FieldGroup>
-        </form>
+              {parentId == null && (
+                <Field>
+                  <FieldLabel htmlFor="category-owner">
+                    Belongs to{" "}
+                    <span className="text-muted-foreground font-normal">
+                      (optional)
+                    </span>
+                  </FieldLabel>
+                  <StandardCombobox
+                    id="category-owner"
+                    items={owners}
+                    value={selectedOwner}
+                    onValueChange={(owner) => {
+                      setValue("ownerId", owner?.id ?? null, {
+                        shouldValidate: true,
+                      });
+                      // An owned category has a single limit (CAT-13).
+                      if (owner) setValue("limitMode", "single");
+                    }}
+                    itemLabel={(o) => (o.active ? o.name : `${o.name} (former member)`)}
+                    placeholder="Shared (everyone)"
+                    emptyMessage="No members"
+                    disabled={isPending}
+                    clearable
+                  />
+                  <p className="text-muted-foreground text-xs">
+                    Its spend and limit are this member's. Subcategories belong
+                    to the same member.
+                  </p>
+                  <FieldError errors={[errors.ownerId]} />
+                </Field>
+              )}
 
-        <SheetFooter>
-          <Button
-            variant="outline"
-            type="button"
-            disabled={isPending}
-            onClick={() => onOpenChange(false)}
-          >
-            <XIcon className="h-4 w-4" />
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            isLoading={isPending}
-            onClick={handleSubmit(onSubmit)}
-          >
-            <SaveIcon className="h-4 w-4" />
-            {isEditing ? "Save" : "Create"}
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+              {type === "DEBIT" && (
+                <CategoryLimitFields
+                  register={register}
+                  watch={watch}
+                  setValue={setValue}
+                  errors={errors}
+                  shares={memberLimitShares(watch("memberLimits"))}
+                  perMemberDisabledReason={
+                    isOwned
+                      ? "A category that belongs to one member has a single limit."
+                      : undefined
+                  }
+                  disabled={isPending}
+                />
+              )}
+            </FieldGroup>
+          </form>
+
+          <SheetFooter>
+            {editing && (
+              <div className="flex gap-2 sm:hidden">
+                <Button
+                  variant="outline"
+                  type="button"
+                  className="text-destructive hover:text-destructive flex-1"
+                  disabled={isPending}
+                  onClick={() => {
+                    setDeleting(editing);
+                    onOpenChange(false);
+                  }}
+                >
+                  <Trash2Icon className="h-4 w-4" />
+                  Delete
+                </Button>
+                {editing.parentId == null && onNewSubcategory && (
+                  <Button
+                    variant="outline"
+                    type="button"
+                    className="flex-1"
+                    disabled={isPending}
+                    onClick={() => onNewSubcategory(editing)}
+                  >
+                    <PlusIcon className="h-4 w-4" />
+                    New subcategory
+                  </Button>
+                )}
+              </div>
+            )}
+            <Button
+              variant="outline"
+              type="button"
+              disabled={isPending}
+              onClick={() => onOpenChange(false)}
+            >
+              <XIcon className="h-4 w-4" />
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              isLoading={isPending}
+              onClick={handleSubmit(onSubmit)}
+            >
+              <SaveIcon className="h-4 w-4" />
+              {isEditing ? "Save" : "Create"}
+            </Button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
+      <DeleteCategoryDialog
+        open={deleting != null}
+        onOpenChange={(isOpen) => {
+          if (!isOpen) setDeleting(null);
+        }}
+        category={deleting}
+        categories={categories}
+      />
+    </>
   );
 };
 
@@ -649,6 +704,13 @@ export const CategoryFormSheetProvider = ({
           state.open && state.mode === "create" ? state.defaults : undefined
         }
         onSuccess={handleSuccess}
+        onNewSubcategory={(root) =>
+          void openWith({
+            open: true,
+            mode: "create",
+            defaults: { parentId: root.id },
+          })
+        }
       />
     </CategoryFormSheetContext.Provider>
   );

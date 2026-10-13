@@ -1085,8 +1085,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: create with a parentId starts with that parent and its type; without keeps today's defaults
-- [ ] Quick gate + build pass
+- [x] Unit: create with a parentId starts with that parent and its type; without keeps today's defaults
+- [x] Quick gate + build pass (`CategoryFormSheet` 49, frontend 314 passed, 0 failed; build ok; lint 23 pre-existing errors, 0 new; footer, prefill and delete flows checked with headless screenshots at 390px)
+
+> Note: `buildDefaultValues` takes the category list as a fourth argument to resolve the parent's type; the form resets once the list loads. The footer's Delete closes the sheet and opens a `DeleteCategoryDialog` that the sheet renders itself, so it works wherever the sheet is opened. New subcategory goes through the provider (`onNewSubcategory`), which replaces the edit form with a create form under that root.
 
 **Tests**: unit
 **Gate**: quick + build

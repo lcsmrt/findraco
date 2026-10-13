@@ -186,6 +186,43 @@ describe("buildDefaultValues", () => {
     });
   });
 
+  // UX-02 AC 2: New subcategory opens the create form with that root as the parent.
+  it("starts a new subcategory under the given parent, with the parent's type", () => {
+    expect(buildDefaultValues(null, { parentId: 4 }, [], categories)).toEqual({
+      type: "CREDIT",
+      description: "",
+      parentId: 4,
+      ownerId: null,
+      spendingLimit: "",
+      limitMode: "single",
+      memberLimits: [],
+    });
+    expect(buildDefaultValues(null, { parentId: 1 }, [], categories)).toMatchObject({
+      type: "DEBIT",
+      parentId: 1,
+    });
+  });
+
+  it("passes the schema with the prefilled parent", () => {
+    const schema = createCategoryFormSchema(categories);
+    const prefilled = {
+      ...buildDefaultValues(null, { parentId: 4 }, [], categories),
+      description: "Bonus",
+    };
+    const parsed = schema.safeParse(prefilled);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.parentId).toBe(4);
+  });
+
+  it("keeps today's defaults for a create without a parent, even with categories", () => {
+    expect(buildDefaultValues(null, undefined, [], categories)).toEqual(
+      buildDefaultValues(),
+    );
+    expect(
+      buildDefaultValues(null, { description: "Gym", type: "CREDIT" }, [], categories),
+    ).toMatchObject({ type: "CREDIT", description: "Gym", parentId: null });
+  });
+
   it("starts a new category as a DEBIT root without defaults", () => {
     expect(buildDefaultValues()).toEqual({
       type: "DEBIT",
