@@ -862,8 +862,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] IT: income and expenses per month for a 3-month range; memberId restricts to that member's shares; 404/403 behaviour for another plan matches the dashboard summary
-- [ ] Full gate passes
+- [x] IT: income and expenses per month for a 3-month range; memberId restricts to that member's shares; 404/403 behaviour for another plan matches the dashboard summary
+- [x] Full gate passes (unit 95, IT 152 passed, 0 failed; `DashboardTrendIT` 5)
+
+> Note: `DashboardTrendIT` also covers a VIEWER read and a missing range (400). Months without data are absent from the response; the frontend fills them (U8). The trend tops up open-ended series first, like the summary.
 
 **Tests**: integration
 **Gate**: full

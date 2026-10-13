@@ -2,6 +2,7 @@ package com.lcs.findraco.controllers;
 
 import com.lcs.findraco.dtos.request.DashboardFilterDto;
 import com.lcs.findraco.dtos.response.DashboardSummaryResponseDto;
+import com.lcs.findraco.dtos.response.MonthlyTrendDto;
 import com.lcs.findraco.security.PlanContext;
 import com.lcs.findraco.services.DashboardService;
 import com.lcs.findraco.utils.ApiRoutes;
@@ -11,6 +12,8 @@ import jakarta.validation.Valid;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @Tag(name = "Dashboard")
 @RestController
@@ -29,5 +32,13 @@ public class DashboardController {
             @ParameterObject @ModelAttribute @Valid DashboardFilterDto filter,
             PlanContext ctx) {
         return ResponseEntity.ok(dashboardService.getSummary(filter, ctx));
+    }
+
+    @Operation(summary = "Returns income and expenses per month for the plan")
+    @GetMapping("/trend")
+    public ResponseEntity<List<MonthlyTrendDto>> getTrend(
+            @ParameterObject @ModelAttribute @Valid DashboardFilterDto filter,
+            PlanContext ctx) {
+        return ResponseEntity.ok(dashboardService.getTrend(filter, ctx));
     }
 }

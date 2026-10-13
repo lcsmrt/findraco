@@ -62,6 +62,14 @@ public class DashboardService {
         return new DashboardSummaryResponseDto(totalIncome, totalExpenses, netBalance, categoryBreakdown, monthlyTrend, personBreakdown);
     }
 
+    /** Income and expenses per calendar month of the range, optionally for one member's shares (UX-05 AC 7). */
+    @Transactional(readOnly = true)
+    public List<MonthlyTrendDto> getTrend(DashboardFilterDto filter, PlanContext ctx) {
+        Plan plan = ctx.getPlan();
+        openEndedSeriesTopUpService.topUp(plan, LocalDate.now(clock));
+        return buildMonthlyTrend(plan, filter.getStartDate(), filter.getEndDate(), filter.getMemberId());
+    }
+
     private List<CategoryBreakdownDto> buildCategoryBreakdown(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         return categorySpendingService.computeOverview(plan, startDate, endDate, memberId).stream()
                 .map(CategoryBreakdownDto::new)
