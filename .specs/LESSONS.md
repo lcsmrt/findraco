@@ -68,6 +68,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: P3 AC6 ownerDefaultAttribution (spec)
 - last seen: 2026-10-12T18:23:53Z
 
+### L-010 - When a rule lists new rows that carry a status flag, test each flag value on the new rows, not only on the rows that existed before
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-assembler` · harmful: 0
+- features: categories-revamp
+- evidence: validation.md UX round B3 CategorySpendingAssembler.java:162 (backend-assembler)
+- last seen: 2026-10-13T02:20:14Z
+
+### L-011 - When an AC defines labels for a control, state the label for every input shape the control accepts, including custom ranges
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `spec` · harmful: 0
+- features: categories-revamp
+- evidence: validation.md UX round UX-05 AC 8 periodNavigator.test.ts:88 (spec)
+- last seen: 2026-10-13T02:20:14Z
+
+### L-012 - When an AC defines a filtered view, state how it applies to every row variant, such as owned or limit-holding rows
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `spec` · harmful: 0
+- features: categories-revamp
+- evidence: validation.md UX round UX-04 AC 7 owned rows (spec)
+- last seen: 2026-10-13T02:20:14Z
+
+### L-013 - Check at design time that reused colour tokens are distinguishable from each other and from status colours before naming them in the design
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `frontend-design` · harmful: 0
+- features: categories-revamp
+- evidence: tasks.md U3 SPEC_DEVIATION member palette (frontend-design)
+- last seen: 2026-10-13T02:20:14Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

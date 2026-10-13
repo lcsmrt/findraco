@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 10,
+  "next_id": 14,
   "lessons": [
     {
       "id": "L-001",
@@ -166,6 +166,78 @@
       ],
       "created": "2026-10-12T18:23:53Z",
       "last_seen": "2026-10-12T18:23:53Z"
+    },
+    {
+      "id": "L-010",
+      "key": "surviving_mutant::when a rule lists new rows that carry a status flag test each flag value on the new rows not only on the rows that existed before",
+      "text": "When a rule lists new rows that carry a status flag, test each flag value on the new rows, not only on the rows that existed before",
+      "signal": "surviving_mutant",
+      "scope": "backend-assembler",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md UX round B3 CategorySpendingAssembler.java:162 (backend-assembler)"
+      ],
+      "created": "2026-10-13T02:20:14Z",
+      "last_seen": "2026-10-13T02:20:14Z"
+    },
+    {
+      "id": "L-011",
+      "key": "spec_precision_gap::when an ac defines labels for a control state the label for every input shape the control accepts including custom ranges",
+      "text": "When an AC defines labels for a control, state the label for every input shape the control accepts, including custom ranges",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md UX round UX-05 AC 8 periodNavigator.test.ts:88 (spec)"
+      ],
+      "created": "2026-10-13T02:20:14Z",
+      "last_seen": "2026-10-13T02:20:14Z"
+    },
+    {
+      "id": "L-012",
+      "key": "spec_precision_gap::when an ac defines a filtered view state how it applies to every row variant such as owned or limit holding rows",
+      "text": "When an AC defines a filtered view, state how it applies to every row variant, such as owned or limit-holding rows",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md UX round UX-04 AC 7 owned rows (spec)"
+      ],
+      "created": "2026-10-13T02:20:14Z",
+      "last_seen": "2026-10-13T02:20:14Z"
+    },
+    {
+      "id": "L-013",
+      "key": "spec_deviation::check at design time that reused colour tokens are distinguishable from each other and from status colours before naming them in the design",
+      "text": "Check at design time that reused colour tokens are distinguishable from each other and from status colours before naming them in the design",
+      "signal": "spec_deviation",
+      "scope": "frontend-design",
+      "status": "candidate",
+      "features": [
+        "categories-revamp"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tasks.md U3 SPEC_DEVIATION member palette (frontend-design)"
+      ],
+      "created": "2026-10-13T02:20:14Z",
+      "last_seen": "2026-10-13T02:20:14Z"
     }
   ]
 }

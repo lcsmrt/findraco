@@ -1,8 +1,176 @@
 # Categories Revamp Validation
 
-## Validation: categories-revamp - PASS
+## UX polish round — iteration 1
 
-**Result**: PASS (iteration 3). The iteration-2 gap (P2 AC 4 "0 when the total is 0") is closed by `9119578`: `CategoryFormSheet.test.ts:286` asserts `shares.get(10)` and `shares.get(20)` are `0` for two R$ 0 rows, and mutant F7 is now killed. The optional `ownerActive` hardening also landed: `CategorySpendingIT` now kills M18/M19 on its own. Full frontend suite 269 passed. Interactive UAT is still pending (user-facing).
+### Validation: categories-revamp UX polish round - FAIL
+
+**Result**: FAIL (UX polish round, iteration 1). 50/51 UX ACs are traced to a passing assertion or to confirmed presentational code, all gates are green, and 15 of 16 effective mutants are killed. One mutant survives: the new members rule in `CategorySpendingAssembler` can report a spend-only former member as active and no test notices (UX-04 AC 1, "whether they are an active member"). One small fix task closes it.
+
+**Date**: 2026-10-12
+**Spec**: `.specs/features/categories-revamp/spec.md`, "Amendment: UX polish round" (UX-01..UX-05)
+**Diff range**: `93b900e..HEAD` (HEAD `3215362`, U1–U12, 12 commits, 48 files)
+**Verifier**: independent sub-agent (author ≠ verifier), UX round iteration 1 of max 3
+
+#### Task completion
+
+U1–U12 are all marked done in `tasks.md` with their gates recorded. Nothing is blocked or partial.
+
+#### Gate check
+
+| Gate | Command | Result |
+| ---- | ------- | ------ |
+| Frontend tests | `npm run test` | 27 files, **318 passed**, 0 failed, 0 skipped |
+| Frontend build | `npm run build` | exit 0 (only the existing chunk-size warning) |
+| Frontend lint | `npm run lint` | 23 errors / 44 warnings. All 23 errors are in files that already had them; none is in a file this round touched (`CategoryFormSheet.tsx` and `TransactionFormDrawer.tsx` have warnings only) |
+| Backend | `./mvnw verify` (from `backend/`) | exit 0: unit **101 passed**, IT **152 passed**, 0 failed, 0 skipped; JaCoCo check met. This run emptied `dev_finsight`, which is accepted for this gate. It ran after the screenshots, so the `@ux.test` seed data is gone now |
+
+**Test count**: the frontend went from 269 at `93b900e` (measured in a scratch worktree) to 318 (+49). U9 removed 11 Categories-codec cases (`homeFilterParams.test.ts`) and replaced them with 3 cases for the amended outcome (`homeFilterParams.test.ts:216-239`). This removal is justified: UX-01 AC 1 removes the codec. The backend changes update superseded assertions to the amended outcome. None is weakened: `CategorySpendingAssemblerTest.java:332,479,569` and `CategorySpendingIT.java:83,241` now assert the extra member rows by value (spent, null limit, active). The new tests are `CategorySpendingAssemblerTest.java:585,616,636`, `CategorySpendingIT.java:284` and `DashboardTrendIT` (5 cases).
+
+#### Spec-anchored acceptance criteria
+
+Legend: ✅ the assertion matches the spec outcome and ran green. 🖥 presentational: the Test Coverage Matrix gates it on the build only, so it was confirmed by reading the component and by headless screenshots (Playwright, 390 and 1280 px, `lucas@ux.test` OWNER and `livia@ux.test` non-owner, before the backend gate wiped the data). ⚠️ spec-precision gap.
+
+##### UX-01 Categories tab is management-only
+
+| AC | Spec outcome | Evidence | Result |
+| -- | ------------ | -------- | ------ |
+| 1 | No period, spend, percent or bars | The period codec is gone: `homeFilterParams.test.ts:226` asserts `"parseCategoriesFilters" in homeFilterParams` is false, and `:216` checks that legacy params are ignored. `CategoriesTab.tsx:105` reads only `useGetFinancialTransactionCategories`, with no spending hook. Screenshots at 390 and 1280 show no period, spend or bars | ✅ + 🖥 |
+| 2 | Wide: name, owner, monthly limit, per-member absolute amounts in aligned columns, "—" when empty | `CategoryTreeRow.tsx:14` grid columns, `:170-188` with `EMPTY = "—"`. The 1280 screenshot shows "Lucas R$ 600,00 · Livia R$ 400,00" and "—" | 🖥 |
+| 3 | Always expanded; roots A–Z, children A–Z under them, tree guide | `categoryTree.test.ts:85` `toEqual(["bills","Food","Leisure","transport"])` and `:103` children grouped and sorted. `CategoryTreeRow.tsx:22` TreeGuide. There are no chevrons in the screenshots | ✅ |
+| 4 | Non-OWNER: same rows, no actions | `CategoriesTab.tsx:101` `canManage = myRole === "OWNER"` gates the New button, the icons and the tap button (`CategoryTreeRow.tsx:190,230`). For `livia@ux.test` at 1280, 0 Edit/Delete/New buttons were found while hovering | 🖥 |
+| 5 | Former owner and per-member entries greyed as "former member" | `CategoryTreeRow.tsx:45-58` (`ownerActive === false`) and `:80-89` (`!entry.active`). No former member in the seed data, so this was confirmed by reading the code only | 🖥 |
+
+##### UX-02 Row actions and mobile lists
+
+| AC | Spec outcome | Evidence | Result |
+| -- | ------------ | -------- | ------ |
+| 1 | Wide + OWNER: hover or focus reveals Edit and Delete, plus New subcategory on roots | `CategoryTreeRow.tsx:189` `group-focus-within/row:opacity-100 group-hover/row:opacity-100`, and `:192` `!isChild` adds ＋. In the screenshot, hovering Food shows ＋ ✎ 🗑 | 🖥 |
+| 2 | New subcategory opens the create form with that root as parent | `CategoryFormSheet.test.ts:190` `buildDefaultValues(null,{parentId:4},[],categories)` `toEqual({type:"CREDIT",…,parentId:4,…})`, and `:208` the schema accepts it. In the 1280 screenshot, clicking ＋ on Food opens "New Category" with Parent = Food | ✅ |
+| 3 | Narrow + OWNER: tap opens edit; footer has Delete and, on a root, New subcategory | `CategoryTreeRow.tsx:230-240` mobile button calls `onEdit`. `CategoryFormSheet.tsx:572-595` has `sm:hidden` Delete and `editing.parentId == null` New subcategory. In the 390 screenshot, tapping Food opens the edit sheet with both buttons | 🖥 |
+| 4 | Narrow Transactions: list grouped by day under a date heading; description, category, participants, signed amount | `groupByDay.test.ts:216` one group per day in page order, `:232` interleaved days, `:259` no UTC shift (TZ America/Sao_Paulo). `TransactionMobileList.tsx` shows the heading `EEE, d MMM yyyy`, "category · names" and "- R$". The 390 screenshot confirms it | ✅ + 🖥 |
+| 5 | Narrow: tap opens edit; footer has Duplicate and Delete | `TransactionFormDrawer.tsx` has an edit-only `sm:hidden` footer, and `TransactionsTab.tsx` wires `handleDuplicate` and `handleDelete`. The 390 screenshot of "Market 2" shows Delete and Duplicate | 🖥 |
+| 6 | Wide keeps the table, in-cell editing and hover icons | `TransactionsTab.tsx`: the table is moved unchanged into `hidden sm:block`. The 1280 screenshot shows the table | 🖥 |
+
+##### UX-03 Overview spending list
+
+| AC | Spec outcome | Evidence | Result |
+| -- | ------------ | -------- | ------ |
+| 1 | List (not chart); roots A–Z, children A–Z | `spendingRows.test.ts:74` `toEqual(["Food","rent"])` (CREDIT dropped) and `:75` `toEqual(["delivery","Restaurants"])`. `CategorySpendingChart.tsx` is deleted | ✅ |
+| 2 | With a limit: "spent of limit", a bar and status; without one: spend, no bar, no track | `spendingRows.test.ts:123` `bar` `toBeNull()` for a no-limit row. `CategorySpendingList.tsx:95` " of {limit}" and `:146` bar only when `row.bar`. Gifts and Restaurants in the screenshots have no track | ✅ |
+| 3 | over when spend > limit; warning when ≥ 80%; else ok | `spendingRows.test.ts:89-93`: 101/100 → "over", 100/100 → "warning", 80/100 → "warning", 79/100 → "ok", no limit → "none" | ✅ |
+| 4 | ok "remaining X" muted; warning "⚠ remaining X" amber; over "▲ over by X" red | `spendingRows.test.ts:102-103` `{remaining:149,overBy:null}` / `{remaining:null,overBy:67}`. `CategorySpendingList.tsx:64-83` sets the muted, amber and destructive classes with TriangleAlert and Triangle icons. Confirmed in the screenshots | ✅ + 🖥 |
+| 5 | Over: tick at the limit and the overflow hatched | `spendingRows.test.ts:133` `limitTickPct` ≈ 66.67 for 150/100, and `:142` null when within. `CategorySpendingList.tsx:41-53` draws the hatch and the tick. Visible on Delivery, Groceries and Repairs | ✅ |
+| 6 | On load, a root with children is collapsed unless a child is warning or over | `spendingRows.test.ts:163` `defaultExpandedIds` equals exactly [warned, overChild]: a calm root and a root that is itself over are excluded. `CategorySpendingList.tsx:292` seeds the state, and the list mounts only after the data loads (`OverviewTab.tsx:130`) | ✅ |
+| 7 | A click anywhere on a root with children toggles it | `CategorySpendingList.tsx:251-259`: the whole row is a `<button aria-expanded>` | 🖥 |
+| 8 | Integer percentages | `spendingRows.test.ts:109` `percent` `toBe(87)` for 872.8/1000 | ✅ |
+| 9 | Limits scaled to the period's months | `spendingRows.test.ts:178-180`: limit 1200 over 3 months, and sub-row limits `[780,420]` | ✅ |
+
+##### UX-04 Per-person on the Overview
+
+| AC | Spec outcome | Evidence | Result |
+| -- | ------------ | -------- | ------ |
+| 1 | Every member with spend or with an entry: spend, own limit (null without one), active | `CategorySpendingAssemblerTest.java:585` (Σ members == row, root and child, `limit` null, `isActive` true), `:616` (entry with no spend → spent 0, limit 140), `:636` (owned: owner and others, limit null). `CategorySpendingIT.java:284` `/spending` lists both members of a plain category with spend, null limit and active true. **Gap:** the `active` flag of a spend-only *former* member on a non-owned row is never asserted. Mutant B3 survives | ❌ GAP (partial) |
+| 2 | Fixed colour per member, by position in members ordered by user id | `memberColors.test.ts:189-193` (input order irrelevant; indexes 0/1/2), `:200-202` (wraps modulo 6), `:207` (unknown → neutral) | ✅ |
+| 3 | Unfiltered: segments in member colours sized by spend; a line with each member's spend | `spendingRows.test.ts:194-203`: segments `[[1,1051,"blue",false],[2,694,"pink",false]]`, Σ amount 1745, member line | ✅ |
+| 4 | Per-member limits: always-visible sub-row per member with own status | `spendingRows.test.ts:216-218`: Lucas 250/260 "warning" remaining 10, Livia 150/140 "over" overBy 10. `CategorySpendingList.tsx:263` renders sub-rows outside the toggle | ✅ |
+| 5 | Owned: owner pill and a bar in the owner's colour with the owner's spend | `spendingRows.test.ts:246-251`: owner `{memberId:2,…,color:"pink"}`, a single segment `[2,70,"pink"]` | ✅ |
+| 6 | Selected member with own limit: their spend vs their limit | `spendingRows.test.ts:265`: `{spent:150,limit:140,status:"over",overBy:10}` | ✅ |
+| 7 | Selected member without own limit: whole-category bar vs category limit, member highlighted, others dimmed, "<m> X of Y · shared limit L", never their share vs the whole limit | `spendingRows.test.ts:282-287` (row 1745/2000 warning; focus `{spent:694,of:1745,sharedLimit:2000}`; dimmed `[[1,true],[2,false]]`), `:302` (1700 → 85% warning, not Livia's 50%), `:316` (a dormant entry counts as no own limit). The 1280 member screenshot shows "Livia R$ 350,00 of R$ 760,00 · shared limit R$ 1.500,00". ⚠️ The spec is silent on owned rows with a member selected (author's choice is recorded in the U5 note) | ✅ ⚠️ |
+| 8 | 2–4 members: chips "All" + dots; >4: combobox with dots; 1: none | `MemberFilterChips.tsx:192` (`<=1` → null), `:194` (`>4` → combobox with `renderItem` dots), and the chips otherwise. The screenshot shows "All · ● Lucas · ● Livia" | 🖥 |
+| 9 | No By Person card | `PersonBreakdownList.tsx` is deleted and `OverviewTab.tsx` renders none | 🖥 |
+
+##### UX-05 Overview summary, trend and period
+
+| AC | Spec outcome | Evidence | Result |
+| -- | ------------ | -------- | ------ |
+| 1 | Income, Expenses, Balance; Income and Expenses each with a member-segmented bar and amounts | `summaryView.test.ts:88-99` (totals 5147/4450/697; segments ordered by id with colours; widths sum to 100) | ✅ |
+| 2 | Selected member: their totals, segment highlighted | `summaryView.test.ts:105-115` (2414/2105/309; dimmed `[[1,true],[2,false]]`) | ✅ |
+| 3 | Narrow: one block, Balance on top, Income and Expenses side by side; wide: three cards | `SummaryCards.tsx:109-135` (`sm:hidden` block / `hidden sm:grid sm:grid-cols-3`). Confirmed at 390 and 1280 | 🖥 |
+| 4 | Grouped Income/Expense bars for the 6 months ending at the period's last month, or the whole period if longer; after the list | `trendMonths.test.ts:207` (Oct → May–Oct), `:211` (12-month period → its 12 months), `:215` (crosses the year), `:219`. `OverviewTab.tsx:136` places the trend after the list | ✅ |
+| 5 | Months with no data → zero bars; in-period months highlighted | `trendMonths.test.ts:235-242` (zeros filled), `:250-257` (`inPeriod` flags) | ✅ |
+| 6 | Selected member → trend shows their amounts | `OverviewTab.tsx:58-63` adds `memberId` to the trend filter. Backend: `DashboardTrendIT.java:60-62` (partner-only 50 / 40). Hook: `useDashboardService.test.ts:44` `toHaveBeenCalledWith("/plan/5/dashboard/trend",{params})` | ✅ |
+| 7 | Trend endpoint returns income and expenses per month for the range and optional member | `DashboardTrendIT.java:48-51` (3 months: 1000/200, 0/100, 500/0; June and October excluded), `:60-62` (memberId), `:86-87` (other plan → 404 like the summary), `:73` (viewer), `:95-96` (missing range → 400) | ✅ |
+| 8 | Label "October 2026" / "Aug – Oct 2026"; arrows shift by the period's length | `periodNavigator.test.ts:75` "October 2026", `:79` "Aug – Oct 2026", `:84` across years, and `:95-108` shifts by 1/3/6/12 across years. ⚠️ The spec defines no label for a custom range not aligned to months (the author shows days: `:88`) | ✅ ⚠️ |
+| 9 | Range menu: This month, Last 3 months, Last 6 months, This year, Custom | `PeriodNavigator.tsx:26-29,133`. The screenshot of the open menu shows all five. `periodNavigator.test.ts:121` presets resolve like `resolvePeriodDates` | ✅ + 🖥 |
+| 10 | Period persists in the URL and local storage via the home filter mechanism | Arrows write `customRange` through `updateOverview` (`OverviewTab.tsx:94`). The existing overview codec round-trip is at `homeFilterParams.test.ts:40`. Live: after the ‹ arrow the URL became `?…&period=custom&periodFrom=2026-09-01&periodTo=2026-09-30`. The member selection survived a reload (it is kept in local storage) | ✅ + 🖥 |
+
+**Status**: ❌ 1 gap (UX-04 AC 1 `active` for a spend-only former member); ⚠️ 2 spec-precision gaps (UX-04 AC 7 on owned rows, UX-05 AC 8 non-month labels). Neither precision gap blocks this round: the author's choices are recorded in the task notes and are consistent with the ACs.
+
+**Superseded CAT ACs re-checked**: P1 Tab AC 3–5 and 8 and P1 Sub AC 11 are replaced by UX-01 and UX-03, and their old Categories-tab assertions are gone with the codec. The Overview assertions above cover the replacement. The P2 AC 6 and P3 AC 5 rows on the Overview are covered by UX-04 AC 4–5. Unchanged CAT backend behaviour still passes in the full IT run (152/0).
+
+#### SPEC_DEVIATION review
+
+- **U3 palette** (`--member-1..6` instead of `--chart-1..5` + one): **acceptable**. UX-04 AC 2 only requires "a fixed colour from a palette, by position", and that is met. The deviation is from the design, not the spec. It is justified because the five `--chart-*` tokens are amber shades that clash with the warning status (UX-03 AC 4).
+- U4–U12 notes record choices where the spec is silent (day labels for unaligned ranges, sub-rows hidden while a member is selected, footer Delete closing the sheet). None contradicts an AC.
+
+#### Discrimination sensor
+
+Each mutant was run in a temporary `git worktree` at HEAD (`node_modules` symlinked, backend `-o` offline), then reverted. The worktree was removed and `git status --porcelain` of the real tree matched the pre-sensor baseline (empty). Sensor depth: expanded (≥5).
+
+| # | File | Mutation | Killed? |
+| - | ---- | -------- | ------- |
+| M1 | `spendingRows.ts:118` | warning `ratio >= 0.8` → `>` | ✅ (1 failed) |
+| M2 | `spendingRows.ts:109` | over `spent > limit` → `>=` | ✅ (2 failed) |
+| M3 | `spendingRows.ts:286` | auto-expand also a root that is itself over | ✅ (1 failed) |
+| M4 | `spendingRows.ts:202` | a dormant own entry counts as own limit | ✅ (1 failed) |
+| M5 | `spendingRows.ts:251` | evaluate the selected member's share against the whole limit (the old `Limits.forRow` bug) | ✅ (3 failed) |
+| M6 | `summaryView.ts:44` | totals ignore the selected member | ✅ (2 failed) |
+| M7 | `trendMonths.ts:158` | `Math.max` → `Math.min` (window length) | ✅ (7 failed) |
+| M8 | `trendMonths.ts:196` | in-period end `<=` → `<` | ✅ (2 failed) |
+| M9 | `periodNavigator.ts:54` | shift by 1 month instead of the range's length | ✅ (3 failed) |
+| M10 | `memberColors.ts:153` | drop the sort by user id | ✅ (2 failed) |
+| M11 | `categoryTree.ts:34` | an orphan child is no longer a root | ✅ (1 failed) |
+| M12 | `groupByDay.ts:180` | `split("T")[0]` → `new Date(d).toISOString().slice(0,10)` | ➖ Survived, **equivalent**: the API sends `LocalDate` (`yyyy-MM-dd`), which parses as UTC and round-trips unchanged. M12b is the real local-format shift |
+| M12b | `groupByDay.ts:180` | `new Date(d).toLocaleDateString("en-CA")` (UTC shift) | ✅ (3 failed) |
+| B1 | `CategorySpendingAssembler.java:153` | drop the spend-only members (only entries listed, the pre-UX rule) | ✅ (4 failed) |
+| B2 | `CategorySpendingAssembler.java:179` | owned row leaves out the owner (the pre-UX rule) | ✅ (4 failed) |
+| B3 | `CategorySpendingAssembler.java:162` | a spend-only member without an entry is always `active=true` | ❌ **Survived** (32/32 unit pass, and no IT seeds a former member with spend on a non-owned row) |
+
+**Result**: 15/16 effective mutants killed (M12 is equivalent) → ❌ FAIL.
+
+#### Code quality
+
+| Check | Status |
+| ----- | ------ |
+| Minimum code, surgical, no scope creep | ✅ (`StandardCombobox.renderItem` is a small optional prop needed for UX-04 AC 8 dots) |
+| Matches patterns (CLAUDE.md: arrow named exports, service hooks, `ApiRoutes`, `PlanContext`) | ✅ |
+| Logic in tested pure helpers; presentational components build-gated per the matrix | ✅ |
+| Spec-anchored outcome check | ❌ UX-04 AC 1 `active` (B3) |
+| Every new test maps to a UX AC, an edge case or a Done-when | ✅ |
+| Guidelines: `CLAUDE.md`, `.specs/codebase/TESTING.md` | ✅ |
+
+**Observation (cosmetic, not an AC breach)**: with a member selected, a row where that member has no spend and that has no limit (e.g. Gifts) draws the focus dot in the neutral grey instead of the member's colour (`CategorySpendingList.tsx:125-128`: the fallback chain finds no segment).
+
+#### Fix plan
+
+**Fix UX-1: assert `active` for spend-only members on non-owned rows** (Major)
+- **Root cause**: the U1 tests assert `isActive()` true for active members only. The new `limits.activeMemberIds().contains(member)` branch (`CategorySpendingAssembler.java:162`) is never exercised with a former member.
+- **Task**: in `CategorySpendingAssemblerTest`, add a case with a plain (non-owned, no entry) category with spend by a member outside `activeMemberIds`, and assert that member is listed with their spend, `limit` null and `isActive()` false. Optionally mirror it in `CategorySpendingIT` (remove the partner after a split on a plain category).
+- **Done when**: mutant B3 (`null, limits.activeMemberIds().contains(member))` → `null, true)`) is killed, and the quick and full gates pass.
+
+#### Requirement traceability (UX round)
+
+| Requirement | Status |
+| ----------- | ------ |
+| UX-01 | ✅ Verified |
+| UX-02 | ✅ Verified |
+| UX-03 | ✅ Verified |
+| UX-04 | ❌ Needs fix (AC 1 `active`, B3) |
+| UX-05 | ✅ Verified |
+
+#### Summary
+
+**Overall**: ❌ Not ready. The round needs one fix task (Fix UX-1) and then re-verification.
+**Spec-anchored check**: 50/51 ACs matched; 1 gap; 2 spec-precision gaps flagged.
+**Sensor**: 15/16 killed (B3 survived; M12 equivalent).
+**Gate**: frontend 318 passed, build ok, lint 23 existing errors (0 new); backend 101 unit + 152 IT passed, JaCoCo met.
+
+---
+
+
+## CAT round (CAT-01..17) - iteration 3: PASS
+
+**CAT round outcome** - PASS (iteration 3). The iteration-2 gap (P2 AC 4 "0 when the total is 0") is closed by `9119578`: `CategoryFormSheet.test.ts:286` asserts `shares.get(10)` and `shares.get(20)` are `0` for two R$ 0 rows, and mutant F7 is now killed. The optional `ownerActive` hardening also landed: `CategorySpendingIT` now kills M18/M19 on its own. Full frontend suite 269 passed. Interactive UAT is still pending (user-facing).
 
 **Date**: 2026-10-12
 **Spec**: `.specs/features/categories-revamp/spec.md` (amended in `50472da`)
