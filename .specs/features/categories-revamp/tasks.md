@@ -937,10 +937,12 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: alphabetical roots and children; over / warning (≥80%) / ok / none; remaining vs overBy; integer percent; no-limit row has no bar; roots auto-expanded only when a child is warning/over
-- [ ] Unit: unfiltered segments sum to spend in member colours; per-member sub-rows with own status; owned row single owner segment + pill
-- [ ] Unit: member selected with own limit → their spend vs their limit; without → whole-category bar vs category limit, their segment highlighted, others dimmed, never their share vs the whole limit
-- [ ] Quick gate passes
+- [x] Unit: alphabetical roots and children; over / warning (≥80%) / ok / none; remaining vs overBy; integer percent; no-limit row has no bar; roots auto-expanded only when a child is warning/over
+- [x] Unit: unfiltered segments sum to spend in member colours; per-member sub-rows with own status; owned row single owner segment + pill
+- [x] Unit: member selected with own limit → their spend vs their limit; without → whole-category bar vs category limit, their segment highlighted, others dimmed, never their share vs the whole limit
+- [x] Quick gate passes (`spendingRows` 19, frontend 303 passed, 0 failed)
+
+> Note: decisions where the spec is silent: with a member selected, per-member sub-rows are hidden (the row itself is the member's view); a dormant own entry counts as no own limit; on an owned row, a non-owner's focus amount is 0 (owned spend is the owner's) and the owner selecting it sees it as their own row (no "shared limit" text). The member line lists every member with non-zero spend, so an owned row also shows the other members' shares (dimmed when another member is selected).
 
 **Tests**: unit
 **Gate**: quick
