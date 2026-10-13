@@ -15,7 +15,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 
 | # | Feature | Why | Source |
 | - | ------- | --- | ------ |
-| M5-04 | **Categories revamp** | Categories get their own tab; explore subcategories (parent/child) and per-person categories. Scope to be shaped in spec. | User — 2026-10-11 |
+| M5-04 | **Categories revamp** ✅ SHIPPED 2026-10-13 (UAT pending) | Categories get their own tab; explore subcategories (parent/child) and per-person categories. Scope to be shaped in spec. | User — 2026-10-11 |
 | M5-05 | **Claude MCP connector** | Remote MCP server so Claude can read and modify plan data from chat — "the chat where I send things"; replaces WhatsApp capture for now. | User — 2026-10-11 |
 | M5-06 | **Period navigator (month)** | Prev/next arrows step one month; clicking the current month opens a custom-range picker. Later: step by quarter/semester/year when that granularity is selected (parked 2026-10-11 — start with month only). | User — 2026-10-11 |
 | M5-07 | **PWA (installable)** | Make the web app installable on the phone (manifest, icons, service worker; offline read and push later). Builds on the mobile-first layout of the categories UX round. | User — 2026-10-12 |
