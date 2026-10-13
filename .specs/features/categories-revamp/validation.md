@@ -1,10 +1,89 @@
 # Categories Revamp Validation
 
+## UX polish round — iteration 2
+
+### Validation: categories-revamp UX polish round - PASS
+
+**Result**: PASS (UX polish round, iteration 2). Both iteration-1 gaps are closed with evidence, mutant B3 is now killed, 6/6 fresh and re-run mutants are killed, and every gate is green.
+
+**Date**: 2026-10-12
+**Spec**: `.specs/features/categories-revamp/spec.md`, "Amendment: UX polish round" (UX-01..UX-05)
+**Diff range**: `93b900e..HEAD` (HEAD `e01ef64`). Fix diff re-checked: `f776269..HEAD` = `afa8453` (F6) + `e01ef64` (F7); 5 files, only `CategorySpendingAssemblerTest.java`, `spendingRows.ts`, `spendingRows.test.ts`, `CategorySpendingList.tsx` and `tasks.md`
+**Verifier**: independent sub-agent (author ≠ verifier), UX round iteration 2 of max 3
+
+#### Task completion
+
+F6 and F7 ("Fix tasks (UX verification iteration 1)" in `tasks.md`) are marked done with their Done-when boxes checked. U1–U12 are unchanged since iteration 1.
+
+#### Gaps from iteration 1
+
+| Gap | Evidence | Result |
+| --- | -------- | ------ |
+| 1. UX-04 AC 1: `active` of a spend-only former member on a non-owned row (mutant B3) | `CategorySpendingAssemblerTest.java:636` `formerMembersSpendOnAPlainCategoryIsListedInactive`: plain category, `activeMemberIds = {MEMBER}`, spend by `OTHER_MEMBER` with no entry. `:643` `getSpent()` `isEqualByComparingTo("40")`, `:644` `getLimit()` `isNull()`, `:645` `isActive()` `isFalse()`, `:646` the active member `isTrue()`. Matches the spec outcome (spend, own limit null, active flag) | ✅ closed |
+| 2. Cosmetic: focused member with no spend in a row drew a grey dot | `spendingRows.ts:58` `MemberFocus.color`, set at `:245` `color: colorOf(selectedMember.id)` independent of segments; `CategorySpendingList.tsx:129` `<MemberDot color={row.focus.color} />` (the `focusColor` fallback chain is removed). `spendingRows.test.ts:326` Rent with spend only by Lucas, Livia selected → `focus` `toEqual({…, color: colorOf(LIVIA), spent: 0, of: 1500, sharedLimit: 1500})`; `:283` the same for a member with spend | ✅ closed |
+
+#### Regression spot-check (UX ACs touched by the fix diff)
+
+- UX-04 AC 1: the other member-list assertions are unchanged (`CategorySpendingAssemblerTest.java:569` owned-row former member inactive, `:585`, `:616`, and the owned case after `:646`) and pass (33/33).
+- UX-04 AC 7: `spendingRows.test.ts:283` keeps the full focus shape (`spent 694, of 1745, sharedLimit 2000`) plus the colour; `:302` (85% warning) and `:316` (dormant entry) are untouched and green. `focus` is read only in `CategorySpendingList.tsx:127-132`; text and shared-limit rendering are unchanged.
+- No other UX AC's code or tests are in `f776269..HEAD`, so iteration 1's other passes stand (the full frontend and backend suites re-ran green below).
+
+**Status**: ✅ All UX ACs covered (51/51). The 2 spec-precision gaps from iteration 1 (UX-04 AC 7 on owned rows, UX-05 AC 8 non-month labels) are unchanged and non-blocking, as recorded there.
+
+#### Discrimination sensor
+
+Each mutant ran in a temporary `git worktree` at HEAD (`node_modules` symlinked; backend `./mvnw -o test -Dtest=CategorySpendingAssemblerTest`), reverted after each run, and the worktree was removed. Real-tree `git status --porcelain` before = after = empty (baseline matched).
+
+| # | File:line | Mutation | Killed? |
+| - | --------- | -------- | ------- |
+| B3 (re-run) | `CategorySpendingAssembler.java:162` | `null, limits.activeMemberIds().contains(member))` → `null, true)` | ✅ (1 failed: `CategorySpendingAssemblerTest.java:645`) |
+| B4 | `CategorySpendingAssembler.java:186` | owned row: member `active` → always `true` | ✅ (1 failed: `formerMembersShareInAnOwnedCategoryIsListedInactive`) |
+| M13 | `spendingRows.ts:245` | F7: focus colour → `"var(--muted-foreground)"` (the old grey) | ✅ (2 failed) |
+| M14 | `spendingRows.ts:245` | F7: focus colour → `colorOf(row.ownerId ?? 0)` (wrong member) | ✅ (2 failed) |
+| M15 | `summaryView.ts:52` | dimmed `person.userId !== memberId` → `===` (highlight inverted) | ✅ (1 failed) |
+| M16 | `categoryTree.ts:43` | drop the A–Z sort of children | ✅ (1 failed) |
+
+**Sensor depth**: expanded. **Sensor result** — 6/6 killed, PASS.
+
+#### Gate check
+
+| Gate | Command | Result |
+| ---- | ------- | ------ |
+| Frontend tests | `npm run test` | 27 files, **318 passed**, 0 failed, 0 skipped (F7 edits 2 assertions, adds none) |
+| Frontend build | `npm run build` | exit 0 |
+| Frontend lint | `npm run lint` | 23 errors / 44 warnings, the same pre-existing 23 errors as iteration 1 (0 new) |
+| Backend | `./mvnw verify` (from `backend/`) | exit 0: unit **96 passed**, IT **152 passed**, 0 failed, 0 skipped; JaCoCo "All coverage checks have been met". `dev_finsight` emptied (accepted) |
+
+**Test count**: backend unit +1 (`CategorySpendingAssemblerTest` 32 → 33). The per-class sum is 96 (PlanAuthorization 24, Assembler 33, RecurringGenerator 16, SeriesRegenerator 9, ItemShareAllocator 7, SplitResolver 6, app 1); iteration 1's "101 unit" was a miscount (95 then). No test was removed or weakened.
+
+#### Code quality
+
+F6 is test-only. F7 is minimal: one field on `MemberFocus`, one assignment, and a removed fallback helper; it matches the existing `color` fields on `MemberSubRow`/owner. ✅
+
+#### Requirement traceability (UX round)
+
+| Requirement | Status |
+| ----------- | ------ |
+| UX-01 | ✅ Verified |
+| UX-02 | ✅ Verified |
+| UX-03 | ✅ Verified |
+| UX-04 | ✅ Verified (AC 1 gap closed) |
+| UX-05 | ✅ Verified |
+
+#### Summary
+
+**Overall**: ✅ Ready, pending the interactive UAT for the UX round.
+**Spec-anchored check**: 51/51 ACs matched; 2 non-blocking spec-precision gaps (unchanged).
+**Sensor**: 6/6 killed (B3 now killed).
+**Gate**: frontend 318 passed, build ok, lint 23 existing errors; backend 96 unit + 152 IT passed, JaCoCo met.
+
+---
+
 ## UX polish round — iteration 1
 
-### Validation: categories-revamp UX polish round - FAIL
+### Iteration 1 verdict (superseded by iteration 2): FAIL
 
-**Result**: FAIL (UX polish round, iteration 1). 50/51 UX ACs are traced to a passing assertion or to confirmed presentational code, all gates are green, and 15 of 16 effective mutants are killed. One mutant survives: the new members rule in `CategorySpendingAssembler` can report a spend-only former member as active and no test notices (UX-04 AC 1, "whether they are an active member"). One small fix task closes it.
+**Iteration 1 outcome** — FAIL (UX polish round, iteration 1). 50/51 UX ACs are traced to a passing assertion or to confirmed presentational code, all gates are green, and 15 of 16 effective mutants are killed. One mutant survives: the new members rule in `CategorySpendingAssembler` can report a spend-only former member as active and no test notices (UX-04 AC 1, "whether they are an active member"). One small fix task closes it.
 
 **Date**: 2026-10-12
 **Spec**: `.specs/features/categories-revamp/spec.md`, "Amendment: UX polish round" (UX-01..UX-05)
@@ -126,7 +205,7 @@ Each mutant was run in a temporary `git worktree` at HEAD (`node_modules` symlin
 | B2 | `CategorySpendingAssembler.java:179` | owned row leaves out the owner (the pre-UX rule) | ✅ (4 failed) |
 | B3 | `CategorySpendingAssembler.java:162` | a spend-only member without an entry is always `active=true` | ❌ **Survived** (32/32 unit pass, and no IT seeds a former member with spend on a non-owned row) |
 
-**Result**: 15/16 effective mutants killed (M12 is equivalent) → ❌ FAIL.
+**Iteration 1 sensor outcome** — 15/16 effective mutants killed (M12 is equivalent) → ❌ FAIL.
 
 #### Code quality
 
