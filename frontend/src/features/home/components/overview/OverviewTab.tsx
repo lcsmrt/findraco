@@ -17,9 +17,9 @@ import {
 import { CategorySpendingList } from "./CategorySpendingList";
 import { MemberFilterChips } from "./MemberFilterChips";
 import { MonthlyTrendChart } from "./MonthlyTrendChart";
-import { PersonBreakdownList } from "./PersonBreakdownList";
 import { buildSpendingRows } from "./spendingRows";
 import { SummaryCards } from "./SummaryCards";
+import { summaryView } from "./summaryView";
 
 export const OverviewTab = () => {
   const { overview, updateOverview } = useHomeFilters();
@@ -39,15 +39,12 @@ export const OverviewTab = () => {
     [period, customFrom, customTo],
   );
 
-  const filter = useMemo(
-    () =>
-      effectiveMemberId != null
-        ? { ...range, memberId: effectiveMemberId }
-        : range,
-    [range, effectiveMemberId],
+  // Unfiltered: the summary shows every member's segment and picks the selected member client-side.
+  const { data, isLoading } = useGetDashboardSummary(range);
+  const summary = useMemo(
+    () => (data ? summaryView(data, effectiveMemberId, colorOf) : null),
+    [data, effectiveMemberId, colorOf],
   );
-
-  const { data, isLoading } = useGetDashboardSummary(filter);
   // Unfiltered: the member filter is applied client-side so the other members' segments can be dimmed.
   const { data: spending, isLoading: isSpendingLoading } = useGetCategorySpending(range);
 
@@ -104,14 +101,14 @@ export const OverviewTab = () => {
         )}
       </div>
 
-      {isLoading || !data ? (
+      {isLoading || !summary ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
-          <Skeleton className="h-28" />
+          <Skeleton className="hidden h-28 sm:block" />
+          <Skeleton className="hidden h-28 sm:block" />
         </div>
       ) : (
-        <SummaryCards data={data} />
+        <SummaryCards view={summary} />
       )}
 
       {isSpendingLoading || !spendingView ? (
@@ -120,12 +117,7 @@ export const OverviewTab = () => {
         <CategorySpendingList view={spendingView} />
       )}
 
-      {data && (
-        <div className="flex flex-col gap-6">
-          <MonthlyTrendChart data={data.monthlyTrend} />
-          <PersonBreakdownList data={data.personBreakdown} />
-        </div>
-      )}
+      {data && <MonthlyTrendChart data={data.monthlyTrend} />}
     </div>
   );
 };

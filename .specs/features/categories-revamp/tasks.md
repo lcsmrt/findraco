@@ -987,8 +987,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: unfiltered totals and per-member segments; member selected → that member's income, expense and balance with their segment highlighted
-- [ ] Quick gate + build pass
+- [x] Unit: unfiltered totals and per-member segments; member selected → that member's income, expense and balance with their segment highlighted
+- [x] Quick gate + build pass (frontend 307 passed, 0 failed; build ok; lint 23 pre-existing errors, 0 new)
+
+> Note: with a member selected, the segments keep their share of the plan's total (the member's highlighted, others dimmed), and the balance is the member's `net`. Until U8 the old trend chart reads the now-unfiltered `monthlyTrend` of the summary.
 
 **Tests**: unit
 **Gate**: quick + build
