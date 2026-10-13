@@ -913,8 +913,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: label 'October 2026' for one calendar month, 'Aug – Oct 2026' for a range, year shown on both ends across years; shift ±1 moves by the range's month count (1, 3, 6, 12), across year boundaries; presets resolve like `resolvePeriodDates`
-- [ ] Quick gate + build pass
+- [x] Unit: label 'October 2026' for one calendar month, 'Aug – Oct 2026' for a range, year shown on both ends across years; shift ±1 moves by the range's month count (1, 3, 6, 12), across year boundaries; presets resolve like `resolvePeriodDates`
+- [x] Quick gate + build pass (frontend 284 passed, 0 failed; build ok; lint 23 pre-existing errors, 0 new)
+
+> Note: a custom range not aligned to whole months is labelled with its days ("5 – 20 Oct 2026"); the spec defines labels for month ranges only. "Custom…" in the Range menu opens a range calendar anchored to the navigator instead of the old inline date-range input. `PeriodPicker` stays for the Categories tab until U9.
 
 **Tests**: unit
 **Gate**: quick + build

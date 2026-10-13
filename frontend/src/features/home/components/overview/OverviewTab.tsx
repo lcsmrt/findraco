@@ -7,7 +7,7 @@ import {
   type Period,
 } from "../../filters/homeFilterParams";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
-import { PeriodPicker } from "../PeriodPicker";
+import { PeriodNavigator } from "../PeriodNavigator";
 import { countMonths, scaleTreeLimits } from "../../utils/scaleLimits";
 import {
   useOverviewMemberFilter,
@@ -27,15 +27,21 @@ export const OverviewTab = () => {
   const customFrom = customRange?.from;
   const customTo = customRange?.to;
 
-  const filter = useMemo(() => {
-    const dates =
+  const range = useMemo(
+    () =>
       customFrom && customTo
         ? { startDate: customFrom, endDate: customTo }
-        : resolvePeriodDates(period, new Date());
-    return effectiveMemberId != null
-      ? { ...dates, memberId: effectiveMemberId }
-      : dates;
-  }, [period, customFrom, customTo, effectiveMemberId]);
+        : resolvePeriodDates(period, new Date()),
+    [period, customFrom, customTo],
+  );
+
+  const filter = useMemo(
+    () =>
+      effectiveMemberId != null
+        ? { ...range, memberId: effectiveMemberId }
+        : range,
+    [range, effectiveMemberId],
+  );
 
   const { data, isLoading } = useGetDashboardSummary(filter);
 
@@ -53,8 +59,8 @@ export const OverviewTab = () => {
   const handlePeriodClick = (p: Period) =>
     updateOverview((o) => ({ ...o, period: p, customRange: null }));
 
-  const handleCustomRangeChange = (range: { from: string; to: string } | null) =>
-    updateOverview((o) => ({ ...o, customRange: range }));
+  const handleRangeChange = (next: { from: string; to: string }) =>
+    updateOverview((o) => ({ ...o, customRange: next }));
 
   const handleMemberChange = (member: MemberOption | null) =>
     updateOverview((o) => ({ ...o, memberId: member?.id ?? null }));
@@ -62,11 +68,12 @@ export const OverviewTab = () => {
   return (
     <div className="flex flex-col gap-6 px-4">
       <div className="flex flex-wrap items-center gap-2">
-        <PeriodPicker
+        <PeriodNavigator
+          range={range}
           period={period}
-          customRange={customRange}
-          onPeriodChange={handlePeriodClick}
-          onCustomRangeChange={handleCustomRangeChange}
+          isCustom={customRange != null}
+          onPresetChange={handlePeriodClick}
+          onRangeChange={handleRangeChange}
         />
         {showMemberPicker && (
           <div className="min-w-48">
