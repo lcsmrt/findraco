@@ -218,8 +218,8 @@ Decisions in `context.md` → "Amendment: UX polish round". The Categories tab b
 1. The Overview summary SHALL show Income, Expenses and Balance; Income and Expenses SHALL each show a bar segmented by member colours and each member's amount.  <!-- ubiquitous -->
 2. WHILE a member is selected the summary SHALL show that member's totals and highlight their segment.  <!-- state-driven -->
 3. WHILE the screen is narrow the summary SHALL be one block with Balance on top and Income and Expenses side by side; WHILE wide it SHALL be three cards in a row.  <!-- state-driven -->
-4. The Overview SHALL show Income and Expenses as grouped bars per month for the 6 calendar months ending at the selected period's last month, or for every month of the selected period when it spans more than 6, after the category list.  <!-- ubiquitous -->
-5. WHEN a month in the trend has no transactions THEN it SHALL show zero bars; WHEN a month lies inside the selected period THEN it SHALL be highlighted.  <!-- event-driven -->
+4. The Overview SHALL show Income and Expenses as one line each across the months for the 6 calendar months ending at the selected period's last month, or for every month of the selected period when it spans more than 6, after the category list.  <!-- ubiquitous -->
+5. WHEN a month in the trend has no transactions THEN it SHALL plot zero; WHEN a month lies inside the selected period THEN it SHALL be highlighted.  <!-- event-driven -->
 6. WHILE a member is selected the trend SHALL show that member's amounts.  <!-- state-driven -->
 7. WHEN a client requests the monthly trend for a date range and optional member THEN the system SHALL return income and expenses per month for that range.  <!-- event-driven -->
 8. The Overview period control SHALL show the selected period as "October 2026" for one calendar month or "Aug – Oct 2026" for a longer range, with previous and next arrows that shift the period by its length in months.  <!-- ubiquitous -->

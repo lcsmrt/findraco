@@ -9,7 +9,7 @@ import {
 } from "@/components/chart/Chart";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { format } from "date-fns";
-import { Bar, BarChart, CartesianGrid, Cell, XAxis, YAxis } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import type { TrendMonth } from "./trendMonths";
 
 const chartConfig: ChartConfig = {
@@ -25,6 +25,30 @@ const compactCurrency = new Intl.NumberFormat("pt-BR", {
 
 /** Months outside the selected period recede (UX-05 AC 5). */
 const OUT_OF_PERIOD_OPACITY = 0.3;
+
+type MonthDotProps = {
+  cx?: number;
+  cy?: number;
+  index?: number;
+  stroke?: string;
+  months: TrendMonth[];
+};
+
+/** A filled, larger dot on months inside the selected period; a faded one elsewhere. */
+const MonthDot = ({ cx, cy, index = 0, stroke, months }: MonthDotProps) => {
+  if (cx == null || cy == null) return null;
+  const inPeriod = months[index]?.inPeriod ?? false;
+  return (
+    <circle
+      cx={cx}
+      cy={cy}
+      r={inPeriod ? 4 : 3}
+      fill={stroke}
+      fillOpacity={inPeriod ? 1 : OUT_OF_PERIOD_OPACITY}
+      stroke="none"
+    />
+  );
+};
 
 type MonthTickProps = {
   x?: number;
@@ -60,7 +84,7 @@ type MonthlyTrendChartProps = {
   isLoading: boolean;
 };
 
-/** Income and Expenses as grouped bars per month, the selected period highlighted (UX-05 AC 4–6). */
+/** Income and Expenses as one line each across the months, the selected period highlighted (UX-05 AC 4–6). */
 export const MonthlyTrendChart = ({ months, isLoading }: MonthlyTrendChartProps) => (
   <Card>
     <CardHeader>
@@ -71,7 +95,7 @@ export const MonthlyTrendChart = ({ months, isLoading }: MonthlyTrendChartProps)
         <Skeleton className="h-64 w-full" />
       ) : (
         <ChartContainer config={chartConfig} className="h-64 w-full">
-          <BarChart data={withTitles(months)} barGap={2} barCategoryGap="22%">
+          <LineChart data={withTitles(months)} margin={{ left: 4, right: 12 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} />
             <XAxis
               dataKey="label"
@@ -87,7 +111,7 @@ export const MonthlyTrendChart = ({ months, isLoading }: MonthlyTrendChartProps)
               tickFormatter={(v: number) => compactCurrency.format(v)}
             />
             <ChartTooltip
-              cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+              cursor={{ stroke: "var(--border)" }}
               content={
                 <ChartTooltipContent
                   labelFormatter={(_, payload) => payload?.[0]?.payload?.title ?? ""}
@@ -96,16 +120,18 @@ export const MonthlyTrendChart = ({ months, isLoading }: MonthlyTrendChartProps)
             />
             <ChartLegend content={<ChartLegendContent />} />
             {(["income", "expenses"] as const).map((key) => (
-              <Bar key={key} dataKey={key} fill={`var(--color-${key})`} radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false}>
-                {months.map((month) => (
-                  <Cell
-                    key={`${month.year}-${month.month}`}
-                    fillOpacity={month.inPeriod ? 1 : OUT_OF_PERIOD_OPACITY}
-                  />
-                ))}
-              </Bar>
+              <Line
+                key={key}
+                type="monotone"
+                dataKey={key}
+                stroke={`var(--color-${key})`}
+                strokeWidth={2}
+                dot={<MonthDot months={months} />}
+                activeDot={{ r: 5 }}
+                isAnimationActive={false}
+              />
             ))}
-          </BarChart>
+          </LineChart>
         </ChartContainer>
       )}
     </CardContent>

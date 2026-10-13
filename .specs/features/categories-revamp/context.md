@@ -108,7 +108,7 @@ Discuss pass after the first UAT, pace **Detailed** (one decision per turn, with
 
 ### Overview general layout
 - **Summary on mobile:** a single block, Balance as the hero on top, Income and Expenses side by side below, each with its member bar and per-member values on two short lines (~200px instead of ~450px; Nubank / Mobills home pattern). Desktop keeps three cards in a row, with member bars.
-- **Trend:** always the **last 6 months** up to the end of the selected period (or the whole period if longer), as **grouped Income/Expense bars**, selected month highlighted (Monarch Cash Flow pattern). Placed at the bottom, after the categories. Replaces the single-dot line chart.
+- **Trend:** always the **last 6 months** up to the end of the selected period (or the whole period if longer), as **Income/Expense lines** (originally grouped bars; switched back to lines by the user on 2026-10-13, the fixed window being what fixed the single dot), selected month highlighted. Placed at the bottom, after the categories. Replaces the single-dot line chart.
 - **Period selector:** month navigator "‹ October 2026 ›" as the main control (arrows step month by month), plus a "Range ▾" menu (Last 3M · Last 6M · This year · Custom). On a range the label becomes "Aug – Oct 2026" and the arrows step the whole range (YNAB / Mobills / Nubank pattern). Member chips on the line below on mobile. Same on desktop.
 
 ### Status semantics
@@ -137,3 +137,4 @@ The user picked these for discussion, then chose to ship the decisions above fir
 - Per-person settlement ("who owes whom"); the per-person net balance was dropped with the By Person card.
 - PWA / installable app → ROADMAP M5-07.
 - Member-chosen colour: each member picks their own identity colour (today it is assigned by user-id order, UX-04 AC 2). User asked for it on 2026-10-13, after the colour palette shipped.
+- Trend with little history: the window is always at least 6 months (empty months plot zero), so a new plan shows a flat zero line before its first month. Idea (user, 2026-10-13): trim leading empty months and draw bars when only 2–3 months remain, lines otherwise.
