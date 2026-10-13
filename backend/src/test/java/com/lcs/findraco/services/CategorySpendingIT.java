@@ -79,7 +79,12 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(food.get("remaining").decimalValue()).isEqualByComparingTo("0.00");
         assertThat(food.get("percentUsed").decimalValue()).isEqualByComparingTo("100.00");
         assertThat(food.get("overLimit").asBoolean()).isFalse();
-        assertThat(food.get("members")).isEmpty();
+        // UX-04 AC 1: the single participant is listed with the rolled-up spend and no limit.
+        assertThat(food.get("members")).singleElement().satisfies(member -> {
+            assertThat(member.get("memberId").asLong()).isEqualTo(owner.getId());
+            assertThat(member.get("spent").decimalValue()).isEqualByComparingTo("400.00");
+            assertThat(member.get("limit").isNull()).isTrue();
+        });
 
         // Child: own spend only, evaluated against its own limit → over limit.
         assertThat(food.get("children")).hasSize(1);
@@ -233,7 +238,9 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("70.00");
         assertThat(row.get("limit").decimalValue()).isEqualByComparingTo("100.00");
         assertThat(row.get("percentUsed").decimalValue()).isEqualByComparingTo("70.00");
-        assertThat(row.get("members")).hasSize(1);
+        assertThat(row.get("members")).hasSize(2);
+        assertThat(memberRow(row, owner).get("spent").decimalValue()).isEqualByComparingTo("70.00");
+        assertThat(memberRow(row, owner).get("limit").isNull()).isTrue();
         JsonNode other = memberRow(row, partner);
         assertThat(other.get("spent").decimalValue()).isEqualByComparingTo("30.00");
         assertThat(other.get("limit").isNull()).isTrue();
@@ -270,6 +277,31 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
         JsonNode rejoined = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Professional");
         assertThat(rejoined.get("ownerActive").asBoolean()).isTrue();
+    }
+
+    // UX-04 AC 1: a plain category (no limit entries) lists every member with their spend.
+    @Test
+    void plainCategoryListsEveryMemberWithSpend() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User partner = fixtures.aUser();
+        fixtures.addMember(plan, partner, PlanRole.EDITOR);
+        FinancialTransactionCategory market = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Market");
+        aSplitTransaction(plan, owner, market, "100.00", Map.of(owner, "60.00", partner, "40.00"));
+
+        JsonNode row = rowNamed(readSpending(fetchSpending(plan, partner).andExpect(status().isOk())), "Market");
+
+        assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("100.00");
+        assertThat(row.get("members")).hasSize(2);
+        JsonNode mine = memberRow(row, owner);
+        assertThat(mine.get("name").asText()).isEqualTo(owner.getName());
+        assertThat(mine.get("spent").decimalValue()).isEqualByComparingTo("60.00");
+        assertThat(mine.get("limit").isNull()).isTrue();
+        assertThat(mine.get("active").asBoolean()).isTrue();
+        JsonNode theirs = memberRow(row, partner);
+        assertThat(theirs.get("spent").decimalValue()).isEqualByComparingTo("40.00");
+        assertThat(theirs.get("limit").isNull()).isTrue();
+        assertThat(theirs.get("active").asBoolean()).isTrue();
     }
 
     private record Seed(FinancialTransactionCategory food, FinancialTransactionCategory delivery) {}

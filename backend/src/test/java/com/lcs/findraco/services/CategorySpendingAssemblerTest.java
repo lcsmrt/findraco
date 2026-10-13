@@ -327,7 +327,7 @@ class CategorySpendingAssemblerTest {
         assertThat(member(row, MEMBER).getSpent()).isEqualByComparingTo("47");
     }
 
-    /** Assumption "members without a per-member limit": their spend counts in the total, they get no row. */
+    /** UX-04 AC 1 (supersedes "members without a per-member limit get no row"): listed with spend and no limit. */
     @Test
     void memberWithoutAnEntryCountsInTheTotalOnly() {
         FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
@@ -340,7 +340,11 @@ class CategorySpendingAssemblerTest {
         assertThat(row.getSpent()).isEqualByComparingTo("130");
         assertThat(row.getLimit()).isEqualByComparingTo("260");
         assertThat(row.getPercentUsed()).isEqualByComparingTo("50.00");
-        assertThat(row.getMembers()).extracting(CategorySpendingDto.Member::getMemberId).containsExactly(MEMBER);
+        assertThat(row.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(row, OTHER_MEMBER).getSpent()).isEqualByComparingTo("30");
+        assertThat(member(row, OTHER_MEMBER).getLimit()).isNull();
+        assertThat(member(row, OTHER_MEMBER).getOverLimit()).isNull();
     }
 
     /** P2 AC 11: a former member's entry is listed inactive, left out of the sum and not evaluated. */
@@ -429,7 +433,11 @@ class CategorySpendingAssemblerTest {
         assertThat(member(foodRow, OTHER_MEMBER).getSpent()).isEqualByComparingTo("30");
         CategorySpendingDto deliveryRow = foodRow.getChildren().get(0);
         assertThat(deliveryRow.getSpent()).isEqualByComparingTo("90");
-        assertThat(deliveryRow.getMembers()).isEmpty();
+        assertThat(deliveryRow.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(deliveryRow, MEMBER).getSpent()).isEqualByComparingTo("60");
+        assertThat(member(deliveryRow, MEMBER).getLimit()).isNull();
+        assertThat(member(deliveryRow, OTHER_MEMBER).getSpent()).isEqualByComparingTo("30");
     }
 
     /** CAT-08 with per-member limits: a category whose only limit is per member is listed in the Overview. */
@@ -466,7 +474,7 @@ class CategorySpendingAssemblerTest {
         assertThat(row.getOverLimit()).isTrue();
     }
 
-    /** Design risk table: other members' shares in an owned category are listed without a limit, not counted. */
+    /** UX-04 AC 1: every share in an owned category, owner's included, is listed without a limit; only the owner's counts. */
     @Test
     void nonOwnerSharesAreListedWithoutALimit() {
         FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
@@ -477,7 +485,13 @@ class CategorySpendingAssemblerTest {
                 rowsA, List.of(), List.of(), List.of(professional), BOTH_MEMBERS, NAMES, null).get(0);
 
         assertThat(row.getSpent()).isEqualByComparingTo("50");
-        assertThat(row.getMembers()).singleElement().satisfies(other -> {
+        assertThat(row.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(row, MEMBER).getSpent()).isEqualByComparingTo("50");
+        assertThat(member(row, MEMBER).getLimit()).isNull();
+        assertThat(member(row, MEMBER).getOverLimit()).isNull();
+        assertThat(member(row, MEMBER).isActive()).isTrue();
+        assertThat(member(row, OTHER_MEMBER)).satisfies(other -> {
             assertThat(other.getMemberId()).isEqualTo(OTHER_MEMBER);
             assertThat(other.getName()).isEqualTo("Livia");
             assertThat(other.getSpent()).isEqualByComparingTo("30");
@@ -507,9 +521,13 @@ class CategorySpendingAssemblerTest {
         assertThat(child.getOwnerActive()).isTrue();
         assertThat(child.getSpent()).isEqualByComparingTo("40");
         assertThat(child.getPercentUsed()).isEqualByComparingTo("80.00");
-        assertThat(child.getMembers()).extracting(CategorySpendingDto.Member::getMemberId).containsExactly(OTHER_MEMBER);
-        assertThat(root.getMembers()).singleElement()
-                .satisfies(other -> assertThat(other.getSpent()).isEqualByComparingTo("25"));
+        assertThat(child.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(child, MEMBER).getSpent()).isEqualByComparingTo("40");
+        assertThat(root.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(root, MEMBER).getSpent()).isEqualByComparingTo("50");
+        assertThat(member(root, OTHER_MEMBER).getSpent()).isEqualByComparingTo("25");
     }
 
     /** P3 AC 7: a former owner's ownership is dormant, but their historic spend still counts as the row's. */
@@ -556,10 +574,83 @@ class CategorySpendingAssemblerTest {
         CategorySpendingDto row = assembler.assemble(
                 rowsA, List.of(), List.of(), List.of(professional), Set.of(MEMBER), NAMES, null).get(0);
 
-        assertThat(row.getMembers()).singleElement().satisfies(other -> {
-            assertThat(other.getMemberId()).isEqualTo(OTHER_MEMBER);
-            assertThat(other.isActive()).isFalse();
+        assertThat(member(row, OTHER_MEMBER).isActive()).isFalse();
+        assertThat(member(row, MEMBER).isActive()).isTrue();
+    }
+
+    // ---- Members on every row (UX-04 AC 1) ----
+
+    /** UX-04 AC 1: a category without limit entries lists every member with spend; Σ members == row spend (root and child). */
+    @Test
+    void plainCategoriesListEveryMemberWithSpendSummingToTheRow() {
+        FinancialTransactionCategory food = debit(1L, "Food", "500", null);
+        FinancialTransactionCategory delivery = debit(2L, "Delivery", null, food);
+        List<Object[]> rowsA = List.of(a(1L, MEMBER, "40"), a(1L, OTHER_MEMBER, "15"),
+                a(2L, MEMBER, "60"), a(2L, OTHER_MEMBER, "30"));
+        List<MemberFact> removed = List.of(fact(2L, OTHER_MEMBER, "10"));
+
+        CategorySpendingDto foodRow = assembler.assemble(
+                rowsA, removed, List.of(), List.of(food, delivery), BOTH_MEMBERS, NAMES, null).get(0);
+        CategorySpendingDto deliveryRow = foodRow.getChildren().get(0);
+
+        assertThat(foodRow.getSpent()).isEqualByComparingTo("135");
+        assertThat(foodRow.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(foodRow, MEMBER).getName()).isEqualTo("Lucas");
+        assertThat(member(foodRow, MEMBER).getSpent()).isEqualByComparingTo("100");
+        assertThat(member(foodRow, OTHER_MEMBER).getName()).isEqualTo("Livia");
+        assertThat(member(foodRow, OTHER_MEMBER).getSpent()).isEqualByComparingTo("35");
+        assertThat(foodRow.getMembers()).allSatisfy(m -> {
+            assertThat(m.getLimit()).isNull();
+            assertThat(m.isActive()).isTrue();
         });
+        assertThat(sumOfMembers(foodRow)).isEqualByComparingTo(foodRow.getSpent());
+        assertThat(deliveryRow.getSpent()).isEqualByComparingTo("80");
+        assertThat(member(deliveryRow, MEMBER).getSpent()).isEqualByComparingTo("60");
+        assertThat(member(deliveryRow, OTHER_MEMBER).getSpent()).isEqualByComparingTo("20");
+        assertThat(sumOfMembers(deliveryRow)).isEqualByComparingTo(deliveryRow.getSpent());
+    }
+
+    /** UX-04 AC 1: a member with a limit entry and no spend is listed with spent 0; a spend-only member has no limit. */
+    @Test
+    void memberWithAnEntryAndNoSpendIsListedWithZero() {
+        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        limit(groceries, OTHER_MEMBER, "Livia", "140");
+        List<Object[]> rowsA = List.<Object[]>of(a(1L, MEMBER, "90"));
+
+        CategorySpendingDto row = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, NAMES, null).get(0);
+
+        assertThat(row.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(row, OTHER_MEMBER).getSpent()).isEqualByComparingTo("0");
+        assertThat(member(row, OTHER_MEMBER).getLimit()).isEqualByComparingTo("140");
+        assertThat(member(row, OTHER_MEMBER).getRemaining()).isEqualByComparingTo("140");
+        assertThat(member(row, MEMBER).getSpent()).isEqualByComparingTo("90");
+        assertThat(member(row, MEMBER).getLimit()).isNull();
+        assertThat(sumOfMembers(row)).isEqualByComparingTo(row.getSpent());
+    }
+
+    /** UX-04 AC 1: an owned row lists the owner and the others with limit null; the row's spend stays the owner's. */
+    @Test
+    void ownedRowListsOwnerAndOthersWithoutLimits() {
+        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        professional.setOwner(user(OTHER_MEMBER, "Livia"));
+        List<Object[]> rowsA = List.of(a(1L, MEMBER, "20"), a(1L, OTHER_MEMBER, "70"));
+
+        CategorySpendingDto row = assembler.assemble(
+                rowsA, List.of(), List.of(), List.of(professional), BOTH_MEMBERS, NAMES, null).get(0);
+
+        assertThat(row.getSpent()).isEqualByComparingTo("70");
+        assertThat(row.getMembers()).extracting(CategorySpendingDto.Member::getMemberId)
+                .containsExactly(MEMBER, OTHER_MEMBER);
+        assertThat(member(row, OTHER_MEMBER).getSpent()).isEqualByComparingTo("70");
+        assertThat(member(row, MEMBER).getSpent()).isEqualByComparingTo("20");
+        assertThat(row.getMembers()).allSatisfy(m -> assertThat(m.getLimit()).isNull());
+    }
+
+    private static BigDecimal sumOfMembers(CategorySpendingDto row) {
+        return row.getMembers().stream().map(CategorySpendingDto.Member::getSpent).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private static CategorySpendingDto.Member member(CategorySpendingDto row, Long memberId) {

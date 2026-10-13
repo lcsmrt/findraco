@@ -837,9 +837,11 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Unit: a category without limit entries lists every member with spend; Σ members.spent == row.spent for non-owned rows (root rolled up and child); a member with a limit entry and no spend is listed with spent 0; owned row lists owner and others with limit null and row spend = owner's
-- [ ] IT: `/spending` returns the members of a plain category with spend for both members
-- [ ] Full gate passes
+- [x] Unit: a category without limit entries lists every member with spend; Σ members.spent == row.spent for non-owned rows (root rolled up and child); a member with a limit entry and no spend is listed with spent 0; owned row lists owner and others with limit null and row spend = owner's
+- [x] IT: `/spending` returns the members of a plain category with spend for both members
+- [x] Full gate passes (unit 95, IT 147 passed, 0 failed; assembler 32)
+
+> Note: members with a zero net share (A - B + I = 0) and no limit entry are not listed, as before for owned rows. Superseded assertions were updated to the amended outcome (UX-04 AC 1), not removed: `memberWithoutAnEntryCountsInTheTotalOnly`, `parentMemberRowsRollUpTheChildrensSpend`, `nonOwnerSharesAreListedWithoutALimit`, `childrenOfAnOwnedRootCountTheOwnersSpendOnly`, `formerMembersShareInAnOwnedCategoryIsListedInactive` and two `CategorySpendingIT` member-count checks now expect the extra member rows.
 
 **Tests**: unit + integration
 **Gate**: full

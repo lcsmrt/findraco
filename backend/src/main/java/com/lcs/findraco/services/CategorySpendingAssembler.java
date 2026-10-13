@@ -17,6 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Predicate;
 
 /**
@@ -28,13 +29,13 @@ import java.util.function.Predicate;
  * A child's spend is its own leaf spend; a root's spend is its own plus all its children's (CAT-07).
  * Each row's limit is evaluated against that row's spend, so a child limit is independent of the
  * parent's. A row's limit is the sum of its active per-member entries, or its plain limit when there
- * are none; each entry also gets a per-member row comparing that member's (rolled-up) spend with
- * their own amount. Entries of users who are not active members are dormant: listed, but left out of
+ * are none. Every member with spend in the row or with a limit entry gets a per-member row (sorted by
+ * member id) with their (rolled-up) spend and their own amount, or no limit without an entry (UX-04 AC 1). Entries of users who are not active members are dormant: listed, but left out of
  * the sum and of evaluation (CAT-11, CAT-12, CAT-14). With a member filter, a row with an active entry
  * for that member shows the member's own limit. An owned category (a child inherits its parent's owner)
  * counts the owner's spend only, even after the owner left the plan (the row then reports
- * {@code ownerActive=false}, inherited by the children); the other members' shares are
- * listed as per-member rows without a limit (CAT-14, CAT-16). No Spring context or repository is needed;
+ * {@code ownerActive=false}, inherited by the children); every member's share, the owner's included, is
+ * listed as a per-member row without a limit (CAT-14, CAT-16). No Spring context or repository is needed;
  * inputs are plain query rows and entities.
  */
 @Component
@@ -144,28 +145,38 @@ public class CategorySpendingAssembler {
             return ownedNode(category, owner, spentByMember, limits, children);
         }
         BigDecimal spent = spentByMember.values().stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-        List<CategorySpendingDto.Member> members = category.getMemberLimits().stream()
-                .sorted(Comparator.comparing(entry -> entry.getMember().getId()))
-                .map(entry -> new CategorySpendingDto.Member(
-                        entry.getMember().getId(),
-                        entry.getMember().getName(),
-                        spentByMember.getOrDefault(entry.getMember().getId(), BigDecimal.ZERO),
-                        entry.getAmount(),
-                        limits.isActive(entry)))
+        Map<Long, CategoryMemberLimit> entries = new HashMap<>();
+        category.getMemberLimits().forEach(entry -> entries.put(entry.getMember().getId(), entry));
+        Set<Long> memberIds = new TreeSet<>(entries.keySet());
+        spentByMember.forEach((member, amount) -> {
+            if (amount.signum() != 0) {
+                memberIds.add(member);
+            }
+        });
+        List<CategorySpendingDto.Member> members = memberIds.stream()
+                .map(member -> {
+                    CategoryMemberLimit entry = entries.get(member);
+                    BigDecimal memberSpent = spentByMember.getOrDefault(member, BigDecimal.ZERO);
+                    return entry == null
+                            ? new CategorySpendingDto.Member(member, limits.memberNames().get(member), memberSpent,
+                                    null, limits.activeMemberIds().contains(member))
+                            : new CategorySpendingDto.Member(member, entry.getMember().getName(), memberSpent,
+                                    entry.getAmount(), limits.isActive(entry));
+                })
                 .toList();
         return new CategorySpendingDto(category, null, spent, limits.forRow(category), members, children);
     }
 
     /**
-     * An owned row (CAT-16): the owner's spend against the category limit; every other member with a
-     * share is listed without a limit, so nothing is hidden.
+     * An owned row (CAT-16): the owner's spend against the category limit; every member with a share,
+     * owner included, is listed without a limit, so nothing is hidden (UX-04 AC 1).
      */
     private static CategorySpendingDto ownedNode(FinancialTransactionCategory category, User owner,
                                                  Map<Long, BigDecimal> spentByMember, Limits limits,
                                                  List<CategorySpendingDto> children) {
         BigDecimal spent = spentByMember.getOrDefault(owner.getId(), BigDecimal.ZERO);
-        List<CategorySpendingDto.Member> others = spentByMember.entrySet().stream()
-                .filter(share -> !share.getKey().equals(owner.getId()) && share.getValue().signum() != 0)
+        List<CategorySpendingDto.Member> members = spentByMember.entrySet().stream()
+                .filter(share -> share.getValue().signum() != 0)
                 .sorted(Map.Entry.comparingByKey())
                 .map(share -> new CategorySpendingDto.Member(
                         share.getKey(),
@@ -175,7 +186,7 @@ public class CategorySpendingAssembler {
                         limits.activeMemberIds().contains(share.getKey())))
                 .toList();
         boolean ownerActive = limits.activeMemberIds().contains(owner.getId());
-        return new CategorySpendingDto(category, ownerActive, spent, limits.forRow(category), others, children);
+        return new CategorySpendingDto(category, ownerActive, spent, limits.forRow(category), members, children);
     }
 
     /** Limit rules shared by every row: effective limit, dormancy and the member filter. */
