@@ -1,5 +1,5 @@
 import { useGetDashboardSummary } from "@/api/services/useDashboardService";
-import { StandardCombobox } from "@/components/input/StandardCombobox";
+import { useGetCategorySpending } from "@/api/services/useFinancialTransactionCategoryService";
 import { Skeleton } from "@/components/skeleton/Skeleton";
 import { useMemo } from "react";
 import {
@@ -8,14 +8,17 @@ import {
 } from "../../filters/homeFilterParams";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { PeriodNavigator } from "../PeriodNavigator";
-import { countMonths, scaleTreeLimits } from "../../utils/scaleLimits";
+import { countMonths } from "../../utils/scaleLimits";
+import { useMemberColors } from "../../utils/memberColors";
 import {
   useOverviewMemberFilter,
   type MemberOption,
 } from "../../hooks/useOverviewMemberFilter";
-import { CategorySpendingChart } from "./CategorySpendingChart";
+import { CategorySpendingList } from "./CategorySpendingList";
+import { MemberFilterChips } from "./MemberFilterChips";
 import { MonthlyTrendChart } from "./MonthlyTrendChart";
 import { PersonBreakdownList } from "./PersonBreakdownList";
+import { buildSpendingRows } from "./spendingRows";
 import { SummaryCards } from "./SummaryCards";
 
 export const OverviewTab = () => {
@@ -23,6 +26,7 @@ export const OverviewTab = () => {
   const { period, customRange } = overview;
   const { memberOptions, showMemberPicker, selectedMember, effectiveMemberId } =
     useOverviewMemberFilter();
+  const colorOf = useMemberColors();
 
   const customFrom = customRange?.from;
   const customTo = customRange?.to;
@@ -44,16 +48,31 @@ export const OverviewTab = () => {
   );
 
   const { data, isLoading } = useGetDashboardSummary(filter);
+  // Unfiltered: the member filter is applied client-side so the other members' segments can be dimmed.
+  const { data: spending, isLoading: isSpendingLoading } = useGetCategorySpending(range);
 
-  const monthCount = countMonths(filter.startDate, filter.endDate);
+  const monthCount = countMonths(range.startDate, range.endDate);
 
-  // SPEC_DEVIATION: remaining/percentUsed/overLimit are recomputed on the
-  // client instead of using the backend values as-is, because the limit is
-  // scaled to the selected period (monthCount) client-side, so the backend's
-  // single-month evaluation would be inconsistent with the scaled limit shown.
-  const scaledCategoryBreakdown = useMemo(
-    () => (data ? scaleTreeLimits(data.categoryBreakdown, monthCount) : []),
-    [data, monthCount],
+  const selectedName = selectedMember?.name;
+  const focusedMember = useMemo(
+    () =>
+      effectiveMemberId != null && selectedName != null
+        ? { id: effectiveMemberId, name: selectedName }
+        : null,
+    [effectiveMemberId, selectedName],
+  );
+
+  const spendingView = useMemo(
+    () =>
+      spending
+        ? buildSpendingRows({
+            tree: spending,
+            monthCount,
+            selectedMember: focusedMember,
+            colorOf,
+          })
+        : null,
+    [spending, monthCount, focusedMember, colorOf],
   );
 
   const handlePeriodClick = (p: Period) =>
@@ -67,7 +86,7 @@ export const OverviewTab = () => {
 
   return (
     <div className="flex flex-col gap-6 px-4">
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
         <PeriodNavigator
           range={range}
           period={period}
@@ -76,40 +95,36 @@ export const OverviewTab = () => {
           onRangeChange={handleRangeChange}
         />
         {showMemberPicker && (
-          <div className="min-w-48">
-            <StandardCombobox
-              items={memberOptions}
-              value={selectedMember}
-              onValueChange={handleMemberChange}
-              itemLabel={(m) => m.name}
-              placeholder="All members"
-              clearable
-            />
-          </div>
+          <MemberFilterChips
+            members={memberOptions}
+            selectedId={effectiveMemberId}
+            onChange={handleMemberChange}
+            colorOf={colorOf}
+          />
         )}
       </div>
 
       {isLoading || !data ? (
-        <div className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <Skeleton className="h-28" />
-            <Skeleton className="h-28" />
-            <Skeleton className="h-28" />
-          </div>
-          <div className="flex flex-col gap-6">
-            <Skeleton className="h-80" />
-            <Skeleton className="h-80" />
-          </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
+          <Skeleton className="h-28" />
         </div>
       ) : (
-        <>
-          <SummaryCards data={data} />
-          <div className="flex flex-col gap-6">
-            <CategorySpendingChart data={scaledCategoryBreakdown} />
-            <MonthlyTrendChart data={data.monthlyTrend} />
-            <PersonBreakdownList data={data.personBreakdown} />
-          </div>
-        </>
+        <SummaryCards data={data} />
+      )}
+
+      {isSpendingLoading || !spendingView ? (
+        <Skeleton className="h-80" />
+      ) : (
+        <CategorySpendingList view={spendingView} />
+      )}
+
+      {data && (
+        <div className="flex flex-col gap-6">
+          <MonthlyTrendChart data={data.monthlyTrend} />
+          <PersonBreakdownList data={data.personBreakdown} />
+        </div>
       )}
     </div>
   );

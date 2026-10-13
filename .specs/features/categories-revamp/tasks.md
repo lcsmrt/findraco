@@ -963,8 +963,10 @@ U9 → U10 → U11 → U12
 
 **Done when**:
 
-- [ ] Rows, toggle, bar and chips render per spec at 390px and 1280px (presentational, build-gated)
-- [ ] Build gate passes; lint no new errors
+- [x] Rows, toggle, bar and chips render per spec at 390px and 1280px (presentational, build-gated; checked with headless screenshots, light and dark, unfiltered and with a member selected)
+- [x] Build gate passes; lint no new errors (frontend 303 passed, build ok, lint 23 pre-existing errors, 0 new)
+
+> Note: `StandardCombobox` gained an optional `renderItem` (list and trigger) for the colour dots of the >4-member combobox; `MemberDot` is its own file for reuse by the summary. The percent is shown next to the status text ("remaining R$ 149 · 85%"). The expand state is initialised once from the default-expanded roots and kept across period changes (manual toggles last until leaving the page).
 
 **Tests**: none
 **Gate**: build

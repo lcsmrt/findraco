@@ -36,6 +36,8 @@ export interface StandardCombobox<T extends WithId> {
   className?: string;
   clearable?: boolean;
   onCreateOption?: (search: string) => void;
+  /** Custom content for an item, in the list and in the trigger; defaults to `itemLabel`. */
+  renderItem?: (item: T) => React.ReactNode;
 }
 
 export function StandardCombobox<T extends WithId>({
@@ -55,6 +57,7 @@ export function StandardCombobox<T extends WithId>({
   className,
   clearable,
   onCreateOption,
+  renderItem = itemLabel,
 }: StandardCombobox<T>) {
   const anchor = useComboboxAnchor();
   const [internalSearch, setInternalSearch] = React.useState("");
@@ -108,7 +111,7 @@ export function StandardCombobox<T extends WithId>({
           }
         >
           <span className={cn(!value && "text-muted-foreground")}>
-            {value ? itemLabel(value) : placeholder}
+            {value ? renderItem(value) : placeholder}
           </span>
         </ComboboxTrigger>
         {showClear && (
@@ -159,7 +162,7 @@ export function StandardCombobox<T extends WithId>({
         <ComboboxList>
           {(item: T) => (
             <ComboboxItem key={String(item.id)} value={item}>
-              {itemLabel(item)}
+              {renderItem(item)}
             </ComboboxItem>
           )}
         </ComboboxList>
