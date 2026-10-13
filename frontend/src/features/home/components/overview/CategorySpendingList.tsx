@@ -122,16 +122,11 @@ type RowBodyProps = {
   row: SpendingRow;
 };
 
-const focusColor = (row: SpendingRow) =>
-  row.memberLine.find((m) => m.memberId === row.focus?.memberId)?.color ??
-  row.bar?.segments.find((s) => !s.dimmed)?.color ??
-  "var(--muted-foreground)";
-
 /** The text and bar lines shared by roots and children. */
 const RowDetails = ({ row }: RowBodyProps) => {
   const detail = row.focus ? (
     <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5 text-xs tabular-nums">
-      <MemberDot color={focusColor(row)} />
+      <MemberDot color={row.focus.color} />
       <span className="min-w-0">
         {row.focus.name} {money(row.focus.spent)} of {money(row.focus.of)}
         {row.focus.sharedLimit != null && ` · shared limit ${money(row.focus.sharedLimit)}`}

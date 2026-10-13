@@ -280,7 +280,7 @@ describe("buildSpendingRows: per person (UX-04)", () => {
     );
 
     expect(rows[0]).toMatchObject({ spent: 1745, limit: 2000, status: "warning", remaining: 255 });
-    expect(rows[0].focus).toEqual({ memberId: LIVIA, name: "Livia", spent: 694, of: 1745, sharedLimit: 2000 });
+    expect(rows[0].focus).toEqual({ memberId: LIVIA, name: "Livia", color: colorOf(LIVIA), spent: 694, of: 1745, sharedLimit: 2000 });
     expect(rows[0].bar?.segments.map((s) => [s.memberId, s.dimmed])).toEqual([
       [LUCAS, true],
       [LIVIA, false],
@@ -323,6 +323,6 @@ describe("buildSpendingRows: per person (UX-04)", () => {
       { id: LIVIA, name: "Livia" },
     );
 
-    expect(rows[0].focus).toEqual({ memberId: LIVIA, name: "Livia", spent: 0, of: 1500, sharedLimit: 1500 });
+    expect(rows[0].focus).toEqual({ memberId: LIVIA, name: "Livia", color: colorOf(LIVIA), spent: 0, of: 1500, sharedLimit: 1500 });
   });
 });

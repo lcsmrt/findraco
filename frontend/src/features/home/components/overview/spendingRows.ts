@@ -55,6 +55,7 @@ export type MemberSubRow = Usage & {
 export type MemberFocus = {
   memberId: number;
   name: string;
+  color: string;
   spent: number;
   of: number;
   sharedLimit: number | null;
@@ -241,6 +242,7 @@ const toRow = (row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow =>
     ? {
         memberId: selectedMember.id,
         name: selectedMember.name,
+        color: colorOf(selectedMember.id),
         spent: rowShares.find((share) => share.memberId === selectedMember.id)?.amount ?? 0,
         of: row.spent,
         sharedLimit: limit,
