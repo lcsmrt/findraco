@@ -55,6 +55,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, ApiRoutes.INVITATION + "/*").permitAll()
                         .requestMatchers(
                                 ApiRoutes.AUTH + "/login",
+                                ApiRoutes.AUTH + "/refresh",
                                 ApiRoutes.AUTH + "/forgot-password",
                                 ApiRoutes.AUTH + "/reset-password",
                                 ApiRoutes.AUTH + "/reset-password/validate",

@@ -8,6 +8,7 @@ import com.lcs.findraco.dtos.response.PasswordResetTokenValidationResponseDto;
 import com.lcs.findraco.security.SessionCookies;
 import com.lcs.findraco.services.AuthenticationService;
 import com.lcs.findraco.services.PasswordResetService;
+import com.lcs.findraco.services.SessionService;
 import com.lcs.findraco.services.SessionService.IssuedSession;
 import com.lcs.findraco.utils.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
@@ -25,15 +26,18 @@ public class AuthenticationController {
 
     private final AuthenticationService authenticationService;
     private final PasswordResetService passwordResetService;
+    private final SessionService sessionService;
     private final SessionCookies sessionCookies;
 
     public AuthenticationController(
             AuthenticationService authenticationService,
             PasswordResetService passwordResetService,
+            SessionService sessionService,
             SessionCookies sessionCookies
     ) {
         this.authenticationService = authenticationService;
         this.passwordResetService = passwordResetService;
+        this.sessionService = sessionService;
         this.sessionCookies = sessionCookies;
     }
 
@@ -42,6 +46,19 @@ public class AuthenticationController {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponseDto> login(@RequestBody @Valid LoginRequestDto dto) {
         IssuedSession session = authenticationService.authenticate(dto);
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, sessionCookies.issue(session.sessionToken()).toString())
+                .body(new AuthenticationResponseDto(session.accessToken()));
+    }
+
+    @Operation(summary = "Renews the session from its cookie; returns a new access token and rotates the cookie")
+    @SecurityRequirements
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthenticationResponseDto> refresh(
+            @CookieValue(name = SessionCookies.NAME, required = false) String sessionToken
+    ) {
+        IssuedSession session = sessionService.rotate(sessionToken);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, sessionCookies.issue(session.sessionToken()).toString())

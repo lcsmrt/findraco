@@ -121,6 +121,14 @@ class SessionServiceTest {
     }
 
     @Test
+    void rotateWithoutATokenIsInvalid() {
+        assertThatThrownBy(() -> service.rotate(null))
+                .isInstanceOf(AuthenticationExceptions.InvalidSessionException.class);
+        verify(repository, never()).findByTokenHashForUpdate(any());
+        verify(repository, never()).save(any());
+    }
+
+    @Test
     void rotateTokenExpiringExactlyNowIsInvalid() {
         UserSession stored = storedSession("expiring", UUID.randomUUID(), NOW, null);
 

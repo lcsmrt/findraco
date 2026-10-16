@@ -60,12 +60,16 @@ public class SessionService {
     }
 
     /**
-     * Exchanges a session token for a new access token and a new session token. Does not roll back
+     * Exchanges a session token for a new access token and a new session token. A missing token is
+     * invalid like an unknown one. Does not roll back
      * on {@link AuthenticationExceptions.InvalidSessionException} so a replay's family revocation
      * is committed together with the {@code 401}.
      */
     @Transactional(noRollbackFor = AuthenticationExceptions.InvalidSessionException.class)
     public IssuedSession rotate(String sessionToken) {
+        if (sessionToken == null || sessionToken.isBlank()) {
+            throw new AuthenticationExceptions.InvalidSessionException();
+        }
         LocalDateTime now = LocalDateTime.now(clock);
         UserSession presented = sessionRepository.findByTokenHashForUpdate(OpaqueTokens.hash(sessionToken))
                 .orElseThrow(AuthenticationExceptions.InvalidSessionException::new);

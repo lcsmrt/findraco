@@ -1,5 +1,6 @@
 package com.lcs.findraco.exceptions;
 
+import com.lcs.findraco.security.SessionCookies;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,12 @@ import java.util.List;
 
 @ControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+
+    private final SessionCookies sessionCookies;
+
+    public GlobalExceptionHandler(SessionCookies sessionCookies) {
+        this.sessionCookies = sessionCookies;
+    }
 
     @Override
     protected ResponseEntity<Object> handleMethodArgumentNotValid(
@@ -47,6 +54,21 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 request.getRequestURI()
         );
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /** The session can't be renewed: answer like any unauthenticated request and drop the dead cookie. */
+    @ExceptionHandler(AuthenticationExceptions.InvalidSessionException.class)
+    public ResponseEntity<ErrorResponseDto> handleInvalidSession(
+            AuthenticationExceptions.InvalidSessionException exception,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDto errorResponse = new ErrorResponseDto(
+                exception.getMessage(),
+                request.getRequestURI()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .header(HttpHeaders.SET_COOKIE, sessionCookies.clear().toString())
+                .body(errorResponse);
     }
 
     @ExceptionHandler(FinancialTransactionExceptions.FinancialTransactionNotFoundException.class)

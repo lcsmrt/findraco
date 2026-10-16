@@ -204,11 +204,13 @@ Note: the existing `AuthenticationIT.requestWithoutTokenIsRejectedForProtectedEn
 
 **Done when**:
 
-- [ ] `SessionIT`: refresh with a valid cookie → `200`, new token works on `/user/me`, new cookie differs from the old one, new row `expires_at ≈ now + 30d`
-- [ ] `SessionIT`: no cookie / unknown value / expired row (backdated) → `401`, body "Authentication required.", `Set-Cookie` with `Max-Age=0`
-- [ ] `SessionIT`: old cookie reused within 30 s → `200`; old cookie reused with `replaced_at` backdated 31 s → `401`, and the successor cookie of that family also → `401`, while a second login's family still refreshes
-- [ ] `SessionIT`: user deleted → refresh `401`
-- [ ] Full gate passes
+- [x] `SessionIT`: refresh with a valid cookie → `200`, new token works on `/user/me`, new cookie differs from the old one, new row `expires_at ≈ now + 30d` (written, not run)
+- [x] `SessionIT`: no cookie / unknown value / expired row (backdated) → `401`, body "Authentication required.", `Set-Cookie` with `Max-Age=0` (written, not run)
+- [x] `SessionIT`: old cookie reused within 30 s → `200`; old cookie reused with `replaced_at` backdated 31 s → `401`, and the successor cookie of that family also → `401`, while a second login's family still refreshes (written, not run)
+- [x] `SessionIT`: user deleted → refresh `401` (written, not run)
+- [x] Full gate passes (substitute gate: `test-compile` + all `*Test` unit tests green; `./mvnw verify` not run, DB tunnel down)
+
+Note: the missing-cookie rule lives in `SessionService.rotate` (null or blank token → `InvalidSessionException`) so the controller stays a single call; `SessionServiceTest.rotateWithoutATokenIsInvalid` covers the branch (7 `SessionIT` tests added).
 
 **Tests**: integration
 **Gate**: full

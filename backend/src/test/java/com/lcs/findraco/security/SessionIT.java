@@ -1,6 +1,8 @@
 package com.lcs.findraco.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -9,7 +11,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
+import jakarta.servlet.http.Cookie;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
@@ -22,6 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockCookie;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 /**
  * Persistent sessions through the real auth endpoints (SESS-04, SESS-06 to SESS-10, SESS-12): the
@@ -107,12 +112,113 @@ class SessionIT extends AbstractIntegrationTest {
         assertThat(tokenHashesOf(user)).isEmpty();
     }
 
+    // --- refresh (T6) -------------------------------------------------------------------------
+
+    @Test
+    void refreshWithAValidCookieReturnsAWorkingTokenAndRotatesTheCookie() throws Exception {
+        User user = fixtures.aUser();
+        String oldCookie = loginCookie(user);
+
+        MvcResult result = refresh(oldCookie).andExpect(status().isOk()).andReturn();
+
+        String token = objectMapper.readTree(result.getResponse().getContentAsString()).get("token").asText();
+        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(user.getEmail()));
+
+        MockCookie newCookie = sessionCookie(result);
+        assertThat(newCookie.getValue()).isNotBlank().isNotEqualTo(oldCookie);
+        assertThat(newCookie.isHttpOnly()).isTrue();
+        assertThat(newCookie.getSecure()).isTrue();
+        assertThat(newCookie.getSameSite()).isEqualTo("Strict");
+        assertThat(newCookie.getPath()).isEqualTo(COOKIE_PATH);
+        assertThat(newCookie.getMaxAge()).isEqualTo(THIRTY_DAYS_IN_SECONDS);
+
+        LocalDateTime expiresAt = jdbc.queryForObject(
+                "SELECT expires_at FROM user_sessions WHERE token_hash = ?",
+                LocalDateTime.class, OpaqueTokens.hash(newCookie.getValue()));
+        assertThat(expiresAt).isCloseTo(LocalDateTime.now().plusDays(30), within(1, ChronoUnit.MINUTES));
+    }
+
+    @Test
+    void refreshWithoutACookieIsRejectedAndClearsTheCookie() throws Exception {
+        assertRejectedAndCleared(refresh(null));
+    }
+
+    @Test
+    void refreshWithAnUnknownCookieIsRejectedAndClearsTheCookie() throws Exception {
+        assertRejectedAndCleared(refresh(OpaqueTokens.generate()));
+    }
+
+    @Test
+    void refreshWithAnExpiredSessionIsRejectedAndClearsTheCookie() throws Exception {
+        String cookie = loginCookie(fixtures.aUser());
+        backdateExpiry(OpaqueTokens.hash(cookie));
+
+        assertRejectedAndCleared(refresh(cookie));
+    }
+
+    @Test
+    void replacedCookieReusedWithinThirtySecondsStillRenews() throws Exception {
+        String original = loginCookie(fixtures.aUser());
+        refresh(original).andExpect(status().isOk());
+
+        refresh(original).andExpect(status().isOk());
+    }
+
+    @Test
+    void replacedCookieReusedAfterThirtyOneSecondsRevokesItsDeviceChainOnly() throws Exception {
+        User user = fixtures.aUser();
+        String original = loginCookie(user);
+        String successor = sessionCookie(refresh(original).andExpect(status().isOk()).andReturn()).getValue();
+        String otherDevice = loginCookie(user);
+        jdbc.update("UPDATE user_sessions SET replaced_at = ? WHERE token_hash = ?",
+                LocalDateTime.now().minusSeconds(31), OpaqueTokens.hash(original));
+
+        assertRejectedAndCleared(refresh(original));
+        assertRejectedAndCleared(refresh(successor));
+        refresh(otherDevice).andExpect(status().isOk());
+    }
+
+    @Test
+    void refreshForADeletedUserIsRejected() throws Exception {
+        User user = fixtures.aUser();
+        String cookie = loginCookie(user);
+        jdbc.update("DELETE FROM users WHERE id = ?", user.getId());
+
+        assertRejectedAndCleared(refresh(cookie));
+    }
+
     // --- helpers ------------------------------------------------------------------------------
 
     private ResultActions login(String email, String password) throws Exception {
         return mockMvc.perform(post(ApiRoutes.AUTH + "/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("email", email, "password", password))));
+    }
+
+    private ResultActions refresh(String cookieValue) throws Exception {
+        MockHttpServletRequestBuilder request = post(ApiRoutes.AUTH + "/refresh");
+        if (cookieValue != null) {
+            request.cookie(new Cookie(COOKIE, cookieValue));
+        }
+        return mockMvc.perform(request);
+    }
+
+    private String loginCookie(User user) throws Exception {
+        return sessionCookie(login(user.getEmail(), "password").andExpect(status().isOk()).andReturn()).getValue();
+    }
+
+    /** 401 "Authentication required." and a Set-Cookie that deletes the session cookie. */
+    private static void assertRejectedAndCleared(ResultActions response) throws Exception {
+        MvcResult result = response
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication required."))
+                .andReturn();
+        MockCookie cleared = sessionCookie(result);
+        assertThat(cleared.getValue()).isEmpty();
+        assertThat(cleared.getMaxAge()).isZero();
+        assertThat(cleared.getPath()).isEqualTo(COOKIE_PATH);
     }
 
     /** The session cookie set by the response; fails when the response set none. */
