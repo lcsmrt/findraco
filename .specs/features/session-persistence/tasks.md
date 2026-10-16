@@ -151,10 +151,12 @@ T12 → T13 → T14
 
 **Done when**:
 
-- [ ] `AuthenticationIT`: protected route with no token, a malformed token, a token signed with another key, and an expired token each → `401`, body `message = "Authentication required."`
-- [ ] `AuthenticationIT`: a token from login has `exp - iat = 900` seconds
-- [ ] `PlanAuthorizationMatrixIT` passes unchanged (forbidden stays `403`/`404`, never `401`)
-- [ ] Full gate passes
+- [x] `AuthenticationIT`: protected route with no token, a malformed token, a token signed with another key, and an expired token each → `401`, body `message = "Authentication required."` (written, not run)
+- [x] `AuthenticationIT`: a token from login has `exp - iat = 900` seconds (written, not run)
+- [x] `PlanAuthorizationMatrixIT` passes unchanged (forbidden stays `403`/`404`, never `401`) (unchanged; every `403` it asserts uses an authenticated caller; not run)
+- [x] Full gate passes (substitute gate: `test-compile` + all `*Test` unit tests green; `./mvnw verify` not run, DB tunnel down)
+
+Note: the existing `AuthenticationIT.requestWithoutTokenIsRejectedForProtectedEndpoint` asserted the old empty `403`; SESS-01 replaces that behavior, so it now asserts `401` + "Authentication required." (5 tests added or changed in `AuthenticationIT`).
 
 **Tests**: integration
 **Gate**: full

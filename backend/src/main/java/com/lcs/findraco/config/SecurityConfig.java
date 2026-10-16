@@ -1,5 +1,6 @@
 package com.lcs.findraco.config;
 
+import com.lcs.findraco.security.JsonAuthenticationEntryPoint;
 import com.lcs.findraco.security.JwtAuthenticationFilter;
 import com.lcs.findraco.utils.ApiRoutes;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,10 +32,16 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JsonAuthenticationEntryPoint authenticationEntryPoint;
 
-    public SecurityConfig(JwtAuthenticationFilter jwtAuthenticationFilter, UserDetailsService userDetailsService) {
+    public SecurityConfig(
+            JwtAuthenticationFilter jwtAuthenticationFilter,
+            UserDetailsService userDetailsService,
+            JsonAuthenticationEntryPoint authenticationEntryPoint
+    ) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
+        this.authenticationEntryPoint = authenticationEntryPoint;
     }
 
     @Bean
@@ -54,6 +61,7 @@ public class SecurityConfig {
                                 "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"
                         ).permitAll()
                         .anyRequest().authenticated())
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

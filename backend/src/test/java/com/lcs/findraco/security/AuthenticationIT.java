@@ -3,15 +3,23 @@ package com.lcs.findraco.security;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
+import java.util.Base64;
+import java.util.Date;
 import java.util.Map;
+import javax.crypto.SecretKey;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
@@ -28,6 +36,9 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Value("${jwt.secret-key}")
+    private String jwtSecretKey;
 
     private String registerAndLogin(String email) throws Exception {
         register(email);
@@ -193,12 +204,69 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk());
     }
 
+    // SESS-01: every way of lacking a usable access token answers 401 "Authentication required."
+    // (JsonAuthenticationEntryPoint), never Spring's default empty 403.
+
     @Test
     void requestWithoutTokenIsRejectedForProtectedEndpoint() throws Exception {
-        // SecurityConfig registers no explicit AuthenticationEntryPoint, so Spring Security falls
-        // back to Http403ForbiddenEntryPoint for an unauthenticated request to a protected route.
         mockMvc.perform(get(ApiRoutes.PLAN))
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication required."));
+    }
+
+    @Test
+    void malformedTokenIsRejectedWith401() throws Exception {
+        mockMvc.perform(get(ApiRoutes.USER + "/me")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication required."));
+    }
+
+    @Test
+    void tokenSignedWithAnotherKeyIsRejectedWith401() throws Exception {
+        User user = fixtures.aUser();
+        Date now = new Date();
+        String forged = Jwts.builder()
+                .subject(user.getEmail())
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + 900_000))
+                .signWith(signingKey("a-different-secret-key-that-is-long-enough-for-hmac-sha-512-signatures"))
+                .compact();
+
+        mockMvc.perform(get(ApiRoutes.USER + "/me")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + forged))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication required."));
+    }
+
+    @Test
+    void expiredTokenIsRejectedWith401() throws Exception {
+        User user = fixtures.aUser();
+        long issuedAt = System.currentTimeMillis() - 3_600_000;
+        String expired = Jwts.builder()
+                .subject(user.getEmail())
+                .issuedAt(new Date(issuedAt))
+                .expiration(new Date(issuedAt + 900_000))
+                .signWith(signingKey(jwtSecretKey))
+                .compact();
+
+        mockMvc.perform(get(ApiRoutes.USER + "/me")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + expired))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.message").value("Authentication required."));
+    }
+
+    @Test
+    void accessTokenFromLoginLivesFifteenMinutes() throws Exception {
+        String token = registerAndLogin("ivan-" + System.nanoTime() + "@test.com");
+
+        JsonNode claims = objectMapper.readTree(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        assertThat(claims.get("exp").asLong() - claims.get("iat").asLong()).isEqualTo(900);
+    }
+
+    /** Same key derivation as JwtService, so only the secret (or the expiry) differs from a real token. */
+    private static SecretKey signingKey(String secret) {
+        return Keys.hmacShaKeyFor(Base64.getEncoder().encode(secret.getBytes()));
     }
 
     private Long fetchOwnPlanId(String token) throws Exception {
