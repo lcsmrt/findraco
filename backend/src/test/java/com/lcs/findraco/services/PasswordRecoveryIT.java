@@ -16,8 +16,10 @@ import com.lcs.findraco.models.PasswordResetToken;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.repositories.PasswordResetTokenRepository;
 import com.lcs.findraco.security.OpaqueTokens;
+import com.lcs.findraco.security.SessionCookies;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
+import jakarta.servlet.http.Cookie;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -65,6 +67,17 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         return mockMvc.perform(post(ApiRoutes.AUTH + "/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("email", email, "password", password))));
+    }
+
+    private ResultActions refresh(String sessionCookie) throws Exception {
+        return mockMvc.perform(post(ApiRoutes.AUTH + "/refresh").cookie(new Cookie(SessionCookies.NAME, sessionCookie)));
+    }
+
+    /** Signs in with the fixture password and returns the session cookie value. */
+    private String sessionCookie(User user) throws Exception {
+        return login(user.getEmail(), "password")
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getCookie(SessionCookies.NAME).getValue();
     }
 
     /** Returns the tokens of every link emailed to {@code email}, oldest first. */
@@ -152,6 +165,35 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         assertThat(tokenRepository.findAll())
                 .singleElement()
                 .satisfies(stored -> assertThat(stored.getTokenHash()).isNotEqualTo(token).hasSize(64));
+    }
+
+    // SESS-11: a completed reset ends every session of that user, and only that user.
+
+    @Test
+    void resetRevokesEverySessionOfTheUserAndNoOtherUsers() throws Exception {
+        User user = fixtures.aUser();
+        User other = fixtures.aUser();
+        String laptop = sessionCookie(user);
+        String phone = sessionCookie(user);
+        String otherUsersDevice = sessionCookie(other);
+        forgotPassword(user.getEmail());
+        String token = emailedTokens(user.getEmail()).get(0);
+
+        resetPassword(token, "new-password").andExpect(status().isNoContent());
+
+        refresh(laptop).andExpect(status().isUnauthorized());
+        refresh(phone).andExpect(status().isUnauthorized());
+        refresh(otherUsersDevice).andExpect(status().isOk());
+    }
+
+    @Test
+    void failedResetRevokesNoSession() throws Exception {
+        User user = fixtures.aUser();
+        String device = sessionCookie(user);
+
+        resetPassword(OpaqueTokens.generate(), "new-password").andExpect(status().isBadRequest());
+
+        refresh(device).andExpect(status().isOk());
     }
 
     @Test

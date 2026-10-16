@@ -24,6 +24,7 @@ public class PasswordResetService {
     private final PasswordResetTokenRepository tokenRepository;
     private final UserService userService;
     private final EmailService emailService;
+    private final SessionService sessionService;
     private final Clock clock;
     private final String appUrl;
 
@@ -32,6 +33,7 @@ public class PasswordResetService {
             PasswordResetTokenRepository tokenRepository,
             UserService userService,
             EmailService emailService,
+            SessionService sessionService,
             Clock clock,
             @Value("${app.url}") String appUrl
     ) {
@@ -39,6 +41,7 @@ public class PasswordResetService {
         this.tokenRepository = tokenRepository;
         this.userService = userService;
         this.emailService = emailService;
+        this.sessionService = sessionService;
         this.clock = clock;
         this.appUrl = appUrl;
     }
@@ -70,7 +73,7 @@ public class PasswordResetService {
         return findValidToken(token).isPresent();
     }
 
-    /** Sets the new password and consumes the token (single use). */
+    /** Sets the new password, consumes the token (single use) and signs the user out everywhere. */
     @Transactional
     public void resetPassword(ResetPasswordRequestDto dto) {
         PasswordResetToken resetToken = findValidToken(dto.getToken())
@@ -78,6 +81,7 @@ public class PasswordResetService {
 
         userService.changePassword(resetToken.getUser(), dto.getPassword());
         tokenRepository.deleteAllByUser(resetToken.getUser());
+        sessionService.revokeAll(resetToken.getUser());
     }
 
     private Optional<PasswordResetToken> findValidToken(String token) {

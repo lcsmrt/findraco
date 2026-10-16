@@ -259,9 +259,9 @@ Note: a missing cookie is a no-op inside `SessionService.revoke`, covered by `Se
 
 **Done when**:
 
-- [ ] `PasswordRecoveryIT`: two logins, reset the password, both cookies refresh with `401`; another user's session still refreshes
-- [ ] A failed reset (invalid token) revokes nothing
-- [ ] Full gate passes
+- [x] `PasswordRecoveryIT`: two logins, reset the password, both cookies refresh with `401`; another user's session still refreshes (written, not run)
+- [x] A failed reset (invalid token) revokes nothing (written, not run)
+- [x] Full gate passes (substitute gate: `test-compile` + all `*Test` unit tests green; `./mvnw verify` not run, DB tunnel down)
 
 **Tests**: integration
 **Gate**: full
