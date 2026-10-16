@@ -125,11 +125,11 @@ T12 → T13 → T14
 
 **Done when**:
 
-- [ ] `SessionServiceTest` (Mockito repo, fixed `Clock`): `open` deletes the user's expired rows, saves a hash (never the raw token) with `expiresAt = now + 30d` in a new family, returns a JWT for the user's email
-- [ ] `rotate`: unknown → `InvalidSessionException`; `expiresAt <= now` → invalid (boundary: exactly `now` is invalid); current token → `replacedAt = now` + successor in the same family with `expiresAt = now + 30d`
-- [ ] `rotate` grace: replaced 30 s ago (boundary inclusive) → successor issued, nothing deleted; replaced 31 s ago → family deleted, `WARN` logged with family and user id, invalid
-- [ ] `revoke`: deletes the family; unknown token is a no-op. `revokeAll`: deletes every row of the user
-- [ ] Quick gate passes
+- [x] `SessionServiceTest` (Mockito repo, fixed `Clock`): `open` deletes the user's expired rows, saves a hash (never the raw token) with `expiresAt = now + 30d` in a new family, returns a JWT for the user's email
+- [x] `rotate`: unknown → `InvalidSessionException`; `expiresAt <= now` → invalid (boundary: exactly `now` is invalid); current token → `replacedAt = now` + successor in the same family with `expiresAt = now + 30d`
+- [x] `rotate` grace: replaced 30 s ago (boundary inclusive) → successor issued, nothing deleted; replaced 31 s ago → family deleted, `WARN` logged with family and user id, invalid
+- [x] `revoke`: deletes the family; unknown token is a no-op. `revokeAll`: deletes every row of the user
+- [x] Quick gate passes (`SessionServiceTest`: 11 tests, passing)
 
 **Tests**: unit
 **Gate**: quick
