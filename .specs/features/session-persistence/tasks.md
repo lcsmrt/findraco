@@ -360,14 +360,16 @@ SPEC_DEVIATION: the design lists a `refreshSession()` raw fn in `useAuthService`
 
 **Done when**:
 
-- [ ] `AuthProvider.test.tsx`: no hint → `anonymous` with no network call; legacy `accessToken` key removed on mount
-- [ ] Hint + renewal ok + profile ok → `authenticated`, `user` set
-- [ ] Hint + renewal `401` → `anonymous`, toast "Your session expired. Please sign in again." once, hint removed
-- [ ] Hint + renewal network error → `unreachable`; `retry()` re-runs start-up
-- [ ] Expiry handler → token cleared, query cache empty, `activePlanId` and hint removed, navigates to `/login` with `state.from` = current location, toast once
-- [ ] `signOut` → calls `logout`, clears the same state with no toast, navigates to `/login`; still does so when `logout` rejects
-- [ ] `signIn(token)` → stores token in memory, sets hint, loads profile, `authenticated`
-- [ ] Quick gate passes
+- [x] `AuthProvider.test.tsx`: no hint → `anonymous` with no network call; legacy `accessToken` key removed on mount
+- [x] Hint + renewal ok + profile ok → `authenticated`, `user` set
+- [x] Hint + renewal `401` → `anonymous`, toast "Your session expired. Please sign in again." once, hint removed
+- [x] Hint + renewal network error → `unreachable`; `retry()` re-runs start-up
+- [x] Expiry handler → token cleared, query cache empty, `activePlanId` and hint removed, navigates to `/login` with `state.from` = current location, toast once
+- [x] `signOut` → calls `logout`, clears the same state with no toast, navigates to `/login`; still does so when `logout` rejects
+- [x] `signIn(token)` → stores token in memory, sets hint, loads profile, `authenticated`
+- [x] Quick gate passes (`AuthProvider.test.tsx`: 8 tests, passing)
+
+SPEC_DEVIATION: `expireSession` navigates to `/login` only when the session had been established (`status` was `authenticated`). When the expiry happens at start-up, it clears state, toasts and sets `anonymous`, and the route guard (T13) redirects private pages with `state.from`. Navigating unconditionally would take a returning user with a stale hint away from a public page such as the emailed reset-password link. `getUserProfile` is now exported from `useAuthService` so start-up and `signIn` can load it through `queryClient.fetchQuery`.
 
 **Tests**: unit
 **Gate**: quick

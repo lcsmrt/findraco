@@ -46,7 +46,7 @@ export const logout = async (): Promise<void> => {
  * Fetches the authenticated user's profile.
  * @returns User data.
  */
-const getUserProfile = async (): Promise<User> => {
+export const getUserProfile = async (): Promise<User> => {
   const { data } = await findracoApi.get("/user/me");
   return data;
 };

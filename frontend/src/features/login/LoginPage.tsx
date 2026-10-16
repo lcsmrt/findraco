@@ -42,7 +42,7 @@ export const Login = () => {
     },
   });
 
-  const { setAccessToken } = useAuth();
+  const { signIn } = useAuth();
   const { mutateAsync: login, isPending: isLoggingIn } = useLogin();
 
   const navigate = useNavigate();
@@ -50,8 +50,8 @@ export const Login = () => {
   const from = (location.state as LoginLocationState | null)?.from;
 
   const onSubmit = handleSubmit(async (credentials: LoginSchema) => {
-    await login({ body: credentials }).then((res) => {
-      setAccessToken(res.token);
+    await login({ body: credentials }).then(async (res) => {
+      await signIn(res.token);
       navigate(from ? `${from.pathname}${from.search}` : PATHS.home, {
         replace: true,
       });

@@ -8,23 +8,13 @@ import {
 } from "../dropdown/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
 import { LogOut } from "lucide-react";
-import { clearSessionStorage } from "@/lib/storage";
-import { useNavigate } from "react-router-dom";
-import { PATHS } from "@/app/routing/paths";
 import { useAuth } from "@/app/providers/AuthProvider";
 import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { PlanSwitcher } from "@/features/plans/components/PlanSwitcher";
 
 export const Navbar = () => {
-  const navigate = useNavigate();
-
-  const { user } = useAuth();
-
-  const logout = () => {
-    clearSessionStorage();
-    navigate(PATHS.login, { replace: true });
-  };
+  const { user, signOut } = useAuth();
 
   return (
     <nav className="border-border bg-background fixed z-20 flex h-16 w-full items-center justify-between border-b px-4">
@@ -48,7 +38,7 @@ export const Navbar = () => {
           <DropdownMenuContent>
             <DropdownMenuItem
               className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
-              onClick={logout}
+              onClick={signOut}
             >
               Logout
               <LogOut className="text-foreground" />

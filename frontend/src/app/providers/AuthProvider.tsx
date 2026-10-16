@@ -1,75 +1,154 @@
-import { setAccessToken as setClientAccessToken } from "@/api/clients/accessToken";
-import { useGetUserProfile } from "@/api/services/useAuthService";
-import { User } from "@/api/dtos/user";
+import { setAccessToken } from "@/api/clients/accessToken";
 import {
+  renewSession,
+  setSessionExpiredHandler,
+} from "@/api/clients/findracoApi";
+import { User } from "@/api/dtos/user";
+import { getUserProfile, logout } from "@/api/services/useAuthService";
+import { PATHS } from "@/app/routing/paths";
+import {
+  clearSessionStorage,
   getItemFromStorage,
-  removeItemFromStorage,
-  STORAGE_KEYS,
   storeItem,
 } from "@/lib/storage";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createContext,
   Dispatch,
   ReactNode,
   SetStateAction,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+
+export type AuthStatus =
+  "loading" | "authenticated" | "anonymous" | "unreachable";
 
 type AuthContextParams = {
   user: User | null;
   setUser: Dispatch<SetStateAction<User | null>>;
-  setAccessToken: Dispatch<SetStateAction<string | null>>;
-  isInitializing: boolean;
+  status: AuthStatus;
+  signIn: (token: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  retry: () => void;
 };
+
+const SESSION_EXPIRED_MESSAGE = "Your session expired. Please sign in again.";
+
+// Written by the previous version, which kept the access token in localStorage.
+const LEGACY_ACCESS_TOKEN_KEY = "accessToken";
 
 const AuthContext = createContext<AuthContextParams>({
   user: null,
   setUser: () => {},
-  setAccessToken: () => {},
-  isInitializing: true,
+  status: "loading",
+  signIn: async () => {},
+  signOut: async () => {},
+  retry: () => {},
 });
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(
-    getItemFromStorage(STORAGE_KEYS.accessToken),
-  );
-  const [isInitializing, setIsInitializing] = useState(!!accessToken);
+type AuthProviderProps = {
+  children: ReactNode;
+};
 
-  const { refetch: getUserProfile } = useGetUserProfile();
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [user, setUser] = useState<User | null>(null);
+  const [status, setStatusState] = useState<AuthStatus>(() =>
+    getItemFromStorage<boolean>("hasSession") ? "loading" : "anonymous",
+  );
+  const statusRef = useRef(status);
+
+  const setStatus = useCallback((next: AuthStatus) => {
+    statusRef.current = next;
+    setStatusState(next);
+  }, []);
+
+  const loadProfile = useCallback(async () => {
+    const profile = await queryClient.fetchQuery({
+      queryKey: ["profile"],
+      queryFn: getUserProfile,
+    });
+    setUser(profile);
+    setStatus("authenticated");
+  }, [queryClient, setStatus]);
+
+  const endSession = useCallback(() => {
+    setAccessToken(null);
+    queryClient.clear();
+    clearSessionStorage();
+    setUser(null);
+    setStatus("anonymous");
+  }, [queryClient, setStatus]);
+
+  const expireSession = useCallback(() => {
+    const wasAuthenticated = statusRef.current === "authenticated";
+    endSession();
+    toast.error(SESSION_EXPIRED_MESSAGE);
+    // At start-up the route guard redirects private pages itself, so a public
+    // page (e.g. a reset-password link) is not taken away from the user.
+    if (wasAuthenticated) {
+      navigate(PATHS.login, { replace: true, state: { from: location } });
+    }
+  }, [endSession, navigate, location]);
 
   useEffect(() => {
-    setClientAccessToken(accessToken);
-    if (accessToken) {
-      storeItem(STORAGE_KEYS.accessToken, accessToken);
-      loadUserData(accessToken);
-    } else {
-      removeItemFromStorage(STORAGE_KEYS.accessToken);
-      setUser(null);
-      setIsInitializing(false);
+    setSessionExpiredHandler(expireSession);
+  }, [expireSession]);
+
+  const resumeSession = useCallback(async () => {
+    setStatus("loading");
+    try {
+      await renewSession();
+      await loadProfile();
+    } catch {
+      // An expired session already went through expireSession (anonymous);
+      // anything else means the API could not be reached.
+      if (statusRef.current === "loading") setStatus("unreachable");
     }
-  }, [accessToken]);
+  }, [loadProfile, setStatus]);
 
-  const loadUserData = async (currentToken: string) => {
-    if (!currentToken) return;
+  useEffect(() => {
+    localStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY);
+    // Start-up only; later sessions begin through signIn.
+    if (statusRef.current === "loading") resumeSession();
+  }, [resumeSession]);
 
-    await getUserProfile()
-      .then(({ data: userProfile }) => {
-        if (userProfile) setUser(userProfile);
-      })
-      .catch(() => {
-        setUser(null);
-        setAccessToken(null);
-      })
-      .finally(() => {
-        setIsInitializing(false);
-      });
-  };
+  const signIn = useCallback(
+    async (token: string) => {
+      setAccessToken(token);
+      storeItem("hasSession", true);
+      await loadProfile();
+    },
+    [loadProfile],
+  );
+
+  const signOut = useCallback(async () => {
+    try {
+      await logout();
+    } catch {
+      // Signing out must work offline too; the session cookie then expires on its own.
+    }
+    endSession();
+    navigate(PATHS.login, { replace: true });
+  }, [endSession, navigate]);
+
+  const retry = useCallback(() => {
+    resumeSession();
+  }, [resumeSession]);
 
   return (
-    <AuthContext.Provider value={{ user, setUser, setAccessToken, isInitializing }}>
+    <AuthContext.Provider
+      value={{ user, setUser, status, signIn, signOut, retry }}
+    >
       {children}
     </AuthContext.Provider>
   );
