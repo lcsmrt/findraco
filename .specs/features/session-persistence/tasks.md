@@ -502,10 +502,14 @@ Note: the wrong-credentials test exposed a bug that predates this feature: `onSu
 
 **Done when**:
 
-- [ ] Start-up expiry with the app on `/reset-password?token=abc`: stays on that path, no toast, state cleared, hint removed (Expired AC 9)
-- [ ] Start-up expiry with the app on a private path: lands on `/login` with `state.from` = that path + query and the expiry toast shown exactly once (Expired AC 3–4, 6) — rendered through `AuthProvider` + `PrivateRoute` together
-- [ ] Mid-session expiry keeps T12 behavior (toast once + navigate with `from`)
-- [ ] Quick gate passes
+- [x] Start-up expiry with the app on `/reset-password?token=abc`: stays on that path, no toast, state cleared, hint removed (Expired AC 9)
+- [x] Start-up expiry with the app on a private path: lands on `/login` with `state.from` = that path + query and the expiry toast shown exactly once (Expired AC 3–4, 6) — rendered through `AuthProvider` + `PrivateRoute` together
+- [x] Mid-session expiry keeps T12 behavior (toast once + navigate with `from`); also checked through `AuthProvider` + `PrivateRoute` (one toast, not two)
+- [x] Quick gate passes (`AuthProvider.test.tsx`: 12 tests; suite 352 passing; 5 behavior mutants of the new logic killed)
+
+Note: the suggested shape is kept. `AuthProvider` records the path where a start-up expiry happened instead of toasting, and exposes `announceSessionExpiry()`; `PrivateRoute` calls it whenever it renders for an `anonymous` user, and it toasts only if the guard is on that same path. Scoping by path (not a plain flag) keeps a public page silent even if the user later opens a private page in-app: a child effect (the guard) runs before a parent effect, so clearing a flag on navigation in `AuthProvider` would come too late. Two extra composition tests pin this: a start-up expiry on `/reset-password` followed by in-app navigation to `/plans` redirects with no toast, and a visitor who never signed in is redirected with no toast (Expired AC 4: the toast is for an expiry only).
+
+Existing test changed: T12's "goes anonymous with one expiry toast and drops the hint when renewal answers 401" encoded a start-up toast on any page, which the 2026-10-16 amendment (Expired AC 4 narrowed, AC 9 added) removes. It now asserts AC 9 on `/reset-password?token=abc` (no toast, path and query kept, token, cache, active plan and hint cleared). The start-up toast on a private page moved to the composition suite. The T12 SPEC_DEVIATION (start-up expiry does not navigate) is now what the amended spec requires. `PrivateRoute.test.tsx` and `LoginPage.test.tsx` only gained the new context field in their `useAuth` mocks.
 
 **Tests**: unit
 **Gate**: quick

@@ -16,6 +16,7 @@ const mockStatus = (status: AuthStatus) =>
     signIn: vi.fn(),
     signOut: vi.fn(),
     retry,
+    announceSessionExpiry: vi.fn(),
   });
 
 const LoginProbe = () => {

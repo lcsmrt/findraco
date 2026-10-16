@@ -1,12 +1,17 @@
 import { useAuth } from "@/app/providers/AuthProvider";
 import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/spinner/Spinner";
+import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { PATHS } from "./paths";
 
 export const PrivateRoute = () => {
   const location = useLocation();
-  const { status, retry } = useAuth();
+  const { status, retry, announceSessionExpiry } = useAuth();
+
+  useEffect(() => {
+    if (status === "anonymous") announceSessionExpiry();
+  }, [status, announceSessionExpiry]);
 
   if (status === "loading") {
     return (

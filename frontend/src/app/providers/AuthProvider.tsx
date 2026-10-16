@@ -36,6 +36,8 @@ type AuthContextParams = {
   signIn: (token: string) => Promise<void>;
   signOut: () => Promise<void>;
   retry: () => void;
+  /** Shows the expiry toast once if the session expired during start-up. */
+  announceSessionExpiry: () => void;
 };
 
 const SESSION_EXPIRED_MESSAGE = "Your session expired. Please sign in again.";
@@ -50,6 +52,7 @@ const AuthContext = createContext<AuthContextParams>({
   signIn: async () => {},
   signOut: async () => {},
   retry: () => {},
+  announceSessionExpiry: () => {},
 });
 
 type AuthProviderProps = {
@@ -66,6 +69,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     getItemFromStorage<boolean>("hasSession") ? "loading" : "anonymous",
   );
   const statusRef = useRef(status);
+  // Path where the session expired during start-up. Only the route guard
+  // announces it, so a public page stays silent.
+  const startUpExpiryPathRef = useRef<string | null>(null);
 
   const setStatus = useCallback((next: AuthStatus) => {
     statusRef.current = next;
@@ -92,13 +98,21 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const expireSession = useCallback(() => {
     const wasAuthenticated = statusRef.current === "authenticated";
     endSession();
-    toast.error(SESSION_EXPIRED_MESSAGE);
     // At start-up the route guard redirects private pages itself, so a public
     // page (e.g. a reset-password link) is not taken away from the user.
     if (wasAuthenticated) {
+      toast.error(SESSION_EXPIRED_MESSAGE);
       navigate(PATHS.login, { replace: true, state: { from: location } });
+    } else {
+      startUpExpiryPathRef.current = location.pathname;
     }
   }, [endSession, navigate, location]);
+
+  const announceSessionExpiry = useCallback(() => {
+    if (startUpExpiryPathRef.current !== location.pathname) return;
+    startUpExpiryPathRef.current = null;
+    toast.error(SESSION_EXPIRED_MESSAGE);
+  }, [location.pathname]);
 
   useEffect(() => {
     setSessionExpiredHandler(expireSession);
@@ -147,7 +161,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, status, signIn, signOut, retry }}
+      value={{
+        user,
+        setUser,
+        status,
+        signIn,
+        signOut,
+        retry,
+        announceSessionExpiry,
+      }}
     >
       {children}
     </AuthContext.Provider>

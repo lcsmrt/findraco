@@ -6,7 +6,15 @@ import {
   type InternalAxiosRequestConfig,
 } from "axios";
 import { ReactNode } from "react";
-import { MemoryRouter, useLocation, type Location } from "react-router-dom";
+import {
+  MemoryRouter,
+  Route,
+  Routes,
+  useLocation,
+  useNavigate,
+  type Location,
+  type NavigateFunction,
+} from "react-router-dom";
 import { toast } from "sonner";
 import {
   afterEach,
@@ -23,6 +31,7 @@ import {
   renewSession,
   setSessionExpiredHandler,
 } from "@/api/clients/findracoApi";
+import { PrivateRoute } from "@/app/routing/PrivateRoute";
 import { AuthProvider, useAuth } from "./AuthProvider";
 
 vi.mock("@/api/clients/findracoApi", () => ({
@@ -83,10 +92,12 @@ const renewAnswers401 = () =>
 
 let auth: ReturnType<typeof useAuth>;
 let currentLocation: Location;
+let navigateTo: NavigateFunction;
 
 const Probe = () => {
   auth = useAuth();
   currentLocation = useLocation();
+  navigateTo = useNavigate();
   return (
     <>
       <p data-testid="status">{auth.status}</p>
@@ -95,10 +106,13 @@ const Probe = () => {
   );
 };
 
-const renderProvider = (initialEntry = "/plans?tab=members") => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
-  });
+const createQueryClient = () =>
+  new QueryClient({ defaultOptions: { queries: { retry: false } } });
+
+const renderProvider = (
+  initialEntry = "/plans?tab=members",
+  queryClient = createQueryClient(),
+) => {
 
   const Wrapper = ({ children }: { children: ReactNode }) => (
     <QueryClientProvider client={queryClient}>
@@ -156,18 +170,25 @@ describe("AuthProvider start-up", () => {
     expect(getAccessToken()).toBe("renewed-token");
   });
 
-  it("goes anonymous with one expiry toast and drops the hint when renewal answers 401", async () => {
+  // Expired AC 9 (amended 2026-10-16): a public page stays put and shows no toast.
+  it("clears the session silently and stays on a public page when renewal answers 401", async () => {
     localStorage.setItem("hasSession", "true");
+    localStorage.setItem("activePlanId", "10");
     renewAnswers401();
 
-    renderProvider();
+    const queryClient = createQueryClient();
+    queryClient.setQueryData(["plans"], [{ id: 10 }]);
+
+    renderProvider("/reset-password?token=abc", queryClient);
 
     await waitFor(() => expect(status()).toBe("anonymous"));
-    expect(mockedToastError).toHaveBeenCalledTimes(1);
-    expect(mockedToastError).toHaveBeenCalledWith(SESSION_EXPIRED_MESSAGE);
+    expect(currentLocation.pathname).toBe("/reset-password");
+    expect(currentLocation.search).toBe("?token=abc");
+    expect(mockedToastError).not.toHaveBeenCalled();
+    expect(getAccessToken()).toBeNull();
+    expect(queryClient.getQueryCache().getAll()).toHaveLength(0);
+    expect(localStorage.getItem("activePlanId")).toBeNull();
     expect(localStorage.getItem("hasSession")).toBeNull();
-    // SPEC_DEVIATION (T12): at start-up the route guard does the redirect.
-    expect(currentLocation.pathname).toBe("/plans");
   });
 
   it("becomes unreachable when renewal fails without a response, and retry() runs start-up again", async () => {
@@ -259,5 +280,77 @@ describe("AuthProvider signIn", () => {
     expect(mockedApi.get).toHaveBeenCalledWith("/user/me");
     expect(status()).toBe("authenticated");
     expect(screen.getByTestId("user").textContent).toBe("Ana Lima");
+  });
+});
+
+describe("AuthProvider with PrivateRoute", () => {
+  const renderApp = (initialEntry: string) =>
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <MemoryRouter initialEntries={[initialEntry]}>
+          <AuthProvider>
+            <Probe />
+            <Routes>
+              <Route path="/login" element={<p>Login page</p>} />
+              <Route path="/reset-password" element={<p>Reset page</p>} />
+              <Route element={<PrivateRoute />}>
+                <Route path="/plans" element={<p>Private page</p>} />
+              </Route>
+            </Routes>
+          </AuthProvider>
+        </MemoryRouter>
+      </QueryClientProvider>,
+    );
+
+  it("takes the user from a private page to /login with one expiry toast when the session expired at start-up", async () => {
+    localStorage.setItem("hasSession", "true");
+    renewAnswers401();
+
+    renderApp("/plans?tab=members");
+
+    await screen.findByText("Login page");
+    expect(currentLocation.state).toMatchObject({
+      from: { pathname: "/plans", search: "?tab=members" },
+    });
+    expect(mockedToastError).toHaveBeenCalledTimes(1);
+    expect(mockedToastError).toHaveBeenCalledWith(SESSION_EXPIRED_MESSAGE);
+    expect(localStorage.getItem("hasSession")).toBeNull();
+    expect(screen.queryByText("Private page")).toBeNull();
+  });
+
+  it("shows the expiry toast once when the session expires mid-session on a private page", async () => {
+    localStorage.setItem("hasSession", "true");
+    renewSucceeds();
+    renderApp("/plans?tab=members");
+    await screen.findByText("Private page");
+
+    act(() => expireHandler()());
+
+    await screen.findByText("Login page");
+    expect(currentLocation.state).toMatchObject({
+      from: { pathname: "/plans", search: "?tab=members" },
+    });
+    expect(mockedToastError).toHaveBeenCalledTimes(1);
+    expect(mockedToastError).toHaveBeenCalledWith(SESSION_EXPIRED_MESSAGE);
+  });
+
+  it("does not announce a start-up expiry found on a public page when the user later opens a private page", async () => {
+    localStorage.setItem("hasSession", "true");
+    renewAnswers401();
+    renderApp("/reset-password?token=abc");
+    await waitFor(() => expect(status()).toBe("anonymous"));
+    expect(screen.getByText("Reset page")).toBeTruthy();
+
+    act(() => navigateTo("/plans"));
+
+    await screen.findByText("Login page");
+    expect(mockedToastError).not.toHaveBeenCalled();
+  });
+
+  it("redirects a visitor who never signed in without the expiry toast", async () => {
+    renderApp("/plans");
+
+    await screen.findByText("Login page");
+    expect(mockedToastError).not.toHaveBeenCalled();
   });
 });

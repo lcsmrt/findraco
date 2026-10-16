@@ -100,6 +100,7 @@ beforeEach(() => {
     signIn,
     signOut: vi.fn(),
     retry: vi.fn(),
+    announceSessionExpiry: vi.fn(),
   });
 });
 
