@@ -290,3 +290,32 @@ The verdict was FAIL ❌, at `bd23b79`.
 - **Dead code**: `useGetUserProfile`.
 - **Spec-precision gaps**: two, about start-up expiry on a public page and about the failed request's own toast after an expiry.
 - **Resolution**: the spec amendment of 2026-10-16 plus fix tasks F1–F5.
+
+## Addendum: IT run (2026-10-16, after iteration 3)
+
+The DB tunnel came back up, which closes both pending items.
+
+- **Gate**: `cd backend && ./mvnw verify` exit 0. Surefire ran 118 tests (the 111 unit tests plus the context-booting tests that need the DB) and failsafe ran 176; there were 0 failures, 0 errors and 0 skipped. `jacoco:check` passed.
+- **IT mutants**: each mutant was applied to the real tree, the target IT class ran (`-Dit.test=<class> -Dtest=NONE -Djacoco.skip=true`) and the file was restored with `git checkout`. I1 and I3 were split into their variants.
+
+| # | Mutation | Result | Killed by |
+| - | -------- | ------ | --------- |
+| I1a | `.httpOnly(false)` | ✅ Killed | `SessionIT.loginReturnsTheAccessTokenAndSetsTheSessionCookie:78` (+1) |
+| I1b | `.sameSite("Lax")` | ✅ Killed | `SessionIT.loginReturnsTheAccessTokenAndSetsTheSessionCookie:80` (+1) |
+| I1c | `.path("/")` | ✅ Killed | 9 `SessionIT` tests |
+| I2 | `clear()` uses `ttl` | ✅ Killed | 7 `SessionIT` tests (`assertCleared`) |
+| I3a | Entry point status `403` | ✅ Killed | 4 `AuthenticationIT` tests |
+| I3b | Entry point message changed | ✅ Killed | 4 `AuthenticationIT` tests |
+| I4 | Remove `.exceptionHandling(...)` | ✅ Killed | 4 `AuthenticationIT` tests |
+| I5 | `handleInvalidSession` drops the clearing `Set-Cookie` | ✅ Killed | 6 `SessionIT` tests |
+| I6 | `rotate` loses `noRollbackFor` | ✅ Killed | `SessionIT.replacedCookieReusedAfterThirtyOneSecondsRevokesItsDeviceChainOnly:187` (401 expected, 200 returned) |
+| I7 | `logout` skips `sessionService.revoke` | ✅ Killed | `SessionIT.logoutRevokesTheSessionAndClearsTheCookie:209` |
+| I8 | Reset skips `sessionService.revokeAll` | ✅ Killed | `PasswordRecoveryIT.resetRevokesEverySessionOfTheUserAndNoOtherUsers:184` |
+| I9 | `deleteExpiredByUser` `<=` → `<` | ✅ Killed | `UserSessionRepositoryIT.deleteExpiredByUserRemovesOnlyThatUsersRowsExpiredAtOrBeforeNow:81` |
+| I10 | `jwt.expiration-ms` default `86400000` | ✅ Killed | `AuthenticationIT.accessTokenFromLoginLivesFifteenMinutes:264` |
+
+**Result**: 13 injected, 13 killed, 0 survived. `git status` was clean afterwards.
+
+**Traceability**: SESS-01, 06, 07, 10 and 11 move to Verified. All 12 requirements are now Verified. The 6 static-only criteria (Expired AC 1–2, Persist AC 2 and 8, End AC 4–5) are now executed.
+
+**Overall**: ✅ Ready. Remaining: merge and deploy (backend and frontend together), then UAT in prod.

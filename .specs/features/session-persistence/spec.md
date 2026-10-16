@@ -178,17 +178,17 @@ password, the other is sent to `/login` within 15 minutes.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| SESS-01 | P1 Expired (AC 1–2), `401` vs. `403/404` | Execute | Implementing |
+| SESS-01 | P1 Expired (AC 1–2), `401` vs. `403/404` | Done | Verified |
 | SESS-02 | P1 Expired (AC 3–5, 9–10), clear, redirect, single message | Done | Verified |
 | SESS-03 | P1 Expired (AC 6–8), return path, start-up loading, bad credentials | Done | Verified |
 | SESS-04 | P1 Persist (AC 7) + Edge (network failure, public endpoints), renewal failure handling | Done | Verified |
 | SESS-05 | P1 Persist (AC 3–4), silent renewal and retry | Done | Verified |
-| SESS-06 | P1 Persist (AC 1–2, 5), lifetimes and sliding expiry | Execute | Implementing |
-| SESS-07 | P1 Persist (AC 8–9, 11), credential storage | Execute | Implementing |
+| SESS-06 | P1 Persist (AC 1–2, 5), lifetimes and sliding expiry | Done | Verified |
+| SESS-07 | P1 Persist (AC 8–9, 11), credential storage | Done | Verified |
 | SESS-08 | P1 Theft (AC 1–2), rotation and replay revocation | Done | Verified |
 | SESS-09 | P1 Theft (AC 3–4), grace window and concurrent tabs | Done | Verified |
-| SESS-10 | P2 End (AC 1–4), sign out | Execute | Implementing |
-| SESS-11 | P2 End (AC 5), revoke on password reset | Execute | Implementing |
+| SESS-10 | P2 End (AC 1–4), sign out | Done | Verified |
+| SESS-11 | P2 End (AC 5), revoke on password reset | Done | Verified |
 | SESS-12 | P1 Persist (AC 6, 10) + Edge (legacy token, cleanup, invitation), start-up and migration | Done | Verified |
 
 **ID format:** `SESS-NN`; each ID covers the AC range named in its row.

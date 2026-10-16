@@ -76,12 +76,12 @@
 
 ## Handoff
 
-- **Feature**: M5-08 Session persistence (`.specs/features/session-persistence/`). Built on branch `feat/session-persistence` (not pushed, not merged). Verifier **PASS** at iteration 3 (`validation.md`, `validate_state` exit 0)
+- **Feature**: M5-08 Session persistence (`.specs/features/session-persistence/`). Built on branch `feat/session-persistence` (not pushed, not merged). Verifier **PASS** at iteration 3 (`validation.md`, `validate_state` exit 0); `./mvnw verify` green and IT mutants I1–I10 killed
 - **Phase / Task**: Execute done — T1–T14 + fixes F1–F6. Spec amended 2026-10-16 (Expired AC 4 narrowed; AC 9 silent expiry on public pages; AC 10 one message when a request fails on expiry)
-- **Completed**: spec, discuss (no "remember me"), design (approach A, AD-009), tasks, implementation, 3 verification iterations. Frontend 356 tests, backend 111 unit tests green
+- **Completed**: spec, discuss (no "remember me"), design (approach A, AD-009), tasks, implementation, 3 verification iterations. Frontend 356 tests; backend `./mvnw verify` 118 unit + 176 IT green
 - **In-progress** (file:line): none
-- **Next step**: (1) bring the DB tunnel up and run `cd backend && ./mvnw verify` — 25 new/changed `*IT` were written but never run (`SessionIT`, `AuthenticationIT`, `PasswordRecoveryIT`, `UserSessionRepositoryIT`); then the pending IT mutants I1–I10 in `validation.md`; flip SESS-01, 06, 07, 10, 11 to Verified. (2) Merge to `main` and deploy backend + frontend **together** (backend alone = 15-minute sessions with no renewal); every user signs in once after deploy. (3) UAT in prod. Before that, previous Next step still stands: second UX round for categories, then M5-05 MCP connector, M5-07 PWA
-- **Runtime state**: API runs detached (`setsid nohup ./mvnw spring-boot:run`), log `backend/target/api.log`; stop with `pgrep -f spring-boot:run | xargs kill`. Vite dev server on :5173. DB via SSH tunnel `ssh -N -L 5432:localhost:5432 vps` (down on 2026-10-16). `./mvnw verify` empties `dev_finsight`. If Safari in dev drops the session cookie over `http://localhost`, set `SESSION_COOKIE_SECURE=false` in `backend/.env`
-- **Blockers**: DB tunnel down (ITs unrun). `npm run lint` fails with 23 pre-existing storybook/table errors; branch adds none
+- **Next step**: (1) Merge to `main` and deploy backend + frontend **together** (backend alone = 15-minute sessions with no renewal); every user signs in once after deploy. (2) UAT in prod. Before that, previous Next step still stands: second UX round for categories, then M5-05 MCP connector, M5-07 PWA
+- **Runtime state**: API runs detached (`setsid nohup ./mvnw spring-boot:run`), log `backend/target/api.log`; stop with `pgrep -f spring-boot:run | xargs kill`. Vite dev server on :5173. DB via SSH tunnel `ssh -N -L 5432:localhost:5432 vps` (brought up again on 2026-10-16). `./mvnw verify` empties `dev_finsight`. If Safari in dev drops the session cookie over `http://localhost`, set `SESSION_COOKIE_SECURE=false` in `backend/.env`
+- **Blockers**: none for this feature (merge and deploy wait on the user's go-ahead). `npm run lint` fails with 23 pre-existing storybook/table errors; branch adds none
 - **Uncommitted files**: none
 - **Branch**: feat/session-persistence (main untouched since `f2a31f7`)

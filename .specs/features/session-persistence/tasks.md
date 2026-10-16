@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/session-persistence/design.md`
-**Status**: Done — Verifier PASS (iteration 3, 2026-10-16). Pending: `./mvnw verify` (DB tunnel down; `*IT` written, not run) and IT mutants I1–I10 from `validation.md`. SESS-01, 06, 07, 10, 11 stay `Implementing` in spec.md until then.
+**Status**: Done — Verifier PASS (iteration 3, 2026-10-16). `./mvnw verify` green and IT mutants I1–I10 all killed (2026-10-16, `validation.md` IT addendum).
 
 ---
 
