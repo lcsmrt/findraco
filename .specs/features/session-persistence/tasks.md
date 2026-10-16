@@ -178,11 +178,11 @@ Note: the existing `AuthenticationIT.requestWithoutTokenIsRejectedForProtectedEn
 
 **Done when**:
 
-- [ ] New `SessionIT`: login → `200`, body `token` present, `Set-Cookie` `findraco_session` with `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/findraco/auth`, `Max-Age=2592000`; the cookie value is absent from the body
-- [ ] `SessionIT`: the DB row holds `sha256(cookie value)`, never the raw value
-- [ ] `SessionIT`: login deletes that user's expired rows (backdated via `JdbcTemplate`) and keeps another user's
-- [ ] Wrong password still `401` "Invalid username or password." with no cookie
-- [ ] Full gate passes
+- [x] New `SessionIT`: login → `200`, body `token` present, `Set-Cookie` `findraco_session` with `HttpOnly`, `Secure`, `SameSite=Strict`, `Path=/api/findraco/auth`, `Max-Age=2592000`; the cookie value is absent from the body (written, not run)
+- [x] `SessionIT`: the DB row holds `sha256(cookie value)`, never the raw value (written, not run)
+- [x] `SessionIT`: login deletes that user's expired rows (backdated via `JdbcTemplate`) and keeps another user's (written, not run)
+- [x] Wrong password still `401` "Invalid username or password." with no cookie (written, not run)
+- [x] Full gate passes (substitute gate: `test-compile` + all `*Test` unit tests green; `./mvnw verify` not run, DB tunnel down)
 
 **Tests**: integration
 **Gate**: full
