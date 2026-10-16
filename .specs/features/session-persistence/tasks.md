@@ -101,9 +101,9 @@ T12 → T13 → T14
 
 **Done when**:
 
-- [ ] `OpaqueTokensTest`: `generate()` yields 43-char Base64url without padding and differs across calls; `hash` returns the known SHA-256 hex of a fixed input and is 64 chars
-- [ ] `PasswordRecoveryIT` still passes unchanged
-- [ ] Full gate passes
+- [x] `OpaqueTokensTest`: `generate()` yields 43-char Base64url without padding and differs across calls; `hash` returns the known SHA-256 hex of a fixed input and is 64 chars (3 tests, passing)
+- [x] `PasswordRecoveryIT` still passes unchanged (assertions unchanged; its one `PasswordResetService.hash` call now reads `OpaqueTokens.hash` because the helper moved; compiles, not run)
+- [x] Full gate passes (substitute gate: `test-compile` + all `*Test` unit tests green; `./mvnw verify` not run, DB tunnel down)
 
 **Tests**: unit
 **Gate**: full

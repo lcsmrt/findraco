@@ -5,28 +5,20 @@ import com.lcs.findraco.exceptions.UserExceptions;
 import com.lcs.findraco.models.PasswordResetToken;
 import com.lcs.findraco.repositories.PasswordResetTokenRepository;
 import com.lcs.findraco.repositories.UserRepository;
+import com.lcs.findraco.security.OpaqueTokens;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.Optional;
 
 @Service
 public class PasswordResetService {
 
     public static final Duration TOKEN_TTL = Duration.ofMinutes(60);
-
-    private static final int TOKEN_BYTES = 32;
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
@@ -61,10 +53,10 @@ public class PasswordResetService {
         userRepository.findByEmail(email).ifPresent(user -> {
             tokenRepository.deleteAllByUser(user);
 
-            String token = generateToken();
+            String token = OpaqueTokens.generate();
             PasswordResetToken resetToken = new PasswordResetToken();
             resetToken.setUser(user);
-            resetToken.setTokenHash(hash(token));
+            resetToken.setTokenHash(OpaqueTokens.hash(token));
             resetToken.setExpiresAt(LocalDateTime.now(clock).plus(TOKEN_TTL));
             tokenRepository.save(resetToken);
 
@@ -89,22 +81,7 @@ public class PasswordResetService {
     }
 
     private Optional<PasswordResetToken> findValidToken(String token) {
-        return tokenRepository.findByTokenHash(hash(token))
+        return tokenRepository.findByTokenHash(OpaqueTokens.hash(token))
                 .filter(resetToken -> resetToken.getExpiresAt().isAfter(LocalDateTime.now(clock)));
-    }
-
-    private static String generateToken() {
-        byte[] bytes = new byte[TOKEN_BYTES];
-        RANDOM.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    static String hash(String token) {
-        try {
-            byte[] digest = MessageDigest.getInstance("SHA-256").digest(token.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(digest);
-        } catch (NoSuchAlgorithmException exception) {
-            throw new IllegalStateException("SHA-256 is not available.", exception);
-        }
     }
 }

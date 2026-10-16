@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.PasswordResetToken;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.repositories.PasswordResetTokenRepository;
+import com.lcs.findraco.security.OpaqueTokens;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
 import java.time.LocalDateTime;
@@ -134,7 +135,7 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         forgotPassword(user.getEmail());
         String token = emailedTokens(user.getEmail()).get(0);
 
-        PasswordResetToken stored = tokenRepository.findByTokenHash(PasswordResetService.hash(token)).orElseThrow();
+        PasswordResetToken stored = tokenRepository.findByTokenHash(OpaqueTokens.hash(token)).orElseThrow();
         stored.setExpiresAt(LocalDateTime.now().minusMinutes(1));
         tokenRepository.save(stored);
 
