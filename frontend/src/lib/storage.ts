@@ -1,5 +1,4 @@
 export const STORAGE_KEYS = {
-  accessToken: "accessToken",
   hasSession: "hasSession",
   user: "user",
   activePlanId: "activePlanId",

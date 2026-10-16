@@ -8,19 +8,19 @@ beforeEach(() => localStorage.clear());
 
 describe("clearSessionStorage", () => {
   it("removes the auth keys", () => {
-    localStorage.setItem("accessToken", '"t"');
+    localStorage.setItem("hasSession", "true");
     localStorage.setItem("user", '{"id":1}');
     localStorage.setItem("activePlanId", "10");
 
     clearSessionStorage();
 
-    expect(localStorage.getItem("accessToken")).toBeNull();
+    expect(localStorage.getItem("hasSession")).toBeNull();
     expect(localStorage.getItem("user")).toBeNull();
     expect(localStorage.getItem("activePlanId")).toBeNull();
   });
 
   it("keeps saved home filters and the theme choice", () => {
-    localStorage.setItem("accessToken", '"t"');
+    localStorage.setItem("hasSession", "true");
     localStorage.setItem("homeFilters:1:10", "plan=10&tab=transactions");
     localStorage.setItem("homeFilters:1:11", "plan=11");
     localStorage.setItem(THEME_KEY, "dark");

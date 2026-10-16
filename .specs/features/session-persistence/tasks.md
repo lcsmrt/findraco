@@ -391,9 +391,11 @@ SPEC_DEVIATION: `expireSession` navigates to `/login` only when the session had 
 
 **Done when**:
 
-- [ ] `PrivateRoute.test.tsx`: `loading` renders the spinner and not the outlet; `unreachable` renders the message and Retry calls `retry`; `anonymous` redirects to `/login` carrying `from` (path + query); `authenticated` renders the outlet
-- [ ] No remaining reference to `STORAGE_KEYS.accessToken` or `isAuthenticated`
-- [ ] Build gate passes
+- [x] `PrivateRoute.test.tsx`: `loading` renders the spinner and not the outlet; `unreachable` renders the message and Retry calls `retry`; `anonymous` redirects to `/login` carrying `from` (path + query); `authenticated` renders the outlet (4 tests, passing)
+- [x] No remaining reference to `STORAGE_KEYS.accessToken` or `isAuthenticated`
+- [x] Build gate passes
+
+Note: `storage.test.ts` asserted that `clearSessionStorage` removes the `accessToken` key. With that key gone from `STORAGE_KEYS` (design: `accessToken` → `hasSession`), the test now seeds and asserts `hasSession` instead; the assertion count is unchanged. The legacy key is removed at start-up by `AuthProvider` (covered in `AuthProvider.test.tsx`).
 
 **Tests**: unit
 **Gate**: build
