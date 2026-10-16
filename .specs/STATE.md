@@ -66,6 +66,14 @@
 - **Date**: 2026-10-12
 - **Status**: active
 
+### AD-009
+- **Decision**: Sessions are a 15-minute bearer JWT held in memory plus a rotating, SHA-256-hashed session token in `user_sessions`, delivered only in an `HttpOnly`, `SameSite=Strict` cookie scoped to `/api/findraco/auth`. Every other route keeps `Authorization: Bearer`. Revocation deletes rows; a session token replayed more than 30 s after rotation deletes its device chain.
+- **Reason**: Expired sessions rendered empty pages and the 24h JWT forced a daily sign-in; the user wants 30-day sliding sessions with real sign-out and reset-revokes-all, which a stateless token cannot give. Chosen over a server-side cookie session to keep the bearer API, tests and Swagger unchanged.
+- **Trade-off**: A session table and a renewal flow in the SPA; revocation reaches already-issued access tokens only after their 15 minutes.
+- **Scope**: Authentication (backend `security/`, `SessionService`, frontend `findracoApi`, `AuthProvider`, `PrivateRoute`).
+- **Date**: 2026-10-16
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: M5-04 Categories revamp (`.specs/features/categories-revamp/`). Shipped to `main` / prod on 2026-10-13. **UAT passed 2026-10-16** (user: no bugs in days of real use)
