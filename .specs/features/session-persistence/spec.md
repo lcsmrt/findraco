@@ -174,22 +174,22 @@ password, the other is sent to `/login` within 15 minutes.
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| SESS-01 | P1 Expired (AC 1–2), `401` vs. `403/404` | Design | In Design |
-| SESS-02 | P1 Expired (AC 3–5), clear, redirect, single toast | Design | In Design |
-| SESS-03 | P1 Expired (AC 6–8), return path, start-up loading, bad credentials | Design | In Design |
-| SESS-04 | P1 Persist (AC 7) + Edge (network failure, public endpoints), renewal failure handling | Design | In Design |
-| SESS-05 | P1 Persist (AC 3–4), silent renewal and retry | Design | In Design |
-| SESS-06 | P1 Persist (AC 1–2, 5), lifetimes and sliding expiry | Design | In Design |
-| SESS-07 | P1 Persist (AC 8–9, 11), credential storage | Design | In Design |
-| SESS-08 | P1 Theft (AC 1–2), rotation and replay revocation | Design | In Design |
-| SESS-09 | P1 Theft (AC 3–4), grace window and concurrent tabs | Design | In Design |
-| SESS-10 | P2 End (AC 1–4), sign out | Design | In Design |
-| SESS-11 | P2 End (AC 5), revoke on password reset | Design | In Design |
-| SESS-12 | P1 Persist (AC 6, 10) + Edge (legacy token, cleanup, invitation), start-up and migration | Design | In Design |
+| SESS-01 | P1 Expired (AC 1–2), `401` vs. `403/404` | Tasks | In Tasks |
+| SESS-02 | P1 Expired (AC 3–5), clear, redirect, single toast | Tasks | In Tasks |
+| SESS-03 | P1 Expired (AC 6–8), return path, start-up loading, bad credentials | Tasks | In Tasks |
+| SESS-04 | P1 Persist (AC 7) + Edge (network failure, public endpoints), renewal failure handling | Tasks | In Tasks |
+| SESS-05 | P1 Persist (AC 3–4), silent renewal and retry | Tasks | In Tasks |
+| SESS-06 | P1 Persist (AC 1–2, 5), lifetimes and sliding expiry | Tasks | In Tasks |
+| SESS-07 | P1 Persist (AC 8–9, 11), credential storage | Tasks | In Tasks |
+| SESS-08 | P1 Theft (AC 1–2), rotation and replay revocation | Tasks | In Tasks |
+| SESS-09 | P1 Theft (AC 3–4), grace window and concurrent tabs | Tasks | In Tasks |
+| SESS-10 | P2 End (AC 1–4), sign out | Tasks | In Tasks |
+| SESS-11 | P2 End (AC 5), revoke on password reset | Tasks | In Tasks |
+| SESS-12 | P1 Persist (AC 6, 10) + Edge (legacy token, cleanup, invitation), start-up and migration | Tasks | In Tasks |
 
 **ID format:** `SESS-NN`; each ID covers the AC range named in its row.
 
-**Coverage:** 12 total, 0 mapped to tasks, 12 unmapped ⚠️ (tasks not written yet)
+**Coverage:** 12 total, 12 mapped to tasks, 0 unmapped
 
 ---
 
