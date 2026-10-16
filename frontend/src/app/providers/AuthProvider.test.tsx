@@ -347,6 +347,25 @@ describe("AuthProvider with PrivateRoute", () => {
     expect(mockedToastError).not.toHaveBeenCalled();
   });
 
+  it("announces a start-up expiry only once, not again after signing in and out", async () => {
+    localStorage.setItem("hasSession", "true");
+    renewAnswers401();
+    renderApp("/plans");
+    await screen.findByText("Login page");
+    expect(mockedToastError).toHaveBeenCalledTimes(1);
+
+    await act(() => auth.signIn("fresh-token"));
+    act(() => navigateTo("/plans"));
+    await screen.findByText("Private page");
+    await act(() => auth.signOut());
+    await screen.findByText("Login page");
+
+    act(() => navigateTo("/plans"));
+
+    await screen.findByText("Login page");
+    expect(mockedToastError).toHaveBeenCalledTimes(1);
+  });
+
   it("redirects a visitor who never signed in without the expiry toast", async () => {
     renderApp("/plans");
 

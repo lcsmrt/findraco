@@ -432,7 +432,7 @@ Note: `CONCERNS.md` had no auth entry; a "Session handling — RESOLVED" entry w
 From `validation.md` (iteration 1, FAIL) and the spec amendment of 2026-10-16 (Expired AC 4 narrowed, AC 9–10 added). Run in order after T14.
 
 ```
-F1 → F2 → F3 → F4 → F5
+F1 → F2 → F3 → F4 → F5 → F6
 ```
 
 ### F1: `LoginPage` tests
@@ -560,6 +560,29 @@ Open (outside F4's listed scope, for the orchestrator): `DeleteCategoryDialog` s
 **Done when**:
 
 - [x] `DeleteCategoryDialog.test.ts`: `classifyDeleteError(new SessionExpiredError(<401>))` is `"session-expired"`; existing 409/other cases unchanged
+- [x] Build gate passes
+
+**Tests**: unit
+**Gate**: build
+
+---
+
+### F6: Start-up expiry toast is announced once
+
+**What**: Test-only. Composition test in `AuthProvider.test.tsx`: start-up expiry on `/plans` → sign in → sign out → open `/plans` again → the expiry toast was shown exactly once. Kills surviving mutant A15 from validation iteration 2 (`AuthProvider.tsx:113`, `startUpExpiryPathRef.current = null` removed).
+**Where**: `frontend/src/app/providers/AuthProvider.test.tsx`
+**Depends on**: F5
+**Reuses**: `renderApp` composition helper
+**Requirement**: SESS-02
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] New test passes on the real code and fails with mutant A15 applied (checked locally, reverted)
 - [x] Build gate passes
 
 **Tests**: unit
