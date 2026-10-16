@@ -1,6 +1,7 @@
 import axios from "axios";
 import { LoginResponse } from "../dtos";
 import { getAccessToken, setAccessToken } from "./accessToken";
+import { SessionExpiredError } from "./sessionExpiredError";
 
 declare module "axios" {
   interface AxiosRequestConfig {
@@ -21,6 +22,9 @@ export const findracoApi = axios.create({
 });
 
 let onSessionExpired: () => void = () => {};
+
+const isUnauthorized = (error: unknown): boolean =>
+  axios.isAxiosError(error) && error.response?.status === 401;
 
 /**
  * Registers what to do when the session can no longer be renewed.
@@ -53,7 +57,7 @@ let pendingRenewal: Promise<string> | null = null;
 export const renewSession = (): Promise<string> => {
   pendingRenewal ??= requestNewAccessTokenExclusively()
     .catch((error: unknown) => {
-      if (axios.isAxiosError(error) && error.response?.status === 401) {
+      if (isUnauthorized(error)) {
         onSessionExpired();
       }
       throw error;
@@ -97,9 +101,12 @@ findracoApi.interceptors.response.use(
 
     try {
       await renewSession();
-    } catch {
-      // Expired session: the handler already ran. Network failure: the caller
-      // sees the original error and stays signed in.
+    } catch (renewalError: unknown) {
+      // Expired session: the handler already ran and its message is the only one.
+      if (isUnauthorized(renewalError)) {
+        return Promise.reject(new SessionExpiredError(error));
+      }
+      // Network failure: the caller sees the original error and stays signed in.
       return Promise.reject(error);
     }
 

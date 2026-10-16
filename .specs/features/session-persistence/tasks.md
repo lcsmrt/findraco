@@ -531,9 +531,13 @@ Existing test changed: T12's "goes anonymous with one expiry toast and drops the
 
 **Done when**:
 
-- [ ] `findracoApi.test.ts`: a request whose renewal fails with `401` rejects with the session-expired error (type asserted), for each of three concurrent requests
-- [ ] `buildMutationOptions` test: session-expired error → no `toast.error`, caller `onError` called; any other error → `toast.error` with the resolved message (unchanged)
-- [ ] Build gate passes
+- [x] `findracoApi.test.ts`: a request whose renewal fails with `401` rejects with the session-expired error (type asserted), for each of three concurrent requests
+- [x] `buildMutationOptions` test: session-expired error → no `toast.error`, caller `onError` called; any other error → `toast.error` with the resolved message (unchanged)
+- [x] Build gate passes (build ok; 354 unit tests; eslint on every feature file: 0 errors; `npm run lint` still 23 pre-existing errors)
+
+Note: the error is `SessionExpiredError` in its own module, `api/clients/sessionExpiredError.ts`, carrying the request's own `401` as `original`. `buildMutationOptions` imports it from there, not from `findracoApi.ts`: several tests mock the client module, and a real `useLogin` rendered against that mock would otherwise see an undefined class. A renewal network failure still rejects with the original `AxiosError` (existing test unchanged). The existing concurrent-expiry test in `findracoApi.test.ts` gained the per-request type and `original` assertions; nothing was removed. 5 behavior mutants of the change were killed.
+
+Open (outside F4's listed scope, for the orchestrator): `DeleteCategoryDialog` sets `showErrorToast: false` and toasts from its own `onError` for unclassified errors, so a delete that fails on expiry would still show a second toast ("The session could not be renewed."). Expired AC 10 is met for every mutation that relies on `buildMutationOptions`, not for that caller.
 
 **Tests**: unit
 **Gate**: build

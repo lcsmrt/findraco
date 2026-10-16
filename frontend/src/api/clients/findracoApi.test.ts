@@ -7,6 +7,7 @@ import {
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getAccessToken, setAccessToken } from "./accessToken";
 import { findracoApi, setSessionExpiredHandler } from "./findracoApi";
+import { SessionExpiredError } from "./sessionExpiredError";
 
 type RecordedCall = {
   url?: string;
@@ -180,7 +181,7 @@ describe("findracoApi session renewal", () => {
     }
   });
 
-  it("calls the expiry handler once and rejects all three requests when renewal answers 401", async () => {
+  it("calls the expiry handler once and rejects all three requests with a session-expired error when renewal answers 401", async () => {
     const backend = createBackend({
       refreshOutcome: "unauthorized",
       holdRefresh: true,
@@ -201,6 +202,15 @@ describe("findracoApi session renewal", () => {
       "rejected",
       "rejected",
     ]);
+    const urls = ["/plans", "/categories", "/transactions"];
+    results.forEach((result, index) => {
+      if (result.status !== "rejected") throw new Error("Expected a rejection");
+      expect(result.reason).toBeInstanceOf(SessionExpiredError);
+      expect(result.reason.original).toMatchObject({
+        config: { url: urls[index] },
+        response: { status: 401, data: AUTH_REQUIRED },
+      });
+    });
     expect(backend.callsTo("/auth/refresh")).toHaveLength(1);
     expect(expiredHandler).toHaveBeenCalledTimes(1);
   });

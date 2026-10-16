@@ -1,4 +1,5 @@
 import { UseMutationOptions } from "@tanstack/react-query";
+import { SessionExpiredError } from "../clients/sessionExpiredError";
 import { MutationOptions } from "../types/mutationOptions";
 import { resolveErrorMessage } from "./resolveErrorMessage";
 import { resolveSuccessMessage } from "./resolveSuccessMessage";
@@ -42,7 +43,8 @@ export function buildMutationOptions<TData, TVariables>(
       onSuccess?.(data, variables);
     },
     onError: (error) => {
-      if (showErrorToast) {
+      // A failed renewal already showed the session-expired message.
+      if (showErrorToast && !(error instanceof SessionExpiredError)) {
         toast.error(
           resolveErrorMessage({
             error,
