@@ -180,12 +180,12 @@ password, the other is sent to `/login` within 15 minutes.
 | SESS-04 | P1 Persist (AC 7) + Edge (network failure, public endpoints), renewal failure handling | Tasks | In Tasks |
 | SESS-05 | P1 Persist (AC 3–4), silent renewal and retry | Tasks | In Tasks |
 | SESS-06 | P1 Persist (AC 1–2, 5), lifetimes and sliding expiry | Tasks | In Tasks |
-| SESS-07 | P1 Persist (AC 8–9, 11), credential storage | Tasks | In Tasks |
+| SESS-07 | P1 Persist (AC 8–9, 11), credential storage | Execute | Implementing |
 | SESS-08 | P1 Theft (AC 1–2), rotation and replay revocation | Tasks | In Tasks |
 | SESS-09 | P1 Theft (AC 3–4), grace window and concurrent tabs | Tasks | In Tasks |
 | SESS-10 | P2 End (AC 1–4), sign out | Tasks | In Tasks |
 | SESS-11 | P2 End (AC 5), revoke on password reset | Tasks | In Tasks |
-| SESS-12 | P1 Persist (AC 6, 10) + Edge (legacy token, cleanup, invitation), start-up and migration | Tasks | In Tasks |
+| SESS-12 | P1 Persist (AC 6, 10) + Edge (legacy token, cleanup, invitation), start-up and migration | Execute | Implementing |
 
 **ID format:** `SESS-NN`; each ID covers the AC range named in its row.
 

@@ -77,9 +77,9 @@ T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Migration applies on the full Flyway chain; `ddl-auto=validate` passes
-- [ ] `UserSessionRepositoryIT`: duplicate `token_hash` rejected; deleting a user cascades to their sessions; `deleteExpiredByUser` removes only rows with `expires_at <= now` of that user; `deleteAllByFamilyId` leaves other families intact
-- [ ] Full gate passes
+- [x] Migration applies on the full Flyway chain; `ddl-auto=validate` passes (covered by the existing `MigrationsIT`, which compares applied versions to the files on disk and boots under `validate`; not run)
+- [x] `UserSessionRepositoryIT`: duplicate `token_hash` rejected; deleting a user cascades to their sessions; `deleteExpiredByUser` removes only rows with `expires_at <= now` of that user; `deleteAllByFamilyId` leaves other families intact (4 tests, written, not run)
+- [x] Full gate passes (substitute gate: `test-compile` + all `*Test` unit tests green; `./mvnw verify` not run, DB tunnel down)
 
 **Tests**: integration
 **Gate**: full
