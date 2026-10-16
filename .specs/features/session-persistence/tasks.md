@@ -283,8 +283,8 @@ Note: a missing cookie is a no-op inside `SessionService.revoke`, covered by `Se
 
 **Done when**:
 
-- [ ] `accessToken.test.ts`: set/get/clear round-trip; setting a token writes nothing to `localStorage` or `sessionStorage`
-- [ ] Quick gate passes
+- [x] `accessToken.test.ts`: set/get/clear round-trip; setting a token writes nothing to `localStorage` or `sessionStorage` (2 tests, passing)
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
