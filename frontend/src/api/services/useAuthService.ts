@@ -35,6 +35,14 @@ export const useLogin = (
 };
 
 /**
+ * Ends the current device's session: the API revokes it and clears the
+ * renewal cookie. Answers 204 whether or not a session was present.
+ */
+export const logout = async (): Promise<void> => {
+  await findracoApi.post("/auth/logout");
+};
+
+/**
  * Fetches the authenticated user's profile.
  * @returns User data.
  */

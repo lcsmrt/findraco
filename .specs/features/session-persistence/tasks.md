@@ -306,8 +306,8 @@ Note: a missing cookie is a no-op inside `SessionService.revoke`, covered by `Se
 
 **Done when**:
 
-- [ ] `useAuthService.test.ts`: `logout` posts to `/auth/logout` with no body and resolves on `204`
-- [ ] Quick gate passes
+- [x] `useAuthService.test.ts`: `logout` posts to `/auth/logout` with no body and resolves on `204` (1 test, passing)
+- [x] Quick gate passes
 
 **Tests**: unit
 **Gate**: quick
