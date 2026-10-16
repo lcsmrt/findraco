@@ -417,8 +417,10 @@ Note: `storage.test.ts` asserted that `clearSessionStorage` removes the `accessT
 
 **Done when**:
 
-- [ ] ARCHITECTURE "Authentication" flow describes login → cookie, renewal, `401`, logout
-- [ ] Build gate passes
+- [x] ARCHITECTURE "Authentication" flow describes login → cookie, renewal, `401`, logout
+- [x] Build gate passes (frontend build + 344 unit tests + eslint on every feature file: 0 errors; backend `./mvnw verify` not run, DB tunnel down)
+
+Note: `CONCERNS.md` had no auth entry; a "Session handling — RESOLVED" entry was added under Security Considerations with the residual risks.
 
 **Tests**: none
 **Gate**: build

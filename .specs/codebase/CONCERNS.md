@@ -36,6 +36,17 @@
 - Current mitigation: The file holds only `VITE_FINSIGHT_API_URL` — a public API base URL that ships in the client bundle anyway, so no secret is exposed today.
 - Recommendations: **LOW.** Add `.env` and `.env.*.local` handling to the frontend `.gitignore` and provide a `.env.example` before any secret-bearing var is ever introduced. Never place secrets in `VITE_`-prefixed vars (they are inlined into the browser bundle).
 
+**Session handling — RESOLVED 2026-10-16 (M5-08, `.specs/features/session-persistence/`):**
+
+- What was wrong: the JWT lived 24h with no renewal, the API answered an expired token with an empty `403`, `PrivateRoute` only checked that a token existed in `localStorage`, and `AuthProvider` swallowed the profile-load failure (`refetch()` never rejects), so an expired session rendered private pages with no data. Logout left the token and query cache in memory.
+- What changed: 15-minute JWT kept in memory only; renewable 30-day session behind a rotating, hashed `user_sessions` token in an `HttpOnly`, `SameSite=Strict` cookie scoped to `/api/findraco/auth`; replay outside a 30 s grace revokes the device chain; unauthenticated → `401` "Authentication required."; the SPA renews and retries on `401`, gates private routes on a resolved session status, and sends an expired session to `/login` with a toast. Sign-out revokes the device session server-side; a password reset revokes every session. See ARCHITECTURE.md "Authentication".
+- Residual risks (**LOW**):
+  - A revoked session's access token stays usable until its 15-minute expiry (no per-request DB check, by design).
+  - No rate limiting on `/auth/login` or `/auth/refresh` (out of scope, same call as `password-recovery`).
+  - Safari may not store a `Secure` cookie over plain-HTTP `localhost`; set `SESSION_COOKIE_SECURE=false` in `backend/.env` for local development if renewal fails there.
+  - A mutation that fails because the session expired also shows its own error toast ("Authentication required.") next to the expiry toast, since the interceptor rejects with the original `401`.
+  - `*IT` tests for the session endpoints were written while the DB tunnel was down; run `./mvnw verify` to confirm them.
+
 ## Fragile Areas
 
 **Nubank CSV import parser:**

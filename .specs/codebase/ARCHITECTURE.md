@@ -6,7 +6,7 @@
 
 ```
 frontend (React SPA)
-  axios client (Bearer token) ──► HTTP/JSON
+  axios client (in-memory Bearer token; session cookie on /auth/*) ──► HTTP/JSON
                                      │
                                      ▼
 backend  (Spring Boot, port 3000, base path /api/finsight)
@@ -14,6 +14,7 @@ backend  (Spring Boot, port 3000, base path /api/finsight)
        ▲                                                          │
        └────────────── Response DTOs ◄────── PostgreSQL ◄─────────┘
   Security filter chain: JwtAuthenticationFilter → CustomUserDetailsService
+                          (unauthenticated → JsonAuthenticationEntryPoint → 401)
 ```
 
 Every backend request is scoped to the authenticated user; ownership is re-checked in the service layer.
@@ -36,11 +37,11 @@ Every backend request is scoped to the authenticated user; ownership is re-check
 
 **Example:** `controllers/DashboardController.java` resolves the user via `@AuthenticationPrincipal` and calls `dashboardService.getSummary(...)`; it holds no business logic.
 
-### JWT Authentication (Security)
+### JWT Authentication and Sessions (Security)
 
-**Location:** `security/` (`JwtService`, `JwtAuthenticationFilter`, `CustomUserDetails`, `CustomUserDetailsService`) + `config/SecurityConfig`.
-**Purpose:** Stateless bearer-token auth; identify the user on every request.
-**Implementation:** A servlet filter validates the `Authorization: Bearer <token>`, extracts the email, and loads the user via `CustomUserDetailsService`. Controllers receive the principal through `@AuthenticationPrincipal`.
+**Location:** `security/` (`JwtService`, `JwtAuthenticationFilter`, `JsonAuthenticationEntryPoint`, `SessionCookies`, `OpaqueTokens`, `CustomUserDetails`, `CustomUserDetailsService`) + `config/SecurityConfig` + `services/SessionService` + `models/UserSession` (`user_sessions`, V12).
+**Purpose:** Bearer-token auth on every route, with a renewable 30-day session behind it (AD-009).
+**Implementation:** A servlet filter validates the `Authorization: Bearer <token>` (a 15-minute JWT, `jwt.expiration-ms=900000`), extracts the email, and loads the user via `CustomUserDetailsService`. Controllers receive the principal through `@AuthenticationPrincipal`. A missing, malformed, wrongly signed or expired token leaves the request anonymous, and `JsonAuthenticationEntryPoint` answers protected routes with `401` + `ErrorResponseDto("Authentication required.")`; forbidden-for-role and not-owner keep their `403`/`404`. The session token is an opaque random value (`OpaqueTokens`) sent only in the `findraco_session` cookie (`HttpOnly`, `Secure` unless `SESSION_COOKIE_SECURE=false`, `SameSite=Strict`, `Path=/api/findraco/auth`, 30 days); `user_sessions` stores only its SHA-256 hash. `SessionService` opens, rotates and revokes sessions: each renewal replaces the token in the same device chain (`family_id`) and restarts the 30 days (`app.session.ttl`); a replaced token presented again within 30 s (`app.session.reuse-grace`) still renews, after that it deletes the whole chain and logs a `WARN`. Revocation is a row delete.
 
 ### Dynamic Filtering via Specifications
 
@@ -82,14 +83,14 @@ Every backend request is scoped to the authenticated user; ownership is re-check
 
 **Location:** `api/clients/finsightApi.ts` + `api/services/*`.
 **Purpose:** Centralize HTTP access and cache management; components never call axios directly.
-**Implementation:** `finsightApi` sets `baseURL` from `VITE_FINSIGHT_API_URL`, defaulting to the same-origin `/api/finsight`, and a request interceptor injects the Bearer token. Service hooks (`useDashboardService.ts`, `useFinancialTransactionService.ts`, `useFinancialTransactionCategoryService.ts`, `useAuthService.ts`) wrap TanStack Query; mutations use `buildMutationOptions` for automatic toast + cache invalidation. Query keys follow `["entityName", params]`.
+**Implementation:** `findracoApi` sets `baseURL` from `VITE_FINDRACO_API_URL`, defaulting to the same-origin `/api/findraco`, sends credentials (`withCredentials`, for the session cookie in cross-origin dev), and a request interceptor injects the Bearer token from `api/clients/accessToken.ts` (module memory only). A response interceptor renews the session on a `401` from any non-`/auth/` route and retries the request once (see Authentication below). Service hooks (`useDashboardService.ts`, `useFinancialTransactionService.ts`, `useFinancialTransactionCategoryService.ts`, `useAuthService.ts`) wrap TanStack Query; mutations use `buildMutationOptions` for automatic toast + cache invalidation. Query keys follow `["entityName", params]`.
 **Example:** `api/services/useDashboardService.ts` → `useGetDashboardSummary` does `finsightApi.get("/dashboard", { params })` with key `["dashboardSummary", params]`.
 
 ### Provider Composition & Routing
 
 **Location:** `app/providers/AppProvider.tsx`, `app/routing/AppRouter.tsx`, `app/routing/paths.ts`.
 **Purpose:** Wire global concerns and gate routes by auth.
-**Implementation:** Providers nest `BrowserRouter → TanStackQueryProvider → AuthProvider → ConfirmDialog → CategoryFormDialog`. Auth state is exposed via `AuthProvider`/`useAuth` (React Context). `AppRouter` (react-router v7) uses `PATHS` constants; `PrivateRoute` gates authenticated routes under `MainLayout`, public routes render under `AuthLayout`.
+**Implementation:** Providers nest `BrowserRouter → TanStackQueryProvider → AuthProvider → ConfirmDialog → CategoryFormDialog`. Auth state is exposed via `AuthProvider`/`useAuth` (React Context): `user`, `status` (`loading` / `authenticated` / `anonymous` / `unreachable`), `signIn`, `signOut`, `retry`. `AppRouter` (react-router v7) uses `PATHS` constants; `PrivateRoute` gates authenticated routes under `MainLayout` on `status` (spinner, "Can't reach findraco." + Retry, redirect to `/login` with `state.from`, or the outlet); public routes render under `AuthLayout`.
 
 ### Charts
 
@@ -100,10 +101,13 @@ Every backend request is scoped to the authenticated user; ownership is re-check
 
 ### Authentication
 
-1. Frontend calls the auth endpoint (`useAuthService`) → backend `AuthenticationController`/`AuthenticationService` verifies credentials and returns a JWT.
-2. Token is stored client-side; the axios request interceptor attaches `Authorization: Bearer <token>` on every call.
-3. Backend `JwtAuthenticationFilter` validates the token → `CustomUserDetailsService` loads the `User` by email → the principal is available via `@AuthenticationPrincipal`.
-4. Services re-check that the resource belongs to the authenticated user before acting.
+1. **Sign in:** `POST /auth/login` → `AuthenticationService` verifies credentials and `SessionService.open` deletes the user's expired sessions and starts a new chain → `200 {token}` + `Set-Cookie: findraco_session`. `LoginPage` calls `AuthProvider.signIn(token)`: the JWT goes to the in-memory store, the non-secret `localStorage["hasSession"]` hint is set, and the profile loads through `queryClient.fetchQuery(["profile"])`. Nothing that grants access is written to web storage.
+2. **Requests:** the request interceptor attaches `Authorization: Bearer <token>`. Backend `JwtAuthenticationFilter` validates it → `CustomUserDetailsService` loads the `User` by email → the principal is available via `@AuthenticationPrincipal`. Services re-check that the resource belongs to the authenticated user before acting.
+3. **Renewal:** a `401` on a non-`/auth/` route calls `renewSession()`: one `POST /auth/refresh` per tab (shared promise), serialized across tabs with the `findraco-session-renewal` Web Lock when the browser has it. The API rotates the cookie and returns a new JWT; the original request is retried once.
+4. **Start-up:** `AuthProvider` removes the legacy `localStorage["accessToken"]`; with no hint it is `anonymous` without a network call, otherwise it renews and loads the profile while `PrivateRoute` shows a full-page spinner. A renewal that fails without a response sets `unreachable` (Retry page).
+5. **Expiry:** a renewal answered `401` (expired, revoked, replayed or deleted user; the API also clears the cookie) fires the session-expired handler once: it clears the token, query cache and session keys, toasts "Your session expired. Please sign in again." and, mid-session, navigates to `/login` with `state.from` so sign-in returns to the same path and query. At start-up the route guard does that redirect. A renewal network failure mid-session only rejects the original request.
+6. **Sign out:** `AuthProvider.signOut` → `POST /auth/logout` (always `204`, revokes this device's chain, clears the cookie); local state is cleared and the user lands on `/login` even if the request fails. Other devices stay signed in.
+7. **Password reset:** `PasswordResetService.resetPassword` calls `SessionService.revokeAll`; access tokens already issued stay valid until their 15-minute expiry.
 
 ### Transaction CRUD
 
