@@ -329,14 +329,16 @@ Note: a missing cookie is a no-op inside `SessionService.revoke`, covered by `Se
 
 **Done when**:
 
-- [ ] `findracoApi.test.ts` (custom axios adapter): a `401` on a protected route renews once and the retried request resolves with its data; three simultaneous `401`s produce exactly one `/auth/refresh` call and three retries
-- [ ] Renewal `401` → expiry handler called exactly once for three concurrent failures, all three reject
-- [ ] Renewal network error → original error rejected, expiry handler not called
-- [ ] `401` from `/auth/login` → no refresh call, error rejected as-is
-- [ ] A retried request that `401`s again is not retried a second time
-- [ ] With `navigator.locks` stubbed, renewal runs inside `request("findraco-session-renewal", …)`; without it, renewal still works
-- [ ] Requests carry `Authorization: Bearer <token>` from the store and `withCredentials: true`
-- [ ] Quick gate passes
+- [x] `findracoApi.test.ts` (custom axios adapter): a `401` on a protected route renews once and the retried request resolves with its data; three simultaneous `401`s produce exactly one `/auth/refresh` call and three retries
+- [x] Renewal `401` → expiry handler called exactly once for three concurrent failures, all three reject
+- [x] Renewal network error → original error rejected, expiry handler not called
+- [x] `401` from `/auth/login` → no refresh call, error rejected as-is
+- [x] A retried request that `401`s again is not retried a second time
+- [x] With `navigator.locks` stubbed, renewal runs inside `request("findraco-session-renewal", …)`; without it, renewal still works
+- [x] Requests carry `Authorization: Bearer <token>` from the store and `withCredentials: true`
+- [x] Quick gate passes (`findracoApi.test.ts`: 8 tests, passing)
+
+SPEC_DEVIATION: the design lists a `refreshSession()` raw fn in `useAuthService`; the `POST /auth/refresh` call lives inside `renewSession()` in `findracoApi.ts` instead, because `useAuthService` imports the client and the reverse import would be circular. `renewSession()` is exported and is what start-up (T12) calls. The expiry handler fires from `renewSession()` (attached to the shared promise), so a `401` at start-up reaches it too.
 
 **Tests**: unit
 **Gate**: quick

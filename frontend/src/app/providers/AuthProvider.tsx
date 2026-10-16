@@ -1,4 +1,4 @@
-import { setAccessTokenAccessor } from "@/api/clients/findracoApi";
+import { setAccessToken as setClientAccessToken } from "@/api/clients/accessToken";
 import { useGetUserProfile } from "@/api/services/useAuthService";
 import { User } from "@/api/dtos/user";
 import {
@@ -41,7 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { refetch: getUserProfile } = useGetUserProfile();
 
   useEffect(() => {
-    setAccessTokenAccessor(() => accessToken);
+    setClientAccessToken(accessToken);
     if (accessToken) {
       storeItem(STORAGE_KEYS.accessToken, accessToken);
       loadUserData(accessToken);

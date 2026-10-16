@@ -175,10 +175,10 @@ password, the other is sent to `/login` within 15 minutes.
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
 | SESS-01 | P1 Expired (AC 1–2), `401` vs. `403/404` | Execute | Implementing |
-| SESS-02 | P1 Expired (AC 3–5), clear, redirect, single toast | Tasks | In Tasks |
+| SESS-02 | P1 Expired (AC 3–5), clear, redirect, single toast | Execute | Implementing |
 | SESS-03 | P1 Expired (AC 6–8), return path, start-up loading, bad credentials | Tasks | In Tasks |
 | SESS-04 | P1 Persist (AC 7) + Edge (network failure, public endpoints), renewal failure handling | Execute | Implementing |
-| SESS-05 | P1 Persist (AC 3–4), silent renewal and retry | Tasks | In Tasks |
+| SESS-05 | P1 Persist (AC 3–4), silent renewal and retry | Execute | Implementing |
 | SESS-06 | P1 Persist (AC 1–2, 5), lifetimes and sliding expiry | Execute | Implementing |
 | SESS-07 | P1 Persist (AC 8–9, 11), credential storage | Execute | Implementing |
 | SESS-08 | P1 Theft (AC 1–2), rotation and replay revocation | Execute | Implementing |
