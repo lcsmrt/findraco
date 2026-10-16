@@ -65,6 +65,17 @@ public class AuthenticationController {
                 .body(new AuthenticationResponseDto(session.accessToken()));
     }
 
+    @Operation(summary = "Signs out this device: revokes the cookie's session, if any, and clears the cookie")
+    @SecurityRequirements
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(@CookieValue(name = SessionCookies.NAME, required = false) String sessionToken) {
+        sessionService.revoke(sessionToken);
+
+        return ResponseEntity.noContent()
+                .header(HttpHeaders.SET_COOKIE, sessionCookies.clear().toString())
+                .build();
+    }
+
     @Operation(summary = "Emails a password reset link; responds the same whether or not the account exists")
     @SecurityRequirements
     @PostMapping("/forgot-password")

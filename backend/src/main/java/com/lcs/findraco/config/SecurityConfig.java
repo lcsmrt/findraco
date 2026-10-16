@@ -56,6 +56,7 @@ public class SecurityConfig {
                         .requestMatchers(
                                 ApiRoutes.AUTH + "/login",
                                 ApiRoutes.AUTH + "/refresh",
+                                ApiRoutes.AUTH + "/logout",
                                 ApiRoutes.AUTH + "/forgot-password",
                                 ApiRoutes.AUTH + "/reset-password",
                                 ApiRoutes.AUTH + "/reset-password/validate",

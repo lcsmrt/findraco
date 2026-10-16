@@ -11,15 +11,20 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -44,6 +49,9 @@ class SessionIT extends AbstractIntegrationTest {
 
     @Autowired
     private DataSource dataSource;
+
+    @Value("${jwt.secret-key}")
+    private String jwtSecretKey;
 
     private JdbcTemplate jdbc;
 
@@ -189,6 +197,45 @@ class SessionIT extends AbstractIntegrationTest {
         assertRejectedAndCleared(refresh(cookie));
     }
 
+    // --- logout (T7) --------------------------------------------------------------------------
+
+    @Test
+    void logoutRevokesTheSessionAndClearsTheCookie() throws Exception {
+        String cookie = loginCookie(fixtures.aUser());
+
+        MvcResult result = logout(cookie, null).andExpect(status().isNoContent()).andReturn();
+
+        assertCleared(result);
+        assertRejectedAndCleared(refresh(cookie));
+    }
+
+    @Test
+    void logoutKeepsTheUsersOtherDevicesSignedIn() throws Exception {
+        User user = fixtures.aUser();
+        String thisDevice = loginCookie(user);
+        String otherDevice = loginCookie(user);
+
+        logout(thisDevice, null).andExpect(status().isNoContent());
+
+        refresh(otherDevice).andExpect(status().isOk());
+    }
+
+    @Test
+    void logoutWithoutACookieAndWithAnExpiredAccessTokenStillSucceeds() throws Exception {
+        User user = fixtures.aUser();
+        long issuedAt = System.currentTimeMillis() - 3_600_000;
+        String expiredAccessToken = Jwts.builder()
+                .subject(user.getEmail())
+                .issuedAt(new Date(issuedAt))
+                .expiration(new Date(issuedAt + 900_000))
+                .signWith(Keys.hmacShaKeyFor(Base64.getEncoder().encode(jwtSecretKey.getBytes())))
+                .compact();
+
+        MvcResult result = logout(null, expiredAccessToken).andExpect(status().isNoContent()).andReturn();
+
+        assertCleared(result);
+    }
+
     // --- helpers ------------------------------------------------------------------------------
 
     private ResultActions login(String email, String password) throws Exception {
@@ -205,6 +252,17 @@ class SessionIT extends AbstractIntegrationTest {
         return mockMvc.perform(request);
     }
 
+    private ResultActions logout(String cookieValue, String accessToken) throws Exception {
+        MockHttpServletRequestBuilder request = post(ApiRoutes.AUTH + "/logout");
+        if (cookieValue != null) {
+            request.cookie(new Cookie(COOKIE, cookieValue));
+        }
+        if (accessToken != null) {
+            request.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken);
+        }
+        return mockMvc.perform(request);
+    }
+
     private String loginCookie(User user) throws Exception {
         return sessionCookie(login(user.getEmail(), "password").andExpect(status().isOk()).andReturn()).getValue();
     }
@@ -215,6 +273,11 @@ class SessionIT extends AbstractIntegrationTest {
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."))
                 .andReturn();
+        assertCleared(result);
+    }
+
+    /** The response carries a Set-Cookie that deletes the session cookie. */
+    private static void assertCleared(MvcResult result) {
         MockCookie cleared = sessionCookie(result);
         assertThat(cleared.getValue()).isEmpty();
         assertThat(cleared.getMaxAge()).isZero();

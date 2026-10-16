@@ -216,6 +216,14 @@ class SessionServiceTest {
     }
 
     @Test
+    void revokeWithoutATokenIsANoOp() {
+        service.revoke(null);
+
+        verify(repository, never()).findByTokenHashForUpdate(any());
+        verify(repository, never()).deleteAllByFamilyId(any());
+    }
+
+    @Test
     void revokeAllDeletesEveryRowOfTheUser() {
         service.revokeAll(user);
 

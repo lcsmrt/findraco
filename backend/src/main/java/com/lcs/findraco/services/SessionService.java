@@ -90,9 +90,12 @@ public class SessionService {
         return issue(presented.getUser(), presented.getFamilyId(), now);
     }
 
-    /** Ends the device session the token belongs to. An unknown token is a no-op. */
+    /** Ends the device session the token belongs to. A missing or unknown token is a no-op. */
     @Transactional
     public void revoke(String sessionToken) {
+        if (sessionToken == null || sessionToken.isBlank()) {
+            return;
+        }
         sessionRepository.findByTokenHashForUpdate(OpaqueTokens.hash(sessionToken))
                 .ifPresent(session -> sessionRepository.deleteAllByFamilyId(session.getFamilyId()));
     }

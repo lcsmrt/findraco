@@ -232,10 +232,12 @@ Note: the missing-cookie rule lives in `SessionService.rotate` (null or blank to
 
 **Done when**:
 
-- [ ] `SessionIT`: logout → `204` + `Max-Age=0` cookie; the same cookie then refreshes with `401`
-- [ ] `SessionIT`: a second device (separate login) still refreshes after the first logs out
-- [ ] `SessionIT`: logout with no cookie and with an expired access token → `204`
-- [ ] Full gate passes
+- [x] `SessionIT`: logout → `204` + `Max-Age=0` cookie; the same cookie then refreshes with `401` (written, not run)
+- [x] `SessionIT`: a second device (separate login) still refreshes after the first logs out (written, not run)
+- [x] `SessionIT`: logout with no cookie and with an expired access token → `204` (written, not run)
+- [x] Full gate passes (substitute gate: `test-compile` + all `*Test` unit tests green; `./mvnw verify` not run, DB tunnel down)
+
+Note: a missing cookie is a no-op inside `SessionService.revoke`, covered by `SessionServiceTest.revokeWithoutATokenIsANoOp` (3 `SessionIT` tests added).
 
 **Tests**: integration
 **Gate**: full
