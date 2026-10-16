@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 14,
+  "next_id": 18,
   "lessons": [
     {
       "id": "L-001",
@@ -238,6 +238,78 @@
       ],
       "created": "2026-10-13T02:20:14Z",
       "last_seen": "2026-10-13T02:20:14Z"
+    },
+    {
+      "id": "L-014",
+      "key": "surviving_mutant::when a page consumes navigation state that an ac depends on test the page itself not only the component that produces the state",
+      "text": "When a page consumes navigation state that an AC depends on, test the page itself, not only the component that produces the state",
+      "signal": "surviving_mutant",
+      "scope": "frontend-pages",
+      "status": "candidate",
+      "features": [
+        "session-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "frontend/src/features/login/LoginPage.tsx:55 (mutant L1) (frontend-pages)"
+      ],
+      "created": "2026-10-16T17:58:23Z",
+      "last_seen": "2026-10-16T17:58:23Z"
+    },
+    {
+      "id": "L-015",
+      "key": "ac_gap::give every negative ui acceptance criterion an explicit test assertion that the element is absent",
+      "text": "Give every negative UI acceptance criterion an explicit test assertion that the element is absent",
+      "signal": "ac_gap",
+      "scope": "frontend-pages",
+      "status": "candidate",
+      "features": [
+        "session-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "spec.md P1 Persist AC 10 (no remember-me) - no assertion (frontend-pages)"
+      ],
+      "created": "2026-10-16T17:58:23Z",
+      "last_seen": "2026-10-16T17:58:23Z"
+    },
+    {
+      "id": "L-016",
+      "key": "spec_precision_gap::when a spec defines a global error toast state whether the failing request s own error toast is suppressed",
+      "text": "When a spec defines a global error toast, state whether the failing request's own error toast is suppressed",
+      "signal": "spec_precision_gap",
+      "scope": "frontend-api",
+      "status": "candidate",
+      "features": [
+        "session-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md Q2; buildMutationOptions.ts:44 toasts the 401 after expiry (frontend-api)"
+      ],
+      "created": "2026-10-16T17:58:23Z",
+      "last_seen": "2026-10-16T17:58:23Z"
+    },
+    {
+      "id": "L-017",
+      "key": "spec_deviation::scope auth redirect criteria to private routes and say what public routes do on session expiry",
+      "text": "Scope auth redirect criteria to private routes and say what public routes do on session expiry",
+      "signal": "spec_deviation",
+      "scope": "frontend-auth",
+      "status": "candidate",
+      "features": [
+        "session-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "tasks.md T12 SPEC_DEVIATION; validation.md Q1 (frontend-auth)"
+      ],
+      "created": "2026-10-16T17:58:23Z",
+      "last_seen": "2026-10-16T17:58:23Z"
     }
   ]
 }

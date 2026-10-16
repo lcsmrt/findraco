@@ -427,6 +427,113 @@ Note: `CONCERNS.md` had no auth entry; a "Session handling — RESOLVED" entry w
 
 ---
 
+## Fix tasks (verification iteration 1)
+
+From `validation.md` (iteration 1, FAIL) and the spec amendment of 2026-10-16 (Expired AC 4 narrowed, AC 9–10 added). Run in order after T14.
+
+```
+F1 → F2 → F3 → F4
+```
+
+### F1: `LoginPage` tests
+
+**What**: `LoginPage.test.tsx` covering the return path, the wrong-credentials message and the absence of "remember me"; fix `LoginPage` only if a test exposes a bug.
+**Where**: `frontend/src/features/login/LoginPage.test.tsx`
+**Depends on**: None (after T14)
+**Reuses**: `AuthProvider.test.tsx` render helpers (MemoryRouter + QueryClient)
+**Requirement**: SESS-03, SESS-12
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Sign-in with `state.from = { pathname: "/plans", search: "?x=1" }` calls `signIn(token)` and navigates to `/plans?x=1` (kills the surviving mutant L1 at `LoginPage.tsx:55`)
+- [ ] Sign-in with no `from` navigates to the home path
+- [ ] A `401` "Invalid username or password." shows that exact toast and does not call `signIn` (Expired AC 8)
+- [ ] The page renders no "remember me" control (Persist AC 10)
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### F2: Remove dead `useGetUserProfile`
+
+**What**: Delete the `useGetUserProfile` hook (no callers since T12); keep the exported `getUserProfile` raw fn.
+**Where**: `frontend/src/api/services/useAuthService.ts`
+**Depends on**: F1
+**Reuses**: none
+**Requirement**: SESS-12
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] No reference to `useGetUserProfile` remains in `frontend/src`
+- [ ] Existing `useAuthService.test.ts` still passes
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### F3: Silent expiry on public pages
+
+**What**: Start-up expiry on a public page clears the session without a toast and without navigating; the expiry toast is shown only when the user is taken off a private page (mid-session expiry, or `PrivateRoute` redirecting after a start-up expiry). Suggested shape: `AuthProvider` records that the session expired instead of toasting at start-up, and `PrivateRoute` shows the toast once when it redirects for that reason.
+**Where**: `frontend/src/app/providers/AuthProvider.tsx`
+**Depends on**: F2
+**Reuses**: T12/T13 code and tests
+**Requirement**: SESS-02, SESS-03
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [ ] Start-up expiry with the app on `/reset-password?token=abc`: stays on that path, no toast, state cleared, hint removed (Expired AC 9)
+- [ ] Start-up expiry with the app on a private path: lands on `/login` with `state.from` = that path + query and the expiry toast shown exactly once (Expired AC 3–4, 6) — rendered through `AuthProvider` + `PrivateRoute` together
+- [ ] Mid-session expiry keeps T12 behavior (toast once + navigate with `from`)
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+
+---
+
+### F4: One message when a request fails on expiry
+
+**What**: When renewal fails with `401`, the interceptor rejects the original request with a recognizable session-expired error, and `buildMutationOptions` skips its error toast for it (caller `onError` still runs).
+**Where**: `frontend/src/api/utils/buildMutationOptions.ts`
+**Depends on**: F3
+**Reuses**: `findracoApi` renewal path (T11)
+**Requirement**: SESS-02
+
+**Tools**:
+
+- MCP: NONE
+- Skill: `api-integration`
+
+**Done when**:
+
+- [ ] `findracoApi.test.ts`: a request whose renewal fails with `401` rejects with the session-expired error (type asserted), for each of three concurrent requests
+- [ ] `buildMutationOptions` test: session-expired error → no `toast.error`, caller `onError` called; any other error → `toast.error` with the resolved message (unchanged)
+- [ ] Build gate passes
+
+**Tests**: unit
+**Gate**: build
+
+---
+
 ## Phase Execution Map
 
 ```

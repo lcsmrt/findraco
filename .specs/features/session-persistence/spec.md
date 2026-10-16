@@ -46,6 +46,8 @@ day.
 | Existing users on deploy | The old local-storage token is discarded; every user signs in once after the deploy | Old tokens have no session to renew; one sign-in is the cost of the migration | y |
 | Expired session records | Deleted when their user next signs in | No scheduler exists in the backend; per-user cleanup on sign-in bounds growth without adding one | y |
 | Login response body | Still returns the access token in the `token` field | Keeps Swagger and scripted API use working | y |
+| Expiry found on a public page (amended 2026-10-16) | The app stays on the page and shows no toast; the expiry toast appears only when the expiry takes the user off a private page | User decision after validation iteration 1: on login, register or reset-password pages the message has no context | y |
+| Failed request's own error after expiry (amended 2026-10-16) | Suppressed; the expiry toast is the only message. The request was not executed by the API; unsaved form input is lost (see Out of Scope) | User decision after validation iteration 1: one message only | y |
 
 **Open questions:** none - all resolved or logged above.
 
@@ -65,11 +67,13 @@ taken to the login page so that I never stare at an empty app wondering where my
 1. WHEN a request to a protected endpoint carries no access token, a malformed one, an invalidly signed one or an expired one THEN the API SHALL respond `401` with body message "Authentication required."  <!-- event-driven -->
 2. WHEN an authenticated user calls an endpoint their plan role or ownership does not allow THEN the API SHALL respond with the same status it responds today (`403` or `404`), never `401`.  <!-- event-driven -->
 3. IF a protected request fails with `401` and the session cannot be renewed THEN the app SHALL discard the access token, clear all cached query data and the active plan, and navigate to `/login`.  <!-- unwanted-behavior -->
-4. WHEN the app navigates to `/login` because the session could not be renewed THEN it SHALL show the toast "Your session expired. Please sign in again."  <!-- event-driven -->
+4. WHEN the app navigates to `/login` from a private page because the session could not be renewed THEN it SHALL show the toast "Your session expired. Please sign in again."  <!-- event-driven -->
 5. IF several requests fail with `401` at the same time and the session cannot be renewed THEN the app SHALL show the expiry toast once and navigate once.  <!-- unwanted-behavior -->
 6. WHEN the user signs in after an expiry redirect THEN the app SHALL navigate to the path and query string the user was on.  <!-- event-driven -->
 7. WHILE the app is resolving the session on start-up the app SHALL render a full-page loading state instead of any private page.  <!-- state-driven -->
 8. WHEN sign-in fails with wrong credentials THEN the app SHALL show "Invalid username or password." and SHALL NOT attempt a renewal or show the expiry toast.  <!-- event-driven -->
+9. WHILE the user is on a public page (login, register, forgot password, reset password), WHEN the session is found expired on start-up THEN the app SHALL stay on that page, clear the session as in AC 3 and SHALL NOT show the expiry toast.  <!-- complex; amended 2026-10-16 -->
+10. IF a request fails because the session could not be renewed THEN the app SHALL NOT show that request's own error toast.  <!-- unwanted-behavior; amended 2026-10-16 -->
 
 **Independent Test**: Sign in, revoke the session in the database, wait for the access token to expire
 (or shorten its lifetime in dev), click anything: the app lands on `/login` with the toast, and signing in
@@ -92,7 +96,7 @@ after a month without opening the app.
 4. IF several protected requests fail with `401` at the same time and the session is valid THEN the app SHALL renew the session once and retry each of them.  <!-- unwanted-behavior -->
 5. WHEN a session is renewed THEN the system SHALL set its expiry to 30 days after the renewal.  <!-- event-driven -->
 6. WHEN the app is opened (new tab, reload, reopened browser or installed app) while the session is valid THEN the app SHALL show the requested private page without showing the login page.  <!-- event-driven -->
-7. IF a renewal is requested for a session that expired, was revoked or belongs to a user that no longer exists THEN the API SHALL respond `401` and the app SHALL behave as in "Expired session" AC 3–4.  <!-- unwanted-behavior -->
+7. IF a renewal is requested for a session that expired, was revoked or belongs to a user that no longer exists THEN the API SHALL respond `401` and the app SHALL behave as in "Expired session" AC 3–4 on a private page and AC 9 on a public page.  <!-- unwanted-behavior -->
 8. The credential that renews the session SHALL be stored only in an `HttpOnly`, `Secure`, `SameSite=Strict` cookie scoped to the auth endpoints, and SHALL NOT appear in any response body.  <!-- ubiquitous -->
 9. The app SHALL NOT write the access token or the renewal credential to `localStorage`, `sessionStorage` or IndexedDB.  <!-- ubiquitous -->
 10. The login page SHALL NOT offer a "remember me" option.  <!-- ubiquitous -->
@@ -175,7 +179,7 @@ password, the other is sent to `/login` within 15 minutes.
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
 | SESS-01 | P1 Expired (AC 1–2), `401` vs. `403/404` | Execute | Implementing |
-| SESS-02 | P1 Expired (AC 3–5), clear, redirect, single toast | Execute | Implementing |
+| SESS-02 | P1 Expired (AC 3–5, 9–10), clear, redirect, single message | Execute | Implementing |
 | SESS-03 | P1 Expired (AC 6–8), return path, start-up loading, bad credentials | Execute | Implementing |
 | SESS-04 | P1 Persist (AC 7) + Edge (network failure, public endpoints), renewal failure handling | Execute | Implementing |
 | SESS-05 | P1 Persist (AC 3–4), silent renewal and retry | Execute | Implementing |

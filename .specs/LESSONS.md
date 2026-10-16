@@ -92,6 +92,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: tasks.md U3 SPEC_DEVIATION member palette (frontend-design)
 - last seen: 2026-10-13T02:20:14Z
 
+### L-014 - When a page consumes navigation state that an AC depends on, test the page itself, not only the component that produces the state
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend-pages` · harmful: 0
+- features: session-persistence
+- evidence: frontend/src/features/login/LoginPage.tsx:55 (mutant L1) (frontend-pages)
+- last seen: 2026-10-16T17:58:23Z
+
+### L-015 - Give every negative UI acceptance criterion an explicit test assertion that the element is absent
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend-pages` · harmful: 0
+- features: session-persistence
+- evidence: spec.md P1 Persist AC 10 (no remember-me) - no assertion (frontend-pages)
+- last seen: 2026-10-16T17:58:23Z
+
+### L-016 - When a spec defines a global error toast, state whether the failing request's own error toast is suppressed
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `frontend-api` · harmful: 0
+- features: session-persistence
+- evidence: validation.md Q2; buildMutationOptions.ts:44 toasts the 401 after expiry (frontend-api)
+- last seen: 2026-10-16T17:58:23Z
+
+### L-017 - Scope auth redirect criteria to private routes and say what public routes do on session expiry
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `frontend-auth` · harmful: 0
+- features: session-persistence
+- evidence: tasks.md T12 SPEC_DEVIATION; validation.md Q1 (frontend-auth)
+- last seen: 2026-10-16T17:58:23Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
