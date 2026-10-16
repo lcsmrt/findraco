@@ -116,6 +116,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: tasks.md T12 SPEC_DEVIATION; validation.md Q1 (frontend-auth)
 - last seen: 2026-10-16T17:58:23Z
 
+### L-018 - For a one-shot notification, test that repeating the triggering condition later in the same session does not show it again
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend-auth` · harmful: 0
+- features: session-persistence
+- evidence: frontend/src/app/providers/AuthProvider.tsx:113 (mutant A15, iteration 2) (frontend-auth)
+- last seen: 2026-10-16T20:19:27Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

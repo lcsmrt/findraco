@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 18,
+  "next_id": 19,
   "lessons": [
     {
       "id": "L-001",
@@ -310,6 +310,24 @@
       ],
       "created": "2026-10-16T17:58:23Z",
       "last_seen": "2026-10-16T17:58:23Z"
+    },
+    {
+      "id": "L-018",
+      "key": "surviving_mutant::for a one shot notification test that repeating the triggering condition later in the same session does not show it again",
+      "text": "For a one-shot notification, test that repeating the triggering condition later in the same session does not show it again",
+      "signal": "surviving_mutant",
+      "scope": "frontend-auth",
+      "status": "candidate",
+      "features": [
+        "session-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "frontend/src/app/providers/AuthProvider.tsx:113 (mutant A15, iteration 2) (frontend-auth)"
+      ],
+      "created": "2026-10-16T20:19:27Z",
+      "last_seen": "2026-10-16T20:19:27Z"
     }
   ]
 }
