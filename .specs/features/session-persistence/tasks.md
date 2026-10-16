@@ -478,9 +478,9 @@ Note: the wrong-credentials test exposed a bug that predates this feature: `onSu
 
 **Done when**:
 
-- [ ] No reference to `useGetUserProfile` remains in `frontend/src`
-- [ ] Existing `useAuthService.test.ts` still passes
-- [ ] Quick gate passes
+- [x] No reference to `useGetUserProfile` remains in `frontend/src` (grep: none)
+- [x] Existing `useAuthService.test.ts` still passes
+- [x] Quick gate passes (348 passing; `tsc -b` clean)
 
 **Tests**: unit
 **Gate**: quick

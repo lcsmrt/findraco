@@ -52,19 +52,6 @@ export const getUserProfile = async (): Promise<User> => {
 };
 
 /**
- * Hook for fetching the authenticated user's profile.
- */
-export const useGetUserProfile = (
-  options?: Omit<UseQueryOptions<User>, "queryKey">,
-) => {
-  return useQuery({
-    queryFn: getUserProfile,
-    queryKey: ["profile"],
-    ...options,
-  });
-};
-
-/**
  * Sends a user registration request.
  * @param params Registration data.
  * @returns Created user.
