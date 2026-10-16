@@ -450,11 +450,13 @@ F1 → F2 → F3 → F4
 
 **Done when**:
 
-- [ ] Sign-in with `state.from = { pathname: "/plans", search: "?x=1" }` calls `signIn(token)` and navigates to `/plans?x=1` (kills the surviving mutant L1 at `LoginPage.tsx:55`)
-- [ ] Sign-in with no `from` navigates to the home path
-- [ ] A `401` "Invalid username or password." shows that exact toast and does not call `signIn` (Expired AC 8)
-- [ ] The page renders no "remember me" control (Persist AC 10)
-- [ ] Quick gate passes
+- [x] Sign-in with `state.from = { pathname: "/plans", search: "?x=1" }` calls `signIn(token)` and navigates to `/plans?x=1` (kills the surviving mutant L1 at `LoginPage.tsx:55`; re-run: dropping `from.search` fails this test)
+- [x] Sign-in with no `from` navigates to the home path
+- [x] A `401` "Invalid username or password." shows that exact toast and does not call `signIn` (Expired AC 8)
+- [x] The page renders no "remember me" control (Persist AC 10)
+- [x] Quick gate passes (`LoginPage.test.tsx`: 4 tests; suite 348 passing)
+
+Note: the wrong-credentials test exposed a bug that predates this feature: `onSubmit` let the rejected `mutateAsync` escape `handleSubmit` as an unhandled promise rejection (Vitest fails the run on it). `LoginPage` now ends the submit when the login fails; `useLogin` already shows the error toast. The test renders the real `useLogin` + `buildMutationOptions` with `findracoApi` mocked, so the toast assertion covers the page's actual message path.
 
 **Tests**: unit
 **Gate**: quick

@@ -50,11 +50,13 @@ export const Login = () => {
   const from = (location.state as LoginLocationState | null)?.from;
 
   const onSubmit = handleSubmit(async (credentials: LoginSchema) => {
-    await login({ body: credentials }).then(async (res) => {
-      await signIn(res.token);
-      navigate(from ? `${from.pathname}${from.search}` : PATHS.home, {
-        replace: true,
-      });
+    // useLogin already shows the failure as a toast.
+    const res = await login({ body: credentials }).catch(() => null);
+    if (!res) return;
+
+    await signIn(res.token);
+    navigate(from ? `${from.pathname}${from.search}` : PATHS.home, {
+      replace: true,
     });
   });
 
