@@ -432,7 +432,7 @@ Note: `CONCERNS.md` had no auth entry; a "Session handling — RESOLVED" entry w
 From `validation.md` (iteration 1, FAIL) and the spec amendment of 2026-10-16 (Expired AC 4 narrowed, AC 9–10 added). Run in order after T14.
 
 ```
-F1 → F2 → F3 → F4
+F1 → F2 → F3 → F4 → F5
 ```
 
 ### F1: `LoginPage` tests
@@ -538,6 +538,29 @@ Existing test changed: T12's "goes anonymous with one expiry toast and drops the
 Note: the error is `SessionExpiredError` in its own module, `api/clients/sessionExpiredError.ts`, carrying the request's own `401` as `original`. `buildMutationOptions` imports it from there, not from `findracoApi.ts`: several tests mock the client module, and a real `useLogin` rendered against that mock would otherwise see an undefined class. A renewal network failure still rejects with the original `AxiosError` (existing test unchanged). The existing concurrent-expiry test in `findracoApi.test.ts` gained the per-request type and `original` assertions; nothing was removed. 5 behavior mutants of the change were killed.
 
 Open (outside F4's listed scope, for the orchestrator): `DeleteCategoryDialog` sets `showErrorToast: false` and toasts from its own `onError` for unclassified errors, so a delete that fails on expiry would still show a second toast ("The session could not be renewed."). Expired AC 10 is met for every mutation that relies on `buildMutationOptions`, not for that caller.
+
+**Tests**: unit
+**Gate**: build
+
+---
+
+### F5: One message on category delete after expiry
+
+**What**: `classifyDeleteError` recognizes `SessionExpiredError` as `"session-expired"`, and `DeleteCategoryDialog`'s own `onError` (it opts out of the shared error toast) returns without a toast for it. Found by the F4 worker.
+**Where**: `frontend/src/features/home/components/categories/DeleteCategoryDialog.tsx`
+**Depends on**: F4
+**Reuses**: `SessionExpiredError` (F4)
+**Requirement**: SESS-02
+
+**Tools**:
+
+- MCP: NONE
+- Skill: NONE
+
+**Done when**:
+
+- [x] `DeleteCategoryDialog.test.ts`: `classifyDeleteError(new SessionExpiredError(<401>))` is `"session-expired"`; existing 409/other cases unchanged
+- [x] Build gate passes
 
 **Tests**: unit
 **Gate**: build

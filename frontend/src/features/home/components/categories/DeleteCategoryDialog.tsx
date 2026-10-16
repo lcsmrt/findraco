@@ -7,6 +7,7 @@ import {
   useDeleteFinancialTransactionCategory,
   useGetCategoryUsage,
 } from "@/api/services/useFinancialTransactionCategoryService";
+import { SessionExpiredError } from "@/api/clients/sessionExpiredError";
 import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
 import { Button } from "@/components/button/Button";
 import {
@@ -79,7 +80,8 @@ export const describeUsage = ({
 /** Tells the two 409s of a category delete apart. */
 export const classifyDeleteError = (
   error: unknown,
-): "has-children" | "in-use" | null => {
+): "has-children" | "in-use" | "session-expired" | null => {
+  if (error instanceof SessionExpiredError) return "session-expired";
   if (!(error instanceof AxiosError) || error.response?.status !== 409) {
     return null;
   }
@@ -119,8 +121,11 @@ export const DeleteCategoryDialog = ({
       showErrorToast: false,
       onSuccess: () => onOpenChange(false),
       onError: (error) => {
+        const kind = classifyDeleteError(error);
+        // The session-expired handler already told the user.
+        if (kind === "session-expired") return;
         const message = resolveErrorMessage({ error });
-        if (classifyDeleteError(error) == null) {
+        if (kind == null) {
           toast.error(message);
           return;
         }

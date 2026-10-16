@@ -1,5 +1,6 @@
 import { AxiosError, AxiosHeaders } from "axios";
 import { describe, expect, it } from "vitest";
+import { SessionExpiredError } from "@/api/clients/sessionExpiredError";
 import type { CategoryUsage, FinancialTransactionCategory } from "@/api/dtos";
 import {
   buildDeleteRequest,
@@ -153,6 +154,14 @@ describe("classifyDeleteError", () => {
         ),
       ),
     ).toBe("in-use");
+  });
+
+  it("recognizes a failure caused by an expired session", () => {
+    expect(
+      classifyDeleteError(
+        new SessionExpiredError(httpError(401, "Authentication required.")),
+      ),
+    ).toBe("session-expired");
   });
 
   it("ignores other errors", () => {
