@@ -171,6 +171,16 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - Cost: ~340 conversions without autofix. A dedicated mechanical slice (a codemod is worth trying). `CLAUDE.md` ("`export const Foo = (props) => {}`") and the component skill are rewritten.
 - Myth noted for the skill: hoisting is not needed to keep helpers below the component, since a helper defined below is already loaded by render time.
 
+### E3 — `FieldError` always takes `errors={[…]}`
+
+- One form. The component already renders nothing without an error and lists several. The auth pages' `{errors.x && <FieldError>{…}</FieldError>}` re-implements that by hand. No ready lint rule exists, so it goes in the forms skill; the fix rides on the auth refactor (C5).
+
+### E4a — `--warning` token; meaningful colour only from tokens, lint-enforced
+
+- Add `--warning` / `--warning-foreground` to both themes, next to `success`. Replace the two hand-written ambers (`CategorySpendingList` amber-700/400, `TransactionFormDrawer` amber-600/400) with `text-warning`, and the `Badge` hand-written greens with `success`.
+- Rule: colour that carries meaning comes from a theme token, never from the raw palette.
+- Lint without a plugin (Tailwind 4 plugin support is uneven): built-in `no-restricted-syntax` with a regex over string literals and template elements, e.g. `(text|bg|border|ring|fill|stroke|outline|decoration)-(red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone)-\d+`, with a message pointing to the tokens. It catches `className="…"` and `cn(…)` arguments alike. Calibrate the regex at implementation (e.g. whether neutral greys are allowed).
+
 ---
 
 ## Process notes
