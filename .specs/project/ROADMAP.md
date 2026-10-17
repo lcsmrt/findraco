@@ -30,6 +30,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 | - | ------- | --- | ------ |
 | M5-01 | **Invoice (NF) import / reader** | Eliminates typing purchases manually; partly covered once Claude can read a receipt and create transactions via MCP (M5-05). | New — M5 |
 | M4-05 | **Server-sent invite emails** | Removes the manual link-copy step from Shared Plans; needed for real multi-user adoption. | STATE.md deferred |
+| M5-10 | **Internationalisation (i18n)** | User plans it soon (2026-10-16): UI copy in more than one language, number/date/money formatting by the viewer's locale, money in the plan's currency. The frontend standards route all money formatting through one source (B6), so screens do not change. | User — 2026-10-16 |
 | M4-06 | **Alerts / notifications** | Warn when balance goes negative or a category limit is projected to break; turns the dashboard from informative to actionable. | M4 deferred / Future |
 | M4-07 | **Permanent plan deletion + retention** | Soft-delete is done; owners need a real purge (and possibly restore) affordance. | STATE.md deferred |
 | M4-08 | **Recurring intervals beyond MONTHLY** | WEEKLY/BIWEEKLY/YEARLY support; small UX unlock once the recurrence model is solid. | M4 deferred |

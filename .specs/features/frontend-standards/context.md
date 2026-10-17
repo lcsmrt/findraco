@@ -128,6 +128,14 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - `CreatePlanDialog` and `RenamePlanDialog` merge into `PlanNameDialog` with a required `mode: "create" | "rename"`. Title and submit derive from `mode`, as the existing multi-mode form convention says.
 - A "rule of three" (extract on the third occurrence) was discussed and **not adopted**. The user prefers to standardise now and split later if the cases ever need to diverge.
 
+### B6 — One money-formatting logic, ready for i18n
+
+- One money module: `formatMoney(value)` for display, and the same engine drives the `CurrencyInput` mask (B2). Both read locale and currency from **one source**. Today that source is a constant in one place (`pt-BR`, `BRL`). With i18n it becomes the user's locale plus the plan's (or user's) currency, and no screen changes.
+- Locale and currency are independent: the viewer's language sets the formatting, the data sets the currency. The 11-entry currency → locale table in `maskCurrency` goes away, since it is conceptually wrong under i18n and `Intl` formats any currency in any locale.
+- The three local `money` shortcuts go away.
+- `Amount` component (root; used by transactions and overview): value + type → signed, toned (red debit / green credit), monospace. Uses `formatMoney`.
+- Context: the user plans to internationalise the app soon (ROADMAP M5-10).
+
 ---
 
 ## Process notes
