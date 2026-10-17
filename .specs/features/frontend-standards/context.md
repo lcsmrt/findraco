@@ -53,6 +53,25 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - Import rule: outside `app/`, code may import only `@/app/providers/*` (global context hooks: `useAuth`, `usePlanContext`, `useTheme`) and `@/app/routing/paths`. Layouts and the router are never imported from outside `app/`. `app/` is the only layer that may import features.
 - Rejected: shell as a feature. It needs to import other features, so it would start life as an exception to "features never import features".
 
+### C1 — Component files export only components; concrete extraction triggers
+
+- A component `.tsx` exports only components (`react-refresh/only-export-components`). Fast Refresh needs this to swap components in place and keep state; a mixed file forces a full reload.
+- Non-exported helpers may stay in the component's file (rung zero of the ladder) unless they hit a trigger. A helper moves to its own `.ts` module, with a test, when it has any of:
+  1. a branch or loop that computes a value (`if`, ternary, `switch`, `reduce`, `map` with logic); a ternary that only picks a className does not count;
+  2. arithmetic on money, dates or quantities;
+  3. a business rule, i.e. something the spec defines (an AC or a requirement ID);
+  4. more than 10 lines.
+- What stays inside: one-expression formatters, className builders, constants, JSX-only sub-components.
+- Example: the transaction form's schema and mappers become `transactionForm.ts`.
+
+### D4 — Cap on component logic, not file size (user's refinement)
+
+- A local ESLint rule (in `eslint.config.js`, no package) limits a component, meaning a PascalCase function returning JSX, to **60 lines from the start of its body to its main `return`**. Above that, extract a `useXxx` hook. The cap is hard, with no escape, because extracting logic into a hook is always possible.
+- The same rule forbids IIFEs inside JSX (`{(() => …)()}`), which hide logic from the count.
+- No file-size cap. A large JSX tree can be a legitimately rich screen; `CategorySpendingList.tsx` (325 lines, 12 small sub-components) is fine.
+- **No bypasses anywhere:** `linterOptions.noInlineConfig: true` makes ESLint ignore `eslint-disable` comments, and `@typescript-eslint/ban-ts-comment` forbids `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck`. If a number proves wrong, it changes for everyone; no per-file exceptions.
+- Residual cost: the local rule is code we own (~40 lines plus a test).
+
 ---
 
 ## Process notes
