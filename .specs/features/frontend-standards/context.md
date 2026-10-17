@@ -37,10 +37,21 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - New primitive: install with the shadcn CLI, then move it into `<family>/base/` (the CLI writes flat files).
 - Lint (built-in `no-restricted-imports`, no new dependency):
   - `src/components/**/base/**` must not import `@/features/*`, `@/app/*` or `@/api/*`.
-  - `src/components/**` must not import `@/features/*` or `@/app/*` (C6).
+  - `src/components/**` must not import `@/features/*`, nor anything under `@/app/*` except `@/app/providers/*` and `@/app/routing/paths` (C6).
   - `src/features/**` must not import `@/features/*`. Imports inside a feature are relative by convention, so any `@/features/…` import is cross-feature (colocation ladder).
 - Residual cost, accepted: one extra folder level for families that are only a primitive. Revisit if it proves noisy.
 - Path to this decision: a `ui/` split was proposed to protect "untouchable" primitives. The user questioned the premise, it did not hold, and the proposal was withdrawn. The user then kept the idea of a mechanical boundary, which became the `base/` marker plus lint.
+
+### C5 — One `auth` feature
+
+- `login/`, `registerUser/`, `forgotPassword/` and `resetPassword/` merge into `src/features/auth/` with four pages. The shared `AuthCard` and `PasswordInput` (B4) live in `auth/components/`, so their location states their real scope. Without the merge, the ladder would push them to the root.
+
+### C6 — App shell lives in `src/app/layout/`
+
+- `MainLayout`, `AuthLayout`, `Navbar`, the `Toaster` (sonner) and mobile-navigation's bottom bar and tab row move to `src/app/layout/`. Only the router uses them (ladder), and they assemble features, so they must sit above them. In `src/components/` they would create a two-way dependency with features.
+- `ThemeToggle` stays in `src/components/` (used by the shell and the 404 page).
+- Import rule: outside `app/`, code may import only `@/app/providers/*` (global context hooks: `useAuth`, `usePlanContext`, `useTheme`) and `@/app/routing/paths`. Layouts and the router are never imported from outside `app/`. `app/` is the only layer that may import features.
+- Rejected: shell as a feature. It needs to import other features, so it would start life as an exception to "features never import features".
 
 ---
 
