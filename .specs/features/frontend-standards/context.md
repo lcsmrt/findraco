@@ -72,6 +72,18 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - **No bypasses anywhere:** `linterOptions.noInlineConfig: true` makes ESLint ignore `eslint-disable` comments, and `@typescript-eslint/ban-ts-comment` forbids `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck`. If a number proves wrong, it changes for everyone; no per-file exceptions.
 - Residual cost: the local rule is code we own (~40 lines plus a test).
 
+### C2 — An extracted module sits next to its consumer
+
+- A `.ts` module used by one component sits next to it (`components/overview/spendingRows.ts` beside `CategorySpendingList.tsx`, with its test). A second consumer in the feature lifts it to the feature's `utils/`, and from there it follows the ladder to `src/utils/`.
+- The folder states the scope, not the kind: one principle for components, hooks and helpers. This replaces the old "pure helpers always go in `utils/`" rule.
+- Residual cost: `components/` folders mix `.tsx` and `.ts`.
+
+### C3 — Provider pattern: `XxxProvider.tsx` + `useXxx.ts`
+
+- Every context provider is two files. `XxxProvider.tsx` exports only the Provider component. `useXxx.ts` holds the `createContext` object and the hook, which throws when used outside the provider.
+- Why: (1) a file exporting a Provider and a hook defeats Fast Refresh, and re-running it calls `createContext()` again, producing a new context object that already-mounted consumers do not match ("must be used within a provider" during dev); (2) consumers import only the hook, so Provider internals never touch them; (3) no exception to C1.
+- Applies to the 6 current providers (`app/providers/*` ×4, `CategoryFormSheet`, `SeriesScopeDialog`) and to future ones.
+
 ---
 
 ## Process notes
