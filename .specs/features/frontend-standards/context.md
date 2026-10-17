@@ -1,8 +1,8 @@
 # Frontend Standards Context
 
-**Gathered:** 2026-10-16 (in progress)
+**Gathered:** 2026-10-16 to 2026-10-17
 **Input:** `.specs/codebase/frontend-quality-audit.md`
-**Status:** Discussing. Each audit finding is reviewed one at a time (user, 2026-10-16), in dependency order: structure (C) → components (B) → separation (D) → conventions (E) → tests and stories (F) → gates (G).
+**Status:** Discussion complete (2026-10-17). Every audit finding was reviewed one at a time with the user. Next: Specify (`spec.md`) with the refactor slices.
 
 ---
 
@@ -229,6 +229,26 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - **E2E smoke tests (Playwright, already installed):** 3–5 critical journeys (sign in, add a transaction, see it on the Overview, switch plans) against the real backend and DB. Sequenced **after** the ROADMAP task "local dev database in Docker", since E2E cannot run against the database `mvn verify` empties.
 - Not adopted now: visual regression (story screenshots). Baselines would churn during the UX rounds; revisit when they slow down.
 - Coverage numbers can be gamed (cover a branch without asserting). The Verifier's mutation sensor is the counterweight.
+
+### F3 — Storybook configuration
+
+- Stories import types from the framework package `@storybook/react-vite`, not the renderer `@storybook/react` (15 files). Remove `@storybook/addon-backgrounds` from `.storybook/main.ts`, since it is core in Storybook 9. Set `a11y: { test: "error" }` in `preview.tsx` (F1).
+
+### G1 — Lint is green on `main`, always
+
+- No warning phase. Each new rule lands in the same slice, and the same commit, that fixes its violations. The first slice clears today's 66 errors, most of which fall out of C1, C3 and F3. Until a rule's slice lands, that standard holds only through the skill. A short, known window.
+
+### G2 — Gates before production
+
+- **CI on GitHub Actions** (free and unlimited, since `lcsmrt/finsight` is public; a self-hosted runner on the VPS is rejected because it would compete with production, and GitHub advises against self-hosted runners on public repos), on every push:
+  - frontend job: `lint`, `tsc` (via `build`), `vitest` with the `unit` and `storybook` projects (installs the Playwright browser), the 90% branch-coverage gate on logic and hooks, and the story/test sibling scripts;
+  - backend job: `./mvnw test` (unit tests, no DB). The full `./mvnw verify` with `*IT` joins once the local Postgres in Docker exists, via a CI service container.
+- **Deploy depends on CI:** the deploy job `needs` both CI jobs. A red commit never reaches production.
+- **Local hooks via husky.** It is already installed (`prepare` script), but `.husky/` has no hooks. `pre-commit` runs `lint-staged` (lint on changed files). `commit-msg` runs the tlc `check_commit.py` (Conventional Commits). Value here: feedback in seconds, before a broken commit exists, which matters with ~156 commits a month, mostly by agents. Hooks can be skipped with `--no-verify`; CI cannot, and CI is the real guarantee.
+
+### A1–A3 — Root causes, closed by the above
+
+- A1 (no story rule) → F1. A2 (no test rule) → F2. A3 (rules exist but nothing enforces them) → the lint rules recorded above, plus G1 and G2.
 
 ---
 
