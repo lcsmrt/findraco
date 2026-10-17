@@ -136,6 +136,23 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - `Amount` component (root; used by transactions and overview): value + type → signed, toned (red debit / green credit), monospace. Uses `formatMoney`.
 - Context: the user plans to internationalise the app soon (ROADMAP M5-10).
 
+### B7 — `usePlanPermissions()`
+
+- A hook in `src/hooks/` (used by several features) returns named capabilities that mirror `PlanAuthorization.java`: `canCreateTransactions`, `canAttributeToOthers`, `canManageCategories`, `canManagePlan`. Screens ask "may I?" instead of "what is my role?". The rules live in one place, with a test over the role × capability matrix. It also handles "role still loading" once (mobile-navigation edge case).
+- Replaces the 5 inline `myRole === …` checks.
+- Residual cost, accepted: the rules are still duplicated between backend and frontend. An endpoint returning capabilities would remove that, but is not worth it today.
+
+### D1 (+ B8) — `TransactionFormDrawer` decomposition
+
+- Mostly dictated by earlier rules: schema and mappers → `transactionForm.ts` with tests (C1, C2); the 4 mutations and the series-scope flow → `useTransactionFormSubmit` (D4); IIFEs → `CurrencyInput`, `NumberField` and a tested helper for "last installment" (B2, D4, C1); mode buttons → `ToggleGroup` (B1); skeleton → `FormSheet` (B3); End date and Number of installments, written twice today, become one field component each, used by create and series edit (B8).
+- New: the items list uses `useFieldArray` (`ItemsField`), replacing the manual array rebuild on every keystroke and the repeated `watch("items")` that re-renders the whole form.
+- Target: the main component becomes ~150–250 lines of section composition. It is its own refactor slice, guarded by `TransactionFormDrawer.test.ts` and `.series.test.ts`.
+
+### D2 — `CategoryFormSheet` decomposition, and the `useFieldArray` rule
+
+- By rule: helpers, schema and mappers → `categoryForm.ts` (C1, C2); provider → `CategoryFormSheetProvider.tsx` + `useCategoryFormSheet.ts` (C3); logic → `useCategoryFormSubmit` (D4); skeleton → `FormSheet` (B3); `CurrencyInput` and `ToggleGroup` in the limit fields (B2, B1). It is its own refactor slice.
+- **Rule (forms skill): every dynamic list inside a form uses `useFieldArray`.** It applies to transaction items, `memberLimits` (`CategoryLimitFields`) and `participants` (`AttributionFields`, 4 manual `setValue("participants", …)` today).
+
 ---
 
 ## Process notes
