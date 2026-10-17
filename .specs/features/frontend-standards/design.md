@@ -13,7 +13,7 @@
 1. `eslint.config.js` composition (STD-02; base for STD-05/06/08/09/12) — **decided**
 2. CI and deploy layout, husky hooks (STD-03) — **decided**
 3. MSW setup and the session-refresh test (STD-04) — **decided**
-4. Where the home filter state lands when `features/home` is removed (STD-05)
+4. Where the home filter state lands when `features/home` is removed (STD-05) — **decided**
 5. `CurrencyInput` API and the locale/currency source of `formatMoney` (STD-06)
 6. `Heading`/`Text` variant set (STD-08)
 7. Story and test gate scripts (STD-10/11)
@@ -35,10 +35,10 @@
 
 | Glob | `no-restricted-imports` | `no-restricted-syntax` |
 | --- | --- | --- |
-| `src/**` except `src/app/**` | `@/app/layout/*`, `@/app/routing/*` except `paths` | palette + typography + raw `<p>`/`<hN>` |
+| `src/**` except `src/app/**` | all of `@/app/*` except `providers/*` and `routing/paths` (C6 wording; covers `app/home`, see decision 4) | palette + typography + raw `<p>`/`<hN>` |
 | `src/app/**` | — | palette + typography + raw `<p>`/`<hN>` |
 | `src/features/**` | the above + `@/features/*` | same |
-| `src/components/**` | the above + `@/features/*`, `@/app/*` except `providers/*` and `routing/paths` | same |
+| `src/components/**` | the above + `@/features/*` | same |
 | `src/components/**/base/**` | the above + `@/api/*`, all of `@/app/*` | **palette only** |
 
 - A config test calls `ESLint#calculateConfigForFile` on one representative path per layer and asserts every expected fragment is active. A forgotten fragment becomes a red test instead of a silent gap.
@@ -109,6 +109,34 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 **Residual cost.** Screen tests start more verbose; scenarios absorb most of it. Handler files are code to maintain.
 
 **Reversibility.** Medium: switching models later rewrites every flow test's setup, hence deciding before the first one.
+
+---
+
+### 4. Home filter state is split by owner; the page, gate and storage move to `src/app/home/`
+
+**Problem.** STD-05 AC 1 removes `features/home`, and STD-05 runs before mobile-navigation, so the filter state needs its final home now (C4 and C9 had deferred it to mobile-navigation's Design). Today one module, `homeFilterParams.ts`, and one hook, `useHomeFilters`, hold the tab and plan params, the Overview params (`period`, `periodFrom/To`, `overviewMember`, `Period`, `resolvePeriodDates`) and the Transactions params (`type`, `category`, `q`, `sort`, `size`, …). Overview and Transactions share no filter; Categories reads none.
+
+**Decision.**
+
+| Piece | Destination |
+| --- | --- |
+| Overview params + `useOverviewFilters` | `features/overview/filters/` |
+| Transactions params + `useTransactionFilters` | `features/transactions/filters/` |
+| `HomePage` (tab composition), `HomeFiltersGate`, tab and plan params + `useHomeTab`, `filterStorage` | `src/app/home/` (they know all three features; only `app/` may import features; storage lives with the state it persists, C9) |
+| `withParams` and the "update this key group" mechanics | `src/hooks/useSearchParamGroup.ts` (generic, used by two features) |
+
+- Behaviour is unchanged: tab switches push history, filter updates replace, the gate saves and restores the whole query string per (user, plan). The gate builds its key list from the lists each feature exports.
+- Mobile-navigation later moves only the tab row from `app/home/` to `app/layout/`; the filter state is already final.
+- Decision 1's import rule for code outside `app/` becomes C6's literal wording ("all of `@/app/*` except `providers/*` and `routing/paths`"), which covers `app/home` and any future `app/` folder. It tightens STD-05 AC 8, which names only `layout` and `routing`.
+
+**Rejected.**
+
+- Keep it together at the root (`src/hooks/useHomeFilters.ts`, `src/utils/homeFilterParams.ts`): smallest move, but a root module would know two features' private filters, couple them through a file that represents nothing shared, and leave `filterStorage` without an obvious home.
+- Interim location now, final in mobile-navigation: two moves; its spec keeps the URL model and persistence (NAV-01 AC 5), so nothing would change the destination.
+
+**Residual cost.** Three hooks instead of one. The gate depends on each feature's exported key list; a param missing from its list would not count as a home param, so `HomeFiltersGate.test.tsx` gains a case built from the exported lists.
+
+**Reversibility.** High: file moves with no behaviour change.
 
 ---
 
