@@ -215,6 +215,21 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - **Enforcement:** `npm test` runs the `storybook` vitest project too; addon-a11y set to fail (`a11y: { test: "error" }`). A gate script requires a sibling `.stories.tsx` for every component file that does not directly import `@/api/services`, `@/app/providers` or `react-router-dom`. It cannot see our hooks that wrap those, so it errs on the strict side and pushes the container/view split; refine later if it gets in the way.
 - Costs accepted: stories for trivial components; a11y in error mode surfaces existing issues at once; tests run slower (real browser).
 
+### F2 — What gets which test
+
+| What | Covered by | Enforced by |
+| --- | --- | --- |
+| Logic: `.ts` modules (C1 triggers), our hooks with logic, mappers, service hooks | unit tests (Vitest; `renderHook` for hooks) | gate script: every logic `.ts` has a sibling `.test.ts` (DTOs, types and constants exempt); **≥ 90% branch coverage on logic modules and hooks only**, never global |
+| Visual: presentational components | stories (F1), with basic interactions in `play` | F1 script |
+| Flows: what a container orchestrates, as the spec's ACs describe | **integration tests**: Testing Library `render` of the real screen (providers, TanStack Query cache, hooks, `findracoApi` with its interceptors), with **only the network simulated by MSW** | tlc execution contract + Verifier (spec-anchored check, mutants) |
+
+- Rule: flow tests never `vi.mock` our own modules. Today's service-hook tests mock `findracoApi`, which skips the session-refresh interceptor, base URL and param serialisation. MSW intercepts at the network, is independent of the HTTP client, and its handlers can be reused in stories or for running without a backend.
+- Testing Library is the query/interaction library in both places: `storybook/test` re-exports it for `play`, and integration tests use `render` directly. No duplication: presentational interactions live in `play`, not in a second test.
+- **Generated API types (OpenAPI):** frontend DTOs are generated from the backend's OpenAPI schema (springdoc/Swagger) instead of hand-written, and MSW handlers are typed with them, so a handler that drifts from the real API fails to compile. This is the Java-backend equivalent of sharing TS types with a Node backend. Pact-style contract tests are not needed: same team, one deploy. It touches the backend too, so it is its own slice. Caveat: generated types still describe JSON (a `Date` arrives as a string).
+- **E2E smoke tests (Playwright, already installed):** 3–5 critical journeys (sign in, add a transaction, see it on the Overview, switch plans) against the real backend and DB. Sequenced **after** the ROADMAP task "local dev database in Docker", since E2E cannot run against the database `mvn verify` empties.
+- Not adopted now: visual regression (story screenshots). Baselines would churn during the UX rounds; revisit when they slow down.
+- Coverage numbers can be gamed (cover a branch without asserting). The Verifier's mutation sensor is the counterweight.
+
 ---
 
 ## Process notes
