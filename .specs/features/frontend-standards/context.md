@@ -196,6 +196,16 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - Known limits: text rendered by libraries (Recharts labels, toast content) is out of the linter's reach; pass tokens there.
 - Path: the agent first recommended "components only for structural roles" (C), weighing migration effort. The user's criterion is quality over effort, and enforced typography removes C's residual inconsistency, so the agent changed its recommendation. Shadcn's "Typography" is a CSS sheet (Typeset) for prose, not components.
 
+### E5 — Comments explain why, in words, without spec IDs
+
+- JSDoc documents what is exported (the contract).
+- `//` is allowed only for **why**: a constraint, a non-obvious consequence, a decision someone might otherwise "simplify" and break. The sentence must carry the context ("if this changes, X breaks"), not just label a rule.
+- A comment that narrates **what** the code does is replaced by a better name or an extraction.
+- No spec/requirement IDs in comments or JSDoc. Traceability to the spec lives in test names. Colocated tests (C2) sit next to the code, cite the ACs, and break when the behaviour changes; a comment never does. The current IDs (e.g. `(CAT-15)`, `(UX-02 AC 5)`) are removed, and shallow comments are enriched or turned into names.
+- This replaces the `CLAUDE.md` rule "no comments except JSDoc", which would have forced moving line-level "why" comments away from their lines, or deleting them. Most of the 36 current `//` comments are good "why" comments and stay.
+- Not lint-enforceable: why vs what is about content, not form. Enforced in the skill and in review (Verifier).
+- Path: the agent first proposed allowing spec references, then dropped them too quickly when the user asked "do we need them?", using an argument ("IDs rot") that applies to the sentence as much as to the ID. Re-tested together, the decision rested on the readers: noise for the user, redundant with the colocated test for agents, and a risk of IDs replacing context.
+
 ---
 
 ## Process notes
