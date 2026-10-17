@@ -16,7 +16,7 @@
 4. Where the home filter state lands when `features/home` is removed (STD-05) — **decided**
 5. `CurrencyInput` contract and the form binding standard (STD-06, STD-07) — **decided**
 6. Locale/currency source of `formatMoney` (STD-06) — **decided**
-7. `Heading`/`Text` variant set (STD-08)
+7. `Heading`/`Text` variant set (STD-08) — **decided**
 8. Story and test gate scripts (STD-10/11)
 9. Local lint rule shape: logic cap + IIFE ban (STD-12)
 10. OpenAPI generator (STD-13)
@@ -188,6 +188,55 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 **Residual cost.** The source is static. `toCents` assumes 2 fraction digits. Multi-currency (the user foresees transactions in more than one currency, e.g. a foreign account) will make currency per-value data and give `formatMoney` a currency argument; deliberately not designed now (user, 2026-10-17).
 
 **Reversibility.** High: one module plus the few direct call sites.
+
+---
+
+### 7. `Heading` and `Text` share one seven-step type scale; variants carry the role's tone
+
+**Problem.** Outside `base/`, 236 size/weight/colour class uses form 14 distinct looks. Many roles share a look (page titles, the wordmark and metric figures are all 2xl–3xl bold; group and column headers are identical), and the three figure sizes exist only in the mobile summary layout (desktop cards are all `text-2xl`). `SectionHeader` uses `text-md`, which Tailwind does not define, so it renders inherited 16px.
+
+**Decision.**
+
+- One `cva` scale, `typographyVariants`, in `typography/base/`, shared by `Heading` (tag from `level`) and `Text` (tag from `as`, default `span`, since a `p` default breaks HTML inside buttons, labels and other paragraphs). The names are hierarchy levels in the style of the Material 3 type scale, not screens.
+- Variants carry the tone their role implies (`secondary`, `caption` are muted); colour stays overridable through token classes (E4a).
+- `tabular-nums` is neither size nor weight, so it stays allowed in `className` (and `Amount` embeds it); figures need no variant of their own.
+
+| # | Variant | Classes | Used for |
+| --- | --- | --- | --- |
+| 1 | `display` | the decorative 404 numeral (`text-[10rem]`, responsive) | 404 |
+| 2 | `headline` | `text-2xl font-bold` | page titles (auth, 404, `PageHeader`), wordmark, metric figures |
+| 3 | `title` | `text-base font-semibold` | section titles (`SectionHeader`), compact figures, `PeriodNavigator` label |
+| 4 | `label` | `text-sm font-medium` | row titles, option labels |
+| 5 | `body` | `text-sm` | default text |
+| 6 | `secondary` | `text-sm text-muted-foreground` | descriptions, metric labels |
+| 7 | `caption` | `text-xs text-muted-foreground` | metadata, subtitles, group and column headers |
+
+- `typographyVariants` is exported for non-HTML targets: the trend chart's SVG `<text>` tick uses `className={typographyVariants({ variant: "label" })}`, which passes the literal-string lint legitimately.
+- The E4b regex also catches arbitrary sizes (`text-[10rem]`) and undefined size classes (`text-md`); `display` lives in `base/`, so the 404 numeral's arbitrary size stays inside the system.
+- `Sheet`/`Dialog` titles keep their own styles as `base/` primitives (E4b).
+
+**Accepted visual changes** (spec amended 2026-10-17: STD-08 AC 1, the behaviour-preservation assumption, the STD-08 independent test):
+
+| Where | Before | After |
+| --- | --- | --- |
+| 404 title | 30px bold | 24px bold |
+| Auth wordmark | 30px bold, `tracking-tight` | 24px bold, normal tracking |
+| Mobile Balance | 30px bold | 24px bold (still above Income/Expenses) |
+| Mobile Income/Expenses | 18px bold | 16px semibold |
+| `PeriodNavigator` label, mobile | 14px semibold | 16px semibold (desktop unchanged) |
+| Metric labels | muted, `font-medium` | muted, normal weight |
+| Mobile day header, category column header | xs muted, `font-medium` | xs muted, normal weight |
+
+The user judges typography by seeing it and will adjust after the slice if needed (2026-10-17); a case that fits no step gets a new role variant, never an exception.
+
+**Rejected.**
+
+- 14 variants reproducing every current look: no visual change, but three one-off variants and several duplicate looks under different names.
+- Size/weight-only variants with tone in `className`: the ~40 muted uses would keep repeating the colour by hand.
+
+**Residual cost.** The visual changes above; the mobile Balance and compact figures are the most noticeable.
+
+**Reversibility.** High: one `cva` holds the scale, and the lint keeps every use inside it.
 
 ---
 
