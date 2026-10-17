@@ -14,7 +14,7 @@ on:
 
 # Portainer instance IDs/URL — not sensitive. Only the API token is a secret.
 env:
-  PORTAINER_URL: http://72.60.1.97:9000
+  PORTAINER_URL: https://portainer.lcsmrt.com
   STACK_ID: "74"
   ENDPOINT_ID: "3"
 
