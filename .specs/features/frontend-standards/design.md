@@ -17,7 +17,7 @@
 5. `CurrencyInput` contract and the form binding standard (STD-06, STD-07) — **decided**
 6. Locale/currency source of `formatMoney` (STD-06) — **decided**
 7. `Heading`/`Text` variant set (STD-08) — **decided**
-8. Story and test gate scripts (STD-10/11)
+8. Story and test gate scripts (STD-10/11) — **decided**
 9. Local lint rule shape: logic cap + IIFE ban (STD-12)
 10. OpenAPI generator (STD-13)
 
@@ -237,6 +237,32 @@ The user judges typography by seeing it and will adjust after the slice if neede
 **Residual cost.** The visual changes above; the mobile Balance and compact figures are the most noticeable.
 
 **Reversibility.** High: one `cva` holds the scale, and the lint keeps every use inside it.
+
+---
+
+### 8. Gate scripts classify by content: a module needs a test when it holds a decision point
+
+**Problem.** STD-11 requires a sibling test for every logic `.ts` module and every hook with logic, exempting DTO, type-only and constant-only modules; STD-10 requires a sibling story for every `.tsx` that does not directly import `@/api/services`, `@/app/providers` or `react-router-dom`. The story side is mechanical (read the imports). The test side needs a definition of "logic". Today 22 `.ts` modules lack a test: nine DTO/type modules, two constant modules (`paths.ts`, `planLabels.ts`) and executable ones (`useDebounce`, `buildPagedQuery`, `resolveErrorMessage`, `resolveSuccessMessage`, `cols.ts`, `masks.ts`, `mergeClasses`, `SessionExpiredError`).
+
+**Decision.**
+
+- `frontend/scripts/check-siblings.ts` reads each module's AST with the installed `typescript` compiler and prints two reports (missing tests, missing stories), each naming the files; any entry fails the run.
+- **A `.ts` module is logic, and needs a sibling `.test.ts`, when it contains at least one of:** a decision point (`if`, ternary, `switch`, `&&`/`||`/`??` used as a value, a loop, `try`/`catch`); arithmetic on non-literal operands; an iteration callback (`map`, `filter`, `reduce`, `forEach`, …). This operationalises the C1 triggers, the project's own definition of logic, and matches the spec's "logic module" / "hook with logic" wording. Classification is by content, never by name, so no rename escapes it.
+- Applied today: `buildPagedQuery`, `cols.ts`, `masks.ts`, `resolveErrorMessage`, `resolveSuccessMessage` need tests; `cn`, `SessionExpiredError`, DTOs, types, constants and `useDebounce` are exempt.
+- **`*.handlers.ts` (decision 3) are test support,** exempt by suffix. To keep the suffix from becoming a hiding place, `no-restricted-imports` forbids non-test files from importing `*.handlers` or `@/test/*` (a fragment in decision 1's composition).
+- **Story gate scope:** every `.tsx` under `src/` except `src/index.tsx`, `src/test/**`, tests and stories.
+- **Scripts are TypeScript**, run natively by Node 24 (type stripping; local, `Dockerfile` and CI all run Node 24) and covered by lint and `tsc` (`tsconfig.node.json` includes `scripts/`). `npm test` becomes `node scripts/check-siblings.ts && vitest run --coverage`.
+- **Coverage is independent of this classification:** Vitest covers `src/**/*.ts` excluding tests, `*.handlers.ts`, `src/test/**` and `.d.ts`, with a 90% branch threshold. Type-only files emit no code and constant files have no branches, so neither distorts the number.
+
+**Rejected.**
+
+- "Any function, class or call is logic": classifies by content too, but forces tests on code with no decision (`cn` tests `tailwind-merge`, `SessionExpiredError` tests the language). Such tests cannot fail on our defects and turn testing into a ritual (over-testing).
+- Exemption by path or name (`api/dtos/**`, `*.constants.ts`): a constants file that grows a function stays exempt; a bypass through naming.
+- An explicit exemption list: the per-file exception D4 forbids.
+
+**Residual cost.** A branchless function that matters (a pure mapper alone in a module) escapes the gate; form mappers have tests required by STD-07 AC 1, and integration tests plus the Verifier's mutants cover the rest. `useDebounce` (time semantics, no branch) is exempt and exercised through `useTransactionSearch` (D3). A `const` initialised by a call is classified by its content like anything else. The script (~60 lines) is code we own, with its own test per decision-point kind.
+
+**Reversibility.** High: the criterion lives in one script.
 
 ---
 
