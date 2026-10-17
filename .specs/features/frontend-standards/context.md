@@ -181,6 +181,21 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - Rule: colour that carries meaning comes from a theme token, never from the raw palette.
 - Lint without a plugin (Tailwind 4 plugin support is uneven): built-in `no-restricted-syntax` with a regex over string literals and template elements, e.g. `(text|bg|border|ring|fill|stroke|outline|decoration)-(red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone)-\d+`, with a message pointing to the tokens. It catches `className="…"` and `cn(…)` arguments alike. Calibrate the regex at implementation (e.g. whether neutral greys are allowed).
 
+### E4b + C7 — Typography in the design system, lint-enforced
+
+- `Heading` and `Text` live in `typography/base/` (design-system primitives).
+  - `<Heading level={1..6} variant="page" | "section" | "subsection">`: `level` picks the semantic tag from the document outline, `variant` picks the look from the design role. They are deliberately separate.
+  - `<Text variant="body" | "muted" | "caption" | … as="p" | "span" | …>`.
+- Enforcement (built-in lint, no plugin), outside `**/base/**`:
+  1. no raw `<p>` or `<h1>`–`<h6>` (`no-restricted-syntax` JSX selector);
+  2. no font-size or font-weight classes (`text-xs`…`text-9xl`, `font-thin`…`font-black`) in strings. Alignment (`text-left/center/right`) and family (`font-mono`) stay allowed. Calibrate at implementation.
+  Together they leave `Heading`/`Text` as the only way to size or weight text. Colour stays free but token-only (E4a).
+- Primitives in `base/` (`Label`, `Button`, `Badge`, `FieldDescription`, inputs) keep their own built-in text styles, so nobody writes `<Label><Text>`.
+- `SectionHeader` (C7) is kept and adopted. A new `PageHeader` is added. Both are compositions of `Heading`/`Text`. Field help text uses the existing `FieldDescription` (16 raw `<p className="text-muted-foreground text-xs|sm">` today).
+- Variant curation: a new variant must name a role, never a screen (no `summaryCardBigNumberMobile`). A case that fits no variant gets a new role variant, never an exception.
+- Known limits: text rendered by libraries (Recharts labels, toast content) is out of the linter's reach; pass tokens there.
+- Path: the agent first recommended "components only for structural roles" (C), weighing migration effort. The user's criterion is quality over effort, and enforced typography removes C's residual inconsistency, so the agent changed its recommendation. Shadcn's "Typography" is a CSS sheet (Typeset) for prose, not components.
+
 ---
 
 ## Process notes
