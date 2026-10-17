@@ -206,6 +206,15 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - Not lint-enforceable: why vs what is about content, not form. Enforced in the skill and in review (Verifier).
 - Path: the agent first proposed allowing spec references, then dropped them too quickly when the user asked "do we need them?", using an argument ("IDs rot") that applies to the sentence as much as to the ID. Re-tested together, the decision rested on the readers: noise for the user, redundant with the colocated test for agents, and a risk of IDs replacing context.
 
+### F1 — Stories: every piece of UI with its own visual
+
+- **Criterion:** a component with its own visual has a story. If it cannot render from props alone, its visual is extracted into a component that can (container + view). A well-made container has no visual of its own (it fetches and passes down), so every piece of UI ends up covered.
+- **Presentational** = renders only from props plus local UI state (`useState`, `useReducer`, refs for open, hover, input drafts). **Container** = takes data or causes effects from outside: service hooks (`@/api/services`), app context hooks (`@/app/providers`), router hooks (`react-router-dom`), or our hooks built on them. Practical test: can a story render it with props only, with no provider, API or router? React Hook Form sections (`useFieldArray`) count as presentational; the story wraps them in a test form.
+- **Story checklist:** one story per variant; one per state the component handles (empty, loading, error); extreme content (long text, big values, many items); mobile viewport when the layout changes. Not a token "Default" story.
+- **Role of stories:** first a workshop (develop and see every state in isolation, which matters for the mobile-first work ahead) and documentation (the story list is the state list). Second, a free test: render plus a11y. `play` covers basic interactions only (open, select). Business logic is unit-tested (F2), never simulated through clicks. This matches the Storybook team's own testing direction; it is not a distortion.
+- **Enforcement:** `npm test` runs the `storybook` vitest project too; addon-a11y set to fail (`a11y: { test: "error" }`). A gate script requires a sibling `.stories.tsx` for every component file that does not directly import `@/api/services`, `@/app/providers` or `react-router-dom`. It cannot see our hooks that wrap those, so it errs on the strict side and pushes the container/view split; refine later if it gets in the way.
+- Costs accepted: stories for trivial components; a11y in error mode surfaces existing issues at once; tests run slower (real browser).
+
 ---
 
 ## Process notes
