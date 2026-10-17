@@ -34,7 +34,7 @@ Frontend quality decayed as features shipped fast. The audit (`.specs/codebase/f
 | --------------------- | -------------- | --------- | ---------- |
 | All standards decisions | As recorded in `context.md` (C1–C9, B1–B8, D1–D4, E1–E5, F1–F3, G1–G2) | Reviewed one at a time with the user, 2026-10-16/17 | y |
 | Behaviour preservation | Refactors change no user-visible behaviour, except: toggles gain `aria-pressed` and arrow-key navigation (B1); installment inputs become an accessible spinbutton (B2); a11y violations surfaced by stories are fixed; the typography consolidation listed in `design.md` decision 7 (amended 2026-10-17) | A standards effort must not smuggle in UX changes; a11y fixes and the typography scale are the stated exceptions | y |
-| Slice order | STD-01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 11 → 12 → 13; STD-14 when the Docker DB exists | Foundations and gates first; each later slice lands its rule already satisfied (G1); D3 last, right before mobile-navigation | y |
+| Slice order | STD-01 → 02 → 03 → 04 → 05 → 06 → 07 → 08 → 09 → 10 → 11 → 12; STD-13 after the backend standards review (user, 2026-10-17, `design.md` decision 10); STD-14 when the Docker DB exists | Foundations and gates first; each later slice lands its rule already satisfied (G1); D3 last, right before mobile-navigation | y |
 | When the logic-cap rule (D4) lands | With STD-12 (D3), the slice after which no component exceeds 60 lines before its `return` | `TransactionsTab` exceeds the cap until D3; G1 forbids landing a red rule | y |
 | `type`-only rule (E1) | Lands in the baseline slice (STD-02) | Autofix, ~32 files, no design work | y |
 | Service-hook tests | Migrate from `vi.mock(findracoApi)` to MSW in STD-04 | F2's motivation: the mock skips the session-refresh interceptor, base URL and param serialisation | y |
@@ -357,7 +357,7 @@ Frontend quality decayed as features shipped fast. The audit (`.specs/codebase/f
 | STD-10 | P2 Story coverage (AC 1–4) — F1 | - | Pending |
 | STD-11 | P2 Test coverage (AC 1–4) — F2 | - | Pending |
 | STD-12 | P2 Transactions tab + logic cap (AC 1–5) — D3, D4 | - | Pending |
-| STD-13 | P3 Generated API types (AC 1–3) — F2 | - | Pending |
+| STD-13 | P3 Generated API types (AC 1–3) — F2, deferred until after the backend standards review | - | Deferred |
 | STD-14 | P3 E2E smoke tests (AC 1–3) — F2, blocked by Docker DB | - | Pending |
 
 **ID format:** `STD-NN`; each ID is one refactor slice and covers the AC range named in its row. Slice order follows the IDs (Assumptions).

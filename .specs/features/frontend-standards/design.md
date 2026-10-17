@@ -2,24 +2,36 @@
 
 **Spec**: `.specs/features/frontend-standards/spec.md`
 **Context**: `.specs/features/frontend-standards/context.md` (locked decisions)
-**Status**: Draft (decisions recorded one at a time with the user)
+**Status**: Draft, complete; awaiting approval (decisions recorded one at a time with the user, 2026-10-17)
 
 ---
 
 ## Architecture Overview
 
-`context.md` already fixes the architecture: where code lives, what gets extracted, which gates exist. This design settles the open "how" decisions, in slice order:
+`context.md` fixes the architecture: where code lives, what gets extracted, which gates exist. This design settles the open "how" decisions (below, one per section) and maps them to the slices. The result is three layers of guarantees around the refactored code:
 
-1. `eslint.config.js` composition (STD-02; base for STD-05/06/08/09/12) — **decided**
-2. CI and deploy layout, husky hooks (STD-03) — **decided**
-3. MSW setup and the session-refresh test (STD-04) — **decided**
-4. Where the home filter state lands when `features/home` is removed (STD-05) — **decided**
-5. `CurrencyInput` contract and the form binding standard (STD-06, STD-07) — **decided**
-6. Locale/currency source of `formatMoney` (STD-06) — **decided**
-7. `Heading`/`Text` variant set (STD-08) — **decided**
-8. Story and test gate scripts (STD-10/11) — **decided**
-9. Local lint rule shape: logic cap + IIFE ban (STD-12) — **decided**
-10. OpenAPI generator (STD-13)
+```mermaid
+graph TD
+    W[Written standards<br/>skills + CLAUDE.md + codebase docs<br/>STD-01] --> L
+    L[Lint<br/>layered restrictions, type scale, palette,<br/>func-style, logic cap, no bypass<br/>decisions 1, 7, 9] --> G
+    T[Tests<br/>unit + MSW integration + stories/a11y<br/>sibling gate + 90% branch on logic<br/>decisions 3, 8] --> G
+    G[Gates<br/>husky pre-commit/commit-msg locally<br/>ci.yml frontend + backend jobs<br/>decision 2] --> D[Deploy<br/>only after CI, head guard]
+```
+
+Decisions, in slice order:
+
+1. `eslint.config.js` composition (STD-02; base for STD-05/06/08/09/12)
+2. CI and deploy layout, husky hooks (STD-03)
+3. MSW setup and the session-refresh test (STD-04)
+4. Where the home filter state lands when `features/home` is removed (STD-05)
+5. `CurrencyInput` contract and the form binding standard (STD-06, STD-07)
+6. Locale/currency source of `formatMoney` (STD-06)
+7. `Heading`/`Text` type scale (STD-08)
+8. Story and test gate scripts (STD-10/11)
+9. Local lint rules: logic cap + IIFE ban (STD-12)
+10. OpenAPI generator and naming (STD-13, deferred until after the backend standards review)
+
+Schema generation in CI (booting the backend with a database) is left for the STD-13 Design pass, after the backend review.
 
 ---
 
@@ -288,6 +300,158 @@ The user judges typography by seeing it and will adjust after the slice if neede
 
 ---
 
+### 10. `openapi-typescript` with the backend's names; STD-13 waits for the backend standards review
+
+**Problem.** F2 wants frontend DTOs generated from the springdoc schema, MSW handlers typed with them, and CI failing on stale types, while the service-hook layer (axios, TanStack Query, `["entity", params]` keys, `buildMutationOptions`, plan scoping per AD-005) stays as it is. Two findings apply to any generator: the backend has **zero** `@Schema` annotations, so springdoc marks every response field optional and never nullable; and nested response classes `ItemDto`/`ParticipantDto` inside `FinancialTransactionResponseDto` share simple names with `dtos/request/ItemDto` and `ParticipantDto`, so one schema silently overwrites the other.
+
+**Decision.**
+
+- **Generator:** `openapi-typescript` (types only, no runtime) with `--root-types --root-types-no-schema-prefix`, so each schema is exported as a top-level type under the backend's own name (`FinancialTransactionResponseDto`). **No alias layer.**
+- **Naming rule** (replaces `CLAUDE.md`'s "`XxxResponse` = API wire shape" in STD-01's rewrite once STD-13 lands): a type with the `Dto` suffix is generated from the backend; a type without it is the frontend's. Frontend call-shape wrappers stay ours and compose generated bodies (`CreatePlanRequest = { params, body: PlanRequestDto }`).
+- **MSW handlers** are typed through MSW's generics (`http.get<Params, never, FinancialTransactionResponseDto>`); until STD-13 lands, they use the hand-written DTOs (decision 3).
+- **Backend prerequisites**, done in the backend standards feature: a springdoc customizer making every `*ResponseDto` field required unless annotated `@Nullable` (with a test); renaming the colliding nested classes to the `XxxResponseDto` pattern; a test failing when two DTOs share a simple name.
+- **Sequencing (user, 2026-10-17):** STD-13 runs after a backend standards review, which also improves the DTO names. Spec slice order and traceability updated; ROADMAP Open Todos gains the backend standards review.
+
+**Rejected.**
+
+- An alias layer mapping generated names to frontend names: confines pure backend renames to one file, but keeps two names for one thing.
+- `orval` / `@hey-api/openapi-ts`: generated query hooks would replace our service hooks and conventions, faker-backed MSW handlers contradict decision 3, and zod schemas of DTOs do not describe form values (decision 5).
+- springdoc fully qualified schema names: fixes the collision, but makes every frontend type name unreadable.
+
+**Residual cost.** A backend DTO rename now breaks the frontend build and needs regeneration in the same commit (intended: drift becomes a compile error). Generics produce composite names (`PagedResponseDtoFinancialTransactionResponseDto`), confined to paged service-hook signatures. Dates stay strings.
+
+**Reversibility.** High: a generator script and the import sites of generated names.
+
+---
+
+## Code Reuse Analysis
+
+### Existing code to leverage
+
+| Existing | Location | How it is used |
+| --- | --- | --- |
+| `Card`, `InputGroup`, `Input`, `Field*` | `src/components/card/`, `src/components/input/base/` | `AuthCard`, `PasswordInput`, `CurrencyInput` and `FormField` compose them (B4, decision 5) |
+| `SectionHeader` | `src/components/sectionHeader/` | Kept and rebuilt on `Heading`/`Text`; `PageHeader` follows its shape (C7) |
+| `buildPagedQuery` | `src/api/utils/` | `toPagination` is its inverse, beside it (D3) |
+| `buildMutationOptions`, service hooks | `src/api/` | Unchanged; `useTransactionFormSubmit`, `useCategoryFormSubmit`, `useTransactionActions` call them |
+| `homeFilterParams` parse/serialize, `useHomeFilters` | `features/home/` | Split by owner; `withParams` becomes `useSearchParamGroup` (decision 4) |
+| `HomeFiltersGate` + its test | `features/home/filters/` | Moves unchanged to `app/home/`, gains the exported-keys case |
+| `findracoApi.test.ts` scenarios | `src/api/clients/` | Same cases, re-expressed as MSW handlers (decision 3) |
+| `TransactionFormDrawer` / `CategoryFormSheet` tests | `features/home/components/` | Guard D1/D2; adapted only in imports and value entry (STD-07 AC 6) |
+| `PlanAuthorization.java` | backend `security/` | Source of the `usePlanPermissions` matrix |
+| shadcn CLI + Base UI | `components.json` (C8) | `toggle`, `toggle-group` installed, moved to `base/`; `NumberField` from Base UI |
+| `typescript` compiler API, Node 24 type stripping | devDependency, runtime | Gate script and local ESLint rules without new dependencies |
+| `husky` (installed, no hooks) | `frontend/.husky/` | `pre-commit`, `commit-msg` |
+| tlc `check_commit.py` | `.claude/skills/tlc-spec-driven/scripts/` | `commit-msg` hook |
+
+### Integration points
+
+| System | Integration |
+| --- | --- |
+| GitHub Actions | `ci.yml` replaces `deploy.yml`; the Portainer `git/redeploy` call is unchanged (decision 2) |
+| Storybook 9 + `@storybook/addon-vitest` | `storybook` Vitest project joins `npm test`; `a11y: { test: "error" }` |
+| MSW | `unit` project setup; handler factories beside services (decision 3) |
+| Backend | Only STD-13 (deferred) touches it; `./mvnw test` runs in CI |
+
+---
+
+## Components
+
+Grouped by slice. Paths are under `frontend/` unless stated.
+
+### Tooling (STD-02, STD-03, STD-04, STD-10/11, STD-12)
+
+- **`eslint.config.js`**: named restriction fragments composed per layer, `defineConfig()`, `noInlineConfig`, `ban-ts-comment`, `consistent-type-definitions`, `func-style`, the `local` plugin (decisions 1, 9).
+- **`eslint/rules/componentLogicCap.ts`, `eslint/rules/noJsxIife.ts`** (+ tests): `Rule.RuleModule` each; cap option `{ max: 60 }`.
+- **`eslint.config.test.ts`**: `ESLint#calculateConfigForFile` per layer path, asserting the fragments.
+- **`scripts/check-siblings.ts`** (+ test): exits non-zero listing missing tests and stories (decision 8).
+- **`.github/workflows/ci.yml`**: jobs `changes`, `frontend`, `backend`, `deploy` (decision 2).
+- **`.husky/pre-commit`** (`lint-staged`), **`.husky/commit-msg`** (`check_commit.py`).
+- **Vitest projects**: `unit` (jsdom, MSW setup), `storybook` (browser, a11y error), `tooling` (Node: rules, script, config test).
+
+### Test infrastructure (STD-04)
+
+- **`src/test/server.ts`**: `setupServer()` with no default handlers.
+- **`src/test/setupUnit.ts`**: listen with an `onUnhandledRequest` recorder, throw in `afterEach` when any request was unhandled, `resetHandlers`, close.
+- **`src/test/renderWithProviders.tsx`**: `QueryClientProvider` (retry off), router, and the real context objects with explicit values (`PlanContext.Provider value={…}`).
+- **`src/test/scenarios.ts`**: named groups of handler factories, e.g. `signedInMember({ role })`.
+- **`src/api/services/*.handlers.ts`**: per-endpoint factories, e.g. `dashboardHandlers.trend(trend): HttpHandler`.
+
+### Structure (STD-05)
+
+- **`src/app/home/`**: `HomePage.tsx`, `HomeFiltersGate.tsx`, `homeParams.ts` (tab + plan), `useHomeTab.ts`, `filterStorage.ts`.
+- **`src/hooks/useSearchParamGroup.ts`**: `useSearchParamGroup<T>(keys, parse, serialize): { value: T; update(fn: (current: T) => T): void; clear(keys?): void }`; updates use `replace`.
+- **`features/overview/filters/`**, **`features/transactions/filters/`**: params + `useOverviewFilters`, `useTransactionFilters`, each exporting its key list.
+- **`src/app/layout/`**: `MainLayout`, `AuthLayout`, `Navbar`, `Toaster`. **`features/auth/`**: four pages + `components/AuthCard`, `components/PasswordInput`.
+- Providers as `XxxProvider.tsx` + `useXxx.ts` (C3).
+
+### Shared components and tokens (STD-06)
+
+- **`src/utils/money.ts`**: `formatMoney(value: number, options?: { compact?: boolean }): string`, `toCents(value: number): number`; `MONEY_LOCALE`, `MONEY_CURRENCY` (decision 6).
+- **`src/components/input/CurrencyInput.tsx`**: `value: number | null`, `onValueChange(value: number | null)`, rest to `Input` (decision 5).
+- **`src/components/form/FormField.tsx`**: `control`, `name`, `label`, `description?`, `children(field)` where `field` carries `id`, `ref`, `onBlur`, `aria-invalid`, `value`, `onChange` (decision 5).
+- **`src/components/amount/Amount.tsx`**: `value: number`, `type: FinancialTransactionType`; signed, toned, `tabular-nums`, via `formatMoney` (B6).
+- **`toggle/base/`, `toggleGroup/base/`**: shadcn primitives with `tone` (primary, destructive, success) and `chip` variants; **`TransactionTypeToggle`** at the root composes them (B1).
+- **`src/components/form/FormSheet.tsx`**: `open`, `onOpenChange`, `title`, `onSubmit`, `isSubmitting`, `submitLabel`, `mobileActions?`, `children` (B3).
+- **`features/plans/components/PlanNameDialog.tsx`**: `mode: "create" | "rename"` (B5).
+- **`src/hooks/usePlanPermissions.ts`**: returns `PlanPermissions` (below); all false while the plan or role is loading (B7).
+- **Theme**: `--warning`, `--warning-foreground` in both modes (E4a).
+
+### Forms (STD-07)
+
+- **`transactionForm.ts`**, **`categoryForm.ts`** (+ tests): schema, `toFormValues(response)`, `toPayload(values)`, inline-save mapper, last-installment helper.
+- **`useTransactionFormSubmit`**, **`useCategoryFormSubmit`**: mutations and the series-scope flow.
+- **`ItemsField`** (`useFieldArray`), **`EndDateField`**, **`InstallmentsField`** (Base UI `NumberField`, min 1, step 1), used by create and series edit (B8).
+
+### Typography (STD-08)
+
+- **`typography/base/typographyVariants.ts`** (`cva`, seven variants), **`Heading.tsx`** (`level: 1–6`, `variant`), **`Text.tsx`** (`as`, default `span`; `variant`) (decision 7).
+- **`PageHeader`**, **`SectionHeader`** compose them.
+
+### Transactions tab (STD-12)
+
+- **`useTransactionSearch`**, **`transactionSort.ts`** (+ test), **`useTransactionActions`**, **`useCsvImport`**; `DrawerState` at module scope.
+- **`src/api/utils/toPagination.ts`** (+ test): paged response → table pagination.
+
+---
+
+## Data Models
+
+### `PlanPermissions`
+
+```typescript
+type PlanPermissions = {
+  canCreateTransactions: boolean; // every role except VIEWER
+  canAttributeToOthers: boolean; // OWNER, EDITOR
+  canManageCategories: boolean; // OWNER
+  canManagePlan: boolean; // OWNER
+};
+```
+
+Mirrors `PlanAuthorization.java` (`requireCanCreateTransaction`, `requireCanAttributeToOthers`, `requireCanManageCategories`, `requireOwner`). Row-level modification (CONTRIBUTOR edits only own rows) stays a backend rule. Tested over the role × capability matrix plus the loading state.
+
+### Form values
+
+Form values hold domain types: money as `number | null` in reais, dates as `Date`, missing as `null`. Mappers convert shape and type only (decision 5).
+
+---
+
+## Error Handling Strategy
+
+| Scenario | Handling | Who sees it |
+| --- | --- | --- |
+| Lint violation, including an attempted `eslint-disable` or `@ts-*` | `pre-commit` blocks; CI `frontend` job fails | Developer / agent, file and rule named |
+| Non-Conventional commit message | `commit-msg` blocks | Developer / agent |
+| Missing sibling test or story | `check-siblings.ts` fails `npm test` and CI | Developer, file named |
+| Branch coverage below 90% on logic | Vitest coverage fails `npm test` and CI | Developer, module named |
+| Unhandled request in a test | Recorded, thrown in `afterEach` | Test fails, URL named |
+| CI job fails on `main` | `deploy` does not run | Production unchanged |
+| Older commit's CI passes after a newer push | Head guard skips its deploy | Newer pipeline decides |
+| Non-digit input in `CurrencyInput` | Ignored | User sees no change |
+| Plan or role not loaded | `usePlanPermissions` reports all false | Role-gated actions hidden |
+
+---
+
 ## Risks & Concerns
 
 | Concern | Location (file:line) | Impact | Mitigation |
@@ -295,3 +459,12 @@ The user judges typography by seeing it and will adjust after the slice if neede
 | Same-rule options replace across flat-config blocks | `frontend/eslint.config.js` | A layer silently loses a restriction; lint stays green | Decision 1: named fragments + `calculateConfigForFile` test |
 | Unused lint devDependencies: `eslint-plugin-import`, `eslint-plugin-check-file`, `eslint-plugin-prettier`, `eslint-config-prettier` | `frontend/package.json` | Dead dependencies suggest rules that do not run | Remove in STD-02 |
 | Portainer redeploys `refs/heads/main` at call time, not the tested SHA | `.github/workflows/deploy.yml` | An untested newer commit can ship after an older commit's CI passes | Decision 2: `concurrency` + head guard; seconds-wide residual window |
+| Backend schema has no requiredness/nullability; nested DTO names collide | backend `dtos/` (`FinancialTransactionResponseDto` nested `ItemDto`, `ParticipantDto` vs `dtos/request/`) | Generated types would be all-optional and one schema silently wrong | Decision 10: customizer + renames + collision test in the backend standards feature, before STD-13 |
+| `findracoApi` and providers are mocked in 6 test files | `LoginPage.test.tsx`, `AuthProvider.test.tsx`, `useOverviewMemberFilter.test.tsx`, … | Interceptors and serialisation untested in those flows | Service-hook tests migrate in STD-04; the others when their slice touches them (spec assumption) |
+| `SectionHeader` uses undefined `text-md` | `src/components/sectionHeader/SectionHeader.tsx:17` | Intended size never applied | Decision 7: `title` variant; lint catches undefined size classes |
+
+---
+
+## Tech Decisions
+
+The non-obvious decisions are the ten numbered sections above. Project-level ones are logged in `.specs/STATE.md` as AD entries on approval.
