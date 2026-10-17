@@ -153,6 +153,24 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - By rule: helpers, schema and mappers → `categoryForm.ts` (C1, C2); provider → `CategoryFormSheetProvider.tsx` + `useCategoryFormSheet.ts` (C3); logic → `useCategoryFormSubmit` (D4); skeleton → `FormSheet` (B3); `CurrencyInput` and `ToggleGroup` in the limit fields (B2, B1). It is its own refactor slice.
 - **Rule (forms skill): every dynamic list inside a form uses `useFieldArray`.** It applies to transaction items, `memberLimits` (`CategoryLimitFields`) and `participants` (`AttributionFields`, 4 manual `setValue("participants", …)` today).
 
+### D3 — `TransactionsTab` decomposition
+
+- `useTransactionSearch` (debounced draft ↔ URL); `transactionSort.ts` beside it, with a test (column ↔ sort-field maps); `useTransactionActions` (edit, duplicate, delete with series scope or confirm, drawer state); the inline-save payload becomes a mapper in `transactionForm.ts`; `useCsvImport`; `DrawerState` moves to module scope.
+- New: `toPagination(page)` in `src/api/utils/`, next to `buildPagedQuery` (the inverse), replacing the hand-built paged-response → table pagination mapping.
+- Done together with, or right before, mobile-navigation's implementation, since NAV-02 moves "create" from this tab to the shell's global add. `useTransactionActions` keeps edit, duplicate and delete.
+
+### E1 — `type` everywhere
+
+- `type` for every object type, DTOs included, enforced by `@typescript-eslint/consistent-type-definitions: "type"` (autofix; ~32 files). Reason: `interface` declarations merge silently; `type` covers objects, unions and intersections, and the discriminated unions the project relies on. The only legitimate `interface` use, augmenting a library's types, does not occur today; if it does, the rule changes for everyone.
+
+### E2 — `function` declarations at top level, arrows for callbacks (react.dev style)
+
+- Components, helpers and handlers declared inside components use `function` declarations. Arrows are for callbacks passed inline (`onClick={() => …}`, `.map((x) => …)`).
+- Chosen on intrinsic merit, setting migration cost aside: it matches react.dev and shadcn (snippets and generated code arrive this way), generics are clean in `.tsx`, and overloads are possible. Trade-off accepted: a function type annotation (`const f: UseFormSetValue<T> = …`) is no longer available; type the parameters instead.
+- Lint: `func-style: ["error", "declaration"]`. It flags function expressions and arrows assigned to variables; inline callbacks are unaffected. Verify the exact options (e.g. typed arrow assignments) against the ESLint docs at implementation.
+- Cost: ~340 conversions without autofix. A dedicated mechanical slice (a codemod is worth trying). `CLAUDE.md` ("`export const Foo = (props) => {}`") and the component skill are rewritten.
+- Myth noted for the skill: hoisting is not needed to keep helpers below the component, since a helper defined below is already loaded by render time.
+
 ---
 
 ## Process notes
