@@ -12,7 +12,7 @@
 
 1. `eslint.config.js` composition (STD-02; base for STD-05/06/08/09/12) — **decided**
 2. CI and deploy layout, husky hooks (STD-03) — **decided**
-3. MSW setup and the session-refresh test (STD-04)
+3. MSW setup and the session-refresh test (STD-04) — **decided**
 4. Where the home filter state lands when `features/home` is removed (STD-05)
 5. `CurrencyInput` API and the locale/currency source of `formatMoney` (STD-06)
 6. `Heading`/`Text` variant set (STD-08)
@@ -87,6 +87,28 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 - The `changes` script is code we own.
 
 **Reversibility.** High: workflow files only.
+
+---
+
+### 3. MSW responses are always explicit, built from typed handler factories
+
+**Problem.** Integration tests render real screens that fire several requests (`/users/me`, plans, categories, transactions). Where those responses come from decides whether a test shows what it depends on, and whether a mutant that changes a request fails loudly. Today the service-hook tests `vi.mock` `findracoApi` and assert call arguments; `findracoApi.test.ts` crosses the interceptors through a hand-written axios adapter that skips XHR, `withCredentials` and serialisation.
+
+**Decision.**
+
+- **No global handlers.** Each test calls `server.use(...)` with what it needs.
+- **Handler factories per endpoint**, next to the service hook they mirror (`src/api/services/dashboard.handlers.ts` exporting e.g. `dashboardHandlers.trend(trend)`), typed with the DTOs (with the generated types after STD-13).
+- **Named scenarios** group factories for screens (`signedInMember({ role: "VIEWER" })`). A scenario groups, it never hides: its parameters name what the test relies on (rule written in `frontend-testing`).
+- **An unhandled request fails the test.** MSW's `onUnhandledRequest: "error"` only logs and fails the request, so code that swallows the error still passes. The `unit` setup records every unhandled request in the callback and throws in `afterEach` (STD-04 AC 3).
+- **Context without `vi.mock`.** After C3 the context object is exported from `useXxx.ts`, so `renderWithProviders` renders `<PlanContext.Provider value={…}>` with explicit values instead of mocking the provider module.
+- **`findracoApi.test.ts` migrates to MSW** (one mechanism, real XHR); the held-refresh concurrency cases use a deferred promise inside the handler. It carries the 401 → refresh → retry test (STD-04 AC 4).
+- **Location.** `src/test/` holds the infrastructure (`server.ts`, the `unit` setup file, `renderWithProviders`, scenarios). `*.handlers.ts` sit beside their service and are exempt from the sibling-test gate (decision 7): no logic, exercised by every test that uses them.
+
+**Rejected.** A global "happy path" handler set overridden per test: shorter tests, but a test can pass on a default it does not know about (a VIEWER test passing on an OWNER fixture), fixture edits ripple into unrelated tests, and the unhandled-request rule loses its value.
+
+**Residual cost.** Screen tests start more verbose; scenarios absorb most of it. Handler files are code to maintain.
+
+**Reversibility.** Medium: switching models later rewrites every flow test's setup, hence deciding before the first one.
 
 ---
 
