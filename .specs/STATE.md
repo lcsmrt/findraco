@@ -76,12 +76,12 @@
 
 ## Handoff
 
-- **Feature**: M5-08 Session persistence (`.specs/features/session-persistence/`). **Deployed 2026-10-16** (fast-forward of `feat/session-persistence` into `main`, Deploy run 38985255238 green). Verifier PASS (iteration 3); `./mvnw verify` green; IT mutants I1–I10 killed
-- **Phase / Task**: Done — UAT in prod pending
+- **Feature**: M5-08 Session persistence (`.specs/features/session-persistence/`). **Deployed 2026-10-16, UAT approved** (fast-forward of `feat/session-persistence` into `main`, Deploy run 38985255238 green). Verifier PASS (iteration 3); `./mvnw verify` green; IT mutants I1–I10 killed
+- **Phase / Task**: Done — UAT approved by the user in prod (2026-10-16)
 - **Completed**: spec, discuss, design (AD-009), tasks, implementation, verification, deploy. In prod: Flyway V12 applied; `/auth/refresh` without a cookie answers `401` and clears the `Secure; HttpOnly; SameSite=Strict` cookie; protected endpoints answer `401` "Authentication required."
 - **Production URL**: `https://findraco.lcsmrt.com` (domain `lcsmrt.com` on Cloudflare, wildcard `*` A record → `72.60.1.97`, DNS only). Host nginx `/etc/nginx/conf.d/findraco.lcsmrt.com.conf` → `127.0.0.1:8094`. Portainer at `https://portainer.lcsmrt.com` (`deploy.yml` calls it over HTTPS). Certificates: certbot webroot `/var/www/certbot`, renewed by `certbot.timer`, per-cert deploy hook reloads nginx. Stack env: `ALLOWED_ORIGINS`/`APP_URL` = the HTTPS origin, `WEB_PORT=127.0.0.1:8094` (the IP:port is no longer public)
 - **In-progress** (file:line): none
-- **Next step**: (1) UAT in prod: sign in once, wait more than 15 minutes, keep using the app without being asked to sign in; sign out; password reset ends other devices. (2) Server hardening ideas discussed, not started: Portainer ports `9000`/`9443` still public (recreate with `127.0.0.1` bindings), cert-expiry alert, later a container proxy (Traefik) once other tenants leave. (3) Previous queue: second UX round for categories, then M5-05 MCP connector, M5-07 PWA
+- **Next step**: (1) Queue: second UX round for categories, then M5-05 Claude MCP connector (now unblocked by HTTPS: a remote MCP server needs a public `https://` URL, e.g. `mcp.lcsmrt.com` or a path under `findraco.lcsmrt.com`; start with Specify), then M5-07 PWA. (2) Server hardening ideas discussed, not started: Portainer ports `9000`/`9443` still public (recreate with `127.0.0.1` bindings), cert-expiry alert, later a container proxy (Traefik) once other tenants leave
 - **Runtime state**: API runs detached (`setsid nohup ./mvnw spring-boot:run`), log `backend/target/api.log`; stop with `pgrep -f spring-boot:run | xargs kill`. Vite dev server on :5173. DB via SSH tunnel `ssh -f -N -L 5432:localhost:5432 vps`. `./mvnw verify` empties `dev_finsight`. If Safari in dev drops the session cookie over `http://localhost`, set `SESSION_COOKIE_SECURE=false` in `backend/.env`
 - **Blockers**: none. `npm run lint` fails with 23 pre-existing storybook/table errors
 - **Uncommitted files**: none

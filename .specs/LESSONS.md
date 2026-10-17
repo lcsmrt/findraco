@@ -122,6 +122,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: frontend/src/app/providers/AuthProvider.tsx:113 (mutant A15, iteration 2) (frontend-auth)
 - last seen: 2026-10-16T20:19:27Z
 
+### L-019 - Before designing a Secure cookie or any HTTPS-only mechanism, confirm production is actually served over HTTPS
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `deploy` · harmful: 0
+- features: session-persistence
+- evidence: design.md AD-009 (Secure session cookie) vs production served over plain HTTP at 72.60.1.97:8094 (deploy)
+- last seen: 2026-10-17T00:16:24Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

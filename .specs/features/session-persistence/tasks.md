@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/session-persistence/design.md`
-**Status**: Done — Verifier PASS (iteration 3, 2026-10-16). `./mvnw verify` green and IT mutants I1–I10 all killed (2026-10-16, `validation.md` IT addendum).
+**Status**: Done — Verifier PASS (iteration 3, 2026-10-16). `./mvnw verify` green and IT mutants I1–I10 all killed (2026-10-16, `validation.md` IT addendum). Deployed 2026-10-16 to `https://findraco.lcsmrt.com`; UAT approved by the user the same day.
 
 ---
 

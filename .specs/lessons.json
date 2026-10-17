@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 19,
+  "next_id": 20,
   "lessons": [
     {
       "id": "L-001",
@@ -328,6 +328,24 @@
       ],
       "created": "2026-10-16T20:19:27Z",
       "last_seen": "2026-10-16T20:19:27Z"
+    },
+    {
+      "id": "L-019",
+      "key": "spec_precision_gap::before designing a secure cookie or any https only mechanism confirm production is actually served over https",
+      "text": "Before designing a Secure cookie or any HTTPS-only mechanism, confirm production is actually served over HTTPS",
+      "signal": "spec_precision_gap",
+      "scope": "deploy",
+      "status": "candidate",
+      "features": [
+        "session-persistence"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "design.md AD-009 (Secure session cookie) vs production served over plain HTTP at 72.60.1.97:8094 (deploy)"
+      ],
+      "created": "2026-10-17T00:16:24Z",
+      "last_seen": "2026-10-17T00:16:24Z"
     }
   ]
 }
