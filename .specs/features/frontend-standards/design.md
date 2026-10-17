@@ -14,11 +14,12 @@
 2. CI and deploy layout, husky hooks (STD-03) — **decided**
 3. MSW setup and the session-refresh test (STD-04) — **decided**
 4. Where the home filter state lands when `features/home` is removed (STD-05) — **decided**
-5. `CurrencyInput` API and the locale/currency source of `formatMoney` (STD-06)
-6. `Heading`/`Text` variant set (STD-08)
-7. Story and test gate scripts (STD-10/11)
-8. Local lint rule shape: logic cap + IIFE ban (STD-12)
-9. OpenAPI generator (STD-13)
+5. `CurrencyInput` contract and the form binding standard (STD-06, STD-07) — **decided**
+6. Locale/currency source of `formatMoney` (STD-06)
+7. `Heading`/`Text` variant set (STD-08)
+8. Story and test gate scripts (STD-10/11)
+9. Local lint rule shape: logic cap + IIFE ban (STD-12)
+10. OpenAPI generator (STD-13)
 
 ---
 
@@ -102,7 +103,7 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 - **An unhandled request fails the test.** MSW's `onUnhandledRequest: "error"` only logs and fails the request, so code that swallows the error still passes. The `unit` setup records every unhandled request in the callback and throws in `afterEach` (STD-04 AC 3).
 - **Context without `vi.mock`.** After C3 the context object is exported from `useXxx.ts`, so `renderWithProviders` renders `<PlanContext.Provider value={…}>` with explicit values instead of mocking the provider module.
 - **`findracoApi.test.ts` migrates to MSW** (one mechanism, real XHR); the held-refresh concurrency cases use a deferred promise inside the handler. It carries the 401 → refresh → retry test (STD-04 AC 4).
-- **Location.** `src/test/` holds the infrastructure (`server.ts`, the `unit` setup file, `renderWithProviders`, scenarios). `*.handlers.ts` sit beside their service and are exempt from the sibling-test gate (decision 7): no logic, exercised by every test that uses them.
+- **Location.** `src/test/` holds the infrastructure (`server.ts`, the `unit` setup file, `renderWithProviders`, scenarios). `*.handlers.ts` sit beside their service and are exempt from the sibling-test gate (decision 8): no logic, exercised by every test that uses them.
 
 **Rejected.** A global "happy path" handler set overridden per test: shorter tests, but a test can pass on a default it does not know about (a VIEWER test passing on an OWNER fixture), fixture edits ripple into unrelated tests, and the unhandled-request rule loses its value.
 
@@ -137,6 +138,39 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 **Residual cost.** Three hooks instead of one. The gate depends on each feature's exported key list; a param missing from its list would not count as a home param, so `HomeFiltersGate.test.tsx` gains a case built from the exported lists.
 
 **Reversibility.** High: file moves with no behaviour change.
+
+---
+
+### 5. `CurrencyInput` is controlled and numeric; every form field binds through `Controller` via `FormField`
+
+**Problem.** `maskCurrency` is used in 7 places: five inside react-hook-form (amount, items, participant shares, category limit, member limits) and two on plain `useState` (filter min/max, inline table edit). The masked string sits in form state and is undone by hand more than 10 times (`replace(/\D/g, "")` + `parseInt / 100`). With `register`, the DOM is the source of truth: `reset({ amount: 12.34 })` writes `"12.34"` into the input, so defaults must already be masked strings, and the mask leaks into mappers and state. That rules out `register` for any input whose displayed value differs from the form value. Forms also use a third pattern, `watch()` + `setValue()` (50 calls in `TransactionFormDrawer`, taught by `form-creation`), which re-renders the whole form on every change, never fires blur/touched, cannot receive focus-on-error (no `ref`) and validates only when `{ shouldValidate: true }` is remembered.
+
+**Decision.**
+
+- **`CurrencyInput`** (`src/components/input/CurrencyInput.tsx`, a composition over `Input`): `value: number | null`, `onValueChange(value: number | null)`, other props passed to `Input`. Empty is `null`, never `0` ("no limit" ≠ "limit R$ 0,00"; empty filter min = no filter). Required/minimum rules live in the zod schema. Display is always `formatMoney(cents / 100)`. Input is handled in `onChange` (strip non-digits, reformat), not `keydown` (Android virtual keyboards send `keyCode 229`); pasting "R$ 12,34" yields 12.34; caret stays at the end; `inputMode="numeric"`; at most 15 digits so cents stay a safe integer.
+- **Money arithmetic goes through cents** (`toCents(value)` in the money module, tested). Forms hold reais as `number`; a float comparison such as "items ≤ total" can be off by 0.00000001.
+- **Every form field binds through `Controller`**, written via a thin **`FormField`** (`src/components/form/FormField.tsx`, with a story) that wraps `Controller` + `Field` + `FieldLabel` + `FieldDescription` + `FieldError`, and hands a render prop a `field` already carrying `id`, `ref`, `onBlur` and `aria-invalid`:
+
+```tsx
+<FormField control={control} name="amount" label="Amount">
+  {(field) => <CurrencyInput {...field} onValueChange={field.onChange} />}
+</FormField>
+```
+
+- `FormField` keeps to `label`, `description` and the render prop. Special layouts (horizontal, hidden label) use a raw `Controller`, which stays allowed. Label/`id` wiring, `aria-invalid` and `FieldError errors={[…]}` (E3) hold by construction.
+- **Reading another field** inside a form uses `useWatch({ control, name })` in the section that needs it, never `watch()` at the form root.
+- **Mappers stay at the boundary** (`toFormValues` from the API, `toPayload` to the API, in `transactionForm.ts` / `categoryForm.ts`) and convert shape and type only (nested → flat, ISO date → `Date`, `undefined` → `null`), never display formatting.
+- The 20 current `register` calls migrate in the slices that already touch those files (auth in STD-05/06, plans in STD-06, forms in STD-07). `FormField` is a design addition within STD-07 and the `form-creation` rewrite (STD-01); it changes no behaviour. The user wants to iterate on the form field components later.
+
+**Rejected.**
+
+- Integer cents in form state: removes float error at the root, but contradicts STD-06 AC 4 and adds a third representation next to the API's and the display's reais.
+- `CurrencyInput` bound to react-hook-form (`control` + `name`): the filter and inline edit do not use a form.
+- Hybrid binding (`register` for native text inputs, `Controller` for the rest): one line per text field and no re-render while typing, but two patterns and a per-field judgement call in a repo where agents write most commits. The per-keystroke re-render is limited to the one `Controller` and is imperceptible at 10–20 fields. `register` is not legacy (react-hook-form still recommends it for native inputs); `Controller` is the norm with controlled component libraries such as Base UI, and the current shadcn form docs use it for every field.
+
+**Residual cost.** `FormField` is one more owned component and may attract per-case props (same watch as `FormSheet`). `onValueChange={field.onChange}` stays visible for Base UI-style inputs rather than renaming our props against Base UI's convention.
+
+**Reversibility.** `CurrencyInput` contract: medium (7 consumers, mechanical, guarded by form and mapper tests). Binding style: high, per field; both styles coexist in one form.
 
 ---
 
