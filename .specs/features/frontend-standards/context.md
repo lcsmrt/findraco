@@ -111,6 +111,23 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - Money uses our own `CurrencyInput`, a composition over `Input`, with **ATM-style typing**: each digit enters from the right (1234 → R$ 12,34), numeric keypad only, as today and as in Brazilian banking apps. It **shows the mask but hands the form a number**. The masked string never leaves the component, so the 4 parse implementations go away. Neither shadcn nor Base UI offers this typing.
 - Rejected: Base UI `NumberField` with currency format (free typing with a comma, formatted on blur). User chose ATM-style typing.
 
+### B3 — `FormSheet`, the shared skeleton of sheet forms
+
+- `FormSheet` in `src/components/` (used by two features) holds only the skeleton: Sheet, title, scrolling form, footer with Cancel/Submit and loading state, and a `mobileActions` slot (Delete, Duplicate, New subcategory). Everything specific to a form stays in that form.
+- Bonus: if the sheet becomes something else on mobile (e.g. a bottom `Drawer`, the category-form UX topic), the change happens once for every form.
+- The user first declined ("only 2 cases"), then reversed: a possible future change of container is no reason to keep duplicating.
+- Risk to watch: per-case props piling up. Keep it to the skeleton.
+
+### B4 — Auth pieces
+
+- `AuthCard` (built on the existing `Card`; today the four pages re-implement it with raw classes) and `PasswordInput` (built on `InputGroup`; neither shadcn nor Base UI has one) live in `auth/components/`.
+- Button labels are plain text, not `<p>` (5 places). Any font weight comes from a `Button` variant.
+
+### B5 — `PlanNameDialog`
+
+- `CreatePlanDialog` and `RenamePlanDialog` merge into `PlanNameDialog` with a required `mode: "create" | "rename"`. Title and submit derive from `mode`, as the existing multi-mode form convention says.
+- A "rule of three" (extract on the third occurrence) was discussed and **not adopted**. The user prefers to standardise now and split later if the cases ever need to diverge.
+
 ---
 
 ## Process notes
