@@ -2,7 +2,7 @@
 
 **Gathered:** 2026-10-16 to 2026-10-17
 **Input:** `.specs/codebase/frontend-quality-audit.md`
-**Status:** Discussion complete (2026-10-17). Every audit finding was reviewed one at a time with the user. Next: Specify (`spec.md`) with the refactor slices.
+**Status:** Spec approved 2026-10-17; next is Design.
 
 ---
 
