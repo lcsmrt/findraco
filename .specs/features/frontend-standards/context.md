@@ -93,6 +93,24 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - `src/lib/` holds adapters around a library or browser API (`mergeClasses` wraps `clsx` + `tailwind-merge`; `storage` wraps `localStorage`). `src/utils/` holds our own pure functions with no external dependency (formatting, masking, calculating).
 - `lib/filterStorage.ts` is the home tabs' filter persistence, not generic, so it moves down the ladder to wherever the filter state lands (mobile-navigation Design).
 
+### Rule: check shadcn and Base UI before writing a component by hand (user, at B1)
+
+- Before building a UI component, check the shadcn registry (Base UI flavour) and Base UI itself. Install from shadcn when it exists; compose Base UI when shadcn lacks it; hand-write only what neither offers.
+- shadcn pieces worth remembering for later items: `Empty` (empty states), `Typography` (E4/C7), `Drawer` (bottom sheet), `Item` (list rows), `Tabs`, `Button Group`.
+
+### B1 — `ToggleGroup` from shadcn (Base UI)
+
+- Install `toggle-group` (and its `toggle` dependency) through the shadcn CLI once C8 is fixed, then move it to `toggleGroup/base/` and `toggle/base/`.
+- Edit the primitive (an app-wide change) to add `tone` colours (primary / destructive / success) and a `chip` variant.
+- `TransactionTypeToggle` becomes a ~10-line composition at the root. The recurrence mode toggle, the category limit mode toggle, the three `AttributionFields` toggles and `MemberFilterChips` use the primitive.
+- This also fixes a hidden defect: the hand-built toggles do not expose the selected state (`aria-pressed`) or arrow-key navigation.
+
+### B2 — Masked inputs
+
+- Integer inputs (installments) use Base UI `NumberField` (min 1, step 1). The 3 IIFE "digits only" inputs go away.
+- Money uses our own `CurrencyInput`, a composition over `Input`, with **ATM-style typing**: each digit enters from the right (1234 → R$ 12,34), numeric keypad only, as today and as in Brazilian banking apps. It **shows the mask but hands the form a number**. The masked string never leaves the component, so the 4 parse implementations go away. Neither shadcn nor Base UI offers this typing.
+- Rejected: Base UI `NumberField` with currency format (free typing with a comma, formatted on blur). User chose ATM-style typing.
+
 ---
 
 ## Process notes
