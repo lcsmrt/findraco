@@ -61,6 +61,7 @@ The code itself is not chaotic. The data layer, routing and forms follow their c
 | C6 | Shared components that are not presentational, and a shared component importing a feature (inverted dependency) | `components/navbar/Navbar.tsx` uses `useAuth` and imports `features/plans/components/PlanSwitcher`; `components/layout/` | App shell (layout, navbar, the new bottom bar) moves to `src/app/layout/`; `src/components/` stays presentational |
 | C7 | `SectionHeader` is shared but used once | `PlansPage.tsx` only | Keep it as the page/section heading primitive and adopt it, or fold it back into Plans. **Your call**, tied to D-typography (E4) |
 | C8 | `components.json` (shadcn CLI config) points at paths that do not exist | aliases `ui: @/components/ui`, `utils: @/lib/utils`, css `src/styles/globals.css`; the real files are `lib/mergeClasses.ts` and `src/index.css` | Fix the config so `npx shadcn add` installs where the primitives live |
+| C9 | No stated boundary between `src/lib/` and `src/utils/`, and a feature-specific module in `lib/` | `lib/` holds `mergeClasses`, `storage`, `filterStorage`; `utils/` holds `string/formatters`, `string/masks` | `lib/` = adapters around libraries and browser APIs; `utils/` = our pure functions; `filterStorage` moves to its feature |
 
 ## D. Size and separation of concerns
 

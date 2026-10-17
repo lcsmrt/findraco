@@ -84,6 +84,15 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 - Why: (1) a file exporting a Provider and a hook defeats Fast Refresh, and re-running it calls `createContext()` again, producing a new context object that already-mounted consumers do not match ("must be used within a provider" during dev); (2) consumers import only the hook, so Provider internals never touch them; (3) no exception to C1.
 - Applies to the 6 current providers (`app/providers/*` ×4, `CategoryFormSheet`, `SeriesScopeDialog`) and to future ones.
 
+### C8 — `components.json` points at the real names
+
+- `utils` → `@/lib/mergeClasses`, `css` → `src/index.css`, `ui` → `@/components`. The project's names are kept: `mergeClasses` describes its content where `utils` invites a junk drawer, and `index.css` is the Vite default (`globals.css` is a Next.js habit). Cost: a snippet pasted from the shadcn docs needs its `cn` import adjusted by hand.
+
+### C9 — `lib/` vs `utils/`
+
+- `src/lib/` holds adapters around a library or browser API (`mergeClasses` wraps `clsx` + `tailwind-merge`; `storage` wraps `localStorage`). `src/utils/` holds our own pure functions with no external dependency (formatting, masking, calculating).
+- `lib/filterStorage.ts` is the home tabs' filter persistence, not generic, so it moves down the ladder to wherever the filter state lands (mobile-navigation Design).
+
 ---
 
 ## Process notes
