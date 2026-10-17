@@ -85,5 +85,5 @@
 - **Other queue**: M5-05 Claude MCP connector, M5-07 PWA, M5-10 i18n (new), local Docker DB quick task. Server hardening ideas not started: Portainer ports `9000`/`9443` public, cert-expiry alert
 - **Runtime state**: API runs detached (`setsid nohup ./mvnw spring-boot:run`), log `backend/target/api.log`; stop with `pgrep -f spring-boot:run | xargs kill`. Vite dev server on :5173. DB via SSH tunnel `ssh -f -N -L 5432:localhost:5432 vps`. `./mvnw verify` empties `dev_finsight`
 - **Blockers**: none. `npm run lint` fails with 66 errors (the audit numbers them)
-- **Uncommitted files**: `frontend/src/app/routing/PrivateRoute.tsx` (`&apos;` → `'`), not made in this session; left untouched for the user to review
+- **Uncommitted files**: none
 - **Branch**: main (local commits not pushed)
