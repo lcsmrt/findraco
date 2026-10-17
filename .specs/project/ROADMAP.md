@@ -20,6 +20,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 | M5-06 | **Period navigator (month)** | Prev/next arrows step one month; clicking the current month opens a custom-range picker. Later: step by quarter/semester/year when that granularity is selected (parked 2026-10-11 — start with month only). | User — 2026-10-11 |
 | M5-07 | **PWA (installable)** | Make the web app installable on the phone (manifest, icons, service worker; offline read and push later). Builds on the mobile-first layout of the categories UX round. | User — 2026-10-12 |
 | M5-08 | **Session persistence** ✅ SHIPPED 2026-10-16 (UAT approved) (spec: `.specs/features/session-persistence/`) | An expired session shows empty pages instead of redirecting to login, and the 24h JWT forces a sign-in every day. Fix the expiry handling and add renewable 30-day sessions. | User — 2026-10-16 |
+| M5-09 | **Mobile navigation** (spec: `.specs/features/mobile-navigation/`) | Bottom bar on the phone (Overview · Transactions · + · Categories · Plans), global add from any screen, Plans as a destination; desktop tabs mirror it. First topic of the second categories UX round (one topic at a time). | User — 2026-10-16 |
 | M4-03 | **Expense Items P2** | Quantity input + itemized indicator in the transactions table; closes the visible gap left by P1. | M4 deferred |
 | M4-04 | **Expense Items P3** | Replicate items across series occurrences so a recurring grocery run stays itemized. | M4 deferred |
 
