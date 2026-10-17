@@ -15,7 +15,7 @@
 3. MSW setup and the session-refresh test (STD-04) — **decided**
 4. Where the home filter state lands when `features/home` is removed (STD-05) — **decided**
 5. `CurrencyInput` contract and the form binding standard (STD-06, STD-07) — **decided**
-6. Locale/currency source of `formatMoney` (STD-06)
+6. Locale/currency source of `formatMoney` (STD-06) — **decided**
 7. `Heading`/`Text` variant set (STD-08)
 8. Story and test gate scripts (STD-10/11)
 9. Local lint rule shape: logic cap + IIFE ban (STD-12)
@@ -171,6 +171,23 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 **Residual cost.** `FormField` is one more owned component and may attract per-case props (same watch as `FormSheet`). `onValueChange={field.onChange}` stays visible for Base UI-style inputs rather than renaming our props against Base UI's convention.
 
 **Reversibility.** `CurrencyInput` contract: medium (7 consumers, mechanical, guarded by form and mapper tests). Binding style: high, per field; both styles coexist in one form.
+
+---
+
+### 6. Money formatting reads one static module
+
+**Problem.** B6 asks for one locale/currency source. Today there are 21 formatting sites: `formatCurrency(value, "BRL")` repeated, three local `money` shortcuts, a hand-built compact `Intl.NumberFormat("pt-BR")` in the trend chart, a locale-less `toLocaleString()` in `Chart`, and the 11-entry currency → locale table in `maskCurrency`. The backend has no currency field.
+
+**Decision.** `src/utils/money.ts` holds `MONEY_LOCALE = "pt-BR"` and `MONEY_CURRENCY = "BRL"` and exports `formatMoney(value)`, `formatMoney(value, { compact: true })` (chart axis) and `toCents(value)`. `Amount` and `CurrencyInput` use it; the currency table and the `money` shortcuts go away. Screens call `Amount`, `CurrencyInput` or `formatMoney`, never `Intl`, a locale or a currency.
+
+**Rejected.**
+
+- Locale context + `useMoneyFormat()` now: invents a mechanism the i18n library (M5-10) will replace for dates, copy and plurals too, and would make `Amount` a container under F1 unless an "ambient provider" category is defined, which belongs to the i18n design.
+- Currency as a parameter at every call: repeats `"BRL"` at every site (today's problem) for data the backend does not have yet.
+
+**Residual cost.** The source is static. `toCents` assumes 2 fraction digits. Multi-currency (the user foresees transactions in more than one currency, e.g. a foreign account) will make currency per-value data and give `formatMoney` a currency argument; deliberately not designed now (user, 2026-10-17).
+
+**Reversibility.** High: one module plus the few direct call sites.
 
 ---
 
