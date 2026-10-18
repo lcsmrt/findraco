@@ -1958,8 +1958,10 @@ Notes: one per-case prop was needed: `submitDisabled` on `FormSheet`. A series e
 
 **Done when**:
 
-- [ ] Story: with title and description, mobile viewport
-- [ ] Full gate passes
+- [x] Story: with title and description, mobile viewport
+- [x] Full gate passes
+
+Notes: `AuthCard` takes `title`, `description?`, `children` and `className`; the title is the page's `<h1>` (typography moves to `Heading` in T92). All projects 662 → 666.
 
 **Tests**: story
 **Gate**: full
