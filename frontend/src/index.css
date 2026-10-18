@@ -80,7 +80,8 @@
   --muted-foreground: #6b675e;
   --accent: #f2ead6;
   --accent-foreground: #3d2a0a;
-  --destructive: #dc2626;
+  /* red-700: red-600 fell below 4.5:1 for text on the background and on the destructive/10 fill. */
+  --destructive: #b91c1c;
   --destructive-foreground: #fef2f2;
   --success: #16a34a;
   --success-foreground: #f0fdf4;

@@ -1226,10 +1226,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] `pnpm test` runs `unit`, `tooling` and `storybook`
-- [ ] Breaking an `aria` attribute in a story fails `pnpm test` (checked, then reverted)
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `pnpm test` runs `unit`, `tooling` and `storybook`
+- [x] Breaking an `aria` attribute in a story fails `pnpm test` (checked, then reverted)
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: story
 **Gate**: full

@@ -12,7 +12,7 @@ export default meta;
 type Story = StoryObj<typeof Checkbox>;
 
 export const Default: Story = {
-  render: () => <Checkbox />,
+  render: () => <Checkbox aria-label="Accept terms and conditions" />,
 };
 
 export const WithLabel: Story = {

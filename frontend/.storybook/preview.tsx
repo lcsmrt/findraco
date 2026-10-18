@@ -13,6 +13,8 @@ const preview: Preview = {
     docs: {
       theme: themes.dark,
     },
+    // A violation fails the story test: fix the component or the story, never the check.
+    a11y: { test: "error" },
   },
   decorators: [
     (Story) => {

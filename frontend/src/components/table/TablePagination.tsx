@@ -63,7 +63,7 @@ export const TablePagination = ({
             value={String(size)}
             onValueChange={(value) => onPageSizeChange(Number(value))}
           >
-            <SelectTrigger className="h-8 w-20">
+            <SelectTrigger className="h-8 w-20" aria-label="Lines per page">
               <SelectValue>{size}</SelectValue>
             </SelectTrigger>
             <SelectContent side="top">
@@ -91,6 +91,7 @@ export const TablePagination = ({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(0)}
+            aria-label="First page"
             disabled={first}
           >
             <ChevronsLeft className="h-4 w-4" />
@@ -99,6 +100,7 @@ export const TablePagination = ({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(Math.max(0, page - 1))}
+            aria-label="Previous page"
             disabled={first}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -110,6 +112,7 @@ export const TablePagination = ({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
+            aria-label="Next page"
             disabled={last}
           >
             <ChevronRight className="h-4 w-4" />
@@ -118,6 +121,7 @@ export const TablePagination = ({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(totalPages - 1)}
+            aria-label="Last page"
             disabled={last}
           >
             <ChevronsRight className="h-4 w-4" />

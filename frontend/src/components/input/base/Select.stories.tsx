@@ -23,7 +23,7 @@ type Story = StoryObj<typeof Select>;
 export const Default: Story = {
   render: () => (
     <Select>
-      <SelectTrigger className="w-48">
+      <SelectTrigger className="w-48" aria-label="Option">
         <SelectValue placeholder="Select an option" />
       </SelectTrigger>
       <SelectContent>
@@ -38,9 +38,9 @@ export const Default: Story = {
 export const WithField: Story = {
   render: () => (
     <Field className="w-48">
-      <FieldLabel>Role</FieldLabel>
+      <FieldLabel htmlFor="role">Role</FieldLabel>
       <Select>
-        <SelectTrigger>
+        <SelectTrigger id="role">
           <SelectValue placeholder="Select a role" />
         </SelectTrigger>
         <SelectContent>
@@ -56,7 +56,7 @@ export const WithField: Story = {
 export const WithGroups: Story = {
   render: () => (
     <Select>
-      <SelectTrigger className="w-48">
+      <SelectTrigger className="w-48" aria-label="Fruit">
         <SelectValue placeholder="Select a fruit" />
       </SelectTrigger>
       <SelectContent>
