@@ -1,17 +1,13 @@
 import { useCallback, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
-  OVERVIEW_PARAM_KEYS,
-  parseOverviewFilters,
   parseTab,
   parseTransactionFilters,
-  serializeOverviewFilters,
   serializeTab,
   serializeTransactionFilters,
   TAB_PARAM,
   TRANSACTION_PARAM_KEYS,
   type HomeTab,
-  type OverviewFilters,
   type TransactionFilters,
 } from "../filters/homeFilterParams";
 
@@ -39,10 +35,6 @@ export const useHomeFilters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const tab = parseTab(searchParams);
-  const overview = useMemo(
-    () => parseOverviewFilters(searchParams),
-    [searchParams],
-  );
   const transactions = useMemo(
     () => parseTransactionFilters(searchParams),
     [searchParams],
@@ -51,20 +43,6 @@ export const useHomeFilters = () => {
     (next: HomeTab) =>
       setSearchParams((prev) =>
         withParams(prev, [TAB_PARAM], serializeTab(next)),
-      ),
-    [setSearchParams],
-  );
-
-  const updateOverview = useCallback(
-    (update: (current: OverviewFilters) => OverviewFilters) =>
-      setSearchParams(
-        (prev) =>
-          withParams(
-            prev,
-            OVERVIEW_PARAM_KEYS,
-            serializeOverviewFilters(update(parseOverviewFilters(prev))),
-          ),
-        { replace: true },
       ),
     [setSearchParams],
   );
@@ -94,10 +72,8 @@ export const useHomeFilters = () => {
 
   return {
     tab,
-    overview,
     transactions,
     setTab,
-    updateOverview,
     updateTransactions,
     clearTransactions,
   };

@@ -1,7 +1,7 @@
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useEffect, useMemo } from "react";
-import { useHomeFilters } from "./useHomeFilters";
+import { useOverviewFilters } from "@/features/overview/filters/useOverviewFilters";
 
 // StandardCombobox requires an `id`; PlanMember keys on `userId`, so members are adapted to this shape.
 export type MemberOption = { id: number; name: string };
@@ -12,7 +12,7 @@ export type MemberOption = { id: number; name: string };
  * is dropped from the URL.
  */
 export const useOverviewMemberFilter = () => {
-  const { overview, updateOverview } = useHomeFilters();
+  const { overview, updateOverview } = useOverviewFilters();
   const { memberId } = overview;
 
   const { activePlanId } = usePlanContext();

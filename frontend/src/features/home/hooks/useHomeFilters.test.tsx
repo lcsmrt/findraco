@@ -61,28 +61,6 @@ describe("useHomeFilters", () => {
     expect(location.pathname).toBe("/other");
   });
 
-  it("writes an Overview filter change to the URL without adding a history entry", async () => {
-    setup("/?plan=1");
-
-    act(() =>
-      hook.updateOverview((o) => ({ ...o, period: "last-3m", memberId: 7 })),
-    );
-
-    expect(currentParams()).toEqual({
-      plan: "1",
-      period: "last-3m",
-      overviewMember: "7",
-    });
-    expect(hook.overview).toEqual({
-      period: "last-3m",
-      customRange: null,
-      memberId: 7,
-    });
-
-    await goBack();
-    expect(location.pathname).toBe("/other");
-  });
-
   it("pushes a history entry on tab switch so Back returns to the previous tab", async () => {
     setup("/?plan=1&period=last-6m");
 
@@ -101,7 +79,7 @@ describe("useHomeFilters", () => {
     expect(hook.tab).toBe("overview");
   });
 
-  it("updating one tab's filters leaves the other tab's params intact", () => {
+  it("updating the Transactions filters leaves the Overview params intact", () => {
     setup(
       "/?plan=1&tab=transactions&period=custom&periodFrom=2026-09-01&periodTo=2026-09-30&overviewMember=7&member=3&q=market",
     );
@@ -119,18 +97,6 @@ describe("useHomeFilters", () => {
       periodFrom: "2026-09-01",
       periodTo: "2026-09-30",
       overviewMember: "7",
-      member: "3",
-      q: "market",
-      min: "50",
-    });
-
-    act(() => hook.updateOverview((o) => ({ ...o, memberId: null })));
-    expect(currentParams()).toEqual({
-      plan: "1",
-      tab: "transactions",
-      period: "custom",
-      periodFrom: "2026-09-01",
-      periodTo: "2026-09-30",
       member: "3",
       q: "market",
       min: "50",
@@ -162,25 +128,14 @@ describe("useHomeFilters", () => {
     expect(location.pathname).toBe("/other");
   });
 
-  it("loads a legacy categoriesPeriod link without a Categories period and keeps it out of updates", () => {
+  it("loads a legacy categoriesPeriod link on the Categories tab without a Categories period", () => {
     setup(
       "/?plan=1&tab=categories&period=last-3m&categoriesPeriod=custom&categoriesPeriodFrom=2026-09-01&categoriesPeriodTo=2026-09-30",
     );
 
     expect(hook.tab).toBe("categories");
-    expect(hook.overview.period).toBe("last-3m");
     expect("categories" in hook).toBe(false);
     expect("updateCategories" in hook).toBe(false);
-
-    act(() => hook.updateOverview((o) => ({ ...o, period: "last-6m" })));
-    expect(currentParams()).toEqual({
-      plan: "1",
-      tab: "categories",
-      period: "last-6m",
-      categoriesPeriod: "custom",
-      categoriesPeriodFrom: "2026-09-01",
-      categoriesPeriodTo: "2026-09-30",
-    });
   });
 
   it("switches to the Categories tab", () => {

@@ -8,8 +8,8 @@ import { useMemo } from "react";
 import {
   resolvePeriodDates,
   type Period,
-} from "../../filters/homeFilterParams";
-import { useHomeFilters } from "../../hooks/useHomeFilters";
+} from "@/features/overview/filters/overviewParams";
+import { useOverviewFilters } from "@/features/overview/filters/useOverviewFilters";
 import { PeriodNavigator } from "../PeriodNavigator";
 import { countMonths } from "../../utils/scaleLimits";
 import { useMemberColors } from "../../utils/memberColors";
@@ -26,7 +26,7 @@ import { summaryView } from "./summaryView";
 import { fillTrendMonths, trendWindow } from "./trendMonths";
 
 export const OverviewTab = () => {
-  const { overview, updateOverview } = useHomeFilters();
+  const { overview, updateOverview } = useOverviewFilters();
   const { period, customRange } = overview;
   const { memberOptions, showMemberPicker, selectedMember, effectiveMemberId } =
     useOverviewMemberFilter();

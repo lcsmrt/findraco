@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CategoryBreakdown, CategorySpending, CategorySpendingMember } from "@/api/dtos";
-import { resolvePeriodDates } from "../filters/homeFilterParams";
+import { resolvePeriodDates } from "@/features/overview/filters/overviewParams";
 import { countMonths, scaleLimit, scaleMemberLimit, scaleTreeLimits } from "./scaleLimits";
 
 const now = new Date(2026, 9, 11); // 2026-10-11

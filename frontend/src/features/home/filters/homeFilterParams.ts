@@ -3,27 +3,10 @@ import type {
   FinancialTransactionType,
   PagedFinancialTransactionsFilter,
 } from "@/api/dtos/financialTransaction";
-import {
-  endOfMonth,
-  endOfYear,
-  format,
-  isValid,
-  parseISO,
-  startOfMonth,
-  startOfYear,
-  subMonths,
-} from "date-fns";
+import { parseDate, parseId } from "@/utils/searchParams";
 
-export type Period = "this-month" | "last-3m" | "last-6m" | "this-year";
 export type HomeTab = "overview" | "transactions" | "categories";
 export type SortDirection = "asc" | "desc";
-
-export type OverviewFilters = {
-  period: Period;
-  /** Absolute range; when set it takes precedence over `period`. */
-  customRange: { from: string; to: string } | null;
-  memberId: number | null;
-};
 
 export type TransactionFilters = {
   filter: PagedFinancialTransactionsFilter;
@@ -31,18 +14,11 @@ export type TransactionFilters = {
   size: number;
 };
 
-export const DEFAULT_PERIOD: Period = "this-month";
 export const DEFAULT_TAB: HomeTab = "overview";
 export const DEFAULT_PAGE_SIZE = 10;
 
 export const PLAN_PARAM = "plan";
 export const TAB_PARAM = "tab";
-export const OVERVIEW_PARAM_KEYS = [
-  "period",
-  "periodFrom",
-  "periodTo",
-  "overviewMember",
-] as const;
 export const TRANSACTION_PARAM_KEYS = [
   "type",
   "category",
@@ -57,12 +33,6 @@ export const TRANSACTION_PARAM_KEYS = [
 ] as const;
 
 const TABS: readonly HomeTab[] = ["overview", "transactions", "categories"];
-const PERIODS: readonly Period[] = [
-  "this-month",
-  "last-3m",
-  "last-6m",
-  "this-year",
-];
 const TYPES: readonly FinancialTransactionType[] = ["CREDIT", "DEBIT"];
 const SORT_FIELDS: readonly FinancialTransactionSortBy[] = [
   "startDate",
@@ -72,20 +42,6 @@ const SORT_FIELDS: readonly FinancialTransactionSortBy[] = [
   "category",
   "attributedTo",
 ];
-
-const DATE_FORMAT = "yyyy-MM-dd";
-const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
-
-const parseId = (value: string | null): number | null => {
-  if (value == null || !/^\d+$/.test(value)) return null;
-  const n = Number(value);
-  return Number.isSafeInteger(n) && n > 0 ? n : null;
-};
-
-const parseDate = (value: string | null): string | null => {
-  if (value == null || !DATE_PATTERN.test(value)) return null;
-  return isValid(parseISO(value)) ? value : null;
-};
 
 const parseAmount = (value: string | null): number | null => {
   if (value == null || !/^\d+(\.\d+)?$/.test(value)) return null;
@@ -112,40 +68,6 @@ export const parseTab = (params: URLSearchParams): HomeTab =>
 
 export const serializeTab = (tab: HomeTab): Record<string, string> =>
   tab === DEFAULT_TAB ? {} : { [TAB_PARAM]: tab };
-
-export const parseOverviewFilters = (
-  params: URLSearchParams,
-): OverviewFilters => {
-  const memberId = parseId(params.get("overviewMember"));
-  const rawPeriod = params.get("period");
-
-  if (rawPeriod === "custom") {
-    const from = parseDate(params.get("periodFrom"));
-    const to = parseDate(params.get("periodTo"));
-    if (from && to && from <= to) {
-      return { period: DEFAULT_PERIOD, customRange: { from, to }, memberId };
-    }
-    return { period: DEFAULT_PERIOD, customRange: null, memberId };
-  }
-
-  const period = PERIODS.find((p) => p === rawPeriod) ?? DEFAULT_PERIOD;
-  return { period, customRange: null, memberId };
-};
-
-export const serializeOverviewFilters = (
-  filters: OverviewFilters,
-): Record<string, string> => {
-  const out: Record<string, string> = {};
-  if (filters.customRange) {
-    out.period = "custom";
-    out.periodFrom = filters.customRange.from;
-    out.periodTo = filters.customRange.to;
-  } else if (filters.period !== DEFAULT_PERIOD) {
-    out.period = filters.period;
-  }
-  if (filters.memberId != null) out.overviewMember = String(filters.memberId);
-  return out;
-};
 
 export const parseTransactionFilters = (
   params: URLSearchParams,
@@ -194,28 +116,4 @@ export const serializeTransactionFilters = (
   if (sort) out.sort = `${sort.by}.${sort.direction}`;
   if (size !== DEFAULT_PAGE_SIZE) out.size = String(size);
   return out;
-};
-
-/** Resolves a preset token to an inclusive `yyyy-MM-dd` range relative to `now`. */
-export const resolvePeriodDates = (period: Period, now: Date) => {
-  const fmt = (d: Date) => format(d, DATE_FORMAT);
-  switch (period) {
-    case "this-month":
-      return {
-        startDate: fmt(startOfMonth(now)),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "last-3m":
-      return {
-        startDate: fmt(startOfMonth(subMonths(now, 2))),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "last-6m":
-      return {
-        startDate: fmt(startOfMonth(subMonths(now, 5))),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "this-year":
-      return { startDate: fmt(startOfYear(now)), endDate: fmt(endOfYear(now)) };
-  }
 };
