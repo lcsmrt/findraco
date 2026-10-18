@@ -1180,11 +1180,11 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] No custom adapter
-- [ ] 401 → refresh → retry test passes through MSW
-- [ ] Same scenario list as before
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No custom adapter
+- [x] 401 → refresh → retry test passes through MSW
+- [x] Same scenario list as before
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick

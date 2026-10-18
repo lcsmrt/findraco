@@ -1,111 +1,96 @@
-import {
-  AxiosError,
-  type AxiosAdapter,
-  type AxiosResponse,
-  type InternalAxiosRequestConfig,
-} from "axios";
+import { waitFor } from "@testing-library/react";
+import { AxiosError } from "axios";
+import { http, HttpResponse, type HttpHandler } from "msw";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { LoginResponse } from "../dtos";
+import { recordRequests } from "@/test/recordRequests";
+import { server } from "@/test/server";
 import { getAccessToken, setAccessToken } from "./accessToken";
 import { findracoApi, setSessionExpiredHandler } from "./findracoApi";
 import { SessionExpiredError } from "./sessionExpiredError";
 
-type RecordedCall = {
-  url?: string;
-  authorization: unknown;
-  withCredentials?: boolean;
-};
-
 type RefreshOutcome = "ok" | "unauthorized" | "network";
 
+type Deferred = { promise: Promise<void>; resolve: () => void };
+
 const AUTH_REQUIRED = { message: "Authentication required." };
+const PROTECTED_URLS = ["/plans", "/categories", "/transactions"];
+const API_PATH = "/api/findraco";
 
-const respond = (
-  config: InternalAxiosRequestConfig,
-  status: number,
-  data: unknown,
-): Promise<AxiosResponse> => {
-  const response: AxiosResponse = {
-    data,
-    status,
-    statusText: "",
-    headers: {},
-    config,
-  };
+function deferred(): Deferred {
+  let resolve: () => void = () => {};
+  const promise = new Promise<void>((settle) => {
+    resolve = settle;
+  });
+  return { promise, resolve };
+}
 
-  if (status >= 200 && status < 300) return Promise.resolve(response);
-
-  return Promise.reject(
-    new AxiosError(
-      `Request failed with status code ${status}`,
-      AxiosError.ERR_BAD_REQUEST,
-      config,
-      null,
-      response,
-    ),
+/** Protected routes accept only "Bearer new-token" (or nothing, when `acceptRenewedToken` is false). */
+function protectedRoutes({ acceptRenewedToken = true } = {}): HttpHandler[] {
+  return PROTECTED_URLS.map((url) =>
+    http.get(`*${API_PATH}${url}`, ({ request }) => {
+      const accepted =
+        acceptRenewedToken && request.headers.get("Authorization") === "Bearer new-token";
+      return accepted
+        ? HttpResponse.json({ url })
+        : HttpResponse.json(AUTH_REQUIRED, { status: 401 });
+    }),
   );
-};
+}
 
-const networkError = (config: InternalAxiosRequestConfig) =>
-  Promise.reject(
-    new AxiosError("Network Error", AxiosError.ERR_NETWORK, config, null),
+/** The refresh endpoint answers per `outcome`, after `hold` resolves when one is given. */
+function refreshRoute(outcome: RefreshOutcome, hold?: Promise<void>): HttpHandler {
+  return http.post<Record<string, never>, never, LoginResponse | typeof AUTH_REQUIRED>(
+    `*${API_PATH}/auth/refresh`,
+    async () => {
+      await hold;
+      if (outcome === "network") return HttpResponse.error();
+      if (outcome === "unauthorized") return HttpResponse.json(AUTH_REQUIRED, { status: 401 });
+      return HttpResponse.json({ token: "new-token" });
+    },
   );
+}
 
-const flushMicrotasks = () =>
-  new Promise<void>((resolve) => setTimeout(resolve, 0));
+function loginRejected(): HttpHandler {
+  return http.post(`*${API_PATH}/auth/login`, () =>
+    HttpResponse.json({ message: "Invalid username or password." }, { status: 401 }),
+  );
+}
+
+function pathOf(request: Request) {
+  return new URL(request.url).pathname.replace(API_PATH, "");
+}
+
+function callsTo(requests: Request[], url: string) {
+  return requests.filter((request) => pathOf(request) === url);
+}
+
+function authorizations(requests: Request[], url: string) {
+  return callsTo(requests, url).map((request) => request.headers.get("Authorization"));
+}
 
 /**
- * Scripted backend: protected routes accept only "Bearer new-token"; the
- * refresh endpoint answers per `refreshOutcome` once `releaseRefresh()` runs
- * (or immediately when `holdRefresh` is false).
+ * Sends the three protected requests and resolves `hold` once every one has had its 401 settled,
+ * so all of them reach the interceptor while the single renewal is still pending. axios calls
+ * `validateStatus` when it settles a response; from there to the interceptor is only microtasks,
+ * so one macrotask later every interceptor has joined the renewal.
  */
-const createBackend = (options: {
-  refreshOutcome: RefreshOutcome;
-  holdRefresh?: boolean;
-  acceptRenewedToken?: boolean;
-}) => {
-  const calls: RecordedCall[] = [];
-  let release: () => void = () => {};
-  const refreshGate = new Promise<void>((resolve) => {
-    release = resolve;
-  });
+function sendThreeThenRelease(hold: Deferred) {
+  const settled = new Set<string>();
+  const requests = PROTECTED_URLS.map((url) =>
+    findracoApi.get(url, {
+      validateStatus(status) {
+        settled.add(url);
+        return status >= 200 && status < 300;
+      },
+    }),
+  );
+  const released = waitFor(() => expect(settled.size).toBe(PROTECTED_URLS.length))
+    .then(() => new Promise((resolve) => setTimeout(resolve, 0)))
+    .then(() => hold.resolve());
+  return { requests, released };
+}
 
-  const adapter: AxiosAdapter = async (config) => {
-    calls.push({
-      url: config.url,
-      authorization: config.headers.Authorization,
-      withCredentials: config.withCredentials,
-    });
-
-    if (config.url === "/auth/login") {
-      return respond(config, 401, {
-        message: "Invalid username or password.",
-      });
-    }
-
-    if (config.url === "/auth/refresh") {
-      if (options.holdRefresh) await refreshGate;
-      if (options.refreshOutcome === "network") return networkError(config);
-      if (options.refreshOutcome === "unauthorized") {
-        return respond(config, 401, AUTH_REQUIRED);
-      }
-      return respond(config, 200, { token: "new-token" });
-    }
-
-    const accepted =
-      (options.acceptRenewedToken ?? true) &&
-      config.headers.Authorization === "Bearer new-token";
-
-    return accepted
-      ? respond(config, 200, { url: config.url })
-      : respond(config, 401, AUTH_REQUIRED);
-  };
-
-  const callsTo = (url: string) => calls.filter((call) => call.url === url);
-
-  return { adapter, calls, callsTo, releaseRefresh: () => release() };
-};
-
-const originalAdapter = findracoApi.defaults.adapter;
 const expiredHandler = vi.fn();
 
 beforeEach(() => {
@@ -114,7 +99,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  findracoApi.defaults.adapter = originalAdapter;
   setAccessToken(null);
   expiredHandler.mockReset();
   Reflect.deleteProperty(navigator, "locks");
@@ -122,102 +106,81 @@ afterEach(() => {
 
 describe("findracoApi request defaults", () => {
   it("sends the in-memory access token as a Bearer header and includes credentials", async () => {
-    const backend = createBackend({ refreshOutcome: "ok" });
-    findracoApi.defaults.adapter = backend.adapter;
+    server.use(...protectedRoutes());
+    const requests = recordRequests();
     setAccessToken("new-token");
 
     await findracoApi.get("/plans");
 
-    expect(backend.calls).toEqual([
-      {
-        url: "/plans",
-        authorization: "Bearer new-token",
-        withCredentials: true,
-      },
-    ]);
+    expect(
+      requests.map((request) => ({
+        url: pathOf(request),
+        authorization: request.headers.get("Authorization"),
+        credentials: request.credentials,
+      })),
+    ).toEqual([{ url: "/plans", authorization: "Bearer new-token", credentials: "include" }]);
   });
 });
 
 describe("findracoApi session renewal", () => {
-  it("renews once on a 401 and resolves with the retried request's data", async () => {
+  it("renews once on a 401 and retries the request with the new token (401 → refresh → retry)", async () => {
     expect(navigator.locks).toBeUndefined();
-    const backend = createBackend({ refreshOutcome: "ok" });
-    findracoApi.defaults.adapter = backend.adapter;
+    server.use(...protectedRoutes(), refreshRoute("ok"));
+    const requests = recordRequests();
 
     const response = await findracoApi.get("/plans");
 
     expect(response.data).toEqual({ url: "/plans" });
-    expect(backend.callsTo("/auth/refresh")).toHaveLength(1);
-    expect(backend.callsTo("/plans").map((call) => call.authorization)).toEqual(
-      ["Bearer old-token", "Bearer new-token"],
-    );
+    expect(requests.map(pathOf)).toEqual(["/plans", "/auth/refresh", "/plans"]);
+    expect(authorizations(requests, "/plans")).toEqual(["Bearer old-token", "Bearer new-token"]);
+    expect(callsTo(requests, "/auth/refresh")[0].credentials).toBe("include");
     expect(getAccessToken()).toBe("new-token");
     expect(expiredHandler).not.toHaveBeenCalled();
   });
 
   it("renews once for three simultaneous 401s and retries each request", async () => {
-    const backend = createBackend({ refreshOutcome: "ok", holdRefresh: true });
-    findracoApi.defaults.adapter = backend.adapter;
+    const hold = deferred();
+    server.use(...protectedRoutes(), refreshRoute("ok", hold.promise));
+    const requests = recordRequests();
 
-    const requests = Promise.all([
-      findracoApi.get("/plans"),
-      findracoApi.get("/categories"),
-      findracoApi.get("/transactions"),
-    ]);
-    await flushMicrotasks();
-    backend.releaseRefresh();
-    const responses = await requests;
+    const { requests: sent, released } = sendThreeThenRelease(hold);
+    await released;
 
-    expect(responses.map((response) => response.data)).toEqual([
+    expect((await Promise.all(sent)).map((response) => response.data)).toEqual([
       { url: "/plans" },
       { url: "/categories" },
       { url: "/transactions" },
     ]);
-    expect(backend.callsTo("/auth/refresh")).toHaveLength(1);
-    for (const url of ["/plans", "/categories", "/transactions"]) {
-      expect(
-        backend.callsTo(url).map((call) => call.authorization),
-      ).toEqual(["Bearer old-token", "Bearer new-token"]);
+    expect(callsTo(requests, "/auth/refresh")).toHaveLength(1);
+    for (const url of PROTECTED_URLS) {
+      expect(authorizations(requests, url)).toEqual(["Bearer old-token", "Bearer new-token"]);
     }
   });
 
   it("calls the expiry handler once and rejects all three requests with a session-expired error when renewal answers 401", async () => {
-    const backend = createBackend({
-      refreshOutcome: "unauthorized",
-      holdRefresh: true,
-    });
-    findracoApi.defaults.adapter = backend.adapter;
+    const hold = deferred();
+    server.use(...protectedRoutes(), refreshRoute("unauthorized", hold.promise));
+    const requests = recordRequests();
 
-    const requests = Promise.allSettled([
-      findracoApi.get("/plans"),
-      findracoApi.get("/categories"),
-      findracoApi.get("/transactions"),
-    ]);
-    await flushMicrotasks();
-    backend.releaseRefresh();
-    const results = await requests;
+    const { requests: sent, released } = sendThreeThenRelease(hold);
+    await released;
+    const results = await Promise.allSettled(sent);
 
-    expect(results.map((result) => result.status)).toEqual([
-      "rejected",
-      "rejected",
-      "rejected",
-    ]);
-    const urls = ["/plans", "/categories", "/transactions"];
+    expect(results.map((result) => result.status)).toEqual(["rejected", "rejected", "rejected"]);
     results.forEach((result, index) => {
       if (result.status !== "rejected") throw new Error("Expected a rejection");
       expect(result.reason).toBeInstanceOf(SessionExpiredError);
       expect(result.reason.original).toMatchObject({
-        config: { url: urls[index] },
+        config: { url: PROTECTED_URLS[index] },
         response: { status: 401, data: AUTH_REQUIRED },
       });
     });
-    expect(backend.callsTo("/auth/refresh")).toHaveLength(1);
+    expect(callsTo(requests, "/auth/refresh")).toHaveLength(1);
     expect(expiredHandler).toHaveBeenCalledTimes(1);
   });
 
   it("rejects with the original error and keeps the session when renewal fails without a response", async () => {
-    const backend = createBackend({ refreshOutcome: "network" });
-    findracoApi.defaults.adapter = backend.adapter;
+    server.use(...protectedRoutes(), refreshRoute("network"));
 
     const error = await findracoApi.get("/plans").catch((e: unknown) => e);
 
@@ -231,8 +194,8 @@ describe("findracoApi session renewal", () => {
   });
 
   it("does not renew when /auth/login answers 401", async () => {
-    const backend = createBackend({ refreshOutcome: "ok" });
-    findracoApi.defaults.adapter = backend.adapter;
+    server.use(loginRejected());
+    const requests = recordRequests();
 
     const error = await findracoApi
       .post("/auth/login", { email: "a@b.c", password: "wrong" })
@@ -244,53 +207,51 @@ describe("findracoApi session renewal", () => {
         data: { message: "Invalid username or password." },
       },
     });
-    expect(backend.calls.map((call) => call.url)).toEqual(["/auth/login"]);
+    expect(requests.map(pathOf)).toEqual(["/auth/login"]);
     expect(expiredHandler).not.toHaveBeenCalled();
   });
 
   it("does not retry a retried request a second time", async () => {
-    const backend = createBackend({
-      refreshOutcome: "ok",
-      acceptRenewedToken: false,
-    });
-    findracoApi.defaults.adapter = backend.adapter;
+    server.use(...protectedRoutes({ acceptRenewedToken: false }), refreshRoute("ok"));
+    const requests = recordRequests();
 
     const error = await findracoApi.get("/plans").catch((e: unknown) => e);
 
     expect(error).toMatchObject({ response: { status: 401 } });
-    expect(backend.callsTo("/plans")).toHaveLength(2);
-    expect(backend.callsTo("/auth/refresh")).toHaveLength(1);
+    expect(callsTo(requests, "/plans")).toHaveLength(2);
+    expect(callsTo(requests, "/auth/refresh")).toHaveLength(1);
   });
 
   it("runs the renewal inside the cross-tab Web Lock when the browser supports it", async () => {
     let lockHeld = false;
-    const request = vi.fn(
-      async (name: string, callback: (lock: Lock | null) => unknown) => {
-        lockHeld = true;
-        try {
-          return await callback({ name, mode: "exclusive" });
-        } finally {
-          lockHeld = false;
-        }
-      },
-    );
+    const request = vi.fn(async (name: string, callback: (lock: Lock | null) => unknown) => {
+      lockHeld = true;
+      try {
+        return await callback({ name, mode: "exclusive" });
+      } finally {
+        lockHeld = false;
+      }
+    });
     Object.defineProperty(navigator, "locks", {
       value: { request },
       configurable: true,
     });
-
-    const backend = createBackend({ refreshOutcome: "ok" });
     const lockStateAtRefresh: boolean[] = [];
-    findracoApi.defaults.adapter = (config) => {
-      if (config.url === "/auth/refresh") lockStateAtRefresh.push(lockHeld);
-      return backend.adapter(config);
-    };
+    function recordLockState({ request: sent }: { request: Request }) {
+      if (pathOf(sent) === "/auth/refresh") lockStateAtRefresh.push(lockHeld);
+    }
+    server.events.on("request:start", recordLockState);
+    server.use(...protectedRoutes(), refreshRoute("ok"));
 
-    const response = await findracoApi.get("/plans");
+    try {
+      const response = await findracoApi.get("/plans");
 
-    expect(response.data).toEqual({ url: "/plans" });
-    expect(request).toHaveBeenCalledTimes(1);
-    expect(request.mock.calls[0][0]).toBe("findraco-session-renewal");
-    expect(lockStateAtRefresh).toEqual([true]);
+      expect(response.data).toEqual({ url: "/plans" });
+      expect(request).toHaveBeenCalledTimes(1);
+      expect(request.mock.calls[0][0]).toBe("findraco-session-renewal");
+      expect(lockStateAtRefresh).toEqual([true]);
+    } finally {
+      server.events.removeListener("request:start", recordLockState);
+    }
   });
 });
