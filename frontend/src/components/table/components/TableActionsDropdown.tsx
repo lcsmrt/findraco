@@ -8,20 +8,20 @@ import {
 } from "../../dropdown/Dropdown";
 import { EllipsisVertical } from "lucide-react";
 
-export type ColumnAction = {
+export type ColumnAction<T> = {
   label: string;
-  onClick: (...args: any) => void;
+  onClick: (row: Row<T>) => void;
   icon?: React.ReactNode;
-  conditionalRenderingFunctions?: ((...args: any) => boolean)[];
-}
+  conditionalRenderingFunctions?: ((original: T) => boolean)[];
+};
 
-type ColumnActionDropdownProps = {
-  columnActions?: ColumnAction[];
-  row: Row<any>;
+type ColumnActionDropdownProps<T> = {
+  columnActions?: ColumnAction<T>[];
+  row: Row<T>;
   subtle?: boolean;
-}
+};
 
-export const TableActionsDropdown = ({ columnActions, row, subtle }: ColumnActionDropdownProps) => {
+export function TableActionsDropdown<T>({ columnActions, row, subtle }: ColumnActionDropdownProps<T>) {
   const filteredActions = columnActions?.filter((action) => {
     if (!action.conditionalRenderingFunctions) return true;
     return action.conditionalRenderingFunctions.every((fn) => fn(row.original));
@@ -55,4 +55,4 @@ export const TableActionsDropdown = ({ columnActions, row, subtle }: ColumnActio
       </DropdownMenuContent>
     </DropdownMenu>
   );
-};
+}

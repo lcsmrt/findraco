@@ -1,25 +1,30 @@
 import {
   type ColumnDef,
   type Row,
+  type Table as TanstackTable,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronRight } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { cn } from "@/lib/mergeClasses";
-import { TableContext } from "./useTable";
 
 type TableProps<T> = {
   data: T[];
-  columns: ColumnDef<T, any>[];
+  columns: ColumnDef<T>[];
   tableId: string;
-  children: ReactNode;
+  /**
+   * Receives the table instance. A render prop instead of a context: TanStack's `Table<T>` is
+   * invariant in `T`, so a context could only hold it as `Table<any>`, and the row type would be lost
+   * between `data` and `TableContent`.
+   */
+  children: (table: TanstackTable<T>) => ReactNode;
   getRowCanExpand?: (row: Row<T>) => boolean;
   border?: "none" | "x" | "y" | "all";
   className?: string;
 };
 
-export const TableRoot = <T,>({
+export function TableRoot<T>({
   data,
   columns,
   tableId,
@@ -27,13 +32,13 @@ export const TableRoot = <T,>({
   getRowCanExpand,
   border = "y",
   className,
-}: TableProps<T>) => {
+}: TableProps<T>) {
   const expandable = !!getRowCanExpand;
 
   const allColumns = useMemo(() => {
     if (!expandable) return columns;
 
-    const expanderColumn: ColumnDef<T, unknown> = {
+    const expanderColumn: ColumnDef<T> = {
       id: "__expander",
       header: () => null,
       cell: ({ row }) => {
@@ -65,20 +70,18 @@ export const TableRoot = <T,>({
   });
 
   return (
-    <TableContext.Provider value={{ table }}>
-      <div
-        id={tableId}
-        className={cn(
-          "overflow-x-auto w-full max-w-full mx-auto",
-          border === "none" && "border-none",
-          border === "x" && "border-x border-border",
-          border === "y" && "border-y border-border",
-          border === "all" && "border border-border",
-          className,
-        )}
-      >
-        {children}
-      </div>
-    </TableContext.Provider>
+    <div
+      id={tableId}
+      className={cn(
+        "overflow-x-auto w-full max-w-full mx-auto",
+        border === "none" && "border-none",
+        border === "x" && "border-x border-border",
+        border === "y" && "border-y border-border",
+        border === "all" && "border border-border",
+        className,
+      )}
+    >
+      {children(table)}
+    </div>
   );
-};
+}

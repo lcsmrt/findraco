@@ -352,17 +352,22 @@ export const TransactionsTab = () => {
           data={financialTransactionsData?.content || []}
           columns={columns}
         >
-          <TableContent
-            sorting={sorting}
-            onSortChange={onSortChange}
-            emptyState="No transactions found."
-            isLoading={isLoadingTransactions}
-          />
-          <TablePagination
-            pagination={pagination}
-            onPageChange={onPageChange}
-            onPageSizeChange={onPageSizeChange}
-          />
+          {(table) => (
+            <>
+              <TableContent
+                table={table}
+                sorting={sorting}
+                onSortChange={onSortChange}
+                emptyState="No transactions found."
+                isLoading={isLoadingTransactions}
+              />
+              <TablePagination
+                pagination={pagination}
+                onPageChange={onPageChange}
+                onPageSizeChange={onPageSizeChange}
+              />
+            </>
+          )}
         </Table>
       </div>
 

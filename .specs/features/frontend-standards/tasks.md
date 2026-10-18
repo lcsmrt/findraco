@@ -929,10 +929,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] 0 `no-explicit-any` and `prefer-const` errors
-- [ ] `cols.test.ts` covers every branch
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] 0 `no-explicit-any` and `prefer-const` errors
+- [x] `cols.test.ts` covers every branch
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick

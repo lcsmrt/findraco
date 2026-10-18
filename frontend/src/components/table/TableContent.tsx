@@ -1,11 +1,11 @@
-import type { Row } from "@tanstack/react-table";
+import type { Row, Table } from "@tanstack/react-table";
 import type { ReactNode } from "react";
-import { useTable } from "./useTable";
 import { TableBody } from "./components/TableBody";
 import { type Sorting, TableHeader } from "./components/TableHeader";
 import { TableBase } from "./components/TableParts";
 
 type TableContentProps<TData> = {
+  table: Table<TData>;
   sorting?: Sorting<TData>[];
   onSortChange?: (sorting: Sorting<TData>[]) => void;
   stickyHeader?: boolean;
@@ -14,16 +14,15 @@ type TableContentProps<TData> = {
   isLoading?: boolean;
 };
 
-export const TableContent = <TData,>({
+export function TableContent<TData>({
+  table,
   sorting,
   onSortChange,
   stickyHeader,
   renderSubComponent,
   emptyState,
   isLoading,
-}: TableContentProps<TData>) => {
-  const { table } = useTable();
-
+}: TableContentProps<TData>) {
   return (
     <TableBase className="w-full">
       <TableHeader
@@ -40,4 +39,4 @@ export const TableContent = <TData,>({
       />
     </TableBase>
   );
-};
+}

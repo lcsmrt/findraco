@@ -74,12 +74,16 @@ export const Default: Story = {
           columns={columns}
           tableId="user-table"
         >
-          <TableContent />
-          <TablePagination
-            pagination={pagination}
-            onPageChange={setPage}
-            onPageSizeChange={setSize}
-          />
+          {(table) => (
+            <>
+              <TableContent table={table} />
+              <TablePagination
+                pagination={pagination}
+                onPageChange={setPage}
+                onPageSizeChange={setSize}
+              />
+            </>
+          )}
         </Table>
       </div>
     );

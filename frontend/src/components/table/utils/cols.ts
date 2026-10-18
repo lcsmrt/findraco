@@ -1,19 +1,22 @@
 import type { ColumnDef, Table } from "@tanstack/react-table";
 
+/** A column definition with an explicit `id`: sizes are keyed by it. */
+type IdentifiedColumnDef<T> = ColumnDef<T> & { id: string };
+
 export function getInitialColumnSizing<T>(
-  columns: ColumnDef<T, any>[],
+  columns: IdentifiedColumnDef<T>[],
   containerWidth: number
 ): Record<string, number> {
   const fixedSizes: Record<string, number> = {};
   let totalFixed = 0;
-  let autoColumns: string[] = [];
+  const autoColumns: string[] = [];
 
   columns.forEach((col) => {
     if (typeof col.size === "number") {
-      fixedSizes[col.id as string] = col.size;
+      fixedSizes[col.id] = col.size;
       totalFixed += col.size;
     } else {
-      autoColumns.push(col.id as string);
+      autoColumns.push(col.id);
     }
   });
 
