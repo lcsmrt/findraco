@@ -404,9 +404,9 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Defines what gets a unit test, a story, an integration test and an E2E test
-- [ ] Contains the story checklist and the "no `vi.mock` of our modules in flow tests" rule
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] Defines what gets a unit test, a story, an integration test and an E2E test
+- [x] Contains the story checklist and the "no `vi.mock` of our modules in flow tests" rule
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
