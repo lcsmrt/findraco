@@ -35,6 +35,13 @@ export const planHandlers = {
       HttpResponse.json(plan, { status: 201 }),
     );
   },
+  /** Fails once `release` resolves, so a test can see the request in flight first. */
+  createNetworkError(release: Promise<void> = Promise.resolve()): HttpHandler {
+    return http.post("*/plan", async () => {
+      await release;
+      return HttpResponse.error();
+    });
+  },
   rename(plan: PlanResponse): HttpHandler {
     return http.put<PlanParams, UpdatePlanRequest["body"], PlanResponse>("*/plan/:planId", () =>
       HttpResponse.json(plan),

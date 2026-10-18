@@ -2063,6 +2063,8 @@ Follow-up (`refactor(frontend): move auth form schemas to form modules`): the fo
 
 Notes: the props are a union: `mode: "create"` takes `onSuccess?`, `mode: "rename"` requires `plan`, so a rename without a plan does not compile. `createPlanForm.ts` became `planNameForm.ts` (`planNameSchema`, the one schema both dialogs had) and its test moved with it. The dialog is now a `<form>`, so Enter submits. Submit picks between two mutations inline; the dialog stays far under the logic cap, so no `usePlanNameSubmit` hook was extracted.
 
+Follow-up (`refactor(frontend): plan name submit in usePlanNameSubmit`): the form skill puts a submit that chooses between mutations in a hook regardless of size, so the choice moved to `usePlanNameSubmit` (`mode: "create"` with `onCreated?`, `mode: "rename"` with `plan`; both take `onDone`). Its test runs through MSW: create (POST body, the created plan handed back), rename (PUT to the plan), and a failed create held in flight by a deferred (`isSubmitting` true, then false; `onDone` never called). New `planHandlers.createNetworkError(release?)`. `planNameForm.ts` exports `PlanNameFormValues`/`PlanNameFormOutput`. Unit + tooling 622 → 625.
+
 **Tests**: integration
 **Gate**: quick
 **Commit**: `refactor(frontend): PlanNameDialog replaces create and rename dialogs`
