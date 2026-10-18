@@ -1614,8 +1614,8 @@ Follow-up: `crossFeatureImports` now applies to every layer outside `src/app/**`
 
 **Done when**:
 
-- [ ] Stories: label only, with description, with error, disabled; label is associated with the input
-- [ ] Full gate passes
+- [x] Stories: label only, with description, with error, disabled; label is associated with the input
+- [x] Full gate passes
 
 **Tests**: story
 **Gate**: full
