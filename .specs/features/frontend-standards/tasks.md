@@ -1570,9 +1570,9 @@ Follow-up: `crossFeatureImports` now applies to every layer outside `src/app/**`
 
 **Done when**:
 
-- [ ] Test: format, negative, compact axis values, `toCents` on float-prone values (0.1 + 0.2)
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test: format, negative, compact axis values, `toCents` on float-prone values (0.1 + 0.2)
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 507 → 523
 
 **Tests**: unit
 **Gate**: quick
