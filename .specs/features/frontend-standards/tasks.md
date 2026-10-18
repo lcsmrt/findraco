@@ -1250,7 +1250,7 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 **Done when**:
 
 - [x] YAML parses
-- [ ] Next push: the frontend job runs both projects (user go-ahead)
+- [x] Next push: the frontend job runs both projects (user go-ahead) — verified: run 39141736690 (2026-10-18), storybook in CI, all jobs green, deployed
 
 **Tests**: none
 **Gate**: build
