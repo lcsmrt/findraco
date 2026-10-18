@@ -8,7 +8,7 @@ import {
   describeUsage,
   eligibleDeleteTargets,
   isCategoryInUse,
-} from "./DeleteCategoryDialog";
+} from "./categoryDeletion";
 
 const cat = (
   id: number,
