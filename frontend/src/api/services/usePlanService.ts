@@ -4,7 +4,7 @@ import {
   CreatePlanRequest,
   Plan,
   PlanMember,
-  PlanRole,
+  PlanResponse,
   RemoveMemberRequest,
   TransferOwnershipRequest,
   UpdateMemberRoleRequest,
@@ -14,14 +14,7 @@ import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 
-type RawPlan = {
-  id: number;
-  name: string;
-  default: boolean;
-  myRole: PlanRole;
-};
-
-const mapPlan = (raw: RawPlan): Plan => ({
+const mapPlan = (raw: PlanResponse): Plan => ({
   id: raw.id,
   name: raw.name,
   isDefault: raw.default,
@@ -29,7 +22,7 @@ const mapPlan = (raw: RawPlan): Plan => ({
 });
 
 const getPlans = async (): Promise<Plan[]> => {
-  const { data } = await findracoApi.get<RawPlan[]>("/plan");
+  const { data } = await findracoApi.get<PlanResponse[]>("/plan");
   return data.map(mapPlan);
 };
 
@@ -42,7 +35,7 @@ export const useGetPlans = (options?: QueryOptions<Plan[]>) => {
 };
 
 const getPlan = async (id: number): Promise<Plan> => {
-  const { data } = await findracoApi.get<RawPlan>(`/plan/${id}`);
+  const { data } = await findracoApi.get<PlanResponse>(`/plan/${id}`);
   return mapPlan(data);
 };
 
@@ -75,7 +68,7 @@ export const useGetPlanMembers = (
 };
 
 const createPlan = async (payload: CreatePlanRequest): Promise<Plan> => {
-  const { data } = await findracoApi.post<RawPlan>("/plan", payload.body);
+  const { data } = await findracoApi.post<PlanResponse>("/plan", payload.body);
   return mapPlan(data);
 };
 
@@ -159,7 +152,7 @@ export const useRemoveMember = (
 };
 
 const renamePlan = async (payload: UpdatePlanRequest): Promise<Plan> => {
-  const { data } = await findracoApi.put<RawPlan>(
+  const { data } = await findracoApi.put<PlanResponse>(
     `/plan/${payload.params.planId}`,
     payload.body,
   );

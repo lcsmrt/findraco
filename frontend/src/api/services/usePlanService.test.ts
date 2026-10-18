@@ -1,65 +1,108 @@
-import { createElement, ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
-import { findracoApi } from "../clients/findracoApi";
-import { useRenamePlan, useUpdateMemberRole } from "./usePlanService";
+import { waitFor } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import type { Plan, PlanMember, PlanResponse } from "@/api/dtos";
+import { recordRequests } from "@/test/recordRequests";
+import { renderHookWithProviders } from "@/test/renderWithProviders";
+import { server } from "@/test/server";
+import { planHandlers } from "./plan.handlers";
+import {
+  useCreatePlan,
+  useDeletePlan,
+  useGetPlan,
+  useGetPlanMembers,
+  useGetPlans,
+  useLeavePlan,
+  useRemoveMember,
+  useRenamePlan,
+  useTransferOwnership,
+  useUpdateMemberRole,
+} from "./usePlanService";
 
-vi.mock("../clients/findracoApi", () => ({
-  findracoApi: {
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    delete: vi.fn(),
-  },
-}));
+const wirePlan: PlanResponse = { id: 5, name: "Home", default: true, myRole: "OWNER" };
+const plan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "OWNER" };
 
-const mockedApi = findracoApi as unknown as {
-  get: Mock;
-  post: Mock;
-  put: Mock;
-  delete: Mock;
-};
+function sent(requests: Request[]) {
+  return requests.map((request) => [request.method, new URL(request.url).pathname]);
+}
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: {
-      queries: { retry: false },
-      mutations: { retry: false },
-    },
+describe("plan queries map the wire `default` flag to isDefault", () => {
+  it("useGetPlans GETs /plan and returns the mapped plans", async () => {
+    server.use(
+      planHandlers.list([wirePlan, { id: 6, name: "Trip", default: false, myRole: "VIEWER" }]),
+    );
+    const requests = recordRequests();
+
+    const { result } = renderHookWithProviders(() => useGetPlans());
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["GET", "/api/findraco/plan"]]);
+    expect(result.current.data).toEqual([
+      plan,
+      { id: 6, name: "Trip", isDefault: false, myRole: "VIEWER" },
+    ]);
   });
 
-  const Wrapper = ({ children }: { children: ReactNode }) =>
-    createElement(QueryClientProvider, { client: queryClient }, children);
+  it("useGetPlan GETs /plan/{id} and returns the mapped plan", async () => {
+    server.use(planHandlers.get(wirePlan));
+    const requests = recordRequests();
 
-  return { queryClient, Wrapper };
-};
+    const { result } = renderHookWithProviders(() => useGetPlan(5));
 
-afterEach(() => {
-  vi.clearAllMocks();
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["GET", "/api/findraco/plan/5"]]);
+    expect(result.current.data).toEqual(plan);
+  });
+});
+
+describe("useGetPlanMembers", () => {
+  it("GETs /plan/{planId}/members and returns the members", async () => {
+    const members: PlanMember[] = [{ userId: 9, name: "Bob", email: "bob@example.com", role: "EDITOR" }];
+    server.use(planHandlers.members(members));
+    const requests = recordRequests();
+
+    const { result } = renderHookWithProviders(() => useGetPlanMembers(5));
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["GET", "/api/findraco/plan/5/members"]]);
+    expect(result.current.data).toEqual(members);
+  });
+});
+
+describe("useCreatePlan", () => {
+  it("POSTs the name to /plan, returns the mapped plan and invalidates the plans query", async () => {
+    server.use(planHandlers.create({ ...wirePlan, default: false }));
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useCreatePlan(), {
+      seed: (client) => client.setQueryData(["plans"], []),
+    });
+    result.current.mutate({ body: { name: "Home" } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["POST", "/api/findraco/plan"]]);
+    expect(await requests[0].json()).toEqual({ name: "Home" });
+    expect(result.current.data).toEqual({ ...plan, isDefault: false });
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
+  });
 });
 
 describe("useRenamePlan", () => {
   it("PUTs to a plan-scoped URL and invalidates the plans query on success", async () => {
-    mockedApi.put.mockResolvedValue({
-      data: { id: 5, name: "New name", default: false, myRole: "OWNER" },
-    });
+    server.use(planHandlers.rename({ id: 5, name: "New name", default: false, myRole: "OWNER" }));
+    const requests = recordRequests();
 
-    const { queryClient, Wrapper } = createWrapper();
-    queryClient.setQueryData(["plans"], [{ id: 5, name: "Old name" }]);
+    const { result, queryClient } = renderHookWithProviders(() => useRenamePlan(), {
+      seed: (client) => client.setQueryData(["plans"], [{ id: 5, name: "Old name" }]),
+    });
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-
-    const { result } = renderHook(() => useRenamePlan(), {
-      wrapper: Wrapper,
-    });
 
     result.current.mutate({ params: { planId: 5 }, body: { name: "New name" } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockedApi.put).toHaveBeenCalledWith("/plan/5", {
-      name: "New name",
-    });
+    expect(sent(requests)).toEqual([["PUT", "/api/findraco/plan/5"]]);
+    expect(await requests[0].json()).toEqual({ name: "New name" });
+    expect(result.current.data).toEqual({ id: 5, name: "New name", isDefault: false, myRole: "OWNER" });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["plans"] });
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
@@ -67,18 +110,17 @@ describe("useRenamePlan", () => {
 
 describe("useUpdateMemberRole", () => {
   it("PUTs to a plan- and member-scoped URL and invalidates planMembers and plans on success", async () => {
-    mockedApi.put.mockResolvedValue({
-      data: { userId: 9, name: "Bob", email: "bob@example.com", role: "EDITOR" },
-    });
+    const member: PlanMember = { userId: 9, name: "Bob", email: "bob@example.com", role: "EDITOR" };
+    server.use(planHandlers.updateMemberRole(member));
+    const requests = recordRequests();
 
-    const { queryClient, Wrapper } = createWrapper();
-    queryClient.setQueryData(["members", 5], []);
-    queryClient.setQueryData(["plans"], []);
+    const { result, queryClient } = renderHookWithProviders(() => useUpdateMemberRole(), {
+      seed: (client) => {
+        client.setQueryData(["members", 5], []);
+        client.setQueryData(["plans"], []);
+      },
+    });
     const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-
-    const { result } = renderHook(() => useUpdateMemberRole(), {
-      wrapper: Wrapper,
-    });
 
     result.current.mutate({
       params: { planId: 5, userId: 9 },
@@ -87,29 +129,24 @@ describe("useUpdateMemberRole", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
 
-    expect(mockedApi.put).toHaveBeenCalledWith("/plan/5/members/9", {
-      role: "EDITOR",
-    });
+    expect(sent(requests)).toEqual([["PUT", "/api/findraco/plan/5/members/9"]]);
+    expect(await requests[0].json()).toEqual({ role: "EDITOR" });
+    expect(result.current.data).toEqual(member);
     expect(invalidateSpy).toHaveBeenCalledWith({
       queryKey: ["members", 5],
     });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["plans"] });
-    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(
-      true,
-    );
+    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
 
   it("does not invalidate queries when the request fails", async () => {
-    mockedApi.put.mockRejectedValue(new Error("network error"));
+    server.use(planHandlers.updateMemberRoleNetworkError());
 
-    const { queryClient, Wrapper } = createWrapper();
-    queryClient.setQueryData(["members", 5], []);
-    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-
-    const { result } = renderHook(() => useUpdateMemberRole(), {
-      wrapper: Wrapper,
+    const { result, queryClient } = renderHookWithProviders(() => useUpdateMemberRole(), {
+      seed: (client) => client.setQueryData(["members", 5], []),
     });
+    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
 
     result.current.mutate({
       params: { planId: 5, userId: 9 },
@@ -119,8 +156,85 @@ describe("useUpdateMemberRole", () => {
     await waitFor(() => expect(result.current.isError).toBe(true));
 
     expect(invalidateSpy).not.toHaveBeenCalled();
-    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(
-      false,
-    );
+    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(false);
+  });
+});
+
+describe("membership and lifecycle mutations", () => {
+  it("useRemoveMember DELETEs /plan/{planId}/members/{userId} and invalidates members and plans", async () => {
+    server.use(planHandlers.removeMember());
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useRemoveMember(), {
+      seed: (client) => {
+        client.setQueryData(["members", 5], []);
+        client.setQueryData(["plans"], []);
+      },
+    });
+    result.current.mutate({ params: { planId: 5, userId: 9 } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["DELETE", "/api/findraco/plan/5/members/9"]]);
+    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
+  });
+
+  it("useDeletePlan DELETEs /plan/{planId} and invalidates plans and its members", async () => {
+    server.use(planHandlers.delete());
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useDeletePlan(), {
+      seed: (client) => {
+        client.setQueryData(["members", 5], []);
+        client.setQueryData(["plans"], []);
+      },
+    });
+    result.current.mutate(5);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["DELETE", "/api/findraco/plan/5"]]);
+    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
+  });
+
+  it("useLeavePlan POSTs /plan/{planId}/leave with no body and invalidates plans and its members", async () => {
+    server.use(planHandlers.leave());
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useLeavePlan(), {
+      seed: (client) => {
+        client.setQueryData(["members", 5], []);
+        client.setQueryData(["plans"], []);
+      },
+    });
+    result.current.mutate(5);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["POST", "/api/findraco/plan/5/leave"]]);
+    expect(await requests[0].text()).toBe("");
+    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
+  });
+
+  it("useTransferOwnership POSTs the new owner to /plan/{planId}/transfer and invalidates plans and members", async () => {
+    server.use(planHandlers.transferOwnership());
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useTransferOwnership(), {
+      seed: (client) => {
+        client.setQueryData(["members", 5], []);
+        client.setQueryData(["plans"], []);
+      },
+    });
+    result.current.mutate({
+      params: { planId: 5 },
+      body: { newOwnerUserId: 9, previousOwnerRole: "EDITOR" },
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["POST", "/api/findraco/plan/5/transfer"]]);
+    expect(await requests[0].json()).toEqual({ newOwnerUserId: 9, previousOwnerRole: "EDITOR" });
+    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
 });
