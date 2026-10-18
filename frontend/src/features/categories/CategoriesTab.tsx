@@ -3,7 +3,7 @@ import {
   ALL_CATEGORIES_PAGE_SIZE,
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
-import { usePlanContext } from "@/app/providers/usePlanContext";
+import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { Button } from "@/components/button/base/Button";
 import {
   Card,
@@ -98,8 +98,7 @@ const CategorySection = ({
 
 /** Category management: structure and configured limits, no spend (UX-01). */
 export const CategoriesTab = () => {
-  const { activePlan } = usePlanContext();
-  const canManage = activePlan?.myRole === "OWNER";
+  const { canManageCategories: canManage } = usePlanPermissions();
   const { openCreate, openEdit } = useCategoryFormSheet();
   const colorOf = useMemberColors();
 

@@ -11,6 +11,7 @@ import {
 } from "@/api/services/useFinancialTransactionService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
+import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { useConfirm } from "@/components/dialog/useConfirm";
@@ -134,10 +135,9 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
 
   const { data: financialTransactionsData, isLoading: isLoadingTransactions } =
     useGetFinancialTransactions(queryParams);
-  const { activePlanId, activePlan } = usePlanContext();
+  const { activePlanId } = usePlanContext();
   const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
-  const canAttributeToOthers =
-    activePlan?.myRole === "OWNER" || activePlan?.myRole === "EDITOR";
+  const { canAttributeToOthers } = usePlanPermissions();
   const { mutate: deleteTransaction, isPending: isDeleting } =
     useDeleteFinancialTransaction();
   const { mutate: deleteFinancialTransactionSeries } =

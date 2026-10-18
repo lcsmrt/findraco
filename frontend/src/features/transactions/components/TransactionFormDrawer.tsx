@@ -10,6 +10,7 @@ import type { FinancialTransactionCategory } from "@/api/dtos";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
+import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
@@ -70,12 +71,11 @@ export const TransactionFormDrawer = ({
   const isEditing = mode === "edit";
   const isSeriesEdit = isEditing && !!transaction?.seriesId;
 
-  const { activePlanId, activePlan } = usePlanContext();
+  const { activePlanId } = usePlanContext();
   const { user } = useAuth();
   const currentUserId = user?.id;
   const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
-  const canAttributeToOthers =
-    activePlan?.myRole === "OWNER" || activePlan?.myRole === "EDITOR";
+  const { canAttributeToOthers } = usePlanPermissions();
   const showAttribution = canAttributeToOthers && members.length > 1;
 
   const chooseScope = useSeriesScope();

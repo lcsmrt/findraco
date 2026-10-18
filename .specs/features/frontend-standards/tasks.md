@@ -2104,10 +2104,12 @@ Notes: to empty `grep -rn "register(" src` three more call sites changed: the de
 
 **Done when**:
 
-- [ ] Test: role × capability matrix (OWNER, EDITOR, CONTRIBUTOR, VIEWER) + loading
-- [ ] `grep -rn myRole src --include=*.tsx` returns nothing
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test: role × capability matrix (OWNER, EDITOR, CONTRIBUTOR, VIEWER) + loading
+- [x] `grep -rn myRole src --include=*.tsx` returns nothing
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 591 → 597; all projects 682 → 688
+
+Notes: the matrix test derives its expectations from `PlanAuthorization.java` (cited in the test): `requireCanCreateTransaction`, `requireCanAttributeToOthers`, `requireCanManageCategories`, `requireOwner`. "Loading" is "no active plan": the plans query has no data while it loads (`isLoading` is true only without data), so the hook checks `activePlan` alone. The five comparisons (`CategoriesTab`, `PlansPage`, `PlanMembersList`, `TransactionsTab`, `TransactionFormDrawer`) read the hook; `isOwner` became `canManagePlan`. The grep still lists test fixtures and one display, `PlansPage`'s role badge (`ROLE_LABELS[plan.myRole]`), which shows the role of every plan in the list and decides nothing; no component compares `myRole`.
 
 **Tests**: unit
 **Gate**: quick

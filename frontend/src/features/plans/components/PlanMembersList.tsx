@@ -20,7 +20,7 @@ import { Spinner } from "@/components/spinner/base/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { Trash2Icon } from "lucide-react";
-import { usePlanContext } from "@/app/providers/usePlanContext";
+import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { ROLE_LABELS, ROLE_OPTIONS } from "../utils/planLabels";
 
 type PlanMembersListProps = {
@@ -29,17 +29,16 @@ type PlanMembersListProps = {
 
 export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
   const { data: members = [], isLoading } = useGetPlanMembers(planId);
-  const { activePlan } = usePlanContext();
   const { user } = useAuth();
   const confirm = useConfirm();
   const { mutate: updateMemberRole } = useUpdateMemberRole();
   const { mutate: removeMember } = useRemoveMember();
 
-  const isOwner = activePlan?.myRole === "OWNER";
+  const { canManagePlan } = usePlanPermissions();
   const ownerCount = members.filter((m) => m.role === "OWNER").length;
 
   const canManage = (member: PlanMember) => {
-    if (!isOwner) return false;
+    if (!canManagePlan) return false;
     if (member.userId === user?.id) return false;
     if (member.role === "OWNER" && ownerCount <= 1) return false;
     return true;

@@ -26,6 +26,7 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
+import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { PlanNameDialog } from "./components/PlanNameDialog";
 import { InvitePlanDialog } from "./components/InvitePlanDialog";
 import { PlanInvitationsList } from "./components/PlanInvitationsList";
@@ -45,7 +46,7 @@ export const PlansPage = () => {
   const { mutate: deletePlan, isPending: isDeletingPlan } = useDeletePlan();
   const { mutate: leavePlan, isPending: isLeavingPlan } = useLeavePlan();
 
-  const isOwner = activePlan?.myRole === "OWNER";
+  const { canManagePlan } = usePlanPermissions();
 
   const handleArchivePlan = async () => {
     if (!activePlan) return;
@@ -134,7 +135,7 @@ export const PlansPage = () => {
           <CardHeader>
             <CardTitle>Members of {activePlan.name}</CardTitle>
             <CardAction className="flex items-center gap-2">
-              {isOwner ? (
+              {canManagePlan ? (
                 <>
                   <Button
                     variant="ghost"
@@ -185,7 +186,7 @@ export const PlansPage = () => {
         </Card>
       )}
 
-      {activePlan && isOwner && (
+      {activePlan && canManagePlan && (
         <Card>
           <CardHeader>
             <CardTitle>Invitations for {activePlan.name}</CardTitle>
