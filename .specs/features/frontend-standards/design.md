@@ -236,6 +236,18 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 | `PeriodNavigator` label, mobile | 14px semibold | 16px semibold (desktop unchanged) |
 | Metric labels | muted, `font-medium` | muted, normal weight |
 | Mobile day header, category column header | xs muted, `font-medium` | xs muted, normal weight |
+| Field help text (TransferOwnership, category form, limit fields) | 12px | 14px via `FieldDescription` (STD-08 AC 4) |
+| Plans page title / subtitle | 16px semibold / 12px | `PageHeader`: 24px bold / 14px |
+| 404 description, "Can't reach" message | 16px regular | `secondary` 14px |
+| Plan card name | 16px medium | `title` 16px semibold |
+| Auth link buttons | `font-bold` | Button's own weight |
+| Limit status text, member sub-row amounts | xs medium, toned | `caption` + token colour (normal weight) |
+| Trend tick, current period | xs semibold | `caption` + `text-foreground` (emphasis by colour) |
+| Filter count, owner pill, multi-combobox overflow chip | hand-built 10px / 0.7rem / xs medium | `Badge` primitive (xs medium) |
+| Inputs with a forced `text-sm` (table cells, shares) | 14px on mobile | Input's own 16px mobile / 14px from `md` |
+| Table pagination | 12px mobile, 14px desktop | `secondary` 14px |
+
+Second review (user, 2026-10-18, Execute T92): no eighth variant. Small emphasised text inside a pill is a `Badge`; plain small text is `caption` with a token colour. `body`, `secondary` and `caption` declare `font-normal` so they never inherit a label's weight. `ProfilePictureInput` (unused) is deleted.
 
 The user judges typography by seeing it and will adjust after the slice if needed (2026-10-17); a case that fits no step gets a new role variant, never an exception.
 
