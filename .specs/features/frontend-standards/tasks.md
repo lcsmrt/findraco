@@ -1739,8 +1739,10 @@ Notes: the plain limit binds through `FormField`; member limits bind through a r
 
 **Done when**:
 
-- [ ] Stories per tone, chip, disabled; `play`: arrow keys move focus, selected item has `aria-pressed="true"`
-- [ ] Full gate passes
+- [x] Stories per tone, chip, disabled; `play`: arrow keys move focus, selected item has `aria-pressed="true"` (Base UI `Toggle` renders `aria-pressed` itself, plus `data-pressed`)
+- [x] Full gate passes: all projects 619 → 629
+
+Notes: installed with `pnpm dlx shadcn@4.21.5 add toggle toggle-group`. With `"style": "new-york"` the CLI resolved the Radix flavour (`radix-ui` dependency), so `components.json` now says `"style": "base-nova"`, the Base UI style whose sizes match the existing `Button`. The registry now emits `import { cn } from "cn"` and adds the `cn` npm package; the dependency was reverted and the imports point at `@/lib/mergeClasses`. Default size raised to `h-9` to match `Button`. The `Success` story failed axe colour contrast (green-600 text on the success/15 fill, 2.5:1), a defect the Credit toggle already had: `--success` (light) moved to green-800, as `--destructive` did before. A single-choice group lets the pressed item be clicked off (value `[]`); compositions ignore the empty value so a segmented control keeps its selection.
 
 **Tests**: story
 **Gate**: full

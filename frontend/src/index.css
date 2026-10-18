@@ -83,7 +83,8 @@
   /* red-700: red-600 fell below 4.5:1 for text on the background and on the destructive/10 fill. */
   --destructive: #b91c1c;
   --destructive-foreground: #fef2f2;
-  --success: #16a34a;
+  /* green-800: green-600 fell below 4.5:1 for text on the background and on the success/15 fill. */
+  --success: #166534;
   --success-foreground: #f0fdf4;
   --border: #e0dbcf;
   --input: #d6d0c2;
