@@ -172,7 +172,7 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 - `FormField` keeps to `label`, `description` and the render prop. Special layouts (horizontal, hidden label) use a raw `Controller`, which stays allowed. Label/`id` wiring, `aria-invalid` and `FieldError errors={[…]}` (E3) hold by construction.
 - **Reading another field** inside a form uses `useWatch({ control, name })` in the section that needs it, never `watch()` at the form root.
 - **Mappers stay at the boundary** (`toFormValues` from the API, `toPayload` to the API, in `transactionForm.ts` / `categoryForm.ts`) and convert shape and type only (nested → flat, ISO date → `Date`, `undefined` → `null`), never display formatting.
-- The 20 current `register` calls migrate in the slices that already touch those files (auth in STD-05/06, plans in STD-06, forms in STD-07). `FormField` is a design addition within STD-07 and the `form-creation` rewrite (STD-01); it changes no behaviour. The user wants to iterate on the form field components later.
+- The 20 current `register` calls migrate in the slices that already touch those files (money fields, auth and plans in STD-06, the remaining form fields in STD-07). `FormField` is a design addition taught by the `form-creation` rewrite (STD-01) and built at the start of STD-06, whose money, auth and plan fields are its first consumers (sequencing fixed in Tasks, 2026-10-17); it changes no behaviour. The user wants to iterate on the form field components later.
 
 **Rejected.**
 

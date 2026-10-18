@@ -345,24 +345,24 @@ Frontend quality decayed as features shipped fast. The audit (`.specs/codebase/f
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| STD-01 | P1 Written standards (AC 1–5) | - | Pending |
-| STD-02 | P1 Green lint baseline (AC 1–9) — C1, C3, C8, E1, F3 | - | Pending |
-| STD-03 | P1 Gates before production (AC 1–6) — G2 | - | Pending |
-| STD-04 | P1 Test infrastructure (AC 1–5) — F1, F2 harness | - | Pending |
-| STD-05 | P2 Structure (AC 1–9) — C2, C4, C4b, C5, C6, C9, `base/` | - | Pending |
-| STD-06 | P2 Shared components and tokens (AC 1–14) — B1–B7, E3, E4a | - | Pending |
-| STD-07 | P2 Form decomposition (AC 1–6) — D1, D2, B8 | - | Pending |
-| STD-08 | P2 Typography (AC 1–5) — E4b, C7 | - | Pending |
-| STD-09 | P2 Mechanical conventions (AC 1–3) — E2, E5 | - | Pending |
-| STD-10 | P2 Story coverage (AC 1–4) — F1 | - | Pending |
-| STD-11 | P2 Test coverage (AC 1–4) — F2 | - | Pending |
-| STD-12 | P2 Transactions tab + logic cap (AC 1–5) — D3, D4 | - | Pending |
+| STD-01 | P1 Written standards (AC 1–5) | P1 (T1–T9) | Pending |
+| STD-02 | P1 Green lint baseline (AC 1–9) — C1, C3, C8, E1, F3 | P2–P4 (T10–T29) | Pending |
+| STD-03 | P1 Gates before production (AC 1–6) — G2 | P5 (T30–T33) | Pending |
+| STD-04 | P1 Test infrastructure (AC 1–5) — F1, F2 harness | P6 (T34–T42) | Pending |
+| STD-05 | P2 Structure (AC 1–9) — C2, C4, C4b, C5, C6, C9, `base/` | P7–P8 (T43–T55) | Pending |
+| STD-06 | P2 Shared components and tokens (AC 1–14) — B1–B7, E3, E4a | P9–P11 (T56–T79) | Pending |
+| STD-07 | P2 Form decomposition (AC 1–6) — D1, D2, B8 | P12 (T80–T88) | Pending |
+| STD-08 | P2 Typography (AC 1–5) — E4b, C7 | P13 (T89–T96) | Pending |
+| STD-09 | P2 Mechanical conventions (AC 1–3) — E2, E5 | P14 (T97–T103) | Pending |
+| STD-10 | P2 Story coverage (AC 1–4) — F1 | P15 (T104–T111) | Pending |
+| STD-11 | P2 Test coverage (AC 1–4) — F2 | P16 (T112–T116) | Pending |
+| STD-12 | P2 Transactions tab + logic cap (AC 1–5) — D3, D4 | P17 (T117–T125) | Pending |
 | STD-13 | P3 Generated API types (AC 1–3) — F2, deferred until after the backend standards review | - | Deferred |
 | STD-14 | P3 E2E smoke tests (AC 1–3) — F2, blocked by Docker DB | - | Pending |
 
 **ID format:** `STD-NN`; each ID is one refactor slice and covers the AC range named in its row. Slice order follows the IDs (Assumptions).
 
-**Coverage:** 14 total, 0 mapped to tasks, 14 unmapped ⚠️ (before Tasks)
+**Coverage:** 14 total, 12 mapped to tasks (T1–T125), 2 unmapped by decision: STD-13 deferred (design decision 10), STD-14 blocked by the Docker DB
 
 ---
 
