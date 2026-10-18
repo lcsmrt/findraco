@@ -584,8 +584,8 @@ T124 → T125
 
 **Done when**:
 
-- [ ] The three aliases match; the CLI install in T63 confirms it
-- [ ] Build gate passes
+- [x] The three aliases match; the CLI install in T63 confirms it
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build
