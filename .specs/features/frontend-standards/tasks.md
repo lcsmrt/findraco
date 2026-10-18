@@ -1395,6 +1395,8 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 **Gate**: build
 **Commit**: `refactor(frontend): lift MemberDot, memberColors and TransactionTypeToggle to the root`
 
+Follow-up: `useMemberColors` reads the API and the plan context, so by C9 it is not a pure function; it moved to `src/hooks/useMemberColors.ts`. The colour functions and `MemberColorOf` stay in `src/utils/memberColors.ts` with their test (the hook had no test cases to move). Commit `refactor(frontend): move useMemberColors to src/hooks`.
+
 ---
 
 ### T49: `features/overview`

@@ -1,7 +1,4 @@
 import type { PlanMember } from "@/api/dtos";
-import { useGetPlanMembers } from "@/api/services/usePlanService";
-import { usePlanContext } from "@/app/providers/usePlanContext";
-import { useCallback, useMemo } from "react";
 
 /** Member identity colours (UX-04 AC 2), defined per theme in `index.css`. */
 export const MEMBER_PALETTE = [
@@ -37,11 +34,3 @@ export const memberColor = (members: MemberRef[], userId: number): string => {
 };
 
 export type MemberColorOf = (userId: number) => string;
-
-/** Colour lookup for the active plan's members. */
-export const useMemberColors = (): MemberColorOf => {
-  const { activePlanId } = usePlanContext();
-  const { data: members } = useGetPlanMembers(activePlanId ?? undefined);
-  const stable = useMemo(() => members ?? [], [members]);
-  return useCallback((userId: number) => memberColor(stable, userId), [stable]);
-};

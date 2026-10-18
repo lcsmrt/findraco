@@ -12,7 +12,7 @@ import {
 import { useOverviewFilters } from "./filters/useOverviewFilters";
 import { PeriodNavigator } from "./components/PeriodNavigator";
 import { countMonths } from "./utils/scaleLimits";
-import { useMemberColors } from "@/utils/memberColors";
+import { useMemberColors } from "@/hooks/useMemberColors";
 import {
   useOverviewMemberFilter,
   type MemberOption,
