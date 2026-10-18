@@ -22,6 +22,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -86,6 +88,9 @@
   /* green-800: green-600 fell below 4.5:1 for text on the background and on the success/15 fill. */
   --success: #166534;
   --success-foreground: #f0fdf4;
+  /* amber-800: amber-700 fell below 4.5:1 for text on the muted background and on a warning/15 fill. */
+  --warning: #92400e;
+  --warning-foreground: #fffbeb;
   --border: #e0dbcf;
   --input: #d6d0c2;
   --ring: #f59e0b;
@@ -153,6 +158,8 @@
   --destructive-foreground: #fef2f2;
   --success: #22c55e;
   --success-foreground: #052e16;
+  --warning: #fbbf24;
+  --warning-foreground: #1f1405;
   --border: #42413c;
   --input: #4a4943;
   --ring: #f59e0b;

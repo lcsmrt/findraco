@@ -67,7 +67,7 @@ const StatusText = ({ usage, className }: StatusTextProps) => {
       className={cn(
         "inline-flex items-center gap-1 text-xs whitespace-nowrap tabular-nums",
         usage.status === "ok" && "text-muted-foreground",
-        usage.status === "warning" && "font-medium text-amber-700 dark:text-amber-400",
+        usage.status === "warning" && "text-warning font-medium",
         usage.status === "over" && "text-destructive font-medium",
         className,
       )}

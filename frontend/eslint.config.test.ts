@@ -230,4 +230,70 @@ describe("eslint.config.js", () => {
       expect(await restrictedImport(specifier, filePath)).toBe(restricted);
     });
   });
+
+  describe("palette ban", () => {
+    function syntaxMessages(config: typeof componentConfig): string[] {
+      const [severity, ...selectors] = config.rules["no-restricted-syntax"] ?? [];
+      if (severity !== 2) return [];
+      return selectors.map((entry: { message: string }) => entry.message);
+    }
+
+    async function paletteMessages(code: string, filePath: string) {
+      const [result] = await eslint.lintText(code, { filePath });
+      return result.messages
+        .filter((message) => message.ruleId === "no-restricted-syntax")
+        .map((message) => message.message);
+    }
+
+    // One path per layer of the syntax table, base/ included: a later layer block that forgot the
+    // fragment would silently drop it for its files (design decision 1).
+    it.each([
+      "src/hooks/configProbe.ts",
+      "src/utils/configProbe.ts",
+      "src/features/x/ConfigProbe.tsx",
+      "src/features/x/ConfigProbe.stories.tsx",
+      "src/features/x/ConfigProbe.test.tsx",
+      "src/components/x/ConfigProbe.tsx",
+      "src/components/x/base/ConfigProbe.tsx",
+      "src/components/x/base/configProbeVariants.ts",
+      "src/app/home/ConfigProbe.tsx",
+    ])("keeps the palette fragment active in %s (STD-06 AC 14)", async (filePath) => {
+      const config = await eslint.calculateConfigForFile(filePath);
+      const messages = syntaxMessages(config);
+
+      expect(messages.filter((message) => message.startsWith("Raw palette colour"))).toHaveLength(2);
+    });
+
+    it.each([
+      ['<span className="text-amber-600">late</span>', "a JSX class string"],
+      ['<span className={cn("rounded", ok && "bg-green-100")}>ok</span>', "a cn() argument"],
+      ["<span className={`px-2 ${tone} dark:border-red-500`}>x</span>", "a template literal"],
+      ['<span className="hover:text-slate-700">x</span>', "a neutral grey behind a variant"],
+    ])("reports %s, naming the tokens to use (STD-06 AC 14)", async (jsx) => {
+      for (const filePath of ["src/features/x/ConfigProbe.tsx", "src/components/x/base/ConfigProbe.tsx"]) {
+        const messages = await paletteMessages(
+          `const ok = true;\nconst tone = "";\nfunction cn(...values: unknown[]) {\n  return values.join(" ");\n}\nexport function Probe() {\n  return ${jsx};\n}\n`,
+          filePath,
+        );
+
+        expect(messages).toHaveLength(1);
+        expect(messages[0]).toContain("text-warning");
+        expect(messages[0]).toContain("text-success");
+        expect(messages[0]).toContain("text-destructive");
+      }
+    });
+
+    it.each([
+      '<span className="text-warning bg-success/10 border-destructive">ok</span>',
+      '<span className="bg-black/10 text-white">overlay</span>',
+      '<span className="text-sm font-medium">plain</span>',
+    ])("allows token, black/white and non-colour classes: %s (STD-06 AC 14)", async (jsx) => {
+      const messages = await paletteMessages(
+        `export function Probe() {\n  return ${jsx};\n}\n`,
+        "src/features/x/ConfigProbe.tsx",
+      );
+
+      expect(messages).toEqual([]);
+    });
+  });
 });

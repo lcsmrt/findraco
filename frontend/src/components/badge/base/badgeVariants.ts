@@ -11,7 +11,7 @@ export const badgeVariants = cva(
         destructive:
           "bg-destructive/10 [a]:hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 text-destructive dark:bg-destructive/20",
         success:
-          "bg-green-100 text-green-700 border-green-200 [a&]:hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800",
+          "bg-success/10 text-success border-success/30 [a&]:hover:bg-success/20",
         outline:
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         ghost:

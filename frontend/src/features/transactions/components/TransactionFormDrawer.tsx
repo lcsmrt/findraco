@@ -495,7 +495,7 @@ export const TransactionFormDrawer = ({
               {definition.parcelsNumber}
             </p>
             {parcelsNumberChanged && (
-              <p className="text-sm text-amber-600 dark:text-amber-400">
+              <p className="text-warning text-sm">
                 Changing the number of parcels updates the whole series.
               </p>
             )}

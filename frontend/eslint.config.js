@@ -55,6 +55,20 @@ const apiImports = [
   },
 ]
 
+// Named `no-restricted-syntax` fragments, composed per layer like the import fragments above.
+
+// Colour that carries meaning comes from a theme token, defined once for both themes. A raw palette
+// class (`text-amber-600`) bypasses that: it misses dark mode and the contrast the tokens were
+// tuned for. The pattern catches class strings in JSX, `cn()` arguments and template literals.
+const PALETTE_CLASS =
+  String.raw`(^|[\s:!])(text|bg|border(-[xytrbl])?|ring|fill|stroke|outline|decoration|from|via|to|divide|placeholder|caret|accent|shadow)-(red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|slate|gray|zinc|neutral|stone)-\d`
+const PALETTE_MESSAGE =
+  'Raw palette colour: use a theme token (text-destructive, text-success, text-warning, bg-primary, text-muted-foreground, border-border, or their -foreground pairs). A missing meaning gets a new token in src/index.css, in both themes.'
+const paletteSelectors = [
+  { selector: `Literal[value=/${PALETTE_CLASS}/]`, message: PALETTE_MESSAGE },
+  { selector: `TemplateElement[value.raw=/${PALETTE_CLASS}/]`, message: PALETTE_MESSAGE },
+]
+
 const testFiles = ['**/*.test.{ts,tsx}', 'src/test/**']
 
 // One layer of the import table: its files get exactly `patterns`, plus the test-support ban
@@ -81,6 +95,17 @@ function importLayer(files, patterns, ignores = []) {
       },
     },
   ]
+}
+
+// One layer of the syntax table: its files, tests and stories included, get exactly `selectors`.
+function syntaxLayer(files, selectors, ignores = []) {
+  return {
+    files,
+    ignores,
+    rules: {
+      'no-restricted-syntax': ['error', ...selectors],
+    },
+  }
 }
 
 export default defineConfig({ ignores: ['dist'] }, {
@@ -128,4 +153,8 @@ export default defineConfig({ ignores: ['dist'] }, {
   ['src/components/**/base/**/*.{ts,tsx}'],
   [...appInternalsImports, ...crossFeatureImports, ...appAnyImports, ...apiImports],
 ),
+// Syntax layers, from the widest to the narrowest; each spreads its complete list.
+syntaxLayer(['src/**/*.{ts,tsx}'], [...paletteSelectors], ['src/app/**']),
+syntaxLayer(['src/app/**/*.{ts,tsx}'], [...paletteSelectors]),
+syntaxLayer(['src/components/**/base/**/*.{ts,tsx}'], [...paletteSelectors]),
 storybook.configs["flat/recommended"]);

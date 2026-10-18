@@ -2129,10 +2129,12 @@ Notes: the matrix test derives its expectations from `PlanAuthorization.java` (c
 
 **Done when**:
 
-- [ ] Config test: palette fragment active in every layer, including `components/**/base/**`
-- [ ] `text-amber-600` in a component fails lint (checked, reverted)
-- [ ] `pnpm lint` exits 0
-- [ ] Build gate passes
+- [x] Config test: palette fragment active in every layer, including `components/**/base/**`
+- [x] `text-amber-600` in a component fails lint (checked, reverted)
+- [x] `pnpm lint` exits 0
+- [x] Build gate passes
+
+Notes: `--warning` is amber-800 (#92400e) in light mode, since amber-700 fell below 4.5:1 on the muted background and on a warning/15 fill, and amber-400 (#fbbf24) in dark mode (7.9:1 on the card); foregrounds #fffbeb and #1f1405. `CategorySpendingList` and `TransactionFormDrawer` use `text-warning`; `Badge` `success` uses `bg-success/10 text-success border-success/30` (success/15 would fall to 4.5:1 on the dark card). The palette fragment (`paletteSelectors`: a `Literal` and a `TemplateElement` selector) bans `text|bg|border|ring|fill|stroke|outline|decoration|from|via|to|divide|placeholder|caret|accent|shadow` with any named hue or grey and a shade; black/white overlays (`bg-black/10`) stay allowed. It sits in three syntax layer blocks (`src/**` except `app`, `src/app/**`, `base/`), ready for the typography fragments of T96. The config test asserts it on nine paths (base `.tsx` and `.ts`, tests and stories included) and lints a JSX string, a `cn()` argument, a template literal and a grey behind a variant in a feature and in `base/`. Checked: a base block with a different selector list fails 6 tests; `text-amber-600` in `TransactionFormDrawer` fails lint (reverted). Tooling 73 tests (57 → 73); all projects 688 → 704.
 
 **Tests**: tooling
 **Gate**: build
