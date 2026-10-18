@@ -2554,10 +2554,12 @@ Notes: table pagination counts are `secondary` (14px at every width). "Lines per
 
 **Done when**:
 
-- [ ] Config test: fragments active outside `base/`, absent inside
-- [ ] `<p className="text-sm">` in a feature fails lint (checked, reverted)
-- [ ] `pnpm lint` exits 0
-- [ ] Build gate passes
+- [x] Config test: fragments active outside `base/`, absent inside
+- [x] `<p className="text-sm">` in a feature fails lint (checked, reverted)
+- [x] `pnpm lint` exits 0
+- [x] Build gate passes
+
+Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes `text-xs`…`text-9xl`, `text-2xs`, `text-md`, arbitrary `text-[…]`, with breakpoint/`!` prefixes and `/` line-height modifiers; weights `font-thin`…`font-black`) and `rawTextTagSelectors` (`JSXOpeningElement` `p`, `h1`–`h6`) are spread into the `src/**` and `src/app/**` syntax layers; `base/` keeps palette only. Config test: the fragments per layer path (11 paths, stories and tests included, base/ absent), `<p className="text-sm">` reported twice, raw headings, each size/weight form, allowed alignment/family/colour classes, base/ free. The palette test's helper now keeps only palette messages, since its `text-sm font-medium` probe is a typography error now. A dropped fragment on the `app/` layer turns two cases red (checked, reverted). The proof file `src/features/plans/LintProbe.tsx` failed with both messages (checked, reverted). Tooling 73 → 101.
 
 **Tests**: tooling
 **Gate**: build

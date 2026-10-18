@@ -238,11 +238,13 @@ describe("eslint.config.js", () => {
       return selectors.map((entry: { message: string }) => entry.message);
     }
 
+    // Only the palette's messages: the typography fragment also reports some probes below.
     async function paletteMessages(code: string, filePath: string) {
       const [result] = await eslint.lintText(code, { filePath });
       return result.messages
         .filter((message) => message.ruleId === "no-restricted-syntax")
-        .map((message) => message.message);
+        .map((message) => message.message)
+        .filter((message) => message.startsWith("Raw palette colour"));
     }
 
     // One path per layer of the syntax table, base/ included: a later layer block that forgot the
@@ -291,6 +293,99 @@ describe("eslint.config.js", () => {
       const messages = await paletteMessages(
         `export function Probe() {\n  return ${jsx};\n}\n`,
         "src/features/x/ConfigProbe.tsx",
+      );
+
+      expect(messages).toEqual([]);
+    });
+  });
+  describe("typography through Heading and Text", () => {
+    const TYPOGRAPHY = "Size or weight class";
+    const RAW_TAG = "Raw <p>/<hN>";
+
+    function syntaxMessages(config: typeof componentConfig): string[] {
+      const [severity, ...selectors] = config.rules["no-restricted-syntax"] ?? [];
+      if (severity !== 2) return [];
+      return selectors.map((entry: { message: string }) => entry.message);
+    }
+
+    async function typographyMessages(code: string, filePath: string) {
+      const [result] = await eslint.lintText(code, { filePath });
+      return result.messages
+        .filter((message) => message.ruleId === "no-restricted-syntax")
+        .map((message) => message.message)
+        .filter((message) => message.startsWith(TYPOGRAPHY) || message.startsWith(RAW_TAG));
+    }
+
+    function probe(jsx: string) {
+      return `const on = true;\nconst tone = "";\nfunction cn(...values: unknown[]) {\n  return values.join(" ");\n}\nexport function Probe() {\n  return ${jsx};\n}\n`;
+    }
+
+    // One path per layer of the syntax table: every layer outside base/ spreads both fragments, and
+    // base/ keeps its primitives' own text styles (design decision 1).
+    it.each([
+      ["src/hooks/configProbe.ts", true],
+      ["src/utils/configProbe.ts", true],
+      ["src/features/x/ConfigProbe.tsx", true],
+      ["src/features/x/ConfigProbe.stories.tsx", true],
+      ["src/features/x/ConfigProbe.test.tsx", true],
+      ["src/components/x/ConfigProbe.tsx", true],
+      ["src/app/home/ConfigProbe.tsx", true],
+      ["src/app/home/ConfigProbe.test.tsx", true],
+      ["src/components/x/base/ConfigProbe.tsx", false],
+      ["src/components/x/base/configProbeVariants.ts", false],
+      ["src/components/x/base/ConfigProbe.stories.tsx", false],
+    ])("in %s, the typography and raw-tag fragments are active: %s (STD-08 AC 2, 3)", async (filePath, active) => {
+      const messages = syntaxMessages(await eslint.calculateConfigForFile(filePath));
+
+      expect(messages.filter((message) => message.startsWith(TYPOGRAPHY))).toHaveLength(active ? 2 : 0);
+      expect(messages.filter((message) => message.startsWith(RAW_TAG))).toHaveLength(active ? 1 : 0);
+    });
+
+    it("reports <p className=\"text-sm\"> in a feature twice: raw tag and size class (STD-08 AC 2, 3)", async () => {
+      const messages = await typographyMessages(probe('<p className="text-sm">x</p>'), "src/features/x/ConfigProbe.tsx");
+
+      expect(messages).toHaveLength(2);
+      expect(messages.some((message) => message.startsWith(RAW_TAG))).toBe(true);
+      expect(messages.some((message) => message.startsWith(TYPOGRAPHY))).toBe(true);
+    });
+
+    it.each(["<h1>x</h1>", "<h3>x</h3>", "<h6>x</h6>"])(
+      "reports the raw heading %s (STD-08 AC 2)",
+      async (jsx) => {
+        const messages = await typographyMessages(probe(jsx), "src/features/x/ConfigProbe.tsx");
+
+        expect(messages).toEqual([expect.stringContaining("<Heading level={n}")]);
+      },
+    );
+
+    it.each([
+      ['<span className="text-xs">x</span>', "the smallest size"],
+      ['<span className="text-9xl">x</span>', "the largest size"],
+      ['<span className="sm:text-base">x</span>', "a size behind a breakpoint"],
+      ['<span className="text-[10rem]">x</span>', "an arbitrary size"],
+      ['<span className="text-md">x</span>', "an undefined size"],
+      ['<span className={cn("px-2", on && "font-thin")}>x</span>', "the lightest weight in a cn() argument"],
+      ["<span className={`px-2 ${tone} font-black`}>x</span>", "the heaviest weight in a template literal"],
+      ['<span className="text-sm/6">x</span>', "a size with a line-height modifier"],
+    ])("reports %s: %s (STD-08 AC 3)", async (jsx) => {
+      const messages = await typographyMessages(probe(jsx), "src/features/x/ConfigProbe.tsx");
+
+      expect(messages).toEqual([expect.stringContaining("Heading/Text")]);
+    });
+
+    it.each([
+      '<span className="text-left text-center text-right font-mono tabular-nums">x</span>',
+      '<span className="text-muted-foreground text-destructive text-foreground/50">x</span>',
+      '<span className="font-sans truncate text-balance">x</span>',
+      '<div>x</div>',
+    ])("allows alignment, family, colour and non-text classes: %s (STD-08 AC 3)", async (jsx) => {
+      expect(await typographyMessages(probe(jsx), "src/features/x/ConfigProbe.tsx")).toEqual([]);
+    });
+
+    it("leaves base/ primitives free to style their own text (STD-08 AC 2, 3)", async () => {
+      const messages = await typographyMessages(
+        probe('<p className="text-sm font-medium">x</p>'),
+        "src/components/x/base/ConfigProbe.tsx",
       );
 
       expect(messages).toEqual([]);

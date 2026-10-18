@@ -69,6 +69,28 @@ const paletteSelectors = [
   { selector: `TemplateElement[value.raw=/${PALETTE_CLASS}/]`, message: PALETTE_MESSAGE },
 ]
 
+// Text is sized and weighted only through `Heading`/`Text` (one seven-step scale in
+// typography/base/). A size or weight class elsewhere starts a new look outside the scale, so it is
+// banned in every string; alignment (`text-center`), family (`font-mono`) and colour stay free.
+// Arbitrary sizes (`text-[10rem]`) and undefined ones (`text-md`, which renders the inherited size)
+// count as sizes. esquery regexes cannot contain `/`, hence the lookahead instead of a delimiter list.
+const TYPOGRAPHY_CLASS =
+  String.raw`(^|[\s:!])(text-(2?xs|sm|md|base|lg|xl|[2-9]xl|\[[^\]]*\])|font-(thin|extralight|light|normal|medium|semibold|bold|extrabold|black))(?![\w-])`
+const TYPOGRAPHY_MESSAGE =
+  'Size or weight class: render text through Heading/Text (src/components/typography/base/) with a variant. A case no variant fits gets a new role variant in typographyVariants, never a class.'
+const typographySelectors = [
+  { selector: `Literal[value=/${TYPOGRAPHY_CLASS}/]`, message: TYPOGRAPHY_MESSAGE },
+  { selector: `TemplateElement[value.raw=/${TYPOGRAPHY_CLASS}/]`, message: TYPOGRAPHY_MESSAGE },
+]
+
+// A raw paragraph or heading carries the browser's look, not the scale's.
+const rawTextTagSelectors = [
+  {
+    selector: 'JSXOpeningElement[name.name=/^(p|h[1-6])$/]',
+    message: 'Raw <p>/<hN>: use <Text as="p" variant="…"> or <Heading level={n} variant="…"> (PageHeader, SectionHeader and FieldDescription for their roles).',
+  },
+]
+
 const testFiles = ['**/*.test.{ts,tsx}', 'src/test/**']
 
 // One layer of the import table: its files get exactly `patterns`, plus the test-support ban
@@ -154,7 +176,12 @@ export default defineConfig({ ignores: ['dist'] }, {
   [...appInternalsImports, ...crossFeatureImports, ...appAnyImports, ...apiImports],
 ),
 // Syntax layers, from the widest to the narrowest; each spreads its complete list.
-syntaxLayer(['src/**/*.{ts,tsx}'], [...paletteSelectors], ['src/app/**']),
-syntaxLayer(['src/app/**/*.{ts,tsx}'], [...paletteSelectors]),
+// base/ primitives keep their own built-in text styles, so they get the palette ban only.
+syntaxLayer(
+  ['src/**/*.{ts,tsx}'],
+  [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors],
+  ['src/app/**'],
+),
+syntaxLayer(['src/app/**/*.{ts,tsx}'], [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors]),
 syntaxLayer(['src/components/**/base/**/*.{ts,tsx}'], [...paletteSelectors]),
 storybook.configs["flat/recommended"]);
