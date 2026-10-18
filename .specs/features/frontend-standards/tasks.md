@@ -1635,11 +1635,13 @@ Follow-up: `crossFeatureImports` now applies to every layer outside `src/app/**`
 
 **Done when**:
 
-- [ ] `currencyDigits.test.ts`: 1, 12, 123, 1234 → 0.01, 0.12, 1.23, 12.34; non-digits ignored; paste; 15-digit cap; empty → null
-- [ ] Story `play`: typing 1234 shows R$ 12,34
-- [ ] The component's own `onChange` wins over a spread `onChange` (decision 5 spreads react-hook-form's `field`): a test spreading a `field` still delivers numbers, never the masked string
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `currencyDigits.test.ts`: 1, 12, 123, 1234 → 0.01, 0.12, 1.23, 12.34; non-digits ignored; paste; 15-digit cap; empty → null
+- [x] Story `play`: typing 1234 shows R$ 12,34
+- [x] The component's own `onChange` wins over a spread `onChange` (decision 5 spreads react-hook-form's `field`): a test spreading a `field` still delivers numbers, never the masked string (`CurrencyInput.test.tsx`; checked against the reversed order, which fails it)
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): all projects 570 → 593
+
+Note: `@testing-library/user-event` 14.6.1 added (exact, the version Storybook already bundles) so unit and integration tests type like a user.
 
 **Tests**: unit + story
 **Gate**: full
