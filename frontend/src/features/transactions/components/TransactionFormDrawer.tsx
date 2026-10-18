@@ -14,19 +14,18 @@ import {
   FieldLabel,
 } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
-import { NumberField } from "@/components/input/base/NumberField";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { DatePicker } from "@/components/input/DatePicker";
 import { FormField } from "@/components/form/FormField";
 import { FormSheet } from "@/components/form/FormSheet";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { addMonths, format } from "date-fns";
 import { CopyIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { Controller, useFieldArray, useForm } from "react-hook-form";
+import { useFieldArray, useForm } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
 import { EndDateField } from "./EndDateField";
+import { InstallmentsField } from "./InstallmentsField";
 import { ItemsField } from "./ItemsField";
 import { useSeriesScope } from "./useSeriesScope";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
@@ -37,7 +36,6 @@ import {
   TransactionFormValues,
   buildDefaultValues,
   categoryAttribution,
-  seriesParcelsChanged,
   transactionFormSchema,
 } from "./transactionForm";
 import { useTransactionFormSubmit } from "./useTransactionFormSubmit";
@@ -127,10 +125,6 @@ export const TransactionFormDrawer = ({
     participantsTouchedRef.current = false;
     reset(buildDefaultValues(transaction, currentUserId, definition));
   }, [transaction, open, reset, currentUserId, definition]);
-
-  const parcelsNumberValue = watch("parcelsNumber");
-  const parcelsNumberChanged =
-    isSeriesEdit && seriesParcelsChanged(definition, parcelsNumberValue);
 
   const { submit, isSubmitting: isPending } = useTransactionFormSubmit({
     mode,
@@ -282,40 +276,12 @@ export const TransactionFormDrawer = ({
         )}
 
         {isSeriesEdit && definition?.mode === "INSTALLMENT" && (
-          <Field>
-            <FieldLabel htmlFor="transaction-parcels">
-              Number of installments
-            </FieldLabel>
-            <Controller
-              control={control}
-              name="parcelsNumber"
-              render={({ field }) => (
-                <NumberField
-                  id="transaction-parcels"
-                  ref={field.ref}
-                  name={field.name}
-                  onBlur={field.onBlur}
-                  value={field.value ?? null}
-                  onValueChange={field.onChange}
-                  min={1}
-                  step={1}
-                  placeholder="e.g., 12"
-                  disabled={isPending}
-                  aria-invalid={!!errors.parcelsNumber}
-                />
-              )}
-            />
-            <FieldError errors={[errors.parcelsNumber]} />
-            <p className="text-muted-foreground text-sm">
-              Currently: parcel {definition.firstParcel ?? 1} of{" "}
-              {definition.parcelsNumber}
-            </p>
-            {parcelsNumberChanged && (
-              <p className="text-warning text-sm">
-                Changing the number of parcels updates the whole series.
-              </p>
-            )}
-          </Field>
+          <InstallmentsField
+            mode="seriesEdit"
+            definition={definition}
+            control={control}
+            disabled={isPending}
+          />
         )}
 
         {isSeriesEdit && definition?.mode === "RECURRING" && (
@@ -377,81 +343,7 @@ export const TransactionFormDrawer = ({
                 </Field>
 
                 {watch("recurrenceMode") === "INSTALLMENT" && (
-                  <>
-                    <Field>
-                      <FieldLabel htmlFor="transaction-parcels-create">
-                        Number of installments
-                      </FieldLabel>
-                      <Controller
-                        control={control}
-                        name="parcelsNumber"
-                        render={({ field }) => (
-                          <NumberField
-                            id="transaction-parcels-create"
-                            ref={field.ref}
-                            name={field.name}
-                            onBlur={field.onBlur}
-                            value={field.value ?? null}
-                            onValueChange={field.onChange}
-                            min={1}
-                            step={1}
-                            placeholder="e.g., 12"
-                            disabled={isPending}
-                            aria-invalid={!!errors.parcelsNumber}
-                          />
-                        )}
-                      />
-                      <FieldError errors={[errors.parcelsNumber]} />
-                    </Field>
-
-                    <Field>
-                      <FieldLabel htmlFor="transaction-current-parcel">
-                        Current installment
-                      </FieldLabel>
-                      <Controller
-                        control={control}
-                        name="currentParcel"
-                        render={({ field }) => (
-                          <NumberField
-                            id="transaction-current-parcel"
-                            ref={field.ref}
-                            name={field.name}
-                            onBlur={field.onBlur}
-                            value={field.value ?? null}
-                            onValueChange={field.onChange}
-                            min={1}
-                            step={1}
-                            placeholder="1"
-                            disabled={isPending}
-                            aria-invalid={!!errors.currentParcel}
-                          />
-                        )}
-                      />
-                      <FieldError errors={[errors.currentParcel]} />
-                    </Field>
-
-                    {(() => {
-                      const total = watch("parcelsNumber") ?? Number.NaN;
-                      const current = watch("currentParcel") ?? 1;
-                      const date = watch("date");
-                      if (
-                        !Number.isFinite(total) ||
-                        total < 2 ||
-                        current < 1 ||
-                        current > total ||
-                        !date
-                      ) {
-                        return null;
-                      }
-                      const lastMonth = addMonths(date, total - current);
-                      return (
-                        <p className="text-muted-foreground text-sm">
-                          Last installment: {total}/{total} —{" "}
-                          {format(lastMonth, "MM/yyyy")}
-                        </p>
-                      );
-                    })()}
-                  </>
+                  <InstallmentsField mode="create" control={control} disabled={isPending} />
                 )}
 
                 {watch("recurrenceMode") === "RECURRING" && (

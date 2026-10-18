@@ -6,6 +6,7 @@ import {
 import {
   TransactionFormOutput,
   buildDefaultValues,
+  lastInstallment,
   seriesParcelsChanged,
   toSeriesCreatePayload,
   toSeriesEditPayload,
@@ -476,5 +477,34 @@ describe("seriesParcelsChanged — a new installment count applies to the whole 
 
   it("is false while the definition is still loading", () => {
     expect(seriesParcelsChanged(undefined, 10)).toBe(false);
+  });
+});
+
+describe("lastInstallment — the preview under the installment count (STD-07 AC 5)", () => {
+  const july = new Date(2026, 6, 15);
+
+  it("counts the months from the first installment", () => {
+    expect(lastInstallment(july, 12, null)).toEqual({ number: 12, month: new Date(2027, 5, 15) });
+  });
+
+  it("counts the months left from a later current installment", () => {
+    expect(lastInstallment(july, 12, 3)).toEqual({ number: 12, month: new Date(2027, 3, 15) });
+  });
+
+  it("is the current month when the current installment is the last one", () => {
+    expect(lastInstallment(july, 2, 2)).toEqual({ number: 2, month: july });
+  });
+
+  it("shows nothing for a single installment", () => {
+    expect(lastInstallment(july, 1, null)).toBeNull();
+  });
+
+  it("shows nothing while the count is empty", () => {
+    expect(lastInstallment(july, null, null)).toBeNull();
+  });
+
+  it("shows nothing when the current installment is beyond the count or below 1", () => {
+    expect(lastInstallment(july, 12, 13)).toBeNull();
+    expect(lastInstallment(july, 12, 0)).toBeNull();
   });
 });

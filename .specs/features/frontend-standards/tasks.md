@@ -2261,14 +2261,16 @@ Notes: `EndDateField` binds `endDate` through a raw `Controller`, since the "Ong
 
 **Done when**:
 
-- [ ] Helper test: even split, remainder cents, 1 installment
-- [ ] Story
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Helper test: even split, remainder cents, 1 installment
+- [x] Story
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 653 → 659 (`lastInstallment`, 6); storybook +5 (`InstallmentsField.stories.tsx`); all projects 757 → 768
+
+Notes: spec-precision gap in the task text: "even split, remainder cents" assumes the preview splits an amount, but every installment carries the full amount (backend `RecurringTransactionGenerator` copies `amount` to each occurrence) and the preview shows only the last installment's number and month. `lastInstallment(date, parcelsNumber, currentParcel)` keeps exactly the IIFE's rule, and its test covers what the preview decides: counted from the first installment, from a later current installment, current = last, one installment (no preview), empty count, current beyond the count or below 1. `InstallmentsField` takes a required `mode`: `create` adds the current installment and the preview; `seriesEdit` takes the `definition`, shows "Currently: parcel x of y" as the field description and the whole-series warning (`seriesParcelsChanged` read with `useWatch`). Both counts bind through `FormField` with `NumberField`'s explicit props, which removed the last IIFE and the drawer's `watch("parcelsNumber")`. Stories: create empty (typing a count shows the preview), from a later installment, too few (error), series edit (raising the count shows the warning), many installments.
 
 **Tests**: unit + story
 **Gate**: full
-**Commit**: `refactor(frontend): InstallmentsField with a tested last-installment helper`
+**Commit**: `refactor(frontend): installments field with a last-installment helper`
 
 ---
 

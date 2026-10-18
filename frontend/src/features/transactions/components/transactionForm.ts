@@ -11,7 +11,7 @@ import {
 } from "@/api/dtos/financialTransaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
-import { format } from "date-fns";
+import { addMonths, format } from "date-fns";
 import { z } from "zod";
 
 export type TransactionFormMode = "create" | "edit" | "duplicate";
@@ -269,6 +269,22 @@ export function itemsRemainderCents(
   items: { amount: number | null | undefined }[],
 ): number {
   return items.reduce((remainder, item) => remainder - centsOf(item.amount), centsOf(amount));
+}
+
+/**
+ * The last installment of a series being created: its number and month, counted from the date of
+ * the current installment (1 when empty). Null until the count and current installment make sense.
+ */
+export function lastInstallment(
+  date: Date,
+  parcelsNumber: number | null | undefined,
+  currentParcel: number | null | undefined,
+): { number: number; month: Date } | null {
+  const current = currentParcel ?? 1;
+  if (parcelsNumber == null || parcelsNumber < 2 || current < 1 || current > parcelsNumber) {
+    return null;
+  }
+  return { number: parcelsNumber, month: addMonths(date, parcelsNumber - current) };
 }
 
 /**
