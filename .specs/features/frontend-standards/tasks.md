@@ -2412,8 +2412,10 @@ Notes: `typographyVariants` holds the seven steps with the classes of decision 7
 
 **Done when**:
 
-- [ ] Story: title only, with description and actions, mobile viewport
-- [ ] Full gate passes
+- [x] Story: title only, with description and actions, mobile viewport
+- [x] Full gate passes
+
+Notes: title as `Heading` level 1 `headline`, description as `Text` `p` `secondary`, actions beside it, wrapping below on a narrow screen. Stories: title only, with description and actions, long title, mobile viewport. All projects 806 → 810.
 
 **Tests**: story
 **Gate**: full
