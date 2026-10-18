@@ -1043,9 +1043,9 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] The `changes` script, run locally against crafted ranges, prints false for docs-only and true for mixed, first-push and force-push cases
-- [ ] Head guard exits 0 without deploying when the SHA is not the tip
-- [ ] YAML parses
+- [x] The `changes` script, run locally against crafted ranges, prints false for docs-only and true for mixed, first-push and force-push cases
+- [x] Head guard exits 0 without deploying when the SHA is not the tip
+- [x] YAML parses
 - [ ] First push to `main`: CI green, then deploy runs (user go-ahead)
 
 **Tests**: none

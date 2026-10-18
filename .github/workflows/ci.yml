@@ -8,6 +8,37 @@ permissions:
   contents: read
 
 jobs:
+  # Path filters live here, not in `on:`: GitHub applies them per workflow, so
+  # they would also skip CI on docs-only pushes.
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      deployable: ${{ steps.diff.outputs.deployable }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # Without a usable range (dispatch, first push, force push) CI still gates
+      # the deploy, so deploying is the safe default.
+      - name: Decide whether this push changes the deployed app
+        id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BEFORE: ${{ github.event.before }}
+        run: |
+          set -euo pipefail
+          deployable=true
+          if [[ "$EVENT" == push && ! "$BEFORE" =~ ^0+$ ]] \
+            && git merge-base --is-ancestor "$BEFORE" "$GITHUB_SHA" 2>/dev/null; then
+            changed=$(git diff --name-only "$BEFORE" "$GITHUB_SHA")
+            if ! grep -qvE '^(\.specs/|\.claude/)|\.md$' <<< "$changed"; then
+              deployable=false
+            fi
+          fi
+          echo "deployable=$deployable"
+          echo "deployable=$deployable" >> "$GITHUB_OUTPUT"
+
   frontend:
     runs-on: ubuntu-latest
     env:
@@ -62,3 +93,77 @@ jobs:
       - name: Test
         working-directory: backend
         run: ./mvnw -B test
+
+  deploy:
+    needs: [changes, frontend, backend]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.deployable == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deploy-production
+      cancel-in-progress: false
+    # Portainer instance IDs/URL — not sensitive. Only the API token is a secret.
+    env:
+      PORTAINER_URL: https://portainer.lcsmrt.com
+      STACK_ID: "74"
+      ENDPOINT_ID: "3"
+    steps:
+      - uses: actions/checkout@v5
+
+      # Portainer builds whatever main is when called, not this commit. If main
+      # moved on, the newer commit's pipeline tests and deploys it instead.
+      - name: Check that this commit is still the tip of main
+        id: head
+        run: |
+          set -euo pipefail
+          tip=$(git ls-remote origin refs/heads/main | cut -f1)
+          if [[ "$tip" == "$GITHUB_SHA" ]]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipping deploy: $GITHUB_SHA is no longer the tip of main ($tip)."
+            echo "current=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Pull and redeploy the stack
+        if: steps.head.outputs.current == 'true'
+        env:
+          API_KEY: ${{ secrets.PORTAINER_API_KEY }}
+        run: |
+          set -euo pipefail
+
+          [[ "$STACK_ID" =~ ^[0-9]+$ ]] || {
+            echo "STACK_ID is still a placeholder. Open the stack in Portainer and"
+            echo "copy the id from the URL (…/docker/stacks/findraco?id=<STACK_ID>…)."
+            exit 1
+          }
+
+          # A plain stack webhook only recreates the containers from the image that
+          # was already built, so the new code never ships. git/redeploy is what the
+          # "Pull and redeploy" button calls: it re-pulls the repo and rebuilds.
+          #
+          # The stack's current Env is read back and sent unchanged, so the database
+          # password and JWT secret stay in Portainer and are never copied into
+          # GitHub — and the PUT does not wipe them.
+          #
+          # Retries: the VPS may be busy with a build and not answer right away.
+          env_json=$(curl -fsS \
+            --connect-timeout 20 --max-time 60 --retry 4 --retry-delay 10 --retry-all-errors \
+            -H "X-API-Key: $API_KEY" \
+            "$PORTAINER_URL/api/stacks/$STACK_ID" | jq '.Env // []')
+
+          body=$(jq -cn --argjson env "$env_json" '{
+            env: $env,
+            prune: false,
+            PullImage: false,
+            RepositoryReferenceName: "refs/heads/main",
+            RepositoryAuthentication: false
+          }')
+
+          # Generous timeout: this rebuilds both images (Maven + pnpm) on the VPS.
+          # The response is the full stack, Env included (DB password, JWT secret,
+          # SMTP password) — never let it reach the public job log.
+          curl -fsS -o /dev/null -X PUT \
+            --connect-timeout 20 --max-time 900 --retry 4 --retry-delay 15 --retry-all-errors \
+            -H "X-API-Key: $API_KEY" \
+            -H 'Content-Type: application/json' \
+            "$PORTAINER_URL/api/stacks/$STACK_ID/git/redeploy?endpointId=$ENDPOINT_ID" \
+            --data "$body"
