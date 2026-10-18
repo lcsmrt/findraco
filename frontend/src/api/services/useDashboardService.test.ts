@@ -1,55 +1,79 @@
-import { createElement, ReactNode } from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { renderHook, waitFor } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
-import { findracoApi } from "../clients/findracoApi";
-import { useGetDashboardTrend } from "./useDashboardService";
+import { waitFor } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+import type { PlanContextValue } from "@/app/providers/usePlanContext";
+import { recordRequests } from "@/test/recordRequests";
+import { renderHookWithProviders } from "@/test/renderWithProviders";
+import { server } from "@/test/server";
+import { dashboardHandlers } from "./dashboard.handlers";
+import { useGetDashboardSummary, useGetDashboardTrend } from "./useDashboardService";
 
-vi.mock("../clients/findracoApi", () => ({
-  findracoApi: { get: vi.fn() },
-}));
+function planContext(activePlanId: number | null): PlanContextValue {
+  return { activePlanId, setActivePlanId: () => {}, plans: [], isLoading: false };
+}
 
-let mockedActivePlanId: number | null = 5;
-vi.mock("@/app/providers/usePlanContext", () => ({
-  usePlanContext: () => ({ activePlanId: mockedActivePlanId }),
-}));
+const params = { startDate: "2026-05-01", endDate: "2026-10-31", memberId: 9 };
 
-const mockedGet = findracoApi.get as unknown as Mock;
+describe("useGetDashboardSummary", () => {
+  it("GETs the plan-scoped summary with start, end and memberId and returns it", async () => {
+    const summary = {
+      totalIncome: 1000,
+      totalExpenses: 250,
+      netBalance: 750,
+      categoryBreakdown: [],
+      monthlyTrend: [],
+      personBreakdown: [],
+    };
+    server.use(dashboardHandlers.summary(summary));
+    const requests = recordRequests();
 
-const createWrapper = () => {
-  const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+    const { result } = renderHookWithProviders(() => useGetDashboardSummary(params), {
+      plan: planContext(5),
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests).toHaveLength(1);
+    expect(requests[0].method).toBe("GET");
+    const url = new URL(requests[0].url);
+    expect(url.pathname).toBe("/api/findraco/plan/5/dashboard");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      startDate: "2026-05-01",
+      endDate: "2026-10-31",
+      memberId: "9",
+    });
+    expect(result.current.data).toEqual(summary);
   });
-  const Wrapper = ({ children }: { children: ReactNode }) =>
-    createElement(QueryClientProvider, { client: queryClient }, children);
-  return { queryClient, Wrapper };
-};
-
-afterEach(() => {
-  vi.clearAllMocks();
-  mockedActivePlanId = 5;
 });
 
 describe("useGetDashboardTrend (UX-05 AC 7)", () => {
-  const params = { startDate: "2026-05-01", endDate: "2026-10-31", memberId: 9 };
   const trend = [{ year: 2026, month: 8, income: 1000, expenses: 250 }];
 
   it("GETs the plan-scoped trend with start, end and memberId", async () => {
-    mockedGet.mockResolvedValue({ data: trend });
-    const { Wrapper } = createWrapper();
+    server.use(dashboardHandlers.trend(trend));
+    const requests = recordRequests();
 
-    const { result } = renderHook(() => useGetDashboardTrend(params), { wrapper: Wrapper });
+    const { result } = renderHookWithProviders(() => useGetDashboardTrend(params), {
+      plan: planContext(5),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(mockedGet).toHaveBeenCalledWith("/plan/5/dashboard/trend", { params });
+    expect(requests).toHaveLength(1);
+    expect(requests[0].method).toBe("GET");
+    const url = new URL(requests[0].url);
+    expect(url.pathname).toBe("/api/findraco/plan/5/dashboard/trend");
+    expect(Object.fromEntries(url.searchParams)).toEqual({
+      startDate: "2026-05-01",
+      endDate: "2026-10-31",
+      memberId: "9",
+    });
     expect(result.current.data).toEqual(trend);
   });
 
   it("keys the query by plan and params", async () => {
-    mockedGet.mockResolvedValue({ data: trend });
-    const { queryClient, Wrapper } = createWrapper();
+    server.use(dashboardHandlers.trend(trend));
 
-    const { result } = renderHook(() => useGetDashboardTrend(params), { wrapper: Wrapper });
+    const { result, queryClient } = renderHookWithProviders(() => useGetDashboardTrend(params), {
+      plan: planContext(5),
+    });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(queryClient.getQueryData(["dashboardTrend", 5, params])).toEqual(trend);
@@ -59,12 +83,13 @@ describe("useGetDashboardTrend (UX-05 AC 7)", () => {
   });
 
   it("is not fetched without an active plan", () => {
-    mockedActivePlanId = null;
-    const { Wrapper } = createWrapper();
+    const requests = recordRequests();
 
-    const { result } = renderHook(() => useGetDashboardTrend(params), { wrapper: Wrapper });
+    const { result } = renderHookWithProviders(() => useGetDashboardTrend(params), {
+      plan: planContext(null),
+    });
 
     expect(result.current.fetchStatus).toBe("idle");
-    expect(mockedGet).not.toHaveBeenCalled();
+    expect(requests).toEqual([]);
   });
 });
