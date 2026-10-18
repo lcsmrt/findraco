@@ -345,10 +345,10 @@ Frontend quality decayed as features shipped fast. The audit (`.specs/codebase/f
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| STD-01 | P1 Written standards (AC 1–5) | P1 (T1–T9) | Pending |
-| STD-02 | P1 Green lint baseline (AC 1–9) — C1, C3, C8, E1, F3 | P2–P4 (T10–T29) | Pending |
-| STD-03 | P1 Gates before production (AC 1–6) — G2 | P5 (T30–T33) | Pending |
-| STD-04 | P1 Test infrastructure (AC 1–5) — F1, F2 harness | P6 (T34–T42) | Pending |
+| STD-01 | P1 Written standards (AC 1–5) | P1 (T1–T9) | Done |
+| STD-02 | P1 Green lint baseline (AC 1–9) — C1, C3, C8, E1, F3 | P2–P4 (T10–T29) | Done |
+| STD-03 | P1 Gates before production (AC 1–6) — G2 | P5 (T30–T33) | Done |
+| STD-04 | P1 Test infrastructure (AC 1–5) — F1, F2 harness | P6 (T34–T42) | Done |
 | STD-05 | P2 Structure (AC 1–9) — C2, C4, C4b, C5, C6, C9, `base/` | P7–P8 (T43–T55) | Pending |
 | STD-06 | P2 Shared components and tokens (AC 1–14) — B1–B7, E3, E4a | P9–P11 (T56–T79) | Pending |
 | STD-07 | P2 Form decomposition (AC 1–6) — D1, D2, B8 | P12 (T80–T88) | Pending |

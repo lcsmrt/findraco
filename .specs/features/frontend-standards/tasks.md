@@ -1023,7 +1023,7 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 - [x] YAML parses (`python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))'`)
 - [x] Commands match the local Build gate
-- [ ] First push: both jobs green (user go-ahead)
+- [x] First push: both jobs green (run 39140226172, 2026-10-18: after fixing setup-node's cache in 5e1f94d, all four jobs green; Portainer redeployed)
 
 **Tests**: none
 **Gate**: build
@@ -1046,7 +1046,7 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 - [x] The `changes` script, run locally against crafted ranges, prints false for docs-only and true for mixed, first-push and force-push cases
 - [x] Head guard exits 0 without deploying when the SHA is not the tip
 - [x] YAML parses
-- [ ] First push to `main`: CI green, then deploy runs (user go-ahead)
+- [x] First push to `main`: CI green, then deploy runs (run 39140226172, 2026-10-18: after fixing setup-node's cache in 5e1f94d, all four jobs green; Portainer redeployed)
 
 **Tests**: none
 **Gate**: build
