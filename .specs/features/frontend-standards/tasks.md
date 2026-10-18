@@ -1855,11 +1855,13 @@ Notes: the `ManyMembers` story (5+ members, the combobox branch) failed axe `but
 
 **Done when**:
 
-- [ ] Story: increment, decrement at min, typing
-- [ ] No IIFE left in the installment inputs
-- [ ] Drawer tests pass
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Story: increment, decrement at min, typing
+- [x] No IIFE left in the installment inputs
+- [x] Drawer tests pass
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): all projects 642 → 647
+
+Notes: the shadcn registry has no number field (404 for the Base UI styles), so `NumberField` composes Base UI's (`Root`, `Group`, `Decrement`, `Input`, `Increment`, whole numbers via `format`). Base UI gives the input role `textbox` with `aria-roledescription`, not `spinbutton`. `parcelsNumber` and `currentParcel` now hold `number | null` instead of digit strings, so the inputs bind through `Controller` without parsing; the schema checks, the series mappers and `buildDefaultValues` read numbers, and `transactionForm.series.test.ts` changed only its value entry ("12" → 12). The last-installment preview stays an IIFE until T84.
 
 **Tests**: story
 **Gate**: full

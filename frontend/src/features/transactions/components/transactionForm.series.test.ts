@@ -71,7 +71,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
     const result = transactionFormSchema.safeParse({
       ...baseValues,
       recurrenceMode: "INSTALLMENT",
-      parcelsNumber: "1",
+      parcelsNumber: 1,
     });
 
     expect(result.success).toBe(false);
@@ -87,7 +87,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
     const result = transactionFormSchema.safeParse({
       ...baseValues,
       recurrenceMode: "INSTALLMENT",
-      parcelsNumber: "12",
+      parcelsNumber: 12,
     });
 
     expect(result.success).toBe(true);
@@ -156,7 +156,7 @@ describe("transactionFormSchema — series edit validation", () => {
       recurring: false,
       seriesEdit: true,
       recurrenceMode: "INSTALLMENT",
-      parcelsNumber: "1",
+      parcelsNumber: 1,
     });
 
     expect(result.success).toBe(false);
@@ -220,7 +220,7 @@ describe("transactionFormSchema — series edit validation", () => {
       recurring: false,
       seriesEdit: true,
       recurrenceMode: "INSTALLMENT",
-      parcelsNumber: "12",
+      parcelsNumber: 12,
     });
 
     expect(result.success).toBe(true);
@@ -238,7 +238,7 @@ describe("buildDefaultValues — series edit mode", () => {
     expect(defaults.seriesEdit).toBe(true);
     expect(defaults.description).toBe("Rent");
     expect(defaults.recurrenceMode).toBe("INSTALLMENT");
-    expect(defaults.parcelsNumber).toBe("12");
+    expect(defaults.parcelsNumber).toBe(12);
     expect(defaults.endDate).toBeUndefined();
     expect(defaults.items).toEqual([]);
   });
@@ -269,8 +269,8 @@ describe("toSeriesCreatePayload", () => {
       {
         ...baseValues,
         recurrenceMode: "INSTALLMENT",
-        parcelsNumber: "12",
-        currentParcel: "3",
+        parcelsNumber: 12,
+        currentParcel: 3,
       },
       false,
       undefined,
@@ -297,7 +297,7 @@ describe("toSeriesCreatePayload", () => {
       {
         ...baseValues,
         recurrenceMode: "INSTALLMENT",
-        parcelsNumber: "12",
+        parcelsNumber: 12,
       },
       false,
       undefined,
@@ -357,7 +357,7 @@ describe("toSeriesEditPayload", () => {
         seriesEdit: true,
         recurring: false,
         recurrenceMode: "INSTALLMENT",
-        parcelsNumber: "10",
+        parcelsNumber: 10,
       },
       installmentTransaction,
       installmentDefinition,
@@ -390,7 +390,7 @@ describe("toSeriesEditPayload", () => {
         seriesEdit: true,
         recurring: false,
         recurrenceMode: "INSTALLMENT",
-        parcelsNumber: "10",
+        parcelsNumber: 10,
         date: new Date(2099, 0, 1),
       },
       installmentTransaction,
@@ -450,7 +450,7 @@ describe("edit-mode reset — series edit", () => {
 
     expect(loadedDefaults.seriesEdit).toBe(true);
     expect(loadedDefaults.recurrenceMode).toBe("INSTALLMENT");
-    expect(loadedDefaults.parcelsNumber).toBe("12");
+    expect(loadedDefaults.parcelsNumber).toBe(12);
     expect(loadedDefaults.description).toBe("Rent");
     expect(loadedDefaults).not.toEqual(loadingDefaults);
   });

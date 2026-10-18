@@ -20,6 +20,7 @@ import {
   FieldLabel,
 } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
+import { NumberField } from "@/components/input/base/NumberField";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { DatePicker } from "@/components/input/DatePicker";
 import { FormField } from "@/components/form/FormField";
@@ -119,7 +120,7 @@ export const TransactionFormDrawer = ({
     defaultValues: buildDefaultValues(transaction, currentUserId, definition),
   });
 
-  const originalParcelsNumberRef = useRef<string | undefined>(undefined);
+  const originalParcelsNumberRef = useRef<number | null | undefined>(undefined);
   const participantsTouchedRef = useRef(false);
 
   // Every attribution change made through AttributionFields is a manual edit.
@@ -156,7 +157,7 @@ export const TransactionFormDrawer = ({
     reset(buildDefaultValues(transaction, currentUserId, definition));
     originalParcelsNumberRef.current =
       definition?.mode === "INSTALLMENT"
-        ? String(definition.parcelsNumber ?? "")
+        ? (definition.parcelsNumber ?? null)
         : undefined;
   }, [transaction, open, reset, currentUserId, definition]);
 
@@ -455,24 +456,25 @@ export const TransactionFormDrawer = ({
                 <FieldLabel htmlFor="transaction-parcels">
                   Number of installments
                 </FieldLabel>
-                {(() => {
-                  const { onChange, ...parcelsRest } = register("parcelsNumber");
-                  return (
-                    <Input
+                <Controller
+                  control={control}
+                  name="parcelsNumber"
+                  render={({ field }) => (
+                    <NumberField
                       id="transaction-parcels"
-                      type="text"
-                      inputMode="numeric"
+                      ref={field.ref}
+                      name={field.name}
+                      onBlur={field.onBlur}
+                      value={field.value ?? null}
+                      onValueChange={field.onChange}
+                      min={1}
+                      step={1}
                       placeholder="e.g., 12"
                       disabled={isPending}
                       aria-invalid={!!errors.parcelsNumber}
-                      {...parcelsRest}
-                      onChange={(e) => {
-                        e.target.value = e.target.value.replace(/\D/g, "");
-                        onChange(e);
-                      }}
                     />
-                  );
-                })()}
+                  )}
+                />
                 <FieldError errors={[errors.parcelsNumber]} />
                 <p className="text-muted-foreground text-sm">
                   Currently: parcel {definition.firstParcel ?? 1} of{" "}
@@ -572,28 +574,25 @@ export const TransactionFormDrawer = ({
                           <FieldLabel htmlFor="transaction-parcels-create">
                             Number of installments
                           </FieldLabel>
-                          {(() => {
-                            const { onChange, ...parcelsRest } =
-                              register("parcelsNumber");
-                            return (
-                              <Input
+                          <Controller
+                            control={control}
+                            name="parcelsNumber"
+                            render={({ field }) => (
+                              <NumberField
                                 id="transaction-parcels-create"
-                                type="text"
-                                inputMode="numeric"
+                                ref={field.ref}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                value={field.value ?? null}
+                                onValueChange={field.onChange}
+                                min={1}
+                                step={1}
                                 placeholder="e.g., 12"
                                 disabled={isPending}
                                 aria-invalid={!!errors.parcelsNumber}
-                                {...parcelsRest}
-                                onChange={(e) => {
-                                  e.target.value = e.target.value.replace(
-                                    /\D/g,
-                                    "",
-                                  );
-                                  onChange(e);
-                                }}
                               />
-                            );
-                          })()}
+                            )}
+                          />
                           <FieldError errors={[errors.parcelsNumber]} />
                         </Field>
 
@@ -601,43 +600,31 @@ export const TransactionFormDrawer = ({
                           <FieldLabel htmlFor="transaction-current-parcel">
                             Current installment
                           </FieldLabel>
-                          {(() => {
-                            const { onChange, ...currentRest } =
-                              register("currentParcel");
-                            return (
-                              <Input
+                          <Controller
+                            control={control}
+                            name="currentParcel"
+                            render={({ field }) => (
+                              <NumberField
                                 id="transaction-current-parcel"
-                                type="text"
-                                inputMode="numeric"
+                                ref={field.ref}
+                                name={field.name}
+                                onBlur={field.onBlur}
+                                value={field.value ?? null}
+                                onValueChange={field.onChange}
+                                min={1}
+                                step={1}
                                 placeholder="1"
                                 disabled={isPending}
                                 aria-invalid={!!errors.currentParcel}
-                                {...currentRest}
-                                onChange={(e) => {
-                                  e.target.value = e.target.value.replace(
-                                    /\D/g,
-                                    "",
-                                  );
-                                  onChange(e);
-                                }}
                               />
-                            );
-                          })()}
+                            )}
+                          />
                           <FieldError errors={[errors.currentParcel]} />
                         </Field>
 
                         {(() => {
-                          const total = parseInt(
-                            (watch("parcelsNumber") ?? "").replace(/\D/g, ""),
-                            10,
-                          );
-                          const currentDigits = (
-                            watch("currentParcel") ?? ""
-                          ).replace(/\D/g, "");
-                          const current =
-                            currentDigits.length > 0
-                              ? parseInt(currentDigits, 10)
-                              : 1;
+                          const total = watch("parcelsNumber") ?? Number.NaN;
+                          const current = watch("currentParcel") ?? 1;
                           const date = watch("date");
                           if (
                             !Number.isFinite(total) ||

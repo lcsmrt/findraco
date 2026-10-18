@@ -47,8 +47,10 @@ export const transactionFormSchema = z
     recurring: z.boolean(),
     seriesEdit: z.boolean(),
     recurrenceMode: z.enum(["INSTALLMENT", "RECURRING"]).optional(),
-    parcelsNumber: z.string().optional(),
-    currentParcel: z.string().optional(),
+    /** Whole count; `null` or unset when empty. */
+    parcelsNumber: z.number().nullable().optional(),
+    /** Whole count; empty means the first installment. */
+    currentParcel: z.number().nullable().optional(),
     endDate: z.date().optional(),
     attributionMode: z.enum(["ME", "SOMEONE", "SPLIT"]),
     splitMode: z.enum(["EQUAL", "EXACT"]),
@@ -109,9 +111,7 @@ export const transactionFormSchema = z
 
     if (values.seriesEdit) {
       if (values.recurrenceMode === "INSTALLMENT") {
-        const digits = (values.parcelsNumber ?? "").replace(/\D/g, "");
-        const total = digits.length > 0 ? parseInt(digits, 10) : 0;
-        if (digits.length === 0 || total < 2) {
+        if ((values.parcelsNumber ?? 0) < 2) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "Enter at least 2 installments",
@@ -145,9 +145,8 @@ export const transactionFormSchema = z
     }
 
     if (values.recurrenceMode === "INSTALLMENT") {
-      const digits = (values.parcelsNumber ?? "").replace(/\D/g, "");
-      const total = digits.length > 0 ? parseInt(digits, 10) : 0;
-      if (digits.length === 0 || total < 2) {
+      const total = values.parcelsNumber ?? 0;
+      if (total < 2) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Enter at least 2 installments",
@@ -155,9 +154,8 @@ export const transactionFormSchema = z
         });
       }
 
-      const currentDigits = (values.currentParcel ?? "").replace(/\D/g, "");
-      if (currentDigits.length > 0) {
-        const current = parseInt(currentDigits, 10);
+      const current = values.currentParcel;
+      if (current != null) {
         if (current < 1) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -348,15 +346,11 @@ export function toSeriesCreatePayload(
     mode: values.recurrenceMode!,
     startDate: format(values.date, "yyyy-MM-dd"),
     parcelsNumber:
-      values.recurrenceMode === "INSTALLMENT"
-        ? parseInt(values.parcelsNumber!.replace(/\D/g, ""), 10)
+      values.recurrenceMode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
+    currentParcel:
+      values.recurrenceMode === "INSTALLMENT" && (values.currentParcel ?? 1) > 1
+        ? (values.currentParcel ?? undefined)
         : undefined,
-    currentParcel: (() => {
-      if (values.recurrenceMode !== "INSTALLMENT") return undefined;
-      const digits = (values.currentParcel ?? "").replace(/\D/g, "");
-      const current = digits.length > 0 ? parseInt(digits, 10) : 1;
-      return current > 1 ? current : undefined;
-    })(),
     interval: values.recurrenceMode === "RECURRING" ? "MONTHLY" : undefined,
     endDate:
       values.recurrenceMode === "RECURRING" && values.endDate
@@ -389,9 +383,7 @@ export function toSeriesEditPayload(
     mode: definition.mode,
     startDate: definition.startDate,
     parcelsNumber:
-      definition.mode === "INSTALLMENT"
-        ? parseInt((values.parcelsNumber ?? "").replace(/\D/g, ""), 10)
-        : undefined,
+      definition.mode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
     interval: definition.interval,
     endDate:
       definition.mode === "RECURRING" && values.endDate
@@ -428,7 +420,7 @@ export function buildDefaultValues(
       recurrenceMode: isSeriesEdit ? definition.mode : undefined,
       parcelsNumber:
         isSeriesEdit && definition.mode === "INSTALLMENT"
-          ? String(definition.parcelsNumber ?? "")
+          ? (definition.parcelsNumber ?? null)
           : undefined,
       endDate:
         isSeriesEdit && definition.mode === "RECURRING" && definition.endDate
