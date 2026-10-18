@@ -1,32 +1,8 @@
-import {
-  createContext,
-  ReactNode,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
-
-type Theme = "light" | "dark" | "system";
-
-type ThemeContextValue = {
-  theme: Theme;
-  setTheme: (theme: Theme) => void;
-  toggleTheme: () => void;
-};
-
-const ThemeContext = createContext<ThemeContextValue | null>(null);
+import { ReactNode, useEffect, useState } from "react";
+import { resolveTheme } from "./resolveTheme";
+import { ThemeContext, type Theme } from "./useTheme";
 
 const STORAGE_KEY = "findraco-theme";
-
-const getSystemTheme = (): "light" | "dark" => {
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
-};
-
-const resolveTheme = (theme: Theme): "light" | "dark" => {
-  return theme === "system" ? getSystemTheme() : theme;
-};
 
 const applyTheme = (theme: Theme) => {
   const root = document.documentElement;
@@ -81,13 +57,3 @@ export const ThemeProvider = ({ children }: ThemeProviderProps) => {
     </ThemeContext.Provider>
   );
 };
-
-export const useTheme = (): ThemeContextValue => {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
-};
-
-export { resolveTheme };

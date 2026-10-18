@@ -6,7 +6,8 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
-import { resolveTheme, useTheme } from "@/app/providers/ThemeProvider";
+import { resolveTheme } from "@/app/providers/resolveTheme";
+import { useTheme } from "@/app/providers/useTheme";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme } = useTheme();
