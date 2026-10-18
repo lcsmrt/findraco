@@ -1,16 +1,16 @@
 import { MainLayout } from "@/components/layout/MainLayout";
 import { Home } from "@/app/home/HomePage";
-import { Login } from "@/features/login/LoginPage";
+import { Login } from "@/features/auth/LoginPage";
 import { Route, Routes } from "react-router-dom";
 import { PATHS } from "./paths";
 import { AuthLayout } from "@/components/layout/AuthLayout";
-import { RegisterUser } from "@/features/registerUser/RegisterUserPage";
+import { RegisterUser } from "@/features/auth/RegisterUserPage";
 import { PrivateRoute } from "./PrivateRoute";
 import { NotFound } from "@/features/notFound/NotFoundPage";
 import { PlansPage } from "@/features/plans/PlansPage";
 import { AcceptInvitationPage } from "@/features/plans/AcceptInvitationPage";
-import { ForgotPassword } from "@/features/forgotPassword/ForgotPasswordPage";
-import { ResetPassword } from "@/features/resetPassword/ResetPasswordPage";
+import { ForgotPassword } from "@/features/auth/ForgotPasswordPage";
+import { ResetPassword } from "@/features/auth/ResetPasswordPage";
 
 export const AppRouter = () => {
   return (
