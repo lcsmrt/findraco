@@ -448,8 +448,8 @@ T124 → T125
 
 **Done when**:
 
-- [ ] No statement contradicts the skills
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] No statement contradicts the skills
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
