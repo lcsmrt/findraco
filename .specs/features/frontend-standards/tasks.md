@@ -1981,8 +1981,10 @@ Notes: `AuthCard` takes `title`, `description?`, `children` and `className`; the
 
 **Done when**:
 
-- [ ] Story `play`: toggling shows and hides the value
-- [ ] Full gate passes
+- [x] Story `play`: toggling shows and hides the value
+- [x] Full gate passes
+
+Notes: the toggle is an `InputGroupButton` named "Show password" / "Hide password" by its action; it is disabled with the input. Every other input prop, `ref` included, reaches the input. Stories: toggle (`play`), invalid, disabled. All projects 666 → 669.
 
 **Tests**: story
 **Gate**: full
