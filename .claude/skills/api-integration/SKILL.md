@@ -1,42 +1,37 @@
 ---
 name: api-integration
-description: Create or modify an API integration in a React frontend that uses axios + TanStack Query wrapped in custom service hooks. Covers DTOs/types, query keys, mutations with automatic toasts, query invalidation, and paginated queries. Use when adding or changing frontend data-fetching — a new endpoint hook, a DTO/request-response type, a query/mutation, or wiring cache invalidation. Triggers on "api integration", "service hook", "useQuery", "useMutation", "TanStack Query", "DTO", "fetch data", "invalidate query", "paginated endpoint".
+description: Create or change frontend data access in findraco: axios (`findracoApi`) + TanStack Query wrapped in service hooks. Covers DTO and request types and their naming, plan-scoped service hooks (raw function + `useXxx` hook), query keys, mutations with `buildMutationOptions` toasts, cache invalidation, paged queries (`buildPagedQuery`, `toPagination`), and the typed MSW handler factories (`xxx.handlers.ts`) that every service ships with for tests. Use when adding or changing an endpoint hook, a DTO, a query or mutation, cache invalidation, or the handlers that simulate an endpoint. Triggers on "api integration", "service hook", "useQuery", "useMutation", "TanStack Query", "DTO", "fetch data", "invalidate query", "paginated endpoint", "pagination", "msw handler", "handlers.ts", "mock the api".
 metadata:
   type: reference
 ---
 
 # API Integration
 
-API communication uses **axios** + **TanStack Query** wrapped in custom service hooks.
-Components never call the HTTP client directly — always through service hooks.
-
-> Paths and helper names below (`apiClient`, `buildMutationOptions`, `buildPagedQuery`,
-> `QueryOptions`, `MutationOptions`) are conventions. Adapt them to your project's names.
+Data access uses **axios** + **TanStack Query**, wrapped in service hooks. Components never call the
+HTTP client; they call a service hook. Code style (`function` declarations, `type`) follows
+`component-creation`.
 
 ---
 
-## File Locations
+## File locations
 
-| Thing              | Location                                        |
-| ------------------ | ----------------------------------------------- |
-| HTTP client        | `src/api/clients/apiClient.ts`                  |
-| DTOs / types       | `src/api/dtos/<entity>.ts`                      |
-| Service hooks      | `src/api/services/useXxxService.ts`             |
-| Shared API types   | `src/api/types/` (QueryOptions, MutationOptions) |
-| API utilities      | `src/api/utils/` (buildPagedQuery, etc.)        |
+| Thing | Location |
+| --- | --- |
+| HTTP client (interceptors, session refresh) | `src/api/clients/findracoApi.ts` |
+| DTOs and request types | `src/api/dtos/<entity>.ts`, re-exported from `src/api/dtos/index.ts` |
+| Service hooks | `src/api/services/useXxxService.ts`, one file per domain |
+| Handler factories (tests and stories only) | `src/api/services/xxx.handlers.ts`, beside the service |
+| `QueryOptions`, `MutationOptions` | `src/api/types/` |
+| `buildMutationOptions`, `buildPagedQuery`, `toPagination` | `src/api/utils/` |
 
-Service hooks that are global (reused across features) live in `src/api/services/`.
-Feature-specific hooks that won't be shared can live in `features/<name>/hooks/`.
+Service hooks live in `src/api/services/`, never inside a feature.
 
 ---
 
-## DTOs
-
-Define entity types and request/response shapes in `src/api/dtos/`:
+## DTOs and naming
 
 ```ts
 // dtos/product.ts
-
 export type ProductStatus = "ACTIVE" | "ARCHIVED";
 
 export type Product = {
@@ -52,156 +47,173 @@ export type CreateProductRequest = {
     name: string;
     price: number;
     status: ProductStatus;
-    categoryId?: number;
+    categoryId: number | null;
   };
 };
 
 export type UpdateProductRequest = {
   params: { id: number };
-  body: Partial<CreateProductRequest["body"]>;
+  body: CreateProductRequest["body"];
+};
+
+export type ProductSortBy = "name" | "price" | "status";
+
+export type PagedProductsFilter = {
+  status?: ProductStatus;
+  name?: string;
 };
 ```
 
-For paginated endpoints, use shared paged types:
-```ts
-import { PagedRequest, PagedResponse } from "@/api/dtos";
-
-// Filter shape for a specific entity
-export type ProductSortBy = "name" | "price" | "status";
-
-export interface PagedProductsFilter {
-  status?: ProductStatus;
-  categoryId?: number;
-  name?: string;
-  priceMin?: number;
-  priceMax?: number;
-}
-```
+- `type` only, never `interface` (lint `@typescript-eslint/consistent-type-definitions`).
+- Entities: plain PascalCase (`FinancialTransaction`).
+- Call shapes: `CreateXxxRequest` / `UpdateXxxRequest` / `DeleteXxxRequest`, holding `params` and/or
+  `body`.
+- `XxxResponse`: the API wire shape when it differs from the entity (`DashboardSummaryResponse`). Keep it
+  in the service layer; screens use the entity or the response type the hook returns.
+- Paged endpoints use the shared `PagedRequest<TFilter, TSortBy>` and `PagedResponse<T>`.
+- A DTO describes JSON: dates arrive as ISO strings. Converting them to `Date` is a form mapper's job
+  (`form-creation`).
 
 ---
 
-## Query Hooks
+## Query hooks
 
 ```ts
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "../clients/apiClient";
+import { usePlanContext } from "@/app/providers/usePlanContext";
+import { findracoApi } from "../clients/findracoApi";
+import { DashboardFilter, MonthlyTrend } from "../dtos";
 import { QueryOptions } from "../types/queryOptions";
 
-// 1. Raw async function — HTTP only, no hooks
-const getProducts = async (
-  params?: PagedRequest<PagedProductsFilter, ProductSortBy>,
-): Promise<PagedResponse<Product>> => {
-  const query = buildPagedQuery(params);
-  const { data } = await apiClient.get(`/product?${query}`);
+// 1. Raw async function: HTTP only, no hooks
+async function getDashboardTrend(planId: number, params: DashboardFilter): Promise<MonthlyTrend[]> {
+  const { data } = await findracoApi.get<MonthlyTrend[]>(`/plan/${planId}/dashboard/trend`, { params });
   return data;
-};
+}
 
-// 2. Hook — wraps the function, accepts options
-export const useGetProducts = (
-  params?: PagedRequest<PagedProductsFilter, ProductSortBy>,
-  options?: QueryOptions<PagedResponse<Product>>,
-) => {
+// 2. Hook: wraps the function, scopes it to the active plan, accepts options
+export function useGetDashboardTrend(params: DashboardFilter, options?: QueryOptions<MonthlyTrend[]>) {
+  const { activePlanId } = usePlanContext();
   return useQuery({
-    queryFn: () => getProducts(params),
-    queryKey: ["products", params],
+    queryFn: () => getDashboardTrend(activePlanId!, params),
+    queryKey: ["dashboardTrend", activePlanId, params],
     ...options,
+    enabled: activePlanId != null && (options?.enabled ?? true),
   });
-};
+}
 ```
 
-**Query key rules:**
-- Format: `["entityName", params]` — always an array
-- Include all params the query depends on (TanStack Query handles deep equality)
-- Entity-level list: `["products"]` or `["products", params]`
-- Single item: `["product", id]`
+**Plan scoping.** A plan-scoped endpoint takes the plan as a path variable (`/plan/{planId}/…`), read
+from `usePlanContext()`. The active plan goes into the query key and `enabled` waits for it. Why: the
+cache never serves one plan's data to another, and switching plans refetches. The `!` in `queryFn` is
+safe only because of that `enabled` guard; keep them together.
 
-**Conditional queries** — use `enabled`, not `useEffect`:
-```ts
-queryKey: ["product", id],
-queryFn: () => getProductById(id!),
-enabled: id != null,
-```
+**Query keys**
+
+- Always an array: `["entityName", activePlanId, params]` for plan-scoped lists, `["entity", id]` for one
+  item.
+- Include every value the query depends on; TanStack Query compares deeply.
+
+**Conditional queries** use `enabled`, never `useEffect`.
 
 ---
 
-## Mutation Hooks
+## Mutation hooks
 
 ```ts
-import { useMutation } from "@tanstack/react-query";
-import { buildMutationOptions } from "../utils/buildMutationOptions";
-import { MutationOptions } from "../types/mutationOptions";
-
-const createProduct = async (
-  payload: CreateProductRequest,
-): Promise<Product> => {
-  const { data } = await apiClient.post("/product", payload.body);
+async function createProduct(payload: CreateProductRequest): Promise<Product> {
+  const { data } = await findracoApi.post<Product>("/product", payload.body);
   return data;
-};
+}
 
-export const useCreateProduct = (
-  options?: MutationOptions<Product, CreateProductRequest>,
-) => {
+export function useCreateProduct(options?: MutationOptions<Product, CreateProductRequest>) {
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: createProduct,
     ...buildMutationOptions(
       { successMessage: "Product created successfully." },
-      options,
+      {
+        ...options,
+        onSuccess: (data, variables) => {
+          queryClient.invalidateQueries({ queryKey: ["products"] });
+          options?.onSuccess?.(data, variables);
+        },
+      },
     ),
   });
-};
-```
-
-`buildMutationOptions` wires success/error toasts automatically. Pass defaults in the first arg; per-call overrides via `options`.
-
-**MutationOptions shape:**
-```ts
-{
-  successMessage?: string | ((data, variables) => string);
-  errorMessage?: string;
-  showSuccessToast?: boolean;   // default: true
-  showErrorToast?: boolean;     // default: true
-  onSuccess?: (data, variables) => void;
-  onError?: (error) => void;
 }
 ```
 
+- `buildMutationOptions(defaults, options)` wires the success and error toasts. Service-level defaults go
+  in the first argument; callers override through `options` (`successMessage`, `errorMessage`,
+  `showSuccessToast`, `showErrorToast`, `onSuccess`, `onError`).
+- A mutation that changes list data invalidates the related queries in `onSuccess`, then calls the
+  caller's `onSuccess`.
+- A failed session renewal already shows its own message, so `buildMutationOptions` skips the error toast
+  for `SessionExpiredError`; do not add another.
+
 ---
 
-## Query Invalidation
+## Paged queries: `buildPagedQuery` and `toPagination`
 
-Invalidate related queries inside `onSuccess` when a mutation changes list data:
+- `buildPagedQuery(params)` turns a `PagedRequest` into a query string, skipping `undefined`, `null` and
+  `""`:
+  `{ page: 0, size: 10, filter: { status: "ACTIVE" }, sort: { by: "name", direction: "desc" } }` →
+  `"page=0&size=10&status=ACTIVE&sortBy=name&sortDirection=desc"`.
+- `toPagination(page)` (beside it, its inverse) turns a `PagedResponse` into the table's pagination
+  props. Never map `page`, `size`, `totalElements` and `totalPages` to the table by hand in a screen.
+
+---
+
+## Handler factories: `xxx.handlers.ts`
+
+Every service file has a sibling `xxx.handlers.ts` with one factory per endpoint. A factory takes the
+response the test needs and returns an MSW `HttpHandler`. Tests and stories compose them; the rules for
+using them (no global handlers, scenarios, unhandled requests fail) are in `frontend-testing`.
 
 ```ts
-import { useQueryClient } from "@tanstack/react-query";
+// src/api/services/dashboard.handlers.ts
+import { http, HttpResponse, type HttpHandler } from "msw";
+import type { DashboardSummaryResponse, MonthlyTrend } from "../dtos";
 
-export const useDeleteProduct = (options?: MutationOptions<void, number>) => {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: deleteProduct,
-    ...buildMutationOptions({ successMessage: "Product deleted successfully." }, {
-      ...options,
-      onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["products"] });
-        options?.onSuccess?.(data, variables);
-      },
-    }),
-  });
+type PlanParams = { planId: string };
+
+export const dashboardHandlers = {
+  summary(summary: DashboardSummaryResponse): HttpHandler {
+    return http.get<PlanParams, never, DashboardSummaryResponse>("*/plan/:planId/dashboard", () =>
+      HttpResponse.json(summary),
+    );
+  },
+  trend(trend: MonthlyTrend[]): HttpHandler {
+    return http.get<PlanParams, never, MonthlyTrend[]>("*/plan/:planId/dashboard/trend", () =>
+      HttpResponse.json(trend),
+    );
+  },
 };
 ```
 
----
-
-## Paginated Queries — buildPagedQuery
-
-A `buildPagedQuery` helper converts a `PagedRequest` to a URL query string, skipping
-undefined/null/"" values automatically.
-
 ```ts
-// Input
-{ page: 0, size: 10, filter: { status: "ACTIVE", name: "phone" }, sort: { by: "name", direction: "desc" } }
-
-// Output
-"page=0&size=10&status=ACTIVE&name=phone&sortBy=name&sortDirection=desc"
+// in a test
+server.use(dashboardHandlers.trend(trend));
 ```
 
-Use it whenever building a paginated GET endpoint.
+- **Typed through MSW's generics** (`http.get<Params, RequestBody, ResponseBody>`) with the DTOs from
+  `src/api/dtos/`. Why: a handler that drifts from the DTO fails to compile instead of passing tests
+  against a shape the API never returns.
+- Name the export `<domain>Handlers` and each factory after its endpoint (`summary`, `trend`).
+- Add or update the factory in the same change as the service function it mirrors. A response a test
+  needs that the factory cannot express (an error status) gets its own factory.
+- Factories hold no logic: they return what they are given. That is why `*.handlers.ts` files are exempt
+  from the sibling-test gate (by suffix in `scripts/check-siblings.ts`) and excluded from coverage; every
+  test that uses them exercises them.
+- **Only tests and stories import `*.handlers` or `@/test/*`.** Enforced by lint
+  `no-restricted-imports` on application files. Why: without it, the gate exemption by suffix would
+  become a hiding place for application code.
+
+---
+
+## Testing a service hook
+
+A service hook is tested through MSW with the real `findracoApi`, asserting what reaches the network
+(method, URL, params, body) and how the response is mapped. The rules and helpers are in
+`frontend-testing`.

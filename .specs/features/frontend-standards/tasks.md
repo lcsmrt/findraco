@@ -383,8 +383,8 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Handler-factory example matches `dashboardHandlers.trend(trend)` from decision 3
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] Handler-factory example matches `dashboardHandlers.trend(trend)` from decision 3
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
