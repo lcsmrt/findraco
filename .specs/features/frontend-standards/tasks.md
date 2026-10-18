@@ -952,10 +952,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] `pnpm lint` exits 0
-- [ ] Config test asserts the rule at `error`
-- [ ] Build gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `pnpm lint` exits 0
+- [x] Config test asserts the rule at `error`
+- [x] Build gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: tooling
 **Gate**: build

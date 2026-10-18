@@ -27,7 +27,7 @@ export default defineConfig({ ignores: ['dist'] }, {
   rules: {
     ...reactHooks.configs.recommended.rules,
     'react-refresh/only-export-components': [
-      'warn',
+      'error',
       { allowConstantExport: true },
     ],
     // A description does not make a type bypass acceptable: fix the type instead.

@@ -60,6 +60,31 @@ describe("eslint.config.js", () => {
     });
   });
 
+  describe("component files export only components", () => {
+    it("sets react-refresh/only-export-components to error, constants allowed (STD-02 AC 5)", () => {
+      expect(componentConfig.rules["react-refresh/only-export-components"]).toEqual([
+        2,
+        { allowConstantExport: true },
+      ]);
+    });
+
+    it("reports a helper function exported beside a component (STD-02 AC 5)", async () => {
+      const ruleIds = await ruleIdsFor(
+        "export function Probe() {\n  return null;\n}\n\nexport function toProbe(value: number) {\n  return value + 1;\n}\n",
+      );
+
+      expect(ruleIds).toContain("react-refresh/only-export-components");
+    });
+
+    it("allows a component file that exports only components and constants (STD-02 AC 5)", async () => {
+      const ruleIds = await ruleIdsFor(
+        'export const PROBE_LABEL = "probe";\n\nexport function Probe() {\n  return null;\n}\n',
+      );
+
+      expect(ruleIds).not.toContain("react-refresh/only-export-components");
+    });
+  });
+
   describe("code style", () => {
     const interfaceProbe = "export interface Probe {\n  id: number;\n}\n";
 
