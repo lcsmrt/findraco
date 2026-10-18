@@ -1068,10 +1068,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] `unhandledRequests.test.ts`: records, throws naming the URL, resets
-- [ ] Existing unit tests pass with the setup active
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `unhandledRequests.test.ts`: records, throws naming the URL, resets
+- [x] Existing unit tests pass with the setup active
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick
