@@ -6,16 +6,16 @@ import {
   type Location,
 } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
-import { useHomeFilters } from "./useHomeFilters";
+import { useHomeTab } from "./useHomeTab";
 
-let hook: ReturnType<typeof useHomeFilters>;
+let hook: ReturnType<typeof useHomeTab>;
 let location: Location;
 let navigate: ReturnType<typeof useNavigate>;
 
 const Probe = () => {
   location = useLocation();
   navigate = useNavigate();
-  hook = useHomeFilters();
+  hook = useHomeTab();
   return null;
 };
 
@@ -35,7 +35,7 @@ const goBack = () => act(async () => navigate(-1));
 
 afterEach(cleanup);
 
-describe("useHomeFilters", () => {
+describe("useHomeTab", () => {
   it("pushes a history entry on tab switch so Back returns to the previous tab", async () => {
     setup("/?plan=1&period=last-6m");
 

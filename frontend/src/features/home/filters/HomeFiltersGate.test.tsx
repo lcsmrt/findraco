@@ -3,7 +3,7 @@ import { useSyncExternalStore } from "react";
 import { MemoryRouter, useLocation, type Location } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
-import { useHomeFilters } from "../hooks/useHomeFilters";
+import { useHomeTab } from "@/app/home/useHomeTab";
 import { HomeFiltersGate } from "./HomeFiltersGate";
 
 let mockedUser: { id: number } | null = { id: 1 };
@@ -40,7 +40,7 @@ let location: Location;
 let childRenders: string[];
 /** `plan` param vs active plan for every child render. */
 let childPlans: { urlPlan: string | null; activePlanId: number | null }[];
-let filters: ReturnType<typeof useHomeFilters> &
+let filters: ReturnType<typeof useHomeTab> &
   ReturnType<typeof useTransactionFilters>;
 
 const LocationProbe = () => {
@@ -55,7 +55,7 @@ const Child = () => {
     urlPlan: new URLSearchParams(search).get("plan"),
     activePlanId: planState.activePlanId,
   });
-  filters = { ...useHomeFilters(), ...useTransactionFilters() };
+  filters = { ...useHomeTab(), ...useTransactionFilters() };
   return null;
 };
 

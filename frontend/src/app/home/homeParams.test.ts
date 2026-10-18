@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import * as homeFilterParams from "./homeFilterParams";
+import * as homeParams from "./homeParams";
 import * as overviewParams from "@/features/overview/filters/overviewParams";
 import {
   parseOverviewFilters,
@@ -11,7 +11,7 @@ import {
   serializeTransactionFilters,
   type TransactionFilters,
 } from "@/features/transactions/filters/transactionParams";
-import { parseTab, serializeTab } from "./homeFilterParams";
+import { parsePlanParam, parseTab, serializeTab } from "./homeParams";
 
 const params = (init: Record<string, string>) => new URLSearchParams(init);
 
@@ -20,6 +20,26 @@ const DEFAULT_TRANSACTIONS: TransactionFilters = {
   sort: null,
   size: 10,
 };
+
+describe("plan param", () => {
+  it("reads the plan id", () => {
+    expect(parsePlanParam(params({ plan: "5", tab: "transactions" }))).toBe(5);
+  });
+
+  const malformed: Record<string, string>[] = [
+    {},
+    { plan: "abc" },
+    { plan: "0" },
+    { plan: "1.5" },
+  ];
+
+  it.each(malformed)(
+    "returns null for a missing or malformed plan %o",
+    (init) => {
+      expect(parsePlanParam(params(init))).toBeNull();
+    },
+  );
+});
 
 describe("tab codec", () => {
   it("defaults to overview and omits it on serialize", () => {
@@ -62,9 +82,9 @@ describe("legacy Categories period params", () => {
   });
 
   it("has no Categories period codec", () => {
-    expect("parseCategoriesFilters" in homeFilterParams).toBe(false);
-    expect("serializeCategoriesFilters" in homeFilterParams).toBe(false);
-    expect("CATEGORIES_PARAM_KEYS" in homeFilterParams).toBe(false);
+    expect("parseCategoriesFilters" in homeParams).toBe(false);
+    expect("serializeCategoriesFilters" in homeParams).toBe(false);
+    expect("CATEGORIES_PARAM_KEYS" in homeParams).toBe(false);
     expect("parseCategoriesFilters" in overviewParams).toBe(false);
     expect("serializeCategoriesFilters" in overviewParams).toBe(false);
     expect("CATEGORIES_PARAM_KEYS" in overviewParams).toBe(false);

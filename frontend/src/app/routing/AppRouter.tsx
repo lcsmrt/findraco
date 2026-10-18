@@ -1,5 +1,5 @@
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Home } from "@/features/home/HomePage";
+import { Home } from "@/app/home/HomePage";
 import { Login } from "@/features/login/LoginPage";
 import { Route, Routes } from "react-router-dom";
 import { PATHS } from "./paths";

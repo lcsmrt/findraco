@@ -25,7 +25,6 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { PlusIcon, SearchIcon, TagIcon, UploadIcon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
-import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
 import { useTransactionsPage } from "../../hooks/useTransactionsPage";
 import { useSeriesScope } from "./useSeriesScope";
@@ -59,10 +58,14 @@ const SORT_COLUMNS: Record<
   attributedTo: "participants",
 };
 
-export const TransactionsTab = () => {
+type TransactionsTabProps = {
+  /** Opens the Categories tab; the tab row belongs to the home page, not to this tab. */
+  onManageCategories: () => void;
+};
+
+export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) => {
   const { transactions, updateTransactions, clearTransactions } =
     useTransactionFilters();
-  const { setTab } = useHomeFilters();
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
   const { filter, sort, size } = transactions;
 
@@ -279,7 +282,7 @@ export const TransactionsTab = () => {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setTab("categories")}>
+            <Button variant="outline" onClick={onManageCategories}>
               <TagIcon className="h-4 w-4" />
               <span className="hidden sm:inline">Manage Categories</span>
             </Button>

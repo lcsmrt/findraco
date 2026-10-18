@@ -9,7 +9,7 @@ import {
   PLAN_PARAM,
   parsePlanParam,
   TAB_PARAM,
-} from "./homeFilterParams";
+} from "@/app/home/homeParams";
 
 const HOME_PARAM_KEYS = [
   PLAN_PARAM,
