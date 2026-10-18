@@ -2054,10 +2054,12 @@ Notes: there was no `ResetPasswordPage.test.ts` (only the schema test `resetPass
 
 **Done when**:
 
-- [ ] Test: create and rename submit the right request
-- [ ] Old dialogs deleted
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test: create and rename submit the right request
+- [x] Old dialogs deleted
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 585 → 588 (`planNameForm.test.ts` moved with its schema, 5; new `PlanNameDialog.test.tsx`, 3); all projects 676 → 679
+
+Notes: the props are a union: `mode: "create"` takes `onSuccess?`, `mode: "rename"` requires `plan`, so a rename without a plan does not compile. `createPlanForm.ts` became `planNameForm.ts` (`planNameSchema`, the one schema both dialogs had) and its test moved with it. The dialog is now a `<form>`, so Enter submits. Submit picks between two mutations inline; the dialog stays far under the logic cap, so no `usePlanNameSubmit` hook was extracted.
 
 **Tests**: integration
 **Gate**: quick

@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { createPlanSchema } from "./createPlanForm";
+import { planNameSchema } from "./planNameForm";
 
-describe("createPlanSchema", () => {
+describe("planNameSchema", () => {
   it("accepts a valid plan name", () => {
-    const result = createPlanSchema.safeParse({ name: "Household finances" });
+    const result = planNameSchema.safeParse({ name: "Household finances" });
 
     expect(result.success).toBe(true);
     if (result.success) {
@@ -12,7 +12,7 @@ describe("createPlanSchema", () => {
   });
 
   it("rejects an empty name", () => {
-    const result = createPlanSchema.safeParse({ name: "" });
+    const result = planNameSchema.safeParse({ name: "" });
 
     expect(result.success).toBe(false);
     if (!result.success) {
@@ -23,16 +23,16 @@ describe("createPlanSchema", () => {
   });
 
   it("rejects a missing name field", () => {
-    const result = createPlanSchema.safeParse({});
+    const result = planNameSchema.safeParse({});
 
     expect(result.success).toBe(false);
   });
 
   it("throws when parsing invalid input directly", () => {
-    expect(() => createPlanSchema.parse({ name: "" })).toThrow();
+    expect(() => planNameSchema.parse({ name: "" })).toThrow();
   });
 
   it("does not throw when parsing valid input directly", () => {
-    expect(() => createPlanSchema.parse({ name: "Vacation fund" })).not.toThrow();
+    expect(() => planNameSchema.parse({ name: "Vacation fund" })).not.toThrow();
   });
 });

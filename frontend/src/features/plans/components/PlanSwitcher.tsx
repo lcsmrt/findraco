@@ -15,7 +15,7 @@ import { ChevronsUpDownIcon, PlusIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { CreatePlanDialog } from "./CreatePlanDialog";
+import { PlanNameDialog } from "./PlanNameDialog";
 
 export const PlanSwitcher = () => {
   const navigate = useNavigate();
@@ -68,7 +68,8 @@ export const PlanSwitcher = () => {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <CreatePlanDialog
+      <PlanNameDialog
+        mode="create"
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         onSuccess={(plan) => setActivePlanId(plan.id)}

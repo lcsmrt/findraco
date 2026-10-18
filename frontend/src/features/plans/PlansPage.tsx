@@ -26,11 +26,10 @@ import {
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { CreatePlanDialog } from "./components/CreatePlanDialog";
+import { PlanNameDialog } from "./components/PlanNameDialog";
 import { InvitePlanDialog } from "./components/InvitePlanDialog";
 import { PlanInvitationsList } from "./components/PlanInvitationsList";
 import { PlanMembersList } from "./components/PlanMembersList";
-import { RenamePlanDialog } from "./components/RenamePlanDialog";
 import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
 import { ROLE_LABELS } from "./utils/planLabels";
 
@@ -197,7 +196,8 @@ export const PlansPage = () => {
         </Card>
       )}
 
-      <CreatePlanDialog
+      <PlanNameDialog
+        mode="create"
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
         onSuccess={(plan) => setActivePlanId(plan.id)}
@@ -212,7 +212,8 @@ export const PlansPage = () => {
       )}
 
       {activePlan && (
-        <RenamePlanDialog
+        <PlanNameDialog
+          mode="rename"
           open={isRenameOpen}
           onOpenChange={setIsRenameOpen}
           plan={activePlan}
