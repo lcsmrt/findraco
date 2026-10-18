@@ -767,10 +767,10 @@ T124 → T125
 
 **Done when**:
 
-- [ ] The Provider file exports only the component; `react-refresh/only-export-components` clean for it
-- [ ] Hook test: throws outside the provider, returns the value inside
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] The Provider file exports only the component; `react-refresh/only-export-components` clean for it
+- [x] Hook test: throws outside the provider, returns the value inside
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick

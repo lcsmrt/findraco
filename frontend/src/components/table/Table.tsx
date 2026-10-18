@@ -1,13 +1,13 @@
 import {
   type ColumnDef,
   type Row,
-  type Table,
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronRight } from "lucide-react";
-import { type ReactNode, createContext, useContext, useMemo } from "react";
+import { type ReactNode, useMemo } from "react";
 import { cn } from "@/lib/mergeClasses";
+import { TableContext } from "./useTable";
 
 type TableProps<T> = {
   data: T[];
@@ -18,12 +18,6 @@ type TableProps<T> = {
   border?: "none" | "x" | "y" | "all";
   className?: string;
 };
-
-interface TableContextType {
-  table: Table<any>;
-}
-
-const TableContext = createContext<TableContextType | null>(null);
 
 export const TableRoot = <T,>({
   data,
@@ -87,10 +81,4 @@ export const TableRoot = <T,>({
       </div>
     </TableContext.Provider>
   );
-};
-
-export const useTable = () => {
-  const context = useContext(TableContext);
-  if (!context) throw new Error("useTable must be used within a Table");
-  return context;
 };

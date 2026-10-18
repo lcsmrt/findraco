@@ -1,6 +1,6 @@
 import type { Row } from "@tanstack/react-table";
 import type { ReactNode } from "react";
-import { useTable } from "./Table";
+import { useTable } from "./useTable";
 import { TableBody } from "./components/TableBody";
 import { type Sorting, TableHeader } from "./components/TableHeader";
 import { TableBase } from "./components/TableParts";
