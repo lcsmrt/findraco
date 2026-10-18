@@ -10,7 +10,7 @@ import {
   toSeriesCreatePayload,
   toSeriesEditPayload,
   transactionFormSchema,
-} from "./TransactionFormDrawer";
+} from "./transactionForm";
 
 const baseValues: TransactionFormValues = {
   type: "DEBIT",

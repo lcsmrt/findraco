@@ -11,7 +11,7 @@ import type {
   UseFormSetValue,
   UseFormWatch,
 } from "react-hook-form";
-import type { TransactionFormValues } from "./TransactionFormDrawer";
+import type { TransactionFormValues } from "./transactionForm";
 
 type AttributionFieldsProps = {
   watch: UseFormWatch<TransactionFormValues>;

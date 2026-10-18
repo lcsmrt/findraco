@@ -796,10 +796,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] `TransactionFormDrawer.tsx` exports only components
-- [ ] Moved tests pass unchanged except imports
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `TransactionFormDrawer.tsx` exports only components
+- [x] Moved tests pass unchanged except imports
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick

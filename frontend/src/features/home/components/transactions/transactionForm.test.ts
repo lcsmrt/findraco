@@ -8,7 +8,7 @@ import {
   ownerDefaultAttribution,
   toPayload,
   transactionFormSchema,
-} from "./TransactionFormDrawer";
+} from "./transactionForm";
 import type { PlanMember } from "@/api/dtos/plan";
 
 const validValues: TransactionFormValues = {
