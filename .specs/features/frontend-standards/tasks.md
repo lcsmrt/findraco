@@ -2389,8 +2389,10 @@ Notes: the sheet composes `TypeField` (raw `Controller`: the toggle group names 
 
 **Done when**:
 
-- [ ] Stories: every variant, every level, long text
-- [ ] Full gate passes
+- [x] Stories: every variant, every level, long text
+- [x] Full gate passes
+
+Notes: `typographyVariants` holds the seven steps with the classes of decision 7 (`display` also carries the numeral's `leading-none` and `tracking-tighter`; `body` is the default). `Text` renders `span` | `p` | `div`; `Heading` requires `level` and `variant`. Stories: each variant on `Text` (plus `p`, truncated long text and a colour override) and each level on `Heading` (plus `display` and a wrapping long title). All projects 788 → 806.
 
 **Tests**: story
 **Gate**: full
