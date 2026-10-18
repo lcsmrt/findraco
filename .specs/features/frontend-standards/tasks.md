@@ -2090,6 +2090,8 @@ Follow-up (`refactor(frontend): plan name submit in usePlanNameSubmit`): the for
 
 Notes: to empty `grep -rn "register(" src` three more call sites changed: the description fields of `CategoryFormSheet` and `TransactionFormDrawer` (the last two `register` bindings, planned for STD-07) now go through `FormField`, and `authHandlers.register` became `authHandlers.registerUser`, after the service it mirrors (`useRegisterUser`). New `invitation.handlers.ts` (`create`). `InvitePlanDialog.test.tsx` covers an email invitation, the missing-email error and a link invitation with an expiry; the type and role selects keep `watch` + `setValue` until STD-07.
 
+Follow-up (`refactor(frontend): invite dialog selects bind through FormField`): the type and role selects bind through `FormField` (the trigger takes `id`, `ref`, `onBlur`, `aria-invalid`; `onValueChange={field.onChange}`), so their labels name them; `Select items={…}` shows the label in the trigger, which removed the two `as` casts. The form reads `type` with `useWatch`; no `watch`/`setValue` is left in the dialog. New test: the role and type picked through their labels reach the request body (`{ role: "EDITOR", type: "LINK" }`). The invite schema still sits in the dialog file (not in this follow-up's scope). Unit + tooling 625 → 626.
+
 **Tests**: integration
 **Gate**: quick
 **Commit**: `refactor(frontend): invite dialog fields use FormField`

@@ -3,7 +3,7 @@ import { invitationHandlers } from "@/api/services/invitation.handlers";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
-import { cleanup, screen, waitFor } from "@testing-library/react";
+import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { InvitePlanDialog } from "./InvitePlanDialog";
@@ -55,6 +55,25 @@ describe("InvitePlanDialog", () => {
     expect((await screen.findByText(/Invitation sent to/)).textContent).toBe(
       "Invitation sent to ana@example.com.",
     );
+  });
+
+  it("sends the role and type chosen in the labelled selects (STD-06 AC 9)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(invitationHandlers.create({ ...linkInvitation, role: "EDITOR" }));
+    renderDialog();
+
+    await user.click(screen.getByLabelText("Role"));
+    await user.click(await screen.findByRole("option", { name: "Editor" }));
+    await user.click(screen.getByLabelText("Invitation type"));
+    await user.click(await screen.findByRole("option", { name: "Link" }));
+
+    expect(within(screen.getByLabelText("Role")).getByText("Editor")).toBeTruthy();
+    expect(within(screen.getByLabelText("Invitation type")).getByText("Link")).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "Generate link" }));
+
+    const request = await sentInvitation(requests);
+    expect(await request?.json()).toEqual({ role: "EDITOR", type: "LINK" });
   });
 
   it("asks for an email address and sends nothing without one (STD-06 AC 9)", async () => {

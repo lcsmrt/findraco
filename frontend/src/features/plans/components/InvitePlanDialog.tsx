@@ -1,4 +1,4 @@
-import { Invitation, InvitationType, PlanRole } from "@/api/dtos";
+import { Invitation, InvitationType } from "@/api/dtos";
 import { useCreateInvitation } from "@/api/services/useInvitationService";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/dialog/base/Dialog";
 import { FormField } from "@/components/form/FormField";
-import { Field, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import {
   Select,
@@ -21,7 +20,7 @@ import {
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CopyIcon, SendIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import { ROLE_LABELS, ROLE_OPTIONS } from "../utils/planLabels";
@@ -70,7 +69,7 @@ export const InvitePlanDialog = ({
     null,
   );
 
-  const { control, handleSubmit, watch, setValue, reset } = useForm<InviteFormValues>({
+  const { control, handleSubmit, reset } = useForm<InviteFormValues>({
     resolver: zodResolver(inviteSchema),
     defaultValues: { role: "VIEWER", type: "EMAIL", email: "", expiresAt: "" },
   });
@@ -84,8 +83,7 @@ export const InvitePlanDialog = ({
     onSuccess: (invitation) => setCreatedInvitation(invitation),
   });
 
-  const type = watch("type");
-  const role = watch("role");
+  const type = useWatch({ control, name: "type" });
 
   const onSubmit = (values: InviteFormValues) => {
     createInvitation({
@@ -156,52 +154,56 @@ export const InvitePlanDialog = ({
           </div>
         ) : (
           <>
-            <Field>
-              <FieldLabel>Invitation type</FieldLabel>
-              <Select
-                value={type}
-                onValueChange={(value) =>
-                  setValue("type", value as InvitationType, {
-                    shouldValidate: true,
-                  })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {(v: string) => TYPE_LABELS[v as InvitationType]}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="EMAIL">Email</SelectItem>
-                  <SelectItem value="LINK">Link</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
+            <FormField control={control} name="type" label="Invitation type">
+              {(field) => (
+                <Select
+                  items={TYPE_LABELS}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger
+                    id={field.id}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    aria-invalid={field["aria-invalid"]}
+                    className="w-full"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="EMAIL">Email</SelectItem>
+                    <SelectItem value="LINK">Link</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </FormField>
 
-            <Field>
-              <FieldLabel>Role</FieldLabel>
-              <Select
-                value={role}
-                onValueChange={(value) =>
-                  setValue("role", value as InviteFormValues["role"], {
-                    shouldValidate: true,
-                  })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue>
-                    {(v: string) => ROLE_LABELS[v as PlanRole]}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {ROLE_OPTIONS.map((option) => (
-                    <SelectItem key={option} value={option}>
-                      {ROLE_LABELS[option]}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            <FormField control={control} name="role" label="Role">
+              {(field) => (
+                <Select
+                  items={ROLE_LABELS}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                >
+                  <SelectTrigger
+                    id={field.id}
+                    ref={field.ref}
+                    onBlur={field.onBlur}
+                    aria-invalid={field["aria-invalid"]}
+                    className="w-full"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ROLE_OPTIONS.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {ROLE_LABELS[option]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </FormField>
 
             {type === "EMAIL" && (
               <FormField control={control} name="email" label="Email">
