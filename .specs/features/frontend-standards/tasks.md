@@ -2335,9 +2335,11 @@ Notes: `useCategoryFormSubmit({ editing, onSuccess?, onDone })` holds the create
 
 **Done when**:
 
-- [ ] Story: no limit, shared limit, per-member limits
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Story: no limit, shared limit, per-member limits
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 662 (unchanged); storybook +5 (`CategoryLimitFields.stories.tsx`); all projects 771 → 776
+
+Notes: `CategoryLimitFields` owns `memberLimits` with `useFieldArray` (rows keyed by `field.id`; removing a former member's entry is `remove(index)` instead of a filtered `setValue`), binds the limit mode with `useController`, reads the rows with `useWatch` for the shares (`memberLimitShares`, now computed here instead of in the sheet) and the errors with `useFormState`. Its props shrink to `control`, `perMemberDisabledReason` and `disabled`; it is now a `function` declaration. Stories: no limit, shared limit, per-member limits (shares, a former member's disabled row removed), per member not allowed (owned category), many members.
 
 **Tests**: story
 **Gate**: full

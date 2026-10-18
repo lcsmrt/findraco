@@ -10,51 +10,40 @@ import { cn } from "@/lib/mergeClasses";
 import { Trash2Icon } from "lucide-react";
 import {
   Controller,
+  useController,
+  useFieldArray,
+  useFormState,
+  useWatch,
   type Control,
-  type FieldErrors,
-  type UseFormSetValue,
-  type UseFormWatch,
 } from "react-hook-form";
-import type { CategoryFormOutput, CategoryFormValues } from "./categoryForm";
+import {
+  memberLimitShares,
+  type CategoryFormOutput,
+  type CategoryFormValues,
+} from "./categoryForm";
 
 type CategoryLimitFieldsProps = {
   control: Control<CategoryFormValues, unknown, CategoryFormOutput>;
-  watch: UseFormWatch<CategoryFormValues>;
-  setValue: UseFormSetValue<CategoryFormValues>;
-  errors: FieldErrors<CategoryFormValues>;
-  /** Read-only share of the per-member total, in percent, by member id. */
-  shares: Map<number, number>;
   /** Set when per-member limits are not allowed (e.g. an owned category). */
   perMemberDisabledReason?: string;
   disabled?: boolean;
 };
 
 /** Monthly limit of a DEBIT category: one plain amount, or one amount per member (CAT-11, CAT-14). */
-export const CategoryLimitFields = ({
+export function CategoryLimitFields({
   control,
-  watch,
-  setValue,
-  errors,
-  shares,
   perMemberDisabledReason,
   disabled,
-}: CategoryLimitFieldsProps) => {
-  const limitMode = watch("limitMode");
-  const rows = watch("memberLimits");
-  const rowErrors = rows.map(
-    (_, index) =>
-      errors.memberLimits?.[index]?.amount ??
-      errors.memberLimits?.[index]?.memberId,
+}: CategoryLimitFieldsProps) {
+  const { field: limitMode } = useController({ control, name: "limitMode" });
+  const { fields, remove } = useFieldArray({ control, name: "memberLimits" });
+  const shares = memberLimitShares(useWatch({ control, name: "memberLimits" }));
+  const { errors } = useFormState({ control, name: ["limitMode", "memberLimits"] });
+  const rowErrors = fields.map(
+    (_, index) => errors.memberLimits?.[index]?.amount ?? errors.memberLimits?.[index]?.memberId,
   );
   const perMemberAllowed = perMemberDisabledReason == null;
-  const isPerMember = limitMode === "perMember" && perMemberAllowed;
-
-  const removeFormerMember = (memberId: number) =>
-    setValue(
-      "memberLimits",
-      rows.filter((row) => row.memberId !== memberId),
-      { shouldValidate: true },
-    );
+  const isPerMember = limitMode.value === "perMember" && perMemberAllowed;
 
   return (
     <>
@@ -65,9 +54,7 @@ export const CategoryLimitFields = ({
           variant="outline"
           tone="primary"
           value={[isPerMember ? "perMember" : "single"]}
-          onValueChange={([next]) =>
-            next && setValue("limitMode", next, { shouldValidate: true })
-          }
+          onValueChange={([next]) => next && limitMode.onChange(next)}
           disabled={disabled}
           className="w-full flex-nowrap"
         >
@@ -118,11 +105,11 @@ export const CategoryLimitFields = ({
         <Field>
           <FieldLabel>Limit per member</FieldLabel>
           <div className="flex flex-col gap-2">
-            {rows.map((row, index) => {
+            {fields.map((row, index) => {
               const share = shares.get(row.memberId);
               return (
                 <div
-                  key={row.memberId}
+                  key={row.id}
                   className={cn(
                     "flex items-center gap-2",
                     !row.active && "text-muted-foreground",
@@ -160,7 +147,7 @@ export const CategoryLimitFields = ({
                       size="icon"
                       disabled={disabled}
                       aria-label={`Remove ${row.memberName}'s limit`}
-                      onClick={() => removeFormerMember(row.memberId)}
+                      onClick={() => remove(index)}
                     >
                       <Trash2Icon className="h-4 w-4" />
                     </Button>
@@ -180,4 +167,4 @@ export const CategoryLimitFields = ({
       )}
     </>
   );
-};
+}

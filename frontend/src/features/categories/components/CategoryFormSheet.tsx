@@ -30,7 +30,6 @@ import {
   categoryHasChildren,
   createCategoryFormSchema,
   effectiveOwnerId,
-  memberLimitShares,
   ownerOptions,
   parentOptions,
 } from "./categoryForm";
@@ -260,10 +259,6 @@ export const CategoryFormSheet = ({
           {type === "DEBIT" && (
             <CategoryLimitFields
               control={control}
-              watch={watch}
-              setValue={setValue}
-              errors={errors}
-              shares={memberLimitShares(watch("memberLimits"))}
               perMemberDisabledReason={
                 isOwned
                   ? "A category that belongs to one member has a single limit."
