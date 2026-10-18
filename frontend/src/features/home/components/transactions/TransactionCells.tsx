@@ -2,7 +2,6 @@ import { FinancialTransactionCategory } from "@/api/dtos";
 import {
   FinancialTransaction,
   ParticipantShare,
-  SplitMode,
 } from "@/api/dtos/financialTransaction";
 import { PlanMember } from "@/api/dtos/plan";
 import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
@@ -18,7 +17,6 @@ import {
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency, formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskCurrency, maskDate } from "@/utils/string/masks";
-import { ColumnDef } from "@tanstack/react-table";
 import { format, isValid, parse } from "date-fns";
 import {
   CopyIcon,
@@ -29,26 +27,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { CategoryCombobox } from "./CategoryCombobox";
-
-export type InlineSaveBody = {
-  description?: string;
-  amount?: number;
-  categoryId?: number;
-  startDate?: string;
-  participants?: { memberId: number }[];
-  splitMode?: SplitMode;
-}
-
-type TransactionColumnHandlers = {
-  onDuplicate: (transaction: FinancialTransaction) => void;
-  onEdit: (transaction: FinancialTransaction) => void;
-  onDelete: (transaction: FinancialTransaction) => void;
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
-  isDeleting?: boolean;
-  showParticipantsColumn?: boolean;
-  canEditParticipants?: boolean;
-  members?: PlanMember[];
-}
+import type { InlineSaveBody } from "./transactionColumns";
 
 type EditableCellProps = {
   transaction: FinancialTransaction;
@@ -104,7 +83,7 @@ const EditableDescriptionCell = ({
   );
 };
 
-const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) => {
+export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) => {
   const { amount, type } = transaction;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -154,7 +133,7 @@ const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) => {
   );
 };
 
-const EditableCategoryCell = ({ transaction, onSave }: EditableCellProps) => {
+export const EditableCategoryCell = ({ transaction, onSave }: EditableCellProps) => {
   const { category, type } = transaction;
   const [editing, setEditing] = useState(false);
 
@@ -196,7 +175,7 @@ const EditableCategoryCell = ({ transaction, onSave }: EditableCellProps) => {
   );
 };
 
-const EditableDateCell = ({ transaction, onSave }: EditableCellProps) => {
+export const EditableDateCell = ({ transaction, onSave }: EditableCellProps) => {
   const displayDate = formatDate(transaction.startDate, "dd/MM/yyyy");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
@@ -343,113 +322,92 @@ const EditableParticipantsCell = ({
   );
 };
 
-export const buildTransactionColumns = ({
+type DescriptionCellProps = EditableCellProps;
+
+export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
+  return (
+    <div className="flex items-center gap-1.5">
+      <EditableDescriptionCell transaction={transaction} onSave={onSave} />
+      {transaction.seriesId && (
+        <Badge variant="secondary" className="gap-1">
+          <RepeatIcon />
+          Series
+        </Badge>
+      )}
+    </div>
+  );
+}
+
+type ParticipantsCellProps = {
+  transaction: FinancialTransaction;
+  members: PlanMember[];
+  canEdit?: boolean;
+  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+};
+
+export function ParticipantsCell({
+  transaction,
+  members,
+  canEdit,
+  onSave,
+}: ParticipantsCellProps) {
+  if (!canEdit) {
+    return <ParticipantsSummary participants={transaction.participants} />;
+  }
+  return (
+    <EditableParticipantsCell
+      transaction={transaction}
+      members={members}
+      onSave={onSave}
+    />
+  );
+}
+
+type ActionsCellProps = {
+  transaction: FinancialTransaction;
+  isDeleting?: boolean;
+  onDuplicate: (transaction: FinancialTransaction) => void;
+  onEdit: (transaction: FinancialTransaction) => void;
+  onDelete: (transaction: FinancialTransaction) => void;
+};
+
+export function ActionsCell({
+  transaction,
+  isDeleting,
   onDuplicate,
   onEdit,
   onDelete,
-  onSave,
-  isDeleting,
-  showParticipantsColumn,
-  canEditParticipants,
-  members = [],
-}: TransactionColumnHandlers): ColumnDef<FinancialTransaction>[] => [
-  {
-    id: "description",
-    accessorKey: "description",
-    header: "Description",
-    enableSorting: true,
-    cell: ({ row }) => (
-      <div className="flex items-center gap-1.5">
-        <EditableDescriptionCell transaction={row.original} onSave={onSave} />
-        {row.original.seriesId && (
-          <Badge variant="secondary" className="gap-1">
-            <RepeatIcon />
-            Series
-          </Badge>
-        )}
-      </div>
-    ),
-  },
-  {
-    id: "category",
-    accessorKey: "category",
-    header: "Category",
-    enableSorting: true,
-    cell: ({ row }) => (
-      <EditableCategoryCell transaction={row.original} onSave={onSave} />
-    ),
-  },
-  {
-    id: "amount",
-    accessorKey: "amount",
-    header: "Amount",
-    enableSorting: true,
-    cell: ({ row }) => (
-      <EditableAmountCell transaction={row.original} onSave={onSave} />
-    ),
-  },
-  {
-    id: "startDate",
-    accessorKey: "startDate",
-    header: "Date",
-    enableSorting: true,
-    cell: ({ row }) => (
-      <EditableDateCell transaction={row.original} onSave={onSave} />
-    ),
-  },
-  ...(showParticipantsColumn
-    ? [
-        {
-          id: "participants",
-          header: "Attributed to",
-          enableSorting: true,
-          cell: ({ row }: { row: { original: FinancialTransaction } }) =>
-            canEditParticipants ? (
-              <EditableParticipantsCell
-                transaction={row.original}
-                members={members}
-                onSave={onSave}
-              />
-            ) : (
-              <ParticipantsSummary participants={row.original.participants} />
-            ),
-        } satisfies ColumnDef<FinancialTransaction>,
-      ]
-    : []),
-  {
-    id: "actions",
-    header: "",
-    cell: ({ row }) => (
-      <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within/row:opacity-100 sm:group-hover/row:opacity-100">
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
-          onClick={() => onDuplicate(row.original)}
-        >
-          <CopyIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
-          onClick={() => onEdit(row.original)}
-        >
-          <PencilIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
-          disabled={isDeleting}
-          onClick={() => onDelete(row.original)}
-        >
-          <Trash2Icon className="h-4 w-4" />
-        </Button>
-      </div>
-    ),
-  },
-];
+}: ActionsCellProps) {
+  return (
+    <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within/row:opacity-100 sm:group-hover/row:opacity-100">
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
+        onClick={() => onDuplicate(transaction)}
+      >
+        <CopyIcon className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
+        onClick={() => onEdit(transaction)}
+      >
+        <PencilIcon className="h-4 w-4" />
+      </Button>
+      <Button
+        type="button"
+        size="icon"
+        variant="ghost"
+        className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
+        disabled={isDeleting}
+        onClick={() => onDelete(transaction)}
+      >
+        <Trash2Icon className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
