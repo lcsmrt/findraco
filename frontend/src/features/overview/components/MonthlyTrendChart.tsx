@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
 import {
   ChartConfig,
   ChartContainer,
@@ -6,8 +6,8 @@ import {
   ChartLegendContent,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/chart/Chart";
-import { Skeleton } from "@/components/skeleton/Skeleton";
+} from "@/components/chart/base/Chart";
+import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { format } from "date-fns";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import type { TrendMonth } from "./trendMonths";

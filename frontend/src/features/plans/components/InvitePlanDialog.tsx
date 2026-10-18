@@ -1,13 +1,13 @@
 import { Invitation, InvitationType, PlanRole } from "@/api/dtos";
 import { useCreateInvitation } from "@/api/services/useInvitationService";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/dialog/Dialog";
+} from "@/components/dialog/base/Dialog";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import {

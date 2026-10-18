@@ -2,14 +2,14 @@ import {
   useGetPlanMembers,
   useTransferOwnership,
 } from "@/api/services/usePlanService";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/dialog/Dialog";
+} from "@/components/dialog/base/Dialog";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import {
   Select,
@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/input/base/Select";
-import { Spinner } from "@/components/spinner/Spinner";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { ArrowRightLeftIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 

@@ -1,4 +1,4 @@
-import { Spinner } from "@/components/spinner/Spinner";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { Button as ButtonPrimitive } from "@base-ui/react/button";
 import type { VariantProps } from "class-variance-authority";

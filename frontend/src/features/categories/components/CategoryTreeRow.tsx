@@ -1,5 +1,5 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency } from "@/utils/string/formatters";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";

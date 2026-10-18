@@ -6,8 +6,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/dialog/Dialog";
-import { Button } from "@/components/button/Button";
+} from "@/components/dialog/base/Dialog";
+import { Button } from "@/components/button/base/Button";
 import { ConfirmDialogContext, type ConfirmOptions } from "./useConfirm";
 
 export const ConfirmDialogProvider = ({

@@ -5,8 +5,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/dialog/Dialog";
-import { Button } from "@/components/button/Button";
+} from "@/components/dialog/base/Dialog";
+import { Button } from "@/components/button/base/Button";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import { RadioGroup, RadioGroupItem } from "@/components/input/base/RadioGroup";
 import { SeriesEditScope } from "@/api/dtos/financialTransaction";

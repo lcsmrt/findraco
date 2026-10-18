@@ -1,5 +1,5 @@
-import { Button } from "@/components/button/Button";
-import { Calendar } from "@/components/calendar/Calendar";
+import { Button } from "@/components/button/base/Button";
+import { Calendar } from "@/components/calendar/base/Calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,8 +8,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/dropdown/Dropdown";
-import { Popover, PopoverContent } from "@/components/popover/Popover";
+} from "@/components/dropdown/base/Dropdown";
+import { Popover, PopoverContent } from "@/components/popover/base/Popover";
 import { format, isSameDay, parseISO } from "date-fns";
 import {
   CalendarRangeIcon,

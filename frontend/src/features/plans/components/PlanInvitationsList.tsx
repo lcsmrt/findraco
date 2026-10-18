@@ -3,10 +3,10 @@ import {
   useGetPlanInvitations,
   useRevokeInvitation,
 } from "@/api/services/useInvitationService";
-import { Badge } from "@/components/badge/Badge";
-import { Button } from "@/components/button/Button";
+import { Badge } from "@/components/badge/base/Badge";
+import { Button } from "@/components/button/base/Button";
 import { useConfirm } from "@/components/dialog/useConfirm";
-import { Spinner } from "@/components/spinner/Spinner";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { format } from "date-fns";
 import { Trash2Icon } from "lucide-react";
 import { ROLE_LABELS, STATUS_LABELS } from "../utils/planLabels";

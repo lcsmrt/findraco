@@ -4,14 +4,14 @@ import {
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/card/Card";
-import { Skeleton } from "@/components/skeleton/Skeleton";
+} from "@/components/card/base/Card";
+import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";

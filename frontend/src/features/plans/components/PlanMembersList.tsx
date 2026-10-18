@@ -5,9 +5,9 @@ import {
   useUpdateMemberRole,
 } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
-import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
-import { Badge } from "@/components/badge/Badge";
-import { Button } from "@/components/button/Button";
+import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
+import { Badge } from "@/components/badge/base/Badge";
+import { Button } from "@/components/button/base/Button";
 import { useConfirm } from "@/components/dialog/useConfirm";
 import {
   Select,
@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/input/base/Select";
-import { Spinner } from "@/components/spinner/Spinner";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { Trash2Icon } from "lucide-react";

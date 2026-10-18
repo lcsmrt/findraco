@@ -3,7 +3,7 @@ import {
   useGetDashboardTrend,
 } from "@/api/services/useDashboardService";
 import { useGetCategorySpending } from "@/api/services/useFinancialTransactionCategoryService";
-import { Skeleton } from "@/components/skeleton/Skeleton";
+import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { useMemo } from "react";
 import {
   resolvePeriodDates,

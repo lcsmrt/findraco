@@ -7,7 +7,7 @@ import {
   PopoverTitle,
   PopoverTrigger,
 } from "./Popover";
-import { Button } from "../button/Button";
+import { Button } from "@/components/button/base/Button";
 
 const meta: Meta<typeof Popover> = {
   title: "Popover",

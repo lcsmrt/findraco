@@ -3,15 +3,15 @@ import {
   useGetInvitationPreview,
 } from "@/api/services/useInvitationService";
 import { PATHS } from "@/app/routing/paths";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/card/Card";
-import { Spinner } from "@/components/spinner/Spinner";
+} from "@/components/card/base/Card";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";

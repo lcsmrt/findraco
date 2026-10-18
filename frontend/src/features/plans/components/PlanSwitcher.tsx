@@ -1,5 +1,5 @@
 import { PATHS } from "@/app/routing/paths";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,7 +10,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/dropdown/Dropdown";
+} from "@/components/dropdown/base/Dropdown";
 import { ChevronsUpDownIcon, PlusIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";

@@ -2,8 +2,8 @@ import * as React from "react";
 import { format, parse, isValid, isSameDay } from "date-fns";
 import { CalendarIcon, XIcon } from "lucide-react";
 import type { DateRange, Matcher } from "react-day-picker";
-import { Calendar } from "@/components/calendar/Calendar";
-import { Popover, PopoverContent } from "@/components/popover/Popover";
+import { Calendar } from "@/components/calendar/base/Calendar";
+import { Popover, PopoverContent } from "@/components/popover/base/Popover";
 import {
   InputGroup,
   InputGroupAddon,

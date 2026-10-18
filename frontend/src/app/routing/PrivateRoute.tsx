@@ -1,6 +1,6 @@
 import { useAuth } from "@/app/providers/useAuth";
-import { Button } from "@/components/button/Button";
-import { Spinner } from "@/components/spinner/Spinner";
+import { Button } from "@/components/button/base/Button";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { PATHS } from "./paths";

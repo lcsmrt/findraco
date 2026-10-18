@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/components/card/Card";
+import { Card, CardContent } from "@/components/card/base/Card";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency, getFirstName } from "@/utils/string/formatters";
 import { MemberDot } from "@/components/memberDot/MemberDot";

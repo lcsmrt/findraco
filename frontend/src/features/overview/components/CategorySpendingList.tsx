@@ -1,4 +1,4 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency, getFirstName } from "@/utils/string/formatters";
 import { ChevronRightIcon, TriangleAlertIcon, TriangleIcon } from "lucide-react";

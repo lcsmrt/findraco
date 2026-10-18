@@ -1,4 +1,4 @@
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { CategoriesTab } from "@/features/categories/CategoriesTab";
 import { OverviewTab } from "@/features/overview/OverviewTab";
 import { TransactionsTab } from "@/features/transactions/TransactionsTab";

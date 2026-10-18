@@ -1,5 +1,5 @@
 import { PlanMember } from "@/api/dtos/plan";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";

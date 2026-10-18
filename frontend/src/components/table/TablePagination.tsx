@@ -5,7 +5,7 @@ import {
   ChevronsLeft,
   ChevronsRight,
 } from "lucide-react";
-import { Button } from "../button/Button";
+import { Button } from "../button/base/Button";
 import {
   Select,
   SelectContent,

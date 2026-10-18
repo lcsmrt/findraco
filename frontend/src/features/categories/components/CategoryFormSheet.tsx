@@ -8,7 +8,7 @@ import {
   useGetFinancialTransactionCategories,
   useUpdateFinancialTransactionCategory,
 } from "@/api/services/useFinancialTransactionCategoryService";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   Field,
   FieldError,
@@ -23,7 +23,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/sheet/Sheet";
+} from "@/components/sheet/base/Sheet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";

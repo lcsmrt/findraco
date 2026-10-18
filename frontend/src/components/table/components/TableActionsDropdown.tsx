@@ -5,7 +5,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "../../dropdown/Dropdown";
+} from "@/components/dropdown/base/Dropdown";
 import { EllipsisVertical } from "lucide-react";
 
 export type ColumnAction<T> = {

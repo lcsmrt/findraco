@@ -2,7 +2,7 @@ import type { Row, Table } from "@tanstack/react-table";
 import type { ReactNode } from "react";
 import { TableBody } from "./components/TableBody";
 import { type Sorting, TableHeader } from "./components/TableHeader";
-import { TableBase } from "./components/TableParts";
+import { TableBase } from "./base/TableParts";
 
 type TableContentProps<TData> = {
   table: Table<TData>;

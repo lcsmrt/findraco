@@ -10,8 +10,8 @@ import type { FinancialTransactionCategory } from "@/api/dtos";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { Badge } from "@/components/badge/Badge";
-import { Button } from "@/components/button/Button";
+import { Badge } from "@/components/badge/base/Badge";
+import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import {
   Field,
@@ -27,7 +27,7 @@ import {
   SheetFooter,
   SheetHeader,
   SheetTitle,
-} from "@/components/sheet/Sheet";
+} from "@/components/sheet/base/Sheet";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency } from "@/utils/string/formatters";
 import { maskCurrency } from "@/utils/string/masks";

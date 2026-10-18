@@ -1,5 +1,5 @@
 import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
-import { Skeleton } from "@/components/skeleton/Skeleton";
+import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { TablePagination } from "@/components/table";
 import type { Pagination } from "@/components/table/TablePagination";
 import { cn } from "@/lib/mergeClasses";

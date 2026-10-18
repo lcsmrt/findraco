@@ -4,7 +4,7 @@ import {
   useGetCategoryUsage,
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   Dialog,
   DialogContent,
@@ -12,7 +12,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/dialog/Dialog";
+} from "@/components/dialog/base/Dialog";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { Trash2Icon, XIcon } from "lucide-react";

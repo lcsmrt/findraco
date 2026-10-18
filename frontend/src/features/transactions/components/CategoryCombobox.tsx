@@ -4,7 +4,7 @@ import {
   ALL_CATEGORIES_PAGE_SIZE,
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import {
   Combobox,
   ComboboxContent,
@@ -16,7 +16,7 @@ import {
 } from "@/components/input/base/Combobox";
 import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
 import { InputGroupButton } from "@/components/input/base/InputGroup";
-import { Spinner } from "@/components/spinner/Spinner";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";

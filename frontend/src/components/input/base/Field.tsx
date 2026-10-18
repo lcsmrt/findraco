@@ -1,5 +1,5 @@
 import { Label } from "@/components/input/base/Label";
-import { Separator } from "@/components/separator/Separator";
+import { Separator } from "@/components/separator/base/Separator";
 import { cn } from "@/lib/mergeClasses";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useMemo } from "react";

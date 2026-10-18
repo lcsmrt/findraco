@@ -4,16 +4,16 @@ import {
   ParticipantShare,
 } from "@/api/dtos/financialTransaction";
 import { PlanMember } from "@/api/dtos/plan";
-import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
-import { Badge } from "@/components/badge/Badge";
-import { Button } from "@/components/button/Button";
+import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
+import { Badge } from "@/components/badge/base/Badge";
+import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { Input } from "@/components/input/base/Input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/popover/Popover";
+} from "@/components/popover/base/Popover";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency, formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskCurrency, maskDate } from "@/utils/string/masks";

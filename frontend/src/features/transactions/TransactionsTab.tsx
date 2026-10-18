@@ -11,8 +11,8 @@ import {
 } from "@/api/services/useFinancialTransactionService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { Badge } from "@/components/badge/Badge";
-import { Button } from "@/components/button/Button";
+import { Badge } from "@/components/badge/base/Badge";
+import { Button } from "@/components/button/base/Button";
 import { useConfirm } from "@/components/dialog/useConfirm";
 import {
   InputGroup,

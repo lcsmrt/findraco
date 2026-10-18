@@ -1,6 +1,6 @@
 import { useLogin } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import {

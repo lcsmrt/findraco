@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { XIcon } from "lucide-react";
 import { cn } from "@/lib/mergeClasses";
 

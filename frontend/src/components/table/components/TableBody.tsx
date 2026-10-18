@@ -1,8 +1,8 @@
 import { cn } from "@/lib/mergeClasses";
-import { Skeleton } from "@/components/skeleton/Skeleton";
+import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { flexRender, type Row, type Table } from "@tanstack/react-table";
 import { Fragment, type ReactNode } from "react";
-import { TableBodyBase, TableCellBase, TableRowBase } from "./TableParts";
+import { TableBodyBase, TableCellBase, TableRowBase } from "../base/TableParts";
 
 const SKELETON_ROWS = 5;
 

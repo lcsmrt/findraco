@@ -2,10 +2,10 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/avatar/Avatar";
+} from "@/components/avatar/base/Avatar";
 import { Camera, CircleUser } from "lucide-react";
 import { useMemo, useRef } from "react";
-import { Button } from "../button/Button";
+import { Button } from "../button/base/Button";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 
 type ProfilePictureInputProps = {

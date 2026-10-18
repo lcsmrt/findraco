@@ -2,7 +2,7 @@ import { cn } from "@/lib/mergeClasses";
 import { flexRender, type Table } from "@tanstack/react-table";
 import { ChevronDownIcon, ChevronsUpDown, ChevronUpIcon } from "lucide-react";
 import type { ReactNode } from "react";
-import { TableHeadBase, TableHeaderBase, TableRowBase } from "./TableParts";
+import { TableHeadBase, TableHeaderBase, TableRowBase } from "../base/TableParts";
 
 export type Sorting<T> = {
   by: keyof T;

@@ -1,4 +1,4 @@
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { Input } from "@/components/input/base/Input";
 import { Textarea } from "@/components/input/base/Textarea";
 import { cn } from "@/lib/mergeClasses";

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/mergeClasses";
 import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { BanknoteArrowDownIcon, BanknoteArrowUpIcon } from "lucide-react";
 
 type TransactionTypeToggleProps = {

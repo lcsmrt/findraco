@@ -6,7 +6,7 @@ import {
   ALL_CATEGORIES_PAGE_SIZE,
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
-import { Button } from "@/components/button/Button";
+import { Button } from "@/components/button/base/Button";
 import { DateRangePicker } from "@/components/input/DatePicker";
 import { Input } from "@/components/input/base/Input";
 import { Field, FieldLabel } from "@/components/input/base/Field";
@@ -22,7 +22,7 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/popover/Popover";
+} from "@/components/popover/base/Popover";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { maskCurrency } from "@/utils/string/masks";
 import { useMemo, useState } from "react";

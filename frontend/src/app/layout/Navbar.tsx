@@ -1,11 +1,11 @@
-import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
+import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/dropdown/Dropdown";
+} from "@/components/dropdown/base/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/app/providers/useAuth";

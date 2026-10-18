@@ -1,16 +1,16 @@
 import { useDeletePlan, useLeavePlan } from "@/api/services/usePlanService";
-import { Badge } from "@/components/badge/Badge";
-import { Button } from "@/components/button/Button";
+import { Badge } from "@/components/badge/base/Badge";
+import { Button } from "@/components/button/base/Button";
 import {
   Card,
   CardAction,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/components/card/Card";
+} from "@/components/card/base/Card";
 import { useConfirm } from "@/components/dialog/useConfirm";
 import { SectionHeader } from "@/components/sectionHeader/SectionHeader";
-import { Spinner } from "@/components/spinner/Spinner";
+import { Spinner } from "@/components/spinner/base/Spinner";
 import { PATHS } from "@/app/routing/paths";
 import { cn } from "@/lib/mergeClasses";
 import {
