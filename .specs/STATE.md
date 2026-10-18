@@ -74,6 +74,38 @@
 - **Date**: 2026-10-16
 - **Status**: active
 
+### AD-010
+- **Decision**: Frontend standards live in the frontend skills, the `CLAUDE.md` Frontend section and `.specs/codebase/`, and every checkable one is enforced mechanically (lint, gate scripts, CI). Lint is green on every `main` commit with no inline bypass: `noInlineConfig`, `ban-ts-comment`. A wrong rule changes for the whole codebase, never per file.
+- **Reason**: The audit found missing and unchecked standards, not chaos, as the cause of decay; lint was red with 66 errors and ignored.
+- **Trade-off**: No escape hatch; an awkward case costs a rule change or a refactor instead of one comment.
+- **Scope**: Frontend (`frontend/`), skills, `CLAUDE.md`.
+- **Date**: 2026-10-17
+- **Status**: active
+
+### AD-011
+- **Decision**: Nothing reaches production without CI. One `.github/workflows/ci.yml` runs frontend and backend jobs on every push; `deploy` needs both plus a change filter, runs one at a time, and a head guard skips it when the tested SHA is no longer the tip of `main`.
+- **Reason**: The old workflow deployed every push to `main` untested, and Portainer builds `main` at call time, not the tested commit.
+- **Trade-off**: Slower deploys; a seconds-wide race remains between the guard and Portainer; a skipped deploy whose successor fails leaves production on the previous release until a fix lands.
+- **Scope**: CI/CD, husky hooks.
+- **Date**: 2026-10-17
+- **Status**: active
+
+### AD-012
+- **Decision**: Testing model. Logic modules (a decision point, arithmetic or iteration) get sibling unit tests, gated by content and held to 90% branch coverage; visuals get stories run with a11y in error mode; flows get integration tests with real providers and only the network simulated by explicit, per-test MSW handlers. No `vi.mock` of our own modules in flow tests.
+- **Reason**: Tests should fail on our defects; mocking our modules skipped the session-refresh interceptor and serialisation, and blanket "test everything" would test libraries.
+- **Trade-off**: More verbose screen tests; handler factories and the gate script are code we own.
+- **Scope**: Frontend tests (`src/test/`, `*.handlers.ts`, `scripts/check-siblings.ts`).
+- **Date**: 2026-10-17
+- **Status**: active
+
+### AD-013
+- **Decision**: Every form field binds through react-hook-form `Controller`, written via `FormField`; form values hold domain types (money as `number | null`, dates as `Date`, missing as `null`), and boundary mappers (`toFormValues`, `toPayload`) convert shape and type only. Other fields are read with `useWatch` locally, never `watch()` at the form root.
+- **Reason**: Masked strings in form state were undone by hand 10+ times and `watch` + `setValue` re-rendered whole forms and skipped touched/focus; one binding pattern removes per-field judgement for agents.
+- **Trade-off**: One re-render per keystroke in the edited field; `FormField` is one more owned component.
+- **Scope**: Frontend forms.
+- **Date**: 2026-10-17
+- **Status**: active
+
 ## Handoff
 
 - **Feature**: Frontend standards (`.specs/features/frontend-standards/`). Input: `.specs/codebase/frontend-quality-audit.md` (32 findings, A1–G2). All findings reviewed one at a time with the user (2026-10-16/17); every decision, with its rationale, is in `context.md`

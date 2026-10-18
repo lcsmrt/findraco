@@ -2,7 +2,7 @@
 
 **Spec**: `.specs/features/frontend-standards/spec.md`
 **Context**: `.specs/features/frontend-standards/context.md` (locked decisions)
-**Status**: Draft, complete; awaiting approval (decisions recorded one at a time with the user, 2026-10-17)
+**Status**: Approved 2026-10-17 (decisions recorded one at a time with the user)
 
 ---
 
@@ -467,4 +467,4 @@ Form values hold domain types: money as `number | null` in reais, dates as `Date
 
 ## Tech Decisions
 
-The non-obvious decisions are the ten numbered sections above. Project-level ones are logged in `.specs/STATE.md` as AD entries on approval.
+The non-obvious decisions are the ten numbered sections above. Project-level ones are logged in `.specs/STATE.md` as AD-010..AD-013. The generated-types naming rule (decision 10) becomes an AD when STD-13 lands.
