@@ -7,23 +7,24 @@ import { useAuth } from "@/app/providers/useAuth";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate, type Location } from "react-router-dom";
-import { z } from "zod";
+import {
+  loginSchema,
+  type LoginFormOutput,
+  type LoginFormValues,
+} from "./authForms";
 import { AuthCard } from "./components/AuthCard";
 import { PasswordInput } from "./components/PasswordInput";
-
-const loginSchema = z.object({
-  email: z.string().min(1, "Please enter your email").email("Invalid email"),
-  password: z.string().min(1, "Please enter your password"),
-});
-
-type LoginSchema = z.infer<typeof loginSchema>;
 
 type LoginLocationState = {
   from?: Location;
 };
 
 export const Login = () => {
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit } = useForm<
+    LoginFormValues,
+    unknown,
+    LoginFormOutput
+  >({
     resolver: zodResolver(loginSchema),
     defaultValues: {
       email: "",
@@ -38,7 +39,7 @@ export const Login = () => {
   const location = useLocation();
   const from = (location.state as LoginLocationState | null)?.from;
 
-  const onSubmit = handleSubmit(async (credentials: LoginSchema) => {
+  const onSubmit = handleSubmit(async (credentials: LoginFormOutput) => {
     // useLogin already shows the failure as a toast.
     const res = await login({ body: credentials }).catch(() => null);
     if (!res) return;
@@ -59,7 +60,11 @@ export const Login = () => {
         <div className="flex w-full flex-col gap-3">
           <FormField control={control} name="email" label="Email">
             {(field) => (
-              <Input {...field} placeholder="you@example.com" className="bg-card/70" />
+              <Input
+                {...field}
+                placeholder="you@example.com"
+                className="bg-card/70"
+              />
             )}
           </FormField>
           <FormField control={control} name="password" label="Password">

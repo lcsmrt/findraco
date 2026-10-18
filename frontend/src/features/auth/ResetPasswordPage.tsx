@@ -11,9 +11,10 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { AuthCard } from "./components/AuthCard";
 import { PasswordInput } from "./components/PasswordInput";
 import {
-  ResetPasswordFormValues,
   resetPasswordSchema,
-} from "./resetPasswordForm";
+  type ResetPasswordFormOutput,
+  type ResetPasswordFormValues,
+} from "./authForms";
 
 export const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -23,7 +24,11 @@ export const ResetPassword = () => {
     useValidatePasswordResetToken(token, { enabled: token !== "" });
   const isTokenValid = validation?.valid === true;
 
-  const { control, handleSubmit } = useForm<ResetPasswordFormValues>({
+  const { control, handleSubmit } = useForm<
+    ResetPasswordFormValues,
+    unknown,
+    ResetPasswordFormOutput
+  >({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
@@ -37,7 +42,7 @@ export const ResetPassword = () => {
     onSuccess: () => navigate(PATHS.login, { replace: true }),
   });
 
-  const onSubmit = handleSubmit((values: ResetPasswordFormValues) => {
+  const onSubmit = handleSubmit((values: ResetPasswordFormOutput) => {
     resetPassword({ body: { token, password: values.password } });
   });
 

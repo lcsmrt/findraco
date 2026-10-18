@@ -6,24 +6,24 @@ import { Input } from "@/components/input/base/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate, type Location } from "react-router-dom";
-import { z } from "zod";
+import {
+  registerUserSchema,
+  type RegisterUserFormOutput,
+  type RegisterUserFormValues,
+} from "./authForms";
 import { AuthCard } from "./components/AuthCard";
 import { PasswordInput } from "./components/PasswordInput";
-
-const registerUserSchema = z.object({
-  name: z.string().min(1, "Please enter your full name"),
-  email: z.string().min(1, "Please enter your email").email("Invalid email"),
-  password: z.string().min(1, "Please enter your password"),
-});
-
-type RegisterUserSchema = z.infer<typeof registerUserSchema>;
 
 type RegisterUserLocationState = {
   from?: Location;
 };
 
 export const RegisterUser = () => {
-  const { control, handleSubmit } = useForm({
+  const { control, handleSubmit } = useForm<
+    RegisterUserFormValues,
+    unknown,
+    RegisterUserFormOutput
+  >({
     resolver: zodResolver(registerUserSchema),
     defaultValues: {
       name: "",
@@ -39,7 +39,7 @@ export const RegisterUser = () => {
   const location = useLocation();
   const from = (location.state as RegisterUserLocationState | null)?.from;
 
-  const onSubmit = handleSubmit(async (credentials: RegisterUserSchema) => {
+  const onSubmit = handleSubmit(async (credentials: RegisterUserFormOutput) => {
     try {
       await registerUser({ body: credentials });
       navigate(PATHS.login, { state: { from } });
@@ -90,8 +90,8 @@ export const RegisterUser = () => {
 
         <p className="text-muted-foreground text-center text-sm">
           By clicking Sign up, you agree to findraco’s{" "}
-          <strong>Terms of Service</strong> and acknowledge that you are
-          subject to our <strong>Privacy Policy</strong>.
+          <strong>Terms of Service</strong> and acknowledge that you are subject
+          to our <strong>Privacy Policy</strong>.
         </p>
 
         <Button className="w-full" type="submit" isLoading={isRegisteringUser}>

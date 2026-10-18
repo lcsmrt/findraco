@@ -7,19 +7,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { z } from "zod";
+import {
+  forgotPasswordSchema,
+  type ForgotPasswordFormOutput,
+  type ForgotPasswordFormValues,
+} from "./authForms";
 import { AuthCard } from "./components/AuthCard";
-
-const forgotPasswordSchema = z.object({
-  email: z.string().min(1, "Please enter your email").email("Invalid email"),
-});
-
-type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 
 export const ForgotPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const { control, handleSubmit } = useForm<ForgotPasswordFormValues>({
+  const { control, handleSubmit } = useForm<
+    ForgotPasswordFormValues,
+    unknown,
+    ForgotPasswordFormOutput
+  >({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
@@ -32,7 +34,7 @@ export const ForgotPassword = () => {
 
   const navigate = useNavigate();
 
-  const onSubmit = handleSubmit((values: ForgotPasswordFormValues) => {
+  const onSubmit = handleSubmit((values: ForgotPasswordFormOutput) => {
     forgotPassword({ body: values });
   });
 
@@ -55,7 +57,11 @@ export const ForgotPassword = () => {
             <div className="flex w-full flex-col gap-3">
               <FormField control={control} name="email" label="Email">
                 {(field) => (
-                  <Input {...field} placeholder="you@example.com" className="bg-card/70" />
+                  <Input
+                    {...field}
+                    placeholder="you@example.com"
+                    className="bg-card/70"
+                  />
                 )}
               </FormField>
             </div>

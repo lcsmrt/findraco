@@ -2036,6 +2036,8 @@ Notes: `LoginPage.test.tsx` runs through `renderWithProviders` and MSW with no `
 
 Notes: there was no `ResetPasswordPage.test.ts` (only the schema test `resetPasswordForm.test.ts`, unchanged), so the flows got new integration tests: `ForgotPasswordPage.test.tsx` (sends the email and confirms; empty email) and `ResetPasswordPage.test.tsx` (sets the password with the link's token and goes to sign in; mismatch sends nothing; invalid token offers a new link). Forgot password's intro and confirmation are the `AuthCard` description. On reset, each password field has its own visibility toggle (before, the one toggle also revealed the confirmation).
 
+Follow-up (`refactor(frontend): move auth form schemas to form modules`): the four auth schemas live in one `authForms.ts` beside the pages, since login, register and forgot password share the email rule (`emailField`); each form exports `XxxFormValues`/`XxxFormOutput` and its page types `useForm` with both. `resetPasswordForm.ts` and its test moved into `authForms.ts`/`authForms.test.ts` (3 tests kept) with 9 new tests, one per rule and message. Unit + tooling 613 → 622.
+
 **Tests**: integration
 **Gate**: quick
 **Commit**: `refactor(frontend): forgot and reset password use the auth pieces`
