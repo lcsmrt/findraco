@@ -1809,9 +1809,9 @@ Notes: the toggles are the recurrence mode and, in `AttributionFields`, "Attribu
 
 **Done when**:
 
-- [ ] `CategoryFormSheet.test.tsx`: switching the limit mode reaches the payload
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `CategoryFormSheet.test.tsx`: switching the limit mode reaches the payload
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 571 → 573
 
 **Tests**: integration
 **Gate**: quick

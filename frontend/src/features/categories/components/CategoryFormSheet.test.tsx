@@ -146,3 +146,38 @@ describe("CategoryFormSheet limits", () => {
     );
   });
 });
+
+describe("CategoryFormSheet limit mode", () => {
+  afterEach(cleanup);
+
+  it("marks the chosen limit mode as pressed (STD-06 AC 2)", async () => {
+    const user = userEvent.setup();
+    await renderLoadedSheet({ members: [lucas, livia] });
+    const single = screen.getByRole("button", { name: "Single" });
+    const perMember = screen.getByRole("button", { name: "Per member" });
+    expect(single.getAttribute("aria-pressed")).toBe("true");
+
+    await user.click(perMember);
+
+    expect(perMember.getAttribute("aria-pressed")).toBe("true");
+    expect(single.getAttribute("aria-pressed")).toBe("false");
+  });
+
+  it("sends the plain limit after switching back from per member to single (STD-06 AC 1)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionCategoryHandlers.create(groceries));
+    await renderLoadedSheet({ members: [lucas, livia] });
+
+    await user.type(screen.getByLabelText("Name"), "Groceries");
+    await user.click(screen.getByRole("button", { name: "Per member" }));
+    await user.type(await screen.findByLabelText("Limit for Lucas"), "26000");
+    await user.click(screen.getByRole("button", { name: "Single" }));
+    await user.type(await screen.findByLabelText("Amount (optional)"), "30000");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body.spendingLimit).toBe(300);
+    expect(body.memberLimits).toEqual([]);
+  });
+});

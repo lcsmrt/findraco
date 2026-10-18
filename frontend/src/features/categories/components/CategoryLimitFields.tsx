@@ -2,6 +2,10 @@ import { Button } from "@/components/button/base/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { FormField } from "@/components/form/FormField";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/toggleGroup/base/ToggleGroup";
 import { cn } from "@/lib/mergeClasses";
 import { Trash2Icon } from "lucide-react";
 import {
@@ -24,14 +28,6 @@ type CategoryLimitFieldsProps = {
   perMemberDisabledReason?: string;
   disabled?: boolean;
 };
-
-const modeButtonClass = (selected: boolean) =>
-  cn(
-    "flex-1 border",
-    selected
-      ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
-      : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
-  );
 
 /** Monthly limit of a DEBIT category: one plain amount, or one amount per member (CAT-11, CAT-14). */
 export const CategoryLimitFields = ({
@@ -64,28 +60,32 @@ export const CategoryLimitFields = ({
     <>
       <Field>
         <FieldLabel>Monthly limit</FieldLabel>
-        <div className="flex w-full gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={disabled}
-            onClick={() => setValue("limitMode", "single", { shouldValidate: true })}
-            className={modeButtonClass(!isPerMember)}
-          >
+        <ToggleGroup
+          aria-label="Monthly limit"
+          variant="outline"
+          tone="primary"
+          value={[isPerMember ? "perMember" : "single"]}
+          onValueChange={([next]) =>
+            next && setValue("limitMode", next, { shouldValidate: true })
+          }
+          disabled={disabled}
+          className="w-full flex-nowrap"
+        >
+          <ToggleGroupItem value="single" className="flex-1">
             Single
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            disabled={disabled || !perMemberAllowed}
-            onClick={() => setValue("limitMode", "perMember", { shouldValidate: true })}
-            className={modeButtonClass(isPerMember)}
+          </ToggleGroupItem>
+          <ToggleGroupItem
+            value="perMember"
+            disabled={!perMemberAllowed}
+            className="flex-1"
           >
             Per member
-          </Button>
-        </div>
+          </ToggleGroupItem>
+        </ToggleGroup>
         {perMemberDisabledReason && (
-          <p className="text-muted-foreground text-xs">{perMemberDisabledReason}</p>
+          <p className="text-muted-foreground text-xs">
+            {perMemberDisabledReason}
+          </p>
         )}
         <FieldError errors={[errors.limitMode]} />
       </Field>
@@ -97,7 +97,9 @@ export const CategoryLimitFields = ({
           label={
             <>
               Amount{" "}
-              <span className="text-muted-foreground font-normal">(optional)</span>
+              <span className="text-muted-foreground font-normal">
+                (optional)
+              </span>
             </>
           }
         >
