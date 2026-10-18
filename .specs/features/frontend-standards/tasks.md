@@ -2311,9 +2311,11 @@ Notes: the drawer composes `TypeField`, the description and amount `FormField`s,
 
 **Done when**:
 
-- [ ] Test through MSW: create, update, error path
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test through MSW: create, update, error path
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 659 → 662 (new `useCategoryFormSubmit.test.ts`, 3)
+
+Notes: `useCategoryFormSubmit({ editing, onSuccess?, onDone })` holds the create and update mutations; both hand the saved category to `onSuccess` (the category picker's "create" option selects it) and then close. Tests through MSW: create (POST body, created category handed back), update (PUT to the category, updated one handed back), a rejected create (neither callback runs). New `financialTransactionCategoryHandlers.createRejected(message)`.
 
 **Tests**: unit
 **Gate**: quick

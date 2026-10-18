@@ -4,9 +4,7 @@ import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import {
   ALL_CATEGORIES_PAGE_SIZE,
-  useCreateFinancialTransactionCategory,
   useGetFinancialTransactionCategories,
-  useUpdateFinancialTransactionCategory,
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -35,8 +33,8 @@ import {
   memberLimitShares,
   ownerOptions,
   parentOptions,
-  toPayload,
 } from "./categoryForm";
+import { useCategoryFormSubmit } from "./useCategoryFormSubmit";
 import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
 
@@ -106,29 +104,11 @@ export const CategoryFormSheet = ({
     null,
   );
 
-  const { mutate: createCategory, isPending: isCreating } =
-    useCreateFinancialTransactionCategory({
-      onSuccess: (created) => {
-        onSuccess?.(created);
-        onOpenChange(false);
-      },
-    });
-  const { mutate: updateCategory, isPending: isUpdating } =
-    useUpdateFinancialTransactionCategory({
-      onSuccess: (updated) => {
-        onSuccess?.(updated);
-        onOpenChange(false);
-      },
-    });
-  const isPending = isCreating || isUpdating;
-
-  const onSubmit = (values: CategoryFormOutput) => {
-    if (editing) {
-      updateCategory({ params: { id: editing.id }, body: toPayload(values) });
-    } else {
-      createCategory({ body: toPayload(values) });
-    }
-  };
+  const { submit, isSubmitting: isPending } = useCategoryFormSubmit({
+    editing,
+    onSuccess,
+    onDone: () => onOpenChange(false),
+  });
 
   const type = watch("type");
   const parentId = watch("parentId");
@@ -147,7 +127,7 @@ export const CategoryFormSheet = ({
         open={open}
         onOpenChange={onOpenChange}
         title={isEditing ? "Edit Category" : "New Category"}
-        onSubmit={handleSubmit(onSubmit)}
+        onSubmit={handleSubmit(submit)}
         isSubmitting={isPending}
         submitLabel={isEditing ? "Save" : "Create"}
         mobileActions={

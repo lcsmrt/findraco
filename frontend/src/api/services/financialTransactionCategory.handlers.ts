@@ -46,6 +46,9 @@ export const financialTransactionCategoryHandlers = {
       FinancialTransactionCategory
     >(base, () => HttpResponse.json(category, { status: 201 }));
   },
+  createRejected(message: string): HttpHandler {
+    return http.post<PlanParams>(base, () => HttpResponse.json({ message }, { status: 400 }));
+  },
   update(category: FinancialTransactionCategory): HttpHandler {
     return http.put<
       CategoryParams,
