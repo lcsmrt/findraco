@@ -111,4 +111,49 @@ describe("eslint.config.js", () => {
       expect(ruleIds).not.toContain("@typescript-eslint/consistent-type-definitions");
     });
   });
+
+  describe("test support only from tests", () => {
+    const testSupportGroup = ["**/*.handlers", "@/test/*"];
+
+    function restrictedGroups(config: typeof componentConfig): unknown {
+      const [, options] = config.rules["no-restricted-imports"] ?? [];
+      return options?.patterns?.map((pattern: { group: string[] }) => pattern.group);
+    }
+
+    it.each(["src/features/x/Foo.tsx", "src/features/x/Foo.stories.tsx"])(
+      "restricts handler factories and @/test/* in %s (STD-04 AC 3)",
+      async (filePath) => {
+        const config = await eslint.calculateConfigForFile(filePath);
+
+        expect(config.rules["no-restricted-imports"][0]).toBe(2);
+        expect(restrictedGroups(config)).toContainEqual(testSupportGroup);
+      },
+    );
+
+    it.each(["./foo.handlers", "@/api/services/auth.handlers", "@/test/server"])(
+      "reports an import of %s from a feature file (STD-04 AC 3)",
+      async (specifier) => {
+        const ruleIds = await ruleIdsFor(
+          `import { probe } from "${specifier}";\n\nexport const value = probe;\n`,
+          "src/features/x/Foo.tsx",
+        );
+
+        expect(ruleIds).toContain("no-restricted-imports");
+      },
+    );
+
+    it.each(["src/features/x/Foo.test.tsx", "src/test/renderWithProviders.tsx"])(
+      "leaves %s free to import test support (STD-04 AC 3)",
+      async (filePath) => {
+        const config = await eslint.calculateConfigForFile(filePath);
+        const ruleIds = await ruleIdsFor(
+          'import { server } from "@/test/server";\nimport { probeHandlers } from "./probe.handlers";\n\nexport const value = [server, probeHandlers];\n',
+          filePath,
+        );
+
+        expect(restrictedGroups(config) ?? []).not.toContainEqual(testSupportGroup);
+        expect(ruleIds).not.toContain("no-restricted-imports");
+      },
+    );
+  });
 });

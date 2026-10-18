@@ -1204,9 +1204,9 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] Config test: the fragment is active for `src/features/x/Foo.tsx` and absent for `Foo.test.tsx`
-- [ ] `pnpm lint` exits 0
-- [ ] Build gate passes
+- [x] Config test: the fragment is active for `src/features/x/Foo.tsx` and absent for `Foo.test.tsx`
+- [x] `pnpm lint` exits 0
+- [x] Build gate passes
 
 **Tests**: tooling
 **Gate**: build
