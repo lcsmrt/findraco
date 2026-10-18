@@ -1,5 +1,5 @@
 import { Button } from "@/components/button/Button";
-import { CategoriesTab } from "@/features/home/components/categories/CategoriesTab";
+import { CategoriesTab } from "@/features/categories/CategoriesTab";
 import { OverviewTab } from "@/features/overview/OverviewTab";
 import { TransactionsTab } from "@/features/transactions/TransactionsTab";
 import { HomeFiltersGate } from "./HomeFiltersGate";

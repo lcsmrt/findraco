@@ -17,8 +17,8 @@ import { PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMemberColors, type MemberColorOf } from "@/utils/memberColors";
 import { buildCategoryTree, type CategoryTreeRoot } from "./categoryTree";
-import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./CategoryTreeRow";
-import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
+import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./components/CategoryTreeRow";
+import { DeleteCategoryDialog } from "./components/DeleteCategoryDialog";
 import { useCategoryFormSheet } from "@/hooks/useCategoryFormSheet";
 
 const SECTION_TITLES = { DEBIT: "Expenses", CREDIT: "Income" } as const;

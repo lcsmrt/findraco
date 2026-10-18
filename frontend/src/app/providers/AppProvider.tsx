@@ -5,7 +5,7 @@ import { PlanProvider } from "./PlanProvider";
 import { TanStackQueryProvider } from "./TanStackQueryProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { ConfirmDialogProvider } from "@/components/dialog/ConfirmDialogProvider";
-import { CategoryFormSheetProvider } from "@/features/home/components/categories/CategoryFormSheetProvider";
+import { CategoryFormSheetProvider } from "@/features/categories/components/CategoryFormSheetProvider";
 import { SeriesScopeDialogProvider } from "@/features/transactions/components/SeriesScopeDialogProvider";
 
 type AppProviderProps = {
