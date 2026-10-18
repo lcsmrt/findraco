@@ -513,12 +513,12 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Config test: `noInlineConfig` and `ban-ts-comment` active for a `src/**/*.tsx` path
-- [ ] Config test: a violation preceded by `// eslint-disable-next-line` is still reported (AC 9); `// @ts-ignore` is reported (AC 3)
-- [ ] The four plugins are gone from `package.json` and the lockfile
-- [ ] Lint error count ≤ 66
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Config test: `noInlineConfig` and `ban-ts-comment` active for a `src/**/*.tsx` path
+- [x] Config test: a violation preceded by `// eslint-disable-next-line` is still reported (AC 9); `// @ts-ignore` is reported (AC 3)
+- [x] The four plugins are gone from `package.json` and the lockfile
+- [x] Lint error count ≤ 66
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: tooling
 **Gate**: build

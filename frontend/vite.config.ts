@@ -64,6 +64,21 @@ export default defineConfig({
           include: ["src/**/*.test.{ts,tsx}"],
         },
       },
+      {
+        extends: true,
+        test: {
+          // Lint config, local rules and gate scripts run in Node: they never touch the DOM.
+          name: "tooling",
+          environment: "node",
+          include: [
+            "eslint.config.test.ts",
+            "eslint/**/*.test.ts",
+            "scripts/**/*.test.ts",
+          ],
+          // Vitest's default exclude drops every `eslint.config.*` file, which would skip the config test.
+          exclude: ["**/node_modules/**", "**/dist/**"],
+        },
+      },
     ],
   },
 });
