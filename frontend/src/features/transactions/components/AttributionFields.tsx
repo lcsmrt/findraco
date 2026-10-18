@@ -2,10 +2,9 @@ import { PlanMember } from "@/api/dtos/plan";
 import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
-import { Input } from "@/components/input/base/Input";
+import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { cn } from "@/lib/mergeClasses";
-import { maskCurrency } from "@/utils/string/masks";
 import type {
   FieldErrors,
   UseFormSetValue,
@@ -55,7 +54,7 @@ export const AttributionFields = ({
           members.map((member) => ({
             memberId: member.userId,
             memberName: member.name,
-            shareAmount: undefined,
+            shareAmount: null,
           })),
         );
       }
@@ -116,7 +115,7 @@ export const AttributionFields = ({
                       {
                         memberId: value.id,
                         memberName: value.name,
-                        shareAmount: undefined,
+                        shareAmount: null,
                       },
                     ]
                   : [],
@@ -187,7 +186,7 @@ export const AttributionFields = ({
                             {
                               memberId: member.userId,
                               memberName: member.name,
-                              shareAmount: undefined,
+                              shareAmount: null,
                             },
                           ]);
                         } else {
@@ -203,19 +202,14 @@ export const AttributionFields = ({
                     />
                     <span className="flex-1 text-sm">{member.name}</span>
                     {watch("splitMode") === "EXACT" && checked && (
-                      <Input
-                        type="text"
-                        inputMode="numeric"
+                      <CurrencyInput
+                        aria-label={`${member.name}'s share`}
                         placeholder="R$ 0,00"
                         className="h-8 w-28 text-sm"
-                        value={participants[index]?.shareAmount ?? ""}
-                        onChange={(e) => {
-                          const masked = maskCurrency(e.target.value);
+                        value={participants[index]?.shareAmount ?? null}
+                        onValueChange={(shareAmount) => {
                           const updated = [...participants];
-                          updated[index] = {
-                            ...updated[index],
-                            shareAmount: masked,
-                          };
+                          updated[index] = { ...updated[index], shareAmount };
                           setValue("participants", updated);
                         }}
                         disabled={disabled}

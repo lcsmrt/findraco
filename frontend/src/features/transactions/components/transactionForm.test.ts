@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { FinancialTransaction } from "@/api/dtos/financialTransaction";
-import { maskCurrency } from "@/utils/string/masks";
 import {
+  TransactionFormOutput,
   TransactionFormValues,
   buildDefaultValues,
   categoryAttribution,
@@ -11,10 +11,10 @@ import {
 } from "./transactionForm";
 import type { PlanMember } from "@/api/dtos/plan";
 
-const validValues: TransactionFormValues = {
+const validValues: TransactionFormOutput = {
   type: "DEBIT",
   description: "Groceries",
-  amount: maskCurrency("10000"),
+  amount: 100,
   category: { id: 1, type: "DEBIT", description: "Food", spendingLimit: null },
   date: new Date(2026, 6, 1),
   recurring: false,
@@ -68,7 +68,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
   it("rejects a zero amount", () => {
     const result = transactionFormSchema.safeParse({
       ...validValues,
-      amount: "R$ 0,00",
+      amount: 0,
     });
 
     expect(result.success).toBe(false);
@@ -77,6 +77,59 @@ describe("transactionFormSchema — plain transaction validation", () => {
         result.error.issues.find((i) => i.path[0] === "amount")?.message,
       ).toBe("Amount must be positive");
     }
+  });
+
+  it("rejects an empty amount (STD-06 AC 4)", () => {
+    const result = transactionFormSchema.safeParse({ ...validValues, amount: null });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.find((i) => i.path[0] === "amount")?.message).toBe(
+        "Amount must be positive",
+      );
+    }
+  });
+
+  it("rejects an item with an empty amount (STD-06 AC 4)", () => {
+    const result = transactionFormSchema.safeParse({
+      ...validValues,
+      items: [{ description: "Snacks", amount: null }],
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.find((i) => i.path.join(".") === "items.0.amount")?.message).toBe(
+        "Amount must be positive",
+      );
+    }
+  });
+
+  it("compares items with the total in cents, so float drift does not exceed it (STD-06 AC 4)", () => {
+    const result = transactionFormSchema.safeParse({
+      ...validValues,
+      amount: 0.3,
+      items: [
+        { description: "Item 1", amount: 0.1 },
+        { description: "Item 2", amount: 0.2 },
+      ],
+    });
+
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts EXACT shares that add up to the total in cents (STD-06 AC 4)", () => {
+    const result = transactionFormSchema.safeParse({
+      ...validValues,
+      amount: 0.3,
+      attributionMode: "SPLIT",
+      splitMode: "EXACT",
+      participants: [
+        { memberId: 1, memberName: "Alice", shareAmount: 0.1 },
+        { memberId: 2, memberName: "Bob", shareAmount: 0.2 },
+      ],
+    });
+
+    expect(result.success).toBe(true);
   });
 
   it("rejects a missing date", () => {
@@ -95,10 +148,10 @@ describe("transactionFormSchema — plain transaction validation", () => {
   it("rejects items whose total exceeds the transaction amount", () => {
     const result = transactionFormSchema.safeParse({
       ...validValues,
-      amount: maskCurrency("10000"),
+      amount: 100,
       items: [
-        { description: "Item 1", amount: maskCurrency("6000") },
-        { description: "Item 2", amount: maskCurrency("6000") },
+        { description: "Item 1", amount: 60 },
+        { description: "Item 2", amount: 60 },
       ],
     });
 
@@ -113,12 +166,12 @@ describe("transactionFormSchema — plain transaction validation", () => {
   it("rejects EXACT split shares that don't add up to the total", () => {
     const result = transactionFormSchema.safeParse({
       ...validValues,
-      amount: maskCurrency("10000"),
+      amount: 100,
       attributionMode: "SPLIT",
       splitMode: "EXACT",
       participants: [
-        { memberId: 1, memberName: "Alice", shareAmount: maskCurrency("3000") },
-        { memberId: 2, memberName: "Bob", shareAmount: maskCurrency("3000") },
+        { memberId: 1, memberName: "Alice", shareAmount: 30 },
+        { memberId: 2, memberName: "Bob", shareAmount: 30 },
       ],
     });
 
@@ -138,7 +191,7 @@ describe("buildDefaultValues — plain transaction", () => {
 
     expect(defaults.type).toBe("DEBIT");
     expect(defaults.description).toBe("");
-    expect(defaults.amount).toBe("");
+    expect(defaults.amount).toBeNull();
     expect(defaults.category).toBeNull();
     expect(defaults.recurring).toBe(false);
     expect(defaults.seriesEdit).toBe(false);
@@ -152,13 +205,13 @@ describe("buildDefaultValues — plain transaction", () => {
     const defaults = buildDefaultValues(baseTransaction, 99, undefined);
 
     expect(defaults.description).toBe("Rent");
-    expect(defaults.amount).toBe(maskCurrency("15050"));
+    expect(defaults.amount).toBe(150.5);
     expect(defaults.seriesEdit).toBe(false);
     expect(defaults.recurrenceMode).toBeUndefined();
     expect(defaults.attributionMode).toBe("ME");
     expect(defaults.participants).toEqual([]);
     expect(defaults.items).toEqual([
-      { description: "Base rent", amount: maskCurrency("15050"), category: null },
+      { description: "Base rent", amount: 150.5, category: null },
     ]);
     expect(defaults.date).toEqual(new Date(2026, 6, 1));
   });
@@ -187,6 +240,28 @@ describe("toPayload — plain transaction", () => {
     expect(body.splitMode).toBe("EQUAL");
   });
 
+  it("sends EXACT shares as the numbers the form holds (STD-06 AC 4)", () => {
+    const body = toPayload(
+      {
+        ...validValues,
+        attributionMode: "SPLIT",
+        splitMode: "EXACT",
+        participants: [
+          { memberId: 1, memberName: "Alice", shareAmount: 30.25 },
+          { memberId: 2, memberName: "Bob", shareAmount: 69.75 },
+        ],
+      },
+      true,
+      1,
+    );
+
+    expect(body.participants).toEqual([
+      { memberId: 1, shareAmount: 30.25 },
+      { memberId: 2, shareAmount: 69.75 },
+    ]);
+    expect(body.splitMode).toBe("EXACT");
+  });
+
   it("maps items with converted amounts and category ids", () => {
     const body = toPayload(
       {
@@ -194,7 +269,7 @@ describe("toPayload — plain transaction", () => {
         items: [
           {
             description: "Snacks",
-            amount: maskCurrency("2500"),
+            amount: 25,
             category: { id: 5, type: "DEBIT", description: "Food" },
           },
         ],
@@ -213,11 +288,11 @@ describe("edit-mode reset — plain transaction", () => {
   it("resets away from create-mode defaults once an existing transaction is provided", () => {
     const createDefaults = buildDefaultValues(undefined, 99, undefined);
     expect(createDefaults.description).toBe("");
-    expect(createDefaults.amount).toBe("");
+    expect(createDefaults.amount).toBeNull();
 
     const editDefaults = buildDefaultValues(baseTransaction, 99, undefined);
     expect(editDefaults.description).toBe("Rent");
-    expect(editDefaults.amount).toBe(maskCurrency("15050"));
+    expect(editDefaults.amount).toBe(150.5);
     expect(editDefaults).not.toEqual(createDefaults);
   });
 });
@@ -237,7 +312,7 @@ describe("ownerDefaultAttribution — owned category default participant (CAT-17
     expect(attribution).toEqual({
       attributionMode: "SOMEONE",
       splitMode: "EQUAL",
-      participants: [{ memberId: 2, memberName: "Livia", shareAmount: undefined }],
+      participants: [{ memberId: 2, memberName: "Livia", shareAmount: null }],
     });
     expect(
       toPayload({ ...validValues, ...attribution! }, true, 1).participants,
@@ -252,7 +327,7 @@ describe("ownerDefaultAttribution — owned category default participant (CAT-17
       participantsTouched: false,
     });
     expect(attribution).toEqual({ attributionMode: "ME", splitMode: "EQUAL", participants: [] });
-    const splitBefore: TransactionFormValues = { ...validValues, attributionMode: "SPLIT" };
+    const splitBefore: TransactionFormOutput = { ...validValues, attributionMode: "SPLIT" };
     expect(toPayload({ ...splitBefore, ...attribution! }, true, 1).participants).toEqual([
       { memberId: 1 },
     ]);
@@ -333,7 +408,7 @@ describe("categoryAttribution — participants follow the selected category (CAT
   const livia = {
     attributionMode: "SOMEONE",
     splitMode: "EQUAL",
-    participants: [{ memberId: 2, memberName: "Livia", shareAmount: undefined }],
+    participants: [{ memberId: 2, memberName: "Livia", shareAmount: null }],
   };
 
   it("sets the owner of an owned category at 100%", () => {
@@ -357,7 +432,7 @@ describe("categoryAttribution — participants follow the selected category (CAT
     expect(select(select(createDefaults, 2), 4)).toEqual({
       attributionMode: "SOMEONE",
       splitMode: "EQUAL",
-      participants: [{ memberId: 4, memberName: "Rafa", shareAmount: undefined }],
+      participants: [{ memberId: 4, memberName: "Rafa", shareAmount: null }],
     });
   });
 
@@ -372,7 +447,7 @@ describe("categoryAttribution — participants follow the selected category (CAT
     expect(select(owned, null, { mode: "duplicate", defaults })).toEqual({
       attributionMode: "SOMEONE",
       splitMode: "EQUAL",
-      participants: [{ memberId: 4, memberName: "Rafa", shareAmount: maskCurrency("15050") }],
+      participants: [{ memberId: 4, memberName: "Rafa", shareAmount: 150.5 }],
     });
   });
 
@@ -381,8 +456,8 @@ describe("categoryAttribution — participants follow the selected category (CAT
       attributionMode: "SPLIT" as const,
       splitMode: "EQUAL" as const,
       participants: [
-        { memberId: 1, memberName: "Lucas", shareAmount: undefined },
-        { memberId: 4, memberName: "Rafa", shareAmount: undefined },
+        { memberId: 1, memberName: "Lucas", shareAmount: null },
+        { memberId: 4, memberName: "Rafa", shareAmount: null },
       ],
     };
     expect(select(manual, 2, { participantsTouched: true })).toBe(manual);

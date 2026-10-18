@@ -20,7 +20,9 @@ import {
   FieldLabel,
 } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
+import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { DatePicker } from "@/components/input/DatePicker";
+import { FormField } from "@/components/form/FormField";
 import {
   Sheet,
   SheetContent,
@@ -29,8 +31,7 @@ import {
   SheetTitle,
 } from "@/components/sheet/base/Sheet";
 import { cn } from "@/lib/mergeClasses";
-import { formatMoney } from "@/utils/money";
-import { maskCurrency } from "@/utils/string/masks";
+import { formatMoney, toCents } from "@/utils/money";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format } from "date-fns";
 import {
@@ -41,13 +42,14 @@ import {
   XIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
-import { useForm, type UseFormSetValue } from "react-hook-form";
+import { Controller, useForm, type UseFormSetValue } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
 import { useSeriesScope } from "./useSeriesScope";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
 import {
   TransactionFormMode,
+  TransactionFormOutput,
   TransactionFormValues,
   buildDefaultValues,
   categoryAttribution,
@@ -104,13 +106,14 @@ export const TransactionFormDrawer = ({
   const submitLabel = mode === "edit" ? "Save" : "Create";
 
   const {
+    control,
     register,
     handleSubmit,
     watch,
     setValue,
     reset,
     formState: { errors },
-  } = useForm<TransactionFormValues>({
+  } = useForm<TransactionFormValues, unknown, TransactionFormOutput>({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: buildDefaultValues(transaction, currentUserId, definition),
   });
@@ -196,7 +199,7 @@ export const TransactionFormDrawer = ({
     isCreatingFinancialTransactionSeries ||
     isUpdatingFinancialTransactionSeries;
 
-  const onSubmit = async (values: TransactionFormValues) => {
+  const onSubmit = async (values: TransactionFormOutput) => {
     if (isSeriesEdit) {
       if (!transaction?.seriesId || !definition) return;
 
@@ -279,28 +282,16 @@ export const TransactionFormDrawer = ({
               <FieldError errors={[errors.description]} />
             </Field>
 
-            <Field>
-              <FieldLabel htmlFor="transaction-amount">Amount</FieldLabel>
-              {(() => {
-                const { onChange, ...amountRest } = register("amount");
-                return (
-                  <Input
-                    id="transaction-amount"
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="R$ 0,00"
-                    disabled={isPending}
-                    aria-invalid={!!errors.amount}
-                    {...amountRest}
-                    onChange={(e) => {
-                      e.target.value = maskCurrency(e.target.value);
-                      onChange(e);
-                    }}
-                  />
-                );
-              })()}
-              <FieldError errors={[errors.amount]} />
-            </Field>
+            <FormField control={control} name="amount" label="Amount">
+              {(field) => (
+                <CurrencyInput
+                  {...field}
+                  onValueChange={field.onChange}
+                  placeholder="R$ 0,00"
+                  disabled={isPending}
+                />
+              )}
+            </FormField>
 
             <Field>
               <FieldLabel htmlFor="transaction-category">Category</FieldLabel>
@@ -355,21 +346,21 @@ export const TransactionFormDrawer = ({
                               setValue("items", updated);
                             }}
                           />
-                          <Input
-                            type="text"
-                            inputMode="numeric"
-                            placeholder="R$ 0,00"
-                            className="w-28"
-                            disabled={isPending}
-                            value={item.amount}
-                            onChange={(e) => {
-                              const updated = [...items];
-                              updated[index] = {
-                                ...updated[index],
-                                amount: maskCurrency(e.target.value),
-                              };
-                              setValue("items", updated);
-                            }}
+                          {/* The row has no visible labels, a layout FormField does not offer. */}
+                          <Controller
+                            control={control}
+                            name={`items.${index}.amount`}
+                            render={({ field, fieldState }) => (
+                              <CurrencyInput
+                                {...field}
+                                onValueChange={field.onChange}
+                                aria-label={`Item ${index + 1} amount`}
+                                aria-invalid={fieldState.invalid}
+                                placeholder="R$ 0,00"
+                                className="w-28"
+                                disabled={isPending}
+                              />
+                            )}
                           />
                           <Button
                             type="button"
@@ -410,7 +401,7 @@ export const TransactionFormDrawer = ({
                     onClick={() =>
                       setValue("items", [
                         ...watch("items"),
-                        { description: "", amount: "", category: null },
+                        { description: "", amount: null, category: null },
                       ])
                     }
                   >
@@ -420,13 +411,11 @@ export const TransactionFormDrawer = ({
                 </div>
                 {watch("items").length > 0 &&
                   (() => {
-                    const totalDigits = watch("amount").replace(/\D/g, "");
-                    const totalCents =
-                      totalDigits.length > 0 ? parseInt(totalDigits, 10) : 0;
-                    const itemsCents = watch("items").reduce((sum, item) => {
-                      const digits = item.amount.replace(/\D/g, "");
-                      return sum + (digits.length > 0 ? parseInt(digits, 10) : 0);
-                    }, 0);
+                    const totalCents = toCents(watch("amount") ?? 0);
+                    const itemsCents = watch("items").reduce(
+                      (sum, item) => sum + toCents(item.amount ?? 0),
+                      0,
+                    );
                     const remainderCents = totalCents - itemsCents;
                     return (
                       <p
@@ -441,7 +430,9 @@ export const TransactionFormDrawer = ({
                       </p>
                     );
                   })()}
-                <FieldError errors={[errors.items]} />
+                {/* With the item amounts registered as fields, the resolver files the list-level
+                    error under `root`. */}
+                <FieldError errors={[errors.items?.root]} />
               </Field>
             )}
 

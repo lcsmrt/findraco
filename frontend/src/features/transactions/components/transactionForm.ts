@@ -10,20 +10,30 @@ import {
   UpdateFinancialTransactionSeriesRequest,
 } from "@/api/dtos/financialTransaction";
 import type { PlanMember } from "@/api/dtos/plan";
-import { maskCurrency } from "@/utils/string/masks";
+import { toCents } from "@/utils/money";
 import { format } from "date-fns";
 import { z } from "zod";
 
 export type TransactionFormMode = "create" | "edit" | "duplicate";
 
+// Narrows the required money fields to `number`, so a valid submit hands `toPayload` no `null`.
+function isPositiveAmount(value: number | null): value is number {
+  return value !== null && value > 0;
+}
+
+/**
+ * Cents of a money field for sums and comparisons. A field that failed its own rule still reaches
+ * the cross-field checks below as `null`, and counts as nothing, as an empty field always has.
+ */
+function centsOf(value: number | null | undefined): number {
+  return value == null ? 0 : toCents(value);
+}
+
 export const transactionFormSchema = z
   .object({
     type: z.enum(["DEBIT", "CREDIT"]),
     description: z.string().min(1, "Description is required"),
-    amount: z.string().refine((v) => {
-      const digits = v.replace(/\D/g, "");
-      return digits.length > 0 && parseInt(digits, 10) > 0;
-    }, "Amount must be positive"),
+    amount: z.number().nullable().refine(isPositiveAmount, "Amount must be positive"),
     category: z
       .object({
         id: z.number(),
@@ -46,16 +56,13 @@ export const transactionFormSchema = z
       z.object({
         memberId: z.number(),
         memberName: z.string(),
-        shareAmount: z.string().optional(),
+        shareAmount: z.number().nullable(),
       }),
     ),
     items: z.array(
       z.object({
         description: z.string().min(1, "Description is required"),
-        amount: z.string().refine((v) => {
-          const digits = v.replace(/\D/g, "");
-          return digits.length > 0 && parseInt(digits, 10) > 0;
-        }, "Amount must be positive"),
+        amount: z.number().nullable().refine(isPositiveAmount, "Amount must be positive"),
         category: z
           .object({
             id: z.number(),
@@ -70,14 +77,9 @@ export const transactionFormSchema = z
   })
   .superRefine((values, ctx) => {
     if (values.items.length > 0) {
-      const totalDigits = values.amount.replace(/\D/g, "");
-      const totalCents = totalDigits.length > 0 ? parseInt(totalDigits, 10) : 0;
-      const itemsCents = values.items.reduce((sum, item) => {
-        const digits = item.amount.replace(/\D/g, "");
-        return sum + (digits.length > 0 ? parseInt(digits, 10) : 0);
-      }, 0);
+      const itemsCents = values.items.reduce((sum, item) => sum + centsOf(item.amount), 0);
 
-      if (itemsCents > totalCents) {
+      if (itemsCents > centsOf(values.amount)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Items cannot exceed the transaction total",
@@ -91,14 +93,12 @@ export const transactionFormSchema = z
       values.splitMode === "EXACT" &&
       values.participants.length > 0
     ) {
-      const totalDigits = values.amount.replace(/\D/g, "");
-      const totalCents = totalDigits.length > 0 ? parseInt(totalDigits, 10) : 0;
-      const sumCents = values.participants.reduce((sum, participant) => {
-        const digits = (participant.shareAmount ?? "").replace(/\D/g, "");
-        return sum + (digits.length > 0 ? parseInt(digits, 10) : 0);
-      }, 0);
+      const sumCents = values.participants.reduce(
+        (sum, participant) => sum + centsOf(participant.shareAmount),
+        0,
+      );
 
-      if (sumCents !== totalCents) {
+      if (sumCents !== centsOf(values.amount)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: "Shares must add up to the total amount",
@@ -185,12 +185,11 @@ export const transactionFormSchema = z
     }
   });
 
-export type TransactionFormValues = z.infer<typeof transactionFormSchema>;
+/** What the fields hold while editing: money in reais, `null` when empty. */
+export type TransactionFormValues = z.input<typeof transactionFormSchema>;
 
-function parseAmount(value: string): number {
-  return parseInt(value.replace(/\D/g, ""), 10) / 100;
-}
-
+/** What a valid submit hands over: the amount and item amounts are no longer `null`. */
+export type TransactionFormOutput = z.output<typeof transactionFormSchema>;
 
 function deriveAttributionMode(
   participants: FinancialTransaction["participants"],
@@ -235,7 +234,7 @@ export function ownerDefaultAttribution({
     attributionMode: "SOMEONE",
     splitMode: "EQUAL",
     participants: [
-      { memberId: owner.userId, memberName: owner.name, shareAmount: undefined },
+      { memberId: owner.userId, memberName: owner.name, shareAmount: null },
     ],
   };
 }
@@ -272,7 +271,7 @@ const stripInstallmentSuffix = (description: string) =>
   description.replace(/\s*\(\d+\/\d+\)$/, "");
 
 function attributionToPayload(
-  values: TransactionFormValues,
+  values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
 ): { participants?: ParticipantInput[]; splitMode?: SplitMode } {
@@ -297,17 +296,14 @@ function attributionToPayload(
     participants: values.participants.map((participant) => ({
       memberId: participant.memberId,
       shareAmount:
-        values.splitMode === "EXACT"
-          ? parseInt((participant.shareAmount ?? "").replace(/\D/g, ""), 10) /
-            100
-          : undefined,
+        values.splitMode === "EXACT" ? (participant.shareAmount ?? undefined) : undefined,
     })),
     splitMode: values.splitMode,
   };
 }
 
 export function toPayload(
-  values: TransactionFormValues,
+  values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
 ): CreateFinancialTransactionRequest["body"] {
@@ -320,21 +316,21 @@ export function toPayload(
   return {
     type: values.type,
     description: values.description,
-    amount: parseAmount(values.amount),
+    amount: values.amount,
     categoryId: values.category?.id,
     startDate: format(values.date, "yyyy-MM-dd"),
     splitMode,
     participants,
     items: values.items.map((item) => ({
       description: item.description,
-      amount: parseAmount(item.amount),
+      amount: item.amount,
       categoryId: item.category?.id,
     })),
   };
 }
 
 export function toSeriesCreatePayload(
-  values: TransactionFormValues,
+  values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
 ): CreateFinancialTransactionSeriesRequest["body"] {
@@ -347,7 +343,7 @@ export function toSeriesCreatePayload(
   return {
     type: values.type,
     description: values.description,
-    amount: parseAmount(values.amount),
+    amount: values.amount,
     categoryId: values.category?.id,
     mode: values.recurrenceMode!,
     startDate: format(values.date, "yyyy-MM-dd"),
@@ -372,7 +368,7 @@ export function toSeriesCreatePayload(
 }
 
 export function toSeriesEditPayload(
-  values: TransactionFormValues,
+  values: TransactionFormOutput,
   transaction: FinancialTransaction,
   definition: RecurrenceDefinitionResponse,
   scope: SeriesEditScope,
@@ -387,7 +383,7 @@ export function toSeriesEditPayload(
 
   return {
     type: definition.type,
-    amount: parseAmount(values.amount),
+    amount: values.amount,
     description: values.description,
     categoryId: values.category?.id,
     mode: definition.mode,
@@ -424,7 +420,7 @@ export function buildDefaultValues(
       description: isSeriesEdit
         ? stripInstallmentSuffix(transaction.description)
         : transaction.description,
-      amount: maskCurrency(String(Math.round(transaction.amount * 100))),
+      amount: transaction.amount,
       category: transaction.category ?? null,
       date: parseLocalDate(transaction.startDate),
       recurring: false,
@@ -446,15 +442,13 @@ export function buildDefaultValues(
           : transaction.participants.map((participant) => ({
               memberId: participant.id,
               memberName: participant.name,
-              shareAmount: maskCurrency(
-                String(Math.round(participant.shareAmount * 100)),
-              ),
+              shareAmount: participant.shareAmount,
             })),
       items: isSeriesEdit
         ? []
         : transaction.items.map((item) => ({
             description: item.description,
-            amount: maskCurrency(String(Math.round(item.amount * 100))),
+            amount: item.amount,
             category: item.category ?? null,
           })),
     };
@@ -462,7 +456,7 @@ export function buildDefaultValues(
   return {
     type: "DEBIT",
     description: "",
-    amount: "",
+    amount: null,
     category: null,
     date: new Date(),
     recurring: false,

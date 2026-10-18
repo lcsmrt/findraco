@@ -3,19 +3,18 @@ import {
   FinancialTransaction,
   RecurrenceDefinitionResponse,
 } from "@/api/dtos/financialTransaction";
-import { maskCurrency } from "@/utils/string/masks";
 import {
-  TransactionFormValues,
+  TransactionFormOutput,
   buildDefaultValues,
   toSeriesCreatePayload,
   toSeriesEditPayload,
   transactionFormSchema,
 } from "./transactionForm";
 
-const baseValues: TransactionFormValues = {
+const baseValues: TransactionFormOutput = {
   type: "DEBIT",
   description: "Rent",
-  amount: maskCurrency("10000"),
+  amount: 100,
   category: null,
   date: new Date(2026, 6, 1),
   recurring: true,

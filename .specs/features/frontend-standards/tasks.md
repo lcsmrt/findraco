@@ -1684,10 +1684,12 @@ Note: `@testing-library/user-event` 14.6.1 added (exact, the version Storybook a
 
 **Done when**:
 
-- [ ] New `TransactionFormDrawer.test.tsx` (`renderWithProviders`, MSW): typing 1234 in Amount submits 12.34; items over the total show the error
-- [ ] `transactionForm.test.ts` updated to numbers
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] New `TransactionFormDrawer.test.tsx` (`renderWithProviders`, MSW): typing 1234 in Amount submits 12.34; items over the total show the error
+- [x] `transactionForm.test.ts` updated to numbers
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 545 → 556
+
+Notes: Amount binds through `FormField`. Item amounts bind through a raw `Controller` with an `aria-label`, because the item row has no visible labels (the skill's special-layout case); participant shares keep the `setValue` path through `AttributionFields`, because that path marks the participants as edited by hand, which the owned-category default depends on. T81/T82 move both lists to `useFieldArray`. Registering `items.N.amount` makes the resolver file the list-level items error under `errors.items.root`. `financialTransaction.handlers.ts` added (create, update) for the integration test.
 
 **Tests**: integration
 **Gate**: quick
