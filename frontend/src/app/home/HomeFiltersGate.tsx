@@ -1,6 +1,6 @@
 import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { loadHomeFilters, saveHomeFilters } from "@/lib/filterStorage";
+import { loadHomeFilters, saveHomeFilters } from "./filterStorage";
 import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
 import { TRANSACTION_PARAM_KEYS } from "@/features/transactions/filters/transactionParams";
 import { useEffect, useRef, type ReactNode } from "react";
@@ -9,7 +9,7 @@ import {
   PLAN_PARAM,
   parsePlanParam,
   TAB_PARAM,
-} from "@/app/home/homeParams";
+} from "./homeParams";
 
 const HOME_PARAM_KEYS = [
   PLAN_PARAM,

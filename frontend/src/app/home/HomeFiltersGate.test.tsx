@@ -1,14 +1,33 @@
-import { act, cleanup, render } from "@testing-library/react";
-import { useSyncExternalStore } from "react";
-import { MemoryRouter, useLocation, type Location } from "react-router-dom";
+import { act, cleanup } from "@testing-library/react";
+import { useSyncExternalStore, type ReactNode } from "react";
+import { useLocation, type Location } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { User } from "@/api/dtos/user";
+import type { AuthContextValue } from "@/app/providers/useAuth";
+import { PlanContext } from "@/app/providers/usePlanContext";
+import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
+import { TRANSACTION_PARAM_KEYS } from "@/features/transactions/filters/transactionParams";
 import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
-import { useHomeTab } from "@/app/home/useHomeTab";
+import { renderWithProviders } from "@/test/renderWithProviders";
 import { HomeFiltersGate } from "./HomeFiltersGate";
+import { TAB_PARAM } from "./homeParams";
+import { useHomeTab } from "./useHomeTab";
 
-let mockedUser: { id: number } | null = { id: 1 };
+const signedInUser: User = { id: 1, name: "Ana", email: "ana@example.com" };
 
-/** Minimal plan context store, so `setActivePlanId` re-renders like the real provider. */
+function authValue(user: User | null): AuthContextValue {
+  return {
+    user,
+    setUser: () => {},
+    status: user ? "authenticated" : "loading",
+    signIn: async () => {},
+    signOut: async () => {},
+    retry: () => {},
+    announceSessionExpiry: () => {},
+  };
+}
+
+/** Plan context state; `setActivePlanId` re-renders consumers like the real provider. */
 type PlanState = {
   activePlanId: number | null;
   plans: { id: number }[];
@@ -16,24 +35,31 @@ type PlanState = {
 };
 let planState: PlanState;
 const planListeners = new Set<() => void>();
-const setPlanState = (patch: Partial<PlanState>) => {
+function setPlanState(patch: Partial<PlanState>) {
   planState = { ...planState, ...patch };
   planListeners.forEach((listener) => listener());
-};
-const subscribePlan = (listener: () => void) => {
+}
+function subscribePlan(listener: () => void) {
   planListeners.add(listener);
   return () => planListeners.delete(listener);
-};
+}
 
-vi.mock("@/app/providers/useAuth", () => ({
-  useAuth: () => ({ user: mockedUser }),
-}));
-vi.mock("@/app/providers/usePlanContext", () => ({
-  usePlanContext: () => ({
-    ...useSyncExternalStore(subscribePlan, () => planState),
+/** Provides the real plan context with the test's state, so plan switches re-render the gate. */
+function TestPlanContext({ children }: { children: ReactNode }) {
+  const state = useSyncExternalStore(subscribePlan, () => planState);
+  const value = {
+    activePlanId: state.activePlanId,
+    isLoading: state.isLoading,
+    plans: state.plans.map((plan) => ({
+      id: plan.id,
+      name: `Plan ${plan.id}`,
+      isDefault: false,
+      myRole: "OWNER" as const,
+    })),
     setActivePlanId: (planId: number) => setPlanState({ activePlanId: planId }),
-  }),
-}));
+  };
+  return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>;
+}
 
 let location: Location;
 /** Query strings the gated children were rendered with, in order. */
@@ -43,12 +69,12 @@ let childPlans: { urlPlan: string | null; activePlanId: number | null }[];
 let filters: ReturnType<typeof useHomeTab> &
   ReturnType<typeof useTransactionFilters>;
 
-const LocationProbe = () => {
+function LocationProbe() {
   location = useLocation();
   return null;
-};
+}
 
-const Child = () => {
+function Child() {
   const { search } = useLocation();
   childRenders.push(search);
   childPlans.push({
@@ -57,25 +83,26 @@ const Child = () => {
   });
   filters = { ...useHomeTab(), ...useTransactionFilters() };
   return null;
-};
+}
 
-const tree = () => (
-  <>
-    <HomeFiltersGate>
-      <Child />
-    </HomeFiltersGate>
-    <LocationProbe />
-  </>
-);
+function renderAt(url: string, user: User | null = signedInUser) {
+  return renderWithProviders(
+    <TestPlanContext>
+      <HomeFiltersGate>
+        <Child />
+      </HomeFiltersGate>
+      <LocationProbe />
+    </TestPlanContext>,
+    { route: url, auth: authValue(user) },
+  );
+}
 
-const renderAt = (url: string) =>
-  render(<MemoryRouter initialEntries={[url]}>{tree()}</MemoryRouter>);
-
-const params = () => Object.fromEntries(new URLSearchParams(location.search));
+function params() {
+  return Object.fromEntries(new URLSearchParams(location.search));
+}
 
 beforeEach(() => {
   localStorage.clear();
-  mockedUser = { id: 1 };
   planState = { activePlanId: 5, plans: [{ id: 4 }, { id: 5 }], isLoading: false };
   childRenders = [];
   childPlans = [];
@@ -139,6 +166,18 @@ describe("HomeFiltersGate", () => {
 
     expect(params()).toEqual({ plan: "5", member: "3" });
   });
+
+  it.each([TAB_PARAM, ...OVERVIEW_PARAM_KEYS, ...TRANSACTION_PARAM_KEYS])(
+    "treats the exported key %s as a home param: a link with only it applies to the active plan",
+    (key) => {
+      localStorage.setItem("homeFilters:1:5", "plan=5&tab=categories&overviewMember=3");
+
+      renderAt(`/?${key}=x`);
+
+      expect(params()).toEqual({ [key]: "x", plan: "5" });
+      expect(localStorage.getItem("homeFilters:1:5")).toBe(`${key}=x&plan=5`);
+    },
+  );
 
   it("applies URL params for the active plan and saves them as the new state", () => {
     localStorage.setItem("homeFilters:1:5", "plan=5&member=3");
@@ -258,13 +297,13 @@ describe("HomeFiltersGate", () => {
 
   it("does not redirect or render children while the user or active plan is loading", () => {
     planState.activePlanId = null;
-    const { rerender } = renderAt("/");
+    renderAt("/");
     expect(location.search).toBe("");
     expect(childRenders).toEqual([]);
 
+    cleanup();
     planState.activePlanId = 5;
-    mockedUser = null;
-    rerender(<MemoryRouter initialEntries={["/"]}>{tree()}</MemoryRouter>);
+    renderAt("/", null);
     expect(location.search).toBe("");
     expect(childRenders).toEqual([]);
   });

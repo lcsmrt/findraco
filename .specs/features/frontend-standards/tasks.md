@@ -1362,10 +1362,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] No `vi.mock` in the gate test
-- [ ] `src/lib/` holds only `mergeClasses` and `storage`
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No `vi.mock` in the gate test
+- [x] `src/lib/` holds only `mergeClasses` and `storage`
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: integration
 **Gate**: quick

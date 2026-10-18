@@ -2,7 +2,7 @@ import { Button } from "@/components/button/Button";
 import { CategoriesTab } from "@/features/home/components/categories/CategoriesTab";
 import { OverviewTab } from "@/features/home/components/overview/OverviewTab";
 import { TransactionsTab } from "@/features/home/components/transactions/TransactionsTab";
-import { HomeFiltersGate } from "@/features/home/filters/HomeFiltersGate";
+import { HomeFiltersGate } from "./HomeFiltersGate";
 import { cn } from "@/lib/mergeClasses";
 import type { HomeTab } from "./homeParams";
 import { useHomeTab } from "./useHomeTab";
