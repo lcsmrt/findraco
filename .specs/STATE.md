@@ -108,14 +108,13 @@
 
 ## Handoff
 
-- **Feature**: Frontend standards (`.specs/features/frontend-standards/`). Input: `.specs/codebase/frontend-quality-audit.md` (32 findings, A1–G2). All findings reviewed one at a time with the user (2026-10-16/17); every decision, with its rationale, is in `context.md`
-- **Phase / Task**: Spec **approved** 2026-10-17 (`spec.md`, STD-01..STD-14, one refactor slice per ID, in ID order; validate_spec clean). Next is **Design** (`references/design.md`): decide e.g. the `CurrencyInput` API, `formatMoney` source of locale/currency, the OpenAPI generator (`openapi-typescript` vs `orval`), the local lint rule's shape (logic cap + IIFE ban), the gate scripts, the `ci.yml`/deploy job layout, `Heading`/`Text` variant set, and where the home filter state lands. Then Tasks
-- **Paused**: M5-09 mobile-navigation (`.specs/features/mobile-navigation/`), spec **approved** 2026-10-16, Design not started. It is the first feature built under the new standards. Remaining round-2 UX topics, one at a time and each in its own cycle: mobile transactions list, category form, delete dialog + empty states
-- **Completed recently**: M5-08 session persistence shipped (UAT approved 2026-10-16). Production at `https://findraco.lcsmrt.com` (details in git history of this section, commit 1664bb5)
-- **In-progress** (file:line): none
-- **Next step**: Design `frontend-standards` (skill `tlc-spec-driven`). How the user works: Detailed pace, one decision per turn; explain the problem, trade-offs and residual cost; quality over effort; no lint/TS bypasses; check shadcn/Base UI before hand-writing UI
-- **Other queue**: M5-05 Claude MCP connector, M5-07 PWA, M5-10 i18n (new), local Docker DB quick task. Server hardening ideas not started: Portainer ports `9000`/`9443` public, cert-expiry alert
-- **Runtime state**: API runs detached (`setsid nohup ./mvnw spring-boot:run`), log `backend/target/api.log`; stop with `pgrep -f spring-boot:run | xargs kill`. Vite dev server on :5173. DB via SSH tunnel `ssh -f -N -L 5432:localhost:5432 vps`. `./mvnw verify` empties `dev_finsight`
-- **Blockers**: none. `npm run lint` fails with 66 errors (the audit numbers them)
-- **Uncommitted files**: none
-- **Branch**: main (local commits not pushed)
+- **Feature**: Frontend standards (`.specs/features/frontend-standards/`). Spec, design (approved 2026-10-17, decisions 1–10) and tasks (125 tasks, 17 phases, approved) are in place; AD-010..AD-013 logged above
+- **Phase / Task**: **Execute**. Done: Phases 1–6 (T1–T42; STD-01..04 marked Done in spec traceability) and Phase 7 T43–T46. **Next: T47** (`HomeFiltersGate` + `filterStorage` move to `src/app/home/`, gate test without `vi.mock`, exported-keys case), then Phase 8 (T48–T55)
+- **How Execute runs**: one sub-agent worker per batch of whole phases (~7 tasks), prompt = read implement.md + coding-principles + tasks.md + the phase's design decisions + the five frontend skills; worker never pushes. Orchestrator reviews each report, fixes artifacts, then dispatches the next batch
+- **Open topic with the user (revisit before STD-09 or sooner)**: T11 moved the axios augmentation (`declare module "axios"`, needs an `interface`) to `src/api/clients/axios.d.ts` and turned `consistent-type-definitions` off for `**/*.d.ts` (E1 addendum in `context.md`). The user did not understand/agree and wants to discuss it later
+- **Pending verification**: the push of 2026-10-18 (this commit) is the first CI run with Playwright (T42 "next push" box) and the a11y fixes (light `--destructive` red-600 → red-700). Check `gh run list --limit 1`; tick T42's last box when green
+- **Known follow-ups**: `TableHeader.tsx` has `header.column.id as keyof TData` (forced `as`, not lint-detectable); app `SelectTrigger`s may lack label association (surfaces in STD-10 stories); `src/test/scenarios.ts` not created yet (first flow test creates it); the commit-msg hook rejects git's default merge messages
+- **Decisions this session**: form types `XxxFormValues` + `XxxFormOutput` (context.md); handlers imported by tests only; `Amount` stays `font-mono`; `FormField` built at the start of STD-06; table context replaced by a render prop (T28)
+- **Paused**: M5-09 mobile-navigation (spec approved, Design waits for STD-12). Backend standards review (ROADMAP Open Todos) precedes STD-13
+- **Runtime state**: Playwright Chromium build 1234 installed locally (`~/.cache/ms-playwright`). API/Vite not running
+- **Blockers**: none. **Uncommitted files**: none. **Branch**: main, pushed
