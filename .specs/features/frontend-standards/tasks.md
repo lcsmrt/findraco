@@ -2186,14 +2186,16 @@ Notes: the four mutations and the series-scope flow live in `useTransactionFormS
 
 **Done when**:
 
-- [ ] Story: empty, several items, over-total error
-- [ ] Drawer item tests pass
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Story: empty, several items, over-total error
+- [x] Drawer item tests pass
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 642 → 646 (`itemsRemainderCents`, 4); storybook +4 (`ItemsField.stories.tsx`); all projects 733 → 741
+
+Notes: `ItemsField` holds the list with `useFieldArray` (rows keyed by `field.id`); description, amount and category bind through raw `Controller`s, since the row has no visible labels (description and amount carry `aria-label`s "Item n description"/"Item n amount"; the remove button became "Remove item n"). Amount, items and type are read with `useWatch`, the list-level error with `useFormState`. The remainder comes from `itemsRemainderCents(amount, items)` in `transactionForm.ts` (tested), which removed the items IIFE. The per-item category picker is `CategoryCombobox`, which fetches categories and reads the category sheet context, so `ItemsField` takes it as a `renderCategory` slot and stays presentational: its story renders in a test form with a read-only stand-in and no providers. Stories: empty (add an item), several items (remove one, remainder updates), over total (error and negative remainder), long descriptions. The drawer's item tests pass unchanged.
 
 **Tests**: story
 **Gate**: full
-**Commit**: `refactor(frontend): ItemsField on useFieldArray`
+**Commit**: `refactor(frontend): items list in ItemsField on useFieldArray`
 
 ---
 

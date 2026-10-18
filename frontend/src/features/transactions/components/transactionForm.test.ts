@@ -5,6 +5,7 @@ import {
   TransactionFormValues,
   buildDefaultValues,
   categoryAttribution,
+  itemsRemainderCents,
   ownerDefaultAttribution,
   toPayload,
   transactionFormSchema,
@@ -468,5 +469,23 @@ describe("categoryAttribution — participants follow the selected category (CAT
     const editing = pick(buildDefaultValues(baseTransaction, 1, undefined));
     expect(select(editing, 2, { mode: "edit", defaults: editing })).toBe(editing);
     expect(select(editing, null, { mode: "edit", defaults: createDefaults })).toBe(editing);
+  });
+});
+
+describe("itemsRemainderCents — what the items leave of the total (STD-07 AC 3)", () => {
+  it("is the total minus the items, in cents", () => {
+    expect(itemsRemainderCents(100, [{ amount: 30.25 }, { amount: 19.75 }])).toBe(5000);
+  });
+
+  it("is negative when the items exceed the total", () => {
+    expect(itemsRemainderCents(10, [{ amount: 20 }])).toBe(-1000);
+  });
+
+  it("counts empty amounts as nothing", () => {
+    expect(itemsRemainderCents(null, [{ amount: 2.5 }, { amount: null }])).toBe(-250);
+  });
+
+  it("sums in cents, so float drift leaves no remainder", () => {
+    expect(itemsRemainderCents(0.3, [{ amount: 0.1 }, { amount: 0.2 }])).toBe(0);
   });
 });

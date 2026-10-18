@@ -261,6 +261,17 @@ export function categoryAttribution({
 }
 
 /**
+ * What is left of the total once the items are taken out, in cents; negative when the items exceed
+ * it. Empty amounts count as nothing, as in the "items cannot exceed the total" rule.
+ */
+export function itemsRemainderCents(
+  amount: number | null | undefined,
+  items: { amount: number | null | undefined }[],
+): number {
+  return items.reduce((remainder, item) => remainder - centsOf(item.amount), centsOf(amount));
+}
+
+/**
  * Whether a series edit changed an installment series' number of installments. That change rebuilds
  * the whole series, so it applies to every occurrence without asking for a scope.
  */

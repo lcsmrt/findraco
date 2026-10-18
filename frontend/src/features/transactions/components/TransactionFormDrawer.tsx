@@ -20,15 +20,14 @@ import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { DatePicker } from "@/components/input/DatePicker";
 import { FormField } from "@/components/form/FormField";
 import { FormSheet } from "@/components/form/FormSheet";
-import { cn } from "@/lib/mergeClasses";
-import { formatMoney, toCents } from "@/utils/money";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format } from "date-fns";
-import { CopyIcon, PlusIcon, Trash2Icon } from "lucide-react";
+import { CopyIcon, Trash2Icon } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { Controller, useForm, type UseFormSetValue } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
+import { ItemsField } from "./ItemsField";
 import { useSeriesScope } from "./useSeriesScope";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
@@ -262,119 +261,18 @@ export const TransactionFormDrawer = ({
         )}
 
         {!isSeriesEdit && (
-          <Field>
-            <FieldLabel>Items</FieldLabel>
-            <div className="flex flex-col gap-2">
-              {watch("items").map((item, index) => {
-                const items = watch("items");
-                return (
-                  <div
-                    key={index}
-                    className="border-border flex flex-col gap-2 rounded-md border p-2"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="Item description"
-                        className="flex-1"
-                        disabled={isPending}
-                        value={item.description}
-                        onChange={(e) => {
-                          const updated = [...items];
-                          updated[index] = {
-                            ...updated[index],
-                            description: e.target.value,
-                          };
-                          setValue("items", updated);
-                        }}
-                      />
-                      {/* The row has no visible labels, a layout FormField does not offer. */}
-                      <Controller
-                        control={control}
-                        name={`items.${index}.amount`}
-                        render={({ field, fieldState }) => (
-                          <CurrencyInput
-                            {...field}
-                            onValueChange={field.onChange}
-                            aria-label={`Item ${index + 1} amount`}
-                            aria-invalid={fieldState.invalid}
-                            placeholder="R$ 0,00"
-                            className="w-28"
-                            disabled={isPending}
-                          />
-                        )}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        disabled={isPending}
-                        onClick={() =>
-                          setValue(
-                            "items",
-                            items.filter((_, i) => i !== index),
-                          )
-                        }
-                      >
-                        <Trash2Icon className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                    <CategoryCombobox
-                      value={item.category ?? null}
-                      onValueChange={(v) => {
-                        const updated = [...items];
-                        updated[index] = {
-                          ...updated[index],
-                          category: v ?? null,
-                        };
-                        setValue("items", updated);
-                      }}
-                      type={watch("type")}
-                      disabled={isPending}
-                    />
-                  </div>
-                );
-              })}
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                disabled={isPending}
-                onClick={() =>
-                  setValue("items", [
-                    ...watch("items"),
-                    { description: "", amount: null, category: null },
-                  ])
-                }
-              >
-                <PlusIcon className="h-3.5 w-3.5" />
-                Add item
-              </Button>
-            </div>
-            {watch("items").length > 0 &&
-              (() => {
-                const totalCents = toCents(watch("amount") ?? 0);
-                const itemsCents = watch("items").reduce(
-                  (sum, item) => sum + toCents(item.amount ?? 0),
-                  0,
-                );
-                const remainderCents = totalCents - itemsCents;
-                return (
-                  <p
-                    className={cn(
-                      "text-sm",
-                      remainderCents < 0
-                        ? "text-destructive"
-                        : "text-muted-foreground",
-                    )}
-                  >
-                    Remainder: {formatMoney(remainderCents / 100)}
-                  </p>
-                );
-              })()}
-            {/* With the item amounts registered as fields, the resolver files the list-level
-                error under `root`. */}
-            <FieldError errors={[errors.items?.root]} />
-          </Field>
+          <ItemsField
+            control={control}
+            disabled={isPending}
+            renderCategory={(picker) => (
+              <CategoryCombobox
+                value={picker.value}
+                onValueChange={picker.onValueChange}
+                type={picker.type}
+                disabled={picker.disabled}
+              />
+            )}
+          />
         )}
 
         {showAttribution && (
