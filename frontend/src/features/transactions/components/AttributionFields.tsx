@@ -1,16 +1,24 @@
 import { PlanMember } from "@/api/dtos/plan";
-import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
-import { cn } from "@/lib/mergeClasses";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/toggleGroup/base/ToggleGroup";
 import type {
   FieldErrors,
   UseFormSetValue,
   UseFormWatch,
 } from "react-hook-form";
 import type { TransactionFormValues } from "./transactionForm";
+
+const ATTRIBUTION_OPTIONS = [
+  ["ME", "Me"],
+  ["SOMEONE", "Someone else"],
+  ["SPLIT", "Split"],
+] as const;
 
 type AttributionFieldsProps = {
   watch: UseFormWatch<TransactionFormValues>;
@@ -65,36 +73,28 @@ export const AttributionFields = ({
     <>
       <Field>
         <FieldLabel>Attributed to</FieldLabel>
-        <div className="flex w-full gap-2">
-          {(
-            [
-              ["ME", "Me"],
-              ["SOMEONE", "Someone else"],
-              ["SPLIT", "Split"],
-            ] as const
-          ).map(([value, label]) => (
-            <Button
-              key={value}
-              type="button"
-              variant="ghost"
-              disabled={disabled}
-              onClick={() => handleAttributionModeChange(value)}
-              className={cn(
-                "flex-1 border",
-                attributionMode === value
-                  ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
-                  : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
-              )}
-            >
+        <ToggleGroup
+          aria-label="Attributed to"
+          variant="outline"
+          tone="primary"
+          value={[attributionMode]}
+          onValueChange={([next]) => next && handleAttributionModeChange(next)}
+          disabled={disabled}
+          className="w-full flex-nowrap"
+        >
+          {ATTRIBUTION_OPTIONS.map(([value, label]) => (
+            <ToggleGroupItem key={value} value={value} className="flex-1">
               {label}
-            </Button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </Field>
 
       {attributionMode === "SOMEONE" && (
         <Field>
-          <FieldLabel htmlFor="transaction-attributed-person">Person</FieldLabel>
+          <FieldLabel htmlFor="transaction-attributed-person">
+            Person
+          </FieldLabel>
           <StandardCombobox
             id="transaction-attributed-person"
             items={otherMembers.map((member) => ({
@@ -133,36 +133,22 @@ export const AttributionFields = ({
         <>
           <Field>
             <FieldLabel>Split mode</FieldLabel>
-            <div className="flex w-full gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={disabled}
-                onClick={() => setValue("splitMode", "EQUAL")}
-                className={cn(
-                  "flex-1 border",
-                  watch("splitMode") === "EQUAL"
-                    ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
-                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
-                )}
-              >
+            <ToggleGroup
+              aria-label="Split mode"
+              variant="outline"
+              tone="primary"
+              value={[watch("splitMode")]}
+              onValueChange={([next]) => next && setValue("splitMode", next)}
+              disabled={disabled}
+              className="w-full flex-nowrap"
+            >
+              <ToggleGroupItem value="EQUAL" className="flex-1">
                 Equal
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={disabled}
-                onClick={() => setValue("splitMode", "EXACT")}
-                className={cn(
-                  "flex-1 border",
-                  watch("splitMode") === "EXACT"
-                    ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
-                    : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
-                )}
-              >
+              </ToggleGroupItem>
+              <ToggleGroupItem value="EXACT" className="flex-1">
                 Exact
-              </Button>
-            </div>
+              </ToggleGroupItem>
+            </ToggleGroup>
           </Field>
 
           <Field>

@@ -1785,9 +1785,11 @@ Notes: installed with `pnpm dlx shadcn@4.21.5 add toggle toggle-group`. With `"s
 
 **Done when**:
 
-- [ ] `TransactionFormDrawer.test.tsx`: choosing a recurrence mode and an attribution option reaches the payload
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `TransactionFormDrawer.test.tsx`: choosing a recurrence mode and an attribution option reaches the payload
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 567 → 571
+
+Notes: the toggles are the recurrence mode and, in `AttributionFields`, "Attributed to" and "Split mode" (the existing Exact test already covered the split mode payload). `financialTransactionHandlers.createSeries` added for the series tests.
 
 **Tests**: integration
 **Gate**: quick

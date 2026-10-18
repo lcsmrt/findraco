@@ -47,6 +47,7 @@ import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
 import { useSeriesScope } from "./useSeriesScope";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
+import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
 import {
   TransactionFormMode,
   TransactionFormOutput,
@@ -198,6 +199,8 @@ export const TransactionFormDrawer = ({
     isUpdatingFinancialTransaction ||
     isCreatingFinancialTransactionSeries ||
     isUpdatingFinancialTransactionSeries;
+
+  const recurrenceMode = watch("recurrenceMode");
 
   const onSubmit = async (values: TransactionFormOutput) => {
     if (isSeriesEdit) {
@@ -535,47 +538,31 @@ export const TransactionFormDrawer = ({
                   <>
                     <Field>
                       <FieldLabel>Mode</FieldLabel>
-                      <div className="flex w-full gap-2">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          disabled={isPending}
-                          onClick={() => {
-                            setValue("recurrenceMode", "INSTALLMENT", {
-                              shouldValidate: true,
-                            });
+                      <ToggleGroup
+                        aria-label="Mode"
+                        variant="outline"
+                        tone="primary"
+                        value={recurrenceMode ? [recurrenceMode] : []}
+                        onValueChange={([next]) => {
+                          if (!next) return;
+                          setValue("recurrenceMode", next, { shouldValidate: true });
+                          if (next === "INSTALLMENT") {
                             setValue("endDate", undefined);
-                          }}
-                          className={cn(
-                            "flex-1 border",
-                            watch("recurrenceMode") === "INSTALLMENT"
-                              ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
-                              : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
-                          )}
-                        >
-                          Installments
-                        </Button>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          disabled={isPending}
-                          onClick={() => {
-                            setValue("recurrenceMode", "RECURRING", {
-                              shouldValidate: true,
-                            });
+                          } else {
                             setValue("parcelsNumber", undefined);
                             setValue("currentParcel", undefined);
-                          }}
-                          className={cn(
-                            "flex-1 border",
-                            watch("recurrenceMode") === "RECURRING"
-                              ? "border-primary/30 bg-primary/15 text-primary-ink hover:bg-primary/20 hover:text-primary-ink"
-                              : "border-border text-muted-foreground hover:border-primary/30 hover:text-primary-ink hover:bg-transparent",
-                          )}
-                        >
+                          }
+                        }}
+                        disabled={isPending}
+                        className="w-full flex-nowrap"
+                      >
+                        <ToggleGroupItem value="INSTALLMENT" className="flex-1">
+                          Installments
+                        </ToggleGroupItem>
+                        <ToggleGroupItem value="RECURRING" className="flex-1">
                           Recurring
-                        </Button>
-                      </div>
+                        </ToggleGroupItem>
+                      </ToggleGroup>
                       <FieldError errors={[errors.recurrenceMode]} />
                     </Field>
 

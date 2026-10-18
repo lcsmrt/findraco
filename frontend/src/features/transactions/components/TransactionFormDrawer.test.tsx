@@ -19,8 +19,18 @@ import { TransactionFormDrawer } from "./TransactionFormDrawer";
 import type { TransactionFormMode } from "./transactionForm";
 
 const PLAN_ID = 5;
-const lucas: PlanMember = { userId: 1, name: "Lucas", email: "lucas@example.com", role: "OWNER" };
-const livia: PlanMember = { userId: 2, name: "Livia", email: "livia@example.com", role: "EDITOR" };
+const lucas: PlanMember = {
+  userId: 1,
+  name: "Lucas",
+  email: "lucas@example.com",
+  role: "OWNER",
+};
+const livia: PlanMember = {
+  userId: 2,
+  name: "Livia",
+  email: "livia@example.com",
+  role: "EDITOR",
+};
 
 const savedTransaction: FinancialTransaction = {
   id: 42,
@@ -47,8 +57,19 @@ function authValue(): AuthContextValue {
 }
 
 function planValue(): PlanContextValue {
-  const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER" };
-  return { activePlanId: PLAN_ID, setActivePlanId: vi.fn(), activePlan: plan, plans: [plan], isLoading: false };
+  const plan: Plan = {
+    id: PLAN_ID,
+    name: "Home",
+    isDefault: true,
+    myRole: "OWNER",
+  };
+  return {
+    activePlanId: PLAN_ID,
+    setActivePlanId: vi.fn(),
+    activePlan: plan,
+    plans: [plan],
+    isLoading: false,
+  };
 }
 
 const categorySheet: CategoryFormSheetContextValue = {
@@ -63,7 +84,11 @@ type RenderDrawerOptions = {
   members: PlanMember[];
 };
 
-function renderDrawer({ mode = "create", transaction, members }: RenderDrawerOptions) {
+function renderDrawer({
+  mode = "create",
+  transaction,
+  members,
+}: RenderDrawerOptions) {
   server.use(
     planHandlers.members(members),
     financialTransactionCategoryHandlers.list({
@@ -79,7 +104,12 @@ function renderDrawer({ mode = "create", transaction, members }: RenderDrawerOpt
   renderWithProviders(
     <CategoryFormSheetContext.Provider value={categorySheet}>
       <SeriesScopeDialogProvider>
-        <TransactionFormDrawer open onOpenChange={onOpenChange} mode={mode} transaction={transaction} />
+        <TransactionFormDrawer
+          open
+          onOpenChange={onOpenChange}
+          mode={mode}
+          transaction={transaction}
+        />
       </SeriesScopeDialogProvider>
     </CategoryFormSheetContext.Provider>,
     { auth: authValue(), plan: planValue() },
@@ -88,7 +118,9 @@ function renderDrawer({ mode = "create", transaction, members }: RenderDrawerOpt
 }
 
 async function sentBody(requests: Request[], method: string) {
-  await waitFor(() => expect(requests.some((request) => request.method === method)).toBe(true));
+  await waitFor(() =>
+    expect(requests.some((request) => request.method === method)).toBe(true),
+  );
   const request = requests.find((candidate) => candidate.method === method);
   return request?.json();
 }
@@ -104,7 +136,9 @@ describe("TransactionFormDrawer money fields", () => {
 
     await user.type(screen.getByLabelText("Description"), "Groceries");
     await user.type(screen.getByLabelText("Amount"), "1234");
-    expect(screen.getByLabelText<HTMLInputElement>("Amount").value).toBe("R$\u00a012,34");
+    expect(screen.getByLabelText<HTMLInputElement>("Amount").value).toBe(
+      "R$\u00a012,34",
+    );
     await user.click(screen.getByRole("button", { name: "Create" }));
 
     expect(await sentBody(requests, "POST")).toEqual({
@@ -126,7 +160,9 @@ describe("TransactionFormDrawer money fields", () => {
     await user.click(screen.getByRole("button", { name: "Create" }));
 
     expect(await screen.findByText("Amount must be positive")).toBeTruthy();
-    expect(screen.getByLabelText("Amount").getAttribute("aria-invalid")).toBe("true");
+    expect(screen.getByLabelText("Amount").getAttribute("aria-invalid")).toBe(
+      "true",
+    );
     expect(requests.filter((request) => request.method === "POST")).toEqual([]);
   });
 
@@ -142,7 +178,9 @@ describe("TransactionFormDrawer money fields", () => {
     await user.type(screen.getByLabelText("Item 1 amount"), "2000");
     await user.click(screen.getByRole("button", { name: "Create" }));
 
-    expect(await screen.findByText("Items cannot exceed the transaction total")).toBeTruthy();
+    expect(
+      await screen.findByText("Items cannot exceed the transaction total"),
+    ).toBeTruthy();
     // Testing Library collapses the non-breaking space pt-BR puts after "R$" into a plain space.
     expect(screen.getByText("Remainder: -R$ 10,00")).toBeTruthy();
     expect(requests.filter((request) => request.method === "POST")).toEqual([]);
@@ -192,9 +230,15 @@ describe("TransactionFormDrawer money fields", () => {
     const user = userEvent.setup();
     const requests = recordRequests();
     server.use(financialTransactionHandlers.update(savedTransaction));
-    renderDrawer({ mode: "edit", transaction: savedTransaction, members: [lucas] });
+    renderDrawer({
+      mode: "edit",
+      transaction: savedTransaction,
+      members: [lucas],
+    });
 
-    expect(screen.getByLabelText<HTMLInputElement>("Amount").value).toBe("R$\u00a0150,50");
+    expect(screen.getByLabelText<HTMLInputElement>("Amount").value).toBe(
+      "R$\u00a0150,50",
+    );
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     const body = await sentBody(requests, "PUT");
@@ -202,5 +246,111 @@ describe("TransactionFormDrawer money fields", () => {
     expect(requests.find((request) => request.method === "PUT")?.url).toMatch(
       /\/plan\/5\/financial-transaction\/42$/,
     );
+  });
+});
+
+describe("TransactionFormDrawer toggles", () => {
+  afterEach(cleanup);
+
+  const savedSeries = {
+    seriesId: "s-1",
+    count: 1,
+    occurrences: [savedTransaction],
+  };
+
+  async function fillRequired(user: ReturnType<typeof userEvent.setup>) {
+    await user.type(screen.getByLabelText("Description"), "Gym");
+    await user.type(screen.getByLabelText("Amount"), "9990");
+  }
+
+  it("creates a monthly series when the Recurring mode is chosen (STD-06 AC 1, 2)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionHandlers.createSeries(savedSeries));
+    renderDrawer({ members: [lucas] });
+
+    await fillRequired(user);
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: "Repeat or split into installments?",
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Recurring" }));
+    expect(
+      screen
+        .getByRole("button", { name: "Recurring" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(requests.find((request) => request.method === "POST")?.url).toMatch(
+      /\/plan\/5\/financial-transaction\/series$/,
+    );
+    expect(body).toMatchObject({
+      mode: "RECURRING",
+      interval: "MONTHLY",
+      amount: 99.9,
+    });
+    expect(body.parcelsNumber).toBeUndefined();
+  });
+
+  it("creates an installment series when the Installments mode is chosen (STD-06 AC 1, 2)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionHandlers.createSeries(savedSeries));
+    renderDrawer({ members: [lucas] });
+
+    await fillRequired(user);
+    await user.click(
+      screen.getByRole("checkbox", {
+        name: "Repeat or split into installments?",
+      }),
+    );
+    await user.click(screen.getByRole("button", { name: "Installments" }));
+    await user.type(screen.getByLabelText("Number of installments"), "12");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body).toMatchObject({ mode: "INSTALLMENT", parcelsNumber: 12 });
+    expect(body.interval).toBeUndefined();
+  });
+
+  it("splits equally between every member when Split is chosen (STD-06 AC 1, 2)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionHandlers.create(savedTransaction));
+    renderDrawer({ members: [lucas, livia] });
+
+    await fillRequired(user);
+    await user.click(await screen.findByRole("button", { name: "Split" }));
+    expect(
+      screen
+        .getByRole("button", { name: "Split" })
+        .getAttribute("aria-pressed"),
+    ).toBe("true");
+    expect(
+      screen.getByRole("button", { name: "Me" }).getAttribute("aria-pressed"),
+    ).toBe("false");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body.splitMode).toBe("EQUAL");
+    expect(body.participants).toEqual([{ memberId: 1 }, { memberId: 2 }]);
+  });
+
+  it("attributes to the current user again when Me is chosen after Split (STD-06 AC 1)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionHandlers.create(savedTransaction));
+    renderDrawer({ members: [lucas, livia] });
+
+    await fillRequired(user);
+    await user.click(await screen.findByRole("button", { name: "Split" }));
+    await user.click(screen.getByRole("button", { name: "Me" }));
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body.participants).toEqual([{ memberId: 1 }]);
   });
 });
