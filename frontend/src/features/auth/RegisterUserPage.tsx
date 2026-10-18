@@ -1,19 +1,14 @@
 import { useRegisterUser } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
 import { Button } from "@/components/button/base/Button";
-import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
+import { FormField } from "@/components/form/FormField";
 import { Input } from "@/components/input/base/Input";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/input/base/InputGroup";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeClosed } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate, type Location } from "react-router-dom";
 import { z } from "zod";
+import { AuthCard } from "./components/AuthCard";
+import { PasswordInput } from "./components/PasswordInput";
 
 const registerUserSchema = z.object({
   name: z.string().min(1, "Please enter your full name"),
@@ -28,13 +23,7 @@ type RegisterUserLocationState = {
 };
 
 export const RegisterUser = () => {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm({
+  const { control, handleSubmit } = useForm({
     resolver: zodResolver(registerUserSchema),
     defaultValues: {
       name: "",
@@ -60,86 +49,54 @@ export const RegisterUser = () => {
   });
 
   return (
-    <>
-
+    <AuthCard title="Create your account">
       <form
         id="register-user-form"
-        className="bg-card border-border flex w-full max-w-xl flex-col items-center gap-5 rounded-lg border p-5 shadow-md"
+        className="flex flex-col items-center gap-5"
         onSubmit={onSubmit}
         autoComplete="off"
       >
-        <h1 className="text-foreground text-2xl font-bold">Create your account</h1>
-
         <div className="flex w-full flex-col gap-3">
-          <Field>
-            <FieldLabel htmlFor="name-register-user">Name</FieldLabel>
-            <Input
-              id="name-register-user"
-              placeholder="Full name"
-              className="bg-card/70"
-              autoComplete="off"
-              {...register("name")}
-            />
-            {errors.name && <FieldError>{errors.name.message}</FieldError>}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="email-register-user">Email</FieldLabel>
-            <Input
-              id="email-register-user"
-              placeholder="you@example.com"
-              className="bg-card/70"
-              autoComplete="off"
-              {...register("email")}
-            />
-            {errors.email && <FieldError>{errors.email.message}</FieldError>}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="password-register-user">Password</FieldLabel>
-            <InputGroup className="bg-card/70">
-              <InputGroupInput
-                id="password-register-user"
-                type={isPasswordVisible ? "text" : "password"}
-                autoComplete="new-password"
-                {...register("password")}
+          <FormField control={control} name="name" label="Name">
+            {(field) => (
+              <Input
+                {...field}
+                placeholder="Full name"
+                className="bg-card/70"
+                autoComplete="off"
               />
-              <InputGroupAddon align="inline-end">
-                <Button
-                  className="h-8 w-8 rounded-full p-0"
-                  variant="ghost"
-                  onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                  type="button"
-                >
-                  {isPasswordVisible ? (
-                    <Eye className="h-5 w-5" />
-                  ) : (
-                    <EyeClosed className="h-5 w-5" />
-                  )}
-                </Button>
-              </InputGroupAddon>
-            </InputGroup>
-            {errors.password && (
-              <FieldError>{errors.password.message}</FieldError>
             )}
-          </Field>
+          </FormField>
+          <FormField control={control} name="email" label="Email">
+            {(field) => (
+              <Input
+                {...field}
+                placeholder="you@example.com"
+                className="bg-card/70"
+                autoComplete="off"
+              />
+            )}
+          </FormField>
+          <FormField control={control} name="password" label="Password">
+            {(field) => (
+              <PasswordInput
+                {...field}
+                className="bg-card/70"
+                autoComplete="new-password"
+              />
+            )}
+          </FormField>
         </div>
 
-        <div className="w-full">
-          <p className="text-muted-foreground text-center text-sm">
-            By clicking Sign up, you agree to findraco’s{" "}
-            <strong>Terms of Service</strong> and acknowledge that you are
-            subject to our <strong>Privacy Policy</strong>.
-          </p>
-        </div>
+        <p className="text-muted-foreground text-center text-sm">
+          By clicking Sign up, you agree to findraco’s{" "}
+          <strong>Terms of Service</strong> and acknowledge that you are
+          subject to our <strong>Privacy Policy</strong>.
+        </p>
 
-        <div className="w-full">
-          <Button
-            className="w-full"
-            type="submit"
-            isLoading={isRegisteringUser}
-          >
-            <p className="text-sm font-semibold">Sign up</p>
-          </Button>
-        </div>
+        <Button className="w-full" type="submit" isLoading={isRegisteringUser}>
+          Sign up
+        </Button>
 
         <div className="flex flex-col items-center">
           <p className="text-muted-foreground text-sm">
@@ -155,6 +112,6 @@ export const RegisterUser = () => {
           </Button>
         </div>
       </form>
-    </>
+    </AuthCard>
   );
 };

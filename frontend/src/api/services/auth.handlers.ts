@@ -11,10 +11,18 @@ import type {
 
 type NoParams = Record<string, never>;
 
+/** The API's error body before the ProblemDetail migration: the message toasts show. */
+type ErrorBody = { message: string };
+
 export const authHandlers = {
   login(response: LoginResponse): HttpHandler {
     return http.post<NoParams, LoginRequest["body"], LoginResponse>("*/auth/login", () =>
       HttpResponse.json(response),
+    );
+  },
+  loginRejected(message: string): HttpHandler {
+    return http.post<NoParams, LoginRequest["body"], ErrorBody>("*/auth/login", () =>
+      HttpResponse.json({ message }, { status: 401 }),
     );
   },
   logout(): HttpHandler {

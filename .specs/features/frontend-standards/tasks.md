@@ -2004,10 +2004,12 @@ Notes: the toggle is an `InputGroupButton` named "Show password" / "Hide passwor
 
 **Done when**:
 
-- [ ] Login test: success, invalid credentials, validation errors through the network
-- [ ] No `register(` in the two pages
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Login test: success, invalid credentials, validation errors through the network
+- [x] No `register(` in the two pages
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 578 → 580 (login test 4 → 6); all projects 669 → 671
+
+Notes: `LoginPage.test.tsx` runs through `renderWithProviders` and MSW with no `vi.mock`: the real `useLogin` and `findracoApi` send the request, and a rendered sonner `Toaster` shows the error toast. New `authHandlers.loginRejected(message)` answers 401 with the API's `{ message }` body. `renderWithProviders`' `route` now takes a router `InitialEntry`, so a test can start with location state (the "return to where you came from" case). The login and register schemas stay in the page files; moving them is STD-07 territory.
 
 **Tests**: integration
 **Gate**: quick

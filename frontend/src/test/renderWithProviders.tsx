@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, renderHook } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, type InitialEntry } from "react-router-dom";
 import { AuthContext, type AuthContextValue } from "@/app/providers/useAuth";
 import { PlanContext, type PlanContextValue } from "@/app/providers/usePlanContext";
 import { ThemeContext, type ThemeContextValue } from "@/app/providers/useTheme";
@@ -11,7 +11,8 @@ import { ThemeContext, type ThemeContextValue } from "@/app/providers/useTheme";
  * that needs it fails loudly instead of running on a default the test never chose.
  */
 export type ProviderValues = {
-  route?: string;
+  /** The starting location; an object carries router state (`{ pathname, state }`). */
+  route?: InitialEntry;
   auth?: AuthContextValue;
   plan?: PlanContextValue;
   theme?: ThemeContextValue;
