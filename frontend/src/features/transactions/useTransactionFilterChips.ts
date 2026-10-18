@@ -8,7 +8,8 @@ import {
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { formatCurrency, formatDate } from "@/utils/string/formatters";
+import { formatMoney } from "@/utils/money";
+import { formatDate } from "@/utils/string/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { useCallback, useEffect, useMemo } from "react";
@@ -121,11 +122,11 @@ export const useTransactionFilterChips = () => {
     if (filter.amountMin != null || filter.amountMax != null) {
       const min =
         filter.amountMin != null
-          ? formatCurrency(filter.amountMin, "BRL")
+          ? formatMoney(filter.amountMin)
           : null;
       const max =
         filter.amountMax != null
-          ? formatCurrency(filter.amountMax, "BRL")
+          ? formatMoney(filter.amountMax)
           : null;
       const label =
         min && max ? `${min} – ${max}` : min ? `≥ ${min}` : `≤ ${max!}`;

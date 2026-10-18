@@ -1,12 +1,10 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { Button } from "@/components/button/base/Button";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency } from "@/utils/string/formatters";
+import { formatMoney } from "@/utils/money";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import type { MemberColorOf } from "@/utils/memberColors";
 import { MemberDot } from "@/components/memberDot/MemberDot";
-
-const money = (value: number) => formatCurrency(value, "BRL");
 
 const EMPTY = "—";
 
@@ -85,7 +83,7 @@ const MemberLimits = ({ category, colorOf }: MemberLimitsProps) => {
               entry.active ? colorOf(entry.memberId) : "var(--muted-foreground)"
             }
           />
-          {entry.memberName} {money(entry.amount)}
+          {entry.memberName} {formatMoney(entry.amount)}
           {!entry.active && " (former member)"}
         </span>
       ))}
@@ -145,7 +143,7 @@ export const CategoryTreeRow = ({
         {name}
         <span className="shrink-0 text-sm tabular-nums">
           {limit != null ? (
-            money(limit)
+            formatMoney(limit)
           ) : (
             <span className="text-muted-foreground">{EMPTY}</span>
           )}
@@ -177,7 +175,7 @@ export const CategoryTreeRow = ({
           )}
         </span>
         <span className="text-right tabular-nums">
-          {limit != null ? money(limit) : EMPTY}
+          {limit != null ? formatMoney(limit) : EMPTY}
         </span>
         <span className="text-muted-foreground min-w-0 text-xs">
           {hasMemberLimits ? (

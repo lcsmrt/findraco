@@ -1592,9 +1592,9 @@ Follow-up: `crossFeatureImports` now applies to every layer outside `src/app/**`
 
 **Done when**:
 
-- [ ] `grep -rn "Intl.NumberFormat\|formatCurrency\|toLocaleString" src` returns only `money.ts`
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `grep -rn "Intl.NumberFormat\|formatCurrency\|toLocaleString" src` returns only `money.ts`, plus two non-display hits: `maskCurrency`'s `toLocaleString` in `masks.ts` (deleted in T62) and `Calendar`'s month-name date formatting (dates, not money)
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 523 → 523 (`formatCurrency` had no tests)
 
 **Tests**: unit
 **Gate**: quick

@@ -1,10 +1,9 @@
 import { Card, CardContent } from "@/components/card/base/Card";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency, getFirstName } from "@/utils/string/formatters";
+import { formatMoney } from "@/utils/money";
+import { getFirstName } from "@/utils/string/formatters";
 import { MemberDot } from "@/components/memberDot/MemberDot";
 import type { SummaryFigure, SummaryView } from "./summaryView";
-
-const money = (value: number) => formatCurrency(value, "BRL");
 
 type MemberBarProps = {
   figure: SummaryFigure;
@@ -46,7 +45,7 @@ const MemberAmounts = ({ figure, className }: MemberAmountsProps) =>
           <span className="min-w-0 truncate" title={segment.name}>
             {getFirstName(segment.name)}
           </span>
-          <span className="shrink-0">{money(segment.amount)}</span>
+          <span className="shrink-0">{formatMoney(segment.amount)}</span>
         </span>
       ))}
     </div>
@@ -69,7 +68,7 @@ const FigureBlock = ({ label, figure, tone, size }: FigureBlockProps) => (
         tone === "income" ? "text-success" : "text-destructive",
       )}
     >
-      {money(figure.total)}
+      {formatMoney(figure.total)}
     </p>
     <MemberBar figure={figure} />
     <MemberAmounts
@@ -94,7 +93,7 @@ const Balance = ({ balance, size }: BalanceProps) => (
         balance >= 0 ? "text-success" : "text-destructive",
       )}
     >
-      {money(balance)}
+      {formatMoney(balance)}
     </p>
   </div>
 );

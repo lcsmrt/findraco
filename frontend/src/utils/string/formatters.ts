@@ -1,20 +1,6 @@
 import { format } from "date-fns";
 
 /**
- * Formats a numeric value into a localized currency string.
- * @param value Number to be formatted.
- * @param currency Currency code (e.g., "BRL", "USD").
- * @returns Formatted currency string.
- */
-export const formatCurrency = (value: number, currency: string): string => {
-  const formatter = new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency,
-  });
-  return formatter.format(value);
-};
-
-/**
  * Formats a date using a given format.
  * @param date Date object or ISO string.
  * @param dateFormat Format pattern (date-fns).

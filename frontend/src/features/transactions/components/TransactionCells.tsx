@@ -15,7 +15,8 @@ import {
   PopoverTrigger,
 } from "@/components/popover/base/Popover";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency, formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
+import { formatMoney } from "@/utils/money";
+import { formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskCurrency, maskDate } from "@/utils/string/masks";
 import { format, isValid, parse } from "date-fns";
 import {
@@ -111,7 +112,7 @@ export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) =
         }}
       >
         {type === "DEBIT" ? "- " : ""}
-        {formatCurrency(amount, "BRL")}
+        {formatMoney(amount)}
       </div>
     );
   }

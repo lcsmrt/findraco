@@ -1,4 +1,5 @@
 import { cn } from "@/lib/mergeClasses";
+import { formatMoney } from "@/utils/money";
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
@@ -214,7 +215,7 @@ function ChartTooltipContent({
                       </div>
                       {item.value && (
                         <span className="font-mono font-medium text-foreground tabular-nums">
-                          {item.value.toLocaleString()}
+                          {typeof item.value === "number" ? formatMoney(item.value) : item.value}
                         </span>
                       )}
                     </div>

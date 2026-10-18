@@ -1,6 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency, getFirstName } from "@/utils/string/formatters";
+import { formatMoney } from "@/utils/money";
+import { getFirstName } from "@/utils/string/formatters";
 import { ChevronRightIcon, TriangleAlertIcon, TriangleIcon } from "lucide-react";
 import { useState } from "react";
 import { MemberDot } from "@/components/memberDot/MemberDot";
@@ -12,8 +13,6 @@ import type {
   SpendingRowsView,
   Usage,
 } from "./spendingRows";
-
-const money = (value: number) => formatCurrency(value, "BRL");
 
 const OVERFLOW_HATCH =
   "repeating-linear-gradient(135deg, color-mix(in srgb, var(--destructive) 75%, transparent) 0 3px, transparent 3px 6px)";
@@ -76,8 +75,8 @@ const StatusText = ({ usage, className }: StatusTextProps) => {
       {usage.status === "warning" && <TriangleAlertIcon className="size-3.5" />}
       {usage.status === "over" && <TriangleIcon className="size-3 fill-current" />}
       {usage.status === "over"
-        ? `over by ${money(usage.overBy ?? 0)}`
-        : `remaining ${money(usage.remaining ?? 0)}`}
+        ? `over by ${formatMoney(usage.overBy ?? 0)}`
+        : `remaining ${formatMoney(usage.remaining ?? 0)}`}
       <span className="text-muted-foreground font-normal">· {usage.percent}%</span>
     </span>
   );
@@ -91,8 +90,8 @@ type AmountProps = {
 
 const Amount = ({ spent, limit, className }: AmountProps) => (
   <span className={cn("text-sm whitespace-nowrap tabular-nums", className)}>
-    <span className="font-medium">{money(spent)}</span>
-    {limit != null && <span className="text-muted-foreground"> of {money(limit)}</span>}
+    <span className="font-medium">{formatMoney(spent)}</span>
+    {limit != null && <span className="text-muted-foreground"> of {formatMoney(limit)}</span>}
   </span>
 );
 
@@ -115,7 +114,7 @@ const MemberLine = ({ members }: MemberLineProps) => (
         <span className="min-w-0 truncate" title={member.name}>
           {getFirstName(member.name)}
         </span>
-        <span className="shrink-0">{money(member.amount)}</span>
+        <span className="shrink-0">{formatMoney(member.amount)}</span>
       </span>
     ))}
   </span>
@@ -131,8 +130,8 @@ const RowDetails = ({ row }: RowBodyProps) => {
     <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5 text-xs tabular-nums">
       <MemberDot color={row.focus.color} />
       <span className="min-w-0">
-        {getFirstName(row.focus.name)} {money(row.focus.spent)} of {money(row.focus.of)}
-        {row.focus.sharedLimit != null && ` · shared limit ${money(row.focus.sharedLimit)}`}
+        {getFirstName(row.focus.name)} {formatMoney(row.focus.spent)} of {formatMoney(row.focus.of)}
+        {row.focus.sharedLimit != null && ` · shared limit ${formatMoney(row.focus.sharedLimit)}`}
       </span>
     </span>
   ) : (

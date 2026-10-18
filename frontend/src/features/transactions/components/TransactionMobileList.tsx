@@ -3,7 +3,8 @@ import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { TablePagination } from "@/components/table";
 import type { Pagination } from "@/components/table/TablePagination";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency, formatDate } from "@/utils/string/formatters";
+import { formatMoney } from "@/utils/money";
+import { formatDate } from "@/utils/string/formatters";
 import { groupByDay } from "./groupByDay";
 
 type TransactionMobileRowProps = {
@@ -41,7 +42,7 @@ const TransactionMobileRow = ({
         )}
       >
         {transaction.type === "DEBIT" ? "- " : ""}
-        {formatCurrency(transaction.amount, "BRL")}
+        {formatMoney(transaction.amount)}
       </span>
     </button>
   );

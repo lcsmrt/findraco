@@ -10,18 +10,13 @@ import {
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { format } from "date-fns";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
+import { formatMoney } from "@/utils/money";
 import type { TrendMonth } from "./trendMonths";
 
 const chartConfig: ChartConfig = {
   income: { label: "Income", color: "var(--success)" },
   expenses: { label: "Expenses", color: "var(--destructive)" },
 };
-
-const compactCurrency = new Intl.NumberFormat("pt-BR", {
-  style: "currency",
-  currency: "BRL",
-  notation: "compact",
-});
 
 /** Months outside the selected period recede (UX-05 AC 5). */
 const OUT_OF_PERIOD_OPACITY = 0.3;
@@ -108,7 +103,7 @@ export const MonthlyTrendChart = ({ months, isLoading }: MonthlyTrendChartProps)
               tickLine={false}
               axisLine={false}
               width={64}
-              tickFormatter={(v: number) => compactCurrency.format(v)}
+              tickFormatter={(v: number) => formatMoney(v, { compact: true })}
             />
             <ChartTooltip
               cursor={{ stroke: "var(--border)" }}

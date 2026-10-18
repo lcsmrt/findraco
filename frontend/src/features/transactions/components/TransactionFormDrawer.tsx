@@ -29,7 +29,7 @@ import {
   SheetTitle,
 } from "@/components/sheet/base/Sheet";
 import { cn } from "@/lib/mergeClasses";
-import { formatCurrency } from "@/utils/string/formatters";
+import { formatMoney } from "@/utils/money";
 import { maskCurrency } from "@/utils/string/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format } from "date-fns";
@@ -437,7 +437,7 @@ export const TransactionFormDrawer = ({
                             : "text-muted-foreground",
                         )}
                       >
-                        Remainder: {formatCurrency(remainderCents / 100, "BRL")}
+                        Remainder: {formatMoney(remainderCents / 100)}
                       </p>
                     );
                   })()}
