@@ -14,13 +14,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SaveIcon, XIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-
-export const createPlanSchema = z.object({
-  name: z.string().min(1, "Enter a name for the plan"),
-});
-
-export type CreatePlanFormValues = z.infer<typeof createPlanSchema>;
+import { CreatePlanFormValues, createPlanSchema } from "./createPlanForm";
 
 type CreatePlanDialogProps = {
   open: boolean;

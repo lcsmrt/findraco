@@ -15,19 +15,10 @@ import { Eye, EyeClosed } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { z } from "zod";
-
-export const resetPasswordSchema = z
-  .object({
-    password: z.string().min(1, "Please enter a new password"),
-    confirmPassword: z.string().min(1, "Please confirm the new password"),
-  })
-  .refine((values) => values.password === values.confirmPassword, {
-    message: "Passwords do not match",
-    path: ["confirmPassword"],
-  });
-
-export type ResetPasswordFormValues = z.infer<typeof resetPasswordSchema>;
+import {
+  ResetPasswordFormValues,
+  resetPasswordSchema,
+} from "./resetPasswordForm";
 
 export const ResetPassword = () => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { FinancialTransactionCategory } from "@/api/dtos";
-import { groupCategoryOptions } from "./CategoryCombobox";
+import { groupCategoryOptions } from "./categoryOptions";
 
 const cat = (
   id: number,

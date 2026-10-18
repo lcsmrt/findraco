@@ -1,6 +1,5 @@
 import type {
   FinancialTransactionType,
-  PagedFinancialTransactionsFilter,
   PlanMember,
 } from "@/api/dtos";
 import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
@@ -25,7 +24,8 @@ import { SlidersHorizontalIcon } from "lucide-react";
 import { maskCurrency } from "@/utils/string/masks";
 import { useMemo, useState } from "react";
 import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/categoryForm";
-import { groupCategoryOptions } from "./CategoryCombobox";
+import { countActiveFilters } from "./activeFilterCount";
+import { groupCategoryOptions } from "./categoryOptions";
 import {
   fromDraft,
   toDraft,
@@ -49,18 +49,6 @@ const toMemberOption = (member: PlanMember): MemberOption => ({
   id: member.userId,
   name: member.name,
 });
-
-export function countActiveFilters(
-  filter: PagedFinancialTransactionsFilter,
-): number {
-  let n = 0;
-  if (filter.type) n++;
-  if (filter.categoryId != null) n++;
-  if (filter.memberId != null) n++;
-  if (filter.startDateFrom || filter.startDateTo) n++;
-  if (filter.amountMin != null || filter.amountMax != null) n++;
-  return n;
-}
 
 type TransactionFilterPopoverProps = {
   appliedFilters: AppliedFilters;

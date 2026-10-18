@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resetPasswordSchema } from "./ResetPasswordPage";
+import { resetPasswordSchema } from "./resetPasswordForm";
 
 describe("resetPasswordSchema", () => {
   it("accepts matching passwords", () => {

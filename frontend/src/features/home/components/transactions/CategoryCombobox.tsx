@@ -19,44 +19,7 @@ import { PlusIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/categoryForm";
 import { useCategoryFormSheet } from "../categories/useCategoryFormSheet";
-
-export type CategoryOption = {
-  category: FinancialTransactionCategory;
-  isChild: boolean;
-};
-
-/**
- * Orders categories as roots by name, each followed by its children by name.
- * A child whose parent is not in the list is shown as a root. Search keeps the
- * parent of a matching child visible so the child stays under it.
- */
-export const groupCategoryOptions = (
-  categories: FinancialTransactionCategory[],
-  search = "",
-): CategoryOption[] => {
-  const query = search.trim().toLowerCase();
-  const matches = (c: FinancialTransactionCategory) =>
-    !query || c.description.toLowerCase().includes(query);
-  const byName = (a: FinancialTransactionCategory, b: FinancialTransactionCategory) =>
-    a.description.localeCompare(b.description);
-  const ids = new Set(categories.map((c) => c.id));
-  const isRoot = (c: FinancialTransactionCategory) =>
-    c.parentId == null || !ids.has(c.parentId);
-
-  return categories
-    .filter(isRoot)
-    .sort(byName)
-    .flatMap((root) => {
-      const children = categories
-        .filter((c) => !isRoot(c) && c.parentId === root.id && matches(c))
-        .sort(byName);
-      if (!matches(root) && children.length === 0) return [];
-      return [
-        { category: root, isChild: false },
-        ...children.map((category) => ({ category, isChild: true })),
-      ];
-    });
-};
+import { groupCategoryOptions } from "./categoryOptions";
 
 type CategoryComboboxProps = {
   id?: string;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { createPlanSchema } from "./CreatePlanDialog";
+import { createPlanSchema } from "./createPlanForm";
 
 describe("createPlanSchema", () => {
   it("accepts a valid plan name", () => {
