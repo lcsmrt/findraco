@@ -77,6 +77,30 @@ jobs:
         working-directory: frontend
         run: pnpm build
 
+      # The storybook project runs every story in Chromium. The cache is keyed on the installed
+      # Playwright version, so a version bump downloads the browser that version expects.
+      - name: Read the Playwright version
+        id: playwright
+        working-directory: frontend
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@v4
+        id: playwright-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}
+
+      - name: Install Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
+        working-directory: frontend
+        run: pnpm exec playwright install --with-deps chromium
+
+      # The cache holds the browser only; its system libraries are apt packages.
+      - name: Install Chromium system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        working-directory: frontend
+        run: pnpm exec playwright install-deps chromium
+
       - name: Test
         working-directory: frontend
         run: pnpm test

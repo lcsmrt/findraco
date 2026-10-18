@@ -1249,7 +1249,7 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] YAML parses
+- [x] YAML parses
 - [ ] Next push: the frontend job runs both projects (user go-ahead)
 
 **Tests**: none
