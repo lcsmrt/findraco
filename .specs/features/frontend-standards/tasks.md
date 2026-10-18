@@ -10,7 +10,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 **Spec**: `.specs/features/frontend-standards/spec.md`  
 **Design**: `.specs/features/frontend-standards/design.md` (approved 2026-10-17)  
-**Status**: Draft (awaiting approval)
+**Status**: Approved 2026-10-17 — In Progress
 
 **Scope**: STD-01..STD-12. STD-13 is deferred until after the backend standards review (design decision 10) and STD-14 is blocked by the local Docker database; each gets its own tasks when unblocked.
 
