@@ -426,9 +426,9 @@ T124 → T125
 
 **Done when**:
 
-- [ ] No "`export const Foo = (props) => {}`", "don't modify shadcn primitives" or "JSDoc only" rule remains
-- [ ] Skills list includes `/frontend-testing`
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] No "`export const Foo = (props) => {}`", "don't modify shadcn primitives" or "JSDoc only" rule remains
+- [x] Skills list includes `/frontend-testing`
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs

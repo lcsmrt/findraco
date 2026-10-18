@@ -42,20 +42,44 @@ Personal-finance app: Spring Boot API (`backend`) + React/TS SPA (`frontend`).
 
 ## Frontend (`frontend`)
 
-React + TS, feature-oriented. Essentials:
+React + TS, feature-oriented. Essentials only: each skill holds the full rules, their reasons and how
+they are enforced. Read the matching skill before writing frontend code.
 
-- Components: `export const Foo = (props: FooProps) => {}` — arrow, named export, module-scope `type`
-  props. Never default export, never `React.FC`. `cn()` for classNames, `cva` for variants. Don't modify
-  shadcn primitives; shared components (`src/components/`) are presentational (no data hooks).
-- Strict TS: avoid `any`, `@ts-ignore`, forced `as`. `type` over `interface` for props.
-- Naming: files `PascalCase.tsx` / `useXxx.ts`; request types `CreateXxxRequest`/`UpdateXxxRequest`;
-  form types `XxxFormValues`; props `<Component>Props`. `XxxResponse` = API wire shape (may differ from
-  the entity; keep it in the service layer).
-- Data: axios + TanStack Query via **service hooks** in `src/api/services/` (raw fn + `useXxx` wrapper).
-  Components never call the HTTP client. Query key `["entity", params]`; mutations via
-  `buildMutationOptions` + `invalidateQueries`.
-- Forms: react-hook-form + zod. Container by complexity: Sheet / Page / Dialog / Popover.
-- Imports: `@/` cross-folder, relative within a feature.
+- Code style: `function` declarations for components, helpers and handlers; arrows only as inline
+  callbacks. Named exports, never default, never `React.FC`. `type` everywhere, never `interface`; no
+  `any`. Props `XxxProps`; files `PascalCase.tsx`, `useXxx.ts`, `camelCase.ts`. `cn()` for classes,
+  `cva` for variants. → `/component-creation`
+- Component files export only components. Logic that hits an extraction trigger moves to a sibling
+  `.ts` with a test; at most 60 code lines before a component's main `return` (extract a hook); no IIFE
+  in JSX. → `/component-creation`
+- Every component with its own visual has a story; a container fetches and passes down, with no visual
+  of its own. → `/component-creation`, `/frontend-testing`
+- Primitives live in `src/components/<family>/base/` and are ours: edit them for app-wide changes only
+  (tokens, variants, loading state, a11y); domain behaviour goes in a composition. Check shadcn and Base
+  UI before writing a component by hand. → `/component-creation`
+- Design system only: text through `Heading`/`Text` (no raw `<p>`/`<hN>`, no size or weight classes);
+  meaningful colour from theme tokens, never the raw palette; money through `Amount`, `formatMoney` and
+  `CurrencyInput`. → `/component-creation`
+- Where code lives: born where it is used, lifted one rung when a second consumer appears; features
+  never import each other; only `app/` imports features; providers are `XxxProvider.tsx` + `useXxx.ts`.
+  `@/` cross-folder, relative within a feature. → `/feature-structure`
+- Data: service hooks in `src/api/services/` (raw function + `useXxx` hook), plan-scoped query keys,
+  mutations via `buildMutationOptions`; components never call `findracoApi`. Each service ships typed
+  MSW handler factories. Request types `CreateXxxRequest`/`UpdateXxxRequest`; `XxxResponse` = API wire
+  shape. → `/api-integration`
+- Forms: react-hook-form + zod; every field through `Controller` via `FormField`; domain-typed values
+  (`XxxFormValues`); `useWatch` locally, never root `watch()` + `setValue()`; `useFieldArray` for every
+  dynamic list. → `/form-creation`
+- Tests: logic → sibling unit test (90% branch coverage); visual → story (a11y violations fail); flow →
+  integration test with MSW, never `vi.mock` of our own modules. → `/frontend-testing`
+- Comments explain why, never what; no spec IDs in code (traceability lives in test names).
+  → `/component-creation`
+- No bypass: `eslint-disable` comments are ignored and `@ts-ignore`/`@ts-expect-error`/`@ts-nocheck` are
+  lint errors. A wrong rule changes for the whole codebase. Lint is green on every `main` commit.
+- CI gates deploy: every push runs lint, build and tests; nothing reaches production without passing
+  them. → `/frontend-testing`
+- Skills: `/component-creation`, `/feature-structure`, `/form-creation`, `/api-integration`,
+  `/frontend-testing`.
 
 ---
 
@@ -71,6 +95,7 @@ Before working on a specific layer, read the matching skill first:
 | Frontend component | `.claude/skills/component-creation/SKILL.md` |
 | Frontend form | `.claude/skills/form-creation/SKILL.md` |
 | Frontend API integration | `.claude/skills/api-integration/SKILL.md` |
+| Frontend tests and stories | `.claude/skills/frontend-testing/SKILL.md` |
 | Spec-driven planning/execution | `.claude/skills/tlc-spec-driven/SKILL.md` |
 
 ---
