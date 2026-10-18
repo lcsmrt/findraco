@@ -7,12 +7,7 @@ import {
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { Button } from "@/components/button/base/Button";
-import {
-  Field,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/input/base/Field";
+import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { FormField } from "@/components/form/FormField";
@@ -20,7 +15,7 @@ import { FormSheet } from "@/components/form/FormSheet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useForm } from "react-hook-form";
+import { Controller, useForm, useWatch, type Control, type UseFormSetValue } from "react-hook-form";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
 import { CategoryLimitFields } from "./CategoryLimitFields";
 import {
@@ -33,11 +28,13 @@ import {
   ownerOptions,
   parentOptions,
 } from "./categoryForm";
-import { useCategoryFormSubmit } from "./useCategoryFormSubmit";
 import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
+import { useCategoryFormSubmit } from "./useCategoryFormSubmit";
 
 const NO_MEMBERS: PlanMember[] = [];
+
+type CategoryFormControl = Control<CategoryFormValues, unknown, CategoryFormOutput>;
 
 type CategoryFormSheetProps = {
   open: boolean;
@@ -50,7 +47,7 @@ type CategoryFormSheetProps = {
   onNewSubcategory?: (root: FinancialTransactionCategory) => void;
 };
 
-export const CategoryFormSheet = ({
+export function CategoryFormSheet({
   open,
   onOpenChange,
   mode,
@@ -58,18 +55,14 @@ export const CategoryFormSheet = ({
   defaults,
   onSuccess,
   onNewSubcategory,
-}: CategoryFormSheetProps) => {
-  const isEditing = mode === "edit";
-  const editing = isEditing ? category : null;
+}: CategoryFormSheetProps) {
+  const editing = mode === "edit" ? category : null;
 
   const { data: categoriesPage } = useGetFinancialTransactionCategories(
     { size: ALL_CATEGORIES_PAGE_SIZE },
     { enabled: open },
   );
-  const categories = useMemo(
-    () => categoriesPage?.content ?? [],
-    [categoriesPage],
-  );
+  const categories = useMemo(() => categoriesPage?.content ?? [], [categoriesPage]);
 
   const { activePlanId } = usePlanContext();
   const { data: membersData } = useGetPlanMembers(activePlanId ?? undefined, {
@@ -77,19 +70,13 @@ export const CategoryFormSheet = ({
   });
   const members = membersData ?? NO_MEMBERS;
 
-  const schema = useMemo(
-    () => createCategoryFormSchema(categories, editing),
-    [categories, editing],
-  );
+  const schema = useMemo(() => createCategoryFormSchema(categories, editing), [categories, editing]);
 
-  const {
-    control,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm<CategoryFormValues, unknown, CategoryFormOutput>({
+  const { control, handleSubmit, setValue, reset } = useForm<
+    CategoryFormValues,
+    unknown,
+    CategoryFormOutput
+  >({
     resolver: zodResolver(schema),
     defaultValues: buildDefaultValues(editing, defaults, members, categories),
   });
@@ -99,9 +86,7 @@ export const CategoryFormSheet = ({
   }, [editing, defaults, members, categories, open, reset]);
 
   // Kept after the sheet closes, so the delete dialog outlives it.
-  const [deleting, setDeleting] = useState<FinancialTransactionCategory | null>(
-    null,
-  );
+  const [deleting, setDeleting] = useState<FinancialTransactionCategory | null>(null);
 
   const { submit, isSubmitting: isPending } = useCategoryFormSubmit({
     editing,
@@ -109,26 +94,18 @@ export const CategoryFormSheet = ({
     onDone: () => onOpenChange(false),
   });
 
-  const type = watch("type");
-  const parentId = watch("parentId");
-  const hasChildren =
-    editing != null && categoryHasChildren(editing.id, categories);
-  const options = parentOptions(categories, type, editing?.id);
-  const selectedParent = options.find((c) => c.id === parentId) ?? null;
-  const ownerId = watch("ownerId");
-  const isOwned = effectiveOwnerId(parentId, ownerId, categories) != null;
-  const owners = ownerOptions(members, editing);
-  const selectedOwner = owners.find((o) => o.id === ownerId) ?? null;
+  const hasChildren = editing != null && categoryHasChildren(editing.id, categories);
+  const sectionProps = { control, setValue, categories, disabled: isPending };
 
   return (
     <>
       <FormSheet
         open={open}
         onOpenChange={onOpenChange}
-        title={isEditing ? "Edit Category" : "New Category"}
+        title={editing ? "Edit Category" : "New Category"}
         onSubmit={handleSubmit(submit)}
         isSubmitting={isPending}
-        submitLabel={isEditing ? "Save" : "Create"}
+        submitLabel={editing ? "Save" : "Create"}
         mobileActions={
           editing && (
             <>
@@ -162,24 +139,7 @@ export const CategoryFormSheet = ({
         }
       >
         <FieldGroup>
-          <Field>
-            <FieldLabel htmlFor="category-type">Type</FieldLabel>
-            <TransactionTypeToggle
-              value={type}
-              onChange={(v) => {
-                setValue("type", v, { shouldValidate: true });
-                setValue("parentId", null);
-                if (v === "CREDIT") setValue("spendingLimit", null);
-              }}
-              disabled={isPending || hasChildren}
-            />
-            {hasChildren && (
-              <p className="text-muted-foreground text-xs">
-                A category with subcategories cannot change type.
-              </p>
-            )}
-            <FieldError errors={[errors.type]} />
-          </Field>
+          <TypeField {...sectionProps} hasChildren={hasChildren} />
 
           <FormField control={control} name="description" label="Name">
             {(field) => (
@@ -191,82 +151,9 @@ export const CategoryFormSheet = ({
             )}
           </FormField>
 
-          <Field>
-            <FieldLabel htmlFor="category-parent">
-              Parent{" "}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
-            </FieldLabel>
-            <StandardCombobox
-              id="category-parent"
-              items={options}
-              value={selectedParent}
-              onValueChange={(parent) => {
-                setValue("parentId", parent?.id ?? null, {
-                  shouldValidate: true,
-                });
-                // A subcategory takes its parent's owner (CAT-15).
-                if (parent) setValue("ownerId", null);
-              }}
-              itemLabel={(c) => c.description}
-              placeholder="None (top level)"
-              emptyMessage="No top-level categories"
-              disabled={isPending || hasChildren}
-              clearable
-            />
-            {hasChildren && (
-              <p className="text-muted-foreground text-xs">
-                A category with subcategories stays at the top level.
-              </p>
-            )}
-            <FieldError errors={[errors.parentId]} />
-          </Field>
-
-          {parentId == null && (
-            <Field>
-              <FieldLabel htmlFor="category-owner">
-                Belongs to{" "}
-                <span className="text-muted-foreground font-normal">
-                  (optional)
-                </span>
-              </FieldLabel>
-              <StandardCombobox
-                id="category-owner"
-                items={owners}
-                value={selectedOwner}
-                onValueChange={(owner) => {
-                  setValue("ownerId", owner?.id ?? null, {
-                    shouldValidate: true,
-                  });
-                  // An owned category has a single limit (CAT-13).
-                  if (owner) setValue("limitMode", "single");
-                }}
-                itemLabel={(o) => (o.active ? o.name : `${o.name} (former member)`)}
-                placeholder="Shared (everyone)"
-                emptyMessage="No members"
-                disabled={isPending}
-                clearable
-              />
-              <p className="text-muted-foreground text-xs">
-                Its spend and limit are this member's. Subcategories belong
-                to the same member.
-              </p>
-              <FieldError errors={[errors.ownerId]} />
-            </Field>
-          )}
-
-          {type === "DEBIT" && (
-            <CategoryLimitFields
-              control={control}
-              perMemberDisabledReason={
-                isOwned
-                  ? "A category that belongs to one member has a single limit."
-                  : undefined
-              }
-              disabled={isPending}
-            />
-          )}
+          <ParentField {...sectionProps} editing={editing} hasChildren={hasChildren} />
+          <OwnerField {...sectionProps} editing={editing} members={members} />
+          <LimitSection {...sectionProps} />
         </FieldGroup>
       </FormSheet>
       <DeleteCategoryDialog
@@ -279,4 +166,141 @@ export const CategoryFormSheet = ({
       />
     </>
   );
+}
+
+type SectionProps = {
+  control: CategoryFormControl;
+  setValue: UseFormSetValue<CategoryFormValues>;
+  categories: FinancialTransactionCategory[];
+  disabled: boolean;
 };
+
+function TypeField({ control, setValue, disabled, hasChildren }: SectionProps & { hasChildren: boolean }) {
+  return (
+    // The toggle group names itself, a layout FormField's label-for-input does not fit.
+    <Controller
+      control={control}
+      name="type"
+      render={({ field, fieldState }) => (
+        <Field data-invalid={fieldState.invalid}>
+          <FieldLabel>Type</FieldLabel>
+          <TransactionTypeToggle
+            value={field.value}
+            onChange={(type) => {
+              field.onChange(type);
+              // Parents belong to one type, and income categories carry no limit.
+              setValue("parentId", null);
+              if (type === "CREDIT") setValue("spendingLimit", null);
+            }}
+            disabled={disabled || hasChildren}
+          />
+          {hasChildren && (
+            <p className="text-muted-foreground text-xs">
+              A category with subcategories cannot change type.
+            </p>
+          )}
+          <FieldError errors={[fieldState.error]} />
+        </Field>
+      )}
+    />
+  );
+}
+
+type ParentFieldProps = SectionProps & {
+  editing: FinancialTransactionCategory | null | undefined;
+  hasChildren: boolean;
+};
+
+function ParentField({ control, setValue, categories, disabled, editing, hasChildren }: ParentFieldProps) {
+  const type = useWatch({ control, name: "type" });
+  const options = parentOptions(categories, type, editing?.id);
+
+  return (
+    <FormField
+      control={control}
+      name="parentId"
+      label={
+        <>
+          Parent <span className="text-muted-foreground font-normal">(optional)</span>
+        </>
+      }
+      description={hasChildren ? "A category with subcategories stays at the top level." : undefined}
+    >
+      {(field) => (
+        <StandardCombobox
+          id={field.id}
+          items={options}
+          value={options.find((option) => option.id === field.value) ?? null}
+          onValueChange={(parent) => {
+            field.onChange(parent?.id ?? null);
+            // A subcategory takes its parent's owner (CAT-15).
+            if (parent) setValue("ownerId", null);
+          }}
+          itemLabel={(option) => option.description}
+          placeholder="None (top level)"
+          emptyMessage="No top-level categories"
+          disabled={disabled || hasChildren}
+          clearable
+        />
+      )}
+    </FormField>
+  );
+}
+
+type OwnerFieldProps = SectionProps & {
+  editing: FinancialTransactionCategory | null | undefined;
+  members: PlanMember[];
+};
+
+function OwnerField({ control, setValue, disabled, editing, members }: OwnerFieldProps) {
+  const parentId = useWatch({ control, name: "parentId" });
+  const owners = ownerOptions(members, editing);
+  if (parentId != null) return null;
+
+  return (
+    <FormField
+      control={control}
+      name="ownerId"
+      label={
+        <>
+          Belongs to <span className="text-muted-foreground font-normal">(optional)</span>
+        </>
+      }
+      description="Its spend and limit are this member's. Subcategories belong to the same member."
+    >
+      {(field) => (
+        <StandardCombobox
+          id={field.id}
+          items={owners}
+          value={owners.find((owner) => owner.id === field.value) ?? null}
+          onValueChange={(owner) => {
+            field.onChange(owner?.id ?? null);
+            // An owned category has a single limit (CAT-13).
+            if (owner) setValue("limitMode", "single");
+          }}
+          itemLabel={(owner) => (owner.active ? owner.name : `${owner.name} (former member)`)}
+          placeholder="Shared (everyone)"
+          emptyMessage="No members"
+          disabled={disabled}
+          clearable
+        />
+      )}
+    </FormField>
+  );
+}
+
+function LimitSection({ control, categories, disabled }: SectionProps) {
+  const [type, parentId, ownerId] = useWatch({ control, name: ["type", "parentId", "ownerId"] });
+  if (type !== "DEBIT") return null;
+  const isOwned = effectiveOwnerId(parentId, ownerId, categories) != null;
+
+  return (
+    <CategoryLimitFields
+      control={control}
+      perMemberDisabledReason={
+        isOwned ? "A category that belongs to one member has a single limit." : undefined
+      }
+      disabled={disabled}
+    />
+  );
+}

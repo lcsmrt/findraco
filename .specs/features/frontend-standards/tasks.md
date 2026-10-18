@@ -2359,13 +2359,15 @@ Notes: `CategoryLimitFields` owns `memberLimits` with `useFieldArray` (rows keye
 
 **Done when**:
 
-- [ ] `categoryForm.test.ts` and `CategoryFormSheet.test.tsx` pass, adapted only in imports and value entry
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `categoryForm.test.ts` and `CategoryFormSheet.test.tsx` pass, adapted only in imports and value entry
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 662 (unchanged); all projects 776 (unchanged); `categoryForm.test.ts` and `CategoryFormSheet.test.tsx` pass with no change at all
+
+Notes: the sheet composes `TypeField` (raw `Controller`: the toggle group names itself), the name `FormField`, `ParentField` and `OwnerField` (`FormField` with the "(optional)" label and the hints as descriptions), and `LimitSection` (`CategoryLimitFields` when the type is DEBIT, with the owned-category reason). Each section reads the values it depends on with `useWatch` (type for the parent options; parent to hide the owner; type, parent and owner for the limits); no `watch` is left. `setValue` remains only for side effects: a new type clears the parent (and the limit for income), a parent clears the owner, an owner sets the single limit. The two hints under parent and owner are `FieldDescription`s now (`text-sm`, they were `text-xs`). Logic lines before the main `return`: `CategoryFormSheet` 31, `TypeField` 0, `ParentField` 2, `OwnerField` 3, `LimitSection` 3, `CategoryLimitFields` 9; the sheet is now a `function` declaration. Build gate green (lint, build, 98 files / 776 tests). STD-07 done.
 
 **Tests**: integration
 **Gate**: quick
-**Commit**: `refactor(frontend): CategoryFormSheet composes its sections`
+**Commit**: `refactor(frontend): category sheet composes its sections`
 
 ---
 
