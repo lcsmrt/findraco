@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolvePeriodDates, type Period } from "@/features/overview/filters/overviewParams";
+import { resolvePeriodDates, type Period } from "../filters/overviewParams";
 import { periodLabel, presetRange, shiftRange } from "./periodNavigator";
 
 const range = (startDate: string, endDate: string) => ({ startDate, endDate });

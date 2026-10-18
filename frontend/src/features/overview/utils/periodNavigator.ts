@@ -8,7 +8,7 @@ import {
   parseISO,
   startOfMonth,
 } from "date-fns";
-import { resolvePeriodDates, type Period } from "@/features/overview/filters/overviewParams";
+import { resolvePeriodDates, type Period } from "../filters/overviewParams";
 import { countMonths } from "./scaleLimits";
 
 /** An inclusive `yyyy-MM-dd` date range. */

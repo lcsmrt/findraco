@@ -7,8 +7,8 @@ import {
   startOfMonth,
   subMonths,
 } from "date-fns";
-import type { PeriodRange } from "../../utils/periodNavigator";
-import { countMonths } from "../../utils/scaleLimits";
+import type { PeriodRange } from "../utils/periodNavigator";
+import { countMonths } from "../utils/scaleLimits";
 
 /** The trend shows at least this many months (UX-05 AC 4). */
 export const TREND_MONTHS = 6;

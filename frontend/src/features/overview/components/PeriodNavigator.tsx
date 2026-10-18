@@ -19,7 +19,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import type { Period } from "@/features/overview/filters/overviewParams";
+import type { Period } from "../filters/overviewParams";
 import { periodLabel, shiftRange, type PeriodRange } from "../utils/periodNavigator";
 
 const PRESET_LABELS: Record<Period, string> = {

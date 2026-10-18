@@ -2,7 +2,7 @@ import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { cn } from "@/lib/mergeClasses";
 import { getFirstName } from "@/utils/string/formatters";
 import type { ReactNode } from "react";
-import type { MemberOption } from "../../hooks/useOverviewMemberFilter";
+import type { MemberOption } from "../useOverviewMemberFilter";
 import type { MemberColorOf } from "@/utils/memberColors";
 import { MemberDot } from "@/components/memberDot/MemberDot";
 

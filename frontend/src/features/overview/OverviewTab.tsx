@@ -8,22 +8,22 @@ import { useMemo } from "react";
 import {
   resolvePeriodDates,
   type Period,
-} from "@/features/overview/filters/overviewParams";
-import { useOverviewFilters } from "@/features/overview/filters/useOverviewFilters";
-import { PeriodNavigator } from "../PeriodNavigator";
-import { countMonths } from "../../utils/scaleLimits";
+} from "./filters/overviewParams";
+import { useOverviewFilters } from "./filters/useOverviewFilters";
+import { PeriodNavigator } from "./components/PeriodNavigator";
+import { countMonths } from "./utils/scaleLimits";
 import { useMemberColors } from "@/utils/memberColors";
 import {
   useOverviewMemberFilter,
   type MemberOption,
-} from "../../hooks/useOverviewMemberFilter";
-import { CategorySpendingList } from "./CategorySpendingList";
-import { MemberFilterChips } from "./MemberFilterChips";
-import { MonthlyTrendChart } from "./MonthlyTrendChart";
-import { buildSpendingRows } from "./spendingRows";
-import { SummaryCards } from "./SummaryCards";
-import { summaryView } from "./summaryView";
-import { fillTrendMonths, trendWindow } from "./trendMonths";
+} from "./useOverviewMemberFilter";
+import { CategorySpendingList } from "./components/CategorySpendingList";
+import { MemberFilterChips } from "./components/MemberFilterChips";
+import { MonthlyTrendChart } from "./components/MonthlyTrendChart";
+import { buildSpendingRows } from "./components/spendingRows";
+import { SummaryCards } from "./components/SummaryCards";
+import { summaryView } from "./components/summaryView";
+import { fillTrendMonths, trendWindow } from "./components/trendMonths";
 
 export const OverviewTab = () => {
   const { overview, updateOverview } = useOverviewFilters();

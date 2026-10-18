@@ -1,6 +1,6 @@
 import { Button } from "@/components/button/Button";
 import { CategoriesTab } from "@/features/home/components/categories/CategoriesTab";
-import { OverviewTab } from "@/features/home/components/overview/OverviewTab";
+import { OverviewTab } from "@/features/overview/OverviewTab";
 import { TransactionsTab } from "@/features/home/components/transactions/TransactionsTab";
 import { HomeFiltersGate } from "./HomeFiltersGate";
 import { cn } from "@/lib/mergeClasses";
