@@ -5,7 +5,6 @@ import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
-import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import {
@@ -27,6 +26,7 @@ import { useEffect, useRef } from "react";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
+import { EndDateField } from "./EndDateField";
 import { ItemsField } from "./ItemsField";
 import { useSeriesScope } from "./useSeriesScope";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
@@ -319,29 +319,7 @@ export const TransactionFormDrawer = ({
         )}
 
         {isSeriesEdit && definition?.mode === "RECURRING" && (
-          <Field>
-            <div className="flex items-center justify-between">
-              <FieldLabel htmlFor="transaction-end-date">
-                End date
-              </FieldLabel>
-              {!watch("endDate") && (
-                <Badge variant="secondary">Ongoing</Badge>
-              )}
-            </div>
-            <DatePicker
-              id="transaction-end-date"
-              value={watch("endDate")}
-              onChange={(v) =>
-                setValue("endDate", v, { shouldValidate: true })
-              }
-              disabled={isPending}
-              className="w-full"
-            />
-            <FieldError errors={[errors.endDate]} />
-            <p className="text-muted-foreground text-sm">
-              Leave empty to keep this series ongoing, with no end date.
-            </p>
-          </Field>
+          <EndDateField control={control} disabled={isPending} />
         )}
 
         {mode === "create" && (
@@ -477,30 +455,7 @@ export const TransactionFormDrawer = ({
                 )}
 
                 {watch("recurrenceMode") === "RECURRING" && (
-                  <Field>
-                    <div className="flex items-center justify-between">
-                      <FieldLabel htmlFor="transaction-create-end-date">
-                        End date
-                      </FieldLabel>
-                      {!watch("endDate") && (
-                        <Badge variant="secondary">Ongoing</Badge>
-                      )}
-                    </div>
-                    <DatePicker
-                      id="transaction-create-end-date"
-                      value={watch("endDate")}
-                      onChange={(v) =>
-                        setValue("endDate", v, { shouldValidate: true })
-                      }
-                      disabled={isPending}
-                      className="w-full"
-                    />
-                    <FieldError errors={[errors.endDate]} />
-                    <p className="text-muted-foreground text-sm">
-                      Leave empty to keep this series ongoing, with no end
-                      date.
-                    </p>
-                  </Field>
+                  <EndDateField control={control} disabled={isPending} />
                 )}
               </>
             )}

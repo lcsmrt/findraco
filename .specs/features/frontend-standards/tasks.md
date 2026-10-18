@@ -2236,10 +2236,12 @@ Notes: the participants list is one `useFieldArray` owned by the form (the drawe
 
 **Done when**:
 
-- [ ] Both modes use it
-- [ ] Story
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Both modes use it
+- [x] Story
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 653 (unchanged); storybook +4 (`EndDateField.stories.tsx`); all projects 753 → 757
+
+Notes: `EndDateField` binds `endDate` through a raw `Controller`, since the "Ongoing" badge shares the label's row; create (Recurring mode) and series edit (recurring series) both render it, which removed the two copies and their `watch`/`setValue` binding. The help line is now a `FieldDescription` (it was a styled `<p>`). The id comes from `useId` instead of two fixed ids. Validation now follows the form's mode like every other `Controller` field (re-validates on change after the first submit) instead of `shouldValidate` on every pick. `DatePicker` takes no `ref`/`onBlur`, so the field cannot receive focus-on-error; left as it is. Stories: ongoing (typing a date hides the badge), with end date, before the start date (error), disabled.
 
 **Tests**: story
 **Gate**: full
