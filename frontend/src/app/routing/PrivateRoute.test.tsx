@@ -21,7 +21,7 @@ const mockStatus = (status: AuthStatus) =>
 
 const LoginProbe = () => {
   const location = useLocation();
-  return <p data-testid="login">{JSON.stringify(location.state)}</p>;
+  return <div data-testid="login">{JSON.stringify(location.state)}</div>;
 };
 
 const renderRoute = () =>
@@ -30,7 +30,7 @@ const renderRoute = () =>
       <Routes>
         <Route path="/login" element={<LoginProbe />} />
         <Route element={<PrivateRoute />}>
-          <Route path="/plans" element={<p>Private page</p>} />
+          <Route path="/plans" element={<div>Private page</div>} />
         </Route>
       </Routes>
     </MemoryRouter>,

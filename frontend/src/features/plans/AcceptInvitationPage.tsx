@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/card/base/Card";
 import { Spinner } from "@/components/spinner/base/Spinner";
+import { Text } from "@/components/typography/base/Text";
 import { CheckIcon, XIcon } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
@@ -63,9 +64,9 @@ export const AcceptInvitationPage = () => {
               <CardTitle>You've been invited</CardTitle>
               <CardDescription>
                 {preview.invitedByName} invited you to the plan{" "}
-                <span className="text-foreground font-medium">
+                <Text variant="label" className="text-foreground">
                   {preview.planName}
-                </span>{" "}
+                </Text>{" "}
                 as {ROLE_LABELS[preview.role]}.
               </CardDescription>
             </CardHeader>

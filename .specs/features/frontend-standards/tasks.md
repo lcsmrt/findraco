@@ -2458,9 +2458,11 @@ Notes: title as `Heading` `title` (`level` 2 by default, 3–4 allowed; `text-md
 
 **Done when**:
 
-- [ ] No raw text tags or size/weight classes in these folders
-- [ ] Build gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No raw text tags or size/weight classes in these folders
+- [x] Build gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+Notes: first, `body`, `secondary` and `caption` gained `font-normal` (skill table updated). Plans title/subtitle and actions on `PageHeader` (h1, 24px / 14px), plan card name `title`, TransferOwnership help text `FieldDescription`, 404 numeral `display`, 404 and auth titles `headline` (404 30→24px), wordmark `headline` (30→24px, normal tracking), 404 description and "Can't reach" `secondary`, auth link buttons without `font-bold`, HomePage tabs and the "Forgot password?" link without classes that repeat Button's, Toaster through `typographyVariants`. Inline emphasis in descriptions (`text-foreground font-medium`) is `Text` `label` with `text-foreground`. Test fixtures in `AuthProvider.test.tsx` and `PrivateRoute.test.tsx` render `<div>` instead of `<p>` (queries unchanged). `SectionHeader` keeps its stories but has no consumer now. All projects 815 → 815.
 
 **Tests**: none
 **Gate**: build

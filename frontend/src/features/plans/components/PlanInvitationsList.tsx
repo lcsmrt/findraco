@@ -7,6 +7,7 @@ import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { useConfirm } from "@/components/dialog/useConfirm";
 import { Spinner } from "@/components/spinner/base/Spinner";
+import { Text } from "@/components/typography/base/Text";
 import { format } from "date-fns";
 import { Trash2Icon } from "lucide-react";
 import { ROLE_LABELS, STATUS_LABELS } from "../utils/planLabels";
@@ -59,9 +60,9 @@ export const PlanInvitationsList = ({ planId }: PlanInvitationsListProps) => {
 
   if (invitations.length === 0) {
     return (
-      <p className="text-muted-foreground py-6 text-center text-sm">
+      <Text as="p" variant="secondary" className="py-6 text-center">
         No invitations created for this plan yet.
-      </p>
+      </Text>
     );
   }
 
@@ -73,19 +74,17 @@ export const PlanInvitationsList = ({ planId }: PlanInvitationsListProps) => {
           className="border-border flex items-center justify-between gap-3 rounded-lg border p-3"
         >
           <div className="flex flex-col gap-1">
-            <span className="text-sm font-medium">
-              {invitationLabel(invitation)}
-            </span>
+            <Text variant="label">{invitationLabel(invitation)}</Text>
             <div className="flex flex-wrap items-center gap-1.5">
               <Badge variant="outline">{ROLE_LABELS[invitation.role]}</Badge>
               <Badge variant={STATUS_VARIANTS[invitation.status]}>
                 {STATUS_LABELS[invitation.status]}
               </Badge>
               {invitation.expiresAt && (
-                <span className="text-muted-foreground text-xs">
+                <Text variant="caption">
                   Expires on{" "}
                   {format(new Date(invitation.expiresAt), "dd/MM/yyyy HH:mm")}
-                </span>
+                </Text>
               )}
             </div>
           </div>

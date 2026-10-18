@@ -1,6 +1,8 @@
 import { PATHS } from "@/app/routing/paths";
 import { Button } from "@/components/button/base/Button";
 import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
+import { Heading } from "@/components/typography/base/Heading";
+import { Text } from "@/components/typography/base/Text";
 import { useNavigate } from "react-router-dom";
 
 export const NotFound = () => {
@@ -13,9 +15,9 @@ export const NotFound = () => {
       </div>
 
       <div className="relative flex items-center justify-center">
-        <span className="text-primary/15 text-[10rem] leading-none font-bold tracking-tighter select-none sm:text-[14rem]">
+        <Text variant="display" className="text-primary/15 select-none">
           404
-        </span>
+        </Text>
         <img
           src="/findraco-logo-128.png"
           alt=""
@@ -24,12 +26,12 @@ export const NotFound = () => {
       </div>
 
       <div className="flex max-w-md flex-col items-center gap-2 text-center">
-        <h1 className="text-foreground text-3xl font-bold">
+        <Heading level={1} variant="headline" className="text-foreground">
           Not in the hoard
-        </h1>
-        <p className="text-muted-foreground">
+        </Heading>
+        <Text as="p" variant="secondary">
           The dragon searched every pile of gold and couldn't find this page.
-        </p>
+        </Text>
       </div>
 
       <Button size="lg" className="px-6" onClick={() => navigate(PATHS.home)}>

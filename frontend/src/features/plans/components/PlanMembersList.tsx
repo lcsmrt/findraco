@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/input/base/Select";
 import { Spinner } from "@/components/spinner/base/Spinner";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { Trash2Icon } from "lucide-react";
@@ -75,9 +76,9 @@ export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
 
   if (members.length === 0) {
     return (
-      <p className="text-muted-foreground py-6 text-center text-sm">
+      <Text as="p" variant="secondary" className="py-6 text-center">
         No members in this plan.
-      </p>
+      </Text>
     );
   }
 
@@ -99,10 +100,12 @@ export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
               </AvatarFallback>
             </Avatar>
             <div className="flex min-w-0 flex-col">
-              <span className="truncate text-sm font-medium">{member.name}</span>
-              <span className="text-muted-foreground truncate text-xs">
+              <Text variant="label" className="truncate">
+                {member.name}
+              </Text>
+              <Text variant="caption" className="truncate">
                 {member.email}
-              </span>
+              </Text>
             </div>
           </div>
 

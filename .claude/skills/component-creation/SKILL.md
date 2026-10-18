@@ -282,9 +282,9 @@ allowed. Colour stays free but token-only (see Colour).
 | `headline` | `text-2xl font-bold` | page titles, wordmark, metric figures |
 | `title` | `text-base font-semibold` | section titles, compact figures, period label |
 | `label` | `text-sm font-medium` | row titles, option labels |
-| `body` | `text-sm` | default text |
-| `secondary` | `text-sm text-muted-foreground` | descriptions, metric labels |
-| `caption` | `text-xs text-muted-foreground` | metadata, subtitles, group and column headers |
+| `body` | `text-sm font-normal` | default text |
+| `secondary` | `text-sm font-normal text-muted-foreground` | descriptions, metric labels |
+| `caption` | `text-xs font-normal text-muted-foreground` | metadata, subtitles, group and column headers |
 
 ```tsx
 // Wrong: raw tag, size and weight classes (lint error)

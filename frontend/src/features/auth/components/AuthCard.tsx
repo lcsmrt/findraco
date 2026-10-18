@@ -1,4 +1,5 @@
 import { Card, CardContent, CardDescription, CardHeader } from "@/components/card/base/Card";
+import { Heading } from "@/components/typography/base/Heading";
 import { cn } from "@/lib/mergeClasses";
 import type { ReactNode } from "react";
 
@@ -14,7 +15,9 @@ export function AuthCard({ title, description, children, className }: AuthCardPr
   return (
     <Card className={cn("w-full max-w-xl gap-5 p-5 shadow-md", className)}>
       <CardHeader className="justify-items-center px-0 text-center">
-        <h1 className="text-foreground text-2xl font-bold">{title}</h1>
+        <Heading level={1} variant="headline" className="text-foreground">
+          {title}
+        </Heading>
         {description && <CardDescription>{description}</CardDescription>}
       </CardHeader>
       <CardContent className="px-0">{children}</CardContent>

@@ -11,9 +11,9 @@ export const typographyVariants = cva("", {
       headline: "text-2xl font-bold",
       title: "text-base font-semibold",
       label: "text-sm font-medium",
-      body: "text-sm",
-      secondary: "text-sm text-muted-foreground",
-      caption: "text-xs text-muted-foreground",
+      body: "text-sm font-normal",
+      secondary: "text-sm font-normal text-muted-foreground",
+      caption: "text-xs font-normal text-muted-foreground",
     },
   },
   defaultVariants: {

@@ -10,7 +10,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/dialog/base/Dialog";
-import { Field, FieldLabel } from "@/components/input/base/Field";
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+} from "@/components/input/base/Field";
 import {
   Select,
   SelectContent,
@@ -19,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/input/base/Select";
 import { Spinner } from "@/components/spinner/base/Spinner";
+import { Text } from "@/components/typography/base/Text";
 import { ArrowRightLeftIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -68,9 +73,9 @@ export const TransferOwnershipDialog = ({
             <Spinner />
           </div>
         ) : candidates.length === 0 ? (
-          <p className="text-muted-foreground py-6 text-center text-sm">
+          <Text as="p" variant="secondary" className="py-6 text-center">
             There are no other members to transfer ownership to.
-          </p>
+          </Text>
         ) : (
           <Field>
             <FieldLabel>New owner</FieldLabel>
@@ -92,9 +97,9 @@ export const TransferOwnershipDialog = ({
                 ))}
               </SelectContent>
             </Select>
-            <p className="text-muted-foreground text-xs">
+            <FieldDescription>
               You will become an Editor of this plan.
-            </p>
+            </FieldDescription>
           </Field>
         )}
 

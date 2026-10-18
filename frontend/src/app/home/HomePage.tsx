@@ -33,7 +33,7 @@ function HomeTabs() {
             onClick={() => setActiveTab(tab.key)}
             variant="ghost"
             className={cn(
-              "-mb-px rounded-none border-0 border-b-2 px-4 py-2 text-sm font-medium transition-colors",
+              "-mb-px rounded-none border-0 border-b-2 px-4 py-2 transition-colors",
               activeTab === tab.key
                 ? "border-primary text-foreground"
                 : "text-muted-foreground hover:text-foreground border-transparent",

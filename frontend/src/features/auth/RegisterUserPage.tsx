@@ -3,6 +3,7 @@ import { PATHS } from "@/app/routing/paths";
 import { Button } from "@/components/button/base/Button";
 import { FormField } from "@/components/form/FormField";
 import { Input } from "@/components/input/base/Input";
+import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate, type Location } from "react-router-dom";
@@ -88,24 +89,24 @@ export const RegisterUser = () => {
           </FormField>
         </div>
 
-        <p className="text-muted-foreground text-center text-sm">
+        <Text as="p" variant="secondary" className="text-center">
           By clicking Sign up, you agree to findraco’s{" "}
           <strong>Terms of Service</strong> and acknowledge that you are subject
           to our <strong>Privacy Policy</strong>.
-        </p>
+        </Text>
 
         <Button className="w-full" type="submit" isLoading={isRegisteringUser}>
           Sign up
         </Button>
 
         <div className="flex flex-col items-center">
-          <p className="text-muted-foreground text-sm">
+          <Text as="p" variant="secondary">
             Already have an account?
-          </p>
+          </Text>
           <Button
             type="button"
             variant="link"
-            className="h-fit p-0 font-bold"
+            className="h-fit p-0"
             onClick={() => navigate(PATHS.login, { state: { from } })}
           >
             Sign in

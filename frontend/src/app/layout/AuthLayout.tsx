@@ -1,5 +1,6 @@
 import { AppVersion } from "@/components/appVersion/AppVersion";
 import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
+import { Text } from "@/components/typography/base/Text";
 import { Outlet } from "react-router-dom";
 
 export const AuthLayout = () => {
@@ -16,16 +17,18 @@ export const AuthLayout = () => {
             alt=""
             className="size-12"
           />
-          <span className="text-foreground text-3xl font-bold tracking-tight">
+          <Text variant="headline" className="text-foreground">
             findraco
-          </span>
+          </Text>
         </div>
       </header>
 
       <Outlet />
 
       <footer className="flex flex-1 flex-col items-center justify-end">
-        <p className="text-muted-foreground text-xs">© 2026 findraco</p>
+        <Text as="p" variant="caption">
+          © 2026 findraco
+        </Text>
         <AppVersion />
       </footer>
     </main>

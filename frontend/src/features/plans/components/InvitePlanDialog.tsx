@@ -17,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/input/base/Select";
+import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CopyIcon, SendIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -97,9 +98,9 @@ export const InvitePlanDialog = ({
           <div className="flex flex-col gap-3">
             {createdInvitation.type === "LINK" ? (
               <>
-                <p className="text-muted-foreground text-sm">
+                <Text as="p" variant="secondary">
                   Share this link to invite someone:
-                </p>
+                </Text>
                 <div className="flex items-center gap-2">
                   <Input
                     readOnly
@@ -117,13 +118,13 @@ export const InvitePlanDialog = ({
                 </div>
               </>
             ) : (
-              <p className="text-muted-foreground text-sm">
+              <Text as="p" variant="secondary">
                 Invitation sent to{" "}
-                <span className="text-foreground font-medium">
+                <Text variant="label" className="text-foreground">
                   {createdInvitation.email}
-                </span>
+                </Text>
                 .
-              </p>
+              </Text>
             )}
 
             <DialogFooter>

@@ -101,8 +101,8 @@ const Probe = () => {
   navigateTo = useNavigate();
   return (
     <>
-      <p data-testid="status">{auth.status}</p>
-      <p data-testid="user">{auth.user?.name ?? ""}</p>
+      <div data-testid="status">{auth.status}</div>
+      <div data-testid="user">{auth.user?.name ?? ""}</div>
     </>
   );
 };
@@ -292,10 +292,10 @@ describe("AuthProvider with PrivateRoute", () => {
           <AuthProvider>
             <Probe />
             <Routes>
-              <Route path="/login" element={<p>Login page</p>} />
-              <Route path="/reset-password" element={<p>Reset page</p>} />
+              <Route path="/login" element={<div>Login page</div>} />
+              <Route path="/reset-password" element={<div>Reset page</div>} />
               <Route element={<PrivateRoute />}>
-                <Route path="/plans" element={<p>Private page</p>} />
+                <Route path="/plans" element={<div>Private page</div>} />
               </Route>
             </Routes>
           </AuthProvider>

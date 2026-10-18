@@ -9,9 +9,10 @@ import {
   CardTitle,
 } from "@/components/card/base/Card";
 import { useConfirm } from "@/components/dialog/useConfirm";
-import { SectionHeader } from "@/components/sectionHeader/SectionHeader";
+import { PageHeader } from "@/components/pageHeader/PageHeader";
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { PATHS } from "@/app/routing/paths";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import {
   ArchiveIcon,
@@ -88,15 +89,16 @@ export const PlansPage = () => {
         Back
       </Button>
 
-      <SectionHeader
+      <PageHeader
         title="Plans"
-        subtitle="Manage your plans and switch between them."
-      >
-        <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-          <PlusIcon className="h-4 w-4" />
-          New plan
-        </Button>
-      </SectionHeader>
+        description="Manage your plans and switch between them."
+        actions={
+          <Button size="sm" onClick={() => setIsCreateOpen(true)}>
+            <PlusIcon className="h-4 w-4" />
+            New plan
+          </Button>
+        }
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-10">
@@ -117,7 +119,7 @@ export const PlansPage = () => {
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">{plan.name}</span>
+                  <Text variant="title">{plan.name}</Text>
                   {isActive && <CheckIcon className="text-primary-ink h-4 w-4" />}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">

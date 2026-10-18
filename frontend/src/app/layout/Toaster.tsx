@@ -8,6 +8,8 @@ import {
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import { resolveTheme } from "@/app/providers/resolveTheme";
 import { useTheme } from "@/app/providers/useTheme";
+import { typographyVariants } from "@/components/typography/base/typographyVariants";
+import { cn } from "@/lib/mergeClasses";
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme } = useTheme();
@@ -58,8 +60,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
           toast:
             "group flex items-start gap-3 rounded-md border bg-popover px-4 py-3 shadow-md",
           icon: "mt-0.5 flex shrink-0 items-center justify-center rounded-full",
-          title: "text-sm font-medium ml-1",
-          description: "text-xs text-muted-foreground",
+          title: cn(typographyVariants({ variant: "label" }), "ml-1"),
+          description: typographyVariants({ variant: "caption" }),
         },
       }}
       {...props}

@@ -4,6 +4,7 @@ import { Button } from "@/components/button/base/Button";
 import { FormField } from "@/components/form/FormField";
 import { Input } from "@/components/input/base/Input";
 import { useAuth } from "@/app/providers/useAuth";
+import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useLocation, useNavigate, type Location } from "react-router-dom";
@@ -73,7 +74,7 @@ export const Login = () => {
           <Button
             type="button"
             variant="link"
-            className="h-fit self-end p-0 text-sm"
+            className="h-fit self-end p-0"
             onClick={() => navigate(PATHS.forgotPassword)}
           >
             Forgot password?
@@ -85,13 +86,13 @@ export const Login = () => {
         </Button>
 
         <div className="flex flex-col items-center">
-          <p className="text-muted-foreground text-sm">
+          <Text as="p" variant="secondary">
             Don’t have an account?
-          </p>
+          </Text>
           <Button
             type="button"
             variant="link"
-            className="h-fit p-0 font-bold"
+            className="h-fit p-0"
             onClick={() => navigate(PATHS.registerUser, { state: { from } })}
           >
             Create one now

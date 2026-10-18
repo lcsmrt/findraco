@@ -5,6 +5,7 @@ import {
 import { PATHS } from "@/app/routing/paths";
 import { Button } from "@/components/button/base/Button";
 import { FormField } from "@/components/form/FormField";
+import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -49,18 +50,18 @@ export const ResetPassword = () => {
   const renderContent = () => {
     if (isValidating) {
       return (
-        <p className="text-muted-foreground text-center text-sm">
+        <Text as="p" variant="secondary" className="text-center">
           Checking your link…
-        </p>
+        </Text>
       );
     }
 
     if (!isTokenValid) {
       return (
         <>
-          <p className="text-muted-foreground text-center text-sm">
+          <Text as="p" variant="secondary" className="text-center">
             This link is invalid or has expired.
-          </p>
+          </Text>
           <Button
             type="button"
             className="w-full"
@@ -106,7 +107,7 @@ export const ResetPassword = () => {
         <Button
           type="button"
           variant="link"
-          className="h-fit p-0 font-bold"
+          className="h-fit p-0"
           onClick={() => navigate(PATHS.login)}
         >
           Back to sign in

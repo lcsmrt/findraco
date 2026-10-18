@@ -75,7 +75,7 @@ export const ForgotPassword = () => {
         <Button
           type="button"
           variant="link"
-          className="h-fit p-0 font-bold"
+          className="h-fit p-0"
           onClick={() => navigate(PATHS.login)}
         >
           Back to sign in
