@@ -1541,10 +1541,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] Config test: each layer path has every expected fragment
-- [ ] `import … from "@/features/plans/…"` inside `features/overview` fails lint (checked, reverted)
-- [ ] `pnpm lint` exits 0
-- [ ] Build gate passes
+- [x] Config test: each layer path has every expected fragment
+- [x] `import … from "@/features/plans/…"` inside `features/overview` fails lint (checked, reverted)
+- [x] `pnpm lint` exits 0
+- [x] Build gate passes
 
 **Tests**: tooling
 **Gate**: build

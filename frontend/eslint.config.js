@@ -21,6 +21,67 @@ const testSupportImports = [
   },
 ]
 
+// Outside app/, only the global context hooks and the route paths: layouts, the router and app/home
+// assemble features, so importing them from below would make the layers depend on each other.
+const appInternalsImports = [
+  {
+    regex: '^@/app/(?!providers/|routing/paths$)',
+    message: 'Outside app/, import only @/app/providers/* and @/app/routing/paths.',
+  },
+]
+
+// Only app/ composes features. What two features need is lifted one rung (colocation ladder), and
+// imports inside a feature are relative, so any @/features/ import here crosses a feature boundary.
+const crossFeatureImports = [
+  {
+    group: ['@/features/*'],
+    message: 'Only app/ imports features: lift the shared piece up the colocation ladder.',
+  },
+]
+
+// base/ primitives are app-wide building blocks: they know no context, route or endpoint.
+const appAnyImports = [
+  {
+    group: ['@/app/*'],
+    message: 'base/ primitives never import @/app/*: take the value through props.',
+  },
+]
+
+const apiImports = [
+  {
+    group: ['@/api/*'],
+    message: 'base/ primitives never import @/api/*: take the data through props.',
+  },
+]
+
+const testFiles = ['**/*.test.{ts,tsx}', 'src/test/**']
+
+// One layer of the import table: its files get exactly `patterns`, plus the test-support ban
+// everywhere except in tests (which still obey the layer).
+function importLayer(files, patterns, ignores = []) {
+  const layer = [
+    {
+      files,
+      ignores: [...ignores, ...testFiles],
+      rules: {
+        'no-restricted-imports': ['error', { patterns: [...testSupportImports, ...patterns] }],
+      },
+    },
+  ]
+  if (patterns.length === 0) return layer
+  return [
+    ...layer,
+    {
+      // A nested array matches files that satisfy every glob in it: tests inside this layer.
+      files: files.flatMap((glob) => testFiles.map((testGlob) => [glob, testGlob])),
+      ignores,
+      rules: {
+        'no-restricted-imports': ['error', { patterns }],
+      },
+    },
+  ]
+}
+
 export default defineConfig({ ignores: ['dist'] }, {
   extends: [js.configs.recommended, ...tseslint.configs.recommended],
   files: ['**/*.{ts,tsx}'],
@@ -58,10 +119,14 @@ export default defineConfig({ ignores: ['dist'] }, {
   rules: {
     '@typescript-eslint/consistent-type-definitions': 'off',
   },
-}, {
-  files: ['src/**/*.{ts,tsx}'],
-  ignores: ['**/*.test.{ts,tsx}', 'src/test/**'],
-  rules: {
-    'no-restricted-imports': ['error', { patterns: [...testSupportImports] }],
-  },
-}, storybook.configs["flat/recommended"]);
+},
+// Import layers, from the widest to the narrowest; each spreads its parents' fragments.
+...importLayer(['src/**/*.{ts,tsx}'], [...appInternalsImports], ['src/app/**']),
+...importLayer(['src/app/**/*.{ts,tsx}'], []),
+...importLayer(['src/features/**/*.{ts,tsx}'], [...appInternalsImports, ...crossFeatureImports]),
+...importLayer(['src/components/**/*.{ts,tsx}'], [...appInternalsImports, ...crossFeatureImports]),
+...importLayer(
+  ['src/components/**/base/**/*.{ts,tsx}'],
+  [...appInternalsImports, ...crossFeatureImports, ...appAnyImports, ...apiImports],
+),
+storybook.configs["flat/recommended"]);

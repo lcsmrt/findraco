@@ -156,4 +156,69 @@ describe("eslint.config.js", () => {
       },
     );
   });
+
+  describe("layered imports", () => {
+    // Each fragment is identified by its group (or regex), so a layer that loses one goes red.
+    const testSupport = "**/*.handlers,@/test/*";
+    const appInternals = "^@/app/(?!providers/|routing/paths$)";
+    const crossFeature = "@/features/*";
+    const appAny = "@/app/*";
+    const api = "@/api/*";
+
+    function fragmentsOf(config: typeof componentConfig): string[] {
+      const [severity, options] = config.rules["no-restricted-imports"] ?? [];
+      if (severity !== 2) return [];
+      return options.patterns.map(
+        (pattern: { group?: string[]; regex?: string }) => pattern.regex ?? pattern.group?.join(","),
+      );
+    }
+
+    it.each([
+      ["src/hooks/configProbe.ts", [testSupport, appInternals]],
+      ["src/test/configProbe.ts", [appInternals]],
+      ["src/app/home/ConfigProbe.tsx", [testSupport]],
+      ["src/app/home/ConfigProbe.test.tsx", []],
+      ["src/features/x/ConfigProbe.tsx", [testSupport, appInternals, crossFeature]],
+      ["src/features/x/ConfigProbe.test.tsx", [appInternals, crossFeature]],
+      ["src/components/x/ConfigProbe.tsx", [testSupport, appInternals, crossFeature]],
+      ["src/components/x/ConfigProbe.test.tsx", [appInternals, crossFeature]],
+      ["src/components/x/base/ConfigProbe.tsx", [testSupport, appInternals, crossFeature, appAny, api]],
+      ["src/components/x/base/ConfigProbe.test.tsx", [appInternals, crossFeature, appAny, api]],
+    ])("gives %s exactly its layer's fragments (STD-05 AC 5-8)", async (filePath, expected) => {
+      const config = await eslint.calculateConfigForFile(filePath);
+
+      expect([...fragmentsOf(config)].sort()).toEqual([...expected].sort());
+    });
+
+    async function restrictedImport(specifier: string, filePath: string) {
+      const ruleIds = await ruleIdsFor(
+        `import { probe } from "${specifier}";\n\nexport const value = probe;\n`,
+        filePath,
+      );
+      return ruleIds.includes("no-restricted-imports");
+    }
+
+    it.each([
+      ["src/features/overview/ConfigProbe.tsx", "@/features/plans/components/PlanSwitcher", true, "AC 5"],
+      ["src/features/overview/ConfigProbe.test.tsx", "@/features/plans/PlansPage", true, "AC 5"],
+      ["src/features/overview/ConfigProbe.tsx", "./components/SummaryCards", false, "AC 5"],
+      ["src/components/x/ConfigProbe.tsx", "@/features/plans/PlansPage", true, "AC 6"],
+      ["src/components/x/ConfigProbe.tsx", "@/app/home/homeParams", true, "AC 6"],
+      ["src/components/x/ConfigProbe.tsx", "@/app/providers/useTheme", false, "AC 6"],
+      ["src/components/x/ConfigProbe.tsx", "@/app/routing/paths", false, "AC 6"],
+      ["src/components/x/ConfigProbe.tsx", "@/api/dtos", false, "AC 6"],
+      ["src/components/x/base/ConfigProbe.tsx", "@/features/plans/PlansPage", true, "AC 7"],
+      ["src/components/x/base/ConfigProbe.tsx", "@/app/providers/useTheme", true, "AC 7"],
+      ["src/components/x/base/ConfigProbe.tsx", "@/app/routing/paths", true, "AC 7"],
+      ["src/components/x/base/ConfigProbe.tsx", "@/api/dtos", true, "AC 7"],
+      ["src/components/x/base/ConfigProbe.tsx", "@/lib/mergeClasses", false, "AC 7"],
+      ["src/hooks/configProbe.ts", "@/app/layout/Navbar", true, "AC 8"],
+      ["src/hooks/configProbe.ts", "@/app/routing/AppRouter", true, "AC 8"],
+      ["src/hooks/configProbe.ts", "@/app/routing/paths", false, "AC 8"],
+      ["src/hooks/configProbe.ts", "@/app/providers/usePlanContext", false, "AC 8"],
+      ["src/app/home/ConfigProbe.tsx", "@/features/overview/OverviewTab", false, "AC 8"],
+    ])("in %s, importing %s is restricted: %s (STD-05 %s)", async (filePath, specifier, restricted) => {
+      expect(await restrictedImport(specifier, filePath)).toBe(restricted);
+    });
+  });
 });
