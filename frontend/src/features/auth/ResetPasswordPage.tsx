@@ -4,25 +4,18 @@ import {
 } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
 import { Button } from "@/components/button/base/Button";
-import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/input/base/InputGroup";
+import { FormField } from "@/components/form/FormField";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeClosed } from "lucide-react";
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { AuthCard } from "./components/AuthCard";
+import { PasswordInput } from "./components/PasswordInput";
 import {
   ResetPasswordFormValues,
   resetPasswordSchema,
 } from "./resetPasswordForm";
 
 export const ResetPassword = () => {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
@@ -30,11 +23,7 @@ export const ResetPassword = () => {
     useValidatePasswordResetToken(token, { enabled: token !== "" });
   const isTokenValid = validation?.valid === true;
 
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm<ResetPasswordFormValues>({
+  const { control, handleSubmit } = useForm<ResetPasswordFormValues>({
     resolver: zodResolver(resetPasswordSchema),
     defaultValues: {
       password: "",
@@ -72,7 +61,7 @@ export const ResetPassword = () => {
             className="w-full"
             onClick={() => navigate(PATHS.forgotPassword)}
           >
-            <p className="text-sm font-semibold">Request a new link</p>
+            Request a new link
           </Button>
         </>
       );
@@ -81,71 +70,32 @@ export const ResetPassword = () => {
     return (
       <>
         <div className="flex w-full flex-col gap-3">
-          <Field>
-            <FieldLabel htmlFor="password-reset-password">
-              New password
-            </FieldLabel>
-            <InputGroup className="bg-card/70">
-              <InputGroupInput
-                id="password-reset-password"
-                type={isPasswordVisible ? "text" : "password"}
-                {...register("password")}
-              />
-              <InputGroupAddon align="inline-end">
-                <Button
-                  className="h-8 w-8 rounded-full p-0"
-                  variant="ghost"
-                  onClick={() => setIsPasswordVisible(!isPasswordVisible)}
-                  type="button"
-                >
-                  {isPasswordVisible ? (
-                    <Eye className="h-5 w-5" />
-                  ) : (
-                    <EyeClosed className="h-5 w-5" />
-                  )}
-                </Button>
-              </InputGroupAddon>
-            </InputGroup>
-            {errors.password && (
-              <FieldError>{errors.password.message}</FieldError>
-            )}
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="confirm-password-reset-password">
-              Confirm new password
-            </FieldLabel>
-            <InputGroup className="bg-card/70">
-              <InputGroupInput
-                id="confirm-password-reset-password"
-                type={isPasswordVisible ? "text" : "password"}
-                {...register("confirmPassword")}
-              />
-            </InputGroup>
-            {errors.confirmPassword && (
-              <FieldError>{errors.confirmPassword.message}</FieldError>
-            )}
-          </Field>
+          <FormField control={control} name="password" label="New password">
+            {(field) => <PasswordInput {...field} className="bg-card/70" />}
+          </FormField>
+          <FormField
+            control={control}
+            name="confirmPassword"
+            label="Confirm new password"
+          >
+            {(field) => <PasswordInput {...field} className="bg-card/70" />}
+          </FormField>
         </div>
 
-        <div className="w-full">
-          <Button className="w-full" type="submit" isLoading={isResetting}>
-            <p className="text-sm font-semibold">Set new password</p>
-          </Button>
-        </div>
+        <Button className="w-full" type="submit" isLoading={isResetting}>
+          Set new password
+        </Button>
       </>
     );
   };
 
   return (
-    <>
-
+    <AuthCard title="Reset password">
       <form
         id="reset-password-form"
-        className="bg-card border-border flex w-full max-w-xl flex-col items-center gap-5 rounded-lg border p-5 shadow-md"
+        className="flex flex-col items-center gap-5"
         onSubmit={onSubmit}
       >
-        <h1 className="text-foreground text-2xl font-bold">Reset password</h1>
-
         {renderContent()}
 
         <Button
@@ -157,6 +107,6 @@ export const ResetPassword = () => {
           Back to sign in
         </Button>
       </form>
-    </>
+    </AuthCard>
   );
 };

@@ -2029,10 +2029,12 @@ Notes: `LoginPage.test.tsx` runs through `renderWithProviders` and MSW with no `
 
 **Done when**:
 
-- [ ] No `register(` in the two pages
-- [ ] Tests through the network for the changed flows
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No `register(` in the two pages
+- [x] Tests through the network for the changed flows
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 580 → 585; all projects 671 → 676
+
+Notes: there was no `ResetPasswordPage.test.ts` (only the schema test `resetPasswordForm.test.ts`, unchanged), so the flows got new integration tests: `ForgotPasswordPage.test.tsx` (sends the email and confirms; empty email) and `ResetPasswordPage.test.tsx` (sets the password with the link's token and goes to sign in; mismatch sends nothing; invalid token offers a new link). Forgot password's intro and confirmation are the `AuthCard` description. On reset, each password field has its own visibility toggle (before, the one toggle also revealed the confirmation).
 
 **Tests**: integration
 **Gate**: quick

@@ -1,13 +1,14 @@
 import { useForgotPassword } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
 import { Button } from "@/components/button/base/Button";
-import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
+import { FormField } from "@/components/form/FormField";
 import { Input } from "@/components/input/base/Input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { z } from "zod";
+import { AuthCard } from "./components/AuthCard";
 
 const forgotPasswordSchema = z.object({
   email: z.string().min(1, "Please enter your email").email("Invalid email"),
@@ -18,11 +19,7 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 export const ForgotPassword = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-  const {
-    register,
-    formState: { errors },
-    handleSubmit,
-  } = useForm<ForgotPasswordFormValues>({
+  const { control, handleSubmit } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: {
       email: "",
@@ -40,47 +37,32 @@ export const ForgotPassword = () => {
   });
 
   return (
-    <>
-
+    <AuthCard
+      title="Forgot password"
+      description={
+        isSubmitted
+          ? "If an account exists for that email, we sent a link to reset your password. It expires in 60 minutes."
+          : "Enter your account email and we’ll send you a link to choose a new password."
+      }
+    >
       <form
         id="forgot-password-form"
-        className="bg-card border-border flex w-full max-w-xl flex-col items-center gap-5 rounded-lg border p-5 shadow-md"
+        className="flex flex-col items-center gap-5"
         onSubmit={onSubmit}
       >
-        <h1 className="text-foreground text-2xl font-bold">Forgot password</h1>
-
-        {isSubmitted ? (
-          <p className="text-muted-foreground text-center text-sm">
-            If an account exists for that email, we sent a link to reset your
-            password. It expires in 60 minutes.
-          </p>
-        ) : (
+        {!isSubmitted && (
           <>
-            <p className="text-muted-foreground text-center text-sm">
-              Enter your account email and we’ll send you a link to choose a new
-              password.
-            </p>
-
             <div className="flex w-full flex-col gap-3">
-              <Field>
-                <FieldLabel htmlFor="email-forgot-password">Email</FieldLabel>
-                <Input
-                  id="email-forgot-password"
-                  placeholder="you@example.com"
-                  className="bg-card/70"
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <FieldError>{errors.email.message}</FieldError>
+              <FormField control={control} name="email" label="Email">
+                {(field) => (
+                  <Input {...field} placeholder="you@example.com" className="bg-card/70" />
                 )}
-              </Field>
+              </FormField>
             </div>
 
-            <div className="w-full">
-              <Button className="w-full" type="submit" isLoading={isSending}>
-                <p className="text-sm font-semibold">Send reset link</p>
-              </Button>
-            </div>
+            <Button className="w-full" type="submit" isLoading={isSending}>
+              Send reset link
+            </Button>
           </>
         )}
 
@@ -93,6 +75,6 @@ export const ForgotPassword = () => {
           Back to sign in
         </Button>
       </form>
-    </>
+    </AuthCard>
   );
 };
