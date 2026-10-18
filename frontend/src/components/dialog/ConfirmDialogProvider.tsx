@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,30 +8,7 @@ import {
   DialogTitle,
 } from "@/components/dialog/Dialog";
 import { Button } from "@/components/button/Button";
-
-interface ConfirmOptions {
-  title: string;
-  description: string;
-  confirmLabel?: string;
-  cancelLabel?: string;
-  variant?: "default" | "destructive";
-}
-
-interface ConfirmDialogContextValue {
-  confirm: (options: ConfirmOptions) => Promise<boolean>;
-}
-
-const ConfirmDialogContext = createContext<ConfirmDialogContextValue | null>(
-  null,
-);
-
-export const useConfirm = () => {
-  const context = useContext(ConfirmDialogContext);
-  if (!context) {
-    throw new Error("useConfirm must be used within ConfirmDialogProvider");
-  }
-  return context.confirm;
-};
+import { ConfirmDialogContext, type ConfirmOptions } from "./useConfirmDialog";
 
 export const ConfirmDialogProvider = ({
   children,
