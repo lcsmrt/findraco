@@ -2530,9 +2530,11 @@ Notes: help text in the category form and limit fields is `FieldDescription` (12
 
 **Done when**:
 
-- [ ] No raw text tags or size/weight classes outside `base/`
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No raw text tags or size/weight classes outside `base/`
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+Notes: table pagination counts are `secondary` (14px at every width). "Lines per page" and the empty table cell are `Text`. `AppVersion` is `caption`. `StandardCombobox` trigger and "Create" text are `body`. In `StandardMultiCombobox` the placeholder is `secondary` and the overflow chip is `Badge` `secondary`. `ProfilePictureInput` (no consumer) is deleted. The `SectionHeader` story asserts the classes of `typographyVariants({ variant: "title" })` instead of literal strings, which the T96 lint would flag. All projects 815 → 815, run per project. In the combined run, user-event tests time out at random under machine load; each takes under 1.3s alone.
 
 **Tests**: none
 **Gate**: full

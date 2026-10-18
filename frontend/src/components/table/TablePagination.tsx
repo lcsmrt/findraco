@@ -1,3 +1,4 @@
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import {
   ChevronLeft,
@@ -57,7 +58,7 @@ export const TablePagination = ({
       )}
     >
       {onPageSizeChange && (
-        <div className="flex w-full items-center gap-2 text-sm">
+        <Text as="div" className="flex w-full items-center gap-2">
           <span className="hidden sm:inline">Lines per page:</span>
           <Select
             value={String(size)}
@@ -78,13 +79,13 @@ export const TablePagination = ({
               ))}
             </SelectContent>
           </Select>
-        </div>
+        </Text>
       )}
 
       <div className="flex w-full items-center justify-end gap-4">
-        <span className="text-muted-foreground hidden text-sm sm:block">
+        <Text variant="secondary" className="hidden sm:block">
           {start} – {end} of {totalElements}
-        </span>
+        </Text>
 
         <div className="flex items-center gap-2">
           <Button
@@ -105,9 +106,9 @@ export const TablePagination = ({
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-muted-foreground text-xs whitespace-nowrap sm:text-sm">
+          <Text variant="secondary" className="whitespace-nowrap">
             Page {page + 1} of {totalPages || 1}
-          </span>
+          </Text>
           <Button
             variant="ghost"
             size="sm"

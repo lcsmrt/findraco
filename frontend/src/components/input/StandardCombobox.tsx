@@ -9,6 +9,7 @@ import {
 } from "@/components/input/base/Combobox";
 import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
 import { Spinner } from "@/components/spinner/base/Spinner";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";
 import * as React from "react";
@@ -103,16 +104,16 @@ export function StandardCombobox<T extends WithId>({
               type="button"
               disabled={disabled}
               className={cn(
-                "border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 flex h-9 w-full cursor-pointer items-center justify-between rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+                "border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 flex h-9 w-full cursor-pointer items-center justify-between rounded-md border bg-transparent px-3 outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
                 showClear && "pr-8",
                 className,
               )}
             />
           }
         >
-          <span className={cn(!value && "text-muted-foreground")}>
+          <Text className={cn(!value && "text-muted-foreground")}>
             {value ? renderItem(value) : placeholder}
-          </span>
+          </Text>
         </ComboboxTrigger>
         {showClear && (
           <button
@@ -150,10 +151,10 @@ export function StandardCombobox<T extends WithId>({
                 onCreateOption(searchTerm);
                 if (!isSearchControlled) setInternalSearch("");
               }}
-              className="text-primary-ink hover:bg-accent flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-sm"
+              className="text-primary-ink hover:bg-accent flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5"
             >
               <PlusIcon className="h-3.5 w-3.5 shrink-0" />
-              Create &ldquo;{searchTerm}&rdquo;
+              <Text>Create &ldquo;{searchTerm}&rdquo;</Text>
             </button>
           </div>
         ) : (

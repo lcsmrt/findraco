@@ -1,3 +1,4 @@
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { flexRender, type Row, type Table } from "@tanstack/react-table";
@@ -43,8 +44,10 @@ export const TableBody = <TData,>({ table, renderSubComponent, emptyState, isLoa
     return (
       <TableBodyBase>
         <tr>
-          <td colSpan={colSpan} className="py-12 text-center text-sm text-muted-foreground">
-            {emptyState ?? "No results."}
+          <td colSpan={colSpan} className="py-12 text-center">
+            <Text as="div" variant="secondary">
+              {emptyState ?? "No results."}
+            </Text>
           </td>
         </tr>
       </TableBodyBase>

@@ -1,3 +1,4 @@
+import { Badge } from "@/components/badge/base/Badge";
 import {
   Combobox,
   ComboboxChip,
@@ -10,6 +11,7 @@ import {
   ComboboxTrigger,
 } from "@/components/input/base/Combobox";
 import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import * as React from "react";
 
@@ -112,14 +114,12 @@ export function StandardMultiCombobox<T extends WithId>({
             </ComboboxChip>
           ))}
           {value.length === 0 && (
-            <span className="text-muted-foreground flex-1 text-sm">
+            <Text variant="secondary" className="flex-1">
               {placeholder}
-            </span>
+            </Text>
           )}
           {overflowCount > 0 && (
-            <span className="bg-muted text-muted-foreground flex h-[calc(--spacing(5.25))] shrink-0 items-center rounded-sm px-1.5 text-xs font-medium whitespace-nowrap">
-              +{overflowCount}
-            </span>
+            <Badge variant="secondary">+{overflowCount}</Badge>
           )}
         </ComboboxTrigger>
       </div>

@@ -1,3 +1,4 @@
+import { typographyVariants } from "@/components/typography/base/typographyVariants";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { PlusIcon } from "lucide-react";
 import { expect } from "storybook/test";
@@ -16,8 +17,7 @@ type Story = StoryObj<typeof meta>;
 export const TitleOnly: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { level: 2, name: "Members" })).toHaveClass(
-      "text-base",
-      "font-semibold",
+      ...typographyVariants({ variant: "title" }).split(" "),
     );
   },
 };
