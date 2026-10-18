@@ -3,8 +3,8 @@ import { cn } from "@/lib/mergeClasses";
 import { getFirstName } from "@/utils/string/formatters";
 import type { ReactNode } from "react";
 import type { MemberOption } from "../../hooks/useOverviewMemberFilter";
-import type { MemberColorOf } from "../../utils/memberColors";
-import { MemberDot } from "./MemberDot";
+import type { MemberColorOf } from "@/utils/memberColors";
+import { MemberDot } from "@/components/memberDot/MemberDot";
 
 /** Plans up to this size get chips; larger ones get a combobox (UX-04 AC 8). */
 const MAX_CHIPS = 4;

@@ -3,8 +3,8 @@ import { Button } from "@/components/button/Button";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency } from "@/utils/string/formatters";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
-import type { MemberColorOf } from "../../utils/memberColors";
-import { MemberDot } from "../overview/MemberDot";
+import type { MemberColorOf } from "@/utils/memberColors";
+import { MemberDot } from "@/components/memberDot/MemberDot";
 
 const money = (value: number) => formatCurrency(value, "BRL");
 

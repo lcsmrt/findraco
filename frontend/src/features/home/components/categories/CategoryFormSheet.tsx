@@ -27,7 +27,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { TransactionTypeToggle } from "../transactions/TransactionTypeToggle";
+import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
 import { CategoryLimitFields } from "./CategoryLimitFields";
 import {
   ALL_CATEGORIES_PAGE_SIZE,

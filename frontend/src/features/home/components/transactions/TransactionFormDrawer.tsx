@@ -45,7 +45,7 @@ import { useForm, type UseFormSetValue } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
 import { useSeriesScope } from "./useSeriesScope";
-import { TransactionTypeToggle } from "./TransactionTypeToggle";
+import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
 import {
   TransactionFormMode,
   TransactionFormValues,

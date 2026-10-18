@@ -3,7 +3,7 @@ import { cn } from "@/lib/mergeClasses";
 import { formatCurrency, getFirstName } from "@/utils/string/formatters";
 import { ChevronRightIcon, TriangleAlertIcon, TriangleIcon } from "lucide-react";
 import { useState } from "react";
-import { MemberDot } from "./MemberDot";
+import { MemberDot } from "@/components/memberDot/MemberDot";
 import type {
   Bar,
   MemberAmount,

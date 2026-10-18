@@ -1,7 +1,7 @@
 import { Card, CardContent } from "@/components/card/Card";
 import { cn } from "@/lib/mergeClasses";
 import { formatCurrency, getFirstName } from "@/utils/string/formatters";
-import { MemberDot } from "./MemberDot";
+import { MemberDot } from "@/components/memberDot/MemberDot";
 import type { SummaryFigure, SummaryView } from "./summaryView";
 
 const money = (value: number) => formatCurrency(value, "BRL");
