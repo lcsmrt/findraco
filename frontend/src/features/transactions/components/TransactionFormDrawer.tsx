@@ -199,6 +199,8 @@ export function TransactionFormDrawer({
             {(field) => (
               <DatePicker
                 id={field.id}
+                ref={field.ref}
+                onBlur={field.onBlur}
                 value={field.value}
                 // Clearing the text keeps the last date: a transaction always has one.
                 onChange={(date) => date && field.onChange(date)}

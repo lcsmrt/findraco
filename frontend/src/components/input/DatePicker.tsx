@@ -25,6 +25,9 @@ export type DatePickerProps = {
   toYear?: number;
   className?: string;
   id?: string;
+  /** The text input, so a form can focus the field on a validation error. */
+  ref?: React.Ref<HTMLInputElement>;
+  onBlur?: () => void;
 }
 
 /**
@@ -41,6 +44,8 @@ export const DatePicker = ({
   toYear = CURRENT_YEAR + 20,
   className,
   id,
+  ref,
+  onBlur,
 }: DatePickerProps) => {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(
@@ -83,12 +88,16 @@ export const DatePicker = ({
         </InputGroupAddon>
         <InputGroupInput
           id={id}
+          ref={ref}
           value={inputValue}
           placeholder={placeholder}
           disabled={disabled}
           onChange={(e) => setInputValue(e.target.value)}
           onFocus={() => setOpen(false)}
-          onBlur={(e) => commitInput(e.currentTarget.value)}
+          onBlur={(e) => {
+            commitInput(e.currentTarget.value);
+            onBlur?.();
+          }}
           onKeyDown={(e) => {
             if (e.key === "Enter") e.currentTarget.blur();
             if (e.key === "Escape")

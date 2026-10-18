@@ -27,6 +27,8 @@ export function EndDateField({ control, disabled }: EndDateFieldProps) {
           </div>
           <DatePicker
             id={id}
+            ref={field.ref}
+            onBlur={field.onBlur}
             value={field.value}
             onChange={field.onChange}
             disabled={disabled}
