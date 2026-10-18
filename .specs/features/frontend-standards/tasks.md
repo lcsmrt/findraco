@@ -361,9 +361,9 @@ T124 → T125
 
 **Done when**:
 
-- [ ] The `watch()` + `setValue()` pattern is gone from the skill and named as the anti-pattern
-- [ ] The `FormField` example matches decision 5's snippet
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] The `watch()` + `setValue()` pattern is gone from the skill and named as the anti-pattern
+- [x] The `FormField` example matches decision 5's snippet
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
