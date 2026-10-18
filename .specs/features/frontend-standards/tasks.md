@@ -2482,9 +2482,11 @@ Notes: first, `body`, `secondary` and `caption` gained `font-normal` (skill tabl
 
 **Done when**:
 
-- [ ] No raw text tags or size/weight classes in the folder
-- [ ] Build gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No raw text tags or size/weight classes in the folder
+- [x] Build gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+Notes: metric labels `secondary` (normal weight); desktop figures and both Balance sizes `headline` (mobile Balance 30→24px, so `Balance` lost its `size` prop); mobile Income/Expenses `title` (18px bold → 16px semibold); `PeriodNavigator` label `title` (mobile 14→16px). Trend tick: `typographyVariants({ variant: "caption" })` with `fill-foreground` for the current period and `fill-muted-foreground` otherwise (the SVG colour classes; the `fontSize` attribute and `font-semibold` are gone), per the second review instead of `label`; the skill example follows. `CategorySpendingList`: status text `caption` + `text-warning`/`text-destructive` (normal weight); member sub-row name and amounts `caption` (`text-foreground` for the name and spent figure); root/child names `title`/`body` (same 16px semibold / 14px as before); root amounts `label` + `secondary` (same look); owner pill is `Badge` `outline`; empty state `secondary`. All projects 815 → 815.
 
 **Tests**: none
 **Gate**: build

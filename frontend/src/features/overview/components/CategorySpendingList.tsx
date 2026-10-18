@@ -1,4 +1,6 @@
+import { Badge } from "@/components/badge/base/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
 import { getFirstName } from "@/utils/string/formatters";
@@ -63,12 +65,12 @@ type StatusTextProps = {
 const StatusText = ({ usage, className }: StatusTextProps) => {
   if (usage.status === "none") return null;
   return (
-    <span
+    <Text
+      variant="caption"
       className={cn(
-        "inline-flex items-center gap-1 text-xs whitespace-nowrap tabular-nums",
-        usage.status === "ok" && "text-muted-foreground",
-        usage.status === "warning" && "text-warning font-medium",
-        usage.status === "over" && "text-destructive font-medium",
+        "inline-flex items-center gap-1 whitespace-nowrap tabular-nums",
+        usage.status === "warning" && "text-warning",
+        usage.status === "over" && "text-destructive",
         className,
       )}
     >
@@ -77,21 +79,27 @@ const StatusText = ({ usage, className }: StatusTextProps) => {
       {usage.status === "over"
         ? `over by ${formatMoney(usage.overBy ?? 0)}`
         : `remaining ${formatMoney(usage.remaining ?? 0)}`}
-      <span className="text-muted-foreground font-normal">· {usage.percent}%</span>
-    </span>
+      <span className="text-muted-foreground">· {usage.percent}%</span>
+    </Text>
   );
 };
 
 type AmountProps = {
   spent: number;
   limit: number | null;
+  /** A member sub-row's smaller figures, in normal weight. */
+  compact?: boolean;
   className?: string;
 };
 
-const Amount = ({ spent, limit, className }: AmountProps) => (
-  <span className={cn("text-sm whitespace-nowrap tabular-nums", className)}>
-    <span className="font-medium">{formatMoney(spent)}</span>
-    {limit != null && <span className="text-muted-foreground"> of {formatMoney(limit)}</span>}
+const Amount = ({ spent, limit, compact = false, className }: AmountProps) => (
+  <span className={cn("whitespace-nowrap tabular-nums", className)}>
+    <Text variant={compact ? "caption" : "label"} className={cn(compact && "text-foreground")}>
+      {formatMoney(spent)}
+    </Text>
+    {limit != null && (
+      <Text variant={compact ? "caption" : "secondary"}> of {formatMoney(limit)}</Text>
+    )}
   </span>
 );
 
@@ -101,7 +109,7 @@ type MemberLineProps = {
 
 /** "● Lucas R$ 1.051 · ● Livia R$ 694" (UX-04 AC 3). */
 const MemberLine = ({ members }: MemberLineProps) => (
-  <span className="text-muted-foreground flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5 text-xs">
+  <Text variant="caption" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
     {members.map((member) => (
       <span
         key={member.memberId}
@@ -117,7 +125,7 @@ const MemberLine = ({ members }: MemberLineProps) => (
         <span className="shrink-0">{formatMoney(member.amount)}</span>
       </span>
     ))}
-  </span>
+  </Text>
 );
 
 type RowBodyProps = {
@@ -127,13 +135,13 @@ type RowBodyProps = {
 /** The text and bar lines shared by roots and children. */
 const RowDetails = ({ row }: RowBodyProps) => {
   const detail = row.focus ? (
-    <span className="text-muted-foreground inline-flex min-w-0 items-center gap-1.5 text-xs tabular-nums">
+    <Text variant="caption" className="inline-flex min-w-0 items-center gap-1.5 tabular-nums">
       <MemberDot color={row.focus.color} />
       <span className="min-w-0">
         {getFirstName(row.focus.name)} {formatMoney(row.focus.spent)} of {formatMoney(row.focus.of)}
         {row.focus.sharedLimit != null && ` · shared limit ${formatMoney(row.focus.sharedLimit)}`}
       </span>
-    </span>
+    </Text>
   ) : (
     row.memberLine.length > 0 && <MemberLine members={row.memberLine} />
   );
@@ -170,20 +178,18 @@ const RowHeader = ({ row, expandable, expanded }: RowHeaderProps) => (
           )}
         />
       )}
-      <span className={cn("break-words", row.depth === 0 ? "font-semibold" : "text-sm")}>
+      <Text variant={row.depth === 0 ? "title" : "body"} className="break-words">
         {row.name}
-      </span>
+      </Text>
       {row.owner && (
-        <span
-          className={cn(
-            "inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[0.7rem] leading-none font-medium",
-            !row.owner.active && "text-muted-foreground opacity-70",
-          )}
+        <Badge
+          variant="outline"
+          className={cn(!row.owner.active && "text-muted-foreground opacity-70")}
         >
           <MemberDot color={row.owner.color} className="size-1.5" />
           <span title={row.owner.name}>{getFirstName(row.owner.name)}</span>
           {!row.owner.active && " (former member)"}
-        </span>
+        </Badge>
       )}
     </span>
     <Amount spent={row.spent} limit={row.limit} className="ml-auto" />
@@ -197,17 +203,17 @@ type SubRowProps = {
 /** One member's spend against their own limit, always visible (UX-04 AC 4). */
 const SubRow = ({ sub }: SubRowProps) => (
   <div className={cn("flex flex-col gap-1", !sub.active && "opacity-60")}>
-    <div className="flex items-center justify-between gap-3 text-xs">
+    <div className="flex items-center justify-between gap-3">
       <span className="flex min-w-0 items-center gap-1.5">
         <MemberDot color={sub.color} />
-        <span className="truncate" title={sub.name}>
+        <Text variant="caption" className="text-foreground truncate" title={sub.name}>
           {getFirstName(sub.name)}
           {!sub.active && <span className="text-muted-foreground"> (former member)</span>}
-        </span>
+        </Text>
       </span>
       <span className="flex items-center gap-3">
         <StatusText usage={sub} className="hidden sm:inline-flex" />
-        <Amount spent={sub.spent} limit={sub.limit} className="text-xs" />
+        <Amount spent={sub.spent} limit={sub.limit} compact />
       </span>
     </div>
     {sub.bar && <UsageBar bar={sub.bar} className="h-1" />}
@@ -303,9 +309,9 @@ export const CategorySpendingList = ({ view, className }: CategorySpendingListPr
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
         {view.rows.length === 0 ? (
-          <p className="text-muted-foreground flex h-32 items-center justify-center text-sm">
+          <Text as="p" variant="secondary" className="flex h-32 items-center justify-center">
             No expense categories yet.
-          </p>
+          </Text>
         ) : (
           <ul className="divide-border flex flex-col divide-y">
             {view.rows.map((row) => (

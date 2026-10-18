@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/card/base/Card";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
 import { getFirstName } from "@/utils/string/formatters";
@@ -32,7 +33,7 @@ type MemberAmountsProps = {
 /** "● Lucas R$ 2.733 · ● Livia R$ 2.414" (UX-05 AC 1). */
 const MemberAmounts = ({ figure, className }: MemberAmountsProps) =>
   figure.segments.length > 0 && (
-    <div className={cn("text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5 text-xs", className)}>
+    <Text as="div" variant="caption" className={cn("flex flex-wrap gap-x-3 gap-y-0.5", className)}>
       {figure.segments.map((segment) => (
         <span
           key={segment.memberId}
@@ -48,7 +49,7 @@ const MemberAmounts = ({ figure, className }: MemberAmountsProps) =>
           <span className="shrink-0">{formatMoney(segment.amount)}</span>
         </span>
       ))}
-    </div>
+    </Text>
   );
 
 type FigureBlockProps = {
@@ -60,16 +61,16 @@ type FigureBlockProps = {
 
 const FigureBlock = ({ label, figure, tone, size }: FigureBlockProps) => (
   <div className="flex min-w-0 flex-col gap-2">
-    <p className="text-muted-foreground text-sm font-medium">{label}</p>
-    <p
-      className={cn(
-        "font-bold tabular-nums",
-        size === "lg" ? "text-2xl" : "text-lg",
-        tone === "income" ? "text-success" : "text-destructive",
-      )}
+    <Text as="p" variant="secondary">
+      {label}
+    </Text>
+    <Text
+      as="p"
+      variant={size === "lg" ? "headline" : "title"}
+      className={cn("tabular-nums", tone === "income" ? "text-success" : "text-destructive")}
     >
       {formatMoney(figure.total)}
-    </p>
+    </Text>
     <MemberBar figure={figure} />
     <MemberAmounts
       figure={figure}
@@ -80,21 +81,20 @@ const FigureBlock = ({ label, figure, tone, size }: FigureBlockProps) => (
 
 type BalanceProps = {
   balance: number;
-  size: "sm" | "lg";
 };
 
-const Balance = ({ balance, size }: BalanceProps) => (
+const Balance = ({ balance }: BalanceProps) => (
   <div className="flex flex-col gap-2">
-    <p className="text-muted-foreground text-sm font-medium">Balance</p>
-    <p
-      className={cn(
-        "font-bold tabular-nums",
-        size === "lg" ? "text-3xl" : "text-2xl",
-        balance >= 0 ? "text-success" : "text-destructive",
-      )}
+    <Text as="p" variant="secondary">
+      Balance
+    </Text>
+    <Text
+      as="p"
+      variant="headline"
+      className={cn("tabular-nums", balance >= 0 ? "text-success" : "text-destructive")}
     >
       {formatMoney(balance)}
-    </p>
+    </Text>
   </div>
 );
 
@@ -110,7 +110,7 @@ export const SummaryCards = ({ view }: SummaryCardsProps) => (
   <>
     <Card className="sm:hidden">
       <CardContent className="flex flex-col gap-5 px-4">
-        <Balance balance={view.balance} size="lg" />
+        <Balance balance={view.balance} />
         <div className="grid grid-cols-2 gap-4">
           <FigureBlock label="Income" figure={view.income} tone="income" size="sm" />
           <FigureBlock label="Expenses" figure={view.expenses} tone="expense" size="sm" />
@@ -131,7 +131,7 @@ export const SummaryCards = ({ view }: SummaryCardsProps) => (
       </Card>
       <Card>
         <CardContent>
-          <Balance balance={view.balance} size="sm" />
+          <Balance balance={view.balance} />
         </CardContent>
       </Card>
     </div>

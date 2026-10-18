@@ -300,7 +300,7 @@ allowed. Colour stays free but token-only (see Colour).
 - **A variant names a role, never a screen** (no `summaryCardBigNumberMobile`). A case that fits no
   variant gets a new role variant in `typographyVariants`, never a one-off class. Review enforces it.
 - Non-HTML targets (an SVG `<text>` tick in a chart) use the exported scale:
-  `className={typographyVariants({ variant: "label" })}`.
+  `className={cn(typographyVariants({ variant: "caption" }), "fill-muted-foreground")}`.
 - Page titles go through `PageHeader`, section titles through `SectionHeader`, field help text through
   `FieldDescription`.
 - Primitives in `base/` (`Label`, `Button`, `Badge`, `FieldDescription`, inputs, `Sheet`/`Dialog`

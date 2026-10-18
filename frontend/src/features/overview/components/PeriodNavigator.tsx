@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/dropdown/base/Dropdown";
 import { Popover, PopoverContent } from "@/components/popover/base/Popover";
+import { Text } from "@/components/typography/base/Text";
 import { format, isSameDay, parseISO } from "date-fns";
 import {
   CalendarRangeIcon,
@@ -89,12 +90,13 @@ export const PeriodNavigator = ({
       >
         <ChevronLeftIcon />
       </Button>
-      <span
-        className="min-w-36 text-center text-sm font-semibold tabular-nums sm:min-w-40 sm:text-base"
+      <Text
+        variant="title"
+        className="min-w-36 text-center tabular-nums sm:min-w-40"
         aria-live="polite"
       >
         {periodLabel(range)}
-      </span>
+      </Text>
       <Button
         variant="ghost"
         size="icon"

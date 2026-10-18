@@ -8,6 +8,8 @@ import {
   ChartTooltipContent,
 } from "@/components/chart/base/Chart";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
+import { typographyVariants } from "@/components/typography/base/typographyVariants";
+import { cn } from "@/lib/mergeClasses";
 import { format } from "date-fns";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { formatMoney } from "@/utils/money";
@@ -60,8 +62,10 @@ const MonthTick = ({ x = 0, y = 0, index = 0, months }: MonthTickProps) => {
       x={x}
       y={y + 12}
       textAnchor="middle"
-      fontSize={12}
-      className={month.inPeriod ? "fill-foreground font-semibold" : "fill-muted-foreground"}
+      className={cn(
+        typographyVariants({ variant: "caption" }),
+        month.inPeriod ? "fill-foreground" : "fill-muted-foreground",
+      )}
     >
       {month.label}
     </text>
