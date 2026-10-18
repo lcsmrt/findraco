@@ -999,9 +999,9 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] A commit with message "stuff" is rejected locally
-- [ ] A Conventional Commit passes
-- [ ] Build gate passes
+- [x] A commit with message "stuff" is rejected locally
+- [x] A Conventional Commit passes
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build

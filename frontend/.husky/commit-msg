@@ -1,0 +1,1 @@
+python3 .claude/skills/tlc-spec-driven/scripts/check_commit.py "$1"
