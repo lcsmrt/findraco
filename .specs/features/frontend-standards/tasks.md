@@ -562,7 +562,7 @@ T124 → T125
 
 **Done when**:
 
-- [ ] 0 `storybook/no-renderer-packages` and 0 `storybook/no-uninstalled-addons` errors
+- [x] 0 `storybook/no-renderer-packages` and 0 `storybook/no-uninstalled-addons` errors
 - [ ] Existing stories still pass in the `storybook` project
 - [ ] Full gate passes
 
