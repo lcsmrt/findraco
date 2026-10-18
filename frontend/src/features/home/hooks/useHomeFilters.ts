@@ -1,14 +1,10 @@
-import { useCallback, useMemo } from "react";
+import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import {
   parseTab,
-  parseTransactionFilters,
   serializeTab,
-  serializeTransactionFilters,
   TAB_PARAM,
-  TRANSACTION_PARAM_KEYS,
   type HomeTab,
-  type TransactionFilters,
 } from "../filters/homeFilterParams";
 
 const withParams = (
@@ -22,23 +18,14 @@ const withParams = (
   return next;
 };
 
-/** Clear removes filters and the search; sort and page size are display preferences. */
-const CLEARABLE_TRANSACTION_PARAM_KEYS = TRANSACTION_PARAM_KEYS.filter(
-  (key) => key !== "sort" && key !== "size",
-);
-
 /**
- * Home filter state derived from the URL query string (single source of truth).
- * Filter updates replace the history entry; tab switches push a new one.
+ * Home tab derived from the URL query string (single source of truth).
+ * Tab switches push a new history entry.
  */
 export const useHomeFilters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const tab = parseTab(searchParams);
-  const transactions = useMemo(
-    () => parseTransactionFilters(searchParams),
-    [searchParams],
-  );
   const setTab = useCallback(
     (next: HomeTab) =>
       setSearchParams((prev) =>
@@ -47,34 +34,5 @@ export const useHomeFilters = () => {
     [setSearchParams],
   );
 
-  const updateTransactions = useCallback(
-    (update: (current: TransactionFilters) => TransactionFilters) =>
-      setSearchParams(
-        (prev) =>
-          withParams(
-            prev,
-            TRANSACTION_PARAM_KEYS,
-            serializeTransactionFilters(update(parseTransactionFilters(prev))),
-          ),
-        { replace: true },
-      ),
-    [setSearchParams],
-  );
-
-  const clearTransactions = useCallback(
-    () =>
-      setSearchParams(
-        (prev) => withParams(prev, CLEARABLE_TRANSACTION_PARAM_KEYS, {}),
-        { replace: true },
-      ),
-    [setSearchParams],
-  );
-
-  return {
-    tab,
-    transactions,
-    setTab,
-    updateTransactions,
-    clearTransactions,
-  };
+  return { tab, setTab };
 };

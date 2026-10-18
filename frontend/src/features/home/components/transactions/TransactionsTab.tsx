@@ -24,6 +24,7 @@ import { Sorting } from "@/components/table/components/TableHeader";
 import { useDebounce } from "@/hooks/useDebounce";
 import { PlusIcon, SearchIcon, TagIcon, UploadIcon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
 import { useTransactionsPage } from "../../hooks/useTransactionsPage";
@@ -59,8 +60,9 @@ const SORT_COLUMNS: Record<
 };
 
 export const TransactionsTab = () => {
-  const { transactions, updateTransactions, clearTransactions, setTab } =
-    useHomeFilters();
+  const { transactions, updateTransactions, clearTransactions } =
+    useTransactionFilters();
+  const { setTab } = useHomeFilters();
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
   const { filter, sort, size } = transactions;
 

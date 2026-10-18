@@ -11,7 +11,7 @@ import { AxiosError, type AxiosResponse } from "axios";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation, type Location } from "react-router-dom";
 import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
-import { useHomeFilters } from "./useHomeFilters";
+import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
 import { useTransactionFilterChips } from "./useTransactionFilterChips";
 
 vi.mock("@/api/clients/findracoApi", () => ({
@@ -78,7 +78,7 @@ const setup = (url: string) => {
     </QueryClientProvider>
   );
   const hook = renderHook(
-    () => ({ chips: useTransactionFilterChips(), home: useHomeFilters() }),
+    () => ({ chips: useTransactionFilterChips(), home: useTransactionFilters() }),
     { wrapper: Wrapper },
   );
   return Object.assign(hook, { queryClient });

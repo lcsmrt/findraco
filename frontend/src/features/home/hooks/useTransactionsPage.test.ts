@@ -1,6 +1,6 @@
 import { act, renderHook } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
-import type { TransactionFilters } from "../filters/homeFilterParams";
+import type { TransactionFilters } from "@/features/transactions/filters/transactionParams";
 import { useTransactionsPage } from "./useTransactionsPage";
 
 const base: TransactionFilters = {

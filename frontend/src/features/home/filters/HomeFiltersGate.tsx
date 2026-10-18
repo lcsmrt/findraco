@@ -2,13 +2,13 @@ import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { loadHomeFilters, saveHomeFilters } from "@/lib/filterStorage";
 import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
+import { TRANSACTION_PARAM_KEYS } from "@/features/transactions/filters/transactionParams";
 import { useEffect, useRef, type ReactNode } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
 import {
   PLAN_PARAM,
   parsePlanParam,
   TAB_PARAM,
-  TRANSACTION_PARAM_KEYS,
 } from "./homeFilterParams";
 
 const HOME_PARAM_KEYS = [

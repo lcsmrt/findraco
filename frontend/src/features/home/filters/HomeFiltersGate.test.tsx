@@ -2,6 +2,7 @@ import { act, cleanup, render } from "@testing-library/react";
 import { useSyncExternalStore } from "react";
 import { MemoryRouter, useLocation, type Location } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
 import { useHomeFilters } from "../hooks/useHomeFilters";
 import { HomeFiltersGate } from "./HomeFiltersGate";
 
@@ -39,7 +40,8 @@ let location: Location;
 let childRenders: string[];
 /** `plan` param vs active plan for every child render. */
 let childPlans: { urlPlan: string | null; activePlanId: number | null }[];
-let filters: ReturnType<typeof useHomeFilters>;
+let filters: ReturnType<typeof useHomeFilters> &
+  ReturnType<typeof useTransactionFilters>;
 
 const LocationProbe = () => {
   location = useLocation();
@@ -53,7 +55,7 @@ const Child = () => {
     urlPlan: new URLSearchParams(search).get("plan"),
     activePlanId: planState.activePlanId,
   });
-  filters = useHomeFilters();
+  filters = { ...useHomeFilters(), ...useTransactionFilters() };
   return null;
 };
 

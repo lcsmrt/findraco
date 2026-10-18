@@ -12,7 +12,7 @@ import { formatCurrency, formatDate } from "@/utils/string/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { useCallback, useEffect, useMemo } from "react";
-import { useHomeFilters } from "./useHomeFilters";
+import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
 
 type FilterKey = keyof PagedFinancialTransactionsFilter;
 
@@ -27,7 +27,7 @@ const isNotFound = (error: unknown) =>
  * category or member that no longer exists in the plan is dropped from the URL.
  */
 export const useTransactionFilterChips = () => {
-  const { transactions, updateTransactions } = useHomeFilters();
+  const { transactions, updateTransactions } = useTransactionFilters();
   const { activePlanId } = usePlanContext();
   const queryClient = useQueryClient();
   const { filter } = transactions;
