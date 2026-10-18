@@ -1231,6 +1231,8 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 - [x] Full gate passes
 - [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
+Follow-up (after T69): the Storybook project failed its first run after a new Base UI import. Its dependency cache (`node_modules/.cache/storybook/<hash>/sb-vitest`) is reused until the lockfile changes, so a Base UI subpath imported for the first time was discovered mid-run; Vite re-optimised and reloaded, and the story loading at that moment failed (reproduced with a scratch story importing `@base-ui/react/tabs`). The storybook project now lists every public Base UI entry point, read from the package's `exports`, in `optimizeDeps.include`. With the scratch story on a warm cache the run passes with no reload; two cold runs (cache cleared) pass, 24 files / 78 tests. No retries.
+
 **Tests**: story
 **Gate**: full
 **Commit**: `test(frontend): storybook project in pnpm test with a11y errors`

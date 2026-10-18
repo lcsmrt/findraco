@@ -7,6 +7,7 @@ import path from "path";
 // https://vite.dev/config/
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 const dirname =
   typeof __dirname !== "undefined"
@@ -17,6 +18,30 @@ const pkg = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
 );
 const buildDate = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+
+/**
+ * Every public Base UI entry point (`@base-ui/react/tabs`, …), read from its package manifest.
+ *
+ * The Storybook project pre-bundles dependencies from what its first scan finds and reuses that cache
+ * until the lockfile changes. A Base UI subpath imported for the first time (a new primitive) is then
+ * discovered mid-run: Vite re-optimises, reloads, and the stories loading at that moment fail. Listing
+ * every subpath up front makes the bundle complete before any story loads, so no retry is needed.
+ */
+function baseUiEntryPoints(): string[] {
+  const manifestPath = createRequire(import.meta.url).resolve("@base-ui/react/package.json");
+  const manifest: unknown = JSON.parse(readFileSync(manifestPath, "utf-8"));
+  if (typeof manifest !== "object" || manifest === null || !("exports" in manifest)) {
+    throw new Error(`No exports map in ${manifestPath}`);
+  }
+  const { exports } = manifest;
+  if (typeof exports !== "object" || exports === null) {
+    throw new Error(`No exports map in ${manifestPath}`);
+  }
+  return Object.keys(exports)
+    .filter((subpath) => subpath !== "./package.json" && subpath !== "./types")
+    .filter((subpath) => !subpath.startsWith("./internals/"))
+    .map((subpath) => path.posix.join("@base-ui/react", subpath));
+}
 
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
@@ -41,6 +66,9 @@ export default defineConfig({
             configDir: path.join(dirname, ".storybook"),
           }),
         ],
+        optimizeDeps: {
+          include: baseUiEntryPoints(),
+        },
         test: {
           name: "storybook",
           browser: {
