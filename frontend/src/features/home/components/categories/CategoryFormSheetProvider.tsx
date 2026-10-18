@@ -1,11 +1,11 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { useRef, useState, type ReactNode } from "react";
-import type { CategoryFormDefaults } from "./categoryForm";
 import { CategoryFormSheet } from "./CategoryFormSheet";
 import {
   CategoryFormSheetContext,
+  type CategoryFormDefaults,
   type CategoryFormSheetContextValue,
-} from "./useCategoryFormSheet";
+} from "@/hooks/useCategoryFormSheet";
 
 type SheetState =
   | { open: false }

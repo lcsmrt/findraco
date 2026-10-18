@@ -1,6 +1,9 @@
 import { FinancialTransactionCategory } from "@/api/dtos";
 import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
-import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
+import {
+  ALL_CATEGORIES_PAGE_SIZE,
+  useGetFinancialTransactionCategories,
+} from "@/api/services/useFinancialTransactionCategoryService";
 import { Button } from "@/components/button/Button";
 import {
   Combobox,
@@ -17,9 +20,8 @@ import { Spinner } from "@/components/spinner/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/categoryForm";
-import { useCategoryFormSheet } from "../categories/useCategoryFormSheet";
-import { groupCategoryOptions } from "./categoryOptions";
+import { useCategoryFormSheet } from "@/hooks/useCategoryFormSheet";
+import { groupCategoryOptions } from "../utils/categoryOptions";
 
 type CategoryComboboxProps = {
   id?: string;

@@ -24,17 +24,17 @@ import { Sorting } from "@/components/table/components/TableHeader";
 import { useDebounce } from "@/hooks/useDebounce";
 import { PlusIcon, SearchIcon, TagIcon, UploadIcon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
-import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
-import { useTransactionsPage } from "../../hooks/useTransactionsPage";
-import { useSeriesScope } from "./useSeriesScope";
+import { useTransactionFilters } from "./filters/useTransactionFilters";
+import { useTransactionFilterChips } from "./useTransactionFilterChips";
+import { useTransactionsPage } from "./useTransactionsPage";
+import { useSeriesScope } from "./components/useSeriesScope";
 import {
   AppliedFilters,
   TransactionFilterPopover,
-} from "./TransactionFilterPopover";
-import { TransactionFormDrawer } from "./TransactionFormDrawer";
-import { TransactionMobileList } from "./TransactionMobileList";
-import { buildTransactionColumns, InlineSaveBody } from "./transactionColumns";
+} from "./components/TransactionFilterPopover";
+import { TransactionFormDrawer } from "./components/TransactionFormDrawer";
+import { TransactionMobileList } from "./components/TransactionMobileList";
+import { buildTransactionColumns, InlineSaveBody } from "./components/transactionColumns";
 
 const SEARCH_DEBOUNCE_MS = 400;
 

@@ -2,7 +2,10 @@ import type {
   FinancialTransactionType,
   PlanMember,
 } from "@/api/dtos";
-import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
+import {
+  ALL_CATEGORIES_PAGE_SIZE,
+  useGetFinancialTransactionCategories,
+} from "@/api/services/useFinancialTransactionCategoryService";
 import { Button } from "@/components/button/Button";
 import { DateRangePicker } from "@/components/input/DatePicker";
 import { Input } from "@/components/input/base/Input";
@@ -23,9 +26,8 @@ import {
 import { SlidersHorizontalIcon } from "lucide-react";
 import { maskCurrency } from "@/utils/string/masks";
 import { useMemo, useState } from "react";
-import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/categoryForm";
 import { countActiveFilters } from "./activeFilterCount";
-import { groupCategoryOptions } from "./categoryOptions";
+import { groupCategoryOptions } from "../utils/categoryOptions";
 import {
   fromDraft,
   toDraft,

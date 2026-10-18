@@ -3,6 +3,7 @@ import type { PlanMember } from "@/api/dtos/plan";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import {
+  ALL_CATEGORIES_PAGE_SIZE,
   useCreateFinancialTransactionCategory,
   useGetFinancialTransactionCategories,
   useUpdateFinancialTransactionCategory,
@@ -30,8 +31,6 @@ import { useForm } from "react-hook-form";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
 import { CategoryLimitFields } from "./CategoryLimitFields";
 import {
-  ALL_CATEGORIES_PAGE_SIZE,
-  CategoryFormDefaults,
   CategoryFormValues,
   buildDefaultValues,
   categoryHasChildren,
@@ -42,6 +41,7 @@ import {
   parentOptions,
   toPayload,
 } from "./categoryForm";
+import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
 
 const NO_MEMBERS: PlanMember[] = [];

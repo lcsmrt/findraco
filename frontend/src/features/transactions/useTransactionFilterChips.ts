@@ -12,7 +12,7 @@ import { formatCurrency, formatDate } from "@/utils/string/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { useCallback, useEffect, useMemo } from "react";
-import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
+import { useTransactionFilters } from "./filters/useTransactionFilters";
 
 type FilterKey = keyof PagedFinancialTransactionsFilter;
 

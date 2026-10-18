@@ -11,7 +11,7 @@ import { AxiosError, type AxiosResponse } from "axios";
 import type { ReactNode } from "react";
 import { MemoryRouter, useLocation, type Location } from "react-router-dom";
 import { afterEach, describe, expect, it, vi, type Mock } from "vitest";
-import { useTransactionFilters } from "@/features/transactions/filters/useTransactionFilters";
+import { useTransactionFilters } from "./filters/useTransactionFilters";
 import { useTransactionFilterChips } from "./useTransactionFilterChips";
 
 vi.mock("@/api/clients/findracoApi", () => ({

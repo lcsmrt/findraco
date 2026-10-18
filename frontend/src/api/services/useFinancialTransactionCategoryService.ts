@@ -35,6 +35,9 @@ const getFinancialTransactionCategories = async (
   return data;
 };
 
+/** Page size large enough to hold every category of a plan (≈25 in practice). */
+export const ALL_CATEGORIES_PAGE_SIZE = 100;
+
 export const useGetFinancialTransactionCategories = (
   params?: PagedRequest<PagedFinancialTransactionCategoriesFilter, FinancialTransactionCategorySortBy>,
   options?: QueryOptions<PagedResponse<FinancialTransactionCategory>>,

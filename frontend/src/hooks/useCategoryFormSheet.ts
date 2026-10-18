@@ -1,6 +1,13 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
 import { createContext, useContext } from "react";
-import type { CategoryFormDefaults } from "./categoryForm";
+
+export type CategoryFormDefaults = {
+  description?: string;
+  type?: FinancialTransactionType;
+  /** Starts a subcategory of this root; the type follows the parent (UX-02 AC 2). */
+  parentId?: number;
+};
 
 export type CategoryFormSheetContextValue = {
   openCreate: (

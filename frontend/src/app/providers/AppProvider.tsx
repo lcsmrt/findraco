@@ -6,7 +6,7 @@ import { TanStackQueryProvider } from "./TanStackQueryProvider";
 import { ThemeProvider } from "./ThemeProvider";
 import { ConfirmDialogProvider } from "@/components/dialog/ConfirmDialogProvider";
 import { CategoryFormSheetProvider } from "@/features/home/components/categories/CategoryFormSheetProvider";
-import { SeriesScopeDialogProvider } from "@/features/home/components/transactions/SeriesScopeDialogProvider";
+import { SeriesScopeDialogProvider } from "@/features/transactions/components/SeriesScopeDialogProvider";
 
 type AppProviderProps = {
   children: ReactNode;

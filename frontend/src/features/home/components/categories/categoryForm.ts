@@ -4,11 +4,9 @@ import {
 } from "@/api/dtos";
 import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
 import type { PlanMember } from "@/api/dtos/plan";
+import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
 import { maskCurrency } from "@/utils/string/masks";
 import { z } from "zod";
-
-/** Page size large enough to hold every category of a plan (≈25 in practice). */
-export const ALL_CATEGORIES_PAGE_SIZE = 100;
 
 export const categoryHasChildren = (
   categoryId: number,
@@ -229,13 +227,6 @@ export const buildMemberLimitRows = (
       active: entry.active,
     }));
   return [...activeRows, ...otherRows];
-};
-
-export type CategoryFormDefaults = {
-  description?: string;
-  type?: FinancialTransactionType;
-  /** Starts a subcategory of this root; the type follows the parent (UX-02 AC 2). */
-  parentId?: number;
 };
 
 export const buildDefaultValues = (

@@ -2,7 +2,7 @@ import { useCallback, useState } from "react";
 import {
   serializeTransactionFilters,
   type TransactionFilters,
-} from "@/features/transactions/filters/transactionParams";
+} from "./filters/transactionParams";
 
 /**
  * Table page for the Transactions tab. Not part of the URL: it starts on the first

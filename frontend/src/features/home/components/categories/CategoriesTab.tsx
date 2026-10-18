@@ -1,5 +1,8 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
-import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
+import {
+  ALL_CATEGORIES_PAGE_SIZE,
+  useGetFinancialTransactionCategories,
+} from "@/api/services/useFinancialTransactionCategoryService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { Button } from "@/components/button/Button";
 import {
@@ -13,11 +16,10 @@ import { cn } from "@/lib/mergeClasses";
 import { PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMemberColors, type MemberColorOf } from "@/utils/memberColors";
-import { ALL_CATEGORIES_PAGE_SIZE } from "./categoryForm";
 import { buildCategoryTree, type CategoryTreeRoot } from "./categoryTree";
 import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./CategoryTreeRow";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
-import { useCategoryFormSheet } from "./useCategoryFormSheet";
+import { useCategoryFormSheet } from "@/hooks/useCategoryFormSheet";
 
 const SECTION_TITLES = { DEBIT: "Expenses", CREDIT: "Income" } as const;
 
