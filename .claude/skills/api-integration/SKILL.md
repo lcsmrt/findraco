@@ -20,7 +20,7 @@ HTTP client; they call a service hook. Code style (`function` declarations, `typ
 | HTTP client (interceptors, session refresh) | `src/api/clients/findracoApi.ts` |
 | DTOs and request types | `src/api/dtos/<entity>.ts`, re-exported from `src/api/dtos/index.ts` |
 | Service hooks | `src/api/services/useXxxService.ts`, one file per domain |
-| Handler factories (tests and stories only) | `src/api/services/xxx.handlers.ts`, beside the service |
+| Handler factories (tests only) | `src/api/services/xxx.handlers.ts`, beside the service |
 | `QueryOptions`, `MutationOptions` | `src/api/types/` |
 | `buildMutationOptions`, `buildPagedQuery`, `toPagination` | `src/api/utils/` |
 
@@ -168,7 +168,7 @@ export function useCreateProduct(options?: MutationOptions<Product, CreateProduc
 ## Handler factories: `xxx.handlers.ts`
 
 Every service file has a sibling `xxx.handlers.ts` with one factory per endpoint. A factory takes the
-response the test needs and returns an MSW `HttpHandler`. Tests and stories compose them; the rules for
+response the test needs and returns an MSW `HttpHandler`. Tests compose them; the rules for
 using them (no global handlers, scenarios, unhandled requests fail) are in `frontend-testing`.
 
 ```ts
@@ -206,9 +206,10 @@ server.use(dashboardHandlers.trend(trend));
 - Factories hold no logic: they return what they are given. That is why `*.handlers.ts` files are exempt
   from the sibling-test gate (by suffix in `scripts/check-siblings.ts`) and excluded from coverage; every
   test that uses them exercises them.
-- **Only tests and stories import `*.handlers` or `@/test/*`.** Enforced by lint
-  `no-restricted-imports` on application files. Why: without it, the gate exemption by suffix would
-  become a hiding place for application code.
+- **Only tests import `*.handlers` or `@/test/*`.** Enforced by lint `no-restricted-imports` on every
+  non-test file, stories included. Why: without it, the gate exemption by suffix would become a hiding
+  place for application code; and stories render presentational components from props, so they never
+  need the network.
 
 ---
 

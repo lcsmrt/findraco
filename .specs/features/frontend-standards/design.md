@@ -211,7 +211,7 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 
 - One `cva` scale, `typographyVariants`, in `typography/base/`, shared by `Heading` (tag from `level`) and `Text` (tag from `as`, default `span`, since a `p` default breaks HTML inside buttons, labels and other paragraphs). The names are hierarchy levels in the style of the Material 3 type scale, not screens.
 - Variants carry the tone their role implies (`secondary`, `caption` are muted); colour stays overridable through token classes (E4a).
-- `tabular-nums` is neither size nor weight, so it stays allowed in `className` (and `Amount` embeds it); figures need no variant of their own.
+- `tabular-nums` is neither size nor weight, so it stays allowed in `className`; figures need no variant of their own (`Amount` is monospace, STD-06 AC 7).
 
 | # | Variant | Classes | Used for |
 | --- | --- | --- | --- |
@@ -390,7 +390,7 @@ Grouped by slice. Paths are under `frontend/` unless stated.
 - **`src/utils/money.ts`**: `formatMoney(value: number, options?: { compact?: boolean }): string`, `toCents(value: number): number`; `MONEY_LOCALE`, `MONEY_CURRENCY` (decision 6).
 - **`src/components/input/CurrencyInput.tsx`**: `value: number | null`, `onValueChange(value: number | null)`, rest to `Input` (decision 5).
 - **`src/components/form/FormField.tsx`**: `control`, `name`, `label`, `description?`, `children(field)` where `field` carries `id`, `ref`, `onBlur`, `aria-invalid`, `value`, `onChange` (decision 5).
-- **`src/components/amount/Amount.tsx`**: `value: number`, `type: FinancialTransactionType`; signed, toned, `tabular-nums`, via `formatMoney` (B6).
+- **`src/components/amount/Amount.tsx`**: `value: number`, `type: FinancialTransactionType`; signed, toned, monospace (`font-mono`, as today), via `formatMoney` (B6).
 - **`toggle/base/`, `toggleGroup/base/`**: shadcn primitives with `tone` (primary, destructive, success) and `chip` variants; **`TransactionTypeToggle`** at the root composes them (B1).
 - **`src/components/form/FormSheet.tsx`**: `open`, `onOpenChange`, `title`, `onSubmit`, `isSubmitting`, `submitLabel`, `mobileActions?`, `children` (B3).
 - **`features/plans/components/PlanNameDialog.tsx`**: `mode: "create" | "rename"` (B5).

@@ -101,7 +101,7 @@ The tree above is the target set by the frontend standards. Migration is in prog
 
 **Purpose:** All data access. Service hooks are global (NOT per-feature).
 **Location:** `src/api/`
-**Key files:** `clients/findracoApi.ts` (axios), `services/useFinancialTransactionService.ts`, `services/*.handlers.ts` (MSW factories for tests and stories), `utils/buildMutationOptions.ts`, `utils/buildPagedQuery.ts`.
+**Key files:** `clients/findracoApi.ts` (axios), `services/useFinancialTransactionService.ts`, `services/*.handlers.ts` (MSW factories, imported by tests only), `utils/buildMutationOptions.ts`, `utils/buildPagedQuery.ts`.
 
 ## Where Things Live
 

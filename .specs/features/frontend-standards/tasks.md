@@ -1007,7 +1007,7 @@ T124 → T125
 
 ### T32: `ci.yml` with frontend and backend jobs
 
-**What**: Create `.github/workflows/ci.yml` on `push` (all branches) and `workflow_dispatch`: `frontend` (pnpm via corepack, frozen install, `pnpm lint`, `pnpm build`, `pnpm test`) and `backend` (Temurin 17, `./mvnw test`).
+**What**: Create `.github/workflows/ci.yml` on `push` (all branches) and `workflow_dispatch`: `frontend` (pnpm via corepack, frozen install, `pnpm lint`, `pnpm build`, `pnpm test`) and `backend` (Temurin 17, `./mvnw test`). `FindracoApplicationTests` extends `AbstractIntegrationTest` and needs the database, so it is renamed `FindracoApplicationIT` (the project's `*IT` convention; failsafe runs it with `verify`).
 **Where**: `.github/workflows/ci.yml`
 **Depends on**: None
 **Reuses**: -
@@ -1629,6 +1629,7 @@ T124 → T125
 
 - [ ] `currencyDigits.test.ts`: 1, 12, 123, 1234 → 0.01, 0.12, 1.23, 12.34; non-digits ignored; paste; 15-digit cap; empty → null
 - [ ] Story `play`: typing 1234 shows R$ 12,34
+- [ ] The component's own `onChange` wins over a spread `onChange` (decision 5 spreads react-hook-form's `field`): a test spreading a `field` still delivers numbers, never the masked string
 - [ ] Full gate passes
 - [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
@@ -1846,7 +1847,7 @@ T124 → T125
 
 ### T69: `Amount`
 
-**What**: `Amount` (`value`, `type`): debit "- " prefix and destructive tone, credit success tone, `tabular-nums`, via `formatMoney`; the mobile list and the table use it.
+**What**: `Amount` (`value`, `type`): debit "- " prefix and destructive tone, credit success tone, monospace (`font-mono`, as today), via `formatMoney`; the mobile list and the table use it.
 **Where**: `frontend/src/components/amount/Amount.tsx`
 **Depends on**: T57
 **Reuses**: -

@@ -322,7 +322,7 @@ a palette class.
 ## Money
 
 - Display a transaction value with `Amount` (`value`, `type`): signed (debit "- "), toned (debit
-  destructive, credit success), tabular figures.
+  destructive, credit success), monospace (`font-mono`), as the list and table show it today.
 - Format any other money value with `formatMoney(value)` from `@/utils/money`, or
   `formatMoney(value, { compact: true })` for chart axes.
 - Never call `Intl.NumberFormat` or `toLocaleString`, and never write a locale or currency code, in a
