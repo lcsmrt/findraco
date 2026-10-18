@@ -24,24 +24,12 @@ import { NumberField } from "@/components/input/base/NumberField";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { DatePicker } from "@/components/input/DatePicker";
 import { FormField } from "@/components/form/FormField";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/sheet/base/Sheet";
+import { FormSheet } from "@/components/form/FormSheet";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney, toCents } from "@/utils/money";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format } from "date-fns";
-import {
-  CopyIcon,
-  PlusIcon,
-  SaveIcon,
-  Trash2Icon,
-  XIcon,
-} from "lucide-react";
+import { CopyIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { useCallback, useEffect, useRef } from "react";
 import { Controller, useForm, type UseFormSetValue } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
@@ -243,491 +231,471 @@ export const TransactionFormDrawer = ({
   };
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right">
-        <SheetHeader>
-          <SheetTitle>{title}</SheetTitle>
-        </SheetHeader>
+    <FormSheet
+      open={open}
+      onOpenChange={onOpenChange}
+      title={title}
+      onSubmit={handleSubmit(onSubmit)}
+      isSubmitting={isPending}
+      submitLabel={submitLabel}
+      submitDisabled={isSeriesEdit && !definition}
+      mobileActions={
+        isEditing &&
+        transaction &&
+        (onDuplicate || onDelete) && (
+          <>
+            {onDelete && (
+              <Button
+                variant="outline"
+                type="button"
+                className="text-destructive hover:text-destructive flex-1"
+                disabled={isPending}
+                onClick={() => onDelete(transaction)}
+              >
+                <Trash2Icon className="h-4 w-4" />
+                Delete
+              </Button>
+            )}
+            {onDuplicate && (
+              <Button
+                variant="outline"
+                type="button"
+                className="flex-1"
+                disabled={isPending}
+                onClick={() => onDuplicate(transaction)}
+              >
+                <CopyIcon className="h-4 w-4" />
+                Duplicate
+              </Button>
+            )}
+          </>
+        )
+      }
+    >
+      {isSeriesEdit && !definition && (
+        <p className="text-muted-foreground text-sm">Loading…</p>
+      )}
 
-        {isSeriesEdit && !definition && (
-          <p className="text-muted-foreground px-4 text-sm">Loading…</p>
+      <FieldGroup>
+        {!isSeriesEdit && (
+          <Field>
+            <FieldLabel htmlFor="transaction-type">Type</FieldLabel>
+            <TransactionTypeToggle
+              value={watch("type")}
+              onChange={(v) => {
+                setValue("type", v);
+                setValue("category", null);
+              }}
+              disabled={isPending}
+            />
+          </Field>
         )}
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-2"
-        >
-          <FieldGroup>
-            {!isSeriesEdit && (
-              <Field>
-                <FieldLabel htmlFor="transaction-type">Type</FieldLabel>
-                <TransactionTypeToggle
-                  value={watch("type")}
-                  onChange={(v) => {
-                    setValue("type", v);
-                    setValue("category", null);
-                  }}
-                  disabled={isPending}
-                />
-              </Field>
-            )}
+        <Field>
+          <FieldLabel htmlFor="transaction-description">
+            Description
+          </FieldLabel>
+          <Input
+            id="transaction-description"
+            placeholder="e.g., Rent, Salary, Groceries"
+            disabled={isPending}
+            aria-invalid={!!errors.description}
+            {...register("description")}
+          />
+          <FieldError errors={[errors.description]} />
+        </Field>
 
-            <Field>
-              <FieldLabel htmlFor="transaction-description">
-                Description
-              </FieldLabel>
-              <Input
-                id="transaction-description"
-                placeholder="e.g., Rent, Salary, Groceries"
+        <FormField control={control} name="amount" label="Amount">
+          {(field) => (
+            <CurrencyInput
+              {...field}
+              onValueChange={field.onChange}
+              placeholder="R$ 0,00"
+              disabled={isPending}
+            />
+          )}
+        </FormField>
+
+        <Field>
+          <FieldLabel htmlFor="transaction-category">Category</FieldLabel>
+          <CategoryCombobox
+            id="transaction-category"
+            value={watch("category") ?? null}
+            onValueChange={handleCategoryChange}
+            type={watch("type")}
+            disabled={isPending}
+          />
+        </Field>
+
+        {!isSeriesEdit && (
+          <Field>
+            <FieldLabel htmlFor="transaction-date">Date</FieldLabel>
+            <DatePicker
+              id="transaction-date"
+              value={watch("date")}
+              onChange={(v) =>
+                v && setValue("date", v, { shouldValidate: true })
+              }
+              disabled={isPending}
+              className="w-full"
+            />
+            <FieldError errors={[errors.date]} />
+          </Field>
+        )}
+
+        {!isSeriesEdit && (
+          <Field>
+            <FieldLabel>Items</FieldLabel>
+            <div className="flex flex-col gap-2">
+              {watch("items").map((item, index) => {
+                const items = watch("items");
+                return (
+                  <div
+                    key={index}
+                    className="border-border flex flex-col gap-2 rounded-md border p-2"
+                  >
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Item description"
+                        className="flex-1"
+                        disabled={isPending}
+                        value={item.description}
+                        onChange={(e) => {
+                          const updated = [...items];
+                          updated[index] = {
+                            ...updated[index],
+                            description: e.target.value,
+                          };
+                          setValue("items", updated);
+                        }}
+                      />
+                      {/* The row has no visible labels, a layout FormField does not offer. */}
+                      <Controller
+                        control={control}
+                        name={`items.${index}.amount`}
+                        render={({ field, fieldState }) => (
+                          <CurrencyInput
+                            {...field}
+                            onValueChange={field.onChange}
+                            aria-label={`Item ${index + 1} amount`}
+                            aria-invalid={fieldState.invalid}
+                            placeholder="R$ 0,00"
+                            className="w-28"
+                            disabled={isPending}
+                          />
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon-sm"
+                        disabled={isPending}
+                        onClick={() =>
+                          setValue(
+                            "items",
+                            items.filter((_, i) => i !== index),
+                          )
+                        }
+                      >
+                        <Trash2Icon className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                    <CategoryCombobox
+                      value={item.category ?? null}
+                      onValueChange={(v) => {
+                        const updated = [...items];
+                        updated[index] = {
+                          ...updated[index],
+                          category: v ?? null,
+                        };
+                        setValue("items", updated);
+                      }}
+                      type={watch("type")}
+                      disabled={isPending}
+                    />
+                  </div>
+                );
+              })}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
                 disabled={isPending}
-                aria-invalid={!!errors.description}
-                {...register("description")}
-              />
-              <FieldError errors={[errors.description]} />
-            </Field>
+                onClick={() =>
+                  setValue("items", [
+                    ...watch("items"),
+                    { description: "", amount: null, category: null },
+                  ])
+                }
+              >
+                <PlusIcon className="h-3.5 w-3.5" />
+                Add item
+              </Button>
+            </div>
+            {watch("items").length > 0 &&
+              (() => {
+                const totalCents = toCents(watch("amount") ?? 0);
+                const itemsCents = watch("items").reduce(
+                  (sum, item) => sum + toCents(item.amount ?? 0),
+                  0,
+                );
+                const remainderCents = totalCents - itemsCents;
+                return (
+                  <p
+                    className={cn(
+                      "text-sm",
+                      remainderCents < 0
+                        ? "text-destructive"
+                        : "text-muted-foreground",
+                    )}
+                  >
+                    Remainder: {formatMoney(remainderCents / 100)}
+                  </p>
+                );
+              })()}
+            {/* With the item amounts registered as fields, the resolver files the list-level
+                error under `root`. */}
+            <FieldError errors={[errors.items?.root]} />
+          </Field>
+        )}
 
-            <FormField control={control} name="amount" label="Amount">
-              {(field) => (
-                <CurrencyInput
-                  {...field}
+        {showAttribution && (
+          <AttributionFields
+            watch={watch}
+            setValue={setAttributionValue}
+            errors={errors}
+            members={members}
+            currentUserId={currentUserId}
+            disabled={isPending}
+          />
+        )}
+
+        {isSeriesEdit && definition?.mode === "INSTALLMENT" && (
+          <Field>
+            <FieldLabel htmlFor="transaction-parcels">
+              Number of installments
+            </FieldLabel>
+            <Controller
+              control={control}
+              name="parcelsNumber"
+              render={({ field }) => (
+                <NumberField
+                  id="transaction-parcels"
+                  ref={field.ref}
+                  name={field.name}
+                  onBlur={field.onBlur}
+                  value={field.value ?? null}
                   onValueChange={field.onChange}
-                  placeholder="R$ 0,00"
+                  min={1}
+                  step={1}
+                  placeholder="e.g., 12"
                   disabled={isPending}
+                  aria-invalid={!!errors.parcelsNumber}
                 />
               )}
-            </FormField>
+            />
+            <FieldError errors={[errors.parcelsNumber]} />
+            <p className="text-muted-foreground text-sm">
+              Currently: parcel {definition.firstParcel ?? 1} of{" "}
+              {definition.parcelsNumber}
+            </p>
+            {parcelsNumberChanged && (
+              <p className="text-sm text-amber-600 dark:text-amber-400">
+                Changing the number of parcels updates the whole series.
+              </p>
+            )}
+          </Field>
+        )}
 
-            <Field>
-              <FieldLabel htmlFor="transaction-category">Category</FieldLabel>
-              <CategoryCombobox
-                id="transaction-category"
-                value={watch("category") ?? null}
-                onValueChange={handleCategoryChange}
-                type={watch("type")}
+        {isSeriesEdit && definition?.mode === "RECURRING" && (
+          <Field>
+            <div className="flex items-center justify-between">
+              <FieldLabel htmlFor="transaction-end-date">
+                End date
+              </FieldLabel>
+              {!watch("endDate") && (
+                <Badge variant="secondary">Ongoing</Badge>
+              )}
+            </div>
+            <DatePicker
+              id="transaction-end-date"
+              value={watch("endDate")}
+              onChange={(v) =>
+                setValue("endDate", v, { shouldValidate: true })
+              }
+              disabled={isPending}
+              className="w-full"
+            />
+            <FieldError errors={[errors.endDate]} />
+            <p className="text-muted-foreground text-sm">
+              Leave empty to keep this series ongoing, with no end date.
+            </p>
+          </Field>
+        )}
+
+        {mode === "create" && (
+          <>
+            <Field orientation="horizontal">
+              <Checkbox
+                id="transaction-recurring"
+                checked={watch("recurring")}
+                onCheckedChange={(checked) => {
+                  setValue("recurring", checked);
+                  if (!checked) {
+                    setValue("recurrenceMode", undefined);
+                    setValue("parcelsNumber", undefined);
+                    setValue("currentParcel", undefined);
+                    setValue("endDate", undefined);
+                  }
+                }}
                 disabled={isPending}
               />
+              <FieldLabel htmlFor="transaction-recurring">
+                Repeat or split into installments?
+              </FieldLabel>
             </Field>
 
-            {!isSeriesEdit && (
-              <Field>
-                <FieldLabel htmlFor="transaction-date">Date</FieldLabel>
-                <DatePicker
-                  id="transaction-date"
-                  value={watch("date")}
-                  onChange={(v) =>
-                    v && setValue("date", v, { shouldValidate: true })
-                  }
-                  disabled={isPending}
-                  className="w-full"
-                />
-                <FieldError errors={[errors.date]} />
-              </Field>
-            )}
-
-            {!isSeriesEdit && (
-              <Field>
-                <FieldLabel>Items</FieldLabel>
-                <div className="flex flex-col gap-2">
-                  {watch("items").map((item, index) => {
-                    const items = watch("items");
-                    return (
-                      <div
-                        key={index}
-                        className="border-border flex flex-col gap-2 rounded-md border p-2"
-                      >
-                        <div className="flex items-center gap-2">
-                          <Input
-                            placeholder="Item description"
-                            className="flex-1"
-                            disabled={isPending}
-                            value={item.description}
-                            onChange={(e) => {
-                              const updated = [...items];
-                              updated[index] = {
-                                ...updated[index],
-                                description: e.target.value,
-                              };
-                              setValue("items", updated);
-                            }}
-                          />
-                          {/* The row has no visible labels, a layout FormField does not offer. */}
-                          <Controller
-                            control={control}
-                            name={`items.${index}.amount`}
-                            render={({ field, fieldState }) => (
-                              <CurrencyInput
-                                {...field}
-                                onValueChange={field.onChange}
-                                aria-label={`Item ${index + 1} amount`}
-                                aria-invalid={fieldState.invalid}
-                                placeholder="R$ 0,00"
-                                className="w-28"
-                                disabled={isPending}
-                              />
-                            )}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon-sm"
-                            disabled={isPending}
-                            onClick={() =>
-                              setValue(
-                                "items",
-                                items.filter((_, i) => i !== index),
-                              )
-                            }
-                          >
-                            <Trash2Icon className="h-3.5 w-3.5" />
-                          </Button>
-                        </div>
-                        <CategoryCombobox
-                          value={item.category ?? null}
-                          onValueChange={(v) => {
-                            const updated = [...items];
-                            updated[index] = {
-                              ...updated[index],
-                              category: v ?? null,
-                            };
-                            setValue("items", updated);
-                          }}
-                          type={watch("type")}
-                          disabled={isPending}
-                        />
-                      </div>
-                    );
-                  })}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={isPending}
-                    onClick={() =>
-                      setValue("items", [
-                        ...watch("items"),
-                        { description: "", amount: null, category: null },
-                      ])
-                    }
-                  >
-                    <PlusIcon className="h-3.5 w-3.5" />
-                    Add item
-                  </Button>
-                </div>
-                {watch("items").length > 0 &&
-                  (() => {
-                    const totalCents = toCents(watch("amount") ?? 0);
-                    const itemsCents = watch("items").reduce(
-                      (sum, item) => sum + toCents(item.amount ?? 0),
-                      0,
-                    );
-                    const remainderCents = totalCents - itemsCents;
-                    return (
-                      <p
-                        className={cn(
-                          "text-sm",
-                          remainderCents < 0
-                            ? "text-destructive"
-                            : "text-muted-foreground",
-                        )}
-                      >
-                        Remainder: {formatMoney(remainderCents / 100)}
-                      </p>
-                    );
-                  })()}
-                {/* With the item amounts registered as fields, the resolver files the list-level
-                    error under `root`. */}
-                <FieldError errors={[errors.items?.root]} />
-              </Field>
-            )}
-
-            {showAttribution && (
-              <AttributionFields
-                watch={watch}
-                setValue={setAttributionValue}
-                errors={errors}
-                members={members}
-                currentUserId={currentUserId}
-                disabled={isPending}
-              />
-            )}
-
-            {isSeriesEdit && definition?.mode === "INSTALLMENT" && (
-              <Field>
-                <FieldLabel htmlFor="transaction-parcels">
-                  Number of installments
-                </FieldLabel>
-                <Controller
-                  control={control}
-                  name="parcelsNumber"
-                  render={({ field }) => (
-                    <NumberField
-                      id="transaction-parcels"
-                      ref={field.ref}
-                      name={field.name}
-                      onBlur={field.onBlur}
-                      value={field.value ?? null}
-                      onValueChange={field.onChange}
-                      min={1}
-                      step={1}
-                      placeholder="e.g., 12"
-                      disabled={isPending}
-                      aria-invalid={!!errors.parcelsNumber}
-                    />
-                  )}
-                />
-                <FieldError errors={[errors.parcelsNumber]} />
-                <p className="text-muted-foreground text-sm">
-                  Currently: parcel {definition.firstParcel ?? 1} of{" "}
-                  {definition.parcelsNumber}
-                </p>
-                {parcelsNumberChanged && (
-                  <p className="text-sm text-amber-600 dark:text-amber-400">
-                    Changing the number of parcels updates the whole series.
-                  </p>
-                )}
-              </Field>
-            )}
-
-            {isSeriesEdit && definition?.mode === "RECURRING" && (
-              <Field>
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="transaction-end-date">
-                    End date
-                  </FieldLabel>
-                  {!watch("endDate") && (
-                    <Badge variant="secondary">Ongoing</Badge>
-                  )}
-                </div>
-                <DatePicker
-                  id="transaction-end-date"
-                  value={watch("endDate")}
-                  onChange={(v) =>
-                    setValue("endDate", v, { shouldValidate: true })
-                  }
-                  disabled={isPending}
-                  className="w-full"
-                />
-                <FieldError errors={[errors.endDate]} />
-                <p className="text-muted-foreground text-sm">
-                  Leave empty to keep this series ongoing, with no end date.
-                </p>
-              </Field>
-            )}
-
-            {mode === "create" && (
+            {watch("recurring") && (
               <>
-                <Field orientation="horizontal">
-                  <Checkbox
-                    id="transaction-recurring"
-                    checked={watch("recurring")}
-                    onCheckedChange={(checked) => {
-                      setValue("recurring", checked);
-                      if (!checked) {
-                        setValue("recurrenceMode", undefined);
+                <Field>
+                  <FieldLabel>Mode</FieldLabel>
+                  <ToggleGroup
+                    aria-label="Mode"
+                    variant="outline"
+                    tone="primary"
+                    value={recurrenceMode ? [recurrenceMode] : []}
+                    onValueChange={([next]) => {
+                      if (!next) return;
+                      setValue("recurrenceMode", next, { shouldValidate: true });
+                      if (next === "INSTALLMENT") {
+                        setValue("endDate", undefined);
+                      } else {
                         setValue("parcelsNumber", undefined);
                         setValue("currentParcel", undefined);
-                        setValue("endDate", undefined);
                       }
                     }}
                     disabled={isPending}
-                  />
-                  <FieldLabel htmlFor="transaction-recurring">
-                    Repeat or split into installments?
-                  </FieldLabel>
+                    className="w-full flex-nowrap"
+                  >
+                    <ToggleGroupItem value="INSTALLMENT" className="flex-1">
+                      Installments
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="RECURRING" className="flex-1">
+                      Recurring
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                  <FieldError errors={[errors.recurrenceMode]} />
                 </Field>
 
-                {watch("recurring") && (
+                {watch("recurrenceMode") === "INSTALLMENT" && (
                   <>
                     <Field>
-                      <FieldLabel>Mode</FieldLabel>
-                      <ToggleGroup
-                        aria-label="Mode"
-                        variant="outline"
-                        tone="primary"
-                        value={recurrenceMode ? [recurrenceMode] : []}
-                        onValueChange={([next]) => {
-                          if (!next) return;
-                          setValue("recurrenceMode", next, { shouldValidate: true });
-                          if (next === "INSTALLMENT") {
-                            setValue("endDate", undefined);
-                          } else {
-                            setValue("parcelsNumber", undefined);
-                            setValue("currentParcel", undefined);
-                          }
-                        }}
-                        disabled={isPending}
-                        className="w-full flex-nowrap"
-                      >
-                        <ToggleGroupItem value="INSTALLMENT" className="flex-1">
-                          Installments
-                        </ToggleGroupItem>
-                        <ToggleGroupItem value="RECURRING" className="flex-1">
-                          Recurring
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                      <FieldError errors={[errors.recurrenceMode]} />
+                      <FieldLabel htmlFor="transaction-parcels-create">
+                        Number of installments
+                      </FieldLabel>
+                      <Controller
+                        control={control}
+                        name="parcelsNumber"
+                        render={({ field }) => (
+                          <NumberField
+                            id="transaction-parcels-create"
+                            ref={field.ref}
+                            name={field.name}
+                            onBlur={field.onBlur}
+                            value={field.value ?? null}
+                            onValueChange={field.onChange}
+                            min={1}
+                            step={1}
+                            placeholder="e.g., 12"
+                            disabled={isPending}
+                            aria-invalid={!!errors.parcelsNumber}
+                          />
+                        )}
+                      />
+                      <FieldError errors={[errors.parcelsNumber]} />
                     </Field>
 
-                    {watch("recurrenceMode") === "INSTALLMENT" && (
-                      <>
-                        <Field>
-                          <FieldLabel htmlFor="transaction-parcels-create">
-                            Number of installments
-                          </FieldLabel>
-                          <Controller
-                            control={control}
-                            name="parcelsNumber"
-                            render={({ field }) => (
-                              <NumberField
-                                id="transaction-parcels-create"
-                                ref={field.ref}
-                                name={field.name}
-                                onBlur={field.onBlur}
-                                value={field.value ?? null}
-                                onValueChange={field.onChange}
-                                min={1}
-                                step={1}
-                                placeholder="e.g., 12"
-                                disabled={isPending}
-                                aria-invalid={!!errors.parcelsNumber}
-                              />
-                            )}
+                    <Field>
+                      <FieldLabel htmlFor="transaction-current-parcel">
+                        Current installment
+                      </FieldLabel>
+                      <Controller
+                        control={control}
+                        name="currentParcel"
+                        render={({ field }) => (
+                          <NumberField
+                            id="transaction-current-parcel"
+                            ref={field.ref}
+                            name={field.name}
+                            onBlur={field.onBlur}
+                            value={field.value ?? null}
+                            onValueChange={field.onChange}
+                            min={1}
+                            step={1}
+                            placeholder="1"
+                            disabled={isPending}
+                            aria-invalid={!!errors.currentParcel}
                           />
-                          <FieldError errors={[errors.parcelsNumber]} />
-                        </Field>
+                        )}
+                      />
+                      <FieldError errors={[errors.currentParcel]} />
+                    </Field>
 
-                        <Field>
-                          <FieldLabel htmlFor="transaction-current-parcel">
-                            Current installment
-                          </FieldLabel>
-                          <Controller
-                            control={control}
-                            name="currentParcel"
-                            render={({ field }) => (
-                              <NumberField
-                                id="transaction-current-parcel"
-                                ref={field.ref}
-                                name={field.name}
-                                onBlur={field.onBlur}
-                                value={field.value ?? null}
-                                onValueChange={field.onChange}
-                                min={1}
-                                step={1}
-                                placeholder="1"
-                                disabled={isPending}
-                                aria-invalid={!!errors.currentParcel}
-                              />
-                            )}
-                          />
-                          <FieldError errors={[errors.currentParcel]} />
-                        </Field>
-
-                        {(() => {
-                          const total = watch("parcelsNumber") ?? Number.NaN;
-                          const current = watch("currentParcel") ?? 1;
-                          const date = watch("date");
-                          if (
-                            !Number.isFinite(total) ||
-                            total < 2 ||
-                            current < 1 ||
-                            current > total ||
-                            !date
-                          ) {
-                            return null;
-                          }
-                          const lastMonth = addMonths(date, total - current);
-                          return (
-                            <p className="text-muted-foreground text-sm">
-                              Last installment: {total}/{total} —{" "}
-                              {format(lastMonth, "MM/yyyy")}
-                            </p>
-                          );
-                        })()}
-                      </>
-                    )}
-
-                    {watch("recurrenceMode") === "RECURRING" && (
-                      <Field>
-                        <div className="flex items-center justify-between">
-                          <FieldLabel htmlFor="transaction-create-end-date">
-                            End date
-                          </FieldLabel>
-                          {!watch("endDate") && (
-                            <Badge variant="secondary">Ongoing</Badge>
-                          )}
-                        </div>
-                        <DatePicker
-                          id="transaction-create-end-date"
-                          value={watch("endDate")}
-                          onChange={(v) =>
-                            setValue("endDate", v, { shouldValidate: true })
-                          }
-                          disabled={isPending}
-                          className="w-full"
-                        />
-                        <FieldError errors={[errors.endDate]} />
+                    {(() => {
+                      const total = watch("parcelsNumber") ?? Number.NaN;
+                      const current = watch("currentParcel") ?? 1;
+                      const date = watch("date");
+                      if (
+                        !Number.isFinite(total) ||
+                        total < 2 ||
+                        current < 1 ||
+                        current > total ||
+                        !date
+                      ) {
+                        return null;
+                      }
+                      const lastMonth = addMonths(date, total - current);
+                      return (
                         <p className="text-muted-foreground text-sm">
-                          Leave empty to keep this series ongoing, with no end
-                          date.
+                          Last installment: {total}/{total} —{" "}
+                          {format(lastMonth, "MM/yyyy")}
                         </p>
-                      </Field>
-                    )}
+                      );
+                    })()}
                   </>
+                )}
+
+                {watch("recurrenceMode") === "RECURRING" && (
+                  <Field>
+                    <div className="flex items-center justify-between">
+                      <FieldLabel htmlFor="transaction-create-end-date">
+                        End date
+                      </FieldLabel>
+                      {!watch("endDate") && (
+                        <Badge variant="secondary">Ongoing</Badge>
+                      )}
+                    </div>
+                    <DatePicker
+                      id="transaction-create-end-date"
+                      value={watch("endDate")}
+                      onChange={(v) =>
+                        setValue("endDate", v, { shouldValidate: true })
+                      }
+                      disabled={isPending}
+                      className="w-full"
+                    />
+                    <FieldError errors={[errors.endDate]} />
+                    <p className="text-muted-foreground text-sm">
+                      Leave empty to keep this series ongoing, with no end
+                      date.
+                    </p>
+                  </Field>
                 )}
               </>
             )}
-          </FieldGroup>
-        </form>
-
-        <SheetFooter>
-          {isEditing && transaction && (onDuplicate || onDelete) && (
-            <div className="flex gap-2 sm:hidden">
-              {onDelete && (
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="text-destructive hover:text-destructive flex-1"
-                  disabled={isPending}
-                  onClick={() => onDelete(transaction)}
-                >
-                  <Trash2Icon className="h-4 w-4" />
-                  Delete
-                </Button>
-              )}
-              {onDuplicate && (
-                <Button
-                  variant="outline"
-                  type="button"
-                  className="flex-1"
-                  disabled={isPending}
-                  onClick={() => onDuplicate(transaction)}
-                >
-                  <CopyIcon className="h-4 w-4" />
-                  Duplicate
-                </Button>
-              )}
-            </div>
-          )}
-          <Button
-            variant="outline"
-            type="button"
-            disabled={isPending}
-            onClick={() => onOpenChange(false)}
-          >
-            <XIcon className="h-4 w-4" />
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            isLoading={isPending}
-            disabled={isSeriesEdit && !definition}
-            onClick={handleSubmit(onSubmit)}
-          >
-            <SaveIcon className="h-4 w-4" />
-            {submitLabel}
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          </>
+        )}
+      </FieldGroup>
+    </FormSheet>
   );
 };

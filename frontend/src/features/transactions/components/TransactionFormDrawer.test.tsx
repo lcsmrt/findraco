@@ -82,12 +82,16 @@ type RenderDrawerOptions = {
   transaction?: FinancialTransaction;
   /** Two or more members show the attribution fields to an owner. */
   members: PlanMember[];
+  onDelete?: (transaction: FinancialTransaction) => void;
+  onDuplicate?: (transaction: FinancialTransaction) => void;
 };
 
 function renderDrawer({
   mode = "create",
   transaction,
   members,
+  onDelete,
+  onDuplicate,
 }: RenderDrawerOptions) {
   server.use(
     planHandlers.members(members),
@@ -109,6 +113,8 @@ function renderDrawer({
           onOpenChange={onOpenChange}
           mode={mode}
           transaction={transaction}
+          onDelete={onDelete}
+          onDuplicate={onDuplicate}
         />
       </SeriesScopeDialogProvider>
     </CategoryFormSheetContext.Provider>,
@@ -246,6 +252,47 @@ describe("TransactionFormDrawer money fields", () => {
     expect(requests.find((request) => request.method === "PUT")?.url).toMatch(
       /\/plan\/5\/financial-transaction\/42$/,
     );
+  });
+});
+
+describe("TransactionFormDrawer skeleton", () => {
+  afterEach(cleanup);
+
+  it("closes on Cancel without sending anything (STD-06 AC 8)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const { onOpenChange } = renderDrawer({ members: [lucas] });
+
+    await user.type(screen.getByLabelText("Description"), "Rent");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(requests.filter((request) => request.method !== "GET")).toEqual([]);
+  });
+
+  it("offers Delete and Duplicate for the edited transaction (STD-06 AC 8)", async () => {
+    const user = userEvent.setup();
+    const onDelete = vi.fn();
+    const onDuplicate = vi.fn();
+    renderDrawer({
+      mode: "edit",
+      transaction: savedTransaction,
+      members: [lucas],
+      onDelete,
+      onDuplicate,
+    });
+
+    await user.click(screen.getByRole("button", { name: "Delete" }));
+    expect(onDelete).toHaveBeenCalledWith(savedTransaction);
+    await user.click(screen.getByRole("button", { name: "Duplicate" }));
+    expect(onDuplicate).toHaveBeenCalledWith(savedTransaction);
+  });
+
+  it("offers no Delete or Duplicate when creating (STD-06 AC 8)", () => {
+    renderDrawer({ members: [lucas], onDelete: vi.fn(), onDuplicate: vi.fn() });
+
+    expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Duplicate" })).toBeNull();
   });
 });
 

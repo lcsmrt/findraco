@@ -1934,9 +1934,11 @@ Notes: `FormSheet` needed no per-case props. Submit is a `type="submit"` button 
 
 **Done when**:
 
-- [ ] `TransactionFormDrawer.test.tsx`: Cancel closes, Submit sends, Delete and Duplicate reachable
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `TransactionFormDrawer.test.tsx`: Cancel closes, Submit sends, Delete and Duplicate reachable
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): all projects 658 → 662
+
+Notes: one per-case prop was needed: `submitDisabled` on `FormSheet`. A series edit keeps Submit disabled while the series definition loads, as before; dropping it would leave a Submit that silently does nothing (the submit handler returns without a definition). It is documented as "Submit is unavailable while the form waits for data" and has a `SubmitUnavailable` story. The "Loading…" line moved inside the form. `TransactionFormDrawer.test.tsx` gained Cancel, Delete/Duplicate reachable in edit, and none in create (10 → 13).
 
 **Tests**: integration
 **Gate**: quick

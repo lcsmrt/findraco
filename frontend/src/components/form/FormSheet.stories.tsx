@@ -61,6 +61,14 @@ export const Submitting: Story = {
   },
 };
 
+export const SubmitUnavailable: Story = {
+  args: { title: "Edit series", submitLabel: "Save", submitDisabled: true },
+  play: async () => {
+    await expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
+    await expect(screen.getByRole("button", { name: "Cancel" })).toBeEnabled();
+  },
+};
+
 export const WithMobileActions: Story = {
   args: {
     title: "Edit Transaction",

@@ -17,6 +17,8 @@ type FormSheetProps = {
   onSubmit: (event: FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
   submitLabel: string;
+  /** Submit is unavailable while the form waits for data it needs (a series definition loading). */
+  submitDisabled?: boolean;
   /** Footer actions shown only on narrow screens, where the list's row actions are hidden. */
   mobileActions?: ReactNode;
   children: ReactNode;
@@ -34,6 +36,7 @@ export function FormSheet({
   onSubmit,
   isSubmitting,
   submitLabel,
+  submitDisabled = false,
   mobileActions,
   children,
 }: FormSheetProps) {
@@ -66,7 +69,7 @@ export function FormSheet({
             Cancel
           </Button>
           {/* The footer sits outside the scrolling form, so the button reaches it through `form`. */}
-          <Button type="submit" form={formId} isLoading={isSubmitting}>
+          <Button type="submit" form={formId} isLoading={isSubmitting} disabled={submitDisabled}>
             <SaveIcon className="h-4 w-4" />
             {submitLabel}
           </Button>
