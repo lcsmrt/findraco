@@ -490,8 +490,8 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Commands match the Gate Check Commands of this file
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] Commands match the Gate Check Commands of this file
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
