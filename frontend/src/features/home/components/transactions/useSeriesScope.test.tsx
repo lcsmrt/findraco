@@ -5,7 +5,7 @@ import {
   SeriesScopeDialogContext,
   type SeriesScopeDialogContextValue,
   useSeriesScope,
-} from "./useSeriesScopeDialog";
+} from "./useSeriesScope";
 
 afterEach(cleanup);
 

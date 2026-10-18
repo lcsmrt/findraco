@@ -13,7 +13,7 @@ import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { Badge } from "@/components/badge/Badge";
 import { Button } from "@/components/button/Button";
-import { useConfirm } from "@/components/dialog/useConfirmDialog";
+import { useConfirm } from "@/components/dialog/useConfirm";
 import {
   InputGroup,
   InputGroupAddon,
@@ -27,7 +27,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
 import { useTransactionsPage } from "../../hooks/useTransactionsPage";
-import { useSeriesScope } from "./useSeriesScopeDialog";
+import { useSeriesScope } from "./useSeriesScope";
 import {
   AppliedFilters,
   TransactionFilterPopover,

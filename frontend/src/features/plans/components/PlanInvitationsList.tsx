@@ -5,7 +5,7 @@ import {
 } from "@/api/services/useInvitationService";
 import { Badge } from "@/components/badge/Badge";
 import { Button } from "@/components/button/Button";
-import { useConfirm } from "@/components/dialog/useConfirmDialog";
+import { useConfirm } from "@/components/dialog/useConfirm";
 import { Spinner } from "@/components/spinner/Spinner";
 import { format } from "date-fns";
 import { Trash2Icon } from "lucide-react";

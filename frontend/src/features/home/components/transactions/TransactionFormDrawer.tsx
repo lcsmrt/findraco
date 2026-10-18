@@ -55,7 +55,7 @@ import { useForm, type UseFormSetValue } from "react-hook-form";
 import { z } from "zod";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
-import { useSeriesScope } from "./useSeriesScopeDialog";
+import { useSeriesScope } from "./useSeriesScope";
 import { TransactionTypeToggle } from "./TransactionTypeToggle";
 
 export const transactionFormSchema = z

@@ -8,7 +8,7 @@ import { useAuth } from "@/app/providers/useAuth";
 import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
 import { Badge } from "@/components/badge/Badge";
 import { Button } from "@/components/button/Button";
-import { useConfirm } from "@/components/dialog/useConfirmDialog";
+import { useConfirm } from "@/components/dialog/useConfirm";
 import {
   Select,
   SelectContent,

@@ -776,6 +776,8 @@ T124 → T125
 **Gate**: quick
 **Commit**: `refactor(frontend): split the `Table` context into provider and hook`
 
+Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.ts`, `useSeriesScope.ts`, tests with them), per the provider pattern `useXxx.ts` → `useXxx`.
+
 ---
 
 ### Phase 4: Lint baseline: component files export only components (STD-02, C1) (T22–T29)

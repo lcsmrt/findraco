@@ -10,7 +10,7 @@ import { Button } from "@/components/button/Button";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import { RadioGroup, RadioGroupItem } from "@/components/input/base/RadioGroup";
 import { SeriesEditScope } from "@/api/dtos/financialTransaction";
-import type { ScopeDialogOptions } from "./useSeriesScopeDialog";
+import type { ScopeDialogOptions } from "./useSeriesScope";
 
 type ScopeOption = {
   value: SeriesEditScope;

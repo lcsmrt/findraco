@@ -4,7 +4,7 @@ import { SeriesScopeDialog } from "./SeriesScopeDialog";
 import {
   SeriesScopeDialogContext,
   type ScopeDialogOptions,
-} from "./useSeriesScopeDialog";
+} from "./useSeriesScope";
 
 export const SeriesScopeDialogProvider = ({
   children,

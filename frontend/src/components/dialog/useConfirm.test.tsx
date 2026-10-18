@@ -5,7 +5,7 @@ import {
   ConfirmDialogContext,
   type ConfirmDialogContextValue,
   useConfirm,
-} from "./useConfirmDialog";
+} from "./useConfirm";
 
 afterEach(cleanup);
 

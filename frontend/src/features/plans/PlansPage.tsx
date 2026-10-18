@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/card/Card";
-import { useConfirm } from "@/components/dialog/useConfirmDialog";
+import { useConfirm } from "@/components/dialog/useConfirm";
 import { SectionHeader } from "@/components/sectionHeader/SectionHeader";
 import { Spinner } from "@/components/spinner/Spinner";
 import { PATHS } from "@/app/routing/paths";
