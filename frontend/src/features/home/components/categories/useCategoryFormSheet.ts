@@ -1,6 +1,6 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { createContext, useContext } from "react";
-import type { CategoryFormDefaults } from "./CategoryFormSheet";
+import type { CategoryFormDefaults } from "./categoryForm";
 
 export type CategoryFormSheetContextValue = {
   openCreate: (

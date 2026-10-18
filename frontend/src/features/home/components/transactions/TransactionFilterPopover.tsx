@@ -24,7 +24,7 @@ import {
 import { SlidersHorizontalIcon } from "lucide-react";
 import { maskCurrency } from "@/utils/string/masks";
 import { useMemo, useState } from "react";
-import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/CategoryFormSheet";
+import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/categoryForm";
 import { groupCategoryOptions } from "./CategoryCombobox";
 import {
   fromDraft,

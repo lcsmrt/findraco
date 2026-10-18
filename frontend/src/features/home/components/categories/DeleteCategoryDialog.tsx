@@ -24,7 +24,7 @@ import { AxiosError } from "axios";
 import { Trash2Icon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { categoryHasChildren } from "./CategoryFormSheet";
+import { categoryHasChildren } from "./categoryForm";
 
 /** Categories that can receive a deleted category's references: same type, not itself, not its children. */
 export const eligibleDeleteTargets = (

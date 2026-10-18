@@ -1,8 +1,4 @@
-import {
-  CreateFinancialTransactionCategoryRequest,
-  FinancialTransactionCategory,
-} from "@/api/dtos";
-import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import { FinancialTransactionCategory } from "@/api/dtos";
 import type { PlanMember } from "@/api/dtos/plan";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
@@ -27,311 +23,28 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/sheet/Sheet";
-import { maskCurrency } from "@/utils/string/masks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { TransactionTypeToggle } from "../transactions/TransactionTypeToggle";
 import { CategoryLimitFields } from "./CategoryLimitFields";
+import {
+  ALL_CATEGORIES_PAGE_SIZE,
+  CategoryFormDefaults,
+  CategoryFormValues,
+  buildDefaultValues,
+  categoryHasChildren,
+  createCategoryFormSchema,
+  effectiveOwnerId,
+  memberLimitShares,
+  ownerOptions,
+  parentOptions,
+  toPayload,
+} from "./categoryForm";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
 
 const NO_MEMBERS: PlanMember[] = [];
-
-/** Page size large enough to hold every category of a plan (≈25 in practice). */
-export const ALL_CATEGORIES_PAGE_SIZE = 100;
-
-export const categoryHasChildren = (
-  categoryId: number,
-  categories: FinancialTransactionCategory[],
-) => categories.some((c) => c.parentId === categoryId);
-
-/** Categories that can be the parent of `editingId`: roots of `type`, never itself. */
-export const parentOptions = (
-  categories: FinancialTransactionCategory[],
-  type: FinancialTransactionType,
-  editingId?: number,
-) =>
-  categories
-    .filter((c) => c.parentId == null && c.type === type && c.id !== editingId)
-    .sort((a, b) => a.description.localeCompare(b.description));
-
-/** The owner a category would have: a child inherits its parent's (CAT-15). */
-export const effectiveOwnerId = (
-  parentId: number | null,
-  ownerId: number | null,
-  categories: FinancialTransactionCategory[],
-): number | null => {
-  if (parentId != null) {
-    return categories.find((c) => c.id === parentId)?.ownerId ?? null;
-  }
-  return ownerId;
-};
-
-export type OwnerOption = { id: number; name: string; active: boolean };
-
-/**
- * Members a root can belong to: the active members, plus the current owner
- * when they left the plan, so the OWNER can keep that ownership (CAT-14).
- */
-export const ownerOptions = (
-  members: PlanMember[],
-  category?: FinancialTransactionCategory | null,
-): OwnerOption[] => {
-  const options: OwnerOption[] = members
-    .map((member) => ({ id: member.userId, name: member.name, active: true }))
-    .sort((a, b) => a.name.localeCompare(b.name));
-  const ownerId = category?.parentId == null ? category?.ownerId : null;
-  if (ownerId != null && !options.some((o) => o.id === ownerId)) {
-    options.push({ id: ownerId, name: category?.ownerName ?? "", active: false });
-  }
-  return options;
-};
-
-const memberLimitRowSchema = z.object({
-  memberId: z.number(),
-  memberName: z.string(),
-  /** Masked currency; empty = no individual limit for this member. */
-  amount: z.string(),
-  /** false = a former member's dormant entry (kept or removed, never edited). */
-  active: z.boolean(),
-});
-
-export type MemberLimitRow = z.infer<typeof memberLimitRowSchema>;
-
-const categoryFormBaseSchema = z.object({
-  type: z.enum(["DEBIT", "CREDIT"]),
-  description: z.string().trim().min(1, "Name is required"),
-  parentId: z.number().nullable(),
-  ownerId: z.number().nullable(),
-  spendingLimit: z.string(),
-  limitMode: z.enum(["single", "perMember"]),
-  memberLimits: z.array(memberLimitRowSchema),
-});
-
-export type CategoryFormValues = z.infer<typeof categoryFormBaseSchema>;
-
-/**
- * Hierarchy rules the API enforces, checked up front: a category with
- * subcategories keeps its type and stays a root; a parent must be a root of
- * the same type.
- */
-export const createCategoryFormSchema = (
-  categories: FinancialTransactionCategory[],
-  editing?: FinancialTransactionCategory | null,
-) =>
-  categoryFormBaseSchema.superRefine((values, ctx) => {
-    refineMemberLimits(values, ctx, categories);
-    if (values.parentId != null && values.ownerId != null) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "A subcategory has its parent's owner",
-        path: ["ownerId"],
-      });
-    }
-    const hasChildren =
-      editing != null && categoryHasChildren(editing.id, categories);
-    if (hasChildren && values.type !== editing.type) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "A category with subcategories cannot change type",
-        path: ["type"],
-      });
-    }
-    if (values.parentId == null) return;
-    if (hasChildren) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "A category with subcategories cannot have a parent",
-        path: ["parentId"],
-      });
-      return;
-    }
-    const allowed = parentOptions(categories, values.type, editing?.id);
-    if (!allowed.some((c) => c.id === values.parentId)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Choose a top-level category of the same type",
-        path: ["parentId"],
-      });
-    }
-  });
-
-/** Per-member limit rules the API enforces (CAT-13), checked up front. */
-const refineMemberLimits = (
-  values: CategoryFormValues,
-  ctx: z.RefinementCtx,
-  categories: FinancialTransactionCategory[],
-) => {
-  if (values.limitMode !== "perMember") return;
-  if (values.type === "CREDIT") {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Income categories cannot have per-member limits",
-      path: ["limitMode"],
-    });
-    return;
-  }
-  if (effectiveOwnerId(values.parentId, values.ownerId, categories) != null) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "A category that belongs to one member cannot have per-member limits",
-      path: ["limitMode"],
-    });
-    return;
-  }
-  const seen = new Set<number>();
-  values.memberLimits.forEach((row, index) => {
-    if (seen.has(row.memberId)) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Each member can have only one limit",
-        path: ["memberLimits", index, "memberId"],
-      });
-    }
-    seen.add(row.memberId);
-    if (row.amount.trim().startsWith("-")) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Amount cannot be negative",
-        path: ["memberLimits", index, "amount"],
-      });
-    }
-  });
-};
-
-const parseLimit = (masked: string): number | undefined => {
-  const digits = masked.replace(/\D/g, "");
-  return digits ? parseInt(digits, 10) / 100 : undefined;
-};
-
-const maskAmount = (amount: number) =>
-  maskCurrency(String(Math.round(amount * 100)));
-
-/**
- * Each active member's read-only share of the per-member total, in percent
- * (one decimal). Former members and members without an amount have no share.
- */
-export const memberLimitShares = (
-  rows: MemberLimitRow[],
-): Map<number, number> => {
-  const amounts = rows
-    .filter((row) => row.active)
-    .map((row) => ({ memberId: row.memberId, amount: parseLimit(row.amount) }))
-    .filter((row): row is { memberId: number; amount: number } => row.amount != null);
-  const total = amounts.reduce((sum, row) => sum + row.amount, 0);
-  const shares = new Map<number, number>();
-  amounts.forEach((row) =>
-    shares.set(
-      row.memberId,
-      total === 0 ? 0 : Math.round((row.amount / total) * 1000) / 10,
-    ),
-  );
-  return shares;
-};
-
-/**
- * One row per active member (with their stored amount, if any), then the
- * stored entries of former members.
- */
-export const buildMemberLimitRows = (
-  category: FinancialTransactionCategory | null | undefined,
-  members: PlanMember[],
-): MemberLimitRow[] => {
-  const stored = category?.memberLimits ?? [];
-  const activeRows: MemberLimitRow[] = members
-    .map((member) => {
-      const entry = stored.find((e) => e.memberId === member.userId);
-      return {
-        memberId: member.userId,
-        memberName: member.name,
-        amount: entry ? maskAmount(entry.amount) : "",
-        active: true,
-      };
-    })
-    .sort((a, b) => a.memberName.localeCompare(b.memberName));
-  const listed = new Set(activeRows.map((row) => row.memberId));
-  const otherRows: MemberLimitRow[] = stored
-    .filter((entry) => !listed.has(entry.memberId))
-    .map((entry) => ({
-      memberId: entry.memberId,
-      memberName: entry.memberName,
-      amount: maskAmount(entry.amount),
-      active: entry.active,
-    }));
-  return [...activeRows, ...otherRows];
-};
-
-export type CategoryFormDefaults = {
-  description?: string;
-  type?: FinancialTransactionType;
-  /** Starts a subcategory of this root; the type follows the parent (UX-02 AC 2). */
-  parentId?: number;
-};
-
-export const buildDefaultValues = (
-  category?: FinancialTransactionCategory | null,
-  defaults?: CategoryFormDefaults,
-  members: PlanMember[] = [],
-  categories: FinancialTransactionCategory[] = [],
-): CategoryFormValues => {
-  const memberLimits = buildMemberLimitRows(category, members);
-  if (category) {
-    return {
-      type: category.type,
-      description: category.description,
-      parentId: category.parentId ?? null,
-      // A child reports its parent's owner; only a root's owner is its own.
-      ownerId: category.parentId == null ? (category.ownerId ?? null) : null,
-      spendingLimit:
-        category.spendingLimit != null ? maskAmount(category.spendingLimit) : "",
-      limitMode: category.memberLimits?.length ? "perMember" : "single",
-      memberLimits,
-    };
-  }
-  const parent =
-    defaults?.parentId != null
-      ? categories.find((c) => c.id === defaults.parentId)
-      : undefined;
-  return {
-    type: defaults?.type ?? parent?.type ?? "DEBIT",
-    description: defaults?.description ?? "",
-    parentId: defaults?.parentId ?? null,
-    ownerId: null,
-    spendingLimit: "",
-    limitMode: "single",
-    memberLimits,
-  };
-};
-
-/**
- * Per member mode sends every row with an amount (former members' entries
- * included, unchanged) and no plain limit; single mode sends the plain limit
- * and clears the per-member entries.
- */
-export const toPayload = (
-  values: CategoryFormValues,
-): CreateFinancialTransactionCategoryRequest["body"] => {
-  const perMember = values.type === "DEBIT" && values.limitMode === "perMember";
-  return {
-    type: values.type,
-    description: values.description.trim(),
-    parentId: values.parentId,
-    ownerId: values.parentId == null ? values.ownerId : null,
-    // Income categories carry no limit.
-    spendingLimit:
-      values.type === "DEBIT" && !perMember
-        ? parseLimit(values.spendingLimit)
-        : undefined,
-    memberLimits: perMember
-      ? values.memberLimits.flatMap((row) => {
-          const amount = parseLimit(row.amount);
-          return amount == null ? [] : [{ memberId: row.memberId, amount }];
-        })
-      : [],
-  };
-};
 
 type CategoryFormSheetProps = {
   open: boolean;

@@ -1,6 +1,7 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { useRef, useState, type ReactNode } from "react";
-import { CategoryFormSheet, type CategoryFormDefaults } from "./CategoryFormSheet";
+import type { CategoryFormDefaults } from "./categoryForm";
+import { CategoryFormSheet } from "./CategoryFormSheet";
 import {
   CategoryFormSheetContext,
   type CategoryFormSheetContextValue,

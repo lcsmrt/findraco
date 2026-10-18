@@ -10,7 +10,7 @@ import type {
   UseFormSetValue,
   UseFormWatch,
 } from "react-hook-form";
-import type { CategoryFormValues } from "./CategoryFormSheet";
+import type { CategoryFormValues } from "./categoryForm";
 
 type CategoryLimitFieldsProps = {
   register: UseFormRegister<CategoryFormValues>;

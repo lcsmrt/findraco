@@ -17,7 +17,7 @@ import { Spinner } from "@/components/spinner/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
-import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/CategoryFormSheet";
+import { ALL_CATEGORIES_PAGE_SIZE } from "../categories/categoryForm";
 import { useCategoryFormSheet } from "../categories/useCategoryFormSheet";
 
 export type CategoryOption = {

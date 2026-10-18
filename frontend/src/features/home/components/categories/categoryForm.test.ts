@@ -12,7 +12,7 @@ import {
   toPayload,
   type CategoryFormValues,
   type MemberLimitRow,
-} from "./CategoryFormSheet";
+} from "./categoryForm";
 
 const cat = (
   id: number,
