@@ -174,8 +174,12 @@ describe("eslint.config.js", () => {
     }
 
     it.each([
-      ["src/hooks/configProbe.ts", [testSupport, appInternals]],
-      ["src/test/configProbe.ts", [appInternals]],
+      ["src/hooks/configProbe.ts", [testSupport, appInternals, crossFeature]],
+      ["src/hooks/configProbe.test.ts", [appInternals, crossFeature]],
+      ["src/utils/configProbe.ts", [testSupport, appInternals, crossFeature]],
+      ["src/lib/configProbe.ts", [testSupport, appInternals, crossFeature]],
+      ["src/api/services/configProbe.ts", [testSupport, appInternals, crossFeature]],
+      ["src/test/configProbe.ts", [appInternals, crossFeature]],
       ["src/app/home/ConfigProbe.tsx", [testSupport]],
       ["src/app/home/ConfigProbe.test.tsx", []],
       ["src/features/x/ConfigProbe.tsx", [testSupport, appInternals, crossFeature]],
@@ -212,6 +216,11 @@ describe("eslint.config.js", () => {
       ["src/components/x/base/ConfigProbe.tsx", "@/app/routing/paths", true, "AC 7"],
       ["src/components/x/base/ConfigProbe.tsx", "@/api/dtos", true, "AC 7"],
       ["src/components/x/base/ConfigProbe.tsx", "@/lib/mergeClasses", false, "AC 7"],
+      ["src/hooks/configProbe.ts", "@/features/plans/PlansPage", true, "C6"],
+      ["src/utils/configProbe.ts", "@/features/transactions/filters/transactionParams", true, "C6"],
+      ["src/lib/configProbe.ts", "@/features/auth/LoginPage", true, "C6"],
+      ["src/api/services/configProbe.ts", "@/features/categories/CategoriesTab", true, "C6"],
+      ["src/test/configProbe.ts", "@/features/overview/OverviewTab", true, "C6"],
       ["src/hooks/configProbe.ts", "@/app/layout/Navbar", true, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/routing/AppRouter", true, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/routing/paths", false, "AC 8"],

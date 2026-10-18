@@ -83,7 +83,7 @@ it moves up again, possibly to the root.
 - The root accepts components with domain names (`MemberDot`, `TransactionTypeToggle`, `Amount`).
   Scope decides the folder, not vocabulary.
 - **Features never import from each other.** Anything two features need has been lifted. Enforced by
-  lint `no-restricted-imports` on `@/features/*` inside `src/features/**`.
+  lint `no-restricted-imports` on `@/features/*` everywhere outside `src/app/**`.
 - When you lift a module, move its test with it, and update every import in the same commit.
 - Two occurrences of a pattern are enough to extract (`component-creation`); this ladder decides where
   the extracted piece goes.
@@ -200,10 +200,8 @@ Restrictions per layer (`eslint.config.js`):
 
 | Glob | `no-restricted-imports` | `no-restricted-syntax` |
 | --- | --- | --- |
-| `src/**` except `src/app/**` | all of `@/app/*` except `@/app/providers/*` and `@/app/routing/paths` | palette + typography + raw `<p>`/`<hN>` |
+| `src/**` except `src/app/**` | all of `@/app/*` except `@/app/providers/*` and `@/app/routing/paths`; `@/features/*` | palette + typography + raw `<p>`/`<hN>` |
 | `src/app/**` | none | palette + typography + raw `<p>`/`<hN>` |
-| `src/features/**` | the above + `@/features/*` | same |
-| `src/components/**` | the above + `@/features/*` | same |
 | `src/components/**/base/**` | the above + `@/api/*` and all of `@/app/*` | palette only |
 
 Everywhere, non-test files never import `*.handlers` or `@/test/*` (see `api-integration`).

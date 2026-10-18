@@ -31,7 +31,8 @@ const appInternalsImports = [
 ]
 
 // Only app/ composes features. What two features need is lifted one rung (colocation ladder), and
-// imports inside a feature are relative, so any @/features/ import here crosses a feature boundary.
+// imports inside a feature are relative, so any @/features/ import outside app/ crosses a boundary:
+// from a feature into another, or from a lower layer (hooks, utils, api, components) up into one.
 const crossFeatureImports = [
   {
     group: ['@/features/*'],
@@ -121,10 +122,8 @@ export default defineConfig({ ignores: ['dist'] }, {
   },
 },
 // Import layers, from the widest to the narrowest; each spreads its parents' fragments.
-...importLayer(['src/**/*.{ts,tsx}'], [...appInternalsImports], ['src/app/**']),
+...importLayer(['src/**/*.{ts,tsx}'], [...appInternalsImports, ...crossFeatureImports], ['src/app/**']),
 ...importLayer(['src/app/**/*.{ts,tsx}'], []),
-...importLayer(['src/features/**/*.{ts,tsx}'], [...appInternalsImports, ...crossFeatureImports]),
-...importLayer(['src/components/**/*.{ts,tsx}'], [...appInternalsImports, ...crossFeatureImports]),
 ...importLayer(
   ['src/components/**/base/**/*.{ts,tsx}'],
   [...appInternalsImports, ...crossFeatureImports, ...appAnyImports, ...apiImports],

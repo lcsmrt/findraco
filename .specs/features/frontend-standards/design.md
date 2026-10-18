@@ -48,10 +48,8 @@ Schema generation in CI (booting the backend with a database) is left for the ST
 
 | Glob | `no-restricted-imports` | `no-restricted-syntax` |
 | --- | --- | --- |
-| `src/**` except `src/app/**` | all of `@/app/*` except `providers/*` and `routing/paths` (C6 wording; covers `app/home`, see decision 4) | palette + typography + raw `<p>`/`<hN>` |
+| `src/**` except `src/app/**` | all of `@/app/*` except `providers/*` and `routing/paths` (C6 wording; covers `app/home`, see decision 4); `@/features/*` (only `app/` imports features, C6) | palette + typography + raw `<p>`/`<hN>` |
 | `src/app/**` | — | palette + typography + raw `<p>`/`<hN>` |
-| `src/features/**` | the above + `@/features/*` | same |
-| `src/components/**` | the above + `@/features/*` | same |
 | `src/components/**/base/**` | the above + `@/api/*`, all of `@/app/*` | **palette only** |
 
 - A config test calls `ESLint#calculateConfigForFile` on one representative path per layer and asserts every expected fragment is active. A forgotten fragment becomes a red test instead of a silent gap.

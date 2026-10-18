@@ -1550,6 +1550,8 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 **Gate**: build
 **Commit**: `build(frontend): layered import restrictions with config tests`
 
+Follow-up: `crossFeatureImports` now applies to every layer outside `src/app/**` (C6: only `app/` imports features), so `hooks`, `utils`, `lib`, `api` and `test` reject `@/features/*` too; the `features/**` and `components/**` blocks, now identical to their parent, are gone. Config-test cases added per layer; design decision 1 and `feature-structure` tables updated. Commit `build(frontend): only app may import features`.
+
 ---
 
 ### Phase 9: Shared components: money, `FormField`, `CurrencyInput` (STD-06) (T56–T62)
