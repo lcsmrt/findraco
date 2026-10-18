@@ -1831,9 +1831,11 @@ Notes: the toggles are the recurrence mode and, in `AttributionFields`, "Attribu
 
 **Done when**:
 
-- [ ] Story: none selected, one selected, many members, long names
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Story: none selected, one selected, many members, long names
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): all projects 638 → 642
+
+Notes: the `ManyMembers` story (5+ members, the combobox branch) failed axe `button-name`: the combobox trigger had no accessible name. It now has a visually hidden "Filter by member" label.
 
 **Tests**: story
 **Gate**: full
