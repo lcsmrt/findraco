@@ -1,4 +1,4 @@
-import { Toaster } from "@/components/sonner/Sonner";
+import { Toaster } from "./layout/Toaster";
 import { AppProvider } from "./providers/AppProvider";
 import { AppRouter } from "./routing/AppRouter";
 

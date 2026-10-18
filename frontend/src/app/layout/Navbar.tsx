@@ -5,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "../dropdown/Dropdown";
+} from "@/components/dropdown/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/app/providers/useAuth";

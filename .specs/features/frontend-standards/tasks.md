@@ -1497,9 +1497,9 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] `src/components/layout` and `navbar` do not exist
-- [ ] Build gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `src/components/layout` and `navbar` do not exist
+- [x] Build gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: none
 **Gate**: build

@@ -1,9 +1,9 @@
-import { MainLayout } from "@/components/layout/MainLayout";
+import { MainLayout } from "@/app/layout/MainLayout";
 import { Home } from "@/app/home/HomePage";
 import { Login } from "@/features/auth/LoginPage";
 import { Route, Routes } from "react-router-dom";
 import { PATHS } from "./paths";
-import { AuthLayout } from "@/components/layout/AuthLayout";
+import { AuthLayout } from "@/app/layout/AuthLayout";
 import { RegisterUser } from "@/features/auth/RegisterUserPage";
 import { PrivateRoute } from "./PrivateRoute";
 import { NotFound } from "@/features/notFound/NotFoundPage";
