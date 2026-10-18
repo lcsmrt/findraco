@@ -528,7 +528,7 @@ T124 → T125
 
 ### T11: `type` everywhere
 
-**What**: Enable `@typescript-eslint/consistent-type-definitions: ["error", "type"]` and apply its autofix to the ~20 files with `interface`.
+**What**: Enable `@typescript-eslint/consistent-type-definitions: ["error", "type"]` and apply its autofix to the ~20 files with `interface`. The one library augmentation (`declare module "axios"` adding `sessionRetried` in `findracoApi.ts`, which only an `interface` can merge) moves to `src/api/clients/axios.d.ts`; the rule is off for `**/*.d.ts` for everyone (E1 addendum, 2026-10-17). Partial work from the first attempt: scratchpad `t11-partial.patch`.
 **Where**: `frontend/eslint.config.js`
 **Depends on**: T10
 **Reuses**: -
@@ -538,8 +538,8 @@ T124 → T125
 
 **Done when**:
 
-- [ ] `grep -rn "^\s*\(export \)\?interface " src` returns nothing
-- [ ] Config test asserts the rule
+- [ ] `grep -rn "^\s*\(export \)\?interface " src --include=*.ts --include=*.tsx | grep -v '\.d\.ts:'` returns nothing
+- [ ] Config test asserts the rule is on for `src/**/*.ts(x)` and off for `src/**/*.d.ts`
 - [ ] Lint error count not higher than after T10
 - [ ] Quick gate passes
 - [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
@@ -563,8 +563,8 @@ T124 → T125
 **Done when**:
 
 - [x] 0 `storybook/no-renderer-packages` and 0 `storybook/no-uninstalled-addons` errors
-- [ ] Existing stories still pass in the `storybook` project
-- [ ] Full gate passes
+- [x] Existing stories still pass in the `storybook` project (16 files, 42 tests, after installing Chromium build 1234 locally)
+- [x] Full gate passes
 
 **Tests**: story
 **Gate**: full
@@ -2635,7 +2635,7 @@ T124 → T125
 
 ### T104: `check-siblings.ts`: story report
 
-**What**: TypeScript script (Node 24 type stripping, `typescript` compiler API) listing every `.tsx` under `src/` (except `index.tsx`, `src/test/**`, tests and stories) without a sibling `.stories.tsx` that does not directly import `@/api/services`, `@/app/providers` or `react-router-dom`; non-zero exit naming each file. Not wired yet.
+**What**: TypeScript script (Node 24 type stripping, `typescript` compiler API) listing every `.tsx` under `src/` (except `index.tsx`, `src/test/**`, tests and stories) without a sibling `.stories.tsx` that does not directly import `@/api/services`, `@/app/providers` or `react-router-dom`; non-zero exit naming each file. Not wired yet. Hook tests may be `.test.tsx` (provider wrappers need JSX): a sibling `.test.ts` or `.test.tsx` both count.
 **Where**: `frontend/scripts/check-siblings.ts`
 **Depends on**: None
 **Reuses**: -

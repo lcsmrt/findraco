@@ -418,6 +418,9 @@ These apply to `.ts` modules and hooks as much as to components.
 - **`type`, never `interface`**, DTOs included. Enforced by lint
   `@typescript-eslint/consistent-type-definitions: "type"`. Why: interfaces merge silently, and `type`
   covers objects, unions, intersections and the discriminated unions the code relies on.
+  The one exception is augmenting a library's types (`declare module "axios" { interface … }`), which
+  only an `interface` can do: it lives in a `*.d.ts` file (`src/api/clients/axios.d.ts`), where the rule
+  is off.
 - **No `any`, no forced `as`.** Enforced by lint (`@typescript-eslint/no-explicit-any`) and review. Use
   generics or narrowing.
 - **Comments explain why.** Enforced by review (the Verifier), since lint cannot judge content.

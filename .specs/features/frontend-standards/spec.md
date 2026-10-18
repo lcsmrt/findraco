@@ -80,7 +80,7 @@ Frontend quality decayed as features shipped fast. The audit (`.specs/codebase/f
 1. WHEN `npm run lint` runs THEN it SHALL exit 0.  <!-- event-driven -->
 2. The ESLint config SHALL set `linterOptions.noInlineConfig: true`.  <!-- ubiquitous -->
 3. The ESLint config SHALL configure `@typescript-eslint/ban-ts-comment` to report `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck`.  <!-- ubiquitous -->
-4. The ESLint config SHALL enforce `@typescript-eslint/consistent-type-definitions: "type"`, and the codebase SHALL contain no `interface` declarations.  <!-- ubiquitous -->
+4. The ESLint config SHALL enforce `@typescript-eslint/consistent-type-definitions: "type"`, and the codebase SHALL contain no `interface` declarations outside `*.d.ts` library augmentations (amended 2026-10-17, E1 addendum).  <!-- ubiquitous -->
 5. A component `.tsx` file SHALL export only components; schemas, mappers and helpers they exported move to sibling `.ts` modules (C1, C2).  <!-- ubiquitous -->
 6. Every context provider SHALL be split into `XxxProvider.tsx` (component only) and `useXxx.ts` (context object + hook that throws outside the provider) (C3).  <!-- ubiquitous -->
 7. Stories SHALL import Storybook types from `@storybook/react-vite`, and `.storybook/main.ts` SHALL not list `@storybook/addon-backgrounds` (F3).  <!-- ubiquitous -->

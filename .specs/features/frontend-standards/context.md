@@ -162,6 +162,13 @@ Frontend coding standards in `finsight`: where code lives, what gets extracted, 
 ### E1 — `type` everywhere
 
 - `type` for every object type, DTOs included, enforced by `@typescript-eslint/consistent-type-definitions: "type"` (autofix; ~32 files). Reason: `interface` declarations merge silently; `type` covers objects, unions and intersections, and the discriminated unions the project relies on. The only legitimate `interface` use, augmenting a library's types, does not occur today; if it does, the rule changes for everyone.
+- **Addendum (2026-10-17, Execute T11):** it does occur. `findracoApi.ts` augments axios's `AxiosRequestConfig` with `sessionRetried`, which only an `interface` can merge. Rule changed for everyone: library augmentations live in `*.d.ts` files (`src/api/clients/axios.d.ts`), and `consistent-type-definitions` is off for `**/*.d.ts`. Application code still never declares an `interface`.
+
+### Form value types: `XxxFormValues` + `XxxFormOutput` (user, 2026-10-17, Execute)
+
+- `XxxFormValues = z.input<typeof schema>` (what fields hold while editing; `null` when empty) and `XxxFormOutput = z.output<typeof schema>` (what a valid submit hands over; a type-predicate `refine` narrows required `number | null` to `number`). `useForm<XxxFormValues, unknown, XxxFormOutput>`; `toPayload` takes `XxxFormOutput`, so it needs no `!` or `as`.
+- Both names always exist, even when identical: they name two moments of the form, not one thing twice, so every form reads the same.
+- Rejected: `XxxFormSubmitValues` (longer, leaves zod's vocabulary); declaring the output type only when it differs (the `toPayload` signature would vary per form); renaming `Values` to `Input` for symmetry. "Values" is react-hook-form's vocabulary (`defaultValues`, `getValues`), and "Input" already names components here (`Input`, `CurrencyInput`), so `TransactionFormInput` would read as a component.
 
 ### E2 — `function` declarations at top level, arrows for callbacks (react.dev style)
 
