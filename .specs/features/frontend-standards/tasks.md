@@ -1021,8 +1021,8 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] YAML parses (`python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))'`)
-- [ ] Commands match the local Build gate
+- [x] YAML parses (`python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))'`)
+- [x] Commands match the local Build gate
 - [ ] First push: both jobs green (user go-ahead)
 
 **Tests**: none
