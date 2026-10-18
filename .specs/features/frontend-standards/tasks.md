@@ -1909,10 +1909,12 @@ Notes: `Amount` sets no font size (typography lint, T96); the mobile list passes
 
 **Done when**:
 
-- [ ] Story: idle, submitting, with mobile actions, long content scrolling, mobile viewport
-- [ ] `CategoryFormSheet.test.tsx` passes (Cancel closes, Submit sends)
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Story: idle, submitting, with mobile actions, long content scrolling, mobile viewport
+- [x] `CategoryFormSheet.test.tsx` passes (Cancel closes, Submit sends)
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): all projects 651 → 658
+
+Notes: `FormSheet` needed no per-case props. Submit is a `type="submit"` button tied to the form by `form={id}`, since the footer sits outside the scrolling form; Enter in a field and the button both go through the form's `onSubmit`. `CategoryFormSheet.test.tsx` gained the Cancel and Submit-closes cases (6 → 8).
 
 **Tests**: story
 **Gate**: full

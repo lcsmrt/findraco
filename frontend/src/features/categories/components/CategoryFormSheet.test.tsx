@@ -31,9 +31,10 @@ type RenderSheetOptions = {
   members: PlanMember[];
   /** Edits this category; creates one when left out. */
   editing?: FinancialTransactionCategory;
+  onOpenChange?: (open: boolean) => void;
 };
 
-function renderSheet({ members, editing }: RenderSheetOptions) {
+function renderSheet({ members, editing, onOpenChange = vi.fn() }: RenderSheetOptions) {
   server.use(
     planHandlers.members(members),
     financialTransactionCategoryHandlers.list({
@@ -48,7 +49,7 @@ function renderSheet({ members, editing }: RenderSheetOptions) {
   const { queryClient } = renderWithProviders(
     <CategoryFormSheet
       open
-      onOpenChange={vi.fn()}
+      onOpenChange={onOpenChange}
       mode={editing ? "edit" : "create"}
       category={editing}
     />,
@@ -179,5 +180,36 @@ describe("CategoryFormSheet limit mode", () => {
     const body = await sentBody(requests, "POST");
     expect(body.spendingLimit).toBe(300);
     expect(body.memberLimits).toEqual([]);
+  });
+});
+
+describe("CategoryFormSheet skeleton", () => {
+  afterEach(cleanup);
+
+  it("closes on Cancel without sending anything (STD-06 AC 8)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const onOpenChange = vi.fn();
+    await renderLoadedSheet({ members: [lucas], onOpenChange });
+
+    await user.type(screen.getByLabelText("Name"), "Groceries");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(requests.filter((request) => request.method !== "GET")).toEqual([]);
+  });
+
+  it("sends the form on Submit and closes once saved (STD-06 AC 8)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const onOpenChange = vi.fn();
+    server.use(financialTransactionCategoryHandlers.create(groceries));
+    await renderLoadedSheet({ members: [lucas], onOpenChange });
+
+    await user.type(screen.getByLabelText("Name"), "Groceries");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    expect((await sentBody(requests, "POST")).description).toBe("Groceries");
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 });

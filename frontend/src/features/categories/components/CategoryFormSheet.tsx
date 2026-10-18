@@ -17,15 +17,9 @@ import {
 } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
-import {
-  Sheet,
-  SheetContent,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/sheet/base/Sheet";
+import { FormSheet } from "@/components/form/FormSheet";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PlusIcon, SaveIcon, Trash2Icon, XIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
@@ -149,181 +143,159 @@ export const CategoryFormSheet = ({
 
   return (
     <>
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="right">
-          <SheetHeader>
-            <SheetTitle>{isEditing ? "Edit Category" : "New Category"}</SheetTitle>
-          </SheetHeader>
-
-          <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-4 pb-2"
-          >
-            <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="category-type">Type</FieldLabel>
-                <TransactionTypeToggle
-                  value={type}
-                  onChange={(v) => {
-                    setValue("type", v, { shouldValidate: true });
-                    setValue("parentId", null);
-                    if (v === "CREDIT") setValue("spendingLimit", null);
-                  }}
-                  disabled={isPending || hasChildren}
-                />
-                {hasChildren && (
-                  <p className="text-muted-foreground text-xs">
-                    A category with subcategories cannot change type.
-                  </p>
-                )}
-                <FieldError errors={[errors.type]} />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="category-description">Name</FieldLabel>
-                <Input
-                  id="category-description"
-                  placeholder="e.g., Food, Transport, Entertainment"
-                  disabled={isPending}
-                  aria-invalid={!!errors.description}
-                  {...register("description")}
-                />
-                <FieldError errors={[errors.description]} />
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="category-parent">
-                  Parent{" "}
-                  <span className="text-muted-foreground font-normal">
-                    (optional)
-                  </span>
-                </FieldLabel>
-                <StandardCombobox
-                  id="category-parent"
-                  items={options}
-                  value={selectedParent}
-                  onValueChange={(parent) => {
-                    setValue("parentId", parent?.id ?? null, {
-                      shouldValidate: true,
-                    });
-                    // A subcategory takes its parent's owner (CAT-15).
-                    if (parent) setValue("ownerId", null);
-                  }}
-                  itemLabel={(c) => c.description}
-                  placeholder="None (top level)"
-                  emptyMessage="No top-level categories"
-                  disabled={isPending || hasChildren}
-                  clearable
-                />
-                {hasChildren && (
-                  <p className="text-muted-foreground text-xs">
-                    A category with subcategories stays at the top level.
-                  </p>
-                )}
-                <FieldError errors={[errors.parentId]} />
-              </Field>
-
-              {parentId == null && (
-                <Field>
-                  <FieldLabel htmlFor="category-owner">
-                    Belongs to{" "}
-                    <span className="text-muted-foreground font-normal">
-                      (optional)
-                    </span>
-                  </FieldLabel>
-                  <StandardCombobox
-                    id="category-owner"
-                    items={owners}
-                    value={selectedOwner}
-                    onValueChange={(owner) => {
-                      setValue("ownerId", owner?.id ?? null, {
-                        shouldValidate: true,
-                      });
-                      // An owned category has a single limit (CAT-13).
-                      if (owner) setValue("limitMode", "single");
-                    }}
-                    itemLabel={(o) => (o.active ? o.name : `${o.name} (former member)`)}
-                    placeholder="Shared (everyone)"
-                    emptyMessage="No members"
-                    disabled={isPending}
-                    clearable
-                  />
-                  <p className="text-muted-foreground text-xs">
-                    Its spend and limit are this member's. Subcategories belong
-                    to the same member.
-                  </p>
-                  <FieldError errors={[errors.ownerId]} />
-                </Field>
-              )}
-
-              {type === "DEBIT" && (
-                <CategoryLimitFields
-                  control={control}
-                  watch={watch}
-                  setValue={setValue}
-                  errors={errors}
-                  shares={memberLimitShares(watch("memberLimits"))}
-                  perMemberDisabledReason={
-                    isOwned
-                      ? "A category that belongs to one member has a single limit."
-                      : undefined
-                  }
-                  disabled={isPending}
-                />
-              )}
-            </FieldGroup>
-          </form>
-
-          <SheetFooter>
-            {editing && (
-              <div className="flex gap-2 sm:hidden">
+      <FormSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        title={isEditing ? "Edit Category" : "New Category"}
+        onSubmit={handleSubmit(onSubmit)}
+        isSubmitting={isPending}
+        submitLabel={isEditing ? "Save" : "Create"}
+        mobileActions={
+          editing && (
+            <>
+              <Button
+                variant="outline"
+                type="button"
+                className="text-destructive hover:text-destructive flex-1"
+                disabled={isPending}
+                onClick={() => {
+                  setDeleting(editing);
+                  onOpenChange(false);
+                }}
+              >
+                <Trash2Icon className="h-4 w-4" />
+                Delete
+              </Button>
+              {editing.parentId == null && onNewSubcategory && (
                 <Button
                   variant="outline"
                   type="button"
-                  className="text-destructive hover:text-destructive flex-1"
+                  className="flex-1"
                   disabled={isPending}
-                  onClick={() => {
-                    setDeleting(editing);
-                    onOpenChange(false);
-                  }}
+                  onClick={() => onNewSubcategory(editing)}
                 >
-                  <Trash2Icon className="h-4 w-4" />
-                  Delete
+                  <PlusIcon className="h-4 w-4" />
+                  New subcategory
                 </Button>
-                {editing.parentId == null && onNewSubcategory && (
-                  <Button
-                    variant="outline"
-                    type="button"
-                    className="flex-1"
-                    disabled={isPending}
-                    onClick={() => onNewSubcategory(editing)}
-                  >
-                    <PlusIcon className="h-4 w-4" />
-                    New subcategory
-                  </Button>
-                )}
-              </div>
+              )}
+            </>
+          )
+        }
+      >
+        <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="category-type">Type</FieldLabel>
+            <TransactionTypeToggle
+              value={type}
+              onChange={(v) => {
+                setValue("type", v, { shouldValidate: true });
+                setValue("parentId", null);
+                if (v === "CREDIT") setValue("spendingLimit", null);
+              }}
+              disabled={isPending || hasChildren}
+            />
+            {hasChildren && (
+              <p className="text-muted-foreground text-xs">
+                A category with subcategories cannot change type.
+              </p>
             )}
-            <Button
-              variant="outline"
-              type="button"
+            <FieldError errors={[errors.type]} />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="category-description">Name</FieldLabel>
+            <Input
+              id="category-description"
+              placeholder="e.g., Food, Transport, Entertainment"
               disabled={isPending}
-              onClick={() => onOpenChange(false)}
-            >
-              <XIcon className="h-4 w-4" />
-              Cancel
-            </Button>
-            <Button
-              type="button"
-              isLoading={isPending}
-              onClick={handleSubmit(onSubmit)}
-            >
-              <SaveIcon className="h-4 w-4" />
-              {isEditing ? "Save" : "Create"}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+              aria-invalid={!!errors.description}
+              {...register("description")}
+            />
+            <FieldError errors={[errors.description]} />
+          </Field>
+
+          <Field>
+            <FieldLabel htmlFor="category-parent">
+              Parent{" "}
+              <span className="text-muted-foreground font-normal">
+                (optional)
+              </span>
+            </FieldLabel>
+            <StandardCombobox
+              id="category-parent"
+              items={options}
+              value={selectedParent}
+              onValueChange={(parent) => {
+                setValue("parentId", parent?.id ?? null, {
+                  shouldValidate: true,
+                });
+                // A subcategory takes its parent's owner (CAT-15).
+                if (parent) setValue("ownerId", null);
+              }}
+              itemLabel={(c) => c.description}
+              placeholder="None (top level)"
+              emptyMessage="No top-level categories"
+              disabled={isPending || hasChildren}
+              clearable
+            />
+            {hasChildren && (
+              <p className="text-muted-foreground text-xs">
+                A category with subcategories stays at the top level.
+              </p>
+            )}
+            <FieldError errors={[errors.parentId]} />
+          </Field>
+
+          {parentId == null && (
+            <Field>
+              <FieldLabel htmlFor="category-owner">
+                Belongs to{" "}
+                <span className="text-muted-foreground font-normal">
+                  (optional)
+                </span>
+              </FieldLabel>
+              <StandardCombobox
+                id="category-owner"
+                items={owners}
+                value={selectedOwner}
+                onValueChange={(owner) => {
+                  setValue("ownerId", owner?.id ?? null, {
+                    shouldValidate: true,
+                  });
+                  // An owned category has a single limit (CAT-13).
+                  if (owner) setValue("limitMode", "single");
+                }}
+                itemLabel={(o) => (o.active ? o.name : `${o.name} (former member)`)}
+                placeholder="Shared (everyone)"
+                emptyMessage="No members"
+                disabled={isPending}
+                clearable
+              />
+              <p className="text-muted-foreground text-xs">
+                Its spend and limit are this member's. Subcategories belong
+                to the same member.
+              </p>
+              <FieldError errors={[errors.ownerId]} />
+            </Field>
+          )}
+
+          {type === "DEBIT" && (
+            <CategoryLimitFields
+              control={control}
+              watch={watch}
+              setValue={setValue}
+              errors={errors}
+              shares={memberLimitShares(watch("memberLimits"))}
+              perMemberDisabledReason={
+                isOwned
+                  ? "A category that belongs to one member has a single limit."
+                  : undefined
+              }
+              disabled={isPending}
+            />
+          )}
+        </FieldGroup>
+      </FormSheet>
       <DeleteCategoryDialog
         open={deleting != null}
         onOpenChange={(isOpen) => {
