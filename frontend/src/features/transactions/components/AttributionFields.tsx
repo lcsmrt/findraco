@@ -4,6 +4,7 @@ import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
+import { Text } from "@/components/typography/base/Text";
 import {
   Controller,
   useController,
@@ -153,7 +154,7 @@ export function AttributionFields({
                       }
                       disabled={disabled}
                     />
-                    <span className="flex-1 text-sm">{member.name}</span>
+                    <Text className="flex-1">{member.name}</Text>
                     {splitMode.value === "EXACT" && participant && (
                       <Controller
                         key={participant.id}
@@ -169,7 +170,7 @@ export function AttributionFields({
                             aria-label={`${member.name}'s share`}
                             aria-invalid={fieldState.invalid}
                             placeholder="R$ 0,00"
-                            className="h-8 w-28 text-sm"
+                            className="h-8 w-28"
                             disabled={disabled}
                           />
                         )}

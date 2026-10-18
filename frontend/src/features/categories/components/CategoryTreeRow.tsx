@@ -1,5 +1,6 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { Button } from "@/components/button/base/Button";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
@@ -127,35 +128,30 @@ export const CategoryTreeRow = ({
   const hasOwner = category.ownerId != null && !!category.ownerName;
   const hasMemberLimits = (category.memberLimits?.length ?? 0) > 0;
   const name = (
-    <span
-      className={cn(
-        "min-w-0 break-words",
-        isChild ? "text-sm" : "font-semibold",
-      )}
-    >
+    <Text variant={isChild ? "body" : "title"} className="min-w-0 break-words">
       {category.description}
-    </span>
+    </Text>
   );
 
   const narrowContent = (
     <>
       <span className="flex w-full items-baseline justify-between gap-3">
         {name}
-        <span className="shrink-0 text-sm tabular-nums">
+        <Text className="shrink-0 tabular-nums">
           {limit != null ? (
             formatMoney(limit)
           ) : (
             <span className="text-muted-foreground">{EMPTY}</span>
           )}
-        </span>
+        </Text>
       </span>
       {(hasOwner || hasMemberLimits) && (
-        <span className="text-muted-foreground flex flex-col gap-0.5 text-xs">
+        <Text variant="caption" className="flex flex-col gap-0.5">
           {hasOwner && <OwnerLabel category={category} colorOf={colorOf} />}
           {hasMemberLimits && (
             <MemberLimits category={category} colorOf={colorOf} />
           )}
-        </span>
+        </Text>
       )}
     </>
   );
@@ -165,7 +161,7 @@ export const CategoryTreeRow = ({
       {child && <TreeGuide isLast={child.isLast} />}
 
       {/* Wide layout */}
-      <div className={cn("hidden py-2.5 text-sm", CATEGORY_GRID_COLUMNS)}>
+      <Text as="div" className={cn("hidden py-2.5", CATEGORY_GRID_COLUMNS)}>
         <span className={cn("min-w-0", isChild && "pl-7")}>{name}</span>
         <span className="min-w-0">
           {hasOwner ? (
@@ -177,13 +173,13 @@ export const CategoryTreeRow = ({
         <span className="text-right tabular-nums">
           {limit != null ? formatMoney(limit) : EMPTY}
         </span>
-        <span className="text-muted-foreground min-w-0 text-xs">
+        <Text variant="caption" className="min-w-0">
           {hasMemberLimits ? (
             <MemberLimits category={category} colorOf={colorOf} />
           ) : (
             EMPTY
           )}
-        </span>
+        </Text>
         <span className="flex justify-end gap-0.5 opacity-0 transition-opacity group-focus-within/row:opacity-100 group-hover/row:opacity-100">
           {canManage && (
             <>
@@ -222,7 +218,7 @@ export const CategoryTreeRow = ({
             </>
           )}
         </span>
-      </div>
+      </Text>
 
       {/* Narrow layout: a tap opens the edit form for an OWNER, otherwise read-only. */}
       {canManage ? (

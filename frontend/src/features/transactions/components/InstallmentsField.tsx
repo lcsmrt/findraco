@@ -1,6 +1,7 @@
 import type { RecurrenceDefinitionResponse } from "@/api/dtos/financialTransaction";
 import { FormField } from "@/components/form/FormField";
 import { NumberField } from "@/components/input/base/NumberField";
+import { Text } from "@/components/typography/base/Text";
 import { format } from "date-fns";
 import { useWatch, type Control } from "react-hook-form";
 import {
@@ -91,7 +92,9 @@ function ParcelsChangedWarning({ control, definition }: ParcelsChangedWarningPro
   const parcelsNumber = useWatch({ control, name: "parcelsNumber" });
   if (!seriesParcelsChanged(definition, parcelsNumber)) return null;
   return (
-    <p className="text-warning text-sm">Changing the number of parcels updates the whole series.</p>
+    <Text as="p" className="text-warning">
+      Changing the number of parcels updates the whole series.
+    </Text>
   );
 }
 
@@ -107,8 +110,8 @@ function LastInstallmentPreview({ control }: LastInstallmentPreviewProps) {
   const last = lastInstallment(date, parcelsNumber, currentParcel);
   if (!last) return null;
   return (
-    <p className="text-muted-foreground text-sm">
+    <Text as="p" variant="secondary">
       Last installment: {last.number}/{last.number} — {format(last.month, "MM/yyyy")}
-    </p>
+    </Text>
   );
 }

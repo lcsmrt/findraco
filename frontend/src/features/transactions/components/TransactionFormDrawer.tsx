@@ -14,6 +14,7 @@ import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { DatePicker } from "@/components/input/DatePicker";
 import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
+import { Text } from "@/components/typography/base/Text";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CopyIcon, Trash2Icon } from "lucide-react";
@@ -166,7 +167,11 @@ export function TransactionFormDrawer({
         )
       }
     >
-      {isSeriesEdit && !definition && <p className="text-muted-foreground text-sm">Loading…</p>}
+      {isSeriesEdit && !definition && (
+        <Text as="p" variant="secondary">
+          Loading…
+        </Text>
+      )}
 
       <FieldGroup>
         {!isSeriesEdit && <TypeField control={control} setValue={setValue} disabled={isPending} />}

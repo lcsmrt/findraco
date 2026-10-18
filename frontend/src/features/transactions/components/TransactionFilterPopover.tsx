@@ -6,6 +6,7 @@ import {
   ALL_CATEGORIES_PAGE_SIZE,
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
+import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { DateRangePicker } from "@/components/input/DatePicker";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
@@ -110,9 +111,7 @@ export const TransactionFilterPopover = ({
         <SlidersHorizontalIcon className="h-4 w-4" />
         Filters
         {activeCount > 0 && (
-          <span className="bg-primary text-primary-foreground flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-medium">
-            {activeCount}
-          </span>
+          <Badge>{activeCount}</Badge>
         )}
       </PopoverTrigger>
       <PopoverContent align="start" className="w-[min(20rem,calc(100vw-1rem))]">

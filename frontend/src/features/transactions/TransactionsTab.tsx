@@ -329,8 +329,8 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
             <Button
               type="button"
               variant="link"
-              size="sm"
-              className="text-muted-foreground h-auto p-0 text-xs"
+              size="xs"
+              className="text-muted-foreground h-auto p-0"
               onClick={onClearFilters}
             >
               Clear all

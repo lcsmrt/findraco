@@ -2506,9 +2506,11 @@ Notes: metric labels `secondary` (normal weight); desktop figures and both Balan
 
 **Done when**:
 
-- [ ] No raw text tags or size/weight classes in the folders
-- [ ] Build gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No raw text tags or size/weight classes in the folders
+- [x] Build gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+Notes: help text in the category form and limit fields is `FieldDescription` (12→14px). The forced `text-sm` is gone from the TransactionCells inputs (×3) and the AttributionFields share input. The filter count is `Badge` (default). "Clear all" is Button `size="xs"`. The mobile day header (`Heading` level 3) and the category column header are `caption` (normal weight). Combobox trigger text and option labels are `Text` (`body`/`label`), so the trigger no longer inherits Button's `font-medium`. SeriesScopeDialog helper text is `secondary` and no longer inherits `FieldLabel`'s weight. The root category name is `title` in both layouts (wide 14→16px, decision 7 row added), the child name is `body`. "(optional)" in labels is `secondary`. Status, warning and remainder lines are `Text` with token colours. The CategoryCombobox "Create" button moved to the default size with `h-7` (same look). All projects 815 → 815; run per project, because the combined run timed out at random under machine load (load average ~20).
 
 **Tests**: none
 **Gate**: build

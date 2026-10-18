@@ -11,6 +11,7 @@ import { Field, FieldLabel } from "@/components/input/base/Field";
 import { RadioGroup, RadioGroupItem } from "@/components/input/base/RadioGroup";
 import { SeriesEditScope } from "@/api/dtos/financialTransaction";
 import type { ScopeDialogOptions } from "./useSeriesScope";
+import { Text } from "@/components/typography/base/Text";
 
 type ScopeOption = {
   value: SeriesEditScope;
@@ -72,10 +73,8 @@ export function SeriesScopeDialog({
               <Field orientation="horizontal">
                 <RadioGroupItem id={option.value} value={option.value} />
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-sm font-medium">{option.label}</span>
-                  <span className="text-muted-foreground text-sm">
-                    {option.helperText}
-                  </span>
+                  <Text variant="label">{option.label}</Text>
+                  <Text variant="secondary">{option.helperText}</Text>
                 </div>
               </Field>
             </FieldLabel>

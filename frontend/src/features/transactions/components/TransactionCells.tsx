@@ -16,6 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/popover/base/Popover";
+import { Text } from "@/components/typography/base/Text";
 import { toCents } from "@/utils/money";
 import { formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskDate } from "@/utils/string/masks";
@@ -80,7 +81,7 @@ const EditableDescriptionCell = ({
           setEditing(false);
         }
       }}
-      className="h-7 min-w-40 text-sm"
+      className="h-7 min-w-40"
     />
   );
 };
@@ -121,7 +122,7 @@ export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) =
         if (e.key === "Enter") commit();
         if (e.key === "Escape") setEditing(false);
       }}
-      className="h-7 w-32 font-mono text-sm"
+      className="h-7 w-32 font-mono"
     />
   );
 };
@@ -149,7 +150,9 @@ export const EditableCategoryCell = ({ transaction, onSave }: EditableCellProps)
         {category ? (
           <Badge variant="outline">{category.description}</Badge>
         ) : (
-          <span className="text-muted-foreground/50 text-xs">—</span>
+          <Text variant="caption" className="text-muted-foreground/50">
+            —
+          </Text>
         )}
       </div>
     );
@@ -209,7 +212,7 @@ export const EditableDateCell = ({ transaction, onSave }: EditableCellProps) => 
         if (e.key === "Enter") commit();
         if (e.key === "Escape") setEditing(false);
       }}
-      className="h-7 w-28 text-sm"
+      className="h-7 w-28"
     />
   );
 };
@@ -220,7 +223,11 @@ const ParticipantsSummary = ({
   participants: ParticipantShare[];
 }) => {
   if (participants.length === 0) {
-    return <span className="text-muted-foreground/50 text-xs">—</span>;
+    return (
+      <Text variant="caption" className="text-muted-foreground/50">
+        —
+      </Text>
+    );
   }
 
   if (participants.length === 1) {
@@ -230,7 +237,7 @@ const ParticipantsSummary = ({
         <Avatar size="sm">
           <AvatarFallback>{getFirstAndLastInitials(participant.name)}</AvatarFallback>
         </Avatar>
-        <span className="text-sm">{participant.name}</span>
+        <Text>{participant.name}</Text>
       </span>
     );
   }
@@ -301,13 +308,13 @@ const EditableParticipantsCell = ({
         {members.map((member) => (
           <label
             key={member.userId}
-            className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 text-sm"
+            className="hover:bg-muted flex cursor-pointer items-center gap-2 rounded px-1.5 py-1"
           >
             <Checkbox
               checked={draft.includes(member.userId)}
               onCheckedChange={() => toggle(member.userId)}
             />
-            <span className="flex-1">{member.name}</span>
+            <Text className="flex-1">{member.name}</Text>
           </label>
         ))}
       </PopoverContent>

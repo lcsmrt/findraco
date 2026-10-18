@@ -15,6 +15,7 @@ import {
 } from "@/components/dialog/base/Dialog";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
+import { Text } from "@/components/typography/base/Text";
 import { Trash2Icon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -105,7 +106,9 @@ export const DeleteCategoryDialog = ({
         </DialogHeader>
 
         {conflict && (
-          <p className="text-destructive text-sm">{conflict}</p>
+          <Text as="p" className="text-destructive">
+            {conflict}
+          </Text>
         )}
 
         {inUse && !hasChildren && (

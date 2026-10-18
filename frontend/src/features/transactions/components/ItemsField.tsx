@@ -4,6 +4,7 @@ import { Button } from "@/components/button/base/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
 import { PlusIcon, Trash2Icon } from "lucide-react";
@@ -115,9 +116,9 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
         </Button>
       </div>
       {fields.length > 0 && (
-        <p className={cn("text-sm", remainderCents < 0 ? "text-destructive" : "text-muted-foreground")}>
+        <Text as="p" variant="secondary" className={cn(remainderCents < 0 && "text-destructive")}>
           Remainder: {formatMoney(remainderCents / 100)}
-        </p>
+        </Text>
       )}
       {/* With the item amounts registered as fields, the resolver files the list-level error under
           `root`. */}

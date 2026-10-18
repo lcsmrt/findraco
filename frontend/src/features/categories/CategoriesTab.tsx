@@ -3,6 +3,7 @@ import {
   ALL_CATEGORIES_PAGE_SIZE,
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
+import { Text } from "@/components/typography/base/Text";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -49,23 +50,22 @@ const CategorySection = ({
     </CardHeader>
     <CardContent>
       {roots.length === 0 ? (
-        <p className="text-muted-foreground flex h-16 items-center justify-center text-sm">
+        <Text as="p" variant="secondary" className="flex h-16 items-center justify-center">
           No categories yet.
-        </p>
+        </Text>
       ) : (
         <div className="flex flex-col">
-          <div
-            className={cn(
-              "text-muted-foreground hidden border-b pb-2 text-xs font-medium",
-              CATEGORY_GRID_COLUMNS,
-            )}
+          <Text
+            as="div"
+            variant="caption"
+            className={cn("hidden border-b pb-2", CATEGORY_GRID_COLUMNS)}
           >
             <span>Name</span>
             <span>Owner</span>
             <span className="text-right">Monthly limit</span>
             <span>Per member</span>
             <span className="sr-only">Actions</span>
-          </div>
+          </Text>
           {roots.map((root) => (
             <div key={root.category.id} className="border-b last:border-0">
               <CategoryTreeRow

@@ -7,11 +7,18 @@ import {
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { Button } from "@/components/button/base/Button";
-import { Field, FieldError, FieldGroup, FieldLabel } from "@/components/input/base/Field";
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
 import { FormField } from "@/components/form/FormField";
 import { FormSheet } from "@/components/form/FormSheet";
+import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, Trash2Icon } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -195,9 +202,9 @@ function TypeField({ control, setValue, disabled, hasChildren }: SectionProps & 
             disabled={disabled || hasChildren}
           />
           {hasChildren && (
-            <p className="text-muted-foreground text-xs">
+            <FieldDescription>
               A category with subcategories cannot change type.
-            </p>
+            </FieldDescription>
           )}
           <FieldError errors={[fieldState.error]} />
         </Field>
@@ -221,7 +228,7 @@ function ParentField({ control, setValue, categories, disabled, editing, hasChil
       name="parentId"
       label={
         <>
-          Parent <span className="text-muted-foreground font-normal">(optional)</span>
+          Parent <Text variant="secondary">(optional)</Text>
         </>
       }
       description={hasChildren ? "A category with subcategories stays at the top level." : undefined}
@@ -263,7 +270,7 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
       name="ownerId"
       label={
         <>
-          Belongs to <span className="text-muted-foreground font-normal">(optional)</span>
+          Belongs to <Text variant="secondary">(optional)</Text>
         </>
       }
       description="Its spend and limit are this member's. Subcategories belong to the same member."

@@ -1,11 +1,12 @@
 import { Button } from "@/components/button/base/Button";
-import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
+import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { FormField } from "@/components/form/FormField";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@/components/toggleGroup/base/ToggleGroup";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { Trash2Icon } from "lucide-react";
 import {
@@ -70,9 +71,7 @@ export function CategoryLimitFields({
           </ToggleGroupItem>
         </ToggleGroup>
         {perMemberDisabledReason && (
-          <p className="text-muted-foreground text-xs">
-            {perMemberDisabledReason}
-          </p>
+          <FieldDescription>{perMemberDisabledReason}</FieldDescription>
         )}
         <FieldError errors={[errors.limitMode]} />
       </Field>
@@ -84,9 +83,7 @@ export function CategoryLimitFields({
           label={
             <>
               Amount{" "}
-              <span className="text-muted-foreground font-normal">
-                (optional)
-              </span>
+              <Text variant="secondary">(optional)</Text>
             </>
           }
         >
@@ -115,12 +112,14 @@ export function CategoryLimitFields({
                     !row.active && "text-muted-foreground",
                   )}
                 >
-                  <span className="min-w-0 flex-1 truncate text-sm">
+                  <Text className="min-w-0 flex-1 truncate">
                     {row.memberName}
                     {!row.active && (
-                      <span className="ml-1 text-xs">(former member)</span>
+                      <Text variant="caption" className="ml-1">
+                        (former member)
+                      </Text>
                     )}
-                  </span>
+                  </Text>
                   {/* The member's name labels the row, a layout FormField does not offer. */}
                   <Controller
                     control={control}
@@ -137,9 +136,9 @@ export function CategoryLimitFields({
                       />
                     )}
                   />
-                  <span className="text-muted-foreground w-14 text-right text-xs tabular-nums">
+                  <Text variant="caption" className="w-14 text-right tabular-nums">
                     {share != null ? `${share}%` : "—"}
-                  </span>
+                  </Text>
                   {!row.active ? (
                     <Button
                       type="button"
@@ -158,10 +157,10 @@ export function CategoryLimitFields({
               );
             })}
           </div>
-          <p className="text-muted-foreground text-xs">
+          <FieldDescription>
             The category limit is the sum of the members' limits. A member left
             empty has no limit of their own.
-          </p>
+          </FieldDescription>
           <FieldError errors={rowErrors} />
         </Field>
       )}

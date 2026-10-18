@@ -17,6 +17,7 @@ import {
 import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
 import { InputGroupButton } from "@/components/input/base/InputGroup";
 import { Spinner } from "@/components/spinner/base/Spinner";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -98,15 +99,15 @@ export const CategoryCombobox = ({
               type="button"
               disabled={disabled}
               className={cn(
-                "border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 flex h-9 w-full cursor-pointer items-center justify-between rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
+                "border-input dark:bg-input/30 focus-visible:border-ring focus-visible:ring-ring/50 disabled:bg-input/50 flex h-9 w-full cursor-pointer items-center justify-between rounded-md border bg-transparent px-3 outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50",
                 showClear && "pr-8",
               )}
             />
           }
         >
-          <span className={cn(!value && "text-muted-foreground")}>
+          <Text className={cn(!value && "text-muted-foreground")}>
             {value ? value.description : "Select a category..."}
-          </span>
+          </Text>
         </ComboboxTrigger>
         {showClear && (
           <InputGroupButton
@@ -140,11 +141,10 @@ export const CategoryCombobox = ({
             <Button
               type="button"
               variant="ghost"
-              size="sm"
               onClick={handleOpenCreate}
-              className="text-primary-ink hover:bg-accent flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5 text-sm"
+              className="text-primary-ink hover:bg-accent flex h-7 w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5"
             >
-              <PlusIcon className="h-3.5 w-3.5 shrink-0" />
+              <PlusIcon className="size-3.5 shrink-0" />
               Create &ldquo;{search}&rdquo;
             </Button>
           </div>
@@ -158,14 +158,12 @@ export const CategoryCombobox = ({
               value={cat}
               className={cn("px-2", childIds.has(cat.id) && "pl-6")}
             >
-              <span
-                className={cn(
-                  "flex-1 truncate",
-                  !childIds.has(cat.id) && "font-medium",
-                )}
+              <Text
+                variant={childIds.has(cat.id) ? "body" : "label"}
+                className="flex-1 truncate"
               >
                 {cat.description}
-              </span>
+              </Text>
             </ComboboxItem>
           )}
         </ComboboxList>

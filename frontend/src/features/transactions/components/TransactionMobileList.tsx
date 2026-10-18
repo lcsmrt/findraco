@@ -3,6 +3,8 @@ import { Amount } from "@/components/amount/Amount";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { TablePagination } from "@/components/table";
 import type { Pagination } from "@/components/table/TablePagination";
+import { Heading } from "@/components/typography/base/Heading";
+import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatDate } from "@/utils/string/formatters";
 import { groupByDay } from "./groupByDay";
@@ -26,20 +28,18 @@ const TransactionMobileRow = ({
       className="active:bg-muted/60 flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
     >
       <span className="flex min-w-0 flex-col gap-0.5">
-        <span className="truncate text-sm font-medium">
+        <Text variant="label" className="truncate">
           {transaction.description}
-        </span>
+        </Text>
         {details.length > 0 && (
-          <span className="text-muted-foreground truncate text-xs">
+          <Text variant="caption" className="truncate">
             {details.join(" · ")}
-          </span>
+          </Text>
         )}
       </span>
-      <Amount
-        value={transaction.amount}
-        type={transaction.type}
-        className="shrink-0 text-sm whitespace-nowrap"
-      />
+      <Text className="shrink-0 whitespace-nowrap">
+        <Amount value={transaction.amount} type={transaction.type} />
+      </Text>
     </button>
   );
 };
@@ -79,15 +79,15 @@ export const TransactionMobileList = ({
           <Skeleton className="h-10" />
         </div>
       ) : days.length === 0 ? (
-        <p className="text-muted-foreground flex h-24 items-center justify-center text-sm">
+        <Text as="p" variant="secondary" className="flex h-24 items-center justify-center">
           No transactions found.
-        </p>
+        </Text>
       ) : (
         days.map((group) => (
           <section key={group.day}>
-            <h3 className="bg-muted/50 text-muted-foreground border-b px-3 py-1.5 text-xs font-medium">
+            <Heading level={3} variant="caption" className="bg-muted/50 border-b px-3 py-1.5">
               {formatDate(group.day, "EEE, d MMM yyyy")}
-            </h3>
+            </Heading>
             <div className="divide-y border-b">
               {group.transactions.map((transaction) => (
                 <TransactionMobileRow

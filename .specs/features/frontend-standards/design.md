@@ -221,7 +221,7 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 | 6 | `secondary` | `text-sm text-muted-foreground` | descriptions, metric labels |
 | 7 | `caption` | `text-xs text-muted-foreground` | metadata, subtitles, group and column headers |
 
-- `typographyVariants` is exported for non-HTML targets: the trend chart's SVG `<text>` tick uses `className={typographyVariants({ variant: "label" })}`, which passes the literal-string lint legitimately.
+- `typographyVariants` is exported for non-HTML targets: the trend chart's SVG `<text>` tick uses `typographyVariants({ variant: "caption" })` plus a fill colour class (`fill-foreground` for the current period, `fill-muted-foreground` otherwise; emphasis by colour, not weight), which passes the literal-string lint legitimately.
 - The E4b regex also catches arbitrary sizes (`text-[10rem]`) and undefined size classes (`text-md`); `display` lives in `base/`, so the 404 numeral's arbitrary size stays inside the system.
 - `Sheet`/`Dialog` titles keep their own styles as `base/` primitives (E4b).
 
@@ -246,6 +246,7 @@ Local hooks live in `frontend/.husky/` (where `prepare` points): `pre-commit` ru
 | Filter count, owner pill, multi-combobox overflow chip | hand-built 10px / 0.7rem / xs medium | `Badge` primitive (xs medium) |
 | Inputs with a forced `text-sm` (table cells, shares) | 14px on mobile | Input's own 16px mobile / 14px from `md` |
 | Table pagination | 12px mobile, 14px desktop | `secondary` 14px |
+| Categories tab root category name, wide layout | 14px semibold | `title` 16px semibold (same as narrow and the overview list) |
 
 Second review (user, 2026-10-18, Execute T92): no eighth variant. Small emphasised text inside a pill is a `Badge`; plain small text is `caption` with a token colour. `body`, `secondary` and `caption` declare `font-normal` so they never inherit a label's weight. `ProfilePictureInput` (unused) is deleted.
 
