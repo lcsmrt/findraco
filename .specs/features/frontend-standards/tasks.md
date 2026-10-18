@@ -315,11 +315,11 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Each listed decision appears as a rule with its enforcement mechanism (lint rule, gate script, review)
-- [ ] No rule from STD-01 AC 2's list remains ("don't modify shadcn primitives", "pure helpers always in `utils/`", "domain language stays in the feature", "arrow function components", "comments only JSDoc")
-- [ ] Adding a primitive: check shadcn and Base UI, install with the CLI, move into `<family>/base/`, convert to function style (AC 5)
-- [ ] States that a component may show more than 60 physical lines before its `return` and pass (blank and comment lines do not count)
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] Each listed decision appears as a rule with its enforcement mechanism (lint rule, gate script, review)
+- [x] No rule from STD-01 AC 2's list remains ("don't modify shadcn primitives", "pure helpers always in `utils/`", "domain language stays in the feature", "arrow function components", "comments only JSDoc")
+- [x] Adding a primitive: check shadcn and Base UI, install with the CLI, move into `<family>/base/`, convert to function style (AC 5)
+- [x] States that a component may show more than 60 physical lines before its `return` and pass (blank and comment lines do not count)
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
