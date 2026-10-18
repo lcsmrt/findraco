@@ -570,6 +570,8 @@ T124 → T125
 **Gate**: full
 **Commit**: `build(frontend): storybook stories use react-vite types; drop core addon`
 
+Follow-up: the direct `@storybook/react` devDependency is removed; nothing imports it since the stories moved to `@storybook/react-vite`, which keeps it as its own dependency.
+
 ---
 
 ### T13: `components.json` points at the real paths
