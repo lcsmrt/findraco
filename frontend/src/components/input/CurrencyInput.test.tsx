@@ -83,6 +83,33 @@ describe("CurrencyInput", () => {
     expect(onValues.mock.calls[0][0]).toEqual({ amount: null });
   });
 
+  it("submits a typed zero as 0, shown as R$ 0,00 (STD-06 AC 4)", async () => {
+    const user = userEvent.setup();
+    const onValues = vi.fn();
+    render(<AmountForm onValues={onValues} />);
+    const input = screen.getByLabelText<HTMLInputElement>("Amount");
+
+    await user.type(input, "0");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(input.value).toBe("R$\u00a00,00");
+    expect(onValues.mock.calls[0][0]).toEqual({ amount: 0 });
+  });
+
+  it("empties R$ 0,00 with one backspace and submits null (STD-06 AC 4)", async () => {
+    const user = userEvent.setup();
+    const onValues = vi.fn();
+    render(<AmountForm onValues={onValues} />);
+    const input = screen.getByLabelText<HTMLInputElement>("Amount");
+
+    await user.type(input, "0");
+    await user.type(input, "{Backspace}");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(input.value).toBe("");
+    expect(onValues.mock.calls[0][0]).toEqual({ amount: null });
+  });
+
   it("opens the numeric keypad (STD-06 AC 4)", () => {
     render(<AmountForm onValues={vi.fn()} />);
 

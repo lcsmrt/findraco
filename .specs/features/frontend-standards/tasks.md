@@ -1643,6 +1643,8 @@ Follow-up: `crossFeatureImports` now applies to every layer outside `src/app/**`
 
 Note: `@testing-library/user-event` 14.6.1 added (exact, the version Storybook already bundles) so unit and integration tests type like a user.
 
+Follow-up (`fix(frontend): currency input keeps a typed zero`): `parseCurrencyDigits` mapped all-zero input to `null`, so R$ 0,00 could not be entered, against decision 5 ("limit R$ 0,00" ≠ "no limit"). Now no digit → `null`, any digit including only zeros → its value (typing "0" shows R$ 0,00 and yields 0), and a deletion that leaves only the display's zero padding → `null`, so backspace still empties the field. The component tells a deletion by the input event's `inputType`. Schemas unchanged: the transaction amount still rejects 0 (`transactionForm.test.ts` "rejects a zero amount"); category limits accept 0. Tests: unit + tooling 560 → 567.
+
 **Tests**: unit + story
 **Gate**: full
 **Commit**: `feat(frontend): CurrencyInput with ATM-style typing`

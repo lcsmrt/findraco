@@ -39,8 +39,26 @@ describe("parseCurrencyDigits", () => {
   it.each([
     ["an empty string", ""],
     ["only non-digits", "R$ ,"],
-    ["only zeros", "R$\u00a00,0"],
   ])("returns null for %s (STD-06 AC 4)", (_label, typed) => {
     expect(parseCurrencyDigits(typed)).toBeNull();
+  });
+
+  it.each([
+    ["a zero typed into an empty field", "0", 0],
+    ["a zero typed after R$ 0,00", "R$\u00a00,000", 0],
+    ["a pasted R$ 0,00", "R$ 0,00", 0],
+    ["a digit typed after R$ 0,00", "R$\u00a00,001", 0.01],
+  ])("keeps %s: zero is a value, not empty (STD-06 AC 4)", (_label, typed, expected) => {
+    expect(parseCurrencyDigits(typed)).toBe(expected);
+  });
+
+  it("returns null when a deletion leaves only the display's zero padding (STD-06 AC 4)", () => {
+    // Backspace on R$ 0,01 or on R$ 0,00 both leave "R$ 0,0".
+    expect(parseCurrencyDigits("R$\u00a00,0", { deleting: true })).toBeNull();
+  });
+
+  it("keeps the remaining digits when a deletion leaves some (STD-06 AC 4)", () => {
+    expect(parseCurrencyDigits("R$\u00a00,1", { deleting: true })).toBe(0.01);
+    expect(parseCurrencyDigits("R$\u00a010,0", { deleting: true })).toBe(1);
   });
 });

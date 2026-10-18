@@ -43,9 +43,17 @@ export function CurrencyInput({ value, onValueChange, ref, ...props }: CurrencyI
       value={display}
       // After the spread on purpose: callers spread react-hook-form's `field`, whose `onChange`
       // would otherwise receive the event and store the masked string.
-      onChange={(event) => onValueChange(parseCurrencyDigits(event.target.value))}
+      onChange={(event) =>
+        onValueChange(
+          parseCurrencyDigits(event.target.value, { deleting: isDeletion(event.nativeEvent) }),
+        )
+      }
     />
   );
+}
+
+function isDeletion(event: Event): boolean {
+  return event instanceof InputEvent && event.inputType.startsWith("delete");
 }
 
 function assignRef(ref: Ref<HTMLInputElement> | undefined, node: HTMLInputElement | null) {
