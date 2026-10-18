@@ -1,4 +1,9 @@
-import type { FinancialTransaction, Plan, PlanMember } from "@/api/dtos";
+import type {
+  FinancialTransaction,
+  FinancialTransactionCategory,
+  Plan,
+  PlanMember,
+} from "@/api/dtos";
 import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
 import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
@@ -82,6 +87,7 @@ type RenderDrawerOptions = {
   transaction?: FinancialTransaction;
   /** Two or more members show the attribution fields to an owner. */
   members: PlanMember[];
+  categories?: FinancialTransactionCategory[];
   onDelete?: (transaction: FinancialTransaction) => void;
   onDuplicate?: (transaction: FinancialTransaction) => void;
 };
@@ -90,16 +96,17 @@ function renderDrawer({
   mode = "create",
   transaction,
   members,
+  categories = [],
   onDelete,
   onDuplicate,
 }: RenderDrawerOptions) {
   server.use(
     planHandlers.members(members),
     financialTransactionCategoryHandlers.list({
-      content: [],
+      content: categories,
       page: 0,
       size: 1000,
-      totalElements: 0,
+      totalElements: categories.length,
       totalPages: 0,
       last: true,
     }),
@@ -399,5 +406,66 @@ describe("TransactionFormDrawer toggles", () => {
 
     const body = await sentBody(requests, "POST");
     expect(body.participants).toEqual([{ memberId: 1 }]);
+  });
+});
+
+describe("TransactionFormDrawer owned-category attribution", () => {
+  afterEach(cleanup);
+
+  const liviasGym: FinancialTransactionCategory = {
+    id: 9,
+    type: "DEBIT",
+    description: "Livia's gym",
+    ownerId: livia.userId,
+    ownerName: livia.name,
+    ownerActive: true,
+  };
+
+  async function chooseCategory(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByLabelText("Category"));
+    await user.click(await screen.findByRole("option", { name: "Livia's gym" }));
+  }
+
+  it("attributes the transaction to the owner of the chosen category (CAT-17)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionHandlers.create(savedTransaction));
+    renderDrawer({ members: [lucas, livia], categories: [liviasGym] });
+
+    await user.type(screen.getByLabelText("Description"), "Gym");
+    await user.type(screen.getByLabelText("Amount"), "9990");
+    await screen.findByRole("button", { name: "Someone else" });
+    await chooseCategory(user);
+
+    expect(
+      screen.getByRole("button", { name: "Someone else" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body.categoryId).toBe(9);
+    expect(body.participants).toEqual([{ memberId: 2 }]);
+  });
+
+  it("keeps hand-edited participants when an owned category is chosen afterwards (CAT-17)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionHandlers.create(savedTransaction));
+    renderDrawer({ members: [lucas, livia], categories: [liviasGym] });
+
+    await user.type(screen.getByLabelText("Description"), "Gym");
+    await user.type(screen.getByLabelText("Amount"), "9990");
+    await user.click(await screen.findByRole("button", { name: "Split" }));
+    await chooseCategory(user);
+
+    expect(
+      screen.getByRole("button", { name: "Split" }).getAttribute("aria-pressed"),
+    ).toBe("true");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body.categoryId).toBe(9);
+    expect(body.splitMode).toBe("EQUAL");
+    expect(body.participants).toEqual([{ memberId: 1 }, { memberId: 2 }]);
   });
 });

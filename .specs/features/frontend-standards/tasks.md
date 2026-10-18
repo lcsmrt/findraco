@@ -2211,10 +2211,12 @@ Notes: `ItemsField` holds the list with `useFieldArray` (rows keyed by `field.id
 
 **Done when**:
 
-- [ ] No `setValue("participants"` left
-- [ ] Story: single payer, split, many members
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No `setValue("participants"` left
+- [x] Story: single payer, split, many members
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 646 → 653 (`participantsForMode`, 5; drawer owned-category tests, 2); storybook +5 (`AttributionFields.stories.tsx`); all projects 741 → 753
+
+Notes: the participants list is one `useFieldArray` owned by the form (the drawer for now), because choosing an owned category also replaces it; `AttributionFields` receives it and binds the mode and split toggles with `useController`, each share through a raw `Controller` (`aria-label` "Name's share"; the member checkboxes gained the member's name as label). Values are read with `useWatch`; `participantsForMode` in `transactionForm.ts` (tested) holds the per-mode rule that the mode handler had inline. The hand-edited flag keeps its behaviour: every change made in `AttributionFields` calls `onEdit`, which sets the drawer's ref, and `categoryAttribution` then leaves the participants alone. Two new drawer tests guard it and passed before and after the change: an owned category attributes the transaction to its owner; after a hand edit (Split), choosing that category keeps the split. The list-level error is read from `root` once a share is registered (the resolver moves it there), else from the list. Stories: single payer, someone else, split (uncheck, exact), exact shares, many members. Found: `StandardCombobox`'s popup (a `role=dialog`) has no accessible name and fails axe when opened, so the story does not open it; left for STD-10.
 
 **Tests**: story
 **Gate**: full

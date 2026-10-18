@@ -282,6 +282,28 @@ export function seriesParcelsChanged(
   return definition?.mode === "INSTALLMENT" && parcelsNumber !== (definition.parcelsNumber ?? null);
 }
 
+/**
+ * The participants a new attribution mode starts with: none for "me", one other member kept for
+ * "someone else", and every member for a split unless at least two are already chosen.
+ */
+export function participantsForMode(
+  mode: TransactionFormValues["attributionMode"],
+  participants: TransactionFormValues["participants"],
+  members: PlanMember[],
+  currentUserId?: number,
+): TransactionFormValues["participants"] {
+  if (mode === "ME") return [];
+  if (mode === "SOMEONE") {
+    return participants.filter((participant) => participant.memberId !== currentUserId).slice(0, 1);
+  }
+  if (participants.length >= 2) return participants;
+  return members.map((member) => ({
+    memberId: member.userId,
+    memberName: member.name,
+    shareAmount: null,
+  }));
+}
+
 function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split("T")[0].split("-").map(Number);
   return new Date(year, month - 1, day);

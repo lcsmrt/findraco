@@ -7,6 +7,7 @@ import {
   categoryAttribution,
   itemsRemainderCents,
   ownerDefaultAttribution,
+  participantsForMode,
   toPayload,
   transactionFormSchema,
 } from "./transactionForm";
@@ -487,5 +488,45 @@ describe("itemsRemainderCents — what the items leave of the total (STD-07 AC 3
 
   it("sums in cents, so float drift leaves no remainder", () => {
     expect(itemsRemainderCents(0.3, [{ amount: 0.1 }, { amount: 0.2 }])).toBe(0);
+  });
+});
+
+describe("participantsForMode — the participants an attribution mode starts with", () => {
+  const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "OWNER" };
+  const bia: PlanMember = { userId: 2, name: "Bia", email: "bia@example.com", role: "EDITOR" };
+  const caio: PlanMember = { userId: 3, name: "Caio", email: "caio@example.com", role: "EDITOR" };
+  const asParticipant = (member: PlanMember, shareAmount: number | null = null) => ({
+    memberId: member.userId,
+    memberName: member.name,
+    shareAmount,
+  });
+
+  it("clears the participants for Me", () => {
+    expect(participantsForMode("ME", [asParticipant(bia)], [ana, bia], 1)).toEqual([]);
+  });
+
+  it("keeps the first other member for Someone else", () => {
+    const participants = [asParticipant(ana), asParticipant(bia), asParticipant(caio)];
+
+    expect(participantsForMode("SOMEONE", participants, [ana, bia, caio], 1)).toEqual([
+      asParticipant(bia),
+    ]);
+  });
+
+  it("starts Someone else empty when only the current user was chosen", () => {
+    expect(participantsForMode("SOMEONE", [asParticipant(ana)], [ana, bia], 1)).toEqual([]);
+  });
+
+  it("splits between every member when fewer than two were chosen", () => {
+    expect(participantsForMode("SPLIT", [asParticipant(bia)], [ana, bia], 1)).toEqual([
+      asParticipant(ana),
+      asParticipant(bia),
+    ]);
+  });
+
+  it("keeps a split's participants and shares when two or more were chosen", () => {
+    const participants = [asParticipant(ana, 30), asParticipant(caio, 70)];
+
+    expect(participantsForMode("SPLIT", participants, [ana, bia, caio], 1)).toBe(participants);
   });
 });

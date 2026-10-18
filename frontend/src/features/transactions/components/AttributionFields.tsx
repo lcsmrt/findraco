@@ -3,16 +3,20 @@ import { Checkbox } from "@/components/input/base/Checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
+import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
 import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/toggleGroup/base/ToggleGroup";
-import type {
-  FieldErrors,
-  UseFormSetValue,
-  UseFormWatch,
+  Controller,
+  useController,
+  useFormState,
+  useWatch,
+  type Control,
+  type UseFieldArrayReturn,
 } from "react-hook-form";
-import type { TransactionFormValues } from "./transactionForm";
+import {
+  participantsForMode,
+  type TransactionFormOutput,
+  type TransactionFormValues,
+} from "./transactionForm";
 
 const ATTRIBUTION_OPTIONS = [
   ["ME", "Me"],
@@ -21,53 +25,50 @@ const ATTRIBUTION_OPTIONS = [
 ] as const;
 
 type AttributionFieldsProps = {
-  watch: UseFormWatch<TransactionFormValues>;
-  setValue: UseFormSetValue<TransactionFormValues>;
-  errors: FieldErrors<TransactionFormValues>;
+  control: Control<TransactionFormValues, unknown, TransactionFormOutput>;
+  /** The form owns the participants list, since choosing an owned category also sets it. */
+  participants: UseFieldArrayReturn<TransactionFormValues, "participants">;
+  /** Called on every change made here: a hand edit stops the category from setting participants. */
+  onEdit: () => void;
   members: PlanMember[];
   currentUserId?: number;
   disabled?: boolean;
 };
 
-export const AttributionFields = ({
-  watch,
-  setValue,
-  errors,
+export function AttributionFields({
+  control,
+  participants,
+  onEdit,
   members,
   currentUserId,
   disabled,
-}: AttributionFieldsProps) => {
-  const attributionMode = watch("attributionMode");
-  const otherMembers = members.filter(
-    (member) => member.userId !== currentUserId,
-  );
+}: AttributionFieldsProps) {
+  const { field: attributionMode } = useController({ control, name: "attributionMode" });
+  const { field: splitMode } = useController({ control, name: "splitMode" });
+  const { errors } = useFormState({ control, name: "participants" });
+  const { fields, replace, append, remove } = participants;
+  // `fields` keeps the rows' identity; the values (shares included) come from the form.
+  const values = useWatch({ control, name: "participants" });
+  const person = values[0];
+  // Once a share is registered as a field, the resolver files the list-level error under `root`.
+  const participantsError = errors.participants?.root ?? errors.participants;
+  const otherMembers = members.filter((member) => member.userId !== currentUserId);
 
-  const handleAttributionModeChange = (
-    next: TransactionFormValues["attributionMode"],
-  ) => {
-    setValue("attributionMode", next);
-    setValue("splitMode", "EQUAL");
-    if (next === "ME") {
-      setValue("participants", []);
-    } else if (next === "SOMEONE") {
-      const kept = watch("participants").filter(
-        (p) => p.memberId !== currentUserId,
-      );
-      setValue("participants", kept.slice(0, 1));
+  function handleAttributionModeChange(next: TransactionFormValues["attributionMode"]) {
+    onEdit();
+    attributionMode.onChange(next);
+    splitMode.onChange("EQUAL");
+    replace(participantsForMode(next, values, members, currentUserId));
+  }
+
+  function handleParticipantToggle(member: PlanMember, index: number, isChecked: boolean) {
+    onEdit();
+    if (isChecked) {
+      append({ memberId: member.userId, memberName: member.name, shareAmount: null });
     } else {
-      const current = watch("participants");
-      if (current.length < 2) {
-        setValue(
-          "participants",
-          members.map((member) => ({
-            memberId: member.userId,
-            memberName: member.name,
-            shareAmount: null,
-          })),
-        );
-      }
+      remove(index);
     }
-  };
+  }
 
   return (
     <>
@@ -77,7 +78,7 @@ export const AttributionFields = ({
           aria-label="Attributed to"
           variant="outline"
           tone="primary"
-          value={[attributionMode]}
+          value={[attributionMode.value]}
           onValueChange={([next]) => next && handleAttributionModeChange(next)}
           disabled={disabled}
           className="w-full flex-nowrap"
@@ -90,46 +91,26 @@ export const AttributionFields = ({
         </ToggleGroup>
       </Field>
 
-      {attributionMode === "SOMEONE" && (
+      {attributionMode.value === "SOMEONE" && (
         <Field>
-          <FieldLabel htmlFor="transaction-attributed-person">
-            Person
-          </FieldLabel>
+          <FieldLabel htmlFor="transaction-attributed-person">Person</FieldLabel>
           <StandardCombobox
             id="transaction-attributed-person"
-            items={otherMembers.map((member) => ({
-              id: member.userId,
-              name: member.name,
-            }))}
-            value={(() => {
-              const person = watch("participants")[0];
-              return person
-                ? { id: person.memberId, name: person.memberName }
-                : null;
-            })()}
-            onValueChange={(value) =>
-              setValue(
-                "participants",
-                value
-                  ? [
-                      {
-                        memberId: value.id,
-                        memberName: value.name,
-                        shareAmount: null,
-                      },
-                    ]
-                  : [],
-              )
-            }
+            items={otherMembers.map((member) => ({ id: member.userId, name: member.name }))}
+            value={person ? { id: person.memberId, name: person.memberName } : null}
+            onValueChange={(value) => {
+              onEdit();
+              replace(value ? [{ memberId: value.id, memberName: value.name, shareAmount: null }] : []);
+            }}
             itemLabel={(member) => member.name}
             placeholder="Select a person"
             disabled={disabled}
           />
-          <FieldError errors={[errors.participants]} />
+          <FieldError errors={[participantsError]} />
         </Field>
       )}
 
-      {attributionMode === "SPLIT" && (
+      {attributionMode.value === "SPLIT" && (
         <>
           <Field>
             <FieldLabel>Split mode</FieldLabel>
@@ -137,8 +118,12 @@ export const AttributionFields = ({
               aria-label="Split mode"
               variant="outline"
               tone="primary"
-              value={[watch("splitMode")]}
-              onValueChange={([next]) => next && setValue("splitMode", next)}
+              value={[splitMode.value]}
+              onValueChange={([next]) => {
+                if (!next) return;
+                onEdit();
+                splitMode.onChange(next);
+              }}
               disabled={disabled}
               className="w-full flex-nowrap"
             >
@@ -155,60 +140,49 @@ export const AttributionFields = ({
             <FieldLabel>Participants</FieldLabel>
             <div className="flex flex-col gap-2">
               {members.map((member) => {
-                const participants = watch("participants");
-                const index = participants.findIndex(
-                  (p) => p.memberId === member.userId,
-                );
-                const checked = index !== -1;
+                const index = fields.findIndex((field) => field.memberId === member.userId);
+                const participant = fields[index];
 
                 return (
                   <div key={member.userId} className="flex items-center gap-2">
                     <Checkbox
-                      checked={checked}
-                      onCheckedChange={(isChecked) => {
-                        if (isChecked) {
-                          setValue("participants", [
-                            ...participants,
-                            {
-                              memberId: member.userId,
-                              memberName: member.name,
-                              shareAmount: null,
-                            },
-                          ]);
-                        } else {
-                          setValue(
-                            "participants",
-                            participants.filter(
-                              (p) => p.memberId !== member.userId,
-                            ),
-                          );
-                        }
-                      }}
+                      aria-label={member.name}
+                      checked={participant !== undefined}
+                      onCheckedChange={(isChecked) =>
+                        handleParticipantToggle(member, index, isChecked)
+                      }
                       disabled={disabled}
                     />
                     <span className="flex-1 text-sm">{member.name}</span>
-                    {watch("splitMode") === "EXACT" && checked && (
-                      <CurrencyInput
-                        aria-label={`${member.name}'s share`}
-                        placeholder="R$ 0,00"
-                        className="h-8 w-28 text-sm"
-                        value={participants[index]?.shareAmount ?? null}
-                        onValueChange={(shareAmount) => {
-                          const updated = [...participants];
-                          updated[index] = { ...updated[index], shareAmount };
-                          setValue("participants", updated);
-                        }}
-                        disabled={disabled}
+                    {splitMode.value === "EXACT" && participant && (
+                      <Controller
+                        key={participant.id}
+                        control={control}
+                        name={`participants.${index}.shareAmount`}
+                        render={({ field, fieldState }) => (
+                          <CurrencyInput
+                            {...field}
+                            onValueChange={(shareAmount) => {
+                              onEdit();
+                              field.onChange(shareAmount);
+                            }}
+                            aria-label={`${member.name}'s share`}
+                            aria-invalid={fieldState.invalid}
+                            placeholder="R$ 0,00"
+                            className="h-8 w-28 text-sm"
+                            disabled={disabled}
+                          />
+                        )}
                       />
                     )}
                   </div>
                 );
               })}
             </div>
-            <FieldError errors={[errors.participants]} />
+            <FieldError errors={[participantsError]} />
           </Field>
         </>
       )}
     </>
   );
-};
+}

@@ -23,8 +23,8 @@ import { FormSheet } from "@/components/form/FormSheet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { addMonths, format } from "date-fns";
 import { CopyIcon, Trash2Icon } from "lucide-react";
-import { useCallback, useEffect, useRef } from "react";
-import { Controller, useForm, type UseFormSetValue } from "react-hook-form";
+import { useEffect, useRef } from "react";
+import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
 import { CategoryCombobox } from "./CategoryCombobox";
 import { ItemsField } from "./ItemsField";
@@ -99,16 +99,9 @@ export const TransactionFormDrawer = ({
     defaultValues: buildDefaultValues(transaction, currentUserId, definition),
   });
 
+  const participants = useFieldArray({ control, name: "participants" });
+  // Set by any change in AttributionFields: hand-edited participants win over the category's owner.
   const participantsTouchedRef = useRef(false);
-
-  // Every attribution change made through AttributionFields is a manual edit.
-  const setAttributionValue = useCallback<UseFormSetValue<TransactionFormValues>>(
-    (name, value, options) => {
-      participantsTouchedRef.current = true;
-      setValue(name, value, options);
-    },
-    [setValue],
-  );
 
   const handleCategoryChange = (
     category: FinancialTransactionCategory | null | undefined,
@@ -127,7 +120,7 @@ export const TransactionFormDrawer = ({
     if (!attribution) return;
     setValue("attributionMode", attribution.attributionMode);
     setValue("splitMode", attribution.splitMode);
-    setValue("participants", attribution.participants);
+    participants.replace(attribution.participants);
   };
 
   useEffect(() => {
@@ -277,9 +270,11 @@ export const TransactionFormDrawer = ({
 
         {showAttribution && (
           <AttributionFields
-            watch={watch}
-            setValue={setAttributionValue}
-            errors={errors}
+            control={control}
+            participants={participants}
+            onEdit={() => {
+              participantsTouchedRef.current = true;
+            }}
             members={members}
             currentUserId={currentUserId}
             disabled={isPending}
