@@ -977,9 +977,9 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] Staging a file with a lint error blocks the commit (checked, then reverted)
-- [ ] A clean staged file commits
-- [ ] Build gate passes
+- [x] Staging a file with a lint error blocks the commit (checked, then reverted)
+- [x] A clean staged file commits
+- [x] Build gate passes
 
 **Tests**: none
 **Gate**: build

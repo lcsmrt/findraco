@@ -8,5 +8,6 @@
     "build": "pnpm -r run build",
     "test": "pnpm -r run test",
     "lint": "pnpm --filter findraco-frontend run lint"
-  }
+  },
+  "packageManager": "pnpm@11.1.2"
 }
