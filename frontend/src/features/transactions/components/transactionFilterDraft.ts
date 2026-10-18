@@ -3,7 +3,6 @@ import type {
   FinancialTransactionType,
   PagedFinancialTransactionsFilter,
 } from "@/api/dtos";
-import { maskCurrency } from "@/utils/string/masks";
 import { format, parseISO } from "date-fns";
 import type { DateRange } from "react-day-picker";
 
@@ -23,8 +22,9 @@ export type FilterDraft = {
   memberId: number | null;
   member: MemberOption | null;
   dateRange: DateRange | undefined;
-  amountMin: string;
-  amountMax: string;
+  /** Reais; `null` means no bound. */
+  amountMin: number | null;
+  amountMax: number | null;
 };
 
 export type AppliedFilters = {
@@ -50,8 +50,8 @@ export function toDraft(applied: AppliedFilters): FilterDraft {
             to: filter.startDateTo ? parseISO(filter.startDateTo) : undefined,
           }
         : undefined,
-    amountMin: filter.amountMin != null ? maskCurrency(String(Math.round(filter.amountMin * 100))) : "",
-    amountMax: filter.amountMax != null ? maskCurrency(String(Math.round(filter.amountMax * 100))) : "",
+    amountMin: filter.amountMin ?? null,
+    amountMax: filter.amountMax ?? null,
   };
 }
 
@@ -73,10 +73,8 @@ export function fromDraft(draft: FilterDraft): AppliedFilters {
   if (draft.dateRange?.from)
     filter.startDateFrom = format(draft.dateRange.from, ISO);
   if (draft.dateRange?.to) filter.startDateTo = format(draft.dateRange.to, ISO);
-  const minDigits = draft.amountMin.replace(/\D/g, "");
-  const maxDigits = draft.amountMax.replace(/\D/g, "");
-  if (minDigits) filter.amountMin = parseInt(minDigits, 10) / 100;
-  if (maxDigits) filter.amountMax = parseInt(maxDigits, 10) / 100;
+  if (draft.amountMin != null) filter.amountMin = draft.amountMin;
+  if (draft.amountMax != null) filter.amountMax = draft.amountMax;
   return {
     filter,
     categoryForDisplay: draft.category,

@@ -8,7 +8,7 @@ import {
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { Button } from "@/components/button/base/Button";
 import { DateRangePicker } from "@/components/input/DatePicker";
-import { Input } from "@/components/input/base/Input";
+import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import {
   Select,
@@ -24,7 +24,6 @@ import {
   PopoverTrigger,
 } from "@/components/popover/base/Popover";
 import { SlidersHorizontalIcon } from "lucide-react";
-import { maskCurrency } from "@/utils/string/masks";
 import { useMemo, useState } from "react";
 import { countActiveFilters } from "./activeFilterCount";
 import { groupCategoryOptions } from "../utils/categoryOptions";
@@ -182,24 +181,16 @@ export const TransactionFilterPopover = ({
           <Field>
             <FieldLabel>Amount</FieldLabel>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <Input
-                type="text"
-                inputMode="numeric"
+              <CurrencyInput
                 placeholder="R$ 0,00"
                 value={draft.amountMin}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, amountMin: maskCurrency(e.target.value) }))
-                }
+                onValueChange={(amountMin) => setDraft((d) => ({ ...d, amountMin }))}
               />
               <span className="text-muted-foreground hidden shrink-0 sm:block">–</span>
-              <Input
-                type="text"
-                inputMode="numeric"
+              <CurrencyInput
                 placeholder="R$ 0,00"
                 value={draft.amountMax}
-                onChange={(e) =>
-                  setDraft((d) => ({ ...d, amountMax: maskCurrency(e.target.value) }))
-                }
+                onValueChange={(amountMax) => setDraft((d) => ({ ...d, amountMax }))}
               />
             </div>
           </Field>

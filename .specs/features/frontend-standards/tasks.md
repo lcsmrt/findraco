@@ -1661,10 +1661,10 @@ Note: `@testing-library/user-event` 14.6.1 added (exact, the version Storybook a
 
 **Done when**:
 
-- [ ] `transactionFilterDraft.test.ts` updated to numbers
-- [ ] No `maskCurrency` in these files
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `transactionFilterDraft.test.ts` updated to numbers (it had no amount cases; four added)
+- [x] No `maskCurrency` in these files
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 541 → 545
 
 **Tests**: unit
 **Gate**: quick

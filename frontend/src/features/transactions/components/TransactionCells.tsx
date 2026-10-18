@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { Checkbox } from "@/components/input/base/Checkbox";
+import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { Input } from "@/components/input/base/Input";
 import {
   Popover,
@@ -15,9 +16,9 @@ import {
   PopoverTrigger,
 } from "@/components/popover/base/Popover";
 import { cn } from "@/lib/mergeClasses";
-import { formatMoney } from "@/utils/money";
+import { formatMoney, toCents } from "@/utils/money";
 import { formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
-import { maskCurrency, maskDate } from "@/utils/string/masks";
+import { maskDate } from "@/utils/string/masks";
 import { format, isValid, parse } from "date-fns";
 import {
   CopyIcon,
@@ -87,13 +88,11 @@ const EditableDescriptionCell = ({
 export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) => {
   const { amount, type } = transaction;
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState("");
+  const [draft, setDraft] = useState<number | null>(null);
 
   const commit = () => {
-    const digits = draft.replace(/\D/g, "");
-    const newAmount = parseInt(digits, 10) / 100;
-    if (digits.length > 0 && newAmount > 0 && newAmount !== amount) {
-      onSave(transaction, { amount: newAmount });
+    if (draft !== null && draft > 0 && toCents(draft) !== toCents(amount)) {
+      onSave(transaction, { amount: draft });
     }
     setEditing(false);
   };
@@ -107,7 +106,7 @@ export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) =
           type === "CREDIT" && "text-success",
         )}
         onClick={() => {
-          setDraft(maskCurrency(String(Math.round(amount * 100))));
+          setDraft(amount);
           setEditing(true);
         }}
       >
@@ -118,12 +117,10 @@ export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) =
   }
 
   return (
-    <Input
+    <CurrencyInput
       autoFocus
-      type="text"
-      inputMode="numeric"
       value={draft}
-      onChange={(e) => setDraft(maskCurrency(e.target.value))}
+      onValueChange={setDraft}
       onBlur={commit}
       onKeyDown={(e) => {
         if (e.key === "Enter") commit();
