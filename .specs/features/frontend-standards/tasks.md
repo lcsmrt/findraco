@@ -2286,14 +2286,16 @@ Notes: spec-precision gap in the task text: "even split, remainder cents" assume
 
 **Done when**:
 
-- [ ] `transactionForm.test.ts` (the former drawer tests, T22) and `TransactionFormDrawer.test.tsx` pass, adapted only in imports and value entry
-- [ ] No `watch(` at the form root, no `setValue(` for field binding
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `transactionForm.test.ts` (the former drawer tests, T22) and `TransactionFormDrawer.test.tsx` pass, adapted only in imports and value entry
+- [x] No `watch(` at the form root, no `setValue(` for field binding
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 659 (unchanged); `transactionForm.test.ts`, `transactionForm.series.test.ts` and `TransactionFormDrawer.test.tsx` pass with no change at all
+
+Notes: the drawer composes `TypeField`, the description and amount `FormField`s, `CategoryField`, the date `FormField`, `ItemsField`, `AttributionFields`, `InstallmentsField`, `EndDateField` and `RecurrenceFields`; the three sections used once (`TypeField`, `CategoryField`, `RecurrenceFields`) are non-exported components in the drawer file. Category and date bind through `FormField`; type, the recurring checkbox and the mode toggle through raw `Controller`s (a toggle group names itself; a checkbox sits beside its label). Values that steer the layout are read with `useWatch` in the section that needs them (type in `CategoryField`, recurring and mode in `RecurrenceFields`); no `watch` is left. `setValue` remains only for side effects on other fields, never for binding: a new type clears the category, turning repetition off or switching mode drops the other settings, and an owned category sets the attribution mode and split. Clearing the date's text keeps the last date, as before. Logic lines before the main `return`: `TransactionFormDrawer` 48 (was about 110), `TypeField` 0, `CategoryField` 1, `RecurrenceFields` 1; the drawer is now a `function` declaration. File 696 → 397 lines; the main component is about 200.
 
 **Tests**: integration
 **Gate**: quick
-**Commit**: `refactor(frontend): TransactionFormDrawer composes its sections`
+**Commit**: `refactor(frontend): transaction drawer composes its sections`
 
 ---
 
