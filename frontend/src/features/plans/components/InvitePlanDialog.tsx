@@ -22,32 +22,19 @@ import { CopyIcon, SendIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 import { ROLE_LABELS, ROLE_OPTIONS } from "../utils/planLabels";
+import {
+  INVITE_FORM_DEFAULTS,
+  InviteFormOutput,
+  InviteFormValues,
+  inviteSchema,
+  toInvitePayload,
+} from "./inviteForm";
 
 const TYPE_LABELS: Record<InvitationType, string> = {
   EMAIL: "Email",
   LINK: "Link",
 };
-
-const inviteSchema = z
-  .object({
-    role: z.enum(["EDITOR", "CONTRIBUTOR", "VIEWER"]),
-    type: z.enum(["EMAIL", "LINK"]),
-    email: z.string().optional(),
-    expiresAt: z.string().optional(),
-  })
-  .superRefine((values, ctx) => {
-    if (values.type === "EMAIL" && !values.email?.trim()) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Enter an email address",
-        path: ["email"],
-      });
-    }
-  });
-
-type InviteFormValues = z.infer<typeof inviteSchema>;
 
 type InvitePlanDialogProps = {
   open: boolean;
@@ -69,13 +56,17 @@ export const InvitePlanDialog = ({
     null,
   );
 
-  const { control, handleSubmit, reset } = useForm<InviteFormValues>({
+  const { control, handleSubmit, reset } = useForm<
+    InviteFormValues,
+    unknown,
+    InviteFormOutput
+  >({
     resolver: zodResolver(inviteSchema),
-    defaultValues: { role: "VIEWER", type: "EMAIL", email: "", expiresAt: "" },
+    defaultValues: INVITE_FORM_DEFAULTS,
   });
 
   useEffect(() => {
-    reset({ role: "VIEWER", type: "EMAIL", email: "", expiresAt: "" });
+    reset(INVITE_FORM_DEFAULTS);
     setCreatedInvitation(null);
   }, [open, reset]);
 
@@ -85,19 +76,8 @@ export const InvitePlanDialog = ({
 
   const type = useWatch({ control, name: "type" });
 
-  const onSubmit = (values: InviteFormValues) => {
-    createInvitation({
-      params: { planId },
-      body: {
-        role: values.role,
-        type: values.type,
-        email: values.type === "EMAIL" ? values.email?.trim() : undefined,
-        expiresAt:
-          values.type === "LINK" && values.expiresAt
-            ? values.expiresAt
-            : undefined,
-      },
-    });
+  const onSubmit = (values: InviteFormOutput) => {
+    createInvitation({ params: { planId }, body: toInvitePayload(values) });
   };
 
   const copyLink = () => {

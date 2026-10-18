@@ -2092,6 +2092,8 @@ Notes: to empty `grep -rn "register(" src` three more call sites changed: the de
 
 Follow-up (`refactor(frontend): invite dialog selects bind through FormField`): the type and role selects bind through `FormField` (the trigger takes `id`, `ref`, `onBlur`, `aria-invalid`; `onValueChange={field.onChange}`), so their labels name them; `Select items={…}` shows the label in the trigger, which removed the two `as` casts. The form reads `type` with `useWatch`; no `watch`/`setValue` is left in the dialog. New test: the role and type picked through their labels reach the request body (`{ role: "EDITOR", type: "LINK" }`). The invite schema still sits in the dialog file (not in this follow-up's scope). Unit + tooling 625 → 626.
 
+Follow-up (`refactor(frontend): move the invite form schema to a form module`): `inviteForm.ts` holds `inviteSchema`, `InviteFormValues`/`InviteFormOutput`, `INVITE_FORM_DEFAULTS` and `toInvitePayload` (the email/link branching that `onSubmit` built inline); the dialog keeps `useForm` and layout. `inviteForm.test.ts` covers each rule and message (email required and whitespace-only for an email invitation, link without email accepted, role and type enums) and each payload branch. Unit + tooling 662 → 671.
+
 **Tests**: integration
 **Gate**: quick
 **Commit**: `refactor(frontend): invite dialog fields use FormField`
