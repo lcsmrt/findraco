@@ -1709,11 +1709,13 @@ Notes: Amount binds through `FormField`. Item amounts bind through a raw `Contro
 
 **Done when**:
 
-- [ ] New `CategoryFormSheet.test.tsx` (`renderWithProviders`, MSW): typing a limit submits the number; empty limit submits none
-- [ ] `grep -rn maskCurrency src` returns nothing
-- [ ] `categoryForm.test.ts` updated
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] New `CategoryFormSheet.test.tsx` (`renderWithProviders`, MSW): typing a limit submits the number; empty limit submits none
+- [x] `grep -rn maskCurrency src` returns nothing
+- [x] `categoryForm.test.ts` updated
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 556 → 560; all projects 612
+
+Notes: the plain limit binds through `FormField`; member limits bind through a raw `Controller` (the member's name labels the row). `masks.ts` keeps `maskDate`, so it stays. The integration test waits for the members and categories queries before typing, because the sheet resets its values when they arrive.
 
 **Tests**: integration
 **Gate**: quick

@@ -31,6 +31,7 @@ import { useForm } from "react-hook-form";
 import { TransactionTypeToggle } from "@/components/transactionTypeToggle/TransactionTypeToggle";
 import { CategoryLimitFields } from "./CategoryLimitFields";
 import {
+  CategoryFormOutput,
   CategoryFormValues,
   buildDefaultValues,
   categoryHasChildren,
@@ -90,13 +91,14 @@ export const CategoryFormSheet = ({
   );
 
   const {
+    control,
     register,
     handleSubmit,
     watch,
     setValue,
     reset,
     formState: { errors },
-  } = useForm<CategoryFormValues>({
+  } = useForm<CategoryFormValues, unknown, CategoryFormOutput>({
     resolver: zodResolver(schema),
     defaultValues: buildDefaultValues(editing, defaults, members, categories),
   });
@@ -126,7 +128,7 @@ export const CategoryFormSheet = ({
     });
   const isPending = isCreating || isUpdating;
 
-  const onSubmit = (values: CategoryFormValues) => {
+  const onSubmit = (values: CategoryFormOutput) => {
     if (editing) {
       updateCategory({ params: { id: editing.id }, body: toPayload(values) });
     } else {
@@ -165,7 +167,7 @@ export const CategoryFormSheet = ({
                   onChange={(v) => {
                     setValue("type", v, { shouldValidate: true });
                     setValue("parentId", null);
-                    if (v === "CREDIT") setValue("spendingLimit", "");
+                    if (v === "CREDIT") setValue("spendingLimit", null);
                   }}
                   disabled={isPending || hasChildren}
                 />
@@ -256,7 +258,7 @@ export const CategoryFormSheet = ({
 
               {type === "DEBIT" && (
                 <CategoryLimitFields
-                  register={register}
+                  control={control}
                   watch={watch}
                   setValue={setValue}
                   errors={errors}

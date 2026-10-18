@@ -5,7 +5,7 @@ import {
 import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
-import { maskCurrency } from "@/utils/string/masks";
+import { toCents } from "@/utils/money";
 import { z } from "zod";
 
 export const categoryHasChildren = (
@@ -58,25 +58,30 @@ export const ownerOptions = (
 const memberLimitRowSchema = z.object({
   memberId: z.number(),
   memberName: z.string(),
-  /** Masked currency; empty = no individual limit for this member. */
-  amount: z.string(),
+  /** Reais; `null` = no individual limit for this member. */
+  amount: z.number().nullable(),
   /** false = a former member's dormant entry (kept or removed, never edited). */
   active: z.boolean(),
 });
 
-export type MemberLimitRow = z.infer<typeof memberLimitRowSchema>;
+export type MemberLimitRow = z.input<typeof memberLimitRowSchema>;
 
 const categoryFormBaseSchema = z.object({
   type: z.enum(["DEBIT", "CREDIT"]),
   description: z.string().trim().min(1, "Name is required"),
   parentId: z.number().nullable(),
   ownerId: z.number().nullable(),
-  spendingLimit: z.string(),
+  /** Reais; `null` = no limit. */
+  spendingLimit: z.number().nullable(),
   limitMode: z.enum(["single", "perMember"]),
   memberLimits: z.array(memberLimitRowSchema),
 });
 
-export type CategoryFormValues = z.infer<typeof categoryFormBaseSchema>;
+/** What the fields hold while editing: limits in reais, `null` when empty. */
+export type CategoryFormValues = z.input<typeof categoryFormBaseSchema>;
+
+/** What a valid submit hands over; no field narrows, so it matches the values. */
+export type CategoryFormOutput = z.output<typeof categoryFormBaseSchema>;
 
 /**
  * Hierarchy rules the API enforces, checked up front: a category with
@@ -157,7 +162,7 @@ const refineMemberLimits = (
       });
     }
     seen.add(row.memberId);
-    if (row.amount.trim().startsWith("-")) {
+    if (row.amount != null && row.amount < 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Amount cannot be negative",
@@ -166,14 +171,6 @@ const refineMemberLimits = (
     }
   });
 };
-
-const parseLimit = (masked: string): number | undefined => {
-  const digits = masked.replace(/\D/g, "");
-  return digits ? parseInt(digits, 10) / 100 : undefined;
-};
-
-const maskAmount = (amount: number) =>
-  maskCurrency(String(Math.round(amount * 100)));
 
 /**
  * Each active member's read-only share of the per-member total, in percent
@@ -184,14 +181,15 @@ export const memberLimitShares = (
 ): Map<number, number> => {
   const amounts = rows
     .filter((row) => row.active)
-    .map((row) => ({ memberId: row.memberId, amount: parseLimit(row.amount) }))
-    .filter((row): row is { memberId: number; amount: number } => row.amount != null);
-  const total = amounts.reduce((sum, row) => sum + row.amount, 0);
+    .flatMap((row) =>
+      row.amount == null ? [] : [{ memberId: row.memberId, cents: toCents(row.amount) }],
+    );
+  const total = amounts.reduce((sum, row) => sum + row.cents, 0);
   const shares = new Map<number, number>();
   amounts.forEach((row) =>
     shares.set(
       row.memberId,
-      total === 0 ? 0 : Math.round((row.amount / total) * 1000) / 10,
+      total === 0 ? 0 : Math.round((row.cents / total) * 1000) / 10,
     ),
   );
   return shares;
@@ -212,7 +210,7 @@ export const buildMemberLimitRows = (
       return {
         memberId: member.userId,
         memberName: member.name,
-        amount: entry ? maskAmount(entry.amount) : "",
+        amount: entry ? entry.amount : null,
         active: true,
       };
     })
@@ -223,7 +221,7 @@ export const buildMemberLimitRows = (
     .map((entry) => ({
       memberId: entry.memberId,
       memberName: entry.memberName,
-      amount: maskAmount(entry.amount),
+      amount: entry.amount,
       active: entry.active,
     }));
   return [...activeRows, ...otherRows];
@@ -243,8 +241,7 @@ export const buildDefaultValues = (
       parentId: category.parentId ?? null,
       // A child reports its parent's owner; only a root's owner is its own.
       ownerId: category.parentId == null ? (category.ownerId ?? null) : null,
-      spendingLimit:
-        category.spendingLimit != null ? maskAmount(category.spendingLimit) : "",
+      spendingLimit: category.spendingLimit ?? null,
       limitMode: category.memberLimits?.length ? "perMember" : "single",
       memberLimits,
     };
@@ -258,7 +255,7 @@ export const buildDefaultValues = (
     description: defaults?.description ?? "",
     parentId: defaults?.parentId ?? null,
     ownerId: null,
-    spendingLimit: "",
+    spendingLimit: null,
     limitMode: "single",
     memberLimits,
   };
@@ -270,7 +267,7 @@ export const buildDefaultValues = (
  * and clears the per-member entries.
  */
 export const toPayload = (
-  values: CategoryFormValues,
+  values: CategoryFormOutput,
 ): CreateFinancialTransactionCategoryRequest["body"] => {
   const perMember = values.type === "DEBIT" && values.limitMode === "perMember";
   return {
@@ -281,13 +278,12 @@ export const toPayload = (
     // Income categories carry no limit.
     spendingLimit:
       values.type === "DEBIT" && !perMember
-        ? parseLimit(values.spendingLimit)
+        ? (values.spendingLimit ?? undefined)
         : undefined,
     memberLimits: perMember
-      ? values.memberLimits.flatMap((row) => {
-          const amount = parseLimit(row.amount);
-          return amount == null ? [] : [{ memberId: row.memberId, amount }];
-        })
+      ? values.memberLimits.flatMap((row) =>
+          row.amount == null ? [] : [{ memberId: row.memberId, amount: row.amount }],
+        )
       : [],
   };
 };

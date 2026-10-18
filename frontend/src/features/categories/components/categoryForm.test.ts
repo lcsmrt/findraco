@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest";
 import type { FinancialTransactionCategory } from "@/api/dtos";
-import { maskCurrency } from "@/utils/string/masks";
 import type { PlanMember } from "@/api/dtos/plan";
 import {
   buildDefaultValues,
@@ -39,7 +38,7 @@ const values = (overrides: Partial<CategoryFormValues> = {}): CategoryFormValues
   description: "Groceries",
   parentId: null,
   ownerId: null,
-  spendingLimit: "",
+  spendingLimit: null,
   limitMode: "single",
   memberLimits: [],
   ...overrides,
@@ -159,7 +158,7 @@ describe("buildDefaultValues", () => {
       description: "Delivery",
       parentId: 1,
       ownerId: null,
-      spendingLimit: maskCurrency("20000"),
+      spendingLimit: 200,
       limitMode: "single",
       memberLimits: [],
     });
@@ -180,7 +179,7 @@ describe("buildDefaultValues", () => {
       description: "Gym",
       parentId: null,
       ownerId: null,
-      spendingLimit: "",
+      spendingLimit: null,
       limitMode: "single",
       memberLimits: [],
     });
@@ -193,7 +192,7 @@ describe("buildDefaultValues", () => {
       description: "",
       parentId: 4,
       ownerId: null,
-      spendingLimit: "",
+      spendingLimit: null,
       limitMode: "single",
       memberLimits: [],
     });
@@ -229,7 +228,7 @@ describe("buildDefaultValues", () => {
       description: "",
       parentId: null,
       ownerId: null,
-      spendingLimit: "",
+      spendingLimit: null,
       limitMode: "single",
       memberLimits: [],
     });
@@ -239,7 +238,7 @@ describe("buildDefaultValues", () => {
 describe("toPayload", () => {
   it("maps a DEBIT child with a limit to the API body", () => {
     expect(
-      toPayload(values({ description: " Delivery ", parentId: 1, spendingLimit: maskCurrency("20050") })),
+      toPayload(values({ description: " Delivery ", parentId: 1, spendingLimit: 200.5 })),
     ).toEqual({
       type: "DEBIT",
       description: "Delivery",
@@ -263,7 +262,7 @@ describe("toPayload", () => {
 
   it("drops the limit for a CREDIT category", () => {
     expect(
-      toPayload(values({ type: "CREDIT", spendingLimit: maskCurrency("10000") })).spendingLimit,
+      toPayload(values({ type: "CREDIT", spendingLimit: 100 })).spendingLimit,
     ).toBeUndefined();
   });
 });
@@ -276,7 +275,7 @@ const livia: PlanMember = { userId: 20, name: "Livia", email: "v@x.com", role: "
 const row = (
   memberId: number,
   memberName: string,
-  amount: string,
+  amount: number | null,
   active = true,
 ): MemberLimitRow => ({ memberId, memberName, amount, active });
 
@@ -291,14 +290,14 @@ const groceries = cat(6, "Groceries", {
 describe("buildMemberLimitRows", () => {
   it("lists every active member with their stored amount, then former members' entries", () => {
     expect(buildMemberLimitRows(groceries, [lucas, livia])).toEqual([
-      row(20, "Livia", ""),
-      row(10, "Lucas", maskCurrency("26000")),
-      row(30, "Ana", maskCurrency("5000"), false),
+      row(20, "Livia", null),
+      row(10, "Lucas", 260),
+      row(30, "Ana", 50, false),
     ]);
   });
 
   it("lists active members with no amount for a new category", () => {
-    expect(buildMemberLimitRows(null, [lucas])).toEqual([row(10, "Lucas", "")]);
+    expect(buildMemberLimitRows(null, [lucas])).toEqual([row(10, "Lucas", null)]);
   });
 });
 
@@ -313,8 +312,8 @@ describe("buildDefaultValues with per-member limits", () => {
 describe("memberLimitShares", () => {
   it("computes each active member's read-only share of the total (260 / 140 → 65% / 35%)", () => {
     const shares = memberLimitShares([
-      row(10, "Lucas", maskCurrency("26000")),
-      row(20, "Livia", maskCurrency("14000")),
+      row(10, "Lucas", 260),
+      row(20, "Livia", 140),
     ]);
     expect(shares.get(10)).toBe(65);
     expect(shares.get(20)).toBe(35);
@@ -322,8 +321,8 @@ describe("memberLimitShares", () => {
 
   it("gives every member a 0% share when the total is 0", () => {
     const shares = memberLimitShares([
-      row(10, "Lucas", maskCurrency("0")),
-      row(20, "Livia", maskCurrency("0")),
+      row(10, "Lucas", 0),
+      row(20, "Livia", 0),
     ]);
     expect(shares.get(10)).toBe(0);
     expect(shares.get(20)).toBe(0);
@@ -331,9 +330,9 @@ describe("memberLimitShares", () => {
 
   it("leaves out former members and members without an amount", () => {
     const shares = memberLimitShares([
-      row(10, "Lucas", maskCurrency("10000")),
-      row(20, "Livia", ""),
-      row(30, "Ana", maskCurrency("10000"), false),
+      row(10, "Lucas", 100),
+      row(20, "Livia", null),
+      row(30, "Ana", 100, false),
     ]);
     expect(shares.get(10)).toBe(100);
     expect(shares.has(20)).toBe(false);
@@ -342,8 +341,8 @@ describe("memberLimitShares", () => {
 
   it("rounds to one decimal", () => {
     const shares = memberLimitShares([
-      row(10, "Lucas", maskCurrency("10000")),
-      row(20, "Livia", maskCurrency("20000")),
+      row(10, "Lucas", 100),
+      row(20, "Livia", 200),
     ]);
     expect(shares.get(10)).toBe(33.3);
     expect(shares.get(20)).toBe(66.7);
@@ -357,7 +356,7 @@ describe("createCategoryFormSchema with per-member limits", () => {
   it("accepts one amount per member", () => {
     expect(
       createCategoryFormSchema(categories).safeParse(
-        perMember([row(10, "Lucas", maskCurrency("26000")), row(20, "Livia", "")]),
+        perMember([row(10, "Lucas", 260), row(20, "Livia", null)]),
       ).success,
     ).toBe(true);
   });
@@ -366,7 +365,7 @@ describe("createCategoryFormSchema with per-member limits", () => {
     expect(
       issuesOf(
         createCategoryFormSchema(categories).safeParse(
-          perMember([row(10, "Lucas", "R$ 1,00"), row(10, "Lucas", "R$ 2,00")]),
+          perMember([row(10, "Lucas", 1), row(10, "Lucas", 2)]),
         ),
       ),
     ).toEqual([{ path: "memberLimits.1.memberId", message: "Each member can have only one limit" }]);
@@ -374,7 +373,7 @@ describe("createCategoryFormSchema with per-member limits", () => {
 
   it("rejects a negative amount", () => {
     expect(
-      issuesOf(createCategoryFormSchema(categories).safeParse(perMember([row(10, "Lucas", "-1,00")]))),
+      issuesOf(createCategoryFormSchema(categories).safeParse(perMember([row(10, "Lucas", -1)]))),
     ).toEqual([{ path: "memberLimits.0.amount", message: "Amount cannot be negative" }]);
   });
 
@@ -382,7 +381,7 @@ describe("createCategoryFormSchema with per-member limits", () => {
     expect(
       issuesOf(
         createCategoryFormSchema(categories).safeParse(
-          perMember([row(10, "Lucas", "R$ 1,00")], { type: "CREDIT" }),
+          perMember([row(10, "Lucas", 1)], { type: "CREDIT" }),
         ),
       ),
     ).toEqual([{ path: "limitMode", message: "Income categories cannot have per-member limits" }]);
@@ -395,14 +394,14 @@ describe("createCategoryFormSchema with per-member limits", () => {
     expect(
       issuesOf(
         createCategoryFormSchema(withOwned, owned).safeParse(
-          perMember([row(10, "Lucas", "R$ 1,00")], { description: "Professional", ownerId: 10 }),
+          perMember([row(10, "Lucas", 1)], { description: "Professional", ownerId: 10 }),
         ),
       ),
     ).toEqual([{ path: "limitMode", message }]);
     expect(
       issuesOf(
         createCategoryFormSchema(withOwned).safeParse(
-          perMember([row(10, "Lucas", "R$ 1,00")], { parentId: 7 }),
+          perMember([row(10, "Lucas", 1)], { parentId: 7 }),
         ),
       ),
     ).toEqual([{ path: "limitMode", message }]);
@@ -415,11 +414,11 @@ describe("toPayload with per-member limits", () => {
       toPayload(
         values({
           limitMode: "perMember",
-          spendingLimit: maskCurrency("99900"),
+          spendingLimit: 999,
           memberLimits: [
-            row(10, "Lucas", maskCurrency("26000")),
-            row(20, "Livia", maskCurrency("14000")),
-            row(40, "Bia", ""),
+            row(10, "Lucas", 260),
+            row(20, "Livia", 140),
+            row(40, "Bia", null),
           ],
         }),
       ),
@@ -437,7 +436,7 @@ describe("toPayload with per-member limits", () => {
   });
 
   it("keeps a former member's entry unchanged until it is removed", () => {
-    const rows = [row(10, "Lucas", maskCurrency("26000")), row(30, "Ana", maskCurrency("5000"), false)];
+    const rows = [row(10, "Lucas", 260), row(30, "Ana", 50, false)];
     expect(toPayload(values({ limitMode: "perMember", memberLimits: rows })).memberLimits).toEqual([
       { memberId: 10, amount: 260 },
       { memberId: 30, amount: 50 },
@@ -450,7 +449,7 @@ describe("toPayload with per-member limits", () => {
 
   it("clears the per-member entries in single mode", () => {
     const payload = toPayload(
-      values({ spendingLimit: maskCurrency("30000"), memberLimits: [row(10, "Lucas", maskCurrency("26000"))] }),
+      values({ spendingLimit: 300, memberLimits: [row(10, "Lucas", 260)] }),
     );
     expect(payload.spendingLimit).toBe(300);
     expect(payload.memberLimits).toEqual([]);
@@ -459,7 +458,7 @@ describe("toPayload with per-member limits", () => {
   it("sends no per-member entries for a CREDIT category", () => {
     expect(
       toPayload(
-        values({ type: "CREDIT", limitMode: "perMember", memberLimits: [row(10, "Lucas", "R$ 1,00")] }),
+        values({ type: "CREDIT", limitMode: "perMember", memberLimits: [row(10, "Lucas", 1)] }),
       ).memberLimits,
     ).toEqual([]);
   });
@@ -505,7 +504,7 @@ describe("createCategoryFormSchema with an owner", () => {
     expect(
       issuesOf(
         createCategoryFormSchema(categories).safeParse(
-          values({ ownerId: 10, limitMode: "perMember", memberLimits: [row(10, "Lucas", "R$ 1,00")] }),
+          values({ ownerId: 10, limitMode: "perMember", memberLimits: [row(10, "Lucas", 1)] }),
         ),
       ),
     ).toEqual([{ path: "limitMode", message }]);

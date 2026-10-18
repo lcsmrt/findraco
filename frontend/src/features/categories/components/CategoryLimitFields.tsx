@@ -1,19 +1,20 @@
 import { Button } from "@/components/button/base/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
-import { Input } from "@/components/input/base/Input";
+import { FormField } from "@/components/form/FormField";
+import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { cn } from "@/lib/mergeClasses";
-import { maskCurrency } from "@/utils/string/masks";
 import { Trash2Icon } from "lucide-react";
-import type {
-  FieldErrors,
-  UseFormRegister,
-  UseFormSetValue,
-  UseFormWatch,
+import {
+  Controller,
+  type Control,
+  type FieldErrors,
+  type UseFormSetValue,
+  type UseFormWatch,
 } from "react-hook-form";
-import type { CategoryFormValues } from "./categoryForm";
+import type { CategoryFormOutput, CategoryFormValues } from "./categoryForm";
 
 type CategoryLimitFieldsProps = {
-  register: UseFormRegister<CategoryFormValues>;
+  control: Control<CategoryFormValues, unknown, CategoryFormOutput>;
   watch: UseFormWatch<CategoryFormValues>;
   setValue: UseFormSetValue<CategoryFormValues>;
   errors: FieldErrors<CategoryFormValues>;
@@ -34,7 +35,7 @@ const modeButtonClass = (selected: boolean) =>
 
 /** Monthly limit of a DEBIT category: one plain amount, or one amount per member (CAT-11, CAT-14). */
 export const CategoryLimitFields = ({
-  register,
+  control,
   watch,
   setValue,
   errors,
@@ -51,8 +52,6 @@ export const CategoryLimitFields = ({
   );
   const perMemberAllowed = perMemberDisabledReason == null;
   const isPerMember = limitMode === "perMember" && perMemberAllowed;
-
-  const { onChange: onLimitChange, ...limitRest } = register("spendingLimit");
 
   const removeFormerMember = (memberId: number) =>
     setValue(
@@ -92,24 +91,25 @@ export const CategoryLimitFields = ({
       </Field>
 
       {!isPerMember && (
-        <Field>
-          <FieldLabel htmlFor="category-spending-limit">
-            Amount{" "}
-            <span className="text-muted-foreground font-normal">(optional)</span>
-          </FieldLabel>
-          <Input
-            id="category-spending-limit"
-            type="text"
-            inputMode="numeric"
-            placeholder="R$ 0,00"
-            disabled={disabled}
-            {...limitRest}
-            onChange={(e) => {
-              e.target.value = maskCurrency(e.target.value);
-              onLimitChange(e);
-            }}
-          />
-        </Field>
+        <FormField
+          control={control}
+          name="spendingLimit"
+          label={
+            <>
+              Amount{" "}
+              <span className="text-muted-foreground font-normal">(optional)</span>
+            </>
+          }
+        >
+          {(field) => (
+            <CurrencyInput
+              {...field}
+              onValueChange={field.onChange}
+              placeholder="R$ 0,00"
+              disabled={disabled}
+            />
+          )}
+        </FormField>
       )}
 
       {isPerMember && (
@@ -117,7 +117,6 @@ export const CategoryLimitFields = ({
           <FieldLabel>Limit per member</FieldLabel>
           <div className="flex flex-col gap-2">
             {rows.map((row, index) => {
-              const { onChange, ...rest } = register(`memberLimits.${index}.amount`);
               const share = shares.get(row.memberId);
               return (
                 <div
@@ -133,19 +132,21 @@ export const CategoryLimitFields = ({
                       <span className="ml-1 text-xs">(former member)</span>
                     )}
                   </span>
-                  <Input
-                    type="text"
-                    inputMode="numeric"
-                    placeholder="No limit"
-                    className="w-32"
-                    aria-label={`Limit for ${row.memberName}`}
-                    disabled={disabled || !row.active}
-                    aria-invalid={!!errors.memberLimits?.[index]?.amount}
-                    {...rest}
-                    onChange={(e) => {
-                      e.target.value = maskCurrency(e.target.value);
-                      onChange(e);
-                    }}
+                  {/* The member's name labels the row, a layout FormField does not offer. */}
+                  <Controller
+                    control={control}
+                    name={`memberLimits.${index}.amount`}
+                    render={({ field, fieldState }) => (
+                      <CurrencyInput
+                        {...field}
+                        onValueChange={field.onChange}
+                        placeholder="No limit"
+                        className="w-32"
+                        aria-label={`Limit for ${row.memberName}`}
+                        disabled={disabled || !row.active}
+                        aria-invalid={fieldState.invalid}
+                      />
+                    )}
                   />
                   <span className="text-muted-foreground w-14 text-right text-xs tabular-nums">
                     {share != null ? `${share}%` : "—"}
