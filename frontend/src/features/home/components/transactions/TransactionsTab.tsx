@@ -27,7 +27,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useHomeFilters } from "../../hooks/useHomeFilters";
 import { useTransactionFilterChips } from "../../hooks/useTransactionFilterChips";
 import { useTransactionsPage } from "../../hooks/useTransactionsPage";
-import { useSeriesScope } from "./SeriesScopeDialog";
+import { useSeriesScope } from "./useSeriesScopeDialog";
 import {
   AppliedFilters,
   TransactionFilterPopover,
