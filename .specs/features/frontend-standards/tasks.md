@@ -1091,10 +1091,10 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] No `vi.mock` in the file
-- [ ] Each service function: request method, URL, params/body and response mapping asserted
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No `vi.mock` in the file
+- [x] Each service function: request method, URL, params/body and response mapping asserted
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick
