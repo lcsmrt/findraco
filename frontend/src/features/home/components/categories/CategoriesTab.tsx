@@ -13,13 +13,11 @@ import { cn } from "@/lib/mergeClasses";
 import { PlusIcon } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useMemberColors, type MemberColorOf } from "../../utils/memberColors";
-import {
-  ALL_CATEGORIES_PAGE_SIZE,
-  useCategoryFormSheet,
-} from "./CategoryFormSheet";
+import { ALL_CATEGORIES_PAGE_SIZE } from "./CategoryFormSheet";
 import { buildCategoryTree, type CategoryTreeRoot } from "./categoryTree";
 import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./CategoryTreeRow";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
+import { useCategoryFormSheet } from "./useCategoryFormSheet";
 
 const SECTION_TITLES = { DEBIT: "Expenses", CREDIT: "Income" } as const;
 
