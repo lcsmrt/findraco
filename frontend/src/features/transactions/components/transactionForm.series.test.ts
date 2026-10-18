@@ -6,6 +6,7 @@ import {
 import {
   TransactionFormOutput,
   buildDefaultValues,
+  seriesParcelsChanged,
   toSeriesCreatePayload,
   toSeriesEditPayload,
   transactionFormSchema,
@@ -453,5 +454,27 @@ describe("edit-mode reset — series edit", () => {
     expect(loadedDefaults.parcelsNumber).toBe(12);
     expect(loadedDefaults.description).toBe("Rent");
     expect(loadedDefaults).not.toEqual(loadingDefaults);
+  });
+});
+
+describe("seriesParcelsChanged — a new installment count applies to the whole series", () => {
+  it("is false while the count matches the series definition", () => {
+    expect(seriesParcelsChanged(installmentDefinition, 12)).toBe(false);
+  });
+
+  it("is true once the count differs from the series definition", () => {
+    expect(seriesParcelsChanged(installmentDefinition, 10)).toBe(true);
+  });
+
+  it("is true when the count is cleared", () => {
+    expect(seriesParcelsChanged(installmentDefinition, null)).toBe(true);
+  });
+
+  it("is false for a recurring series, which has no count", () => {
+    expect(seriesParcelsChanged(recurringDefinition, undefined)).toBe(false);
+  });
+
+  it("is false while the definition is still loading", () => {
+    expect(seriesParcelsChanged(undefined, 10)).toBe(false);
   });
 });

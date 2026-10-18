@@ -5,10 +5,12 @@ import type {
   FinancialTransaction,
   FinancialTransactionSeriesResponse,
   UpdateFinancialTransactionRequest,
+  UpdateFinancialTransactionSeriesRequest,
 } from "../dtos";
 
 type PlanParams = { planId: string };
 type TransactionParams = PlanParams & { id: string };
+type SeriesParams = PlanParams & { seriesId: string };
 
 const base = "*/plan/:planId/financial-transaction";
 
@@ -33,5 +35,15 @@ export const financialTransactionHandlers = {
       UpdateFinancialTransactionRequest["body"],
       FinancialTransaction
     >(`${base}/:id`, () => HttpResponse.json(transaction));
+  },
+  createRejected(message: string): HttpHandler {
+    return http.post<PlanParams>(base, () => HttpResponse.json({ message }, { status: 400 }));
+  },
+  updateSeries(series: FinancialTransactionSeriesResponse): HttpHandler {
+    return http.put<
+      SeriesParams,
+      UpdateFinancialTransactionSeriesRequest["body"],
+      FinancialTransactionSeriesResponse
+    >(`${base}/series/:seriesId`, () => HttpResponse.json(series));
   },
 };

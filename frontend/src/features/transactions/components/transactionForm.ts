@@ -260,6 +260,17 @@ export function categoryAttribution({
   return ownerDefaultAttribution(input) ?? defaults;
 }
 
+/**
+ * Whether a series edit changed an installment series' number of installments. That change rebuilds
+ * the whole series, so it applies to every occurrence without asking for a scope.
+ */
+export function seriesParcelsChanged(
+  definition: RecurrenceDefinitionResponse | undefined,
+  parcelsNumber: number | null | undefined,
+): boolean {
+  return definition?.mode === "INSTALLMENT" && parcelsNumber !== (definition.parcelsNumber ?? null);
+}
+
 function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split("T")[0].split("-").map(Number);
   return new Date(year, month - 1, day);

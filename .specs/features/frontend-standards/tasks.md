@@ -2162,9 +2162,11 @@ Notes: `--warning` is amber-800 (#92400e) in light mode, since amber-700 fell be
 
 **Done when**:
 
-- [ ] Test through MSW: create, update, series edit with each scope, duplicate, error path
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test through MSW: create, update, series edit with each scope, duplicate, error path
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 626 → 642 (new `useTransactionFormSubmit.test.ts`, 11; `seriesParcelsChanged`, 5)
+
+Notes: the four mutations and the series-scope flow live in `useTransactionFormSubmit`; the drawer passes `useSeriesScope()`'s `chooseScope` in, so the test drives each scope (and a cancelled prompt) without rendering the dialog. `seriesParcelsChanged(definition, parcelsNumber)` in `transactionForm.ts` (tested) replaces the drawer's `originalParcelsNumberRef`: a changed installment count edits the whole series without asking, and the warning reads the same helper. The handlers file already existed as `financialTransaction.handlers.ts` (named after its service); it gained `updateSeries` and `createRejected`. Tests through MSW: create, update, duplicate (POST, no PUT), series create, each of the three scopes, count changed (ALL, no prompt), cancelled prompt and definition still loading (nothing sent), a rejected create (`onDone` not called).
 
 **Tests**: unit
 **Gate**: quick

@@ -1,11 +1,5 @@
 import { FinancialTransaction } from "@/api/dtos/financialTransaction";
-import {
-  useCreateFinancialTransaction,
-  useCreateFinancialTransactionSeries,
-  useGetFinancialTransactionSeries,
-  useUpdateFinancialTransaction,
-  useUpdateFinancialTransactionSeries,
-} from "@/api/services/useFinancialTransactionService";
+import { useGetFinancialTransactionSeries } from "@/api/services/useFinancialTransactionService";
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
@@ -44,11 +38,10 @@ import {
   TransactionFormValues,
   buildDefaultValues,
   categoryAttribution,
-  toPayload,
-  toSeriesCreatePayload,
-  toSeriesEditPayload,
+  seriesParcelsChanged,
   transactionFormSchema,
 } from "./transactionForm";
+import { useTransactionFormSubmit } from "./useTransactionFormSubmit";
 
 type TransactionFormDrawerProps = {
   open: boolean;
@@ -107,7 +100,6 @@ export const TransactionFormDrawer = ({
     defaultValues: buildDefaultValues(transaction, currentUserId, definition),
   });
 
-  const originalParcelsNumberRef = useRef<number | null | undefined>(undefined);
   const participantsTouchedRef = useRef(false);
 
   // Every attribution change made through AttributionFields is a manual edit.
@@ -142,99 +134,30 @@ export const TransactionFormDrawer = ({
   useEffect(() => {
     participantsTouchedRef.current = false;
     reset(buildDefaultValues(transaction, currentUserId, definition));
-    originalParcelsNumberRef.current =
-      definition?.mode === "INSTALLMENT"
-        ? (definition.parcelsNumber ?? null)
-        : undefined;
   }, [transaction, open, reset, currentUserId, definition]);
 
   const parcelsNumberValue = watch("parcelsNumber");
   const parcelsNumberChanged =
-    isSeriesEdit &&
-    definition?.mode === "INSTALLMENT" &&
-    parcelsNumberValue !== originalParcelsNumberRef.current;
+    isSeriesEdit && seriesParcelsChanged(definition, parcelsNumberValue);
 
-  const {
-    mutate: createFinancialTransaction,
-    isPending: isCreatingFinancialTransaction,
-  } = useCreateFinancialTransaction({
-    onSuccess: () => onOpenChange(false),
+  const { submit, isSubmitting: isPending } = useTransactionFormSubmit({
+    mode,
+    transaction,
+    definition,
+    showAttribution,
+    currentUserId,
+    chooseScope,
+    onDone: () => onOpenChange(false),
   });
-
-  const {
-    mutate: updateFinancialTransaction,
-    isPending: isUpdatingFinancialTransaction,
-  } = useUpdateFinancialTransaction({
-    onSuccess: () => onOpenChange(false),
-  });
-
-  const {
-    mutate: createFinancialTransactionSeries,
-    isPending: isCreatingFinancialTransactionSeries,
-  } = useCreateFinancialTransactionSeries({
-    onSuccess: () => onOpenChange(false),
-  });
-
-  const {
-    mutate: updateFinancialTransactionSeries,
-    isPending: isUpdatingFinancialTransactionSeries,
-  } = useUpdateFinancialTransactionSeries({
-    onSuccess: () => onOpenChange(false),
-  });
-
-  const isPending =
-    isCreatingFinancialTransaction ||
-    isUpdatingFinancialTransaction ||
-    isCreatingFinancialTransactionSeries ||
-    isUpdatingFinancialTransactionSeries;
 
   const recurrenceMode = watch("recurrenceMode");
-
-  const onSubmit = async (values: TransactionFormOutput) => {
-    if (isSeriesEdit) {
-      if (!transaction?.seriesId || !definition) return;
-
-      const scope = parcelsNumberChanged
-        ? "ALL"
-        : await chooseScope({ title: "Edit series" });
-      if (!scope) return;
-
-      updateFinancialTransactionSeries({
-        params: { seriesId: transaction.seriesId },
-        body: toSeriesEditPayload(
-          values,
-          transaction,
-          definition,
-          scope,
-          showAttribution,
-          currentUserId,
-        ),
-      });
-      return;
-    }
-
-    if (mode === "create" && values.recurring && values.recurrenceMode) {
-      createFinancialTransactionSeries({
-        body: toSeriesCreatePayload(values, showAttribution, currentUserId),
-      });
-      return;
-    }
-
-    const body = toPayload(values, showAttribution, currentUserId);
-
-    if (isEditing) {
-      updateFinancialTransaction({ params: { id: transaction!.id }, body });
-    } else {
-      createFinancialTransaction({ body });
-    }
-  };
 
   return (
     <FormSheet
       open={open}
       onOpenChange={onOpenChange}
       title={title}
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(submit)}
       isSubmitting={isPending}
       submitLabel={submitLabel}
       submitDisabled={isSeriesEdit && !definition}
