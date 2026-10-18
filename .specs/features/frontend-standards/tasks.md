@@ -469,8 +469,8 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Tree matches decision 1's layers and decision 4's destinations
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] Tree matches decision 1's layers and decision 4's destinations
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
