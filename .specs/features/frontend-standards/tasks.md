@@ -676,9 +676,9 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Provider file exports only the component
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Provider file exports only the component
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: none
 **Gate**: quick
