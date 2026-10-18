@@ -56,6 +56,12 @@ export default defineConfig({
     },
   },
   test: {
+    // Vitest sizes the fork pool (`unit`, `tooling`) and the browser pool (`storybook`) separately,
+    // each at one worker per core minus one by default. Together with the Vite server and Chromium
+    // that oversubscribes the CPU about twice over, and user-event tests starve past their timeout
+    // at random. Half the cores for forks and a quarter for browser pages keep the whole run under
+    // one worker per core, on a 4-core CI runner as much as on a workstation.
+    maxWorkers: "50%",
     projects: [
       {
         extends: true,
@@ -71,6 +77,9 @@ export default defineConfig({
         },
         test: {
           name: "storybook",
+          // The browser pool reads this project's own cap. Lower than the forks': each page also costs
+          // Chromium renderer processes.
+          maxWorkers: "25%",
           browser: {
             enabled: true,
             headless: true,
