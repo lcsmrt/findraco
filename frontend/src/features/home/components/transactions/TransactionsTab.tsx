@@ -10,7 +10,7 @@ import {
   useUpdateFinancialTransaction,
 } from "@/api/services/useFinancialTransactionService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { Badge } from "@/components/badge/Badge";
 import { Button } from "@/components/button/Button";
 import { useConfirm } from "@/components/dialog/useConfirmDialog";

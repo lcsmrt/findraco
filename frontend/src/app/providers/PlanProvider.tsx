@@ -1,4 +1,3 @@
-import { Plan } from "@/api/dtos";
 import { useGetPlans } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
 import {
@@ -6,25 +5,8 @@ import {
   removeItemFromStorage,
   storeItem,
 } from "@/lib/storage";
-import {
-  createContext,
-  ReactNode,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
-type PlanContextValue = {
-  activePlanId: number | null;
-  setActivePlanId: (planId: number) => void;
-  activePlan?: Plan;
-  plans: Plan[];
-  isLoading: boolean;
-};
-
-const PlanContext = createContext<PlanContextValue | null>(null);
+import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
+import { PlanContext } from "./usePlanContext";
 
 export const PlanProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();
@@ -73,11 +55,4 @@ export const PlanProvider = ({ children }: { children: ReactNode }) => {
   return (
     <PlanContext.Provider value={value}>{children}</PlanContext.Provider>
   );
-};
-
-export const usePlanContext = () => {
-  const context = useContext(PlanContext);
-  if (!context)
-    throw new Error("usePlanContext must be used within a PlanProvider");
-  return context;
 };

@@ -27,7 +27,7 @@ const subscribePlan = (listener: () => void) => {
 vi.mock("@/app/providers/useAuth", () => ({
   useAuth: () => ({ user: mockedUser }),
 }));
-vi.mock("@/app/providers/PlanProvider", () => ({
+vi.mock("@/app/providers/usePlanContext", () => ({
   usePlanContext: () => ({
     ...useSyncExternalStore(subscribePlan, () => planState),
     setActivePlanId: (planId: number) => setPlanState({ activePlanId: planId }),

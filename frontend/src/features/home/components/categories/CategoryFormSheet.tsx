@@ -4,7 +4,7 @@ import {
 } from "@/api/dtos";
 import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
 import type { PlanMember } from "@/api/dtos/plan";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import {
   useCreateFinancialTransactionCategory,

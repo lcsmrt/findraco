@@ -19,7 +19,7 @@ vi.mock("../clients/findracoApi", () => ({
 }));
 
 let mockedActivePlanId: number | null = 5;
-vi.mock("@/app/providers/PlanProvider", () => ({
+vi.mock("@/app/providers/usePlanContext", () => ({
   usePlanContext: () => ({ activePlanId: mockedActivePlanId }),
 }));
 

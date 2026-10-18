@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { findracoApi } from "../clients/findracoApi";
 import { DashboardFilter, DashboardSummaryResponse, MonthlyTrend } from "../dtos";
 import { QueryOptions } from "../types/queryOptions";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 
 const getDashboardSummary = async (
   planId: number,

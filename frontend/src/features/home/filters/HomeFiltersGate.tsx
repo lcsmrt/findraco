@@ -1,5 +1,5 @@
 import { useAuth } from "@/app/providers/useAuth";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { loadHomeFilters, saveHomeFilters } from "@/lib/filterStorage";
 import { useEffect, useRef, type ReactNode } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";

@@ -1,6 +1,6 @@
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { useGetFinancialTransactionCategories } from "@/api/services/useFinancialTransactionCategoryService";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { Button } from "@/components/button/Button";
 import {
   Card,

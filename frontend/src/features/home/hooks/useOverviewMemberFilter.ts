@@ -1,5 +1,5 @@
 import { useGetPlanMembers } from "@/api/services/usePlanService";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useEffect, useMemo } from "react";
 import { useHomeFilters } from "./useHomeFilters";
 

@@ -7,7 +7,7 @@ import {
   useGetFinancialTransactionCategory,
 } from "@/api/services/useFinancialTransactionCategoryService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { formatCurrency, formatDate } from "@/utils/string/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";

@@ -1,6 +1,6 @@
 import type { PlanMember } from "@/api/dtos";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useCallback, useMemo } from "react";
 
 /** Member identity colours (UX-04 AC 2), defined per theme in `index.css`. */

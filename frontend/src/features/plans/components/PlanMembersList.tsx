@@ -20,7 +20,7 @@ import { Spinner } from "@/components/spinner/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { Trash2Icon } from "lucide-react";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 import { ROLE_LABELS, ROLE_OPTIONS } from "../utils/planLabels";
 
 type PlanMembersListProps = {

@@ -17,7 +17,7 @@ import { useTransactionFilterChips } from "./useTransactionFilterChips";
 vi.mock("@/api/clients/findracoApi", () => ({
   findracoApi: { get: vi.fn() },
 }));
-vi.mock("@/app/providers/PlanProvider", () => ({
+vi.mock("@/app/providers/usePlanContext", () => ({
   usePlanContext: () => ({ activePlanId: 5 }),
 }));
 

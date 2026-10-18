@@ -22,7 +22,7 @@ import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 import { buildPagedQuery } from "../utils/buildPagedQuery";
-import { usePlanContext } from "@/app/providers/PlanProvider";
+import { usePlanContext } from "@/app/providers/usePlanContext";
 
 const getFinancialTransactionCategories = async (
   planId: number,
