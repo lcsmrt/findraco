@@ -1881,9 +1881,11 @@ Notes: the shadcn registry has no number field (404 for the Base UI styles), so 
 
 **Done when**:
 
-- [ ] Story: debit, credit, zero, large value
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Story: debit, credit, zero, large value
+- [x] Full gate passes (phase end: build gate, lint 0)
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): all projects 647 → 651
+
+Notes: `Amount` sets no font size (typography lint, T96); the mobile list passes its `text-sm` through `className` until T94.
 
 **Tests**: story
 **Gate**: full

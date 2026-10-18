@@ -1,9 +1,9 @@
 import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import { Amount } from "@/components/amount/Amount";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { TablePagination } from "@/components/table";
 import type { Pagination } from "@/components/table/TablePagination";
 import { cn } from "@/lib/mergeClasses";
-import { formatMoney } from "@/utils/money";
 import { formatDate } from "@/utils/string/formatters";
 import { groupByDay } from "./groupByDay";
 
@@ -35,15 +35,11 @@ const TransactionMobileRow = ({
           </span>
         )}
       </span>
-      <span
-        className={cn(
-          "shrink-0 font-mono text-sm whitespace-nowrap",
-          transaction.type === "DEBIT" ? "text-destructive" : "text-success",
-        )}
-      >
-        {transaction.type === "DEBIT" ? "- " : ""}
-        {formatMoney(transaction.amount)}
-      </span>
+      <Amount
+        value={transaction.amount}
+        type={transaction.type}
+        className="shrink-0 text-sm whitespace-nowrap"
+      />
     </button>
   );
 };

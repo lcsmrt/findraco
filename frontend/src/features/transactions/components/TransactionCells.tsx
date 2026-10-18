@@ -7,6 +7,7 @@ import { PlanMember } from "@/api/dtos/plan";
 import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
+import { Amount } from "@/components/amount/Amount";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { Input } from "@/components/input/base/Input";
@@ -15,8 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/popover/base/Popover";
-import { cn } from "@/lib/mergeClasses";
-import { formatMoney, toCents } from "@/utils/money";
+import { toCents } from "@/utils/money";
 import { formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskDate } from "@/utils/string/masks";
 import { format, isValid, parse } from "date-fns";
@@ -100,18 +100,13 @@ export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) =
   if (!editing) {
     return (
       <div
-        className={cn(
-          "cursor-text font-mono decoration-dotted underline-offset-2 hover:underline",
-          type === "DEBIT" && "text-destructive",
-          type === "CREDIT" && "text-success",
-        )}
+        className="cursor-text decoration-dotted underline-offset-2 hover:underline"
         onClick={() => {
           setDraft(amount);
           setEditing(true);
         }}
       >
-        {type === "DEBIT" ? "- " : ""}
-        {formatMoney(amount)}
+        <Amount value={amount} type={type} />
       </div>
     );
   }
