@@ -6,8 +6,8 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxTrigger,
-  useComboboxAnchor,
 } from "@/components/input/base/Combobox";
+import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
 import { Spinner } from "@/components/spinner/Spinner";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";

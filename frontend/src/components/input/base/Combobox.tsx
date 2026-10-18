@@ -257,10 +257,6 @@ function ComboboxChipsInput({ className, ...props }: ComboboxPrimitive.Input.Pro
   );
 }
 
-function useComboboxAnchor() {
-  return React.useRef<HTMLDivElement | null>(null);
-}
-
 const ComboboxPortal = ComboboxPrimitive.Portal;
 
 function ComboboxPositioner({ className, ...props }: ComboboxPrimitive.Positioner.Props) {
@@ -305,7 +301,6 @@ export {
   ComboboxSeparator,
   ComboboxTrigger,
   ComboboxValue,
-  useComboboxAnchor,
   ComboboxPortal,
   ComboboxPopup,
   ComboboxPositioner,

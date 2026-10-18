@@ -908,8 +908,8 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 
 **Done when**:
 
-- [ ] `Button.tsx`, `Badge.tsx`, `Combobox.tsx` export only components
-- [ ] Full gate passes
+- [x] `Button.tsx`, `Badge.tsx`, `Combobox.tsx` export only components
+- [x] Full gate passes
 
 **Tests**: story
 **Gate**: full

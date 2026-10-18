@@ -10,8 +10,8 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxTrigger,
-  useComboboxAnchor,
 } from "@/components/input/base/Combobox";
+import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
 import { InputGroupButton } from "@/components/input/base/InputGroup";
 import { Spinner } from "@/components/spinner/Spinner";
 import { cn } from "@/lib/mergeClasses";

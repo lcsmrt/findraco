@@ -8,8 +8,8 @@ import {
   ComboboxItem,
   ComboboxList,
   ComboboxTrigger,
-  useComboboxAnchor,
 } from "@/components/input/base/Combobox";
+import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
 import { cn } from "@/lib/mergeClasses";
 import * as React from "react";
 
