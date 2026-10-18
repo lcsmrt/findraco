@@ -3,13 +3,6 @@ import { LoginResponse } from "../dtos";
 import { getAccessToken, setAccessToken } from "./accessToken";
 import { SessionExpiredError } from "./sessionExpiredError";
 
-declare module "axios" {
-  interface AxiosRequestConfig {
-    /** Set on the single retry that follows a session renewal. */
-    sessionRetried?: boolean;
-  }
-}
-
 const SESSION_RENEWAL_LOCK = "findraco-session-renewal";
 
 // In production the SPA is served by the same nginx that proxies /api to the API,

@@ -3,7 +3,7 @@ import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
 import { Button } from "@/components/button/Button";
 import { BanknoteArrowDownIcon, BanknoteArrowUpIcon } from "lucide-react";
 
-interface TransactionTypeToggleProps {
+type TransactionTypeToggleProps = {
   value: FinancialTransactionType;
   onChange: (value: FinancialTransactionType) => void;
   disabled?: boolean;

@@ -15,7 +15,7 @@ import { cn } from "@/lib/mergeClasses";
 const DATE_FORMAT = "dd/MM/yyyy";
 const CURRENT_YEAR = new Date().getFullYear();
 
-export interface DatePickerProps {
+export type DatePickerProps = {
   value?: Date;
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
@@ -129,7 +129,7 @@ export const DatePicker = ({
   );
 };
 
-export interface DateRangePickerProps {
+export type DateRangePickerProps = {
   value?: DateRange;
   onChange?: (range: DateRange | undefined) => void;
   placeholder?: string;

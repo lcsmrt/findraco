@@ -1,10 +1,10 @@
-export interface User {
+export type User = {
   id: number;
   name: string;
   email: string;
 }
 
-export interface RegisterUserRequest {
+export type RegisterUserRequest = {
   body: {
     name: string;
     email: string;

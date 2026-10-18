@@ -58,7 +58,7 @@ export type FinancialTransactionSortBy =
   | "category"
   | "attributedTo";
 
-export interface PagedFinancialTransactionsFilter {
+export type PagedFinancialTransactionsFilter = {
   type?: FinancialTransactionType;
   categoryId?: number;
   memberId?: number;

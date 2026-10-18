@@ -30,7 +30,7 @@ import {
 import { useState } from "react";
 import { CategoryCombobox } from "./CategoryCombobox";
 
-export interface InlineSaveBody {
+export type InlineSaveBody = {
   description?: string;
   amount?: number;
   categoryId?: number;
@@ -39,7 +39,7 @@ export interface InlineSaveBody {
   splitMode?: SplitMode;
 }
 
-interface TransactionColumnHandlers {
+type TransactionColumnHandlers = {
   onDuplicate: (transaction: FinancialTransaction) => void;
   onEdit: (transaction: FinancialTransaction) => void;
   onDelete: (transaction: FinancialTransaction) => void;
@@ -50,7 +50,7 @@ interface TransactionColumnHandlers {
   members?: PlanMember[];
 }
 
-interface EditableCellProps {
+type EditableCellProps = {
   transaction: FinancialTransaction;
   onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
 }

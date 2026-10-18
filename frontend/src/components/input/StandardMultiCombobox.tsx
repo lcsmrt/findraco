@@ -19,7 +19,7 @@ function defaultEqual<T extends WithId>(a: T, b: T) {
   return a.id === b.id;
 }
 
-export interface StandardMultiCombobox<T extends WithId> {
+export type StandardMultiCombobox<T extends WithId> = {
   id?: string;
   items: T[];
   value: T[];

@@ -17,8 +17,8 @@ beforeAll(async () => {
   componentConfig = await eslint.calculateConfigForFile(componentPath);
 }, 30_000);
 
-async function ruleIdsFor(code: string) {
-  const [result] = await eslint.lintText(code, { filePath: componentPath });
+async function ruleIdsFor(code: string, filePath = componentPath) {
+  const [result] = await eslint.lintText(code, { filePath });
   return result.messages.map((message) => message.ruleId);
 }
 
@@ -57,6 +57,33 @@ describe("eslint.config.js", () => {
       const ruleIds = await ruleIdsFor(`${directive}export const value: any = 1;\n`);
 
       expect(ruleIds).toContain("@typescript-eslint/no-explicit-any");
+    });
+  });
+
+  describe("code style", () => {
+    const interfaceProbe = "export interface Probe {\n  id: number;\n}\n";
+
+    it.each(["src/components/ConfigProbe.tsx", "src/utils/configProbe.ts"])(
+      "enforces type over interface in %s (STD-02 AC 4)",
+      async (filePath) => {
+        const config = await eslint.calculateConfigForFile(filePath);
+        const ruleIds = await ruleIdsFor(interfaceProbe, filePath);
+
+        expect(config.rules["@typescript-eslint/consistent-type-definitions"]).toEqual([2, "type"]);
+        expect(ruleIds).toContain("@typescript-eslint/consistent-type-definitions");
+      },
+    );
+
+    it("allows an interface in a *.d.ts library augmentation (STD-02 AC 4)", async () => {
+      const filePath = "src/api/clients/configProbe.d.ts";
+      const augmentation =
+        'import "axios";\n\ndeclare module "axios" {\n  interface AxiosRequestConfig {\n    probe?: boolean;\n  }\n}\n';
+      const config = await eslint.calculateConfigForFile(filePath);
+      const ruleIds = await ruleIdsFor(augmentation, filePath);
+
+      // A later block that sets only the severity keeps the earlier options, so check the severity.
+      expect(config.rules["@typescript-eslint/consistent-type-definitions"][0]).toBe(0);
+      expect(ruleIds).not.toContain("@typescript-eslint/consistent-type-definitions");
     });
   });
 });

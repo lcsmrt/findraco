@@ -28,7 +28,7 @@ export type FinancialTransactionCategorySortBy =
   | "description"
   | "spendingLimit";
 
-export interface PagedFinancialTransactionCategoriesFilter {
+export type PagedFinancialTransactionCategoriesFilter = {
   description?: string;
   type?: FinancialTransactionType;
 }

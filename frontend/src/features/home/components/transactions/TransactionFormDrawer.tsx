@@ -233,7 +233,7 @@ function parseAmount(value: string): number {
   return parseInt(value.replace(/\D/g, ""), 10) / 100;
 }
 
-interface TransactionFormDrawerProps {
+type TransactionFormDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   transaction?: FinancialTransaction;

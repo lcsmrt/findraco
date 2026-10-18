@@ -1,4 +1,4 @@
-interface ResolveSuccessMessageParams<TData, TVariables> {
+type ResolveSuccessMessageParams<TData, TVariables> = {
   /**
    * Custom message: a static string or a function that receives the response data
    * and request variables to build the message dynamically.

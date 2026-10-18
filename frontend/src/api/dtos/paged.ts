@@ -1,7 +1,7 @@
-export interface PagedRequest<
+export type PagedRequest<
   TFilters extends object = Record<string, unknown>,
   TSort = string,
-> {
+> = {
   page?: number;
   size?: number;
   filter?: TFilters;
@@ -11,7 +11,7 @@ export interface PagedRequest<
   };
 }
 
-export interface PagedResponse<T> {
+export type PagedResponse<T> = {
   content: T[];
   page: number;
   size: number;

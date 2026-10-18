@@ -1,6 +1,6 @@
 import { AxiosError } from "axios";
 
-interface ResolveErrorMessageParams {
+type ResolveErrorMessageParams = {
   /**
    * Error object that can be an AxiosError, a standard Error, or any unknown type.
    * The function will attempt to extract a user-friendly message from it.

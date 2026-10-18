@@ -8,14 +8,14 @@ import {
 } from "../../dropdown/Dropdown";
 import { EllipsisVertical } from "lucide-react";
 
-export interface ColumnAction {
+export type ColumnAction = {
   label: string;
   onClick: (...args: any) => void;
   icon?: React.ReactNode;
   conditionalRenderingFunctions?: ((...args: any) => boolean)[];
 }
 
-interface ColumnActionDropdownProps {
+type ColumnActionDropdownProps = {
   columnActions?: ColumnAction[];
   row: Row<any>;
   subtle?: boolean;

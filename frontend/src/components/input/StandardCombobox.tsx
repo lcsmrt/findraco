@@ -19,7 +19,7 @@ function defaultEqual<T extends WithId>(a: T, b: T) {
   return a.id === b.id;
 }
 
-export interface StandardCombobox<T extends WithId> {
+export type StandardCombobox<T extends WithId> = {
   id?: string;
   items: T[];
   value: T | null;

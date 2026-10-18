@@ -62,7 +62,7 @@ export function countActiveFilters(
   return n;
 }
 
-interface TransactionFilterPopoverProps {
+type TransactionFilterPopoverProps = {
   appliedFilters: AppliedFilters;
   onApply: (filters: AppliedFilters) => void;
   members?: PlanMember[];

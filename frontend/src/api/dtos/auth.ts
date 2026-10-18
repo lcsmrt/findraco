@@ -1,27 +1,27 @@
-export interface LoginRequest {
+export type LoginRequest = {
   body: {
     email: string;
     password: string;
   };
 }
 
-export interface LoginResponse {
+export type LoginResponse = {
   token: string;
 }
 
-export interface ForgotPasswordRequest {
+export type ForgotPasswordRequest = {
   body: {
     email: string;
   };
 }
 
-export interface ResetPasswordRequest {
+export type ResetPasswordRequest = {
   body: {
     token: string;
     password: string;
   };
 }
 
-export interface PasswordResetTokenValidationResponse {
+export type PasswordResetTokenValidationResponse = {
   valid: boolean;
 }

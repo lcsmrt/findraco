@@ -1,7 +1,7 @@
 /**
  * Options for customizing messages, toast and callbacks in mutation operations.
  */
-export interface MutationOptions<TData = unknown, TVariables = unknown> {
+export type MutationOptions<TData = unknown, TVariables = unknown> = {
   /**
    * Custom success message.
    */

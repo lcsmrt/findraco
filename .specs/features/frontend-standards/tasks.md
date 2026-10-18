@@ -538,11 +538,11 @@ T124 → T125
 
 **Done when**:
 
-- [ ] `grep -rn "^\s*\(export \)\?interface " src --include=*.ts --include=*.tsx | grep -v '\.d\.ts:'` returns nothing
-- [ ] Config test asserts the rule is on for `src/**/*.ts(x)` and off for `src/**/*.d.ts`
-- [ ] Lint error count not higher than after T10
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `grep -rn "^\s*\(export \)\?interface " src --include=*.ts --include=*.tsx | grep -v '\.d\.ts:'` returns nothing
+- [x] Config test asserts the rule is on for `src/**/*.ts(x)` and off for `src/**/*.d.ts`
+- [x] Lint error count not higher than after T10
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: tooling
 **Gate**: build

@@ -35,5 +35,14 @@ export default defineConfig({ ignores: ['dist'] }, {
       'error',
       { 'ts-ignore': true, 'ts-expect-error': true, 'ts-nocheck': true },
     ],
+    // Interfaces merge silently with any same-named declaration; `type` also covers the unions the code relies on.
+    '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+  },
+}, {
+  // Augmenting a library's types (`declare module "axios" { interface … }`) needs declaration
+  // merging, which only an interface does; augmentations live in `*.d.ts` files for that reason.
+  files: ['**/*.d.ts'],
+  rules: {
+    '@typescript-eslint/consistent-type-definitions': 'off',
   },
 }, storybook.configs["flat/recommended"]);
