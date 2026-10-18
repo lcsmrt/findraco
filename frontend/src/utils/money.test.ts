@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { formatMoney, MONEY_CURRENCY, MONEY_LOCALE, toCents } from "./money";
 
 // pt-BR separates the symbol (and the compact suffix) with a non-breaking space, U+00A0.
-const NBSP = " ";
+const NBSP = "\u00a0";
 
 describe("money locale and currency", () => {
   it("come from one source, pt-BR and BRL today (STD-06 AC 6)", () => {

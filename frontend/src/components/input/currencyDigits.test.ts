@@ -12,11 +12,11 @@ describe("parseCurrencyDigits", () => {
   });
 
   it("reads the next keystroke on the formatted display (STD-06 AC 4)", () => {
-    expect(parseCurrencyDigits("R$ 1,234")).toBe(12.34);
+    expect(parseCurrencyDigits("R$\u00a01,234")).toBe(12.34);
   });
 
   it("drops the last digit when backspace removes it from the display (STD-06 AC 4)", () => {
-    expect(parseCurrencyDigits("R$ 12,3")).toBe(1.23);
+    expect(parseCurrencyDigits("R$\u00a012,3")).toBe(1.23);
   });
 
   it.each([
@@ -39,7 +39,7 @@ describe("parseCurrencyDigits", () => {
   it.each([
     ["an empty string", ""],
     ["only non-digits", "R$ ,"],
-    ["only zeros", "R$ 0,0"],
+    ["only zeros", "R$\u00a00,0"],
   ])("returns null for %s (STD-06 AC 4)", (_label, typed) => {
     expect(parseCurrencyDigits(typed)).toBeNull();
   });

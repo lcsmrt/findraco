@@ -43,7 +43,7 @@ export const Empty: Story = {
   play: async ({ canvas, userEvent }) => {
     const input = canvas.getByLabelText("Amount");
     await userEvent.type(input, "1234");
-    await expect(input).toHaveValue("R$ 12,34");
+    await expect(input).toHaveValue("R$\u00a012,34");
   },
 };
 

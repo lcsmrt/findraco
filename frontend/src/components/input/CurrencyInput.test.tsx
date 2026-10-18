@@ -52,7 +52,7 @@ describe("CurrencyInput", () => {
       shown.push(input.value);
     }
 
-    expect(shown).toEqual(["R$ 0,01", "R$ 0,12", "R$ 1,23", "R$ 12,34"]);
+    expect(shown).toEqual(["R$\u00a00,01", "R$\u00a00,12", "R$\u00a01,23", "R$\u00a012,34"]);
     expect(input.selectionStart).toBe(input.value.length);
   });
 
@@ -65,7 +65,7 @@ describe("CurrencyInput", () => {
     await user.type(input, "1a,2-b");
     await user.click(screen.getByRole("button", { name: "Save" }));
 
-    expect(input.value).toBe("R$ 0,12");
+    expect(input.value).toBe("R$\u00a00,12");
     expect(onValues.mock.calls[0][0]).toEqual({ amount: 0.12 });
   });
 
