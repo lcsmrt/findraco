@@ -1,6 +1,6 @@
 import { Plan } from "@/api/dtos";
 import { useGetPlans } from "@/api/services/usePlanService";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import {
   getItemFromStorage,
   removeItemFromStorage,

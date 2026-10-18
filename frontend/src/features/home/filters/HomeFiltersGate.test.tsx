@@ -24,7 +24,7 @@ const subscribePlan = (listener: () => void) => {
   return () => planListeners.delete(listener);
 };
 
-vi.mock("@/app/providers/AuthProvider", () => ({
+vi.mock("@/app/providers/useAuth", () => ({
   useAuth: () => ({ user: mockedUser }),
 }));
 vi.mock("@/app/providers/PlanProvider", () => ({

@@ -21,14 +21,14 @@ import {
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
 import { findracoApi } from "@/api/clients/findracoApi";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import { Login } from "./LoginPage";
 
 vi.mock("@/api/clients/findracoApi", () => ({
   findracoApi: { get: vi.fn(), post: vi.fn() },
 }));
 
-vi.mock("@/app/providers/AuthProvider", () => ({ useAuth: vi.fn() }));
+vi.mock("@/app/providers/useAuth", () => ({ useAuth: vi.fn() }));
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 

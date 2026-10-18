@@ -1,4 +1,4 @@
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/PlanProvider";
 import { loadHomeFilters, saveHomeFilters } from "@/lib/filterStorage";
 import { useEffect, useRef, type ReactNode } from "react";

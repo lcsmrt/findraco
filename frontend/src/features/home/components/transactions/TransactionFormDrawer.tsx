@@ -18,7 +18,7 @@ import {
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import type { PlanMember } from "@/api/dtos/plan";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/PlanProvider";
 import { Badge } from "@/components/badge/Badge";
 import { Button } from "@/components/button/Button";

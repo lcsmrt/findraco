@@ -12,48 +12,15 @@ import {
   storeItem,
 } from "@/lib/storage";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  createContext,
-  Dispatch,
-  ReactNode,
-  SetStateAction,
-  useCallback,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-
-export type AuthStatus =
-  "loading" | "authenticated" | "anonymous" | "unreachable";
-
-type AuthContextParams = {
-  user: User | null;
-  setUser: Dispatch<SetStateAction<User | null>>;
-  status: AuthStatus;
-  signIn: (token: string) => Promise<void>;
-  signOut: () => Promise<void>;
-  retry: () => void;
-  /** Shows the expiry toast once if the session expired during start-up. */
-  announceSessionExpiry: () => void;
-};
+import { AuthContext, type AuthStatus } from "./useAuth";
 
 const SESSION_EXPIRED_MESSAGE = "Your session expired. Please sign in again.";
 
 // Written by the previous version, which kept the access token in localStorage.
 const LEGACY_ACCESS_TOKEN_KEY = "accessToken";
-
-const AuthContext = createContext<AuthContextParams>({
-  user: null,
-  setUser: () => {},
-  status: "loading",
-  signIn: async () => {},
-  signOut: async () => {},
-  retry: () => {},
-  announceSessionExpiry: () => {},
-});
 
 type AuthProviderProps = {
   children: ReactNode;
@@ -174,11 +141,4 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       {children}
     </AuthContext.Provider>
   );
-};
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context)
-    throw new Error("The useAuth hook must be used within a AuthProvider");
-  return context;
 };

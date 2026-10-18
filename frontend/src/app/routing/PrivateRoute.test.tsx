@@ -1,10 +1,10 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { useAuth, type AuthStatus } from "@/app/providers/AuthProvider";
+import { useAuth, type AuthStatus } from "@/app/providers/useAuth";
 import { PrivateRoute } from "./PrivateRoute";
 
-vi.mock("@/app/providers/AuthProvider", () => ({ useAuth: vi.fn() }));
+vi.mock("@/app/providers/useAuth", () => ({ useAuth: vi.fn() }));
 
 const retry = vi.fn();
 

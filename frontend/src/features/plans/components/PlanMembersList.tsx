@@ -4,7 +4,7 @@ import {
   useRemoveMember,
   useUpdateMemberRole,
 } from "@/api/services/usePlanService";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import { Avatar, AvatarFallback } from "@/components/avatar/Avatar";
 import { Badge } from "@/components/badge/Badge";
 import { Button } from "@/components/button/Button";

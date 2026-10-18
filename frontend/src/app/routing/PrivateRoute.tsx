@@ -1,4 +1,4 @@
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import { Button } from "@/components/button/Button";
 import { Spinner } from "@/components/spinner/Spinner";
 import { useEffect } from "react";

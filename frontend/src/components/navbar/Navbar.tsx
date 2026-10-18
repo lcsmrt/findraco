@@ -8,7 +8,7 @@ import {
 } from "../dropdown/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
 import { LogOut } from "lucide-react";
-import { useAuth } from "@/app/providers/AuthProvider";
+import { useAuth } from "@/app/providers/useAuth";
 import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { PlanSwitcher } from "@/features/plans/components/PlanSwitcher";

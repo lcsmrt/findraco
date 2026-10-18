@@ -32,7 +32,8 @@ import {
   setSessionExpiredHandler,
 } from "@/api/clients/findracoApi";
 import { PrivateRoute } from "@/app/routing/PrivateRoute";
-import { AuthProvider, useAuth } from "./AuthProvider";
+import { AuthProvider } from "./AuthProvider";
+import { useAuth } from "./useAuth";
 
 vi.mock("@/api/clients/findracoApi", () => ({
   findracoApi: { get: vi.fn(), post: vi.fn() },
