@@ -339,9 +339,9 @@ T124 → T125
 
 **Done when**:
 
-- [ ] Folder map and import rules match decision 1's table and C6's wording
-- [ ] No contradiction with T1's skill
-- [ ] Docs gate: every item above checked against `context.md` and `design.md`
+- [x] Folder map and import rules match decision 1's table and C6's wording
+- [x] No contradiction with T1's skill
+- [x] Docs gate: every item above checked against `context.md` and `design.md`
 
 **Tests**: none
 **Gate**: docs
