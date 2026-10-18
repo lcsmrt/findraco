@@ -1762,10 +1762,10 @@ Notes: installed with `pnpm dlx shadcn@4.21.5 add toggle toggle-group`. With `"s
 
 **Done when**:
 
-- [ ] Story with keyboard `play`
-- [ ] Existing form tests pass
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Story with keyboard `play`
+- [x] Existing form tests pass
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): all projects 629 → 632
 
 **Tests**: story
 **Gate**: full

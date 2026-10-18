@@ -1,51 +1,39 @@
-import { cn } from "@/lib/mergeClasses";
-import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
-import { Button } from "@/components/button/base/Button";
+import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@/components/toggleGroup/base/ToggleGroup";
 import { BanknoteArrowDownIcon, BanknoteArrowUpIcon } from "lucide-react";
 
 type TransactionTypeToggleProps = {
   value: FinancialTransactionType;
   onChange: (value: FinancialTransactionType) => void;
   disabled?: boolean;
-}
+};
 
-export const TransactionTypeToggle = ({
+export function TransactionTypeToggle({
   value,
   onChange,
   disabled,
-}: TransactionTypeToggleProps) => {
+}: TransactionTypeToggleProps) {
   return (
-    <div className="flex w-full gap-2">
-      <Button
-        type="button"
-        variant="ghost"
-        disabled={disabled}
-        onClick={() => onChange("DEBIT")}
-        className={cn(
-          "flex-1 border",
-          value === "DEBIT"
-            ? "border-destructive/30 bg-destructive/15 text-destructive hover:bg-destructive/20 hover:text-destructive"
-            : "border-border text-muted-foreground hover:border-destructive/30 hover:text-destructive hover:bg-transparent",
-        )}
-      >
-        <BanknoteArrowDownIcon className="h-4 w-4" />
+    <ToggleGroup
+      aria-label="Transaction type"
+      variant="outline"
+      value={[value]}
+      // Clicking the pressed option would empty the group; a transaction always has a type.
+      onValueChange={([next]) => next && onChange(next)}
+      disabled={disabled}
+      className="w-full flex-nowrap"
+    >
+      <ToggleGroupItem value="DEBIT" tone="destructive" className="flex-1">
+        <BanknoteArrowDownIcon />
         Debit
-      </Button>
-      <Button
-        type="button"
-        variant="ghost"
-        disabled={disabled}
-        onClick={() => onChange("CREDIT")}
-        className={cn(
-          "flex-1 border",
-          value === "CREDIT"
-            ? "border-success/30 bg-success/15 text-success hover:bg-success/20 hover:text-success"
-            : "border-border text-muted-foreground hover:border-success/30 hover:text-success hover:bg-transparent",
-        )}
-      >
-        <BanknoteArrowUpIcon className="h-4 w-4" />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="CREDIT" tone="success" className="flex-1">
+        <BanknoteArrowUpIcon />
         Credit
-      </Button>
-    </div>
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
-};
+}
