@@ -49,6 +49,9 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 24
+          # setup-node@v5 caches the package manager named in package.json by default, which fails
+          # before corepack enables pnpm; the pnpm store cache below handles caching instead.
+          package-manager-cache: false
 
       # pnpm version comes from the root package.json "packageManager" field.
       - name: Enable pnpm
