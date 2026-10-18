@@ -281,8 +281,27 @@ No lint rule exists for this; enforced by review.
   call `maskCurrency`.
 - Outside a form (a filter's min/max, an inline table edit), bind `CurrencyInput` to plain state:
   `<CurrencyInput value={min} onValueChange={setMin} />`.
-- **Integers: Base UI `NumberField`** with `min` and `step` (installments: min 1, step 1). Never a text
-  input that filters digits. It is an accessible spinbutton.
+- **Integers: `NumberField`** (`src/components/input/base/NumberField.tsx`, composed from Base UI) with
+  `min` and `step` (installments: min 1, step 1). Never a text input that filters digits. Bind it with
+  explicit props, never by spreading `field`: its `onChange` would reach the root element and store the
+  DOM event instead of the number.
+
+  ```tsx
+  <FormField control={control} name="parcelsNumber" label="Installments">
+    {(field) => (
+      <NumberField
+        id={field.id}
+        ref={field.ref}
+        onBlur={field.onBlur}
+        aria-invalid={field["aria-invalid"]}
+        value={field.value}
+        onValueChange={field.onChange}
+        min={1}
+        step={1}
+      />
+    )}
+  </FormField>
+  ```
 - Money arithmetic in a form (items must not exceed the total) goes through `toCents` (`component-creation`,
   Money).
 

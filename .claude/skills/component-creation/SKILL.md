@@ -219,10 +219,15 @@ src/components/
 ### Adding a primitive
 
 1. Check the shadcn registry (Base UI flavour), then Base UI (see "Before writing a component").
-2. Install with the CLI from `frontend/`: `pnpm dlx shadcn@latest add <name>`. `components.json` points
-   `utils` at `@/lib/mergeClasses`, `css` at `src/index.css` and `ui` at `@/components`, so generated
-   imports resolve. A snippet pasted from the shadcn docs instead needs its `cn` import changed to
-   `@/lib/mergeClasses` by hand.
+2. Install with a pinned CLI from `frontend/`: `pnpm dlx shadcn@<exact version> add <name>` (last used:
+   `shadcn@4.21.5`), never `@latest`, so a registry change cannot alter what an install produces.
+   `components.json` says `"style": "base-nova"`, the Base UI flavour (`new-york` resolves the Radix
+   one), and points `utils` at `@/lib/mergeClasses`, `css` at `src/index.css` and `ui` at
+   `@/components`.
+   - The registry emits `import { cn } from "cn"` and adds the npm `cn` package. Change the import to
+     `@/lib/mergeClasses` and revert that dependency; the same applies to a snippet pasted from the
+     shadcn docs.
+   - shadcn has no number field. Compose Base UI's `NumberField` instead (`input/base/NumberField.tsx`).
 3. Move the files into `<family>/base/` (the CLI writes flat files), e.g. `toggleGroup/base/ToggleGroup.tsx`,
    and fix the imports.
 4. Convert to the project's style: `function` declarations, `type` instead of `interface`, PascalCase
@@ -238,7 +243,7 @@ src/components/
 | --- | --- | --- |
 | Single-choice segmented control | `ToggleGroup` (`tone`: primary, destructive, success; `chip` variant) | hand-built buttons with an active class |
 | Debit/credit choice | `TransactionTypeToggle` (composition of `ToggleGroup`) | a new toggle |
-| Integer input | Base UI `NumberField` (`min`, `step`) | a text input filtering digits |
+| Integer input | `NumberField` (Base UI composed; `min`, `step`; binding in `form-creation`) | a text input filtering digits |
 | Money input | `CurrencyInput` (see `form-creation`) | `maskCurrency`, parsing strings |
 | Money display | `Amount` or `formatMoney` (see Money) | `Intl.NumberFormat`, `toLocaleString` |
 | Page title | `PageHeader` | a styled `<h1>` |
