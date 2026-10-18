@@ -2435,8 +2435,10 @@ Notes: title as `Heading` level 1 `headline`, description as `Text` `p` `seconda
 
 **Done when**:
 
-- [ ] Story
-- [ ] Full gate passes
+- [x] Story
+- [x] Full gate passes
+
+Notes: title as `Heading` `title` (`level` 2 by default, 3–4 allowed; `text-md` gone, same 16px semibold as the inherited size it rendered), subtitle as `Text` `caption`. The only consumer (`PlansPage`) now gets an `h2` instead of a `span`. Stories: title only, subtitle and action, nested level, long text, mobile. All projects 810 → 815.
 
 **Tests**: story
 **Gate**: full
