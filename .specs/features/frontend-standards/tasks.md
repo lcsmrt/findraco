@@ -2079,10 +2079,12 @@ Notes: the props are a union: `mode: "create"` takes `onSuccess?`, `mode: "renam
 
 **Done when**:
 
-- [ ] No `register(` left in `src`
-- [ ] Invite flow test through the network
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No `register(` left in `src`
+- [x] Invite flow test through the network
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count): unit + tooling 588 → 591; all projects 679 → 682
+
+Notes: to empty `grep -rn "register(" src` three more call sites changed: the description fields of `CategoryFormSheet` and `TransactionFormDrawer` (the last two `register` bindings, planned for STD-07) now go through `FormField`, and `authHandlers.register` became `authHandlers.registerUser`, after the service it mirrors (`useRegisterUser`). New `invitation.handlers.ts` (`create`). `InvitePlanDialog.test.tsx` covers an email invitation, the missing-email error and a link invitation with an expiry; the type and role selects keep `watch` + `setValue` until STD-07.
 
 **Tests**: integration
 **Gate**: quick

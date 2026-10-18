@@ -8,7 +8,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/dialog/base/Dialog";
-import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
+import { FormField } from "@/components/form/FormField";
+import { Field, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import {
   Select,
@@ -69,14 +70,7 @@ export const InvitePlanDialog = ({
     null,
   );
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    setValue,
-    reset,
-    formState: { errors },
-  } = useForm<InviteFormValues>({
+  const { control, handleSubmit, watch, setValue, reset } = useForm<InviteFormValues>({
     resolver: zodResolver(inviteSchema),
     defaultValues: { role: "VIEWER", type: "EMAIL", email: "", expiresAt: "" },
   });
@@ -210,34 +204,28 @@ export const InvitePlanDialog = ({
             </Field>
 
             {type === "EMAIL" && (
-              <Field>
-                <FieldLabel htmlFor="invite-email">Email</FieldLabel>
-                <Input
-                  id="invite-email"
-                  type="email"
-                  placeholder="person@email.com"
-                  disabled={isPending}
-                  aria-invalid={!!errors.email}
-                  {...register("email")}
-                />
-                <FieldError errors={[errors.email]} />
-              </Field>
+              <FormField control={control} name="email" label="Email">
+                {(field) => (
+                  <Input
+                    {...field}
+                    type="email"
+                    placeholder="person@email.com"
+                    disabled={isPending}
+                  />
+                )}
+              </FormField>
             )}
 
             {type === "LINK" && (
-              <Field>
-                <FieldLabel htmlFor="invite-expires-at">
-                  Expires at (optional)
-                </FieldLabel>
-                <Input
-                  id="invite-expires-at"
-                  type="datetime-local"
-                  disabled={isPending}
-                  aria-invalid={!!errors.expiresAt}
-                  {...register("expiresAt")}
-                />
-                <FieldError errors={[errors.expiresAt]} />
-              </Field>
+              <FormField
+                control={control}
+                name="expiresAt"
+                label="Expires at (optional)"
+              >
+                {(field) => (
+                  <Input {...field} type="datetime-local" disabled={isPending} />
+                )}
+              </FormField>
             )}
 
             <DialogFooter>

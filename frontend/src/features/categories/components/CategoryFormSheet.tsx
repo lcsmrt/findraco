@@ -17,6 +17,7 @@ import {
 } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
+import { FormField } from "@/components/form/FormField";
 import { FormSheet } from "@/components/form/FormSheet";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon, Trash2Icon } from "lucide-react";
@@ -86,7 +87,6 @@ export const CategoryFormSheet = ({
 
   const {
     control,
-    register,
     handleSubmit,
     watch,
     setValue,
@@ -202,17 +202,15 @@ export const CategoryFormSheet = ({
             <FieldError errors={[errors.type]} />
           </Field>
 
-          <Field>
-            <FieldLabel htmlFor="category-description">Name</FieldLabel>
-            <Input
-              id="category-description"
-              placeholder="e.g., Food, Transport, Entertainment"
-              disabled={isPending}
-              aria-invalid={!!errors.description}
-              {...register("description")}
-            />
-            <FieldError errors={[errors.description]} />
-          </Field>
+          <FormField control={control} name="description" label="Name">
+            {(field) => (
+              <Input
+                {...field}
+                placeholder="e.g., Food, Transport, Entertainment"
+                disabled={isPending}
+              />
+            )}
+          </FormField>
 
           <Field>
             <FieldLabel htmlFor="category-parent">

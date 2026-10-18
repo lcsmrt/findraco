@@ -31,7 +31,7 @@ export const authHandlers = {
   me(user: User): HttpHandler {
     return http.get<NoParams, never, User>("*/user/me", () => HttpResponse.json(user));
   },
-  register(user: User): HttpHandler {
+  registerUser(user: User): HttpHandler {
     return http.post<NoParams, RegisterUserRequest["body"], User>("*/user", () =>
       HttpResponse.json(user, { status: 201 }),
     );

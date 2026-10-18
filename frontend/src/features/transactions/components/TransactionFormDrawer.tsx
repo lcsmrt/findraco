@@ -97,7 +97,6 @@ export const TransactionFormDrawer = ({
 
   const {
     control,
-    register,
     handleSubmit,
     watch,
     setValue,
@@ -291,19 +290,15 @@ export const TransactionFormDrawer = ({
           </Field>
         )}
 
-        <Field>
-          <FieldLabel htmlFor="transaction-description">
-            Description
-          </FieldLabel>
-          <Input
-            id="transaction-description"
-            placeholder="e.g., Rent, Salary, Groceries"
-            disabled={isPending}
-            aria-invalid={!!errors.description}
-            {...register("description")}
-          />
-          <FieldError errors={[errors.description]} />
-        </Field>
+        <FormField control={control} name="description" label="Description">
+          {(field) => (
+            <Input
+              {...field}
+              placeholder="e.g., Rent, Salary, Groceries"
+              disabled={isPending}
+            />
+          )}
+        </FormField>
 
         <FormField control={control} name="amount" label="Amount">
           {(field) => (

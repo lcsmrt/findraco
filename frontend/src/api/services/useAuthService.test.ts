@@ -62,7 +62,7 @@ describe("getUserProfile", () => {
 
 describe("useRegisterUser", () => {
   it("POSTs the registration to /user and resolves with the created user", async () => {
-    server.use(authHandlers.register(user));
+    server.use(authHandlers.registerUser(user));
     const requests = recordRequests();
     const body = { name: "Ana", email: "ana@example.com", password: "secret" };
 
