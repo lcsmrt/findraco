@@ -6,7 +6,9 @@
 **Verifier**: independent sub-agent (author ≠ verifier)
 **Scope**: STD-01..STD-12. STD-13 is Deferred (design decision 10) and STD-14 is blocked by the local Docker database. Neither is in scope for this report.
 
-**Current verdict (iteration 1 re-verification, at `cc2bcea`): FAIL ❌.** Gaps 1–3 and Fix 4 are closed: M28, M29 and M9 are now killed, and M9 fails in 12 ms. One new mutant survives on the fixed logic-cap rule: deleting its `JSXFragment` listener breaks no test. The fix is one RuleTester case. See "Iteration 1 re-verification" at the end of this report.
+**Current verdict (iteration 2 re-verification, at `73c4265`): PASS ✅.** Fix 5 is closed: mutant N2 (deleting the `JSXFragment` listener) is now killed by the new fragment-only RuleTester case. Lint and test are green and the fix range has no bypasses. Residuals R1 and R2 remain and do not block. See "Iteration 2 re-verification" at the end of this report.
+
+**Previous verdict (iteration 1 re-verification, at `cc2bcea`): FAIL ❌.** Gaps 1–3 and Fix 4 are closed: M28, M29 and M9 are now killed, and M9 fails in 12 ms. One new mutant survives on the fixed logic-cap rule: deleting its `JSXFragment` listener breaks no test. The fix is one RuleTester case. See "Iteration 1 re-verification" at the end of this report.
 
 **Initial verdict (at `d3bbee5`): FAIL ❌.** Every gate is green and every mechanical guarantee I tested in the scratch worktree fires. Two problems block PASS:
 
@@ -234,7 +236,7 @@ Expanded tier: this feature guards the whole frontend. All mutations ran in a te
 | M29 | `src/test/setupUnit.ts:18` | remove `unhandledRequests.assertNone()` | whole `unit` project | ❌ **Survived** (748/748 pass) |
 
 **Sensor depth**: expanded, 29 behaviour-level mutants (M9 needed a manual stop).
-**Result**: 26 killed, 1 equivalent, **2 survived** - FAIL ❌. Both survivors protect STD-04 AC 3 ("fail a test on any request without a handler"). That behaviour is real today (checked in scratch), but a regression there would go unnoticed.
+**Outcome**: 26 killed, 1 equivalent, **2 survived** - FAIL ❌. Both survivors protect STD-04 AC 3 ("fail a test on any request without a handler"). That behaviour is real today (checked in scratch), but a regression there would go unnoticed.
 
 ---
 
@@ -382,7 +384,7 @@ All mutants ran in a temporary `git worktree` at `cc2bcea` under the scratchpad,
 | N4 | `findracoApi.ts:108` | allow exactly one extra retry (`sessionRetried: config.sessionRetried !== undefined`) | findracoApi | ✅ Killed (1 failed, 11 ms) |
 
 **Sensor depth**: focused re-check: 3 re-runs and 4 new mutants.
-**Result**: 6 killed, 1 survived (N2). FAIL.
+**Outcome**: 6 killed, 1 survived (N2). FAIL.
 
 ### AC evidence for the fixes
 
@@ -434,3 +436,47 @@ All mutants ran in a temporary `git worktree` at `cc2bcea` under the scratchpad,
 **Sensor (iteration 1)**: 7 mutations: 6 killed, 1 survived (N2)
 **Closed**: gap 1 (M28, M29), gap 2 (`return content;` and `return renderX();` with a local helper), gap 3 (M9 now fails in 12 ms), Fix 4 / SP-3 (no `vi.mock` of our modules)
 **Open**: Fix 5 (N2). Residuals R1 and R2 do not block.
+
+## Iteration 2 re-verification
+
+At `73c4265`; fix range `12351dc..HEAD`: `componentLogicCap.test.ts` +14 lines, `tasks.md` +2 lines.
+
+### Fix 5 (N2)
+
+The new cases are `frontend/eslint/rules/componentLogicCap.test.ts:76` (valid, a 60-line fragment-only component) and `:91` (invalid, 61 lines). The fixture builder is at `:36-38` and returns `<>{v0}</>`.
+
+| Mutant | Change (scratch worktree at HEAD) | Result |
+| ------ | --------------------------------- | ------ |
+| N2 | delete `JSXFragment: markJsx,` (`frontend/eslint/rules/componentLogicCap.ts:103`) | ✅ killed: `vitest run --project=tooling eslint/rules/componentLogicCap.test.ts` exits 1, with 1 failed and 19 passed. The failure is `invalid > a component whose only JSX is a fragment, at 61 lines`. |
+
+I removed the worktree afterwards. The real tree's `git status --porcelain` is identical before and after.
+
+### Gate (real tree, `frontend/`)
+
+| Command | Exit | Counts |
+| ------- | ---- | ------ |
+| `pnpm lint` | 0 | eslint clean |
+| `pnpm test` | 0 | unit: 83 files, 751 passed. Tooling and storybook: 95 files, 639 passed (+2, the new cases). 0 failed, 0 skipped |
+
+### Bypass scan (`12351dc..HEAD`, added lines)
+
+There are no `eslint-disable`, `@ts-`, ` as `, `.skip` or `.only` matches.
+
+### Residuals
+
+R1 (a module-level render helper is not recognised) and R2 (`setupUnit.test.ts` cases depend on their order) are unchanged. Neither blocks. Both remain optional hardening.
+
+### Requirement Traceability Update (proposed)
+
+| Requirement | Status after iteration 2 |
+| ----------- | ------------------------ |
+| STD-12 | ✅ Verified (AC 3: N2 killed) |
+| Others | unchanged from iteration 1 |
+
+### Iteration 2 summary
+
+**Result**: PASS ✅
+**Overall**: ✅ PASS. Nothing blocking remains (iteration 2 of 3 used).
+**Gate**: lint 0, test 0 (751 unit + 639 tooling/storybook passed, 0 failed, 0 skipped). I did not re-run the build: the fix range touches only a test file and `tasks.md`.
+**Sensor (iteration 2)**: 1 mutation, 1 killed (N2).
+**Open**: none blocking. R1 and R2 are residuals.
