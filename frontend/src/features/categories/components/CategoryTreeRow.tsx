@@ -40,7 +40,7 @@ type OwnerLabelProps = {
   colorOf: MemberColorOf;
 };
 
-/** Owner name; a former member is greyed. */
+/** Owner name; a former member is greyed (muted colour only: fading it further breaks contrast). */
 function OwnerLabel({ category, colorOf }: OwnerLabelProps) {
   if (category.ownerId == null || !category.ownerName) return null;
   const former = category.ownerActive === false;
@@ -48,7 +48,7 @@ function OwnerLabel({ category, colorOf }: OwnerLabelProps) {
     <span
       className={cn(
         "inline-flex min-w-0 items-center gap-1.5",
-        former && "text-muted-foreground opacity-70",
+        former && "text-muted-foreground",
       )}
     >
       <MemberDot
@@ -67,7 +67,7 @@ type MemberLimitsProps = {
   colorOf: MemberColorOf;
 };
 
-/** Per-member limits as absolute amounts; former members greyed. */
+/** Per-member limits as absolute amounts; former members greyed (muted colour only, for contrast). */
 function MemberLimits({ category, colorOf }: MemberLimitsProps) {
   const entries = category.memberLimits ?? [];
   if (entries.length === 0) return null;
@@ -78,7 +78,7 @@ function MemberLimits({ category, colorOf }: MemberLimitsProps) {
           key={entry.memberId}
           className={cn(
             "inline-flex items-center gap-1.5 whitespace-nowrap tabular-nums",
-            !entry.active && "text-muted-foreground opacity-70",
+            !entry.active && "text-muted-foreground",
           )}
         >
           <MemberDot
