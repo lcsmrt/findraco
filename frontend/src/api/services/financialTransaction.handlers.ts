@@ -30,6 +30,11 @@ export const financialTransactionHandlers = {
       HttpResponse.json(result),
     );
   },
+  importCsvRejected(message: string): HttpHandler {
+    return http.post<PlanParams>(`${base}/import`, () =>
+      HttpResponse.json({ message }, { status: 400 }),
+    );
+  },
   series(definition: RecurrenceDefinitionResponse): HttpHandler {
     return http.get<SeriesParams, never, RecurrenceDefinitionResponse>(`${base}/series/:seriesId`, () =>
       HttpResponse.json(definition),

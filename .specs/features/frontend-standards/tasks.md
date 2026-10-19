@@ -3301,9 +3301,9 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] Test through MSW: success, partial failure, error
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test through MSW: success, partial failure, error
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick
