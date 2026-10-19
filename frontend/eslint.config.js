@@ -7,6 +7,15 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import { noJsxIife } from './eslint/rules/noJsxIife.ts'
+
+// Rules we own, in TypeScript under eslint/rules/: Node's type stripping loads them, so they need
+// neither a build step nor a package.
+const local = {
+  rules: {
+    'no-jsx-iife': noJsxIife,
+  },
+}
 
 // Named `no-restricted-imports` fragments. Flat config replaces a rule's options when a later block
 // matching the same file sets it again, so every block that sets the rule spreads the complete list
@@ -145,9 +154,11 @@ export default defineConfig({ ignores: ['dist'] }, {
   plugins: {
     'react-hooks': reactHooks,
     'react-refresh': reactRefresh,
+    local,
   },
   rules: {
     ...reactHooks.configs.recommended.rules,
+    'local/no-jsx-iife': 'error',
     'react-refresh/only-export-components': [
       'error',
       { allowConstantExport: true },

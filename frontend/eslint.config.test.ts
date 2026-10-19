@@ -427,4 +427,18 @@ describe("eslint.config.js", () => {
       expect(messages).toEqual([]);
     });
   });
+
+  describe("local rules", () => {
+    it("sets local/no-jsx-iife to error (STD-12 AC 4)", () => {
+      expect(componentConfig.rules["local/no-jsx-iife"]).toEqual([2]);
+    });
+
+    it("reports an IIFE in a component's JSX (STD-12 AC 4)", async () => {
+      const ruleIds = await ruleIdsFor(
+        "export function Last() {\n  return <span>{(() => 1)()}</span>;\n}\n",
+      );
+
+      expect(ruleIds).toContain("local/no-jsx-iife");
+    });
+  });
 });

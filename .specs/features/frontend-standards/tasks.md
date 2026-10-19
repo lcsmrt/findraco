@@ -3346,9 +3346,9 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] `RuleTester` cases: IIFE in children, in an attribute, a normal call allowed
-- [ ] `pnpm lint` exits 0
-- [ ] Build gate passes
+- [x] `RuleTester` cases: IIFE in children, in an attribute, a normal call allowed
+- [x] `pnpm lint` exits 0
+- [x] Build gate passes
 
 **Tests**: tooling
 **Gate**: build
