@@ -15,10 +15,10 @@ type TransactionMobileRowProps = {
 };
 
 /** Description, category and people on the left, signed amount on the right; tap edits (UX-02 AC 5). */
-const TransactionMobileRow = ({
+function TransactionMobileRow({
   transaction,
   onEdit,
-}: TransactionMobileRowProps) => {
+}: TransactionMobileRowProps) {
   const people = transaction.participants.map((p) => p.name).join(", ");
   const details = [transaction.category?.description, people].filter(Boolean);
   return (
@@ -42,7 +42,7 @@ const TransactionMobileRow = ({
       </Text>
     </button>
   );
-};
+}
 
 type TransactionMobileListProps = {
   transactions: FinancialTransaction[];
@@ -55,7 +55,7 @@ type TransactionMobileListProps = {
 };
 
 /** The narrow-screen Transactions list: the table's page, grouped by day (UX-02 AC 4). */
-export const TransactionMobileList = ({
+export function TransactionMobileList({
   transactions,
   isLoading,
   pagination,
@@ -63,7 +63,7 @@ export const TransactionMobileList = ({
   onPageSizeChange,
   onEdit,
   className,
-}: TransactionMobileListProps) => {
+}: TransactionMobileListProps) {
   const days = groupByDay(transactions);
   return (
     <div
@@ -108,4 +108,4 @@ export const TransactionMobileList = ({
       />
     </div>
   );
-};
+}

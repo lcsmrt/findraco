@@ -64,7 +64,7 @@ type TransactionsTabProps = {
   onManageCategories: () => void;
 };
 
-export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) => {
+export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
   const { transactions, updateTransactions, clearTransactions } =
     useTransactionFilters();
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
@@ -108,30 +108,31 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
     memberForDisplay: member,
   };
 
-  const onApplyFilters = (applied: AppliedFilters) => {
+  function onApplyFilters(applied: AppliedFilters) {
     if (applied.categoryForDisplay) seedCategory(applied.categoryForDisplay);
     updateTransactions((t) => ({
       ...t,
       filter: { ...applied.filter, description: t.filter.description },
     }));
-  };
+  }
 
-  const onClearFilters = () => {
+  function onClearFilters() {
     setDescription("");
     clearTransactions();
-  };
+  }
 
-  const onPageSizeChange = (s: number) =>
+  function onPageSizeChange(s: number) {
     updateTransactions((t) => ({ ...t, size: s }));
+  }
 
-  const onSortChange = (next: Sorting<FinancialTransaction>[]) => {
+  function onSortChange(next: Sorting<FinancialTransaction>[]) {
     const active = next[0];
     const by = active ? SORTABLE_FIELDS[active.by as string] : undefined;
     updateTransactions((t) => ({
       ...t,
       sort: by ? { by, direction: active.direction } : null,
     }));
-  };
+  }
 
   const { data: financialTransactionsData, isLoading: isLoadingTransactions } =
     useGetFinancialTransactions(queryParams);
@@ -161,15 +162,17 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
 
   const [drawerState, setDrawerState] = useState<DrawerState>({ open: false });
 
-  const handleImportClick = () => fileInputRef.current?.click();
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (file) {
       importCsv(file);
       e.target.value = "";
     }
-  };
+  }
 
   const pagination = financialTransactionsData
     ? {
@@ -182,15 +185,19 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
       }
     : undefined;
 
-  const handleOpenCreate = () => setDrawerState({ open: true, mode: "create" });
+  function handleOpenCreate() {
+    setDrawerState({ open: true, mode: "create" });
+  }
 
-  const handleEdit = (transaction: FinancialTransaction) =>
+  function handleEdit(transaction: FinancialTransaction) {
     setDrawerState({ open: true, mode: "edit", transaction });
+  }
 
-  const handleDuplicate = (transaction: FinancialTransaction) =>
+  function handleDuplicate(transaction: FinancialTransaction) {
     setDrawerState({ open: true, mode: "duplicate", transaction });
+  }
 
-  const handleDelete = async (transaction: FinancialTransaction) => {
+  async function handleDelete(transaction: FinancialTransaction) {
     if (transaction.seriesId) {
       const scope = await chooseScope({
         title: "Delete series",
@@ -220,12 +227,12 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
     if (confirmed) {
       deleteTransaction(transaction.id);
     }
-  };
+  }
 
-  const handleInlineSave = (
+  function handleInlineSave(
     transaction: FinancialTransaction,
     change: InlineSaveBody,
-  ) => {
+  ) {
     updateTransaction({
       params: { id: transaction.id },
       body: {
@@ -244,7 +251,7 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
           })),
       },
     });
-  };
+  }
 
   const columns = buildTransactionColumns({
     onDuplicate: handleDuplicate,
@@ -395,4 +402,4 @@ export const TransactionsTab = ({ onManageCategories }: TransactionsTabProps) =>
       />
     </>
   );
-};
+}

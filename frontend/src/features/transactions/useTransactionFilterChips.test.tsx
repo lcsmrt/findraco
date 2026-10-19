@@ -35,21 +35,25 @@ const groceries: FinancialTransactionCategory = {
   description: "Groceries",
 };
 
-const notFound = () =>
-  new AxiosError("Not found", "ERR_BAD_REQUEST", undefined, undefined, {
+function notFound() {
+  return new AxiosError("Not found", "ERR_BAD_REQUEST", undefined, undefined, {
     status: 404,
   } as AxiosResponse);
+}
 
-const serverError = () =>
-  new AxiosError("Server error", "ERR_BAD_RESPONSE", undefined, undefined, {
+function serverError() {
+  return new AxiosError("Server error", "ERR_BAD_RESPONSE", undefined, undefined, {
     status: 500,
   } as AxiosResponse);
+}
 
-const networkError = () => new AxiosError("Network Error", "ERR_NETWORK");
+function networkError() {
+  return new AxiosError("Network Error", "ERR_NETWORK");
+}
 
 /** Routes GETs: members always resolve; the category resolves or fails with `categoryError`. */
-const mockApi = ({ categoryExists = true, categoryError = notFound } = {}) =>
-  mockedGet.mockImplementation(async (url: string) => {
+function mockApi({ categoryExists = true, categoryError = notFound } = {}) {
+  return mockedGet.mockImplementation(async (url: string) => {
     if (url === MEMBERS_URL) return { data: members };
     if (url === CATEGORY_URL) {
       if (categoryExists) return { data: groceries };
@@ -57,40 +61,47 @@ const mockApi = ({ categoryExists = true, categoryError = notFound } = {}) =>
     }
     throw new Error(`Unexpected GET ${url}`);
   });
+}
 
 let location: Location;
-const LocationProbe = () => {
+function LocationProbe() {
   location = useLocation();
   return null;
-};
+}
 
-const setup = (url: string) => {
+function setup(url: string) {
   // Same retry default as the app's client, without the delay.
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: 1, retryDelay: 0 } },
   });
-  const Wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[url]}>
-        {children}
-        <LocationProbe />
-      </MemoryRouter>
-    </QueryClientProvider>
-  );
+  function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[url]}>
+          {children}
+          <LocationProbe />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+  }
   const hook = renderHook(
     () => ({ chips: useTransactionFilterChips(), home: useTransactionFilters() }),
     { wrapper: Wrapper },
   );
   return Object.assign(hook, { queryClient });
-};
+}
 
-const labels = (result: ReturnType<typeof setup>["result"]) =>
-  result.current.chips.chips.map((c) => c.label);
+function labels(result: ReturnType<typeof setup>["result"]) {
+  return result.current.chips.chips.map((c) => c.label);
+}
 
-const params = () => Object.fromEntries(new URLSearchParams(location.search));
+function params() {
+  return Object.fromEntries(new URLSearchParams(location.search));
+}
 
-const categoryRequests = () =>
-  mockedGet.mock.calls.filter(([url]) => url === CATEGORY_URL).length;
+function categoryRequests() {
+  return mockedGet.mock.calls.filter(([url]) => url === CATEGORY_URL).length;
+}
 
 afterEach(() => {
   cleanup();

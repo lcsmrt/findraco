@@ -9,13 +9,13 @@ const base: TransactionFilters = {
   size: 10,
 };
 
-const setup = () => {
+function setup() {
   const hook = renderHook((filters: TransactionFilters) => useTransactionsPage(filters), {
     initialProps: base,
   });
   act(() => hook.result.current[1](3));
   return hook;
-};
+}
 
 describe("useTransactionsPage", () => {
   it("starts on the first page", () => {

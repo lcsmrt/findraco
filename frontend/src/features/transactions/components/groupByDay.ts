@@ -10,9 +10,9 @@ export type TransactionDay = {
  * Groups a page of transactions by calendar day (UX-02 AC 4). Days appear in the
  * order of their first transaction on the page; rows keep their page order.
  */
-export const groupByDay = (
+export function groupByDay(
   transactions: FinancialTransaction[],
-): TransactionDay[] => {
+): TransactionDay[] {
   const groups = new Map<string, FinancialTransaction[]>();
   transactions.forEach((transaction) => {
     const day = transaction.startDate.split("T")[0];
@@ -21,4 +21,4 @@ export const groupByDay = (
     else groups.set(day, [transaction]);
   });
   return Array.from(groups, ([day, rows]) => ({ day, transactions: rows }));
-};
+}

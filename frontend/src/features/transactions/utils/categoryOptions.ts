@@ -10,18 +10,21 @@ export type CategoryOption = {
  * A child whose parent is not in the list is shown as a root. Search keeps the
  * parent of a matching child visible so the child stays under it.
  */
-export const groupCategoryOptions = (
+export function groupCategoryOptions(
   categories: FinancialTransactionCategory[],
   search = "",
-): CategoryOption[] => {
+): CategoryOption[] {
   const query = search.trim().toLowerCase();
-  const matches = (c: FinancialTransactionCategory) =>
-    !query || c.description.toLowerCase().includes(query);
-  const byName = (a: FinancialTransactionCategory, b: FinancialTransactionCategory) =>
-    a.description.localeCompare(b.description);
+  function matches(c: FinancialTransactionCategory) {
+    return !query || c.description.toLowerCase().includes(query);
+  }
+  function byName(a: FinancialTransactionCategory, b: FinancialTransactionCategory) {
+    return a.description.localeCompare(b.description);
+  }
   const ids = new Set(categories.map((c) => c.id));
-  const isRoot = (c: FinancialTransactionCategory) =>
-    c.parentId == null || !ids.has(c.parentId);
+  function isRoot(c: FinancialTransactionCategory) {
+    return c.parentId == null || !ids.has(c.parentId);
+  }
 
   return categories
     .filter(isRoot)
@@ -36,4 +39,4 @@ export const groupCategoryOptions = (
         ...children.map((category) => ({ category, isChild: true })),
       ];
     });
-};
+}

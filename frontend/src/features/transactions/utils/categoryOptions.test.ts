@@ -2,11 +2,13 @@ import { describe, expect, it } from "vitest";
 import type { FinancialTransactionCategory } from "@/api/dtos";
 import { groupCategoryOptions } from "./categoryOptions";
 
-const cat = (
+function cat(
   id: number,
   description: string,
   parentId: number | null = null,
-): FinancialTransactionCategory => ({ id, description, type: "DEBIT", parentId });
+): FinancialTransactionCategory {
+  return { id, description, type: "DEBIT", parentId };
+}
 
 const food = cat(1, "Food");
 const delivery = cat(2, "Delivery", 1);
@@ -17,8 +19,9 @@ const rent = cat(6, "Rent");
 // Unsorted on purpose: grouping must not depend on input order.
 const categories = [home, rent, diningOut, shopping, delivery, food];
 
-const view = (options: ReturnType<typeof groupCategoryOptions>) =>
-  options.map((o) => `${o.isChild ? "  " : ""}${o.category.description}`);
+function view(options: ReturnType<typeof groupCategoryOptions>) {
+  return options.map((o) => `${o.isChild ? "  " : ""}${o.category.description}`);
+}
 
 describe("groupCategoryOptions", () => {
   it("lists roots by name, each followed by its children by name", () => {

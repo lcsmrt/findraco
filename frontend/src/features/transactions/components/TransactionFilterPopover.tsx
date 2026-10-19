@@ -47,10 +47,12 @@ const TYPE_LABELS: Record<FinancialTransactionType | typeof TYPE_ALL, string> = 
   DEBIT: "Debit",
 };
 
-const toMemberOption = (member: PlanMember): MemberOption => ({
-  id: member.userId,
-  name: member.name,
-});
+function toMemberOption(member: PlanMember): MemberOption {
+  return {
+    id: member.userId,
+    name: member.name,
+  };
+}
 
 type TransactionFilterPopoverProps = {
   appliedFilters: AppliedFilters;
@@ -58,11 +60,11 @@ type TransactionFilterPopoverProps = {
   members?: PlanMember[];
 }
 
-export const TransactionFilterPopover = ({
+export function TransactionFilterPopover({
   appliedFilters,
   onApply,
   members = [],
-}: TransactionFilterPopoverProps) => {
+}: TransactionFilterPopoverProps) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<FilterDraft>(() =>
     toDraft(appliedFilters),
@@ -81,25 +83,25 @@ export const TransactionFilterPopover = ({
   const parentNames = new Map(
     (categoriesData?.content ?? []).map((c) => [c.id, c.description]),
   );
-  const categoryLabel = (c: (typeof categories)[number]) => {
+  function categoryLabel(c: (typeof categories)[number]) {
     const parentName = c.parentId != null ? parentNames.get(c.parentId) : undefined;
     return parentName ? `${parentName} › ${c.description}` : c.description;
-  };
+  }
 
-  const handleOpenChange = (o: boolean) => {
+  function handleOpenChange(o: boolean) {
     if (o) setDraft(toDraft(appliedFilters));
     setOpen(o);
-  };
+  }
 
-  const handleApply = () => {
+  function handleApply() {
     onApply(fromDraft(draft));
     setOpen(false);
-  };
+  }
 
-  const handleReset = () => {
+  function handleReset() {
     onApply({ filter: {}, categoryForDisplay: null, memberForDisplay: null });
     setOpen(false);
-  };
+  }
 
   const showMemberPicker = members.length > 1;
 
@@ -211,4 +213,4 @@ export const TransactionFilterPopover = ({
       </PopoverContent>
     </Popover>
   );
-};
+}

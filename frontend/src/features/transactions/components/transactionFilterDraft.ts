@@ -55,15 +55,19 @@ export function toDraft(applied: AppliedFilters): FilterDraft {
   };
 }
 
-export const withDraftCategory = (
+export function withDraftCategory(
   draft: FilterDraft,
   category: FinancialTransactionCategory | null,
-): FilterDraft => ({ ...draft, category, categoryId: category?.id ?? null });
+): FilterDraft {
+  return { ...draft, category, categoryId: category?.id ?? null };
+}
 
-export const withDraftMember = (
+export function withDraftMember(
   draft: FilterDraft,
   member: MemberOption | null,
-): FilterDraft => ({ ...draft, member, memberId: member?.id ?? null });
+): FilterDraft {
+  return { ...draft, member, memberId: member?.id ?? null };
+}
 
 export function fromDraft(draft: FilterDraft): AppliedFilters {
   const filter: PagedFinancialTransactionsFilter = {};

@@ -36,7 +36,7 @@ type CategoryComboboxProps = {
   onOpenChange?: (open: boolean) => void;
 };
 
-export const CategoryCombobox = ({
+export function CategoryCombobox({
   id,
   value,
   onValueChange,
@@ -44,7 +44,7 @@ export const CategoryCombobox = ({
   disabled,
   defaultOpen,
   onOpenChange,
-}: CategoryComboboxProps) => {
+}: CategoryComboboxProps) {
   const anchor = useComboboxAnchor();
   const { openCreate } = useCategoryFormSheet();
 
@@ -65,13 +65,13 @@ export const CategoryCombobox = ({
     [options],
   );
 
-  const handleOpenCreate = async () => {
+  async function handleOpenCreate() {
     const created = await openCreate({ description: search.trim(), type });
     if (created) {
       onValueChange(created);
       setSearch("");
     }
-  };
+  }
 
   const showClear = value !== null;
 
@@ -170,4 +170,4 @@ export const CategoryCombobox = ({
       </ComboboxContent>
     </Combobox>
   );
-};
+}

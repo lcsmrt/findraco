@@ -377,15 +377,17 @@ describe("categoryAttribution — participants follow the selected category (CAT
   const partner: PlanMember = { userId: 2, name: "Livia", email: "v@x.com", role: "EDITOR" };
   const third: PlanMember = { userId: 4, name: "Rafa", email: "r@x.com", role: "EDITOR" };
   const members = [me, partner, third];
-  const pick = ({ attributionMode, splitMode, participants }: TransactionFormValues) => ({
-    attributionMode,
-    splitMode,
-    participants,
-  });
+  function pick({ attributionMode, splitMode, participants }: TransactionFormValues) {
+    return {
+      attributionMode,
+      splitMode,
+      participants,
+    };
+  }
   const createDefaults = pick(buildDefaultValues(undefined, 1, undefined));
 
   /** Applies a category selection to the form's attribution like the drawer does. */
-  const select = (
+  function select(
     current: ReturnType<typeof pick>,
     ownerId: number | null | undefined,
     {
@@ -397,8 +399,8 @@ describe("categoryAttribution — participants follow the selected category (CAT
       defaults?: ReturnType<typeof pick>;
       participantsTouched?: boolean;
     } = {},
-  ) =>
-    categoryAttribution({
+  ) {
+    return categoryAttribution({
       mode,
       defaults,
       category: ownerId === undefined ? null : { ownerId },
@@ -406,6 +408,7 @@ describe("categoryAttribution — participants follow the selected category (CAT
       currentUserId: 1,
       participantsTouched,
     }) ?? current;
+  }
 
   const livia = {
     attributionMode: "SOMEONE",
@@ -495,11 +498,13 @@ describe("participantsForMode — the participants an attribution mode starts wi
   const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "OWNER" };
   const bia: PlanMember = { userId: 2, name: "Bia", email: "bia@example.com", role: "EDITOR" };
   const caio: PlanMember = { userId: 3, name: "Caio", email: "caio@example.com", role: "EDITOR" };
-  const asParticipant = (member: PlanMember, shareAmount: number | null = null) => ({
-    memberId: member.userId,
-    memberName: member.name,
-    shareAmount,
-  });
+  function asParticipant(member: PlanMember, shareAmount: number | null = null) {
+    return {
+      memberId: member.userId,
+      memberName: member.name,
+      shareAmount,
+    };
+  }
 
   it("clears the participants for Me", () => {
     expect(participantsForMode("ME", [asParticipant(bia)], [ana, bia], 1)).toEqual([]);

@@ -325,8 +325,9 @@ function parseLocalDate(value: string): Date {
   return new Date(year, month - 1, day);
 }
 
-const stripInstallmentSuffix = (description: string) =>
-  description.replace(/\s*\(\d+\/\d+\)$/, "");
+function stripInstallmentSuffix(description: string) {
+  return description.replace(/\s*\(\d+\/\d+\)$/, "");
+}
 
 function attributionToPayload(
   values: TransactionFormOutput,

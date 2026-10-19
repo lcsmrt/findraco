@@ -37,14 +37,14 @@ type EditableCellProps = {
   onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
 }
 
-const EditableDescriptionCell = ({
+function EditableDescriptionCell({
   transaction,
   onSave,
-}: EditableCellProps) => {
+}: EditableCellProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(transaction.description);
 
-  const commit = () => {
+  function commit() {
     const trimmed = draft.trim();
     if (trimmed && trimmed !== transaction.description) {
       onSave(transaction, { description: trimmed });
@@ -52,7 +52,7 @@ const EditableDescriptionCell = ({
       setDraft(transaction.description);
     }
     setEditing(false);
-  };
+  }
 
   if (!editing) {
     return (
@@ -84,19 +84,19 @@ const EditableDescriptionCell = ({
       className="h-7 min-w-40"
     />
   );
-};
+}
 
-export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) => {
+export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
   const { amount, type } = transaction;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<number | null>(null);
 
-  const commit = () => {
+  function commit() {
     if (draft !== null && draft > 0 && toCents(draft) !== toCents(amount)) {
       onSave(transaction, { amount: draft });
     }
     setEditing(false);
-  };
+  }
 
   if (!editing) {
     return (
@@ -125,24 +125,24 @@ export const EditableAmountCell = ({ transaction, onSave }: EditableCellProps) =
       className="h-7 w-32 font-mono"
     />
   );
-};
+}
 
-export const EditableCategoryCell = ({ transaction, onSave }: EditableCellProps) => {
+export function EditableCategoryCell({ transaction, onSave }: EditableCellProps) {
   const { category, type } = transaction;
   const [editing, setEditing] = useState(false);
 
-  const handleValueChange = (
+  function handleValueChange(
     newCategory: FinancialTransactionCategory | null | undefined,
-  ) => {
+  ) {
     if (newCategory != null) {
       onSave(transaction, { categoryId: newCategory.id });
     }
     setEditing(false);
-  };
+  }
 
-  const handleOpenChange = (open: boolean) => {
+  function handleOpenChange(open: boolean) {
     if (!open) setEditing(false);
-  };
+  }
 
   if (!editing) {
     return (
@@ -169,14 +169,14 @@ export const EditableCategoryCell = ({ transaction, onSave }: EditableCellProps)
       />
     </div>
   );
-};
+}
 
-export const EditableDateCell = ({ transaction, onSave }: EditableCellProps) => {
+export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
   const displayDate = formatDate(transaction.startDate, "dd/MM/yyyy");
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
-  const commit = () => {
+  function commit() {
     const parsed = parse(draft, "dd/MM/yyyy", new Date());
     if (isValid(parsed)) {
       const newStartDate = format(parsed, "yyyy-MM-dd");
@@ -185,7 +185,7 @@ export const EditableDateCell = ({ transaction, onSave }: EditableCellProps) => 
       }
     }
     setEditing(false);
-  };
+  }
 
   if (!editing) {
     return (
@@ -215,13 +215,13 @@ export const EditableDateCell = ({ transaction, onSave }: EditableCellProps) => 
       className="h-7 w-28"
     />
   );
-};
+}
 
-const ParticipantsSummary = ({
+function ParticipantsSummary({
   participants,
 }: {
   participants: ParticipantShare[];
-}) => {
+}) {
   if (participants.length === 0) {
     return (
       <Text variant="caption" className="text-muted-foreground/50">
@@ -252,9 +252,9 @@ const ParticipantsSummary = ({
       {participants.length} people
     </Badge>
   );
-};
+}
 
-const EditableParticipantsCell = ({
+function EditableParticipantsCell({
   transaction,
   members,
   onSave,
@@ -262,11 +262,11 @@ const EditableParticipantsCell = ({
   transaction: FinancialTransaction;
   members: PlanMember[];
   onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
-}) => {
+}) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<number[]>([]);
 
-  const handleOpenChange = (next: boolean) => {
+  function handleOpenChange(next: boolean) {
     if (next) {
       setDraft(transaction.participants.map((p) => p.id));
     } else {
@@ -283,14 +283,15 @@ const EditableParticipantsCell = ({
       }
     }
     setOpen(next);
-  };
+  }
 
-  const toggle = (userId: number) =>
+  function toggle(userId: number) {
     setDraft((prev) =>
       prev.includes(userId)
         ? prev.filter((x) => x !== userId)
         : [...prev, userId],
     );
+  }
 
   return (
     <Popover open={open} onOpenChange={handleOpenChange}>
@@ -320,7 +321,7 @@ const EditableParticipantsCell = ({
       </PopoverContent>
     </Popover>
   );
-};
+}
 
 type DescriptionCellProps = EditableCellProps;
 

@@ -6,11 +6,11 @@ import {
   type ScopeDialogOptions,
 } from "./useSeriesScope";
 
-export const SeriesScopeDialogProvider = ({
+export function SeriesScopeDialogProvider({
   children,
 }: {
   children: ReactNode;
-}) => {
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [scope, setScope] = useState<SeriesEditScope>("THIS_ONE");
   const [options, setOptions] = useState<ScopeDialogOptions>({});
@@ -18,26 +18,26 @@ export const SeriesScopeDialogProvider = ({
     ((value: SeriesEditScope | null) => void) | null
   >(null);
 
-  const chooseScope = (
+  function chooseScope(
     opts: ScopeDialogOptions = {},
-  ): Promise<SeriesEditScope | null> => {
+  ): Promise<SeriesEditScope | null> {
     setScope("THIS_ONE");
     setOptions(opts);
     setIsOpen(true);
     return new Promise((resolve) => {
       setResolver(() => resolve);
     });
-  };
+  }
 
-  const handleContinue = () => {
+  function handleContinue() {
     resolver?.(scope);
     setIsOpen(false);
-  };
+  }
 
-  const handleCancel = () => {
+  function handleCancel() {
     resolver?.(null);
     setIsOpen(false);
-  };
+  }
 
   return (
     <SeriesScopeDialogContext.Provider value={{ chooseScope }}>
@@ -52,4 +52,4 @@ export const SeriesScopeDialogProvider = ({
       />
     </SeriesScopeDialogContext.Provider>
   );
-};
+}

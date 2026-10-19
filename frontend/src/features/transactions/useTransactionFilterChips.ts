@@ -19,15 +19,16 @@ type FilterKey = keyof PagedFinancialTransactionsFilter;
 
 export type FilterChip = { key: string; label: string; onRemove: () => void };
 
-const isNotFound = (error: unknown) =>
-  isAxiosError(error) && error.response?.status === 404;
+function isNotFound(error: unknown) {
+  return isAxiosError(error) && error.response?.status === 404;
+}
 
 /**
  * Chips for the active Transactions filters. Member names come from the members
  * query, the category name from the category-by-id query. A filter pointing to a
  * category or member that no longer exists in the plan is dropped from the URL.
  */
-export const useTransactionFilterChips = () => {
+export function useTransactionFilterChips() {
   const { transactions, updateTransactions } = useTransactionFilters();
   const { activePlanId } = usePlanContext();
   const queryClient = useQueryClient();
@@ -141,4 +142,4 @@ export const useTransactionFilterChips = () => {
   }, [filter, category, member, removeFilters]);
 
   return { chips, category, member, seedCategory };
-};
+}

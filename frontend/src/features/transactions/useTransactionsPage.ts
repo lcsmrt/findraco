@@ -8,7 +8,7 @@ import {
  * Table page for the Transactions tab. Not part of the URL: it starts on the first
  * page and resets to it whenever the filters, sort or page size change.
  */
-export const useTransactionsPage = (transactions: TransactionFilters) => {
+export function useTransactionsPage(transactions: TransactionFilters) {
   const filtersKey = new URLSearchParams(
     serializeTransactionFilters(transactions),
   ).toString();
@@ -21,4 +21,4 @@ export const useTransactionsPage = (transactions: TransactionFilters) => {
   );
 
   return [page, setPage] as const;
-};
+}

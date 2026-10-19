@@ -5,7 +5,9 @@ import {
   type TransactionFilters,
 } from "./transactionParams";
 
-const params = (init: Record<string, string>) => new URLSearchParams(init);
+function params(init: Record<string, string>) {
+  return new URLSearchParams(init);
+}
 
 const DEFAULT_TRANSACTIONS: TransactionFilters = {
   filter: {},

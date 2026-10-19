@@ -2,20 +2,23 @@ import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { groupByDay } from "./groupByDay";
 
-const tx = (id: number, startDate: string): FinancialTransaction => ({
-  id,
-  type: "DEBIT",
-  amount: 10,
-  description: `T${id}`,
-  startDate,
-  endDate: startDate,
-  splitMode: "EQUAL",
-  participants: [],
-  items: [],
-});
+function tx(id: number, startDate: string): FinancialTransaction {
+  return {
+    id,
+    type: "DEBIT",
+    amount: 10,
+    description: `T${id}`,
+    startDate,
+    endDate: startDate,
+    splitMode: "EQUAL",
+    participants: [],
+    items: [],
+  };
+}
 
-const shape = (groups: ReturnType<typeof groupByDay>) =>
-  groups.map((g) => ({ day: g.day, ids: g.transactions.map((t) => t.id) }));
+function shape(groups: ReturnType<typeof groupByDay>) {
+  return groups.map((g) => ({ day: g.day, ids: g.transactions.map((t) => t.id) }));
+}
 
 // UX-02 AC 4: the narrow Transactions list groups rows by day under a date heading.
 describe("groupByDay", () => {
