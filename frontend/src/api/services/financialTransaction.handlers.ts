@@ -4,6 +4,8 @@ import type {
   CreateFinancialTransactionSeriesRequest,
   FinancialTransaction,
   FinancialTransactionSeriesResponse,
+  PagedResponse,
+  RecurrenceDefinitionResponse,
   UpdateFinancialTransactionRequest,
   UpdateFinancialTransactionSeriesRequest,
 } from "../dtos";
@@ -15,6 +17,27 @@ type SeriesParams = PlanParams & { seriesId: string };
 const base = "*/plan/:planId/financial-transaction";
 
 export const financialTransactionHandlers = {
+  list(page: PagedResponse<FinancialTransaction>): HttpHandler {
+    return http.get<PlanParams, never, PagedResponse<FinancialTransaction>>(base, () =>
+      HttpResponse.json(page),
+    );
+  },
+  remove(): HttpHandler {
+    return http.delete<TransactionParams>(`${base}/:id`, () => new HttpResponse(null, { status: 204 }));
+  },
+  importCsv(result: { imported: number }): HttpHandler {
+    return http.post<PlanParams, never, { imported: number }>(`${base}/import`, () =>
+      HttpResponse.json(result),
+    );
+  },
+  series(definition: RecurrenceDefinitionResponse): HttpHandler {
+    return http.get<SeriesParams, never, RecurrenceDefinitionResponse>(`${base}/series/:seriesId`, () =>
+      HttpResponse.json(definition),
+    );
+  },
+  removeSeries(): HttpHandler {
+    return http.delete<SeriesParams>(`${base}/series/:seriesId`, () => new HttpResponse(null, { status: 204 }));
+  },
   create(transaction: FinancialTransaction): HttpHandler {
     return http.post<
       PlanParams,

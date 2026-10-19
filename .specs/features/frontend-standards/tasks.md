@@ -3098,10 +3098,12 @@ Note: `src/test/**` is test support like `*.handlers.ts` and is skipped too (the
 
 **Done when**:
 
-- [ ] The test report lists nothing
-- [ ] Every branch of each module covered
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] The test report lists nothing
+- [x] Every branch of each module covered
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+Done: unit + tooling 71 files / 762 tests → 77 / 811, none removed. Six modules, each at 100% branches: `buildPagedQuery`, `resolveErrorMessage`, `resolveSuccessMessage`, `masks.ts`, `useMemberColors` and `useFinancialTransactionService` (through MSW; five handler factories added). The import test asserts method, URL, result and refresh but not the multipart body: under jsdom, MSW's XHR interceptor receives jsdom's `FormData` as the text `[object FormData]`.
 
 **Tests**: unit
 **Gate**: quick
