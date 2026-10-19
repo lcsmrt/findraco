@@ -159,6 +159,14 @@ export default defineConfig({ ignores: ['dist'] }, {
     ],
     // Interfaces merge silently with any same-named declaration; `type` also covers the unions the code relies on.
     '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
+    // One way to write a named function, the one react.dev and shadcn snippets arrive in; arrows stay
+    // for inline callbacks. No escape through a type annotation (`const f: Handler = () => …`):
+    // type the parameters instead. Arrows that use the enclosing `this` are never reported.
+    'func-style': [
+      'error',
+      'declaration',
+      { allowArrowFunctions: false, allowTypeAnnotation: false, overrides: { namedExports: 'declaration' } },
+    ],
   },
 }, {
   // Augmenting a library's types (`declare module "axios" { interface … }`) needs declaration

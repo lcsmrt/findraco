@@ -99,6 +99,42 @@ describe("eslint.config.js", () => {
       },
     );
 
+    it.each(["src/components/ConfigProbe.tsx", "src/utils/configProbe.ts"])(
+      "enforces function declarations, typed arrows included, in %s (STD-09 AC 1)",
+      async (filePath) => {
+        const config = await eslint.calculateConfigForFile(filePath);
+
+        expect(config.rules["func-style"]).toEqual([
+          2,
+          "declaration",
+          { allowArrowFunctions: false, allowTypeAnnotation: false, overrides: { namedExports: "declaration" } },
+        ]);
+      },
+    );
+
+    it.each([
+      ["an exported component arrow", "export const Probe = () => null;\n"],
+      ["a top-level helper arrow", "const toProbe = (value: number) => value + 1;\n\nexport { toProbe };\n"],
+      ["a function expression", "const toProbe = function (value: number) {\n  return value + 1;\n};\n\nexport { toProbe };\n"],
+      ["an arrow with a type annotation", "const toProbe: (value: number) => number = (value) => value + 1;\n\nexport { toProbe };\n"],
+      [
+        "a handler arrow inside a component",
+        "export function Probe() {\n  const handleClick = () => undefined;\n  return <button onClick={handleClick} />;\n}\n",
+      ],
+    ])("reports %s (STD-09 AC 1)", async (_label, code) => {
+      const ruleIds = await ruleIdsFor(code);
+
+      expect(ruleIds).toContain("func-style");
+    });
+
+    it("allows function declarations with inline arrow callbacks (STD-09 AC 1)", async () => {
+      const ruleIds = await ruleIdsFor(
+        "export function Probe({ values }: { values: number[] }) {\n  function handleClick() {\n    return values.map((value) => value + 1);\n  }\n  return <button onClick={() => handleClick()} />;\n}\n",
+      );
+
+      expect(ruleIds).not.toContain("func-style");
+    });
+
     it("allows an interface in a *.d.ts library augmentation (STD-02 AC 4)", async () => {
       const filePath = "src/api/clients/configProbe.d.ts";
       const augmentation =

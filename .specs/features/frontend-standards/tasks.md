@@ -2695,9 +2695,9 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] `const Foo = () => …` at top level fails lint (checked, reverted)
-- [ ] `pnpm lint` exits 0
-- [ ] Build gate passes
+- [x] `const Foo = () => …` at top level fails lint (checked, reverted)
+- [x] `pnpm lint` exits 0
+- [x] Build gate passes
 
 **Tests**: tooling
 **Gate**: build
