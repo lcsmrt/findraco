@@ -1,15 +1,11 @@
 import { Outlet } from "react-router-dom";
+import { MainLayoutView } from "./MainLayoutView";
 import { Navbar } from "./Navbar";
 
 export function MainLayout() {
   return (
-    <div className="flex min-h-dvh flex-col overflow-x-hidden">
-      <header>
-        <Navbar />
-      </header>
-      <main className="flex flex-1 flex-col pt-16">
-        <Outlet />
-      </main>
-    </div>
+    <MainLayoutView navbar={<Navbar />}>
+      <Outlet />
+    </MainLayoutView>
   );
 }
