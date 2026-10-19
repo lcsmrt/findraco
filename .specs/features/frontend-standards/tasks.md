@@ -3213,9 +3213,9 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] Test: every column both ways, unknown column
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test: every column both ways, unknown column
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick
