@@ -129,13 +129,15 @@ function Calendar({
           return <ChevronDownIcon className={cn("size-4", className)} {...props} />;
         },
         DayButton: ({ ...props }) => <CalendarDayButton locale={locale} {...props} />,
+        // react-day-picker gives the week number `scope="row"` and `role="rowheader"`, valid only on
+        // a header cell.
         WeekNumber: ({ children, ...props }) => {
           return (
-            <td {...props}>
+            <th {...props}>
               <div className="flex size-(--cell-size) items-center justify-center text-center">
                 {children}
               </div>
-            </td>
+            </th>
           );
         },
         ...components,

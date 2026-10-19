@@ -43,7 +43,7 @@ function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
       className={cn(className)}
       {...props}
       render={
-        <InputGroupButton variant="ghost" size="icon-xs">
+        <InputGroupButton variant="ghost" size="icon-xs" aria-label="Clear">
           <XIcon className="pointer-events-none" />
         </InputGroupButton>
       }
@@ -67,9 +67,14 @@ function ComboboxInput({
       <ComboboxPrimitive.Input render={<InputGroupInput disabled={disabled} />} {...props} />
       <InputGroupAddon align="inline-end">
         {showTrigger && (
+          // The input is the keyboard entry point (arrow keys open the list), so the toggle stays
+          // out of the tab order, as in the WAI-ARIA combobox pattern; Base UI also hides it from
+          // assistive technology while the list is open, which needs it not to be tabbable.
           <InputGroupButton
             size="icon-xs"
             variant="ghost"
+            aria-label="Show options"
+            tabIndex={-1}
             data-slot="input-group-button"
             className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
             disabled={disabled}
@@ -188,9 +193,12 @@ function ComboboxEmpty({ className, ...props }: ComboboxPrimitive.Empty.Props) {
   );
 }
 
-function ComboboxSeparator({ className, ...props }: ComboboxPrimitive.Separator.Props) {
+// A listbox may only contain options and groups, so the line is decoration hidden from assistive
+// technology rather than Base UI's separator role.
+function ComboboxSeparator({ className, ...props }: React.ComponentProps<"div">) {
   return (
-    <ComboboxPrimitive.Separator
+    <div
+      aria-hidden
       data-slot="combobox-separator"
       className={cn("bg-border -mx-1 my-1 h-px", className)}
       {...props}
@@ -237,7 +245,7 @@ function ComboboxChip({
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
           render={
-            <Button variant="ghost" size="icon-xs">
+            <Button variant="ghost" size="icon-xs" aria-label="Remove">
               <XIcon className="pointer-events-none" />
             </Button>
           }
