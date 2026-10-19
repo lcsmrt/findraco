@@ -162,15 +162,19 @@ const lastInstallment = lastInstallmentDate(startDate, count);
 Rules:
 
 1. **A component with its own visual has a sibling `.stories.tsx`.** Enforced by the story report of
-   `scripts/check-siblings.ts`: every `.tsx` under `src/` that does not directly import
-   `@/api/services`, `@/app/providers` or `react-router-dom` needs one (tests, stories, `src/index.tsx`
-   and `src/test/**` excepted).
-2. **A container has no visual of its own.** It fetches and passes down. If it renders markup of its
-   own, split it: the container keeps the hooks, a presentational view renders from props and gets the
-   story.
-3. The gate cannot see our hooks that wrap the API, context or router. A component that calls such a
-   hook without importing those modules still needs a story. Split it into container and view; never
-   look for a way around the gate.
+   `scripts/check-siblings.ts`: every `.tsx` under `src/` that is not a container needs one (tests,
+   stories, `src/index.tsx` and `src/test/**` excepted). The script resolves each import to its real
+   path (relative or `@/`) and treats a file as a container when it imports `@/api/services`,
+   `@/app/providers` or `react-router-dom`, directly or through one of our `.ts` modules built on them
+   (followed transitively). Importing a component does not count: rendering a container does not make
+   the parent one.
+2. **A container renders only components.** It fetches and passes down. Any intrinsic HTML element
+   (`div`, `span`, `form`, `img`…; fragments are fine) in a container file fails the same report,
+   naming the file and the elements. Split it: the container keeps the hooks and effects and renders
+   the view; the view (`XxxView.tsx` or a name by role) renders from props and gets the story.
+   Providers and roots that render only components pass as they are.
+3. Never look for a way around the gate (moving markup into a callback, an untyped wrapper, a hook
+   that returns JSX). A container that composes only components passes; its children carry the stories.
 4. Story content follows the story checklist in `frontend-testing`.
 
 ```tsx

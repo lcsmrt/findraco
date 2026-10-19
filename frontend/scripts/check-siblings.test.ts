@@ -2,7 +2,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { findMissingStories } from "./check-siblings.ts";
+import { findContainersWithMarkup, findMissingStories } from "./check-siblings.ts";
 
 let srcDir: string;
 
@@ -61,5 +61,80 @@ describe("findMissingStories", () => {
     write("utils/money.ts");
 
     expect(findMissingStories(srcDir)).toEqual([]);
+  });
+});
+
+describe("container detection through real paths and our hooks", () => {
+  it("resolves a relative import into app/providers (STD-10 AC 1)", () => {
+    write("app/providers/useTheme.ts", "export function useTheme() { return 'dark'; }\n");
+    write(
+      "app/providers/ThemeProvider.tsx",
+      'import { useTheme } from "./useTheme";\nexport function ThemeProvider() { useTheme(); return null; }\n',
+    );
+
+    expect(findMissingStories(srcDir)).toEqual([]);
+  });
+
+  it("treats a component calling our hook built on a service as a container (STD-10 AC 1)", () => {
+    write("api/services/planService.ts", "export function useGetPlans() { return []; }\n");
+    write(
+      "features/plans/usePlanList.ts",
+      'import { useGetPlans } from "@/api/services/planService";\nexport function usePlanList() { return useGetPlans(); }\n',
+    );
+    write(
+      "features/plans/PlansPage.tsx",
+      'import { usePlanList } from "./usePlanList";\nexport function PlansPage() { usePlanList(); return null; }\n',
+    );
+
+    expect(findMissingStories(srcDir)).toEqual([]);
+  });
+
+  it("follows a chain of our modules through an import cycle (STD-10 AC 1)", () => {
+    write("features/plans/a.ts", 'import { b } from "./b";\nimport { useNavigate } from "react-router-dom";\nexport const a = [b, useNavigate];\n');
+    write("features/plans/b.ts", 'import { a } from "./a";\nexport const b = () => a;\n');
+    write("features/plans/usePlanRoute.ts", 'import { b } from "./b";\nexport function usePlanRoute() { return b; }\n');
+    write(
+      "features/plans/PlanRoute.tsx",
+      'import { usePlanRoute } from "./usePlanRoute";\nexport function PlanRoute() { usePlanRoute(); return null; }\n',
+    );
+
+    expect(findMissingStories(srcDir)).toEqual([]);
+  });
+
+  it("still asks a story of a component that only renders a container (STD-10 AC 1)", () => {
+    write(
+      "features/plans/PlansPage.tsx",
+      'import { useNavigate } from "react-router-dom";\nexport function PlansPage() { useNavigate(); return null; }\n',
+    );
+    write(
+      "features/plans/PlansSection.tsx",
+      'import { PlansPage } from "./PlansPage";\nexport function PlansSection() { return <PlansPage />; }\n',
+    );
+
+    expect(findMissingStories(srcDir)).toEqual(["features/plans/PlansSection.tsx"]);
+  });
+});
+
+describe("findContainersWithMarkup", () => {
+  it("names a container that renders an intrinsic element, with the element (STD-10 AC 4)", () => {
+    write(
+      "features/overview/OverviewTab.tsx",
+      'import { useNavigate } from "react-router-dom";\nexport function OverviewTab() { useNavigate(); return <div><span>Total</span></div>; }\n',
+    );
+
+    expect(findContainersWithMarkup(srcDir)).toEqual([
+      { file: "features/overview/OverviewTab.tsx", elements: ["div", "span"] },
+    ]);
+  });
+
+  it("passes a container that renders only components and fragments (STD-10 AC 4)", () => {
+    write(
+      "features/overview/OverviewTab.tsx",
+      'import { useNavigate } from "react-router-dom";\nimport { OverviewView } from "./OverviewView";\n' +
+        "export function OverviewTab() { useNavigate(); return <><OverviewView title=\"Total\" /></>; }\n",
+    );
+    write("features/overview/OverviewView.tsx", "export function OverviewView() { return <div>Total</div>; }\n");
+
+    expect(findContainersWithMarkup(srcDir)).toEqual([]);
   });
 });

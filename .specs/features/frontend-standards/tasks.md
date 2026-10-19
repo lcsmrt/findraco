@@ -2913,9 +2913,9 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] Tests: relative import resolved; container via our hook; container with an intrinsic element fails naming it; container rendering only components passes
-- [ ] Report lists the containers to split
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Tests: relative import resolved; container via our hook; container with an intrinsic element fails naming it; container rendering only components passes
+- [x] Report lists the containers to split
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: tooling
 **Gate**: quick
