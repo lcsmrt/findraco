@@ -265,13 +265,25 @@ T104 → T106
 T104 → T107
 T104 → T108
 T104 → T109
+T109 → T126
 T104 → T110
+T126 → T110
+T126 → T127
+T126 → T128
+T126 → T129
+T126 → T130
+T126 → T131
 T105 → T111
 T106 → T111
 T107 → T111
 T108 → T111
 T109 → T111
 T110 → T111
+T127 → T111
+T128 → T111
+T129 → T111
+T130 → T111
+T131 → T111
 ```
 
 ### Phase 16: Test coverage (STD-11)
@@ -2870,7 +2882,7 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **What**: Every component the T104 report lists in `features/plans`, `features/auth`, `features/notFound`, `src/app` gets a story following the checklist; a component that cannot render from props alone is split into container + view, the view getting the story (STD-10 AC 4).
 **Where**: `frontend/src/features/plans/`
-**Depends on**: T104
+**Depends on**: T104, T126
 **Reuses**: -
 **Requirement**: STD-10 (AC 1, 3, 4)
 
@@ -2889,11 +2901,148 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 ---
 
+### T126: Gate refinement: real paths, our hooks, containers without markup
+
+**What**: Gate refinement decided 2026-10-18 (user followed the orchestrator's recommendation; explanation pending): (1) resolve relative and `@/` imports to real paths before classifying; (2) a component is a container when it imports one of the three modules directly **or** one of our modules (hook) that does; (3) a container may render only components, never intrinsic HTML elements (`div`, `span`, `button`…), so STD-10 AC 4 is enforced mechanically. Report both violations (missing story, container with markup), naming files. Not wired yet.
+**Where**: `frontend/scripts/check-siblings.ts`
+**Depends on**: T109
+**Reuses**: `scripts/check-siblings.ts`, the story checklist
+**Requirement**: STD-10 (AC 1, 2, 4)
+
+**Tools**: MCP: NONE · Skill: `component-creation`, `frontend-testing`
+
+**Done when**:
+
+- [ ] Tests: relative import resolved; container via our hook; container with an intrinsic element fails naming it; container rendering only components passes
+- [ ] Report lists the containers to split
+- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+**Tests**: tooling
+**Gate**: quick
+**Commit**: `build(frontend): story gate sees our hooks and container markup`
+
+---
+
+### T127: Container/view splits: `src/app` (layouts, Navbar, Toaster, PrivateRoute, HomePage tabs)
+
+**What**: Apply T126's report in `src/app` (layouts, Navbar, Toaster, PrivateRoute, HomePage tabs); the view gets the story.
+**Where**: `frontend/src/app/layout/`
+**Depends on**: T126
+**Reuses**: `scripts/check-siblings.ts`, the story checklist
+**Requirement**: STD-10 (AC 1, 2, 4)
+
+**Tools**: MCP: NONE · Skill: `component-creation`, `frontend-testing`
+
+**Done when**:
+
+- [ ] Every container in `src/app` (layouts, Navbar, Toaster, PrivateRoute, HomePage tabs) that renders HTML elements of its own is split: the container keeps the hooks and renders only components; the view renders from props and has a story per the checklist
+- [ ] Behaviour unchanged; existing tests pass (moved with their subjects where needed)
+- [ ] Full gate passes
+- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+**Tests**: story
+**Gate**: full
+**Commit**: `refactor(frontend): split app shell containers into views`
+
+---
+
+### T128: Container/view splits: `features/transactions` and `features/overview`
+
+**What**: Apply T126's report in `features/transactions` and `features/overview`; the view gets the story.
+**Where**: `frontend/src/features/transactions/`
+**Depends on**: T126
+**Reuses**: `scripts/check-siblings.ts`, the story checklist
+**Requirement**: STD-10 (AC 1, 2, 4)
+
+**Tools**: MCP: NONE · Skill: `component-creation`, `frontend-testing`
+
+**Done when**:
+
+- [ ] Every container in `features/transactions` and `features/overview` that renders HTML elements of its own is split: the container keeps the hooks and renders only components; the view renders from props and has a story per the checklist
+- [ ] Behaviour unchanged; existing tests pass (moved with their subjects where needed)
+- [ ] Full gate passes
+- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+**Tests**: story
+**Gate**: full
+**Commit**: `refactor(frontend): split transactions and overview containers`
+
+---
+
+### T129: Container/view splits: `features/categories`
+
+**What**: Apply T126's report in `features/categories`; the view gets the story.
+**Where**: `frontend/src/features/categories/`
+**Depends on**: T126
+**Reuses**: `scripts/check-siblings.ts`, the story checklist
+**Requirement**: STD-10 (AC 1, 2, 4)
+
+**Tools**: MCP: NONE · Skill: `component-creation`, `frontend-testing`
+
+**Done when**:
+
+- [ ] Every container in `features/categories` that renders HTML elements of its own is split: the container keeps the hooks and renders only components; the view renders from props and has a story per the checklist
+- [ ] Behaviour unchanged; existing tests pass (moved with their subjects where needed)
+- [ ] Full gate passes
+- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+**Tests**: story
+**Gate**: full
+**Commit**: `refactor(frontend): split categories containers into views`
+
+---
+
+### T130: Container/view splits: `features/plans`
+
+**What**: Apply T126's report in `features/plans`; the view gets the story.
+**Where**: `frontend/src/features/plans/`
+**Depends on**: T126
+**Reuses**: `scripts/check-siblings.ts`, the story checklist
+**Requirement**: STD-10 (AC 1, 2, 4)
+
+**Tools**: MCP: NONE · Skill: `component-creation`, `frontend-testing`
+
+**Done when**:
+
+- [ ] Every container in `features/plans` that renders HTML elements of its own is split: the container keeps the hooks and renders only components; the view renders from props and has a story per the checklist
+- [ ] Behaviour unchanged; existing tests pass (moved with their subjects where needed)
+- [ ] Full gate passes
+- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+**Tests**: story
+**Gate**: full
+**Commit**: `refactor(frontend): split plans containers into views`
+
+---
+
+### T131: Container/view splits: `features/auth`, `features/notFound`, `src/components` (e.g. `ThemeToggle`)
+
+**What**: Apply T126's report in `features/auth`, `features/notFound`, `src/components` (e.g. `ThemeToggle`); the view gets the story.
+**Where**: `frontend/src/features/auth/`
+**Depends on**: T126
+**Reuses**: `scripts/check-siblings.ts`, the story checklist
+**Requirement**: STD-10 (AC 1, 2, 4)
+
+**Tools**: MCP: NONE · Skill: `component-creation`, `frontend-testing`
+
+**Done when**:
+
+- [ ] Every container in `features/auth`, `features/notFound`, `src/components` (e.g. `ThemeToggle`) that renders HTML elements of its own is split: the container keeps the hooks and renders only components; the view renders from props and has a story per the checklist
+- [ ] Behaviour unchanged; existing tests pass (moved with their subjects where needed)
+- [ ] Full gate passes
+- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+
+**Tests**: story
+**Gate**: full
+**Commit**: `refactor(frontend): split auth, 404 and shared containers`
+
+---
+
 ### T111: Story gate in `pnpm test`
 
 **What**: `test` runs the story report before Vitest; CI follows through `pnpm test`.
 **Where**: `frontend/package.json`
-**Depends on**: T105, T106, T107, T108, T109, T110
+**Depends on**: T105, T106, T107, T108, T109, T110, T127, T128, T129, T130, T131
 **Reuses**: -
 **Requirement**: STD-10 (AC 2)
 
