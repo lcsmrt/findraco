@@ -34,7 +34,7 @@ export type DatePickerProps = {
  * Single date picker with an editable text input and a popover calendar.
  * Supports typing in dd/mm/yyyy format or selecting from the calendar.
  */
-export const DatePicker = ({
+export function DatePicker({
   value,
   onChange,
   placeholder = "dd/mm/yyyy",
@@ -46,7 +46,7 @@ export const DatePicker = ({
   id,
   ref,
   onBlur,
-}: DatePickerProps) => {
+}: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(
     value ? format(value, DATE_FORMAT) : "",
@@ -136,7 +136,7 @@ export const DatePicker = ({
       </PopoverContent>
     </Popover>
   );
-};
+}
 
 export type DateRangePickerProps = {
   value?: DateRange;
@@ -162,7 +162,7 @@ function formatRange(range?: DateRange): string {
  * Date range picker with a two-month calendar and year/month navigation via dropdown.
  * Closes automatically after both dates are selected.
  */
-export const DateRangePicker = ({
+export function DateRangePicker({
   value,
   onChange,
   placeholder = "dd/mm/yyyy – dd/mm/yyyy",
@@ -173,7 +173,7 @@ export const DateRangePicker = ({
   numberOfMonths = 2,
   className,
   id,
-}: DateRangePickerProps) => {
+}: DateRangePickerProps) {
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const hasValue = !!(value?.from || value?.to);
@@ -242,4 +242,4 @@ export const DateRangePicker = ({
       </PopoverContent>
     </Popover>
   );
-};
+}

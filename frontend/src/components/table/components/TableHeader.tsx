@@ -16,13 +16,13 @@ type TableHeaderProps<TData> = {
   isSticky?: boolean;
 };
 
-export const TableHeader = <TData,>({
+export function TableHeader<TData>({
   table,
   sorting,
   onSortChange,
   isSticky = true,
-}: TableHeaderProps<TData>) => {
-  const toggleSort = (columnId: keyof TData) => {
+}: TableHeaderProps<TData>) {
+  function toggleSort(columnId: keyof TData) {
     const existing = (sorting ?? []).find((s) => s.by === columnId);
 
     // Single active sort key: clicking a column replaces any prior sort rather than appending, so the
@@ -37,7 +37,7 @@ export const TableHeader = <TData,>({
     }
 
     onSortChange?.(newSorting);
-  };
+  }
 
   return (
     <TableHeaderBase className={cn("z-10 bg-card border-b min-w-fit", isSticky && "sticky top-0")}>
@@ -69,11 +69,11 @@ export const TableHeader = <TData,>({
       ))}
     </TableHeaderBase>
   );
-};
+}
 
-const TableHeaderCell = ({ children }: { children: ReactNode }) => {
+function TableHeaderCell({ children }: { children: ReactNode }) {
   return <div className="px-2 py-1 select-none truncate">{children}</div>;
-};
+}
 
 type SortableTableHeaderCellProps = {
   children: ReactNode;
@@ -81,11 +81,11 @@ type SortableTableHeaderCellProps = {
   onClick?: (event?: unknown) => void;
 };
 
-const SortableTableHeaderCell = ({
+function SortableTableHeaderCell({
   children,
   direction,
   onClick,
-}: SortableTableHeaderCellProps) => {
+}: SortableTableHeaderCellProps) {
   return (
     <div
       role="button"
@@ -104,4 +104,4 @@ const SortableTableHeaderCell = ({
       </span>
     </div>
   );
-};
+}

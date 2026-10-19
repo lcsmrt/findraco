@@ -19,18 +19,18 @@ type MemberRef = Pick<PlanMember, "userId">;
  * Palette slot of a member: their position in the plan's members ordered by user id,
  * modulo the palette size; -1 when the user is not a member.
  */
-export const memberColorIndex = (members: MemberRef[], userId: number): number => {
+export function memberColorIndex(members: MemberRef[], userId: number): number {
   const position = members
     .map((member) => member.userId)
     .sort((a, b) => a - b)
     .indexOf(userId);
   return position === -1 ? -1 : position % MEMBER_PALETTE.length;
-};
+}
 
 /** CSS colour of a member, or the neutral colour for an unknown user. */
-export const memberColor = (members: MemberRef[], userId: number): string => {
+export function memberColor(members: MemberRef[], userId: number): string {
   const index = memberColorIndex(members, userId);
   return index === -1 ? NEUTRAL_MEMBER_COLOR : MEMBER_PALETTE[index];
-};
+}
 
 export type MemberColorOf = (userId: number) => string;

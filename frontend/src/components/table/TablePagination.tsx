@@ -32,12 +32,12 @@ type TablePaginationProps = {
   isSticky?: boolean;
 };
 
-export const TablePagination = ({
+export function TablePagination({
   pagination,
   onPageChange,
   onPageSizeChange,
   isSticky = true,
-}: TablePaginationProps) => {
+}: TablePaginationProps) {
   const {
     number: page = 0,
     size = 0,
@@ -131,4 +131,4 @@ export const TablePagination = ({
       </div>
     </div>
   );
-};
+}

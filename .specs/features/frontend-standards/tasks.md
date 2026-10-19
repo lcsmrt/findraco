@@ -2585,9 +2585,9 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] No `func-style: declaration` violation in the area (rule run ad hoc)
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] No `func-style: declaration` violation in the area (rule run ad hoc)
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: none
 **Gate**: quick

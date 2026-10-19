@@ -66,16 +66,16 @@ export function StandardCombobox<T extends WithId>({
   const isSearchControlled = externalSearch !== undefined;
   const searchTerm = isSearchControlled ? externalSearch : internalSearch;
 
-  const handleSearchChange = (val: string) => {
+  function handleSearchChange(val: string) {
     if (!isSearchControlled) setInternalSearch(val);
     onSearchChange?.(val);
-  };
+  }
 
-  const handleValueChange = (val: T | null) => {
+  function handleValueChange(val: T | null) {
     if (val === null && value !== null && displayedItems.length === 0) return;
     onValueChange(val);
     if (!isSearchControlled) setInternalSearch("");
-  };
+  }
 
   const displayedItems = React.useMemo(() => {
     if (isSearchControlled) return items;

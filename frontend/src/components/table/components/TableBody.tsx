@@ -14,12 +14,12 @@ type TableBodyProps<TData> = {
   isLoading?: boolean;
 };
 
-export const TableBody = <TData,>({ table, renderSubComponent, emptyState, isLoading }: TableBodyProps<TData>) => {
-  const handleRowClick = (row: Row<TData>) => {
+export function TableBody<TData>({ table, renderSubComponent, emptyState, isLoading }: TableBodyProps<TData>) {
+  function handleRowClick(row: Row<TData>) {
     if (!row.getCanExpand()) return;
     const isCurrentlyExpanded = row.getIsExpanded();
     table.setExpanded(isCurrentlyExpanded ? {} : { [row.id]: true });
-  };
+  }
 
   const rows = table.getRowModel().rows;
   const colSpan = table.getAllColumns().length;
@@ -89,4 +89,4 @@ export const TableBody = <TData,>({ table, renderSubComponent, emptyState, isLoa
       })}
     </TableBodyBase>
   );
-};
+}

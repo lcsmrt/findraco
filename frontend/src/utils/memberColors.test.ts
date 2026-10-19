@@ -6,7 +6,9 @@ import {
   memberColorIndex,
 } from "./memberColors";
 
-const members = (...ids: number[]) => ids.map((userId) => ({ userId }));
+function members(...ids: number[]) {
+  return ids.map((userId) => ({ userId }));
+}
 
 describe("memberColorIndex (UX-04 AC 2)", () => {
   it("orders members by user id, whatever the input order", () => {

@@ -10,34 +10,34 @@ import {
 import { Button } from "@/components/button/base/Button";
 import { ConfirmDialogContext, type ConfirmOptions } from "./useConfirm";
 
-export const ConfirmDialogProvider = ({
+export function ConfirmDialogProvider({
   children,
 }: {
   children: ReactNode;
-}) => {
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [resolver, setResolver] = useState<((value: boolean) => void) | null>(
     null,
   );
 
-  const confirm = (opts: ConfirmOptions): Promise<boolean> => {
+  function confirm(opts: ConfirmOptions): Promise<boolean> {
     setOptions(opts);
     setIsOpen(true);
     return new Promise((resolve) => {
       setResolver(() => resolve);
     });
-  };
+  }
 
-  const handleConfirm = () => {
+  function handleConfirm() {
     resolver?.(true);
     setIsOpen(false);
-  };
+  }
 
-  const handleCancel = () => {
+  function handleCancel() {
     resolver?.(false);
     setIsOpen(false);
-  };
+  }
 
   return (
     <ConfirmDialogContext.Provider value={{ confirm }}>
@@ -65,4 +65,4 @@ export const ConfirmDialogProvider = ({
       )}
     </ConfirmDialogContext.Provider>
   );
-};
+}
