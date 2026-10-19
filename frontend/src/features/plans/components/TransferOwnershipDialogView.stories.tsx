@@ -1,6 +1,6 @@
 import type { PlanMember } from "@/api/dtos";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, screen } from "storybook/test";
+import { expect, fn, screen, waitFor } from "storybook/test";
 import { TransferOwnershipDialogView } from "./TransferOwnershipDialogView";
 
 const candidates: PlanMember[] = [
@@ -30,6 +30,8 @@ export const WithCandidates: Story = {
     await expect(screen.getByRole("button", { name: "Transfer" })).toBeDisabled();
     await userEvent.click(screen.getByRole("combobox", { name: "New owner" }));
     await userEvent.click(await screen.findByRole("option", { name: "Ana Lima" }));
+    // The list closes with an exit animation; the a11y check runs once it has left, not mid-way.
+    await waitFor(() => expect(screen.queryByRole("listbox")).toBeNull());
     await userEvent.click(screen.getByRole("button", { name: "Transfer" }));
     await expect(args.onTransfer).toHaveBeenCalledWith(3);
   },
