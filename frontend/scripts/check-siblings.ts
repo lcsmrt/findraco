@@ -137,6 +137,131 @@ export function findMissingStories(srcDir: string): string[] {
     .map(({ filePath }) => toRelative(srcDir, filePath));
 }
 
+// Callbacks that run once per element: logic even when the callback itself has no branch.
+const iterationMethods = new Set([
+  "map",
+  "flatMap",
+  "filter",
+  "reduce",
+  "reduceRight",
+  "forEach",
+  "some",
+  "every",
+  "find",
+  "findIndex",
+  "findLast",
+  "findLastIndex",
+  "sort",
+  "toSorted",
+]);
+
+const logicalOperators = new Set([
+  ts.SyntaxKind.AmpersandAmpersandToken,
+  ts.SyntaxKind.BarBarToken,
+  ts.SyntaxKind.QuestionQuestionToken,
+  ts.SyntaxKind.AmpersandAmpersandEqualsToken,
+  ts.SyntaxKind.BarBarEqualsToken,
+  ts.SyntaxKind.QuestionQuestionEqualsToken,
+]);
+
+const arithmeticOperators = new Set([
+  ts.SyntaxKind.PlusToken,
+  ts.SyntaxKind.MinusToken,
+  ts.SyntaxKind.AsteriskToken,
+  ts.SyntaxKind.SlashToken,
+  ts.SyntaxKind.PercentToken,
+  ts.SyntaxKind.AsteriskAsteriskToken,
+  ts.SyntaxKind.PlusEqualsToken,
+  ts.SyntaxKind.MinusEqualsToken,
+  ts.SyntaxKind.AsteriskEqualsToken,
+  ts.SyntaxKind.SlashEqualsToken,
+  ts.SyntaxKind.PercentEqualsToken,
+  ts.SyntaxKind.AsteriskAsteriskEqualsToken,
+]);
+
+const decisionKinds = new Set([
+  ts.SyntaxKind.IfStatement,
+  ts.SyntaxKind.ConditionalExpression,
+  ts.SyntaxKind.SwitchStatement,
+  ts.SyntaxKind.ForStatement,
+  ts.SyntaxKind.ForInStatement,
+  ts.SyntaxKind.ForOfStatement,
+  ts.SyntaxKind.WhileStatement,
+  ts.SyntaxKind.DoStatement,
+  ts.SyntaxKind.TryStatement,
+]);
+
+// A literal, or arithmetic made only of literals (`5 * 60 * 1000`): a constant, not a computation.
+function isLiteral(node: ts.Expression): boolean {
+  if (ts.isParenthesizedExpression(node)) {
+    return isLiteral(node.expression);
+  }
+  if (ts.isBinaryExpression(node) && arithmeticOperators.has(node.operatorToken.kind)) {
+    return isLiteral(node.left) && isLiteral(node.right);
+  }
+  if (ts.isPrefixUnaryExpression(node) && node.operator === ts.SyntaxKind.MinusToken) {
+    return isLiteral(node.operand);
+  }
+  return ts.isNumericLiteral(node) || ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node);
+}
+
+function isLogicNode(node: ts.Node) {
+  if (decisionKinds.has(node.kind)) {
+    return true;
+  }
+  if (ts.isBinaryExpression(node)) {
+    const operator = node.operatorToken.kind;
+    if (logicalOperators.has(operator)) {
+      return true;
+    }
+    return arithmeticOperators.has(operator) && !(isLiteral(node.left) && isLiteral(node.right));
+  }
+  if (ts.isPrefixUnaryExpression(node) || ts.isPostfixUnaryExpression(node)) {
+    return node.operator === ts.SyntaxKind.PlusPlusToken || node.operator === ts.SyntaxKind.MinusMinusToken;
+  }
+  return (
+    ts.isCallExpression(node) &&
+    ts.isPropertyAccessExpression(node.expression) &&
+    iterationMethods.has(node.expression.name.text) &&
+    node.arguments.length > 0
+  );
+}
+
+// Decision 8's criterion: a decision point, arithmetic on non-literal operands, or an iteration
+// callback. Types emit no code, so they are never searched.
+function hasLogic(source: ts.SourceFile) {
+  function visit(node: ts.Node): boolean {
+    if (ts.isTypeNode(node) || ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) {
+      return false;
+    }
+    return isLogicNode(node) || (ts.forEachChild(node, visit) ?? false);
+  }
+  return visit(source);
+}
+
+function isModuleFile(srcDir: string, filePath: string) {
+  const relative = toRelative(srcDir, filePath);
+  if (!relative.endsWith(".ts") || relative.startsWith("test/")) {
+    return false;
+  }
+  // MSW handler factories are test support (decision 3), exercised by every test that uses them.
+  return !/\.(test|d|handlers)\.ts$/.test(relative);
+}
+
+function hasSiblingTest(filePath: string) {
+  const base = filePath.replace(/\.ts$/, "");
+  return existsSync(`${base}.test.ts`) || existsSync(`${base}.test.tsx`);
+}
+
+/** Logic modules under `srcDir` that lack a sibling `.test.ts(x)`, relative to `srcDir`. */
+export function findMissingTests(srcDir: string): string[] {
+  return listFiles(srcDir)
+    .filter((filePath) => isModuleFile(srcDir, filePath))
+    .sort()
+    .filter((filePath) => !hasSiblingTest(filePath) && hasLogic(parse(filePath)))
+    .map((filePath) => toRelative(srcDir, filePath));
+}
+
 // An intrinsic element is a lowercase JSX tag (`div`, `span`, `svg`); fragments have no tag at all.
 function intrinsicElements(source: ts.SourceFile) {
   const tags = new Set<string>();
@@ -163,8 +288,15 @@ export function findContainersWithMarkup(srcDir: string): ContainerWithMarkup[] 
 
 function main() {
   const srcDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../src");
+  const missingTests = findMissingTests(srcDir);
   const missingStories = findMissingStories(srcDir);
   const containersWithMarkup = findContainersWithMarkup(srcDir);
+  if (missingTests.length > 0) {
+    console.error("Logic modules without a sibling .test.ts:");
+    for (const file of missingTests) {
+      console.error(`  src/${file}`);
+    }
+  }
   if (missingStories.length > 0) {
     console.error("Component files without a sibling .stories.tsx:");
     for (const file of missingStories) {
@@ -177,7 +309,7 @@ function main() {
       console.error(`  src/${file} (${elements.map((tag) => `<${tag}>`).join(", ")})`);
     }
   }
-  if (missingStories.length > 0 || containersWithMarkup.length > 0) {
+  if (missingTests.length > 0 || missingStories.length > 0 || containersWithMarkup.length > 0) {
     process.exitCode = 1;
   }
 }

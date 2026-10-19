@@ -3075,8 +3075,10 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] Test per decision-point kind, arithmetic, iteration callback; a type-only, a constant-only and a `*.handlers.ts` module exempt
-- [ ] Quick gate passes
+- [x] Test per decision-point kind, arithmetic, iteration callback; a type-only, a constant-only and a `*.handlers.ts` module exempt
+- [x] Quick gate passes
+
+Note: `src/test/**` is test support like `*.handlers.ts` and is skipped too (the coverage scope excludes it as well). Literal-only arithmetic (`5 * 60 * 1000`) is a constant, not logic. `+` counts as arithmetic even on strings, since the AST cannot tell them apart; template literals carry no operator. First report: `useFinancialTransactionService`, `buildPagedQuery`, `resolveErrorMessage`, `resolveSuccessMessage`, `useMemberColors`, `masks.ts` (T113).
 
 **Tests**: tooling
 **Gate**: quick
