@@ -3323,10 +3323,10 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] `TransactionsTab.test.tsx` green before and after the refactor: search, sort, page, open edit, duplicate, delete
-- [ ] ≤ 60 code lines before the main `return`
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `TransactionsTab.test.tsx` green before and after the refactor: search, sort, page, open edit, duplicate, delete
+- [x] ≤ 60 code lines before the main `return`
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: integration
 **Gate**: quick
