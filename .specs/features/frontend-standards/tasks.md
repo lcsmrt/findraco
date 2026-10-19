@@ -3123,8 +3123,10 @@ Done: unit + tooling 71 files / 762 tests → 77 / 811, none removed. Six module
 
 **Done when**:
 
-- [ ] `vitest run --coverage` reports per-file branches; components, stories, DTOs and types excluded
-- [ ] Quick gate passes
+- [x] `vitest run --coverage` reports per-file branches; components, stories, DTOs and types excluded
+- [x] Quick gate passes
+
+Choices: `thresholds.perFile` (the failure names the module, and a module with few branches cannot hide behind well-tested ones, so removing one case can fail the gate); measured on the `unit` project only (`vitest run --project=unit --coverage`; `tooling` covers no `src` file, and `storybook` would count helpers that stories run without asserting); `all: false`, because v8 reports a module no test loads as 0% branches even when it has none (barrels, `queryClient.ts`, `useDebounce`), while the sibling gate already makes every logic module load in its test. First run: 95.8% branches over 71 modules; five under 90% (T115). `coverage/` is git-ignored.
 
 **Tests**: tooling
 **Gate**: quick

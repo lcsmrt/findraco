@@ -63,6 +63,23 @@ export default defineConfig({
     // the whole run under one busy process per core, on a 4-core CI runner as on a workstation.
     // Vitest types `maxWorkers` as root-only, so the two pools cannot get different caps.
     maxWorkers: "25%",
+    // Branch coverage on logic only (decision 8): `.ts` modules, never components, stories or test
+    // support. Type-only and constant modules emit no branches, so they cannot move the number.
+    // Each module must reach the floor on its own, so the failure names it and a module with few
+    // branches cannot hide behind well-tested ones. Measured on the `unit` project only (`pnpm test`):
+    // a story renders components that run our helpers without asserting their results.
+    // Only modules a test loads are measured (`all: false`). The sibling gate already gives every
+    // logic module a test that loads it; v8 reports any module no test loads (a barrel, a
+    // `new QueryClient()`) as 0% branches even when it has none, which would demand tests of
+    // re-exports and libraries.
+    coverage: {
+      provider: "v8",
+      all: false,
+      include: ["src/**/*.ts"],
+      exclude: ["src/**/*.test.ts", "src/**/*.handlers.ts", "src/test/**", "src/**/*.d.ts"],
+      reporter: ["text"],
+      thresholds: { branches: 90, perFile: true },
+    },
     projects: [
       {
         extends: true,
