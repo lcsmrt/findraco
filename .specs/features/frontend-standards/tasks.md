@@ -2832,10 +2832,10 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] The report lists nothing in the area
-- [ ] Each story file covers variants, handled states, extreme content, mobile viewport when the layout changes
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] The report lists nothing in the area
+- [x] Each story file covers variants, handled states, extreme content, mobile viewport when the layout changes
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: story
 **Gate**: full

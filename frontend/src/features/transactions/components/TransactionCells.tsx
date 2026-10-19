@@ -71,6 +71,7 @@ function EditableDescriptionCell({
   return (
     <Input
       autoFocus
+      aria-label="Description"
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
@@ -115,6 +116,7 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
   return (
     <CurrencyInput
       autoFocus
+      aria-label="Amount"
       value={draft}
       onValueChange={setDraft}
       onBlur={commit}
@@ -204,6 +206,7 @@ export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
   return (
     <Input
       autoFocus
+      aria-label="Date"
       value={draft}
       placeholder="dd/mm/yyyy"
       onChange={(e) => setDraft(maskDate(e.target.value))}
@@ -305,7 +308,7 @@ function EditableParticipantsCell({
       >
         <ParticipantsSummary participants={transaction.participants} />
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-56 gap-1">
+      <PopoverContent align="start" className="w-56 gap-1" aria-label="Participants">
         {members.map((member) => (
           <label
             key={member.userId}
@@ -386,6 +389,7 @@ export function ActionsCell({
         size="icon"
         variant="ghost"
         className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
+        aria-label="Duplicate"
         onClick={() => onDuplicate(transaction)}
       >
         <CopyIcon className="h-4 w-4" />
@@ -395,6 +399,7 @@ export function ActionsCell({
         size="icon"
         variant="ghost"
         className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
+        aria-label="Edit"
         onClick={() => onEdit(transaction)}
       >
         <PencilIcon className="h-4 w-4" />
@@ -404,6 +409,7 @@ export function ActionsCell({
         size="icon"
         variant="ghost"
         className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
+        aria-label="Delete"
         disabled={isDeleting}
         onClick={() => onDelete(transaction)}
       >
