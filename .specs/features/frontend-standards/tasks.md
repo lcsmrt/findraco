@@ -3279,9 +3279,9 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] Test through MSW: edit opens, duplicate opens prefilled, delete single and series with each scope, cancel
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test through MSW: edit opens, duplicate opens prefilled, delete single and series with each scope, cancel
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick
