@@ -1795,6 +1795,8 @@ Notes: installed with `pnpm dlx shadcn@4.21.5 add toggle toggle-group`. With `"s
 
 Notes: the toggles are the recurrence mode and, in `AttributionFields`, "Attributed to" and "Split mode" (the existing Exact test already covered the split mode payload). `financialTransactionHandlers.createSeries` added for the series tests.
 
+Follow-up (production report, after T96): on mobile the "Someone else" option of "Attributed to" spilled over its button borders. Cause in the primitive: the full-width segmented pattern (`w-full flex-nowrap` group, `flex-1` items, used by four toggles) shrinks every item to an equal share of the row, and the size's `min-w-9` replaces flexbox's automatic floor at the content width, so a label wider than its share (89.5 px in a 90.7 px button with 20 px of padding, in the 288 px drawer of a 320 px phone) overflowed. `ToggleGroupItem` now ends its classes with `min-w-fit`: an item is never narrower than its label and the other items give up the space. Story `AttributionFields/MobileSomeoneElse` (mobile viewport, 288 px container) asserts each label fits inside its button's padding; it failed before the fix.
+
 **Tests**: integration
 **Gate**: quick
 **Commit**: `refactor(frontend): transaction form toggles use ToggleGroup`

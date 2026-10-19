@@ -37,7 +37,7 @@ function DemoForm({ attributionMode, splitMode, participants, members, onEdit }:
   const participantsArray = useFieldArray({ control, name: "participants" });
 
   return (
-    <form className="flex w-96 flex-col gap-4">
+    <form className="flex w-full max-w-96 flex-col gap-4">
       <AttributionFields
         control={control}
         participants={participantsArray}
@@ -47,6 +47,16 @@ function DemoForm({ attributionMode, splitMode, participants, members, onEdit }:
       />
     </form>
   );
+}
+
+// A centred label wider than its button spills over both borders, and `scrollWidth` does not see a
+// spill to the left, so compare the label's own width with the space inside the padding.
+function labelFits(button: HTMLElement) {
+  const label = document.createRange();
+  label.selectNodeContents(button);
+  const { paddingLeft, paddingRight } = getComputedStyle(button);
+  const room = button.clientWidth - parseFloat(paddingLeft) - parseFloat(paddingRight);
+  return label.getBoundingClientRect().width <= room;
 }
 
 function asParticipant(person: PlanMember, shareAmount: number | null = null) {
@@ -119,5 +129,23 @@ export const ManyMembers: Story = {
     splitMode: "EXACT",
     participants: manyMembers.map((person) => asParticipant(person, 16.67)),
     members: manyMembers,
+  },
+};
+
+export const MobileSomeoneElse: Story = {
+  args: { attributionMode: "SOMEONE", participants: [asParticipant(bia)] },
+  globals: { viewport: { value: "mobile1" } },
+  // The drawer's content on a 320 px phone: the screen minus its 16 px side padding.
+  decorators: [
+    (Story) => (
+      <div className="w-72">
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    for (const name of ["Me", "Someone else", "Split"]) {
+      await expect(labelFits(canvas.getByRole("button", { name })), name).toBe(true);
+    }
   },
 };
