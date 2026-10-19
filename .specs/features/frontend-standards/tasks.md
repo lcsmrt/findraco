@@ -3050,8 +3050,8 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] Deleting a story fails `pnpm test` naming the component (checked, reverted)
-- [ ] Full gate passes
+- [x] Deleting a story fails `pnpm test` naming the component (checked, reverted)
+- [x] Full gate passes
 
 **Tests**: tooling
 **Gate**: full
