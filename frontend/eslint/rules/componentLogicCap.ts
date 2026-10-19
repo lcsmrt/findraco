@@ -73,9 +73,13 @@ export const componentLogicCap: Rule.RuleModule = {
       return lines.size;
     }
 
+    // In a .tsx file the PascalCase name alone marks a component, so one that gets its JSX from a
+    // render helper defined outside it (`return renderSummary(data);`) cannot escape the cap.
+    const isTsx = context.filename.endsWith(".tsx");
+
     function exit(node: FunctionNode & Rule.NodeParentExtension) {
       const frame = frames.pop();
-      if (!frame?.containsJsx || node.body.type !== "BlockStatement") return;
+      if (!frame || (!frame.containsJsx && !isTsx) || node.body.type !== "BlockStatement") return;
       const name = componentName(node);
       if (!name || !PASCAL_CASE.test(name)) return;
 

@@ -118,8 +118,8 @@ A large JSX tree is fine. There is no file-size cap: a file with many small JSX 
 ## The logic cap: 60 lines before the main `return`
 
 A component (a PascalCase function, or a function assigned to a PascalCase name including inside
-`memo(...)`, with JSX anywhere in its body, so returning it through a variable or a local render
-helper counts too) may have **at most 60 lines of code from the start of its body to its
+`memo(...)`; in a `.tsx` file the name alone is enough, so getting the JSX from a variable or a
+render helper, local or module-level, never escapes the cap) may have **at most 60 lines of code from the start of its body to its
 main `return`**. Enforced by lint `local/component-logic-cap`; the limit is hard and the same for
 everyone.
 

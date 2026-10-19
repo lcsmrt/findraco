@@ -33,6 +33,11 @@ function returnsCall(body: string): string {
   return `function Summary() {\n  function renderContent() {\n    return <span />;\n  }\n${body}\n  return renderContent();\n}`;
 }
 
+/** A component whose JSX comes from a render helper defined outside it, so its own body has none. */
+function returnsModuleHelper(body: string): string {
+  return `function renderSummary() {\n  return <span />;\n}\nfunction Summary() {\n${body}\n  return renderSummary();\n}`;
+}
+
 /** A component whose only JSX is a fragment. */
 function returnsFragment(body: string): string {
   return `function Summary() {\n${body}\n  return <>{v0}</>;\n}`;
@@ -50,7 +55,7 @@ ruleTester.run("local/component-logic-cap (STD-12 AC 3, 5)", componentLogicCap, 
       code: component("buildSummary", logic(80)),
     },
     {
-      name: "a PascalCase function that returns no JSX",
+      name: "a PascalCase function that returns no JSX, outside a .tsx file",
       code: `function Summary() {\n${logic(80)}\n  return null;\n}`,
     },
     {
@@ -77,8 +82,18 @@ ruleTester.run("local/component-logic-cap (STD-12 AC 3, 5)", componentLogicCap, 
       code: returnsFragment(logic(60)),
     },
     {
-      name: "a PascalCase function returning a call, with no JSX anywhere",
+      name: "a PascalCase function returning a call, with no JSX anywhere, outside a .tsx file",
       code: `function Summary() {\n${logic(80)}\n  return build();\n}`,
+    },
+    {
+      name: "a component returning a module-level render helper at 60 lines, in a .tsx file",
+      code: returnsModuleHelper(logic(60)),
+      filename: "Summary.tsx",
+    },
+    {
+      name: "a non-component function over 60 lines, in a .tsx file",
+      code: `function buildSummary() {\n${logic(80)}\n  return null;\n}`,
+      filename: "Summary.tsx",
     },
     {
       name: "the max is an option",
@@ -87,6 +102,18 @@ ruleTester.run("local/component-logic-cap (STD-12 AC 3, 5)", componentLogicCap, 
     },
   ],
   invalid: [
+    {
+      name: "a component returning a module-level render helper at 61 lines, in a .tsx file",
+      code: returnsModuleHelper(logic(61)),
+      filename: "Summary.tsx",
+      errors: tooLong("Summary", 61),
+    },
+    {
+      name: "a PascalCase function that returns no JSX, in a .tsx file",
+      code: `function Summary() {\n${logic(61)}\n  return null;\n}`,
+      filename: "Summary.tsx",
+      errors: tooLong("Summary", 61),
+    },
     {
       name: "a component whose only JSX is a fragment, at 61 lines",
       code: returnsFragment(logic(61)),
