@@ -1,15 +1,8 @@
-import { Button } from "@/components/button/base/Button";
 import { useTheme } from "@/app/providers/useTheme";
-import { Moon, Sun } from "lucide-react";
+import { ThemeToggleView } from "./ThemeToggleView";
 
 export function ThemeToggle() {
   const { toggleTheme } = useTheme();
 
-  return (
-    <Button variant="ghost" size="icon" onClick={toggleTheme}>
-      <Moon className="dark:hidden" />
-      <Sun className="hidden dark:block" />
-      <span className="sr-only">Toggle theme</span>
-    </Button>
-  );
+  return <ThemeToggleView onToggle={toggleTheme} />;
 }
