@@ -4,21 +4,21 @@ import { DashboardFilter, DashboardSummaryResponse, MonthlyTrend } from "../dtos
 import { QueryOptions } from "../types/queryOptions";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 
-const getDashboardSummary = async (
+async function getDashboardSummary(
   planId: number,
   params: DashboardFilter,
-): Promise<DashboardSummaryResponse> => {
+): Promise<DashboardSummaryResponse> {
   const { data } = await findracoApi.get<DashboardSummaryResponse>(
     `/plan/${planId}/dashboard`,
     { params },
   );
   return data;
-};
+}
 
-export const useGetDashboardSummary = (
+export function useGetDashboardSummary(
   params: DashboardFilter,
   options?: QueryOptions<DashboardSummaryResponse>,
-) => {
+) {
   const { activePlanId } = usePlanContext();
   return useQuery({
     queryFn: () => getDashboardSummary(activePlanId!, params),
@@ -26,24 +26,24 @@ export const useGetDashboardSummary = (
     ...options,
     enabled: activePlanId != null && (options?.enabled ?? true),
   });
-};
+}
 
-const getDashboardTrend = async (
+async function getDashboardTrend(
   planId: number,
   params: DashboardFilter,
-): Promise<MonthlyTrend[]> => {
+): Promise<MonthlyTrend[]> {
   const { data } = await findracoApi.get<MonthlyTrend[]>(
     `/plan/${planId}/dashboard/trend`,
     { params },
   );
   return data;
-};
+}
 
 /** Income and expenses per month for a range and optional member (UX-05 AC 7). */
-export const useGetDashboardTrend = (
+export function useGetDashboardTrend(
   params: DashboardFilter,
   options?: QueryOptions<MonthlyTrend[]>,
-) => {
+) {
   const { activePlanId } = usePlanContext();
   return useQuery({
     queryFn: () => getDashboardTrend(activePlanId!, params),
@@ -51,4 +51,4 @@ export const useGetDashboardTrend = (
     ...options,
     enabled: activePlanId != null && (options?.enabled ?? true),
   });
-};
+}

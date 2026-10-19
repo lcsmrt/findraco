@@ -14,10 +14,10 @@ type ResolveErrorMessageParams = {
 /**
  * Resolves an error message from various error types or returns a fallback message if none is found.
  */
-export const resolveErrorMessage = ({
+export function resolveErrorMessage({
   error,
   fallbackMessage,
-}: ResolveErrorMessageParams) => {
+}: ResolveErrorMessageParams) {
   let message: string | string[] | undefined;
 
   if (error instanceof AxiosError) {
@@ -31,4 +31,4 @@ export const resolveErrorMessage = ({
   }
 
   return message || fallbackMessage || "An unexpected error occurred.";
-};
+}

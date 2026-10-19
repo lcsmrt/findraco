@@ -11,7 +11,7 @@ import { useTheme } from "@/app/providers/useTheme";
 import { typographyVariants } from "@/components/typography/base/typographyVariants";
 import { cn } from "@/lib/mergeClasses";
 
-const Toaster = ({ ...props }: ToasterProps) => {
+function Toaster({ ...props }: ToasterProps) {
   const { theme } = useTheme();
 
   return (
@@ -67,6 +67,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
       {...props}
     />
   );
-};
+}
 
 export { Toaster };

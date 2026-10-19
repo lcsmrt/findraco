@@ -6,12 +6,12 @@ type TanStackQueryProviderProps = {
   children: ReactNode;
 };
 
-export const TanStackQueryProvider = ({
+export function TanStackQueryProvider({
   children,
-}: TanStackQueryProviderProps) => {
+}: TanStackQueryProviderProps) {
   return (
     <QueryClientProvider client={tanStackQueryClient}>
       {children}
     </QueryClientProvider>
   );
-};
+}

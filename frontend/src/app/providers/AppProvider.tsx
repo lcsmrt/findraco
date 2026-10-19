@@ -12,7 +12,7 @@ type AppProviderProps = {
   children: ReactNode;
 };
 
-export const AppProvider = ({ children }: AppProviderProps) => {
+export function AppProvider({ children }: AppProviderProps) {
   return (
     <BrowserRouter>
       <TanStackQueryProvider>
@@ -32,4 +32,4 @@ export const AppProvider = ({ children }: AppProviderProps) => {
       </TanStackQueryProvider>
     </BrowserRouter>
   );
-};
+}

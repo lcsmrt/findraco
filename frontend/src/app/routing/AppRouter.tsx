@@ -12,7 +12,7 @@ import { AcceptInvitationPage } from "@/features/plans/AcceptInvitationPage";
 import { ForgotPassword } from "@/features/auth/ForgotPasswordPage";
 import { ResetPassword } from "@/features/auth/ResetPasswordPage";
 
-export const AppRouter = () => {
+export function AppRouter() {
   return (
     <Routes>
       <Route element={<AuthLayout />}>
@@ -36,4 +36,4 @@ export const AppRouter = () => {
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
-};
+}

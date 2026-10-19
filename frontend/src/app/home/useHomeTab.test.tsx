@@ -12,26 +12,29 @@ let hook: ReturnType<typeof useHomeTab>;
 let location: Location;
 let navigate: ReturnType<typeof useNavigate>;
 
-const Probe = () => {
+function Probe() {
   location = useLocation();
   navigate = useNavigate();
   hook = useHomeTab();
   return null;
-};
+}
 
 /** Renders the hook at `initial`, with `/other` as the previous history entry. */
-const setup = (initial: string) => {
+function setup(initial: string) {
   render(
     <MemoryRouter initialEntries={["/other", initial]} initialIndex={1}>
       <Probe />
     </MemoryRouter>,
   );
-};
+}
 
-const currentParams = () =>
-  Object.fromEntries(new URLSearchParams(location.search));
+function currentParams() {
+  return Object.fromEntries(new URLSearchParams(location.search));
+}
 
-const goBack = () => act(async () => navigate(-1));
+function goBack() {
+  return act(async () => navigate(-1));
+}
 
 afterEach(cleanup);
 

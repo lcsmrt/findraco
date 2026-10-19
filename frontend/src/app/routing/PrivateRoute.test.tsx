@@ -8,8 +8,8 @@ vi.mock("@/app/providers/useAuth", () => ({ useAuth: vi.fn() }));
 
 const retry = vi.fn();
 
-const mockStatus = (status: AuthStatus) =>
-  vi.mocked(useAuth).mockReturnValue({
+function mockStatus(status: AuthStatus) {
+  return vi.mocked(useAuth).mockReturnValue({
     user: null,
     setUser: vi.fn(),
     status,
@@ -18,14 +18,15 @@ const mockStatus = (status: AuthStatus) =>
     retry,
     announceSessionExpiry: vi.fn(),
   });
+}
 
-const LoginProbe = () => {
+function LoginProbe() {
   const location = useLocation();
   return <div data-testid="login">{JSON.stringify(location.state)}</div>;
-};
+}
 
-const renderRoute = () =>
-  render(
+function renderRoute() {
+  return render(
     <MemoryRouter initialEntries={["/plans?tab=members"]}>
       <Routes>
         <Route path="/login" element={<LoginProbe />} />
@@ -35,6 +36,7 @@ const renderRoute = () =>
       </Routes>
     </MemoryRouter>,
   );
+}
 
 afterEach(() => {
   cleanup();

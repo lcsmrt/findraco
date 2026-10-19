@@ -18,11 +18,11 @@ const PROTECTED_URLS = ["/plans", "/categories", "/transactions"];
 const API_PATH = "/api/findraco";
 
 function deferred(): Deferred {
-  let resolve: () => void = () => {};
-  const promise = new Promise<void>((settle) => {
-    resolve = settle;
+  let settle: (() => void) | undefined;
+  const promise = new Promise<void>((resolve) => {
+    settle = resolve;
   });
-  return { promise, resolve };
+  return { promise, resolve: () => settle?.() };
 }
 
 /** Protected routes accept only "Bearer new-token" (or nothing, when `acceptRenewedToken` is false). */

@@ -54,8 +54,8 @@ const requestConfig: InternalAxiosRequestConfig = {
   headers: new AxiosHeaders(),
 };
 
-const unauthorizedError = () =>
-  new AxiosError(
+function unauthorizedError() {
+  return new AxiosError(
     "Unauthorized",
     AxiosError.ERR_BAD_REQUEST,
     requestConfig,
@@ -68,34 +68,38 @@ const unauthorizedError = () =>
       config: requestConfig,
     },
   );
+}
 
-const networkError = () =>
-  new AxiosError("Network Error", AxiosError.ERR_NETWORK, requestConfig, null);
+function networkError() {
+  return new AxiosError("Network Error", AxiosError.ERR_NETWORK, requestConfig, null);
+}
 
-const expireHandler = () => {
+function expireHandler() {
   const handler = vi.mocked(setSessionExpiredHandler).mock.lastCall?.[0];
   if (!handler) throw new Error("No session-expired handler registered");
   return handler;
-};
+}
 
-const renewSucceeds = () =>
-  mockedRenewSession.mockImplementation(async () => {
+function renewSucceeds() {
+  return mockedRenewSession.mockImplementation(async () => {
     setAccessToken("renewed-token");
     return "renewed-token";
   });
+}
 
 // Mirrors the real renewSession: a 401 renewal fires the handler, then rejects.
-const renewAnswers401 = () =>
-  mockedRenewSession.mockImplementation(async () => {
+function renewAnswers401() {
+  return mockedRenewSession.mockImplementation(async () => {
     expireHandler()();
     throw unauthorizedError();
   });
+}
 
 let auth: ReturnType<typeof useAuth>;
 let currentLocation: Location;
 let navigateTo: NavigateFunction;
 
-const Probe = () => {
+function Probe() {
   auth = useAuth();
   currentLocation = useLocation();
   navigateTo = useNavigate();
@@ -105,30 +109,35 @@ const Probe = () => {
       <div data-testid="user">{auth.user?.name ?? ""}</div>
     </>
   );
-};
+}
 
-const createQueryClient = () =>
-  new QueryClient({ defaultOptions: { queries: { retry: false } } });
+function createQueryClient() {
+  return new QueryClient({ defaultOptions: { queries: { retry: false } } });
+}
 
-const renderProvider = (
+function renderProvider(
   initialEntry = "/plans?tab=members",
   queryClient = createQueryClient(),
-) => {
+) {
 
-  const Wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[initialEntry]}>
-        <AuthProvider>{children}</AuthProvider>
-      </MemoryRouter>
-    </QueryClientProvider>
-  );
+  function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[initialEntry]}>
+          <AuthProvider>{children}</AuthProvider>
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+  }
 
   render(<Probe />, { wrapper: Wrapper });
 
   return { queryClient };
-};
+}
 
-const status = () => screen.getByTestId("status").textContent;
+function status() {
+  return screen.getByTestId("status").textContent;
+}
 
 beforeEach(() => {
   localStorage.clear();
@@ -212,7 +221,7 @@ describe("AuthProvider start-up", () => {
 });
 
 describe("AuthProvider session end", () => {
-  const renderAuthenticated = async () => {
+  async function renderAuthenticated() {
     localStorage.setItem("hasSession", "true");
     localStorage.setItem("activePlanId", "10");
     renewSucceeds();
@@ -220,7 +229,7 @@ describe("AuthProvider session end", () => {
     await waitFor(() => expect(status()).toBe("authenticated"));
     rendered.queryClient.setQueryData(["plans"], [{ id: 10 }]);
     return rendered;
-  };
+  }
 
   it("clears the session and sends the user to /login with the current location when it expires", async () => {
     const { queryClient } = await renderAuthenticated();
@@ -285,8 +294,8 @@ describe("AuthProvider signIn", () => {
 });
 
 describe("AuthProvider with PrivateRoute", () => {
-  const renderApp = (initialEntry: string) =>
-    render(
+  function renderApp(initialEntry: string) {
+    return render(
       <QueryClientProvider client={createQueryClient()}>
         <MemoryRouter initialEntries={[initialEntry]}>
           <AuthProvider>
@@ -302,6 +311,7 @@ describe("AuthProvider with PrivateRoute", () => {
         </MemoryRouter>
       </QueryClientProvider>,
     );
+  }
 
   it("takes the user from a private page to /login with one expiry toast when the session expired at start-up", async () => {
     localStorage.setItem("hasSession", "true");

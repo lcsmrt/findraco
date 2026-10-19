@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { PATHS } from "./paths";
 
-export const PrivateRoute = () => {
+export function PrivateRoute() {
   const location = useLocation();
   const { status, retry, announceSessionExpiry } = useAuth();
 
@@ -38,4 +38,4 @@ export const PrivateRoute = () => {
   }
 
   return <Outlet />;
-};
+}

@@ -14,31 +14,33 @@ export const findracoApi = axios.create({
   withCredentials: true,
 });
 
-let onSessionExpired: () => void = () => {};
+let onSessionExpired: (() => void) | undefined;
 
-const isUnauthorized = (error: unknown): boolean =>
-  axios.isAxiosError(error) && error.response?.status === 401;
+function isUnauthorized(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 401;
+}
 
 /**
  * Registers what to do when the session can no longer be renewed.
  * @param handler Called once per failed renewal.
  */
-export const setSessionExpiredHandler = (handler: () => void): void => {
+export function setSessionExpiredHandler(handler: () => void): void {
   onSessionExpired = handler;
-};
+}
 
-const requestNewAccessToken = async (): Promise<string> => {
+async function requestNewAccessToken(): Promise<string> {
   const { data } = await findracoApi.post<LoginResponse>("/auth/refresh");
   setAccessToken(data.token);
   return data.token;
-};
+}
 
 // Tabs share the cookie jar: the Web Lock makes them rotate the session token
 // one after another. Browsers without the API rely on the server's grace window.
-const requestNewAccessTokenExclusively = (): Promise<string> =>
-  navigator.locks
+function requestNewAccessTokenExclusively(): Promise<string> {
+  return navigator.locks
     ? navigator.locks.request(SESSION_RENEWAL_LOCK, requestNewAccessToken)
     : requestNewAccessToken();
+}
 
 let pendingRenewal: Promise<string> | null = null;
 
@@ -47,11 +49,11 @@ let pendingRenewal: Promise<string> | null = null;
  * callers share one request; a 401 answer fires the session-expired handler once.
  * @returns The new access token.
  */
-export const renewSession = (): Promise<string> => {
+export function renewSession(): Promise<string> {
   pendingRenewal ??= requestNewAccessTokenExclusively()
     .catch((error: unknown) => {
       if (isUnauthorized(error)) {
-        onSessionExpired();
+        onSessionExpired?.();
       }
       throw error;
     })
@@ -60,7 +62,7 @@ export const renewSession = (): Promise<string> => {
     });
 
   return pendingRenewal;
-};
+}
 
 findracoApi.interceptors.request.use(
   (config) => {

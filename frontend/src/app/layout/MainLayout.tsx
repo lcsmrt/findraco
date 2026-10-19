@@ -1,7 +1,7 @@
 import { Outlet } from "react-router-dom";
 import { Navbar } from "./Navbar";
 
-export const MainLayout = () => {
+export function MainLayout() {
   return (
     <div className="flex min-h-dvh flex-col overflow-x-hidden">
       <header>
@@ -12,4 +12,4 @@ export const MainLayout = () => {
       </main>
     </div>
   );
-};
+}

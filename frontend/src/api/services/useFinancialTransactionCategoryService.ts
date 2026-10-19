@@ -24,24 +24,24 @@ import { buildMutationOptions } from "../utils/buildMutationOptions";
 import { buildPagedQuery } from "../utils/buildPagedQuery";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 
-const getFinancialTransactionCategories = async (
+async function getFinancialTransactionCategories(
   planId: number,
   params?: PagedRequest<PagedFinancialTransactionCategoriesFilter, FinancialTransactionCategorySortBy>,
-): Promise<PagedResponse<FinancialTransactionCategory>> => {
+): Promise<PagedResponse<FinancialTransactionCategory>> {
   const query = buildPagedQuery(params);
   const { data } = await findracoApi.get(
     `/plan/${planId}/financial-transaction-category?${query}`,
   );
   return data;
-};
+}
 
 /** Page size large enough to hold every category of a plan (≈25 in practice). */
 export const ALL_CATEGORIES_PAGE_SIZE = 100;
 
-export const useGetFinancialTransactionCategories = (
+export function useGetFinancialTransactionCategories(
   params?: PagedRequest<PagedFinancialTransactionCategoriesFilter, FinancialTransactionCategorySortBy>,
   options?: QueryOptions<PagedResponse<FinancialTransactionCategory>>,
-) => {
+) {
   const { activePlanId } = usePlanContext();
   return useQuery({
     queryFn: () => getFinancialTransactionCategories(activePlanId!, params),
@@ -49,23 +49,23 @@ export const useGetFinancialTransactionCategories = (
     ...options,
     enabled: activePlanId != null && (options?.enabled ?? true),
   });
-};
+}
 
-const getCategorySpending = async (
+async function getCategorySpending(
   planId: number,
   params: CategorySpendingFilter,
-): Promise<CategorySpending[]> => {
+): Promise<CategorySpending[]> {
   const { data } = await findracoApi.get<CategorySpending[]>(
     `/plan/${planId}/financial-transaction-category/spending`,
     { params },
   );
   return data;
-};
+}
 
-export const useGetCategorySpending = (
+export function useGetCategorySpending(
   params: CategorySpendingFilter,
   options?: QueryOptions<CategorySpending[]>,
-) => {
+) {
   const { activePlanId } = usePlanContext();
   return useQuery({
     queryFn: () => getCategorySpending(activePlanId!, params),
@@ -73,33 +73,34 @@ export const useGetCategorySpending = (
     ...options,
     enabled: activePlanId != null && (options?.enabled ?? true),
   });
-};
+}
 
 /** Every category mutation changes the category list, the spending tree and the dashboard breakdown. */
-const invalidateCategoryViews = (queryClient: QueryClient) => {
+function invalidateCategoryViews(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: ["financialTransactionCategories"] });
   queryClient.invalidateQueries({ queryKey: ["categorySpending"] });
   queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
   queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
-};
+}
 
-const getCategoryUsage = async (
+async function getCategoryUsage(
   planId: number,
   id: number,
-): Promise<CategoryUsage> => {
+): Promise<CategoryUsage> {
   const { data } = await findracoApi.get<CategoryUsage>(
     `/plan/${planId}/financial-transaction-category/${id}/usage`,
   );
   return data;
-};
+}
 
-export const categoryUsageKey = (planId: number | null, id: number | null) =>
-  ["categoryUsage", planId, id] as const;
+export function categoryUsageKey(planId: number | null, id: number | null) {
+  return ["categoryUsage", planId, id] as const;
+}
 
-export const useGetCategoryUsage = (
+export function useGetCategoryUsage(
   id: number | null,
   options?: QueryOptions<CategoryUsage>,
-) => {
+) {
   const { activePlanId } = usePlanContext();
   return useQuery({
     queryFn: () => getCategoryUsage(activePlanId!, id!),
@@ -107,29 +108,31 @@ export const useGetCategoryUsage = (
     ...options,
     enabled: activePlanId != null && id != null && (options?.enabled ?? true),
   });
-};
+}
 
-const getFinancialTransactionCategory = async (
+async function getFinancialTransactionCategory(
   planId: number,
   id: number,
-): Promise<FinancialTransactionCategory> => {
+): Promise<FinancialTransactionCategory> {
   const { data } = await findracoApi.get(
     `/plan/${planId}/financial-transaction-category/${id}`,
   );
   return data;
-};
+}
 
 const CATEGORY_STALE_TIME_MS = 5 * 60 * 1000;
 
-export const financialTransactionCategoryKey = (
+export function financialTransactionCategoryKey(
   planId: number | null,
   id: number | null,
-) => ["financialTransactionCategory", planId, id] as const;
+) {
+  return ["financialTransactionCategory", planId, id] as const;
+}
 
-export const useGetFinancialTransactionCategory = (
+export function useGetFinancialTransactionCategory(
   id: number | null,
   options?: QueryOptions<FinancialTransactionCategory>,
-) => {
+) {
   const { activePlanId } = usePlanContext();
   return useQuery({
     queryFn: () => getFinancialTransactionCategory(activePlanId!, id!),
@@ -139,25 +142,25 @@ export const useGetFinancialTransactionCategory = (
     ...options,
     enabled: activePlanId != null && id != null && (options?.enabled ?? true),
   });
-};
+}
 
-const createFinancialTransactionCategory = async (
+async function createFinancialTransactionCategory(
   planId: number,
   payload: CreateFinancialTransactionCategoryRequest,
-): Promise<FinancialTransactionCategory> => {
+): Promise<FinancialTransactionCategory> {
   const { data } = await findracoApi.post(
     `/plan/${planId}/financial-transaction-category`,
     payload.body,
   );
   return data;
-};
+}
 
-export const useCreateFinancialTransactionCategory = (
+export function useCreateFinancialTransactionCategory(
   options?: MutationOptions<
     FinancialTransactionCategory,
     CreateFinancialTransactionCategoryRequest
   >,
-) => {
+) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
@@ -171,26 +174,26 @@ export const useCreateFinancialTransactionCategory = (
       },
     }),
   });
-};
+}
 
-const updateFinancialTransactionCategory = async (
+async function updateFinancialTransactionCategory(
   planId: number,
   payload: UpdateFinancialTransactionCategoryRequest,
-): Promise<FinancialTransactionCategory> => {
+): Promise<FinancialTransactionCategory> {
   const { params, body } = payload;
   const { data } = await findracoApi.put(
     `/plan/${planId}/financial-transaction-category/${params.id}`,
     body,
   );
   return data;
-};
+}
 
-export const useUpdateFinancialTransactionCategory = (
+export function useUpdateFinancialTransactionCategory(
   options?: MutationOptions<
     FinancialTransactionCategory,
     UpdateFinancialTransactionCategoryRequest
   >,
-) => {
+) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
@@ -207,21 +210,21 @@ export const useUpdateFinancialTransactionCategory = (
       },
     }),
   });
-};
+}
 
-const deleteFinancialTransactionCategory = async (
+async function deleteFinancialTransactionCategory(
   planId: number,
   { id, reassignTo }: DeleteFinancialTransactionCategoryRequest,
-): Promise<void> => {
+): Promise<void> {
   await findracoApi.delete(
     `/plan/${planId}/financial-transaction-category/${id}`,
     reassignTo != null ? { params: { reassignTo } } : undefined,
   );
-};
+}
 
-export const useDeleteFinancialTransactionCategory = (
+export function useDeleteFinancialTransactionCategory(
   options?: MutationOptions<void, DeleteFinancialTransactionCategoryRequest>,
-) => {
+) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
@@ -242,4 +245,4 @@ export const useDeleteFinancialTransactionCategory = (
       },
     }),
   });
-};
+}

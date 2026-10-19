@@ -3,7 +3,7 @@ import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
 import { Text } from "@/components/typography/base/Text";
 import { Outlet } from "react-router-dom";
 
-export const AuthLayout = () => {
+export function AuthLayout() {
   return (
     <main className="bg-background relative flex min-h-dvh flex-col items-center justify-center gap-5 p-5">
       <div className="absolute top-3 right-3">
@@ -33,4 +33,4 @@ export const AuthLayout = () => {
       </footer>
     </main>
   );
-};
+}

@@ -13,7 +13,9 @@ import {
 } from "@/features/transactions/filters/transactionParams";
 import { parsePlanParam, parseTab, serializeTab } from "./homeParams";
 
-const params = (init: Record<string, string>) => new URLSearchParams(init);
+function params(init: Record<string, string>) {
+  return new URLSearchParams(init);
+}
 
 const DEFAULT_TRANSACTIONS: TransactionFilters = {
   filter: {},

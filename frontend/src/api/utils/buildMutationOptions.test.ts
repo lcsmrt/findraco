@@ -20,8 +20,8 @@ const requestConfig: InternalAxiosRequestConfig = {
   headers: new AxiosHeaders(),
 };
 
-const apiError = (status: number, message: string) =>
-  new AxiosError(
+function apiError(status: number, message: string) {
+  return new AxiosError(
     `Request failed with status code ${status}`,
     AxiosError.ERR_BAD_REQUEST,
     requestConfig,
@@ -34,6 +34,7 @@ const apiError = (status: number, message: string) =>
       config: requestConfig,
     },
   );
+}
 
 const mutationContext: MutationFunctionContext = {
   client: new QueryClient(),

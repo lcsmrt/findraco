@@ -13,7 +13,7 @@ import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { PlanSwitcher } from "@/features/plans/components/PlanSwitcher";
 
-export const Navbar = () => {
+export function Navbar() {
   const { user, signOut } = useAuth();
 
   return (
@@ -52,4 +52,4 @@ export const Navbar = () => {
       </div>
     </nav>
   );
-};
+}

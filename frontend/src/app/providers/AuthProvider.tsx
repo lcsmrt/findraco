@@ -26,7 +26,7 @@ type AuthProviderProps = {
   children: ReactNode;
 };
 
-export const AuthProvider = ({ children }: AuthProviderProps) => {
+export function AuthProvider({ children }: AuthProviderProps) {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const location = useLocation();
@@ -141,4 +141,4 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       {children}
     </AuthContext.Provider>
   );
-};
+}

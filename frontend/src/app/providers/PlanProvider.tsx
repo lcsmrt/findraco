@@ -8,7 +8,7 @@ import {
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { PlanContext } from "./usePlanContext";
 
-export const PlanProvider = ({ children }: { children: ReactNode }) => {
+export function PlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   const [activePlanId, setActivePlanIdState] = useState<number | null>(() =>
@@ -55,4 +55,4 @@ export const PlanProvider = ({ children }: { children: ReactNode }) => {
   return (
     <PlanContext.Provider value={value}>{children}</PlanContext.Provider>
   );
-};
+}

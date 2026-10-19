@@ -16,58 +16,58 @@ import {
  * @param params Login credentials.
  * @returns Login response with token.
  */
-const login = async (params: LoginRequest): Promise<LoginResponse> => {
+async function login(params: LoginRequest): Promise<LoginResponse> {
   const { body } = params;
   const { data } = await findracoApi.post("/auth/login", body);
   return data;
-};
+}
 
 /**
  * Hook for performing user login.
  */
-export const useLogin = (
+export function useLogin(
   options?: MutationOptions<LoginResponse, LoginRequest>,
-) => {
+) {
   return useMutation({
     mutationFn: login,
     ...buildMutationOptions({ showSuccessToast: false }, options),
   });
-};
+}
 
 /**
  * Ends the current device's session: the API revokes it and clears the
  * renewal cookie. Answers 204 whether or not a session was present.
  */
-export const logout = async (): Promise<void> => {
+export async function logout(): Promise<void> {
   await findracoApi.post("/auth/logout");
-};
+}
 
 /**
  * Fetches the authenticated user's profile.
  * @returns User data.
  */
-export const getUserProfile = async (): Promise<User> => {
+export async function getUserProfile(): Promise<User> {
   const { data } = await findracoApi.get("/user/me");
   return data;
-};
+}
 
 /**
  * Sends a user registration request.
  * @param params Registration data.
  * @returns Created user.
  */
-const registerUser = async (params: RegisterUserRequest): Promise<User> => {
+async function registerUser(params: RegisterUserRequest): Promise<User> {
   const { body } = params;
   const { data } = await findracoApi.post("/user", body);
   return data;
-};
+}
 
 /**
  * Hook for performing user registration.
  */
-export const useRegisterUser = (
+export function useRegisterUser(
   options?: MutationOptions<User, RegisterUserRequest>,
-) => {
+) {
   return useMutation({
     mutationFn: registerUser,
     ...buildMutationOptions(
@@ -75,76 +75,76 @@ export const useRegisterUser = (
       options,
     ),
   });
-};
+}
 
 /**
  * Requests a password reset link. The API answers the same whether or not the
  * account exists.
  * @param params Account email.
  */
-const forgotPassword = async (params: ForgotPasswordRequest): Promise<void> => {
+async function forgotPassword(params: ForgotPasswordRequest): Promise<void> {
   const { body } = params;
   await findracoApi.post("/auth/forgot-password", body);
-};
+}
 
 /**
  * Hook for requesting a password reset link.
  */
-export const useForgotPassword = (
+export function useForgotPassword(
   options?: MutationOptions<void, ForgotPasswordRequest>,
-) => {
+) {
   return useMutation({
     mutationFn: forgotPassword,
     ...buildMutationOptions({ showSuccessToast: false }, options),
   });
-};
+}
 
 /**
  * Checks whether a password reset token is still valid, without consuming it.
  * @param token Token from the emailed link.
  * @returns Validation verdict.
  */
-const validatePasswordResetToken = async (
+async function validatePasswordResetToken(
   token: string,
-): Promise<PasswordResetTokenValidationResponse> => {
+): Promise<PasswordResetTokenValidationResponse> {
   const { data } = await findracoApi.get("/auth/reset-password/validate", {
     params: { token },
   });
   return data;
-};
+}
 
 /**
  * Hook for validating a password reset token.
  */
-export const useValidatePasswordResetToken = (
+export function useValidatePasswordResetToken(
   token: string,
   options?: Omit<
     UseQueryOptions<PasswordResetTokenValidationResponse>,
     "queryKey"
   >,
-) => {
+) {
   return useQuery({
     queryFn: () => validatePasswordResetToken(token),
     queryKey: ["passwordResetToken", { token }],
     ...options,
   });
-};
+}
 
 /**
  * Sets a new password using a password reset token.
  * @param params Token and new password.
  */
-const resetPassword = async (params: ResetPasswordRequest): Promise<void> => {
+async function resetPassword(params: ResetPasswordRequest): Promise<void> {
   const { body } = params;
   await findracoApi.post("/auth/reset-password", body);
-};
+}
 
 /**
  * Hook for resetting the password.
  */
-export const useResetPassword = (
+export function useResetPassword(
   options?: MutationOptions<void, ResetPasswordRequest>,
-) => {
+) {
   return useMutation({
     mutationFn: resetPassword,
     ...buildMutationOptions(
@@ -152,4 +152,4 @@ export const useResetPassword = (
       options,
     ),
   });
-};
+}

@@ -30,7 +30,7 @@ type HomeFiltersGateProps = {
  *   keeping the URL filters;
  * - no home params or an unknown plan → redirect to the active plan's saved state.
  */
-export const HomeFiltersGate = ({ children }: HomeFiltersGateProps) => {
+export function HomeFiltersGate({ children }: HomeFiltersGateProps) {
   const { user } = useAuth();
   const { activePlanId, setActivePlanId, plans, isLoading } = usePlanContext();
   const [searchParams] = useSearchParams();
@@ -80,4 +80,4 @@ export const HomeFiltersGate = ({ children }: HomeFiltersGateProps) => {
   next.set(PLAN_PARAM, String(activePlanId));
 
   return <Navigate replace to={{ search: `?${next.toString()}` }} />;
-};
+}

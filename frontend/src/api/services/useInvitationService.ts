@@ -11,19 +11,19 @@ import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 
-const createInvitation = async (
+async function createInvitation(
   payload: CreateInvitationRequest,
-): Promise<Invitation> => {
+): Promise<Invitation> {
   const { data } = await findracoApi.post<Invitation>(
     `/plan/${payload.params.planId}/invitation`,
     payload.body,
   );
   return data;
-};
+}
 
-export const useCreateInvitation = (
+export function useCreateInvitation(
   options?: MutationOptions<Invitation, CreateInvitationRequest>,
-) => {
+) {
   return useMutation({
     mutationFn: createInvitation,
     ...buildMutationOptions(
@@ -31,21 +31,21 @@ export const useCreateInvitation = (
       options,
     ),
   });
-};
+}
 
-const getInvitationPreview = async (
+async function getInvitationPreview(
   token: string,
-): Promise<InvitationPreview> => {
+): Promise<InvitationPreview> {
   const { data } = await findracoApi.get<InvitationPreview>(
     `/invitation/${token}`,
   );
   return data;
-};
+}
 
-export const useGetInvitationPreview = (
+export function useGetInvitationPreview(
   token?: string,
   options?: QueryOptions<InvitationPreview>,
-) => {
+) {
   return useQuery({
     queryFn: () => getInvitationPreview(token!),
     queryKey: ["invitationPreview", token],
@@ -53,38 +53,38 @@ export const useGetInvitationPreview = (
     retry: false,
     ...options,
   });
-};
+}
 
-const getPlanInvitations = async (planId: number): Promise<Invitation[]> => {
+async function getPlanInvitations(planId: number): Promise<Invitation[]> {
   const { data } = await findracoApi.get<Invitation[]>(
     `/plan/${planId}/invitation`,
   );
   return data;
-};
+}
 
-export const useGetPlanInvitations = (
+export function useGetPlanInvitations(
   planId?: number,
   options?: QueryOptions<Invitation[]>,
-) => {
+) {
   return useQuery({
     queryFn: () => getPlanInvitations(planId!),
     queryKey: ["invitations", planId],
     enabled: planId != null,
     ...options,
   });
-};
+}
 
-const revokeInvitation = async (
+async function revokeInvitation(
   payload: RevokeInvitationRequest,
-): Promise<void> => {
+): Promise<void> {
   await findracoApi.delete(
     `/plan/${payload.params.planId}/invitation/${payload.params.invitationId}`,
   );
-};
+}
 
-export const useRevokeInvitation = (
+export function useRevokeInvitation(
   options?: MutationOptions<void, RevokeInvitationRequest>,
-) => {
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: revokeInvitation,
@@ -101,20 +101,20 @@ export const useRevokeInvitation = (
       },
     ),
   });
-};
+}
 
-const acceptInvitation = async (
+async function acceptInvitation(
   token: string,
-): Promise<AcceptInvitationResponse> => {
+): Promise<AcceptInvitationResponse> {
   const { data } = await findracoApi.post<AcceptInvitationResponse>(
     `/invitation/${token}/accept`,
   );
   return data;
-};
+}
 
-export const useAcceptInvitation = (
+export function useAcceptInvitation(
   options?: MutationOptions<AcceptInvitationResponse, string>,
-) => {
+) {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: acceptInvitation,
@@ -129,4 +129,4 @@ export const useAcceptInvitation = (
       },
     ),
   });
-};
+}

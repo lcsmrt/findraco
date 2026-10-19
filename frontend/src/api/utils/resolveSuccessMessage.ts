@@ -18,12 +18,12 @@ type ResolveSuccessMessageParams<TData, TVariables> = {
 /**
  * Resolves a success message from a static string, a dynamic function, or a fallback.
  */
-export const resolveSuccessMessage = <TData, TVariables>({
+export function resolveSuccessMessage<TData, TVariables>({
   message,
   data,
   variables,
   fallbackMessage,
-}: ResolveSuccessMessageParams<TData, TVariables>): string => {
+}: ResolveSuccessMessageParams<TData, TVariables>): string {
   if (typeof message === "function") return message(data, variables);
   return message ?? fallbackMessage ?? "";
-};
+}
