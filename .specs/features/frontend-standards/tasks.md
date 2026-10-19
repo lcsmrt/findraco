@@ -3410,10 +3410,12 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] One recorded request → `assertNone` throws naming it
-- [ ] A test that sends a request without a handler fails with the recorder's message naming method and URL; removing `assertNone()` from `setupUnit.ts` makes a test fail
-- [ ] M28 and M29 applied, run and killed (checked, reverted)
-- [ ] Quick gate passes
+- [x] One recorded request → `assertNone` throws naming it
+- [x] A test that sends a request without a handler fails with the recorder's message naming method and URL; removing `assertNone()` from `setupUnit.ts` makes a test fail
+- [x] M28 and M29 applied, run and killed (checked, reverted)
+- [x] Quick gate passes
+
+Done: unit + tooling 921 → 924 tests. `setupUnit.test.ts` sends a fetch no handler answers inside an `it.fails` test and captures its errors in `onTestFailed`, which runs after every `afterEach`; the next test asserts the exact guard message naming `GET` and the URL. Checked, reverted: M28 (`<= 1`) fails the single-request case and the setup test; M29 (no `assertNone()`) fails both setup tests ("Expect test to fail", empty failures).
 
 **Tests**: unit
 **Gate**: quick
