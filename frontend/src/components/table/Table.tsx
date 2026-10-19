@@ -40,7 +40,8 @@ export function TableRoot<T>({
 
     const expanderColumn: ColumnDef<T> = {
       id: "__expander",
-      header: () => null,
+      // A column header needs text for screen readers even when it shows nothing.
+      header: () => <span className="sr-only">Expand</span>,
       cell: ({ row }) => {
         if (!row.getCanExpand()) return null;
         return (
@@ -70,8 +71,10 @@ export function TableRoot<T>({
   });
 
   return (
+    // The wrapper scrolls sideways on narrow screens; focus lets keyboard users scroll it.
     <div
       id={tableId}
+      tabIndex={0}
       className={cn(
         "overflow-x-auto w-full max-w-full mx-auto",
         border === "none" && "border-none",

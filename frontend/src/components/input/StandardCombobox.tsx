@@ -119,6 +119,7 @@ export function StandardCombobox<T extends WithId>({
           <button
             type="button"
             tabIndex={-1}
+            aria-label="Clear selection"
             className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded"
             onClick={(e) => {
               e.stopPropagation();
@@ -130,7 +131,8 @@ export function StandardCombobox<T extends WithId>({
         )}
       </div>
 
-      <ComboboxContent anchor={anchor}>
+      {/* The popup is a dialog holding the search field and the list; it needs a name too. */}
+      <ComboboxContent anchor={anchor} aria-label={placeholder}>
         <ComboboxInput
           placeholder={searchPlaceholder}
           value={searchTerm}
@@ -160,7 +162,8 @@ export function StandardCombobox<T extends WithId>({
         ) : (
           <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
         )}
-        <ComboboxList>
+        {/* Every caller names the field through its placeholder, so the list reuses it. */}
+        <ComboboxList aria-label={placeholder}>
           {(item: T) => (
             <ComboboxItem key={String(item.id)} value={item}>
               {renderItem(item)}

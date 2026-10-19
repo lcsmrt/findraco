@@ -105,6 +105,9 @@ export function StandardMultiCombobox<T extends WithId>({
                 className,
               )}
               aria-disabled={disabled || undefined}
+              // The chips are a div, which a <label htmlFor> cannot name, so the field takes the
+              // name its placeholder gives it.
+              aria-label={placeholder}
             />
           }
         >
@@ -124,7 +127,8 @@ export function StandardMultiCombobox<T extends WithId>({
         </ComboboxTrigger>
       </div>
 
-      <ComboboxContent anchor={anchor}>
+      {/* The popup is a dialog holding the search field and the list; it needs a name too. */}
+      <ComboboxContent anchor={anchor} aria-label={placeholder}>
         <ComboboxInput
           placeholder={searchPlaceholder}
           value={searchTerm}
@@ -133,7 +137,8 @@ export function StandardMultiCombobox<T extends WithId>({
           disabled={disabled}
         />
         <ComboboxEmpty>{emptyMessage}</ComboboxEmpty>
-        <ComboboxList>
+        {/* Every caller names the field through its placeholder, so the list reuses it. */}
+        <ComboboxList aria-label={placeholder}>
           {(item: T) => (
             <ComboboxItem key={String(item.id)} value={item}>
               {itemLabel(item)}

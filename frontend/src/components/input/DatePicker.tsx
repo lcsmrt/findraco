@@ -118,7 +118,12 @@ export function DatePicker({
           </InputGroupAddon>
         )}
       </InputGroup>
-      <PopoverContent className="w-auto p-0" align="start" anchor={anchorRef}>
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        anchor={anchorRef}
+        aria-label="Choose a date"
+      >
         <Calendar
           mode="single"
           selected={value}
@@ -226,7 +231,12 @@ export function DateRangePicker({
           </InputGroupAddon>
         )}
       </InputGroup>
-      <PopoverContent className="w-auto p-0" align="start" anchor={anchorRef}>
+      <PopoverContent
+        className="w-auto p-0"
+        align="start"
+        anchor={anchorRef}
+        aria-label="Choose a period"
+      >
         <Calendar
           mode="range"
           selected={value}

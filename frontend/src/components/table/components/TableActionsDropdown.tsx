@@ -29,7 +29,9 @@ export function TableActionsDropdown<T>({ columnActions, row, subtle }: ColumnAc
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="hover:bg-muted-foreground/10 flex h-7 w-7 items-center justify-center rounded-full">
+      <DropdownMenuTrigger
+        aria-label="Row actions"
+        className="hover:bg-muted-foreground/10 flex h-7 w-7 items-center justify-center rounded-full">
         <EllipsisVertical
           className={cn(
             "inline-block h-4 w-4",
@@ -41,10 +43,7 @@ export function TableActionsDropdown<T>({ columnActions, row, subtle }: ColumnAc
         {filteredActions?.map((action, index) => (
           <DropdownMenuItem
             key={index}
-            onSelect={(e) => {
-              e.preventDefault();
-              action.onClick(row);
-            }}
+            onClick={() => action.onClick(row)}
           >
             <div className="flex w-full items-center gap-2 hover:cursor-pointer">
               {action.icon}
