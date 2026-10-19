@@ -95,6 +95,45 @@ describe("transactionFormSchema — recurring (create) validation", () => {
     expect(result.success).toBe(true);
   });
 
+  it("rejects a current installment below 1", () => {
+    const result = transactionFormSchema.safeParse({
+      ...baseValues,
+      recurrenceMode: "INSTALLMENT",
+      parcelsNumber: 12,
+      currentParcel: 0,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((i) => [i.path[0], i.message])).toEqual([
+      ["currentParcel", "The current installment must be at least 1"],
+    ]);
+  });
+
+  it("rejects a current installment beyond the total", () => {
+    const result = transactionFormSchema.safeParse({
+      ...baseValues,
+      recurrenceMode: "INSTALLMENT",
+      parcelsNumber: 12,
+      currentParcel: 13,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((i) => [i.path[0], i.message])).toEqual([
+      ["currentParcel", "The current installment cannot be greater than the total"],
+    ]);
+  });
+
+  it("accepts the last installment as the current one", () => {
+    const result = transactionFormSchema.safeParse({
+      ...baseValues,
+      recurrenceMode: "INSTALLMENT",
+      parcelsNumber: 12,
+      currentParcel: 12,
+    });
+
+    expect(result.success).toBe(true);
+  });
+
   it("accepts a recurring transaction with an empty end date (open-ended)", () => {
     const result = transactionFormSchema.safeParse({
       ...baseValues,

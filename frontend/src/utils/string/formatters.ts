@@ -33,5 +33,6 @@ export function getFirstAndLastInitials(name: string): string {
  * @returns The first name, or the trimmed input when it has a single word.
  */
 export function getFirstName(name: string): string {
-  return name.trim().split(/\s+/)[0] ?? name;
+  // `split` always returns at least one element, so the first is always there.
+  return name.trim().split(/\s+/)[0];
 }

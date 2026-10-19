@@ -129,4 +129,33 @@ describe("transaction filter draft mapping", () => {
     expect(fromDraft({ ...draft, amountMax: null }).filter).toEqual({ amountMin: 50 });
     expect(fromDraft({ ...draft, amountMin: null }).filter).toEqual({ amountMax: 200 });
   });
+
+  it("opens the applied date range as calendar days and applies it back as ISO dates", () => {
+    const draft = toDraft({
+      filter: { startDateFrom: "2026-10-01", startDateTo: "2026-10-31" },
+      categoryForDisplay: null,
+      memberForDisplay: null,
+    });
+
+    expect(draft.dateRange).toEqual({ from: new Date(2026, 9, 1), to: new Date(2026, 9, 31) });
+    expect(fromDraft(draft).filter).toEqual({ startDateFrom: "2026-10-01", startDateTo: "2026-10-31" });
+  });
+
+  it("keeps a range with only an end date, and one with only a start date", () => {
+    const untilEnd = toDraft({ filter: { startDateTo: "2026-10-31" }, categoryForDisplay: null, memberForDisplay: null });
+    const fromStart = toDraft({ filter: { startDateFrom: "2026-10-01" }, categoryForDisplay: null, memberForDisplay: null });
+
+    expect(untilEnd.dateRange).toEqual({ from: undefined, to: new Date(2026, 9, 31) });
+    expect(fromDraft(untilEnd).filter).toEqual({ startDateTo: "2026-10-31" });
+    expect(fromStart.dateRange).toEqual({ from: new Date(2026, 9, 1), to: undefined });
+    expect(fromDraft(fromStart).filter).toEqual({ startDateFrom: "2026-10-01" });
+  });
+
+  it("holds no range and the 'all' type when neither is applied, and applies neither", () => {
+    const draft = toDraft({ filter: {}, categoryForDisplay: null, memberForDisplay: null });
+
+    expect(draft.dateRange).toBeUndefined();
+    expect(draft.type).toBe("ALL");
+    expect(fromDraft(draft).filter).toEqual({});
+  });
 });

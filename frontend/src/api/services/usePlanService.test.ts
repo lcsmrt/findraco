@@ -238,3 +238,64 @@ describe("membership and lifecycle mutations", () => {
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
 });
+
+describe("plan mutations hand the result and the request to the caller's onSuccess", () => {
+  it("useUpdateMemberRole", async () => {
+    const member: PlanMember = { userId: 9, name: "Bob", email: "bob@example.com", role: "VIEWER" };
+    server.use(planHandlers.updateMemberRole(member));
+    const onSuccess = vi.fn();
+    const request = { params: { planId: 5, userId: 9 }, body: { role: "VIEWER" as const } };
+
+    const { result } = renderHookWithProviders(() => useUpdateMemberRole({ onSuccess }));
+    result.current.mutate(request);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(onSuccess).toHaveBeenCalledWith(member, request);
+  });
+
+  it("useRemoveMember", async () => {
+    server.use(planHandlers.removeMember());
+    const onSuccess = vi.fn();
+    const request = { params: { planId: 5, userId: 9 } };
+
+    const { result } = renderHookWithProviders(() => useRemoveMember({ onSuccess }));
+    result.current.mutate(request);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(onSuccess).toHaveBeenCalledWith(undefined, request);
+  });
+
+  it("useDeletePlan", async () => {
+    server.use(planHandlers.delete());
+    const onSuccess = vi.fn();
+
+    const { result } = renderHookWithProviders(() => useDeletePlan({ onSuccess }));
+    result.current.mutate(5);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(onSuccess).toHaveBeenCalledWith(undefined, 5);
+  });
+
+  it("useLeavePlan", async () => {
+    server.use(planHandlers.leave());
+    const onSuccess = vi.fn();
+
+    const { result } = renderHookWithProviders(() => useLeavePlan({ onSuccess }));
+    result.current.mutate(5);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(onSuccess).toHaveBeenCalledWith(undefined, 5);
+  });
+
+  it("useTransferOwnership", async () => {
+    server.use(planHandlers.transferOwnership());
+    const onSuccess = vi.fn();
+    const request = { params: { planId: 5 }, body: { newOwnerUserId: 9, previousOwnerRole: "EDITOR" as const } };
+
+    const { result } = renderHookWithProviders(() => useTransferOwnership({ onSuccess }));
+    result.current.mutate(request);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(onSuccess).toHaveBeenCalledWith(undefined, request);
+  });
+});

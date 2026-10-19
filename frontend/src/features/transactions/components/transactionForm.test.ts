@@ -219,6 +219,49 @@ describe("buildDefaultValues — plain transaction", () => {
   });
 });
 
+describe("buildDefaultValues — attribution of an existing transaction", () => {
+  it("opens a transaction attributed to another member as Someone else", () => {
+    const defaults = buildDefaultValues(
+      { ...baseTransaction, participants: [{ id: 8, name: "Livia", shareAmount: 150.5 }] },
+      99,
+    );
+
+    expect(defaults.attributionMode).toBe("SOMEONE");
+    expect(defaults.participants).toEqual([{ memberId: 8, memberName: "Livia", shareAmount: 150.5 }]);
+  });
+
+  it("opens a transaction attributed only to the current user as Me", () => {
+    const defaults = buildDefaultValues(
+      { ...baseTransaction, participants: [{ id: 99, name: "Lucas", shareAmount: 150.5 }] },
+      99,
+    );
+
+    expect(defaults.attributionMode).toBe("ME");
+    expect(defaults.participants).toEqual([]);
+  });
+
+  it("opens an exact split with its mode and each member's share", () => {
+    const defaults = buildDefaultValues(
+      {
+        ...baseTransaction,
+        splitMode: "EXACT",
+        participants: [
+          { id: 99, name: "Lucas", shareAmount: 100 },
+          { id: 8, name: "Livia", shareAmount: 50.5 },
+        ],
+      },
+      99,
+    );
+
+    expect(defaults.attributionMode).toBe("SPLIT");
+    expect(defaults.splitMode).toBe("EXACT");
+    expect(defaults.participants).toEqual([
+      { memberId: 99, memberName: "Lucas", shareAmount: 100 },
+      { memberId: 8, memberName: "Livia", shareAmount: 50.5 },
+    ]);
+  });
+});
+
 describe("toPayload — plain transaction", () => {
   it("maps form values into the create/update request body", () => {
     const body = toPayload(validValues, false, undefined);
@@ -233,6 +276,31 @@ describe("toPayload — plain transaction", () => {
       participants: undefined,
       items: [],
     });
+  });
+
+  it("sends no attribution for Me while the current user is unknown", () => {
+    const body = toPayload(validValues, true, undefined);
+
+    expect(body.participants).toBeUndefined();
+    expect(body.splitMode).toBeUndefined();
+  });
+
+  it("sends no attribution for Someone else before a member is picked", () => {
+    const body = toPayload({ ...validValues, attributionMode: "SOMEONE", participants: [] }, true, 7);
+
+    expect(body.participants).toBeUndefined();
+    expect(body.splitMode).toBeUndefined();
+  });
+
+  it("sends the picked member at 100% for Someone else", () => {
+    const body = toPayload(
+      { ...validValues, attributionMode: "SOMEONE", participants: [{ memberId: 8, memberName: "Livia", shareAmount: null }] },
+      true,
+      7,
+    );
+
+    expect(body.participants).toEqual([{ memberId: 8 }]);
+    expect(body.splitMode).toBe("EQUAL");
   });
 
   it("includes attribution when showAttribution is true", () => {

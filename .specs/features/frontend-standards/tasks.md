@@ -3146,13 +3146,11 @@ Choices: `thresholds.perFile` (the failure names the module, and a module with f
 
 **Done when**:
 
-- [ ] Coverage ≥ 90% branches
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Coverage ≥ 90% branches
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
-**Tests**: unit
-**Gate**: quick
-**Commit**: `test(frontend): close branch coverage gaps on logic`
+Done: 97.8% branches overall, every module ≥ 90%; unit + tooling 811 → 835 tests, none removed. Raised: `useDashboardService` 77.8 → 100 (not fetched without a plan or while disabled); `usePlanService` 87.2 → 100 (five mutations hand result and request to the caller's `onSuccess`); `transactionFilterDraft` 78.3 → 100 (date range both ways, one-ended ranges, no range and the "all" type); `transactionForm` 89.7 → 94.1 (current-installment validation, attribution read from an existing transaction, Me without a known user, Someone else before and after a pick); `formatters` 50 → 100 (`formatDate` string and `Date` paths, `getFirstAndLastInitials`). `getFirstName` lost its `?? name`: `split` always returns an element, so that arm could never run.
 
 ---
 
