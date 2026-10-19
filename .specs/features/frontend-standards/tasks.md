@@ -2741,9 +2741,9 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] `check-siblings.test.ts` (tooling): presentational without story fails naming it; with story passes; container exempt by each import kind
-- [ ] `tsconfig.node.json` covers `scripts/`
-- [ ] Quick gate passes
+- [x] `check-siblings.test.ts` (tooling): presentational without story fails naming it; with story passes; container exempt by each import kind
+- [x] `tsconfig.node.json` covers `scripts/`
+- [x] Quick gate passes
 
 **Tests**: tooling
 **Gate**: quick
