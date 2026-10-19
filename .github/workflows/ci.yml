@@ -9,37 +9,67 @@ permissions:
 
 jobs:
   # Path filters live here, not in `on:`: GitHub applies them per workflow, so
-  # they would also skip CI on docs-only pushes.
+  # they could not skip one app while still gating the deploy on the other.
   changes:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
     outputs:
+      frontend: ${{ steps.diff.outputs.frontend }}
+      backend: ${{ steps.diff.outputs.backend }}
       deployable: ${{ steps.diff.outputs.deployable }}
     steps:
       - uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
-      # Without a usable range (dispatch, first push, force push) CI still gates
-      # the deploy, so deploying is the safe default.
-      - name: Decide whether this push changes the deployed app
+      # The diff runs from the last green run on this branch, not from the
+      # previous push: after a failed run, the next push must still test what
+      # that run failed on, or untested code would ride along with it into the
+      # deploy. Without a usable base (dispatch, first run, force push) every
+      # app runs, so the safe default is always a full run.
+      - name: Decide which apps this push changes
         id: diff
         env:
           EVENT: ${{ github.event_name }}
-          BEFORE: ${{ github.event.before }}
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          deployable=true
-          if [[ "$EVENT" == push && ! "$BEFORE" =~ ^0+$ ]] \
-            && git merge-base --is-ancestor "$BEFORE" "$GITHUB_SHA" 2>/dev/null; then
-            changed=$(git diff --name-only "$BEFORE" "$GITHUB_SHA")
-            if ! grep -qvE '^(\.specs/|\.claude/)|\.md$' <<< "$changed"; then
-              deployable=false
-            fi
+          frontend=true
+          backend=true
+          base=""
+          if [[ "$EVENT" == push ]]; then
+            base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch "$BRANCH" \
+              --status success --limit 1 --json headSha --jq '.[0].headSha // ""')
           fi
-          echo "deployable=$deployable"
-          echo "deployable=$deployable" >> "$GITHUB_OUTPUT"
+          if [[ -n "$base" ]] && git merge-base --is-ancestor "$base" "$GITHUB_SHA" 2>/dev/null; then
+            frontend=false
+            backend=false
+            # Docs touch no app; anything outside both apps (root config, the
+            # lockfile, this workflow, compose files) may affect either.
+            while IFS= read -r file; do
+              case "$file" in
+                .specs/*|.claude/*|*.md) ;;
+                frontend/*) frontend=true ;;
+                backend/*) backend=true ;;
+                *) frontend=true; backend=true ;;
+              esac
+            done < <(git diff --name-only "$base" "$GITHUB_SHA")
+          fi
+          deployable=false
+          if [[ "$frontend" == true || "$backend" == true ]]; then deployable=true; fi
+          echo "base=${base:-none} frontend=$frontend backend=$backend deployable=$deployable"
+          {
+            echo "frontend=$frontend"
+            echo "backend=$backend"
+            echo "deployable=$deployable"
+          } >> "$GITHUB_OUTPUT"
 
   frontend:
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
     env:
       HUSKY: "0"
@@ -106,6 +136,8 @@ jobs:
         run: pnpm test
 
   backend:
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -123,7 +155,14 @@ jobs:
 
   deploy:
     needs: [changes, frontend, backend]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && needs.changes.outputs.deployable == 'true'
+    # A skipped app job would skip this one by default; `!cancelled()` lets it
+    # run, and each app must have passed or been skipped as unchanged.
+    if: >-
+      !cancelled()
+      && github.event_name == 'push' && github.ref == 'refs/heads/main'
+      && needs.changes.outputs.deployable == 'true'
+      && contains(fromJSON('["success", "skipped"]'), needs.frontend.result)
+      && contains(fromJSON('["success", "skipped"]'), needs.backend.result)
     runs-on: ubuntu-latest
     concurrency:
       group: deploy-production

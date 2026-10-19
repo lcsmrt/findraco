@@ -25,7 +25,7 @@ finsight/
       exceptions/                  GlobalExceptionHandler + typed exceptions
       utils/                       ApiRoutes constants, DateUtils
   .github/workflows/
-    ci.yml                         CI on every push (frontend + backend jobs); deploy gated by CI
+    ci.yml                         CI per push, each app job only when that app changed; deploy gated by CI
   frontend/
     Dockerfile                     Vite build → nginx runtime image
     nginx.conf                     Serves the SPA, proxies /api/ to the API on the host

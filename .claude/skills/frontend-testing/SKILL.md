@@ -216,9 +216,9 @@ it. Adding retries hides it.
 | --- | --- | --- |
 | `pre-commit` (husky, `frontend/.husky/`) | `lint-staged`: ESLint on the staged frontend files | the commit |
 | `commit-msg` (husky) | `check_commit.py`: Conventional Commits | the commit |
-| CI `frontend` job (`.github/workflows/ci.yml`, every push) | lint, `build` (`tsc`), `pnpm test` (sibling gate, all projects, coverage) | deploy |
-| CI `backend` job (every push) | `./mvnw test` | deploy |
-| CI `deploy` job (push to `main`) | needs both jobs green and a deployable change (not only `.specs/`, `.claude/`, `*.md`); one at a time; skipped when the tested commit is no longer the tip of `main` | production |
+| CI `frontend` job (`.github/workflows/ci.yml`, pushes that change `frontend/` or root files, diffed from the last green run) | lint, `build` (`tsc`), `pnpm test` (sibling gate, all projects, coverage) | deploy |
+| CI `backend` job (pushes that change `backend/` or root files) | `./mvnw test` | deploy |
+| CI `deploy` job (push to `main`) | needs each app job green or skipped as unchanged, and some app changed; one at a time; skipped when the tested commit is no longer the tip of `main` | production |
 
 - `--no-verify` skips the hooks, not CI. A commit that skips them still fails CI and never deploys.
 - Fix forward. If an older commit's deploy is skipped because a newer one is the tip, and the newer one
