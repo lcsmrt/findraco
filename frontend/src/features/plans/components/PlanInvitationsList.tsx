@@ -26,18 +26,19 @@ const STATUS_VARIANTS: Record<
   REVOKED: "destructive",
 };
 
-const invitationLabel = (invitation: Invitation): string =>
-  invitation.type === "EMAIL"
+function invitationLabel(invitation: Invitation): string {
+  return invitation.type === "EMAIL"
     ? (invitation.email ?? "Email invitation")
     : "Link invitation";
+}
 
-export const PlanInvitationsList = ({ planId }: PlanInvitationsListProps) => {
+export function PlanInvitationsList({ planId }: PlanInvitationsListProps) {
   const { data: invitations = [], isLoading } =
     useGetPlanInvitations(planId);
   const confirm = useConfirm();
   const { mutate: revokeInvitation } = useRevokeInvitation();
 
-  const handleRevoke = async (invitation: Invitation) => {
+  async function handleRevoke(invitation: Invitation) {
     const confirmed = await confirm({
       title: "Revoke invitation",
       description: `Are you sure you want to revoke the invitation for ${invitationLabel(invitation)}?`,
@@ -48,7 +49,7 @@ export const PlanInvitationsList = ({ planId }: PlanInvitationsListProps) => {
     if (confirmed) {
       revokeInvitation({ params: { planId, invitationId: invitation.id } });
     }
-  };
+  }
 
   if (isLoading) {
     return (
@@ -104,4 +105,4 @@ export const PlanInvitationsList = ({ planId }: PlanInvitationsListProps) => {
       ))}
     </ul>
   );
-};
+}

@@ -14,7 +14,7 @@ import {
 } from "./authForms";
 import { AuthCard } from "./components/AuthCard";
 
-export const ForgotPassword = () => {
+export function ForgotPassword() {
   const [isSubmitted, setIsSubmitted] = useState(false);
 
   const { control, handleSubmit } = useForm<
@@ -83,4 +83,4 @@ export const ForgotPassword = () => {
       </form>
     </AuthCard>
   );
-};
+}

@@ -20,7 +20,7 @@ type LoginLocationState = {
   from?: Location;
 };
 
-export const Login = () => {
+export function Login() {
   const { control, handleSubmit } = useForm<
     LoginFormValues,
     unknown,
@@ -101,4 +101,4 @@ export const Login = () => {
       </form>
     </AuthCard>
   );
-};
+}

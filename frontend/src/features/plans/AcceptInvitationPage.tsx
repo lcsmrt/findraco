@@ -18,7 +18,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { ROLE_LABELS } from "./utils/planLabels";
 
-export const AcceptInvitationPage = () => {
+export function AcceptInvitationPage() {
   const { token } = useParams<{ token: string }>();
   const navigate = useNavigate();
   const { setActivePlanId } = usePlanContext();
@@ -94,4 +94,4 @@ export const AcceptInvitationPage = () => {
       </Card>
     </div>
   );
-};
+}

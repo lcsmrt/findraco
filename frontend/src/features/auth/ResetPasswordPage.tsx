@@ -17,7 +17,7 @@ import {
   type ResetPasswordFormValues,
 } from "./authForms";
 
-export const ResetPassword = () => {
+export function ResetPassword() {
   const [searchParams] = useSearchParams();
   const token = searchParams.get("token") ?? "";
 
@@ -47,7 +47,7 @@ export const ResetPassword = () => {
     resetPassword({ body: { token, password: values.password } });
   });
 
-  const renderContent = () => {
+  function renderContent() {
     if (isValidating) {
       return (
         <Text as="p" variant="secondary" className="text-center">
@@ -93,7 +93,7 @@ export const ResetPassword = () => {
         </Button>
       </>
     );
-  };
+  }
 
   return (
     <AuthCard title="Reset password">
@@ -115,4 +115,4 @@ export const ResetPassword = () => {
       </form>
     </AuthCard>
   );
-};
+}

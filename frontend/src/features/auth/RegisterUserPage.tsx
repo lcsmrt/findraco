@@ -19,7 +19,7 @@ type RegisterUserLocationState = {
   from?: Location;
 };
 
-export const RegisterUser = () => {
+export function RegisterUser() {
   const { control, handleSubmit } = useForm<
     RegisterUserFormValues,
     unknown,
@@ -115,4 +115,4 @@ export const RegisterUser = () => {
       </form>
     </AuthCard>
   );
-};
+}

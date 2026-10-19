@@ -28,7 +28,7 @@ type PlanMembersListProps = {
   planId: number;
 };
 
-export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
+export function PlanMembersList({ planId }: PlanMembersListProps) {
   const { data: members = [], isLoading } = useGetPlanMembers(planId);
   const { user } = useAuth();
   const confirm = useConfirm();
@@ -38,22 +38,22 @@ export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
   const { canManagePlan } = usePlanPermissions();
   const ownerCount = members.filter((m) => m.role === "OWNER").length;
 
-  const canManage = (member: PlanMember) => {
+  function canManage(member: PlanMember) {
     if (!canManagePlan) return false;
     if (member.userId === user?.id) return false;
     if (member.role === "OWNER" && ownerCount <= 1) return false;
     return true;
-  };
+  }
 
-  const handleRoleChange = (member: PlanMember, role: PlanRole) => {
+  function handleRoleChange(member: PlanMember, role: PlanRole) {
     if (role === member.role) return;
     updateMemberRole({
       params: { planId, userId: member.userId },
       body: { role },
     });
-  };
+  }
 
-  const handleRemove = async (member: PlanMember) => {
+  async function handleRemove(member: PlanMember) {
     const confirmed = await confirm({
       title: "Remove member",
       description: `Are you sure you want to remove ${member.name} from this plan?`,
@@ -64,7 +64,7 @@ export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
     if (confirmed) {
       removeMember({ params: { planId, userId: member.userId } });
     }
-  };
+  }
 
   if (isLoading) {
     return (
@@ -149,4 +149,4 @@ export const PlanMembersList = ({ planId }: PlanMembersListProps) => {
       ))}
     </ul>
   );
-};
+}

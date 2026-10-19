@@ -61,7 +61,7 @@ describe("usePlanNameSubmit", () => {
   });
 
   it("stays open when the request fails, and reports submitting while it runs", async () => {
-    let fail: () => void = () => {};
+    let fail: (() => void) | undefined;
     const release = new Promise<void>((settle) => {
       fail = settle;
     });
@@ -77,7 +77,7 @@ describe("usePlanNameSubmit", () => {
 
     await waitFor(() => expect(result.current.isSubmitting).toBe(true));
     expect(sent(requests)).toEqual([["POST", "/api/findraco/plan"]]);
-    fail();
+    fail?.();
     await waitFor(() => expect(result.current.isSubmitting).toBe(false));
     expect(onDone).not.toHaveBeenCalled();
     expect(onCreated).not.toHaveBeenCalled();

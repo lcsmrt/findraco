@@ -43,16 +43,16 @@ type InvitePlanDialogProps = {
   planId: number;
 };
 
-const buildInvitationLink = (invitation: Invitation): string => {
+function buildInvitationLink(invitation: Invitation): string {
   const relative = invitation.link ?? `/invitation/${invitation.token}`;
   return `${window.location.origin}${relative}`;
-};
+}
 
-export const InvitePlanDialog = ({
+export function InvitePlanDialog({
   open,
   onOpenChange,
   planId,
-}: InvitePlanDialogProps) => {
+}: InvitePlanDialogProps) {
   const [createdInvitation, setCreatedInvitation] = useState<Invitation | null>(
     null,
   );
@@ -77,15 +77,15 @@ export const InvitePlanDialog = ({
 
   const type = useWatch({ control, name: "type" });
 
-  const onSubmit = (values: InviteFormOutput) => {
+  function onSubmit(values: InviteFormOutput) {
     createInvitation({ params: { planId }, body: toInvitePayload(values) });
-  };
+  }
 
-  const copyLink = () => {
+  function copyLink() {
     if (!createdInvitation) return;
     navigator.clipboard.writeText(buildInvitationLink(createdInvitation));
     toast.success("Link copied to clipboard.");
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -235,4 +235,4 @@ export const InvitePlanDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
+}

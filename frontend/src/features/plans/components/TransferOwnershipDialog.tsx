@@ -33,11 +33,11 @@ type TransferOwnershipDialogProps = {
   planId: number;
 };
 
-export const TransferOwnershipDialog = ({
+export function TransferOwnershipDialog({
   open,
   onOpenChange,
   planId,
-}: TransferOwnershipDialogProps) => {
+}: TransferOwnershipDialogProps) {
   const { data: members = [], isLoading } = useGetPlanMembers(planId, {
     enabled: open,
   });
@@ -53,13 +53,13 @@ export const TransferOwnershipDialog = ({
     onSuccess: () => onOpenChange(false),
   });
 
-  const onSubmit = () => {
+  function onSubmit() {
     if (!selectedUserId) return;
     transferOwnership({
       params: { planId },
       body: { newOwnerUserId: Number(selectedUserId) },
     });
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,4 +126,4 @@ export const TransferOwnershipDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
+}

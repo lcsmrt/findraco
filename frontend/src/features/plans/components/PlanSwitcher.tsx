@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { PlanNameDialog } from "./PlanNameDialog";
 
-export const PlanSwitcher = () => {
+export function PlanSwitcher() {
   const navigate = useNavigate();
   const { plans, activePlan, activePlanId, setActivePlanId } = usePlanContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -76,4 +76,4 @@ export const PlanSwitcher = () => {
       />
     </>
   );
-};
+}

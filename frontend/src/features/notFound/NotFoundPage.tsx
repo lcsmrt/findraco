@@ -5,7 +5,7 @@ import { Heading } from "@/components/typography/base/Heading";
 import { Text } from "@/components/typography/base/Text";
 import { useNavigate } from "react-router-dom";
 
-export const NotFound = () => {
+export function NotFound() {
   const navigate = useNavigate();
 
   return (
@@ -39,4 +39,4 @@ export const NotFound = () => {
       </Button>
     </main>
   );
-};
+}

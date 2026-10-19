@@ -35,7 +35,7 @@ import { PlanMembersList } from "./components/PlanMembersList";
 import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
 import { ROLE_LABELS } from "./utils/planLabels";
 
-export const PlansPage = () => {
+export function PlansPage() {
   const navigate = useNavigate();
   const { plans, activePlan, activePlanId, setActivePlanId, isLoading } =
     usePlanContext();
@@ -49,7 +49,7 @@ export const PlansPage = () => {
 
   const { canManagePlan } = usePlanPermissions();
 
-  const handleArchivePlan = async () => {
+  async function handleArchivePlan() {
     if (!activePlan) return;
     const confirmed = await confirm({
       title: "Archive plan",
@@ -61,9 +61,9 @@ export const PlansPage = () => {
     if (confirmed) {
       deletePlan(activePlan.id);
     }
-  };
+  }
 
-  const handleLeavePlan = async () => {
+  async function handleLeavePlan() {
     if (!activePlan) return;
     const confirmed = await confirm({
       title: "Leave plan",
@@ -75,7 +75,7 @@ export const PlansPage = () => {
     if (confirmed) {
       leavePlan(activePlan.id);
     }
-  };
+  }
 
   return (
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
@@ -232,4 +232,4 @@ export const PlansPage = () => {
       )}
     </div>
   );
-};
+}
