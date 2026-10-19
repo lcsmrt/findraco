@@ -116,14 +116,12 @@ function MemberLine({ members }: MemberLineProps) {
   return (
     <Text variant="caption" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
       {members.map((member) => (
+        // Only the dot fades for the other members: faded text would fall below readable contrast.
         <span
           key={member.memberId}
-          className={cn(
-            "inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums",
-            member.dimmed && "opacity-50",
-          )}
+          className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums"
         >
-          <MemberDot color={member.color} />
+          <MemberDot color={member.color} className={cn(member.dimmed && "opacity-25")} />
           <span className="min-w-0 truncate" title={member.name}>
             {getFirstName(member.name)}
           </span>

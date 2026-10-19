@@ -37,14 +37,12 @@ function MemberAmounts({ figure, className }: MemberAmountsProps) {
   return figure.segments.length > 0 && (
     <Text as="div" variant="caption" className={cn("flex flex-wrap gap-x-3 gap-y-0.5", className)}>
       {figure.segments.map((segment) => (
+        // Only the dot fades for the other members: faded text would fall below readable contrast.
         <span
           key={segment.memberId}
-          className={cn(
-            "inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums",
-            segment.dimmed && "opacity-50",
-          )}
+          className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums"
         >
-          <MemberDot color={segment.color} />
+          <MemberDot color={segment.color} className={cn(segment.dimmed && "opacity-25")} />
           <span className="min-w-0 truncate" title={segment.name}>
             {getFirstName(segment.name)}
           </span>

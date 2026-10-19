@@ -140,7 +140,12 @@ export function PeriodNavigator({
       </DropdownMenu>
 
       <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-        <PopoverContent className="w-auto p-0" align="start" anchor={anchorRef}>
+        <PopoverContent
+          className="w-auto p-0"
+          align="start"
+          anchor={anchorRef}
+          aria-label="Choose a period"
+        >
           <Calendar
             mode="range"
             selected={draft}
