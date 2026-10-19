@@ -8,6 +8,7 @@ import {
   TableHeaderBase,
   TableRowBase,
 } from "./TableParts";
+import { formatMoney } from "@/utils/money";
 
 type Row = { description: string; category: string; amount: string };
 
@@ -87,7 +88,7 @@ export const LongContent: Story = {
     rows: Array.from({ length: 25 }, (_, index) => ({
       description: "Annual maintenance contract for the building's elevators and generators",
       category: "Housing and maintenance",
-      amount: `R$ ${(987654.32 + index).toLocaleString("pt-BR")}`,
+      amount: formatMoney(987654.32 + index),
     })),
   },
 };

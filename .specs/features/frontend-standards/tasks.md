@@ -3508,8 +3508,10 @@ Done: unit + tooling 929 tests, unchanged (the four files keep 13 + 4 + 3 + 8 = 
 
 **Done when**:
 
-- [ ] No `toLocaleString("pt-BR")` left in `src`
-- [ ] Build gate passes (`pnpm lint && pnpm build && pnpm test`)
+- [x] No `toLocaleString("pt-BR")` left in `src`
+- [x] Build gate passes (`pnpm lint && pnpm build && pnpm test`)
+
+Done: Build gate green: lint 0, build 0; `pnpm test`: unit 83 files / 751 tests, tooling + storybook 95 files / 637 tests (tooling 178, storybook 459).
 
 **Tests**: story
 **Gate**: build
