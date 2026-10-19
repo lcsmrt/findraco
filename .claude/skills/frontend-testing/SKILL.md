@@ -70,6 +70,9 @@ There is no exemption list.
 - Vitest `v8` coverage over `src/**/*.ts`, excluding tests, `*.handlers.ts`, `src/test/**` and `.d.ts`.
   Branch threshold 90% per module; below it, `pnpm test` fails naming the module. Measured on the
   `unit` project only: stories run helpers without asserting their results.
+- Coverage runs in its own invocation on `unit` (Vitest takes coverage settings only at the root) and
+  measures only modules a test loads (`all: false`): the sibling gate already gives every logic module a
+  test, and v8 would report an unloaded barrel as 0% branches.
 - Components (`.tsx`), stories, DTOs and types are outside the threshold. Never set a global number.
 - Coverage is a signal, not proof. Executing a branch without asserting its outcome games the number.
   Every covered branch has an assertion on the result; the Verifier's mutation sensor catches tests that

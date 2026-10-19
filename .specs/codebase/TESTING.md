@@ -17,9 +17,9 @@
 **Frontend (frontend):** Vitest with three projects, run from `frontend/` with pnpm. The rules for what gets which test live in the `frontend-testing` skill.
 
 - `unit` (jsdom): logic modules, hooks with logic (`renderHook`), service hooks, and integration tests of screens. An MSW server starts for every test file with **no default handlers**; each test adds what it needs with `server.use(...)`. A request without a handler is recorded and thrown in `afterEach`, naming method and URL (MSW's `onUnhandledRequest: "error"` alone would let code that swallows the error pass). (STD-04; today service-hook tests `vi.mock` the HTTP client.)
-- `storybook` (Chromium via Playwright, `@storybook/addon-vitest`): every story renders as a test, `play` functions cover basic interactions, and the a11y addon runs in error mode (`a11y: { test: "error" }` in `.storybook/preview.tsx`), so a violation fails the run. (In `pnpm test` from STD-04; today run separately.)
+- `storybook` (Chromium via Playwright, `@storybook/addon-vitest`): every story renders as a test, `play` functions cover basic interactions, and the a11y addon runs in error mode (`a11y: { test: "error" }` in `.storybook/preview.tsx`), so a violation fails the run. Part of `pnpm test` (STD-04).
 - `tooling` (Node): the local ESLint rules (`eslint/rules/*.test.ts`, `RuleTester` on Vitest's `describe`/`it`), the sibling gate's own test (`scripts/check-siblings.test.ts`) and the ESLint config test (`eslint.config.test.ts`, `ESLint#calculateConfigForFile` per layer path). (STD-02 onward.)
-- Coverage: `@vitest/coverage-v8` over `src/**/*.ts`, excluding tests, `*.handlers.ts`, `src/test/**` and `.d.ts`; branch threshold 90% (STD-11).
+- Coverage: `@vitest/coverage-v8` over `src/**/*.ts`, excluding tests, `*.handlers.ts`, `src/test/**` and `.d.ts`; branch threshold 90% per file (STD-11). Measured on `unit` only, in its own invocation, because Vitest takes coverage settings only at the root; only modules a test loads are measured (`all: false`), since the sibling gate guarantees every logic module a test.
 - E2E: Playwright (installed), 3–5 smoke journeys against the real backend and a disposable database; blocked by the local Docker database (STD-14).
 
 ## Test Organization
@@ -81,19 +81,19 @@ cd backend
 
 ```bash
 cd frontend
-pnpm test                                               # sibling gate, then every project with coverage (what CI runs; STD-11)
+pnpm test                                               # sibling gate, unit with coverage, then tooling and storybook (what CI runs; STD-11)
 pnpm exec vitest run --project=unit --project=tooling   # quick: logic, flows, tooling
 pnpm exec vitest run                                    # every project, without the sibling and coverage gates
 pnpm exec vitest run --project=storybook                # stories only (Chromium, headless)
 ```
 
-Until the sibling and coverage gates join `pnpm test` (STD-11), `pnpm exec vitest run` is the full run.
+`pnpm test` runs `node scripts/check-siblings.ts && vitest run --project=unit --coverage && vitest run --project=tooling --project=storybook`.
 
 ## Coverage Targets
 
 **Current:**
 - Backend: global JaCoCo report generated on every `mvn verify` (no global minimum). A `check` rule gates branch coverage ≥0.80 on exactly `SplitResolver`, `CategorySpendingAssembler`, `PlanAuthorization` — the three invariant-bearing classes identified during design (AD-007's partition invariant, SPLIT-01, and the two-layer plan authz model). Weakening test coverage on any of these three fails `mvn verify`; no other class is gated.
-- Frontend: 90% branch coverage on `src/**/*.ts` (logic modules and hooks; tests, `*.handlers.ts`, `src/test/**` and `.d.ts` excluded), never global; components, stories, DTOs and types are outside the threshold (STD-11; today wired, not enforced). Coverage is a signal: the Verifier's mutation sensor catches branches that are executed but not asserted.
+- Frontend: 90% branch coverage on `src/**/*.ts` (logic modules and hooks; tests, `*.handlers.ts`, `src/test/**` and `.d.ts` excluded), never global; components, stories, DTOs and types are outside the threshold (STD-11). Coverage is a signal: the Verifier's mutation sensor catches branches that are executed but not asserted.
 
 **Goals:** extend the JaCoCo floor to additional invariant classes as they're identified.
 **Enforcement:** backend — `jacoco:check` bound to the `verify` phase (hard gate, fails the build). Frontend — the Vitest coverage threshold fails `pnpm test` and the CI `frontend` job.
@@ -134,8 +134,8 @@ Remaining gaps (not "no coverage exists" anymore, but "coverage is not yet exhau
 | Docs (FE)  | Skill and doc changes                      | none; check the change against the feature's `context.md` and `design.md`                     |
 | Quick (FE) | Frontend logic, flow or tooling change     | `cd frontend && pnpm exec vitest run --project=unit --project=tooling`                        |
 | Full       | Backend change touching HTTP/DB/security   | `cd backend && ./mvnw verify` (tunnel up; empties `dev_finsight` — see Local Environment Setup) |
-| Full (FE)  | Frontend change with stories               | `cd frontend && pnpm exec vitest run` (every project); once the gates are in `pnpm test`: `pnpm test` |
-| Build      | Phase completion, config, moves, lint rules | `cd backend && ./mvnw package` ; `cd frontend && pnpm lint && pnpm build && pnpm exec vitest run` (once the gates are in `pnpm test`: `pnpm lint && pnpm build && pnpm test`) |
+| Full (FE)  | Frontend change with stories               | `cd frontend && pnpm test` |
+| Build      | Phase completion, config, moves, lint rules | `cd backend && ./mvnw package` ; `cd frontend && pnpm lint && pnpm build && pnpm test` |
 
 Commands are extracted from `backend/pom.xml` (Maven wrapper, failsafe+jacoco bindings) and `frontend/package.json` scripts; the frontend rows match the Gate Check Commands of `.specs/features/frontend-standards/tasks.md`.
 
