@@ -6,7 +6,9 @@
 **Verifier**: independent sub-agent (author ≠ verifier)
 **Scope**: STD-01..STD-12. STD-13 is Deferred (design decision 10) and STD-14 is blocked by the local Docker database. Neither is in scope for this report.
 
-**Verdict: FAIL ❌.** Every gate is green and every mechanical guarantee I tested in the scratch worktree fires. Two problems block PASS:
+**Current verdict (iteration 1 re-verification, at `cc2bcea`): FAIL ❌.** Gaps 1–3 and Fix 4 are closed: M28, M29 and M9 are now killed, and M9 fails in 12 ms. One new mutant survives on the fixed logic-cap rule: deleting its `JSXFragment` listener breaks no test. The fix is one RuleTester case. See "Iteration 1 re-verification" at the end of this report.
+
+**Initial verdict (at `d3bbee5`): FAIL ❌.** Every gate is green and every mechanical guarantee I tested in the scratch worktree fires. Two problems block PASS:
 
 - **Two surviving mutants on the unhandled-request guard (STD-04 AC 3).** The behaviour works when tried by hand, but no test protects it.
 - **A way around the logic cap (STD-12 AC 3).** A component that returns its JSX through a variable or a call is not counted.
@@ -332,7 +334,7 @@ Migrate `useAuthSession.test.tsx`, `useOverviewMemberFilter.test.tsx`, `useTrans
 
 ---
 
-## Summary
+## Summary (initial run)
 
 **Overall**: ❌ Not Ready (small, bounded fixes)
 
@@ -345,3 +347,90 @@ Migrate `useAuthSession.test.tsx`, `useOverviewMemberFilter.test.tsx`, `useTrans
 **Issues found**: Fix 1 (M28/M29), Fix 2 (logic-cap evasion), Fix 3 (hang instead of failure), plus behaviour changes for UAT and residual `vi.mock` usage.
 
 **Next steps**: route Fixes 1–3 to an implementer, re-run the Verifier (iteration 1 of 3), push so CI runs on the 33 unpushed commits, and confirm the six behaviour changes in UAT.
+
+---
+
+## Iteration 1 re-verification
+
+**Date**: 2026-10-19
+**Fix range**: `a63e4d7..cc2bcea` (5 commits, T132–T136). HEAD is `cc2bcea`.
+**Verifier**: a new independent sub-agent. It did not write the fixes.
+**Scope**: a focused re-check. It covers gaps 1–3, Fix 4 (SP-3), the ACs the fixes touch, new mutants on the fixed code, and a bypass scan of the fix range. The ACs not touched by the fixes keep their initial-run evidence.
+
+### Gates (real tree, `frontend/`, at `cc2bcea`)
+
+- **Lint** (`pnpm lint`): exit 0
+- **Build** (`pnpm build`): exit 0
+- **Test** (`pnpm test`): exit 0
+  - `check-siblings.ts`: exit 0
+  - `unit` + coverage: 83 files, **751 passed**, 0 failed, 0 skipped (748 → 751: one recorder case and two setup-guard cases). Branch coverage is 97.98% overall.
+  - `tooling` + `storybook`: 95 files, **637 passed**, 0 failed, 0 skipped (632 → 637: five new `componentLogicCap` RuleTester cases)
+- **Backend**: not re-run, because the fix range touches no backend file.
+
+### Discrimination sensor (scratch worktree)
+
+All mutants ran in a temporary `git worktree` at `cc2bcea` under the scratchpad, after `pnpm install --offline`. Each file was restored after its run, and the worktree was removed at the end. The real tree's `git status --porcelain` was empty before and after (match).
+
+| # | File:line | Mutation | Tests run | Result |
+| - | --------- | -------- | --------- | ------ |
+| M28 (re-run) | `src/test/unhandledRequests.ts:19` | `requests.length === 0` → `<= 1` | `src/test/` | ✅ Killed (3 failed: `throws naming a single recorded request` and both `setupUnit.test.ts` cases) |
+| M29 (re-run) | `src/test/setupUnit.ts:18` | remove `unhandledRequests.assertNone()` | `src/test/` | ✅ Killed (2 failed: `setupUnit.test.ts:14` `it.fails` now passes, so it is reported as a failure, and `:23` gets `[]`) |
+| M9 (re-run) | `src/api/clients/findracoApi.ts:108` | retry without `sessionRetried: true` | findracoApi | ✅ Killed **fast**: `does not retry a retried request a second time` failed in 12 ms (whole file 1.1 s, 3 s wall time). The third `/plans` call gets 500, so `toMatchObject({ response: { status: 401 } })` fails |
+| N1 | `eslint/rules/componentLogicCap.ts` `markJsx` | mark only the innermost frame, so nested JSX is ignored | componentLogicCap (tooling) | ✅ Killed (1 failed: `a component returning a render call at 61 lines`) |
+| N2 | `componentLogicCap.ts` listeners | delete `JSXFragment: markJsx` | componentLogicCap (tooling) | ❌ **Survived** (18/18 pass). No RuleTester case has a component whose only JSX is a fragment. The behaviour works today: a probe of a 61-line component ending `return <>{a}</>;` through `eslint --stdin` in the real tree is reported. Nothing protects it |
+| N3 | `src/test/setupUnit.ts:21` | drop `unhandledRequests.reset()` in `finally` | `src/test/` | ✅ Killed (1 failed: `names the request in that failure`) |
+| N4 | `findracoApi.ts:108` | allow exactly one extra retry (`sessionRetried: config.sessionRetried !== undefined`) | findracoApi | ✅ Killed (1 failed, 11 ms) |
+
+**Sensor depth**: focused re-check: 3 re-runs and 4 new mutants.
+**Result**: 6 killed, 1 survived (N2). FAIL.
+
+### AC evidence for the fixes
+
+| AC | Evidence (`file:line` + assertion) | Result |
+| -- | ---------------------------------- | ------ |
+| STD-04 AC 3 (an unhandled request fails the test) | `src/test/unhandledRequests.test.ts:11-19` puts one request in the recorder and expects `toThrow(/^Requests without an MSW handler \(add one with server\.use\):\nGET http:\/\/localhost\/api\/findraco\/plan$/)`. `src/test/setupUnit.test.ts:14` is an `it.fails` test that swallows the error from an unmocked `fetch`. `:23` then checks `expect(failures).toEqual([\`Requests without an MSW handler (add one with server.use):\nGET ${UNHANDLED_URL}\`])`, which pins both the wiring and the message. M28, M29 and N3 are killed | ✅ PASS (⚠️ residual R2) |
+| STD-04 AC 4 (service-hook tests go through MSW; 401 → refresh → retry) | `grep -rn "vi.mock(" src --include=*.test.ts*` finds only two hits, both of the third-party `sonner`: `src/features/transactions/components/useCsvImport.test.ts:12` and `src/api/utils/buildMutationOptions.test.ts:15`. None of our modules is mocked in a flow or hook test. `useAuthSession.test.tsx` now uses `authHandlers.*` (e.g. `:110` `expect(paths(requests)).toEqual(["POST /auth/refresh", "GET /user/me"])`, `:218` `toBe("Bearer login-token")`). `PrivateRoute.test.tsx`, `useOverviewMemberFilter.test.tsx` and `useTransactionFilterChips.test.tsx` pass explicit context values; their only `vi.fn()` are context callbacks. Retry bound: `src/api/clients/findracoApi.test.ts:221` (`plansAttempts > 2` → 500), with `:232` `toHaveLength(2)` and `:233` `toHaveLength(1)` | ✅ PASS. SP-3 resolved in practice |
+| STD-12 AC 3 (a PascalCase function returning JSX with more than 60 logic lines is an error) | `eslint/rules/componentLogicCap.test.ts:83` `returnsVariable(logic(60))` → `errors: tooLong("Summary", 61)`. `:88` `returnsCall(logic(58))` (with a 3-line local `renderContent`) → `tooLong("Summary", 61)`. `:71` keeps a PascalCase function with no JSX and 80 lines valid. N1 is killed. The `JSXFragment` path is untested (N2) | ❌ GAP (N2 survives) |
+| STD-12 AC 5 (60 lines is allowed) | `componentLogicCap.test.ts:64` `returnsVariable(logic(59))` (59 + `const content` = 60) is valid, and `:68` `returnsCall(logic(57))` (57 + 3 = 60) is valid. The original 60/61 cases are unchanged | ✅ PASS |
+| STD-06 AC 6 (money through `formatMoney`) | `src/components/table/base/TableParts.stories.tsx:91` `amount: formatMoney(987654.32 + index)`; no `toLocaleString` is left in the file | ✅ PASS |
+
+### Residuals
+
+- **R1: a component whose only JSX comes from a module-level render function is not recognised.** Probe: a 61-line `Summary` that ends `return renderContent(a);`, with `renderContent` declared at module level in the same file, is not reported (`eslint --stdin`, real tree). **Judgement: an acceptable residual, not blocking.**
+  - Only a deliberate workaround reaches this case. The component must have no JSX of its own and hand all of its markup to a camelCase function outside it. Ordinary drift does not produce that shape. Review catches it more easily than an inline `return content;`, because the markup visibly lives outside the component.
+  - Today's code does not use the pattern. `grep -E "^(export )?function render[A-Z]" src/**/*.tsx` finds no module-level render helpers.
+  - For an imported helper, the rule would need analysis across files. The task note overstates the limit for the same-file case, though. That case needs no type or call-graph analysis: the callee is a `FunctionDeclaration` in the same `Program`, so it can be resolved by name. **Optional hardening for iteration 2:** treat a PascalCase function as a component when its main `return` calls a same-file function that contains JSX, and add one RuleTester case.
+- **R2: the two `setupUnit.test.ts` cases depend on their order.** `names the request in that failure` reads state that the `it.fails` case writes. If the second case runs alone, it fails: `vitest run src/test/setupUnit.test.ts -t "names the request"` gives 1 failed and 1 skipped. The gate runs the whole file in declaration order and `vite.config.ts` does not configure `sequence.shuffle`, so the gate is sound. Someone filtering with `-t`, or a future shuffle setting, would see a false failure. Not blocking. A one-line comment would help, or `describe.sequential`, or making the second case skip itself when the first did not run.
+
+### Bypass scan (fix range `a63e4d7..cc2bcea`, added lines)
+
+| Pattern | Result |
+| ------- | ------ |
+| `eslint-disable`, `@ts-` | none |
+| ` as ` casts (other than `as const`) | none. The 5 casts from gap 4 left with the `vi.mock` removal |
+| `.skip`, `.only` | none. `it.fails` (`setupUnit.test.ts:14`) is an inverted expectation, not a skip; M29 proves it fails when the guard is gone |
+| Raised timeouts or retries | none. T134 bounds the loop with a counter, not a timeout |
+
+### Fix Plan (iteration 2)
+
+**Fix 5: give the logic cap's fragment path a test (N2), Minor but blocking.**
+
+- **Task**: add a RuleTester `invalid` case for a 61-line component whose only JSX is a fragment, for example `return <>{value}</>;`, and a matching 60-line `valid` case.
+- **Optional**: add R1 same-file render-helper resolution and the R2 order note in the same pass.
+- **Done when**: N2 (delete `JSXFragment: markJsx`) is killed in scratch and `pnpm lint` and `pnpm test` stay green.
+
+### Requirement Traceability Update (proposed)
+
+| Requirement | Status after iteration 1 |
+| ----------- | ------------------------ |
+| STD-04 | ✅ Verified (AC 3 and AC 4 discriminate; SP-3 resolved) |
+| STD-12 | ❌ Needs Fix (AC 3: N2 survivor) |
+| Others | unchanged from the initial run |
+
+### Iteration 1 summary
+
+**Overall**: ❌ Not Ready. One small blocking gap remains (iteration 1 of 3 used).
+**Gate**: lint 0, build 0, test 0 (751 unit + 637 tooling/storybook passed, 0 failed, 0 skipped)
+**Sensor (iteration 1)**: 7 mutations: 6 killed, 1 survived (N2)
+**Closed**: gap 1 (M28, M29), gap 2 (`return content;` and `return renderX();` with a local helper), gap 3 (M9 now fails in 12 ms), Fix 4 / SP-3 (no `vi.mock` of our modules)
+**Open**: Fix 5 (N2). Residuals R1 and R2 do not block.

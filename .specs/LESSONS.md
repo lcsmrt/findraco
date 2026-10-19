@@ -158,6 +158,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: SP-1 STD-10 AC 3; SP-2 STD-09 AC 3 (spec)
 - last seen: 2026-10-19T05:32:26Z
 
+### L-025 - Give every AST node type a custom lint rule listens to its own RuleTester case
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `eslint-rules` · harmful: 0
+- features: frontend-standards
+- evidence: validation.md iteration 1: N2 (componentLogicCap.ts JSXFragment listener) (eslint-rules)
+- last seen: 2026-10-19T12:00:37Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

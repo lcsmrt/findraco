@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 25,
+  "next_id": 26,
   "lessons": [
     {
       "id": "L-001",
@@ -436,6 +436,24 @@
       ],
       "created": "2026-10-19T05:32:26Z",
       "last_seen": "2026-10-19T05:32:26Z"
+    },
+    {
+      "id": "L-025",
+      "key": "surviving_mutant::give every ast node type a custom lint rule listens to its own ruletester case",
+      "text": "Give every AST node type a custom lint rule listens to its own RuleTester case",
+      "signal": "surviving_mutant",
+      "scope": "eslint-rules",
+      "status": "candidate",
+      "features": [
+        "frontend-standards"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md iteration 1: N2 (componentLogicCap.ts JSXFragment listener) (eslint-rules)"
+      ],
+      "created": "2026-10-19T12:00:37Z",
+      "last_seen": "2026-10-19T12:00:37Z"
     }
   ]
 }
