@@ -68,7 +68,8 @@ There is no exemption list.
 ## Coverage: 90% branches on logic, nowhere else
 
 - Vitest `v8` coverage over `src/**/*.ts`, excluding tests, `*.handlers.ts`, `src/test/**` and `.d.ts`.
-  Branch threshold 90%; below it, `pnpm test` fails naming the module.
+  Branch threshold 90% per module; below it, `pnpm test` fails naming the module. Measured on the
+  `unit` project only: stories run helpers without asserting their results.
 - Components (`.tsx`), stories, DTOs and types are outside the threshold. Never set a global number.
 - Coverage is a signal, not proof. Executing a branch without asserting its outcome games the number.
   Every covered branch has an assertion on the result; the Verifier's mutation sensor catches tests that
@@ -197,7 +198,7 @@ it("shows the viewer no create action (PLAN-04 AC 2)", async () => {
 
 | Command | Use |
 | --- | --- |
-| `pnpm test` | everything: sibling gate, then every project with coverage (what CI runs) |
+| `pnpm test` | everything: sibling gate, `unit` with coverage, then `tooling` and `storybook` (what CI runs) |
 | `pnpm exec vitest run --project=unit --project=tooling` | quick loop for logic, flows and tooling |
 | `pnpm exec vitest run` | every project, without the sibling and coverage gates |
 

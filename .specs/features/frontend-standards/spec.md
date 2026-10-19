@@ -355,7 +355,7 @@ Frontend quality decayed as features shipped fast. The audit (`.specs/codebase/f
 | STD-08 | P2 Typography (AC 1–5) — E4b, C7 | P13 (T89–T96) | Done |
 | STD-09 | P2 Mechanical conventions (AC 1–3) — E2, E5 | P14 (T97–T103) | Done |
 | STD-10 | P2 Story coverage (AC 1–4) — F1 | P15 (T104–T111, T126–T131) | Done |
-| STD-11 | P2 Test coverage (AC 1–4) — F2 | P16 (T112–T116) | Pending |
+| STD-11 | P2 Test coverage (AC 1–4) — F2 | P16 (T112–T116) | Done |
 | STD-12 | P2 Transactions tab + logic cap (AC 1–5) — D3, D4 | P17 (T117–T125) | Pending |
 | STD-13 | P3 Generated API types (AC 1–3) — F2, deferred until after the backend standards review | - | Deferred |
 | STD-14 | P3 E2E smoke tests (AC 1–3) — F2, blocked by Docker DB | - | Pending |

@@ -3166,8 +3166,10 @@ Done: 97.8% branches overall, every module ≥ 90%; unit + tooling 811 → 835 t
 
 **Done when**:
 
-- [ ] Deleting a helper test fails `pnpm test` naming it; removing a branch's case fails coverage (checked, reverted)
-- [ ] Full gate passes
+- [x] Deleting a helper test fails `pnpm test` naming it; removing a branch's case fails coverage (checked, reverted)
+- [x] Full gate passes
+
+Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --coverage && vitest run --project=tooling --project=storybook`. Deviation from the literal `vitest run --coverage`: coverage is root-level in Vitest, so a single run measures the `storybook` project too, and stories raised modules without asserting them (`periodNavigator` 90 → 91.7%, `spendingRows` 94.0 → 95.5%). CI still runs every project through `pnpm test`. Checked, reverted: without `resolveSuccessMessage.test.ts` the run stops with `Logic modules without a sibling .test.ts: src/api/utils/resolveSuccessMessage.ts`; without its "no message or fallback" case it fails `Coverage for branches (80%) does not meet global threshold (90%) for src/api/utils/resolveSuccessMessage.ts`. The full gate exposed a flaky `TransferOwnershipDialogView` story (a11y caught the listbox mid exit), fixed in its own commit before this one.
 
 **Tests**: tooling
 **Gate**: full
