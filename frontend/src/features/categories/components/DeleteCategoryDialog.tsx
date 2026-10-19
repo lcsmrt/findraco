@@ -35,12 +35,12 @@ type DeleteCategoryDialogProps = {
   categories: FinancialTransactionCategory[];
 };
 
-export const DeleteCategoryDialog = ({
+export function DeleteCategoryDialog({
   open,
   onOpenChange,
   category,
   categories,
-}: DeleteCategoryDialogProps) => {
+}: DeleteCategoryDialogProps) {
   const [targetId, setTargetId] = useState<number | null>(null);
   const [conflict, setConflict] = useState<string | null>(null);
 
@@ -153,4 +153,4 @@ export const DeleteCategoryDialog = ({
       </DialogContent>
     </Dialog>
   );
-};
+}

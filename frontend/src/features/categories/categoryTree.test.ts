@@ -2,26 +2,29 @@ import type { FinancialTransactionCategory } from "@/api/dtos";
 import { describe, expect, it } from "vitest";
 import { buildCategoryTree } from "./categoryTree";
 
-const category = (
+function category(
   id: number,
   description: string,
   overrides: Partial<FinancialTransactionCategory> = {},
-): FinancialTransactionCategory => ({
-  id,
-  description,
-  type: "DEBIT",
-  parentId: null,
-  ...overrides,
-});
+): FinancialTransactionCategory {
+  return {
+    id,
+    description,
+    type: "DEBIT",
+    parentId: null,
+    ...overrides,
+  };
+}
 
-const names = (tree: ReturnType<typeof buildCategoryTree>) =>
-  tree.map((section) => ({
+function names(tree: ReturnType<typeof buildCategoryTree>) {
+  return tree.map((section) => ({
     type: section.type,
     roots: section.roots.map((root) => ({
       name: root.category.description,
       children: root.children.map((child) => child.description),
     })),
   }));
+}
 
 describe("buildCategoryTree", () => {
   it("sorts roots alphabetically, ignoring case (UX-01 AC 3)", () => {

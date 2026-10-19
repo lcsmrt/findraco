@@ -5,15 +5,17 @@ import { countMonths, scaleLimit, scaleMemberLimit, scaleTreeLimits } from "./sc
 
 const now = new Date(2026, 9, 11); // 2026-10-11
 
-const breakdown = (
+function breakdown(
   overrides: Partial<CategoryBreakdown> & Pick<CategoryBreakdown, "spent">,
-): CategoryBreakdown => ({
-  categoryId: 1,
-  parentId: null,
-  categoryName: "Food",
-  children: [],
-  ...overrides,
-});
+): CategoryBreakdown {
+  return {
+    categoryId: 1,
+    parentId: null,
+    categoryName: "Food",
+    children: [],
+    ...overrides,
+  };
+}
 
 describe("countMonths", () => {
   it.each([
@@ -119,17 +121,19 @@ describe("scaleTreeLimits", () => {
   });
 });
 
-const member = (overrides: Partial<CategorySpendingMember>): CategorySpendingMember => ({
-  memberId: 10,
-  name: "Lucas",
-  spent: 0,
-  limit: null,
-  remaining: null,
-  percentUsed: null,
-  overLimit: null,
-  active: true,
-  ...overrides,
-});
+function member(overrides: Partial<CategorySpendingMember>): CategorySpendingMember {
+  return {
+    memberId: 10,
+    name: "Lucas",
+    spent: 0,
+    limit: null,
+    remaining: null,
+    percentUsed: null,
+    overLimit: null,
+    active: true,
+    ...overrides,
+  };
+}
 
 describe("scaleMemberLimit", () => {
   it("scales an active member's limit by the month count and evaluates their spend", () => {
@@ -150,23 +154,25 @@ describe("scaleMemberLimit", () => {
 
 describe("scaleTreeLimits with per-member rows", () => {
   it("scales the members of every node", () => {
-    const spendingNode = (overrides: Partial<CategorySpending>): CategorySpending => ({
-      categoryId: 1,
-      parentId: null,
-      name: "Food",
-      type: "DEBIT",
-      ownerId: null,
-      ownerName: null,
-      ownerActive: null,
-      spent: 0,
-      limit: null,
-      remaining: null,
-      percentUsed: null,
-      overLimit: null,
-      members: [],
-      children: [],
-      ...overrides,
-    });
+    function spendingNode(overrides: Partial<CategorySpending>): CategorySpending {
+      return {
+        categoryId: 1,
+        parentId: null,
+        name: "Food",
+        type: "DEBIT",
+        ownerId: null,
+        ownerName: null,
+        ownerActive: null,
+        spent: 0,
+        limit: null,
+        remaining: null,
+        percentUsed: null,
+        overLimit: null,
+        members: [],
+        children: [],
+        ...overrides,
+      };
+    }
     const child = spendingNode({
       categoryId: 2,
       parentId: 1,

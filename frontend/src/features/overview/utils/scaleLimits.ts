@@ -2,8 +2,9 @@ import type { CategorySpendingMember } from "@/api/dtos";
 import { differenceInCalendarMonths, parseISO } from "date-fns";
 
 /** Calendar months touched by an inclusive `yyyy-MM-dd` range (Oct 15 – Nov 10 → 2). */
-export const countMonths = (startDate: string, endDate: string): number =>
-  differenceInCalendarMonths(parseISO(endDate), parseISO(startDate)) + 1;
+export function countMonths(startDate: string, endDate: string): number {
+  return differenceInCalendarMonths(parseISO(endDate), parseISO(startDate)) + 1;
+}
 
 export type ScaledLimit = {
   limit?: number;
@@ -16,11 +17,11 @@ export type ScaledLimit = {
  * Scales a monthly limit to `monthCount` months and evaluates `spent` against it.
  * Usage is recomputed on the client because the API evaluates a single month.
  */
-export const scaleLimit = (
+export function scaleLimit(
   spent: number,
   monthlyLimit: number | null | undefined,
   monthCount: number,
-): ScaledLimit => {
+): ScaledLimit {
   if (monthlyLimit == null) {
     return {
       limit: undefined,
@@ -36,16 +37,16 @@ export const scaleLimit = (
     percentUsed: limit === 0 ? 0 : Math.round((spent / limit) * 10000) / 100,
     overLimit: spent > limit,
   };
-};
+}
 
 /**
  * Scales one member's monthly limit like {@link scaleLimit}. A former member's
  * entry keeps its (scaled) amount but is never evaluated (CAT-14).
  */
-export const scaleMemberLimit = (
+export function scaleMemberLimit(
   member: CategorySpendingMember,
   monthCount: number,
-): CategorySpendingMember => {
+): CategorySpendingMember {
   const scaled = scaleLimit(member.spent, member.limit, monthCount);
   return {
     ...member,
@@ -54,7 +55,7 @@ export const scaleMemberLimit = (
     percentUsed: member.active ? (scaled.percentUsed ?? null) : null,
     overLimit: member.active ? (scaled.overLimit ?? null) : null,
   };
-};
+}
 
 type LimitedNode<T> = {
   spent: number;
@@ -70,11 +71,11 @@ export type ScaledNode<T> = Omit<
   ScaledLimit & { children: ScaledNode<T>[] };
 
 /** Applies {@link scaleLimit} to every node of a category tree, and to its per-member rows. */
-export const scaleTreeLimits = <T extends LimitedNode<T>>(
+export function scaleTreeLimits<T extends LimitedNode<T>>(
   nodes: T[],
   monthCount: number,
-): ScaledNode<T>[] =>
-  nodes.map((node) => ({
+): ScaledNode<T>[] {
+  return nodes.map((node) => ({
     ...node,
     ...scaleLimit(node.spent, node.limit, monthCount),
     ...(node.members && {
@@ -82,3 +83,4 @@ export const scaleTreeLimits = <T extends LimitedNode<T>>(
     }),
     children: scaleTreeLimits(node.children, monthCount),
   }));
+}

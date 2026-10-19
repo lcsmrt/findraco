@@ -19,14 +19,14 @@ const DATE_FORMAT = "yyyy-MM-dd";
  * The months the trend covers (UX-05 AC 4): the 6 calendar months ending at the
  * selected period's last month, or every month of the period when it spans more.
  */
-export const trendWindow = (selected: PeriodRange): PeriodRange => {
+export function trendWindow(selected: PeriodRange): PeriodRange {
   const lastMonth = parseISO(selected.endDate);
   const months = Math.max(TREND_MONTHS, countMonths(selected.startDate, selected.endDate));
   return {
     startDate: format(startOfMonth(subMonths(lastMonth, months - 1)), DATE_FORMAT),
     endDate: format(endOfMonth(lastMonth), DATE_FORMAT),
   };
-};
+}
 
 export type TrendMonth = MonthlyTrend & {
   label: string;
@@ -34,14 +34,16 @@ export type TrendMonth = MonthlyTrend & {
   inPeriod: boolean;
 };
 
-const monthKey = (year: number, month: number) => year * 12 + (month - 1);
+function monthKey(year: number, month: number) {
+  return year * 12 + (month - 1);
+}
 
 /** One entry per month of the window, zero when the API has none (UX-05 AC 5). */
-export const fillTrendMonths = (
+export function fillTrendMonths(
   data: MonthlyTrend[],
   window: PeriodRange,
   selected: PeriodRange,
-): TrendMonth[] => {
+): TrendMonth[] {
   const byMonth = new Map(data.map((entry) => [monthKey(entry.year, entry.month), entry]));
   const first = startOfMonth(parseISO(window.startDate));
   const selectedFrom = startOfMonth(parseISO(selected.startDate));
@@ -62,4 +64,4 @@ export const fillTrendMonths = (
       inPeriod: date >= selectedFrom && date <= selectedTo,
     };
   });
-};
+}

@@ -44,32 +44,34 @@ type PeriodNavigatorProps = {
   onRangeChange: (range: CustomRange) => void;
 };
 
-const toCustom = (range: PeriodRange): CustomRange => ({
-  from: range.startDate,
-  to: range.endDate,
-});
+function toCustom(range: PeriodRange): CustomRange {
+  return {
+    from: range.startDate,
+    to: range.endDate,
+  };
+}
 
 /**
  * "‹ October 2026 ›" plus a Range menu (UX-05 AC 8–9). The arrows step the period by
  * its own length and always produce an absolute range; presets set the period.
  */
-export const PeriodNavigator = ({
+export function PeriodNavigator({
   range,
   period,
   isCustom,
   onPresetChange,
   onRangeChange,
-}: PeriodNavigatorProps) => {
+}: PeriodNavigatorProps) {
   const anchorRef = useRef<HTMLDivElement>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
 
-  const openCalendar = () => {
+  function openCalendar() {
     setDraft({ from: parseISO(range.startDate), to: parseISO(range.endDate) });
     setIsCalendarOpen(true);
-  };
+  }
 
-  const handleSelect = (next: DateRange | undefined) => {
+  function handleSelect(next: DateRange | undefined) {
     setDraft(next);
     if (next?.from && next.to && !isSameDay(next.from, next.to)) {
       onRangeChange({
@@ -78,7 +80,7 @@ export const PeriodNavigator = ({
       });
       setIsCalendarOpen(false);
     }
-  };
+  }
 
   return (
     <div ref={anchorRef} className="flex items-center gap-1">
@@ -152,4 +154,4 @@ export const PeriodNavigator = ({
       </Popover>
     </div>
   );
-};
+}

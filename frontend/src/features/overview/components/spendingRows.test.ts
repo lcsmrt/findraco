@@ -5,61 +5,69 @@ import { buildSpendingRows, type SpendingRow } from "./spendingRows";
 const LUCAS = 1;
 const LIVIA = 2;
 const COLORS: Record<number, string> = { [LUCAS]: "blue", [LIVIA]: "pink" };
-const colorOf = (id: number) => COLORS[id] ?? "grey";
+function colorOf(id: number) {
+  return COLORS[id] ?? "grey";
+}
 
-const member = (
+function member(
   memberId: number,
   spent: number,
   limit: number | null = null,
   active = true,
-): CategorySpendingMember => ({
-  memberId,
-  name: memberId === LUCAS ? "Lucas" : "Livia",
-  spent,
-  limit,
-  remaining: null,
-  percentUsed: null,
-  overLimit: null,
-  active,
-});
+): CategorySpendingMember {
+  return {
+    memberId,
+    name: memberId === LUCAS ? "Lucas" : "Livia",
+    spent,
+    limit,
+    remaining: null,
+    percentUsed: null,
+    overLimit: null,
+    active,
+  };
+}
 
 let nextId = 100;
-const category = (
+function category(
   name: string,
   spent: number,
   overrides: Partial<CategorySpending> = {},
-): CategorySpending => ({
-  categoryId: nextId++,
-  parentId: null,
-  name,
-  type: "DEBIT",
-  ownerId: null,
-  ownerName: null,
-  ownerActive: null,
-  spent,
-  limit: null,
-  remaining: null,
-  percentUsed: null,
-  overLimit: null,
-  members: [],
-  children: [],
-  ...overrides,
-});
+): CategorySpending {
+  return {
+    categoryId: nextId++,
+    parentId: null,
+    name,
+    type: "DEBIT",
+    ownerId: null,
+    ownerName: null,
+    ownerActive: null,
+    spent,
+    limit: null,
+    remaining: null,
+    percentUsed: null,
+    overLimit: null,
+    members: [],
+    children: [],
+    ...overrides,
+  };
+}
 
-const build = (
+function build(
   tree: CategorySpending[],
   selectedMember: { id: number; name: string } | null = null,
   monthCount = 1,
-) => buildSpendingRows({ tree, monthCount, selectedMember, colorOf });
+) {
+  return buildSpendingRows({ tree, monthCount, selectedMember, colorOf });
+}
 
-const rowNamed = (rows: SpendingRow[], name: string): SpendingRow => {
+function rowNamed(rows: SpendingRow[], name: string): SpendingRow {
   for (const row of rows) {
     if (row.name === name) return row;
     const child = row.children.find((c) => c.name === name);
     if (child) return child;
   }
   throw new Error(`No row ${name}`);
-};
+}
 
 describe("buildSpendingRows: list and status (UX-03)", () => {
   it("lists DEBIT roots and their children alphabetically (AC 1)", () => {

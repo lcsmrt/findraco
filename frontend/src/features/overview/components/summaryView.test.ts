@@ -4,7 +4,9 @@ import { summaryView } from "./summaryView";
 
 const LUCAS = 1;
 const LIVIA = 2;
-const colorOf = (id: number) => (id === LUCAS ? "blue" : id === LIVIA ? "pink" : "grey");
+function colorOf(id: number) {
+  return id === LUCAS ? "blue" : id === LIVIA ? "pink" : "grey";
+}
 
 const dashboard: DashboardSummaryResponse = {
   totalIncome: 5147,

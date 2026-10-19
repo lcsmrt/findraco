@@ -6,7 +6,9 @@ import {
   type OverviewFilters,
 } from "./overviewParams";
 
-const params = (init: Record<string, string>) => new URLSearchParams(init);
+function params(init: Record<string, string>) {
+  return new URLSearchParams(init);
+}
 
 const DEFAULT_OVERVIEW: OverviewFilters = {
   period: "this-month",

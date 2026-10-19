@@ -17,15 +17,16 @@ export type PeriodRange = { startDate: string; endDate: string };
 const DATE_FORMAT = "yyyy-MM-dd";
 
 /** Whether the range starts on a month's first day and ends on a month's last day. */
-const isMonthAligned = (start: Date, end: Date) =>
-  isSameDay(start, startOfMonth(start)) && isSameDay(end, endOfMonth(end));
+function isMonthAligned(start: Date, end: Date) {
+  return isSameDay(start, startOfMonth(start)) && isSameDay(end, endOfMonth(end));
+}
 
 /**
  * The period control label (UX-05 AC 8): "October 2026" for one calendar month,
  * "Aug – Oct 2026" for whole months, the year on both ends when they differ.
  * A range not aligned to months shows its days ("5 – 20 Oct 2026").
  */
-export const periodLabel = ({ startDate, endDate }: PeriodRange): string => {
+export function periodLabel({ startDate, endDate }: PeriodRange): string {
   const start = parseISO(startDate);
   const end = parseISO(endDate);
   const sameYear = isSameYear(start, end);
@@ -41,14 +42,14 @@ export const periodLabel = ({ startDate, endDate }: PeriodRange): string => {
   return sameYear
     ? `${format(start, "d MMM")} – ${format(end, "d MMM yyyy")}`
     : `${format(start, "d MMM yyyy")} – ${format(end, "d MMM yyyy")}`;
-};
+}
 
 /**
  * Moves the range by its own length in calendar months (UX-05 AC 8): one month
  * steps by one, a quarter by three, a year by twelve. Month-aligned ranges stay
  * aligned to whole months.
  */
-export const shiftRange = (range: PeriodRange, direction: 1 | -1): PeriodRange => {
+export function shiftRange(range: PeriodRange, direction: 1 | -1): PeriodRange {
   const start = parseISO(range.startDate);
   const end = parseISO(range.endDate);
   const months = countMonths(range.startDate, range.endDate) * direction;
@@ -59,8 +60,9 @@ export const shiftRange = (range: PeriodRange, direction: 1 | -1): PeriodRange =
     startDate: format(aligned ? startOfMonth(nextStart) : nextStart, DATE_FORMAT),
     endDate: format(aligned ? endOfMonth(nextEnd) : nextEnd, DATE_FORMAT),
   };
-};
+}
 
 /** Dates of a range-menu preset (UX-05 AC 9), resolved like the home filters. */
-export const presetRange = (preset: Period, now: Date): PeriodRange =>
-  resolvePeriodDates(preset, now);
+export function presetRange(preset: Period, now: Date): PeriodRange {
+  return resolvePeriodDates(preset, now);
+}

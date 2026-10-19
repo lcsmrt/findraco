@@ -25,7 +25,7 @@ import { SummaryCards } from "./components/SummaryCards";
 import { summaryView } from "./components/summaryView";
 import { fillTrendMonths, trendWindow } from "./components/trendMonths";
 
-export const OverviewTab = () => {
+export function OverviewTab() {
   const { overview, updateOverview } = useOverviewFilters();
   const { period, customRange } = overview;
   const { memberOptions, showMemberPicker, selectedMember, effectiveMemberId } =
@@ -88,14 +88,17 @@ export const OverviewTab = () => {
     [spending, monthCount, focusedMember, colorOf],
   );
 
-  const handlePeriodClick = (p: Period) =>
+  function handlePeriodClick(p: Period) {
     updateOverview((o) => ({ ...o, period: p, customRange: null }));
+  }
 
-  const handleRangeChange = (next: { from: string; to: string }) =>
+  function handleRangeChange(next: { from: string; to: string }) {
     updateOverview((o) => ({ ...o, customRange: next }));
+  }
 
-  const handleMemberChange = (member: MemberOption | null) =>
+  function handleMemberChange(member: MemberOption | null) {
     updateOverview((o) => ({ ...o, memberId: member?.id ?? null }));
+  }
 
   return (
     <div className="flex flex-col gap-6 px-4">
@@ -136,4 +139,4 @@ export const OverviewTab = () => {
       <MonthlyTrendChart months={trendMonths} isLoading={isTrendLoading} />
     </div>
   );
-};
+}

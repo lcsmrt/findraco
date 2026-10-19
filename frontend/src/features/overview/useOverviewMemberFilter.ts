@@ -11,7 +11,7 @@ export type MemberOption = { id: number; name: string };
  * single-member plan ignores the saved member, and a member no longer in the plan
  * is dropped from the URL.
  */
-export const useOverviewMemberFilter = () => {
+export function useOverviewMemberFilter() {
   const { overview, updateOverview } = useOverviewFilters();
   const { memberId } = overview;
 
@@ -39,4 +39,4 @@ export const useOverviewMemberFilter = () => {
   }, [isMemberStale, updateOverview]);
 
   return { memberOptions, showMemberPicker, selectedMember, effectiveMemberId };
-};
+}

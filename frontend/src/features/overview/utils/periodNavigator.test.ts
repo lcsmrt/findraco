@@ -2,7 +2,9 @@ import { describe, expect, it } from "vitest";
 import { resolvePeriodDates, type Period } from "../filters/overviewParams";
 import { periodLabel, presetRange, shiftRange } from "./periodNavigator";
 
-const range = (startDate: string, endDate: string) => ({ startDate, endDate });
+function range(startDate: string, endDate: string) {
+  return { startDate, endDate };
+}
 
 describe("periodLabel (UX-05 AC 8)", () => {
   it("names one calendar month in full", () => {

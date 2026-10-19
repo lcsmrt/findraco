@@ -18,20 +18,22 @@ type TreeGuideProps = {
 };
 
 /** Thin ├ / └ guide that ties a child to its root (UX-01 AC 3). */
-const TreeGuide = ({ isLast }: TreeGuideProps) => (
-  <span
-    aria-hidden
-    className="pointer-events-none absolute inset-y-0 left-2 w-4"
-  >
+function TreeGuide({ isLast }: TreeGuideProps) {
+  return (
     <span
-      className={cn(
-        "bg-border absolute top-0 left-0 w-px",
-        isLast ? "h-1/2" : "h-full",
-      )}
-    />
-    <span className="bg-border absolute top-1/2 left-0 h-px w-3" />
-  </span>
-);
+      aria-hidden
+      className="pointer-events-none absolute inset-y-0 left-2 w-4"
+    >
+      <span
+        className={cn(
+          "bg-border absolute top-0 left-0 w-px",
+          isLast ? "h-1/2" : "h-full",
+        )}
+      />
+      <span className="bg-border absolute top-1/2 left-0 h-px w-3" />
+    </span>
+  );
+}
 
 type OwnerLabelProps = {
   category: FinancialTransactionCategory;
@@ -39,7 +41,7 @@ type OwnerLabelProps = {
 };
 
 /** Owner name; a former member is greyed (UX-01 AC 5). */
-const OwnerLabel = ({ category, colorOf }: OwnerLabelProps) => {
+function OwnerLabel({ category, colorOf }: OwnerLabelProps) {
   if (category.ownerId == null || !category.ownerName) return null;
   const former = category.ownerActive === false;
   return (
@@ -58,7 +60,7 @@ const OwnerLabel = ({ category, colorOf }: OwnerLabelProps) => {
       </span>
     </span>
   );
-};
+}
 
 type MemberLimitsProps = {
   category: FinancialTransactionCategory;
@@ -66,7 +68,7 @@ type MemberLimitsProps = {
 };
 
 /** Per-member limits as absolute amounts; former members greyed (UX-01 AC 2, 5). */
-const MemberLimits = ({ category, colorOf }: MemberLimitsProps) => {
+function MemberLimits({ category, colorOf }: MemberLimitsProps) {
   const entries = category.memberLimits ?? [];
   if (entries.length === 0) return null;
   return (
@@ -90,11 +92,12 @@ const MemberLimits = ({ category, colorOf }: MemberLimitsProps) => {
       ))}
     </span>
   );
-};
+}
 
 /** The configured monthly limit: the per-member sum, or the plain limit. */
-const monthlyLimit = (category: FinancialTransactionCategory) =>
-  category.effectiveLimit ?? category.spendingLimit ?? null;
+function monthlyLimit(category: FinancialTransactionCategory) {
+  return category.effectiveLimit ?? category.spendingLimit ?? null;
+}
 
 type CategoryTreeRowProps = {
   category: FinancialTransactionCategory;
@@ -113,7 +116,7 @@ type CategoryTreeRowProps = {
  * actions (UX-02 AC 1). Narrow: a stacked row that opens the edit form on tap
  * (UX-02 AC 3). Both layouts render; CSS shows one.
  */
-export const CategoryTreeRow = ({
+export function CategoryTreeRow({
   category,
   child,
   colorOf,
@@ -122,7 +125,7 @@ export const CategoryTreeRow = ({
   onDelete,
   onAddChild,
   className,
-}: CategoryTreeRowProps) => {
+}: CategoryTreeRowProps) {
   const isChild = child != null;
   const limit = monthlyLimit(category);
   const hasOwner = category.ownerId != null && !!category.ownerName;
@@ -244,4 +247,4 @@ export const CategoryTreeRow = ({
       )}
     </div>
   );
-};
+}

@@ -10,17 +10,19 @@ import {
   isCategoryInUse,
 } from "./categoryDeletion";
 
-const cat = (
+function cat(
   id: number,
   description: string,
   overrides: Partial<FinancialTransactionCategory> = {},
-): FinancialTransactionCategory => ({
-  id,
-  description,
-  type: "DEBIT",
-  parentId: null,
-  ...overrides,
-});
+): FinancialTransactionCategory {
+  return {
+    id,
+    description,
+    type: "DEBIT",
+    parentId: null,
+    ...overrides,
+  };
+}
 
 const food = cat(1, "Food");
 const delivery = cat(2, "Delivery", { parentId: 1 });
@@ -30,14 +32,15 @@ const home = cat(5, "Home", { parentId: 4 });
 const salary = cat(6, "Salary", { type: "CREDIT" });
 const categories = [food, delivery, diningOut, shopping, home, salary];
 
-const httpError = (status: number, message: string) =>
-  new AxiosError(message, String(status), undefined, undefined, {
+function httpError(status: number, message: string) {
+  return new AxiosError(message, String(status), undefined, undefined, {
     status,
     statusText: "",
     headers: {},
     config: { headers: new AxiosHeaders() },
     data: { message },
   });
+}
 
 describe("eligibleDeleteTargets", () => {
   it("offers every other category of the same type, sorted by name", () => {
@@ -62,11 +65,13 @@ describe("eligibleDeleteTargets", () => {
   });
 });
 
-const usage = (
+function usage(
   transactions: number,
   items: number,
   recurrenceDefinitions: number,
-): CategoryUsage => ({ transactions, items, recurrenceDefinitions });
+): CategoryUsage {
+  return { transactions, items, recurrenceDefinitions };
+}
 
 const unused = usage(0, 0, 0);
 

@@ -17,37 +17,37 @@ type CategoryFormSheetProviderProps = {
 };
 
 /** One category form for the app; callers await the saved category (or null on cancel). */
-export const CategoryFormSheetProvider = ({
+export function CategoryFormSheetProvider({
   children,
-}: CategoryFormSheetProviderProps) => {
+}: CategoryFormSheetProviderProps) {
   const [state, setState] = useState<SheetState>({ open: false });
   const resolverRef = useRef<
     ((category: FinancialTransactionCategory | null) => void) | null
   >(null);
 
-  const openWith = (next: SheetState) => {
+  function openWith(next: SheetState) {
     resolverRef.current?.(null);
     setState(next);
     return new Promise<FinancialTransactionCategory | null>((resolve) => {
       resolverRef.current = resolve;
     });
-  };
+  }
 
   const value: CategoryFormSheetContextValue = {
     openCreate: (defaults) => openWith({ open: true, mode: "create", defaults }),
     openEdit: (category) => openWith({ open: true, mode: "edit", category }),
   };
 
-  const handleSuccess = (saved: FinancialTransactionCategory) => {
+  function handleSuccess(saved: FinancialTransactionCategory) {
     resolverRef.current?.(saved);
     resolverRef.current = null;
-  };
+  }
 
-  const handleClose = () => {
+  function handleClose() {
     resolverRef.current?.(null);
     resolverRef.current = null;
     setState({ open: false });
-  };
+  }
 
   return (
     <CategoryFormSheetContext.Provider value={value}>
@@ -71,4 +71,4 @@ export const CategoryFormSheetProvider = ({
       />
     </CategoryFormSheetContext.Provider>
   );
-};
+}

@@ -101,11 +101,12 @@ export type SpendingRowsView = {
 
 type Row = ScaledNode<CategorySpending>;
 
-const byName = (a: { name: string }, b: { name: string }) =>
-  a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+function byName(a: { name: string }, b: { name: string }) {
+  return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+}
 
 /** Status, integer percent and remaining / over-by of a spend against a limit (UX-03 AC 3–4, 8). */
-export const usageOf = (spent: number, limit: number | null | undefined): Usage => {
+export function usageOf(spent: number, limit: number | null | undefined): Usage {
   if (limit == null) return { status: "none", percent: null, remaining: null, overBy: null };
   if (spent > limit) {
     return {
@@ -122,26 +123,29 @@ export const usageOf = (spent: number, limit: number | null | undefined): Usage 
     remaining: limit - spent,
     overBy: null,
   };
-};
+}
 
 type SegmentInput = Omit<BarSegment, "widthPct">;
 
-const buildBar = (segments: SegmentInput[], spent: number, limit: number | null): Bar | null => {
+function buildBar(segments: SegmentInput[], spent: number, limit: number | null): Bar | null {
   if (limit == null) return null;
   const span = Math.max(spent, limit);
-  const pct = (value: number) => (span === 0 ? 0 : (value / span) * 100);
+  function pct(value: number) {
+    return span === 0 ? 0 : (value / span) * 100;
+  }
   return {
     segments: segments
       .filter((segment) => segment.amount > 0)
       .map((segment) => ({ ...segment, widthPct: pct(segment.amount) })),
     limitTickPct: spent > limit ? pct(limit) : null,
   };
-};
+}
 
-const spendingMembers = (row: Row) =>
-  row.members.filter((member) => member.spent !== 0);
+function spendingMembers(row: Row) {
+  return row.members.filter((member) => member.spent !== 0);
+}
 
-const memberSubRow = (member: CategorySpendingMember, colorOf: (id: number) => string): MemberSubRow => {
+function memberSubRow(member: CategorySpendingMember, colorOf: (id: number) => string): MemberSubRow {
   const color = colorOf(member.memberId);
   const usage = member.active
     ? usageOf(member.spent, member.limit)
@@ -162,9 +166,9 @@ const memberSubRow = (member: CategorySpendingMember, colorOf: (id: number) => s
         )
       : null,
   };
-};
+}
 
-const toRow = (row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow => {
+function toRow(row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
   const { selectedMember, colorOf } = input;
   const limit = row.limit ?? null;
   const owner: OwnerPill | null =
@@ -182,8 +186,9 @@ const toRow = (row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow =>
     ? [{ memberId: owner.memberId, amount: row.spent }]
     : spendingMembers(row).map((m) => ({ memberId: m.memberId, amount: m.spent }));
 
-  const isDimmed = (memberId: number) =>
-    selectedMember != null && memberId !== selectedMember.id;
+  function isDimmed(memberId: number) {
+    return selectedMember != null && memberId !== selectedMember.id;
+  }
 
   const memberLine: MemberAmount[] = spendingMembers(row).map((member) => ({
     memberId: member.memberId,
@@ -267,17 +272,18 @@ const toRow = (row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow =>
     owner,
     children,
   };
-};
+}
 
-const needsAttention = (row: SpendingRow) =>
-  row.status === "warning" || row.status === "over";
+function needsAttention(row: SpendingRow) {
+  return row.status === "warning" || row.status === "over";
+}
 
 /**
  * The Overview spending list (UX-03, UX-04): DEBIT roots and their children sorted by
  * name, limits scaled to the period, member segments and sub-rows, and the roots that
  * open on load.
  */
-export const buildSpendingRows = (input: SpendingRowsInput): SpendingRowsView => {
+export function buildSpendingRows(input: SpendingRowsInput): SpendingRowsView {
   const debit = input.tree.filter((root) => root.type === "DEBIT");
   const rows = scaleTreeLimits(debit, input.monthCount)
     .map((root) => toRow(root, 0, input))
@@ -288,4 +294,4 @@ export const buildSpendingRows = (input: SpendingRowsInput): SpendingRowsView =>
       .filter((root) => root.children.some(needsAttention))
       .map((root) => root.categoryId),
   };
-};
+}

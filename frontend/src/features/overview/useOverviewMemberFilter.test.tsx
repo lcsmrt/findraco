@@ -18,34 +18,39 @@ const mockedGet = findracoApi.get as unknown as Mock;
 const ana = { userId: 7, name: "Ana", email: "ana@x.com", role: "OWNER" };
 const bruno = { userId: 8, name: "Bruno", email: "bruno@x.com", role: "EDITOR" };
 
-const mockMembers = (members: (typeof ana)[]) =>
-  mockedGet.mockImplementation(async (url: string) => {
+function mockMembers(members: (typeof ana)[]) {
+  return mockedGet.mockImplementation(async (url: string) => {
     if (url === "/plan/5/members") return { data: members };
     throw new Error(`Unexpected GET ${url}`);
   });
+}
 
 let location: Location;
-const LocationProbe = () => {
+function LocationProbe() {
   location = useLocation();
   return null;
-};
+}
 
-const setup = (url: string) => {
+function setup(url: string) {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
   });
-  const Wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      <MemoryRouter initialEntries={[url]}>
-        {children}
-        <LocationProbe />
-      </MemoryRouter>
-    </QueryClientProvider>
-  );
+  function Wrapper({ children }: { children: ReactNode }) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <MemoryRouter initialEntries={[url]}>
+          {children}
+          <LocationProbe />
+        </MemoryRouter>
+      </QueryClientProvider>
+    );
+  }
   return renderHook(() => useOverviewMemberFilter(), { wrapper: Wrapper });
-};
+}
 
-const params = () => Object.fromEntries(new URLSearchParams(location.search));
+function params() {
+  return Object.fromEntries(new URLSearchParams(location.search));
+}
 
 afterEach(() => {
   cleanup();

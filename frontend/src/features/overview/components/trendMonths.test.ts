@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { fillTrendMonths, trendWindow } from "./trendMonths";
 
-const range = (startDate: string, endDate: string) => ({ startDate, endDate });
+function range(startDate: string, endDate: string) {
+  return { startDate, endDate };
+}
 
 describe("trendWindow (UX-05 AC 4)", () => {
   it("covers the 6 months ending at a one-month period", () => {

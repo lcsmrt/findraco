@@ -13,18 +13,20 @@ import {
   type MemberLimitRow,
 } from "./categoryForm";
 
-const cat = (
+function cat(
   id: number,
   description: string,
   overrides: Partial<FinancialTransactionCategory> = {},
-): FinancialTransactionCategory => ({
-  id,
-  description,
-  type: "DEBIT",
-  parentId: null,
-  spendingLimit: null,
-  ...overrides,
-});
+): FinancialTransactionCategory {
+  return {
+    id,
+    description,
+    type: "DEBIT",
+    parentId: null,
+    spendingLimit: null,
+    ...overrides,
+  };
+}
 
 const food = cat(1, "Food");
 const delivery = cat(2, "Delivery", { parentId: 1 });
@@ -33,23 +35,26 @@ const salary = cat(4, "Salary", { type: "CREDIT" });
 const rent = cat(5, "Rent");
 const categories = [food, delivery, shopping, salary, rent];
 
-const values = (overrides: Partial<CategoryFormValues> = {}): CategoryFormValues => ({
-  type: "DEBIT",
-  description: "Groceries",
-  parentId: null,
-  ownerId: null,
-  spendingLimit: null,
-  limitMode: "single",
-  memberLimits: [],
-  ...overrides,
-});
+function values(overrides: Partial<CategoryFormValues> = {}): CategoryFormValues {
+  return {
+    type: "DEBIT",
+    description: "Groceries",
+    parentId: null,
+    ownerId: null,
+    spendingLimit: null,
+    limitMode: "single",
+    memberLimits: [],
+    ...overrides,
+  };
+}
 
-const issuesOf = (
+function issuesOf(
   result: ReturnType<ReturnType<typeof createCategoryFormSchema>["safeParse"]>,
-) =>
-  result.success
+) {
+  return result.success
     ? []
     : result.error.issues.map((i) => ({ path: i.path.join("."), message: i.message }));
+}
 
 describe("parentOptions", () => {
   it("lists only roots of the given type, sorted by name", () => {
@@ -272,12 +277,14 @@ describe("toPayload", () => {
 const lucas: PlanMember = { userId: 10, name: "Lucas", email: "l@x.com", role: "OWNER" };
 const livia: PlanMember = { userId: 20, name: "Livia", email: "v@x.com", role: "EDITOR" };
 
-const row = (
+function row(
   memberId: number,
   memberName: string,
   amount: number | null,
   active = true,
-): MemberLimitRow => ({ memberId, memberName, amount, active });
+): MemberLimitRow {
+  return { memberId, memberName, amount, active };
+}
 
 const groceries = cat(6, "Groceries", {
   memberLimits: [
@@ -350,8 +357,9 @@ describe("memberLimitShares", () => {
 });
 
 describe("createCategoryFormSchema with per-member limits", () => {
-  const perMember = (rows: MemberLimitRow[], overrides: Partial<CategoryFormValues> = {}) =>
-    values({ limitMode: "perMember", memberLimits: rows, ...overrides });
+  function perMember(rows: MemberLimitRow[], overrides: Partial<CategoryFormValues> = {}) {
+    return values({ limitMode: "perMember", memberLimits: rows, ...overrides });
+  }
 
   it("accepts one amount per member", () => {
     expect(

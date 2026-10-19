@@ -70,7 +70,9 @@ export function serializeOverviewFilters(
 
 /** Resolves a preset token to an inclusive `yyyy-MM-dd` range relative to `now`. */
 export function resolvePeriodDates(period: Period, now: Date) {
-  const fmt = (d: Date) => format(d, DATE_FORMAT);
+  function fmt(d: Date) {
+    return format(d, DATE_FORMAT);
+  }
   switch (period) {
     case "this-month":
       return {

@@ -35,7 +35,7 @@ type CategorySectionProps = {
   onAddChild: (root: FinancialTransactionCategory) => void;
 };
 
-const CategorySection = ({
+function CategorySection({
   title,
   roots,
   colorOf,
@@ -43,61 +43,63 @@ const CategorySection = ({
   onEdit,
   onDelete,
   onAddChild,
-}: CategorySectionProps) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>{title}</CardTitle>
-    </CardHeader>
-    <CardContent>
-      {roots.length === 0 ? (
-        <Text as="p" variant="secondary" className="flex h-16 items-center justify-center">
-          No categories yet.
-        </Text>
-      ) : (
-        <div className="flex flex-col">
-          <Text
-            as="div"
-            variant="caption"
-            className={cn("hidden border-b pb-2", CATEGORY_GRID_COLUMNS)}
-          >
-            <span>Name</span>
-            <span>Owner</span>
-            <span className="text-right">Monthly limit</span>
-            <span>Per member</span>
-            <span className="sr-only">Actions</span>
+}: CategorySectionProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {roots.length === 0 ? (
+          <Text as="p" variant="secondary" className="flex h-16 items-center justify-center">
+            No categories yet.
           </Text>
-          {roots.map((root) => (
-            <div key={root.category.id} className="border-b last:border-0">
-              <CategoryTreeRow
-                category={root.category}
-                colorOf={colorOf}
-                canManage={canManage}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onAddChild={onAddChild}
-              />
-              {root.children.map((child, index) => (
+        ) : (
+          <div className="flex flex-col">
+            <Text
+              as="div"
+              variant="caption"
+              className={cn("hidden border-b pb-2", CATEGORY_GRID_COLUMNS)}
+            >
+              <span>Name</span>
+              <span>Owner</span>
+              <span className="text-right">Monthly limit</span>
+              <span>Per member</span>
+              <span className="sr-only">Actions</span>
+            </Text>
+            {roots.map((root) => (
+              <div key={root.category.id} className="border-b last:border-0">
                 <CategoryTreeRow
-                  key={child.id}
-                  category={child}
-                  child={{ isLast: index === root.children.length - 1 }}
+                  category={root.category}
                   colorOf={colorOf}
                   canManage={canManage}
                   onEdit={onEdit}
                   onDelete={onDelete}
                   onAddChild={onAddChild}
                 />
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
-    </CardContent>
-  </Card>
-);
+                {root.children.map((child, index) => (
+                  <CategoryTreeRow
+                    key={child.id}
+                    category={child}
+                    child={{ isLast: index === root.children.length - 1 }}
+                    colorOf={colorOf}
+                    canManage={canManage}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onAddChild={onAddChild}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 /** Category management: structure and configured limits, no spend (UX-01). */
-export const CategoriesTab = () => {
+export function CategoriesTab() {
   const { canManageCategories: canManage } = usePlanPermissions();
   const { openCreate, openEdit } = useCategoryFormSheet();
   const colorOf = useMemberColors();
@@ -114,11 +116,13 @@ export const CategoriesTab = () => {
     null,
   );
 
-  const handleEdit = (category: FinancialTransactionCategory) =>
+  function handleEdit(category: FinancialTransactionCategory) {
     void openEdit(category);
+  }
 
-  const handleAddChild = (root: FinancialTransactionCategory) =>
+  function handleAddChild(root: FinancialTransactionCategory) {
     void openCreate({ parentId: root.id });
+  }
 
   return (
     <div className="flex flex-col gap-6 px-4">
@@ -165,4 +169,4 @@ export const CategoriesTab = () => {
       )}
     </div>
   );
-};
+}

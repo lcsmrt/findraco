@@ -32,7 +32,7 @@ type MonthDotProps = {
 };
 
 /** A filled, larger dot on months inside the selected period; a faded one elsewhere. */
-const MonthDot = ({ cx, cy, index = 0, stroke, months }: MonthDotProps) => {
+function MonthDot({ cx, cy, index = 0, stroke, months }: MonthDotProps) {
   if (cx == null || cy == null) return null;
   const inPeriod = months[index]?.inPeriod ?? false;
   return (
@@ -45,7 +45,7 @@ const MonthDot = ({ cx, cy, index = 0, stroke, months }: MonthDotProps) => {
       stroke="none"
     />
   );
-};
+}
 
 type MonthTickProps = {
   x?: number;
@@ -54,7 +54,7 @@ type MonthTickProps = {
   months: TrendMonth[];
 };
 
-const MonthTick = ({ x = 0, y = 0, index = 0, months }: MonthTickProps) => {
+function MonthTick({ x = 0, y = 0, index = 0, months }: MonthTickProps) {
   const month = months[index];
   if (!month) return null;
   return (
@@ -70,13 +70,14 @@ const MonthTick = ({ x = 0, y = 0, index = 0, months }: MonthTickProps) => {
       {month.label}
     </text>
   );
-};
+}
 
-const withTitles = (months: TrendMonth[]) =>
-  months.map((month) => ({
+function withTitles(months: TrendMonth[]) {
+  return months.map((month) => ({
     ...month,
     title: format(new Date(month.year, month.month - 1, 1), "MMMM yyyy"),
   }));
+}
 
 type MonthlyTrendChartProps = {
   months: TrendMonth[] | undefined;
@@ -84,55 +85,57 @@ type MonthlyTrendChartProps = {
 };
 
 /** Income and Expenses as one line each across the months, the selected period highlighted (UX-05 AC 4–6). */
-export const MonthlyTrendChart = ({ months, isLoading }: MonthlyTrendChartProps) => (
-  <Card>
-    <CardHeader>
-      <CardTitle>Monthly trend</CardTitle>
-    </CardHeader>
-    <CardContent className="px-2 sm:px-6">
-      {isLoading || !months ? (
-        <Skeleton className="h-64 w-full" />
-      ) : (
-        <ChartContainer config={chartConfig} className="h-64 w-full">
-          <LineChart data={withTitles(months)} margin={{ left: 4, right: 12 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis
-              dataKey="label"
-              tickLine={false}
-              axisLine={false}
-              interval={0}
-              tick={<MonthTick months={months} />}
-            />
-            <YAxis
-              tickLine={false}
-              axisLine={false}
-              width={64}
-              tickFormatter={(v: number) => formatMoney(v, { compact: true })}
-            />
-            <ChartTooltip
-              cursor={{ stroke: "var(--border)" }}
-              content={
-                <ChartTooltipContent
-                  labelFormatter={(_, payload) => payload?.[0]?.payload?.title ?? ""}
-                />
-              }
-            />
-            <ChartLegend content={<ChartLegendContent />} />
-            {(["income", "expenses"] as const).map((key) => (
-              <Line
-                key={key}
-                type="monotone"
-                dataKey={key}
-                stroke={`var(--color-${key})`}
-                strokeWidth={2}
-                dot={<MonthDot months={months} />}
-                activeDot={{ r: 5 }}
-                isAnimationActive={false}
+export function MonthlyTrendChart({ months, isLoading }: MonthlyTrendChartProps) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Monthly trend</CardTitle>
+      </CardHeader>
+      <CardContent className="px-2 sm:px-6">
+        {isLoading || !months ? (
+          <Skeleton className="h-64 w-full" />
+        ) : (
+          <ChartContainer config={chartConfig} className="h-64 w-full">
+            <LineChart data={withTitles(months)} margin={{ left: 4, right: 12 }}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} />
+              <XAxis
+                dataKey="label"
+                tickLine={false}
+                axisLine={false}
+                interval={0}
+                tick={<MonthTick months={months} />}
               />
-            ))}
-          </LineChart>
-        </ChartContainer>
-      )}
-    </CardContent>
-  </Card>
-);
+              <YAxis
+                tickLine={false}
+                axisLine={false}
+                width={64}
+                tickFormatter={(v: number) => formatMoney(v, { compact: true })}
+              />
+              <ChartTooltip
+                cursor={{ stroke: "var(--border)" }}
+                content={
+                  <ChartTooltipContent
+                    labelFormatter={(_, payload) => payload?.[0]?.payload?.title ?? ""}
+                  />
+                }
+              />
+              <ChartLegend content={<ChartLegendContent />} />
+              {(["income", "expenses"] as const).map((key) => (
+                <Line
+                  key={key}
+                  type="monotone"
+                  dataKey={key}
+                  stroke={`var(--color-${key})`}
+                  strokeWidth={2}
+                  dot={<MonthDot months={months} />}
+                  activeDot={{ r: 5 }}
+                  isAnimationActive={false}
+                />
+              ))}
+            </LineChart>
+          </ChartContainer>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

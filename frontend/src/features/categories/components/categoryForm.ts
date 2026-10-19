@@ -8,32 +8,35 @@ import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
 import { toCents } from "@/utils/money";
 import { z } from "zod";
 
-export const categoryHasChildren = (
+export function categoryHasChildren(
   categoryId: number,
   categories: FinancialTransactionCategory[],
-) => categories.some((c) => c.parentId === categoryId);
+) {
+  return categories.some((c) => c.parentId === categoryId);
+}
 
 /** Categories that can be the parent of `editingId`: roots of `type`, never itself. */
-export const parentOptions = (
+export function parentOptions(
   categories: FinancialTransactionCategory[],
   type: FinancialTransactionType,
   editingId?: number,
-) =>
-  categories
+) {
+  return categories
     .filter((c) => c.parentId == null && c.type === type && c.id !== editingId)
     .sort((a, b) => a.description.localeCompare(b.description));
+}
 
 /** The owner a category would have: a child inherits its parent's (CAT-15). */
-export const effectiveOwnerId = (
+export function effectiveOwnerId(
   parentId: number | null,
   ownerId: number | null,
   categories: FinancialTransactionCategory[],
-): number | null => {
+): number | null {
   if (parentId != null) {
     return categories.find((c) => c.id === parentId)?.ownerId ?? null;
   }
   return ownerId;
-};
+}
 
 export type OwnerOption = { id: number; name: string; active: boolean };
 
@@ -41,10 +44,10 @@ export type OwnerOption = { id: number; name: string; active: boolean };
  * Members a root can belong to: the active members, plus the current owner
  * when they left the plan, so the OWNER can keep that ownership (CAT-14).
  */
-export const ownerOptions = (
+export function ownerOptions(
   members: PlanMember[],
   category?: FinancialTransactionCategory | null,
-): OwnerOption[] => {
+): OwnerOption[] {
   const options: OwnerOption[] = members
     .map((member) => ({ id: member.userId, name: member.name, active: true }))
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -53,7 +56,7 @@ export const ownerOptions = (
     options.push({ id: ownerId, name: category?.ownerName ?? "", active: false });
   }
   return options;
-};
+}
 
 const memberLimitRowSchema = z.object({
   memberId: z.number(),
@@ -88,11 +91,11 @@ export type CategoryFormOutput = z.output<typeof categoryFormBaseSchema>;
  * subcategories keeps its type and stays a root; a parent must be a root of
  * the same type.
  */
-export const createCategoryFormSchema = (
+export function createCategoryFormSchema(
   categories: FinancialTransactionCategory[],
   editing?: FinancialTransactionCategory | null,
-) =>
-  categoryFormBaseSchema.superRefine((values, ctx) => {
+) {
+  return categoryFormBaseSchema.superRefine((values, ctx) => {
     refineMemberLimits(values, ctx, categories);
     if (values.parentId != null && values.ownerId != null) {
       ctx.addIssue({
@@ -128,13 +131,14 @@ export const createCategoryFormSchema = (
       });
     }
   });
+}
 
 /** Per-member limit rules the API enforces (CAT-13), checked up front. */
-const refineMemberLimits = (
+function refineMemberLimits(
   values: CategoryFormValues,
   ctx: z.RefinementCtx,
   categories: FinancialTransactionCategory[],
-) => {
+) {
   if (values.limitMode !== "perMember") return;
   if (values.type === "CREDIT") {
     ctx.addIssue({
@@ -170,15 +174,15 @@ const refineMemberLimits = (
       });
     }
   });
-};
+}
 
 /**
  * Each active member's read-only share of the per-member total, in percent
  * (one decimal). Former members and members without an amount have no share.
  */
-export const memberLimitShares = (
+export function memberLimitShares(
   rows: MemberLimitRow[],
-): Map<number, number> => {
+): Map<number, number> {
   const amounts = rows
     .filter((row) => row.active)
     .flatMap((row) =>
@@ -193,16 +197,16 @@ export const memberLimitShares = (
     ),
   );
   return shares;
-};
+}
 
 /**
  * One row per active member (with their stored amount, if any), then the
  * stored entries of former members.
  */
-export const buildMemberLimitRows = (
+export function buildMemberLimitRows(
   category: FinancialTransactionCategory | null | undefined,
   members: PlanMember[],
-): MemberLimitRow[] => {
+): MemberLimitRow[] {
   const stored = category?.memberLimits ?? [];
   const activeRows: MemberLimitRow[] = members
     .map((member) => {
@@ -225,14 +229,14 @@ export const buildMemberLimitRows = (
       active: entry.active,
     }));
   return [...activeRows, ...otherRows];
-};
+}
 
-export const buildDefaultValues = (
+export function buildDefaultValues(
   category?: FinancialTransactionCategory | null,
   defaults?: CategoryFormDefaults,
   members: PlanMember[] = [],
   categories: FinancialTransactionCategory[] = [],
-): CategoryFormValues => {
+): CategoryFormValues {
   const memberLimits = buildMemberLimitRows(category, members);
   if (category) {
     return {
@@ -259,16 +263,16 @@ export const buildDefaultValues = (
     limitMode: "single",
     memberLimits,
   };
-};
+}
 
 /**
  * Per member mode sends every row with an amount (former members' entries
  * included, unchanged) and no plain limit; single mode sends the plain limit
  * and clears the per-member entries.
  */
-export const toPayload = (
+export function toPayload(
   values: CategoryFormOutput,
-): CreateFinancialTransactionCategoryRequest["body"] => {
+): CreateFinancialTransactionCategoryRequest["body"] {
   const perMember = values.type === "DEBIT" && values.limitMode === "perMember";
   return {
     type: values.type,
@@ -286,4 +290,4 @@ export const toPayload = (
         )
       : [],
   };
-};
+}
