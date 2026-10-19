@@ -212,7 +212,18 @@ describe("findracoApi session renewal", () => {
   });
 
   it("does not retry a retried request a second time", async () => {
-    server.use(...protectedRoutes({ acceptRenewedToken: false }), refreshRoute("ok"));
+    let plansAttempts = 0;
+    server.use(
+      http.get(`*${API_PATH}/plans`, () => {
+        plansAttempts += 1;
+        // The expected flow sends /plans twice. A third attempt means the retry loops: a 500 ends
+        // the loop, so the count assertions below fail at once instead of the test hanging.
+        return plansAttempts > 2
+          ? HttpResponse.json({ message: "Retry loop stopped by the test." }, { status: 500 })
+          : HttpResponse.json(AUTH_REQUIRED, { status: 401 });
+      }),
+      refreshRoute("ok"),
+    );
     const requests = recordRequests();
 
     const error = await findracoApi.get("/plans").catch((e: unknown) => e);

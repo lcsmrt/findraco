@@ -3460,8 +3460,10 @@ Done: tooling 13 → 18 rule cases (+5). Recognition moved from "a `return` argu
 
 **Done when**:
 
-- [ ] M9 applied → the test fails in seconds on the count assertions (checked, reverted)
-- [ ] Quick gate passes
+- [x] M9 applied → the test fails in seconds on the count assertions (checked, reverted)
+- [x] Quick gate passes
+
+Done: unit + tooling 929 tests, unchanged count. The case defines its own `/plans` handler counting attempts; past the expected two it answers 500, ending a looping retry. Checked, reverted: M9 (retry without `sessionRetried`) now fails in 11 ms on `toMatchObject({ response: { status: 401 } })` (whole file run 2.6 s) instead of hanging.
 
 **Tests**: unit
 **Gate**: quick
