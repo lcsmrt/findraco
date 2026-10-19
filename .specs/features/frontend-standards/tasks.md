@@ -309,6 +309,18 @@ T123 → T124
 T124 → T125
 ```
 
+### Phase 18: Verifier fixes (iteration 1)
+
+Fixes from `validation.md` (iteration 1 of 3). The five tasks are independent of each other; they run in order.
+
+```
+T132
+T133
+T134
+T135
+T136
+```
+
 ---
 
 ## Task Breakdown
@@ -3152,6 +3164,10 @@ Choices: `thresholds.perFile` (the failure names the module, and a module with f
 
 Done: 97.8% branches overall, every module ≥ 90%; unit + tooling 811 → 835 tests, none removed. Raised: `useDashboardService` 77.8 → 100 (not fetched without a plan or while disabled); `usePlanService` 87.2 → 100 (five mutations hand result and request to the caller's `onSuccess`); `transactionFilterDraft` 78.3 → 100 (date range both ways, one-ended ranges, no range and the "all" type); `transactionForm` 89.7 → 94.1 (current-installment validation, attribution read from an existing transaction, Me without a known user, Someone else before and after a pick); `formatters` 50 → 100 (`formatDate` string and `Date` paths, `getFirstAndLastInitials`). `getFirstName` lost its `?? name`: `split` always returns an element, so that arm could never run.
 
+**Tests**: unit
+**Gate**: quick
+**Commit**: `test(frontend): close branch coverage gaps on logic`
+
 ---
 
 ### T116: Full gate in `pnpm test`
@@ -3380,10 +3396,123 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 ---
 
+### Phase 18: Verifier fixes (iteration 1) (T132–T136)
+
+### T132: Tests that protect the unhandled-request guard
+
+**What**: A recorder case with exactly one unhandled request, and a test proving the `unit` setup's `afterEach` fails a test that sent an unhandled request (kills M28 and M29).
+**Where**: `frontend/src/test/unhandledRequests.test.ts`, `frontend/src/test/setupUnit.test.ts`
+**Depends on**: None
+**Reuses**: -
+**Requirement**: STD-04 (AC 3)
+
+**Tools**: MCP: NONE · Skill: `frontend-testing`
+
+**Done when**:
+
+- [ ] One recorded request → `assertNone` throws naming it
+- [ ] A test that sends a request without a handler fails with the recorder's message naming method and URL; removing `assertNone()` from `setupUnit.ts` makes a test fail
+- [ ] M28 and M29 applied, run and killed (checked, reverted)
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+**Commit**: `test(frontend): unhandled-request guard tests kill m28 and m29`
+
+---
+
+### T133: Logic cap recognises components that return JSX indirectly
+
+**What**: `local/component-logic-cap` treats a PascalCase function as a component when its body contains JSX anywhere (not only in a `return` argument), so `return content;` and `return renderX();` no longer escape; functions without JSX stay excluded. Skill text updated to the new criterion.
+**Where**: `frontend/eslint/rules/componentLogicCap.ts`
+**Depends on**: None
+**Reuses**: -
+**Requirement**: STD-12 (AC 3, 5)
+
+**Tools**: MCP: NONE · Skill: `frontend-testing`, `component-creation`
+
+**Done when**:
+
+- [ ] `RuleTester`: `return content;` and `return renderX();` components at 61 lines reported, at 60 lines valid; existing cases unchanged
+- [ ] A PascalCase function with no JSX stays valid
+- [ ] `pnpm lint` exits 0 (any newly caught component gets its hook, reported)
+- [ ] Quick gate passes
+
+**Tests**: tooling
+**Gate**: quick
+**Commit**: `fix(frontend): logic cap counts components returning jsx indirectly`
+
+---
+
+### T134: Broken session retry fails fast
+
+**What**: The always-401 case in `findracoApi.test.ts` bounds the retry with a request counter: a third `/plans` attempt answers 500, so a looping retry ends and the exact-count assertions (2 `/plans`, 1 refresh) fail instead of hanging (M9).
+**Where**: `frontend/src/api/clients/findracoApi.test.ts`
+**Depends on**: None
+**Reuses**: -
+**Requirement**: STD-04 (AC 4)
+
+**Tools**: MCP: NONE · Skill: `frontend-testing`
+
+**Done when**:
+
+- [ ] M9 applied → the test fails in seconds on the count assertions (checked, reverted)
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+**Commit**: `test(frontend): bound the always-401 retry case by a request counter`
+
+---
+
+### T135: No `vi.mock` of our modules in hook and route tests
+
+**What**: Migrate `useAuthSession.test.tsx`, `useOverviewMemberFilter.test.tsx`, `useTransactionFilterChips.test.tsx` and `PrivateRoute.test.tsx` to MSW handler factories and `renderWithProviders`/`renderHookWithProviders` with explicit context values; every scenario and assertion kept; no ` as ` casts.
+**Where**: `frontend/src/app/providers/useAuthSession.test.tsx` (+ the three other test files)
+**Depends on**: None
+**Reuses**: -
+**Requirement**: STD-04 (AC 3, 4)
+
+**Tools**: MCP: NONE · Skill: `frontend-testing`, `api-integration`
+
+**Done when**:
+
+- [ ] No `vi.mock` of `@/` modules in the four files; `sonner` rendered for real or mocked only if unavoidable (reported)
+- [ ] Every previous scenario and assertion still present; test count ≥ before
+- [ ] No ` as ` casts in the four files
+- [ ] Quick gate passes
+
+**Tests**: unit
+**Gate**: quick
+**Commit**: `test(frontend): hook and route tests through msw without vi.mock`
+
+---
+
+### T136: Story fixture formats money with `formatMoney`
+
+**What**: Replace `toLocaleString("pt-BR")` in the table story fixture with `formatMoney`.
+**Where**: `frontend/src/components/table/base/TableParts.stories.tsx`
+**Depends on**: None
+**Reuses**: -
+**Requirement**: STD-06 (AC 6)
+
+**Tools**: MCP: NONE · Skill: `component-creation`
+
+**Done when**:
+
+- [ ] No `toLocaleString("pt-BR")` left in `src`
+- [ ] Build gate passes (`pnpm lint && pnpm build && pnpm test`)
+
+**Tests**: story
+**Gate**: build
+**Commit**: `refactor(frontend): table story formats money with formatmoney`
+
+---
+
 ## Phase Execution Map
 
 ```
-P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8 → P9 → P10 → P11 → P12 → P13 → P14 → P15 → P16 → P17
+P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8 → P9 → P10 → P11 → P12 → P13 → P14 → P15 → P16 → P17 → P18
 
 P1  Written standards (STD-01): T1–T9 (9 tasks)
 P2  Lint baseline: config and mechanical fixes (STD-02): T10–T13 (4 tasks)
@@ -3402,9 +3531,10 @@ P14 Mechanical conventions (STD-09): T97–T103 (7 tasks)
 P15 Story coverage (STD-10): T104–T111 (8 tasks)
 P16 Test coverage (STD-11): T112–T116 (5 tasks)
 P17 Transactions tab and the logic cap (STD-12): T117–T125 (9 tasks)
+P18 Verifier fixes (iteration 1): T132–T136 (5 tasks)
 ```
 
-125 tasks in 17 phases. Execute packs whole phases into ~7-task batches, one sub-agent worker per batch (sequential).
+136 tasks in 18 phases (T126–T131 sit in P15; P18 added after the iteration 1 Verifier report). Execute packs whole phases into ~7-task batches, one sub-agent worker per batch (sequential).
 
 ## Validation
 
@@ -3537,6 +3667,11 @@ P17 Transactions tab and the logic cap (STD-12): T117–T125 (9 tasks)
 | T123: `TransactionsTab` composes the hooks | 1 component | ✅ Granular |
 | T124: `local/no-jsx-iife` | 1 rule | ✅ Granular |
 | T125: `local/component-logic-cap` | 1 rule | ✅ Granular |
+| T132: Tests that protect the unhandled-request guard | 2 test files | ✅ Granular |
+| T133: Logic cap recognises components that return JSX indirectly | 1 rule | ✅ Granular |
+| T134: Broken session retry fails fast | 1 test case | ✅ Granular |
+| T135: No `vi.mock` of our modules in hook and route tests | 4 test files, one pattern | ✅ Granular |
+| T136: Story fixture formats money with `formatMoney` | 1 story file | ✅ Granular |
 
 ### Diagram-Definition Cross-Check
 
@@ -3667,6 +3802,11 @@ P17 Transactions tab and the logic cap (STD-12): T117–T125 (9 tasks)
 | T123 | T117, T118, T119, T120, T121, T122 | T117 → T123, T118 → T123, T119 → T123, T120 → T123, T121 → T123, T122 → T123 | ✅ Match |
 | T124 | T123 | T123 → T124 | ✅ Match |
 | T125 | T124 | T124 → T125 | ✅ Match |
+| T132 | None | - | ✅ Match |
+| T133 | None | - | ✅ Match |
+| T134 | None | - | ✅ Match |
+| T135 | None | - | ✅ Match |
+| T136 | None | - | ✅ Match |
 
 ### Test Co-location Validation
 
@@ -3797,4 +3937,9 @@ P17 Transactions tab and the logic cap (STD-12): T117–T125 (9 tasks)
 | T123: `TransactionsTab` composes the hooks | Flow (integration) | integration | integration | ✅ OK |
 | T124: `local/no-jsx-iife` | Tooling | tooling | tooling | ✅ OK |
 | T125: `local/component-logic-cap` | Tooling | tooling | tooling | ✅ OK |
+| T132: Tests that protect the unhandled-request guard | Test infrastructure | unit | unit | ✅ OK |
+| T133: Logic cap recognises components that return JSX indirectly | Tooling | tooling | tooling | ✅ OK |
+| T134: Broken session retry fails fast | API client | unit | unit | ✅ OK |
+| T135: No `vi.mock` of our modules in hook and route tests | Flow (integration) | unit | unit | ✅ OK |
+| T136: Story fixture formats money with `formatMoney` | Presentational component | story | story | ✅ OK |
 
