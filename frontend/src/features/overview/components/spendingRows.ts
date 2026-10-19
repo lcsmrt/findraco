@@ -1,14 +1,14 @@
 import type { CategorySpending, CategorySpendingMember } from "@/api/dtos";
 import { scaleTreeLimits, type ScaledNode } from "../utils/scaleLimits";
 
-/** Share of the limit from which a row reads as a warning (UX-03 AC 3). */
+/** Share of the limit from which a row reads as a warning. */
 export const WARNING_RATIO = 0.8;
 
 export type SpendingStatus = "ok" | "warning" | "over" | "none";
 
 export type Usage = {
   status: SpendingStatus;
-  /** Whole-number percent of the limit used; null without a limit (UX-03 AC 8). */
+  /** Whole-number percent of the limit used; null without a limit. */
   percent: number | null;
   /** Left before the limit; null without a limit or when over. */
   remaining: number | null;
@@ -20,7 +20,7 @@ export type BarSegment = {
   memberId: number;
   amount: number;
   color: string;
-  /** Another member is selected (UX-04 AC 7). */
+  /** Another member is selected. */
   dimmed: boolean;
   /** Width in percent of the bar (the bar spans max(spent, limit)). */
   widthPct: number;
@@ -28,7 +28,7 @@ export type BarSegment = {
 
 export type Bar = {
   segments: BarSegment[];
-  /** Position of the limit tick in percent, only when over (UX-03 AC 5). */
+  /** Position of the limit tick in percent, only when over. */
   limitTickPct: number | null;
 };
 
@@ -46,12 +46,12 @@ export type MemberSubRow = Usage & {
   color: string;
   spent: number;
   limit: number | null;
-  /** false for a former member: shown greyed, never evaluated (CAT-14). */
+  /** false for a former member: shown greyed, never evaluated. */
   active: boolean;
   bar: Bar | null;
 };
 
-/** "<member> X of Y · shared limit L" for a selected member without a limit of their own (UX-04 AC 7). */
+/** "<member> X of Y · shared limit L" for a selected member without a limit of their own. */
 export type MemberFocus = {
   memberId: number;
   name: string;
@@ -75,7 +75,7 @@ export type SpendingRow = Usage & {
   /** The spend the row shows: the whole category, or the selected member's against their own limit. */
   spent: number;
   limit: number | null;
-  /** Null when the row has no limit: no bar and no track (UX-03 AC 2). */
+  /** Null when the row has no limit: no bar and no track. */
   bar: Bar | null;
   memberLine: MemberAmount[];
   memberSubRows: MemberSubRow[];
@@ -95,7 +95,7 @@ export type SpendingRowsInput = {
 
 export type SpendingRowsView = {
   rows: SpendingRow[];
-  /** Roots open on load: those with a child in warning or over (UX-03 AC 6). */
+  /** Roots open on load: those with a child in warning or over. */
   defaultExpandedIds: number[];
 };
 
@@ -105,7 +105,7 @@ function byName(a: { name: string }, b: { name: string }) {
   return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 }
 
-/** Status, integer percent and remaining / over-by of a spend against a limit (UX-03 AC 3–4, 8). */
+/** Status, integer percent and remaining / over-by of a spend against a limit. */
 export function usageOf(spent: number, limit: number | null | undefined): Usage {
   if (limit == null) return { status: "none", percent: null, remaining: null, overBy: null };
   if (spent > limit) {
@@ -181,7 +181,8 @@ function toRow(row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
         }
       : null;
 
-  // Owned rows count the owner's spend only (CAT-16): one segment in the owner's colour.
+  // An owned category's limit is judged against its owner's spend alone, so the bar holds one
+  // segment in the owner's colour; a split by member would show spend the limit ignores.
   const rowShares: { memberId: number; amount: number }[] = owner
     ? [{ memberId: owner.memberId, amount: row.spent }]
     : spendingMembers(row).map((m) => ({ memberId: m.memberId, amount: m.spent }));
@@ -210,7 +211,8 @@ function toRow(row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
     : undefined;
 
   if (selectedMember && ownEntry && !owner) {
-    // The member's own limit: their spend against it (UX-04 AC 6).
+    // A member with a limit of their own is judged against it, not the category's: the status,
+    // bar and amounts of the row become theirs.
     const color = colorOf(ownEntry.memberId);
     return {
       ...usageOf(ownEntry.spent, ownEntry.limit),
@@ -240,7 +242,8 @@ function toRow(row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
   }));
 
   // Without a limit of their own, the selected member is shown inside the whole category,
-  // never evaluated against the whole limit (UX-04 AC 7).
+  // never evaluated against the whole limit: their share of a shared limit is undefined, so a
+  // status for them alone would be invented.
   // An owned row selected by its owner is that member's own row.
   const focus: MemberFocus | null =
     selectedMember && selectedMember.id !== owner?.memberId
@@ -279,7 +282,7 @@ function needsAttention(row: SpendingRow) {
 }
 
 /**
- * The Overview spending list (UX-03, UX-04): DEBIT roots and their children sorted by
+ * The Overview spending list: DEBIT roots and their children sorted by
  * name, limits scaled to the period, member segments and sub-rows, and the roots that
  * open on load.
  */

@@ -14,7 +14,7 @@ type TransactionMobileRowProps = {
   onEdit: (transaction: FinancialTransaction) => void;
 };
 
-/** Description, category and people on the left, signed amount on the right; tap edits (UX-02 AC 5). */
+/** Description, category and people on the left, signed amount on the right; tap edits. */
 function TransactionMobileRow({
   transaction,
   onEdit,
@@ -54,7 +54,7 @@ type TransactionMobileListProps = {
   className?: string;
 };
 
-/** The narrow-screen Transactions list: the table's page, grouped by day (UX-02 AC 4). */
+/** The narrow-screen Transactions list: the table's page, grouped by day. */
 export function TransactionMobileList({
   transactions,
   isLoading,

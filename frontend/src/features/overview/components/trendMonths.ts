@@ -10,13 +10,13 @@ import {
 import type { PeriodRange } from "../utils/periodNavigator";
 import { countMonths } from "../utils/scaleLimits";
 
-/** The trend shows at least this many months (UX-05 AC 4). */
+/** The trend shows at least this many months. */
 export const TREND_MONTHS = 6;
 
 const DATE_FORMAT = "yyyy-MM-dd";
 
 /**
- * The months the trend covers (UX-05 AC 4): the 6 calendar months ending at the
+ * The months the trend covers: the 6 calendar months ending at the
  * selected period's last month, or every month of the period when it spans more.
  */
 export function trendWindow(selected: PeriodRange): PeriodRange {
@@ -30,7 +30,7 @@ export function trendWindow(selected: PeriodRange): PeriodRange {
 
 export type TrendMonth = MonthlyTrend & {
   label: string;
-  /** The month lies inside the selected period (UX-05 AC 5). */
+  /** The month lies inside the selected period. */
   inPeriod: boolean;
 };
 
@@ -38,7 +38,7 @@ function monthKey(year: number, month: number) {
   return year * 12 + (month - 1);
 }
 
-/** One entry per month of the window, zero when the API has none (UX-05 AC 5). */
+/** One entry per month of the window, zero when the API has none. */
 export function fillTrendMonths(
   data: MonthlyTrend[],
   window: PeriodRange,

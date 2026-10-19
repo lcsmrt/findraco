@@ -57,7 +57,7 @@ type TransactionFormDrawerProps = {
   onOpenChange: (open: boolean) => void;
   transaction?: FinancialTransaction;
   mode: TransactionFormMode;
-  /** Edit footer, narrow screens (UX-02 AC 5). */
+  /** Edit footer, narrow screens. */
   onDuplicate?: (transaction: FinancialTransaction) => void;
   onDelete?: (transaction: FinancialTransaction) => void;
 };
@@ -368,7 +368,8 @@ function RecurrenceFields({ control, setValue, disabled }: SectionProps) {
                 onValueChange={([next]) => {
                   if (!next) return;
                   field.onChange(next);
-                  // Each mode drops the other mode's settings.
+                  // Each mode drops the other mode's settings, so switching back shows empty fields
+                  // rather than values the user may have forgotten were there.
                   if (next === "INSTALLMENT") {
                     setValue("endDate", undefined);
                   } else {

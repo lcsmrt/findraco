@@ -31,13 +31,13 @@ export function usePlanPermissions(): PlanPermissions {
 
 function permissionsFor(role: PlanRole): PlanPermissions {
   return {
-    // requireCanCreateTransaction
+    // Mirrors PlanAuthorization.requireCanCreateTransaction.
     canCreateTransactions: role !== "VIEWER",
-    // requireCanAttributeToOthers
+    // Mirrors PlanAuthorization.requireCanAttributeToOthers.
     canAttributeToOthers: role === "OWNER" || role === "EDITOR",
-    // requireCanManageCategories
+    // Mirrors PlanAuthorization.requireCanManageCategories.
     canManageCategories: role === "OWNER",
-    // requireOwner
+    // Mirrors PlanAuthorization.requireOwner.
     canManagePlan: role === "OWNER",
   };
 }

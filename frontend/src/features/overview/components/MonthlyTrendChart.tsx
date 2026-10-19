@@ -20,7 +20,7 @@ const chartConfig: ChartConfig = {
   expenses: { label: "Expenses", color: "var(--destructive)" },
 };
 
-/** Months outside the selected period recede (UX-05 AC 5). */
+/** Months outside the selected period recede. */
 const OUT_OF_PERIOD_OPACITY = 0.3;
 
 type MonthDotProps = {
@@ -84,7 +84,7 @@ type MonthlyTrendChartProps = {
   isLoading: boolean;
 };
 
-/** Income and Expenses as one line each across the months, the selected period highlighted (UX-05 AC 4–6). */
+/** Income and Expenses as one line each across the months, the selected period highlighted. */
 export function MonthlyTrendChart({ months, isLoading }: MonthlyTrendChartProps) {
   return (
     <Card>

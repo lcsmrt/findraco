@@ -30,7 +30,7 @@ type CategoryLimitFieldsProps = {
   disabled?: boolean;
 };
 
-/** Monthly limit of a DEBIT category: one plain amount, or one amount per member (CAT-11, CAT-14). */
+/** Monthly limit of a DEBIT category: one plain amount, or one amount per member. */
 export function CategoryLimitFields({
   control,
   perMemberDisabledReason,

@@ -39,7 +39,7 @@ async function getDashboardTrend(
   return data;
 }
 
-/** Income and expenses per month for a range and optional member (UX-05 AC 7). */
+/** Income and expenses per month for a range and optional member. */
 export function useGetDashboardTrend(
   params: DashboardFilter,
   options?: QueryOptions<MonthlyTrend[]>,

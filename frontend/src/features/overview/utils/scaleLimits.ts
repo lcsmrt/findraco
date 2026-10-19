@@ -41,7 +41,7 @@ export function scaleLimit(
 
 /**
  * Scales one member's monthly limit like {@link scaleLimit}. A former member's
- * entry keeps its (scaled) amount but is never evaluated (CAT-14).
+ * entry keeps its (scaled) amount but is never evaluated.
  */
 export function scaleMemberLimit(
   member: CategorySpendingMember,

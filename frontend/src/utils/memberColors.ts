@@ -1,6 +1,6 @@
 import type { PlanMember } from "@/api/dtos";
 
-/** Member identity colours (UX-04 AC 2), defined per theme in `index.css`. */
+/** Member identity colours, defined per theme in `index.css`. */
 export const MEMBER_PALETTE = [
   "var(--member-1)",
   "var(--member-2)",

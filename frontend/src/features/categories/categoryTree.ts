@@ -23,7 +23,7 @@ function byName(
 }
 
 /**
- * The Categories tab tree (UX-01 AC 3): Expenses then Income, roots sorted by name,
+ * The Categories tab tree: Expenses then Income, roots sorted by name,
  * each followed by its children sorted by name. A child whose parent is not in the
  * list is shown as a root.
  */

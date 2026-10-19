@@ -24,7 +24,7 @@ type UsageBarProps = {
   className?: string;
 };
 
-/** Member-coloured segments; when over, a tick at the limit and the overflow hatched in red (UX-03 AC 5). */
+/** Member-coloured segments; when over, a tick at the limit and the overflow hatched in red. */
 function UsageBar({ bar, className }: UsageBarProps) {
   return (
     <div className={cn("bg-muted relative h-2 w-full rounded-full", className)}>
@@ -63,7 +63,7 @@ type StatusTextProps = {
   className?: string;
 };
 
-/** ok "remaining X" muted, warning "⚠ remaining X" amber, over "▲ over by X" red (UX-03 AC 4). */
+/** ok "remaining X" muted, warning "⚠ remaining X" amber, over "▲ over by X" red. */
 function StatusText({ usage, className }: StatusTextProps) {
   if (usage.status === "none") return null;
   return (
@@ -111,7 +111,7 @@ type MemberLineProps = {
   members: MemberAmount[];
 };
 
-/** "● Lucas R$ 1.051 · ● Livia R$ 694" (UX-04 AC 3). */
+/** "● Lucas R$ 1.051 · ● Livia R$ 694". */
 function MemberLine({ members }: MemberLineProps) {
   return (
     <Text variant="caption" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
@@ -208,7 +208,7 @@ type SubRowProps = {
   sub: MemberSubRow;
 };
 
-/** One member's spend against their own limit, always visible (UX-04 AC 4). */
+/** One member's spend against their own limit, always visible. */
 function SubRow({ sub }: SubRowProps) {
   return (
     <div className={cn("flex flex-col gap-1", !sub.active && "opacity-60")}>
@@ -298,7 +298,7 @@ type CategorySpendingListProps = {
 };
 
 /**
- * Expense categories as a list with usage bars (UX-03): click anywhere on a root to
+ * Expense categories as a list with usage bars: click anywhere on a root to
  * toggle its children; roots with a child in trouble start open.
  */
 export function CategorySpendingList({ view, className }: CategorySpendingListProps) {

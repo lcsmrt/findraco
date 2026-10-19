@@ -5,7 +5,7 @@ export type SummarySegment = {
   name: string;
   amount: number;
   color: string;
-  /** Another member is selected (UX-05 AC 2). */
+  /** Another member is selected. */
   dimmed: boolean;
   /** Width in percent of the plan's total. */
   widthPct: number;
@@ -24,7 +24,7 @@ export type SummaryView = {
 };
 
 /**
- * The Overview summary (UX-05 AC 1–2, UX-04 AC 9): Income and Expenses with a segment
+ * The Overview summary: Income and Expenses with a segment
  * per member, from the unfiltered dashboard. With a member selected, the figures are
  * that member's and their segment is highlighted against the plan's total.
  */

@@ -52,7 +52,7 @@ function toCustom(range: PeriodRange): CustomRange {
 }
 
 /**
- * "‹ October 2026 ›" plus a Range menu (UX-05 AC 8–9). The arrows step the period by
+ * "‹ October 2026 ›" plus a Range menu. The arrows step the period by
  * its own length and always produce an absolute range; presets set the period.
  */
 export function PeriodNavigator({

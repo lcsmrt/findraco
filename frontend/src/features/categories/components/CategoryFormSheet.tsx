@@ -50,7 +50,7 @@ type CategoryFormSheetProps = {
   category?: FinancialTransactionCategory | null;
   defaults?: CategoryFormDefaults;
   onSuccess?: (category: FinancialTransactionCategory) => void;
-  /** Edit footer, narrow screens: opens a create form under this root (UX-02 AC 3). */
+  /** Edit footer, narrow screens: opens a create form under this root. */
   onNewSubcategory?: (root: FinancialTransactionCategory) => void;
 };
 
@@ -240,7 +240,8 @@ function ParentField({ control, setValue, categories, disabled, editing, hasChil
           value={options.find((option) => option.id === field.value) ?? null}
           onValueChange={(parent) => {
             field.onChange(parent?.id ?? null);
-            // A subcategory takes its parent's owner (CAT-15).
+            // A subcategory takes its parent's owner. The owner field hides once a parent is set, so a
+            // choice left here would fail validation on a field the user can no longer see.
             if (parent) setValue("ownerId", null);
           }}
           itemLabel={(option) => option.description}
@@ -282,7 +283,8 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
           value={owners.find((owner) => owner.id === field.value) ?? null}
           onValueChange={(owner) => {
             field.onChange(owner?.id ?? null);
-            // An owned category has a single limit (CAT-13).
+            // An owned category has a single limit. The toggle already shows Single, but a stored
+            // per-member mode would still fail validation on save.
             if (owner) setValue("limitMode", "single");
           }}
           itemLabel={(owner) => (owner.active ? owner.name : `${owner.name} (former member)`)}

@@ -22,7 +22,7 @@ function isMonthAligned(start: Date, end: Date) {
 }
 
 /**
- * The period control label (UX-05 AC 8): "October 2026" for one calendar month,
+ * The period control label: "October 2026" for one calendar month,
  * "Aug – Oct 2026" for whole months, the year on both ends when they differ.
  * A range not aligned to months shows its days ("5 – 20 Oct 2026").
  */
@@ -45,7 +45,7 @@ export function periodLabel({ startDate, endDate }: PeriodRange): string {
 }
 
 /**
- * Moves the range by its own length in calendar months (UX-05 AC 8): one month
+ * Moves the range by its own length in calendar months: one month
  * steps by one, a quarter by three, a year by twelve. Month-aligned ranges stay
  * aligned to whole months.
  */
@@ -62,7 +62,7 @@ export function shiftRange(range: PeriodRange, direction: 1 | -1): PeriodRange {
   };
 }
 
-/** Dates of a range-menu preset (UX-05 AC 9), resolved like the home filters. */
+/** Dates of a range-menu preset, resolved like the home filters. */
 export function presetRange(preset: Period, now: Date): PeriodRange {
   return resolvePeriodDates(preset, now);
 }

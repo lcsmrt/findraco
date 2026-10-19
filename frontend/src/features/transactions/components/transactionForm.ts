@@ -209,7 +209,7 @@ type OwnerDefaultInput = {
 };
 
 /**
- * The attribution an owned category implies (CAT-17): its owner as the single
+ * The attribution an owned category implies: its owner as the single
  * 100% participant. Null when the participants were edited by hand, the
  * category is not owned, or the owner is no longer a member of the plan.
  */
@@ -243,7 +243,7 @@ type AttributionValues = Pick<
 >;
 
 /**
- * The participants a newly selected category sets (CAT-17, P3 AC 6): its active
+ * The participants a newly selected category sets: its active
  * owner at 100%, otherwise the form's default participants (`defaults`, from
  * `buildDefaultValues`). Null — leave them as they are — in edit mode or once
  * the participants were edited by hand.

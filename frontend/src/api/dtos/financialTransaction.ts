@@ -39,7 +39,7 @@ export type FinancialTransaction = {
 
 export type ParticipantInput = {
   memberId: number;
-  // Only used when splitMode is EXACT.
+  /** Only used when splitMode is EXACT. */
   shareAmount?: number;
 };
 
@@ -99,7 +99,7 @@ export type CreateFinancialTransactionSeriesRequest = {
     description: string;
     categoryId?: number;
     mode: RecurrenceMode;
-    // For installments, the month of the current parcel; for recurring, the first occurrence.
+    /** For installments, the month of the current parcel; for recurring, the first occurrence. */
     startDate: string;
     parcelsNumber?: number;
     currentParcel?: number;

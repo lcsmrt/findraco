@@ -7,7 +7,7 @@ export type TransactionDay = {
 };
 
 /**
- * Groups a page of transactions by calendar day (UX-02 AC 4). Days appear in the
+ * Groups a page of transactions by calendar day. Days appear in the
  * order of their first transaction on the page; rows keep their page order.
  */
 export function groupByDay(

@@ -9,7 +9,7 @@ import {
   ToggleGroupItem,
 } from "@/components/toggleGroup/base/ToggleGroup";
 
-/** Plans up to this size get chips; larger ones get a combobox (UX-04 AC 8). */
+/** Plans up to this size get chips; larger ones get a combobox. */
 const MAX_CHIPS = 4;
 
 /** The chip value standing for "no member filter". */
@@ -24,7 +24,7 @@ type MemberFilterChipsProps = {
 };
 
 /**
- * The Overview member filter (UX-04 AC 8): "All" plus a chip per member for 2–4
+ * The Overview member filter: "All" plus a chip per member for 2–4
  * members (the chips double as the colour legend), a combobox with colour dots
  * for more, nothing for a single member.
  */

@@ -26,7 +26,7 @@ export function parentOptions(
     .sort((a, b) => a.description.localeCompare(b.description));
 }
 
-/** The owner a category would have: a child inherits its parent's (CAT-15). */
+/** The owner a category would have: a child inherits its parent's. */
 export function effectiveOwnerId(
   parentId: number | null,
   ownerId: number | null,
@@ -42,7 +42,7 @@ export type OwnerOption = { id: number; name: string; active: boolean };
 
 /**
  * Members a root can belong to: the active members, plus the current owner
- * when they left the plan, so the OWNER can keep that ownership (CAT-14).
+ * when they left the plan, so the OWNER can keep that ownership.
  */
 export function ownerOptions(
   members: PlanMember[],
@@ -133,7 +133,7 @@ export function createCategoryFormSchema(
   });
 }
 
-/** Per-member limit rules the API enforces (CAT-13), checked up front. */
+/** Per-member limit rules the API enforces, checked up front. */
 function refineMemberLimits(
   values: CategoryFormValues,
   ctx: z.RefinementCtx,
@@ -279,7 +279,8 @@ export function toPayload(
     description: values.description.trim(),
     parentId: values.parentId,
     ownerId: values.parentId == null ? values.ownerId : null,
-    // Income categories carry no limit.
+    // Income categories carry no limit, and a per-member category's total is the sum of its
+    // `memberLimits`, so only a single-limit DEBIT category sends one.
     spendingLimit:
       values.type === "DEBIT" && !perMember
         ? (values.spendingLimit ?? undefined)

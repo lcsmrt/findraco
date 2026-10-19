@@ -39,7 +39,8 @@ import { buildTransactionColumns, InlineSaveBody } from "./components/transactio
 
 const SEARCH_DEBOUNCE_MS = 400;
 
-// Table column key -> API sort field, and back.
+// The table's column ids and the API's sort fields differ (`participants` sorts by `attributedTo`),
+// so sorting translates both ways.
 const SORTABLE_FIELDS: Record<string, FinancialTransactionSortBy> = {
   startDate: "startDate",
   amount: "amount",
@@ -72,7 +73,8 @@ export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
 
   const [page, onPageChange] = useTransactionsPage(transactions);
 
-  // Typing draft for the search box, debounced into the `q` param.
+  // The search box keeps its own draft so a keystroke does not rewrite the URL and refetch; the
+  // `q` param follows once typing settles.
   const urlDescription = filter.description ?? "";
   const [description, setDescription] = useState(urlDescription);
   const debouncedDescription = useDebounce(description, SEARCH_DEBOUNCE_MS);

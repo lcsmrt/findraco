@@ -32,7 +32,7 @@ type MemberAmountsProps = {
   className?: string;
 };
 
-/** "● Lucas R$ 2.733 · ● Livia R$ 2.414" (UX-05 AC 1). */
+/** "● Lucas R$ 2.733 · ● Livia R$ 2.414". */
 function MemberAmounts({ figure, className }: MemberAmountsProps) {
   return figure.segments.length > 0 && (
     <Text as="div" variant="caption" className={cn("flex flex-wrap gap-x-3 gap-y-0.5", className)}>
@@ -110,7 +110,7 @@ type SummaryCardsProps = {
 };
 
 /**
- * Income, Expenses and Balance with member segments (UX-05 AC 1–3): one block with
+ * Income, Expenses and Balance with member segments: one block with
  * Balance on top below `sm`, three cards in a row from `sm`.
  */
 export function SummaryCards({ view }: SummaryCardsProps) {

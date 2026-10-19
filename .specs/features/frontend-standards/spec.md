@@ -353,7 +353,7 @@ Frontend quality decayed as features shipped fast. The audit (`.specs/codebase/f
 | STD-06 | P2 Shared components and tokens (AC 1–14) — B1–B7, E3, E4a | P9–P11 (T56–T79) | Done |
 | STD-07 | P2 Form decomposition (AC 1–6) — D1, D2, B8 | P12 (T80–T88) | Done |
 | STD-08 | P2 Typography (AC 1–5) — E4b, C7 | P13 (T89–T96) | Done |
-| STD-09 | P2 Mechanical conventions (AC 1–3) — E2, E5 | P14 (T97–T103) | Pending |
+| STD-09 | P2 Mechanical conventions (AC 1–3) — E2, E5 | P14 (T97–T103) | Done |
 | STD-10 | P2 Story coverage (AC 1–4) — F1 | P15 (T104–T111) | Pending |
 | STD-11 | P2 Test coverage (AC 1–4) — F2 | P16 (T112–T116) | Pending |
 | STD-12 | P2 Transactions tab + logic cap (AC 1–5) — D3, D4 | P17 (T117–T125) | Pending |

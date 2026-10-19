@@ -5,7 +5,7 @@ import { createContext, useContext } from "react";
 export type CategoryFormDefaults = {
   description?: string;
   type?: FinancialTransactionType;
-  /** Starts a subcategory of this root; the type follows the parent (UX-02 AC 2). */
+  /** Starts a subcategory of this root; the type follows the parent. */
   parentId?: number;
 };
 

@@ -9,7 +9,7 @@ import { MemberDot } from "@/components/memberDot/MemberDot";
 
 const EMPTY = "—";
 
-/** Desktop columns: Name | Owner | Monthly limit | Per member | actions (UX-01 AC 2). */
+/** Desktop columns: Name | Owner | Monthly limit | Per member | actions. */
 export const CATEGORY_GRID_COLUMNS =
   "sm:grid sm:grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)_7.5rem_minmax(0,1.6fr)_6rem] sm:items-center sm:gap-x-4";
 
@@ -17,7 +17,7 @@ type TreeGuideProps = {
   isLast: boolean;
 };
 
-/** Thin ├ / └ guide that ties a child to its root (UX-01 AC 3). */
+/** Thin ├ / └ guide that ties a child to its root. */
 function TreeGuide({ isLast }: TreeGuideProps) {
   return (
     <span
@@ -40,7 +40,7 @@ type OwnerLabelProps = {
   colorOf: MemberColorOf;
 };
 
-/** Owner name; a former member is greyed (UX-01 AC 5). */
+/** Owner name; a former member is greyed. */
 function OwnerLabel({ category, colorOf }: OwnerLabelProps) {
   if (category.ownerId == null || !category.ownerName) return null;
   const former = category.ownerActive === false;
@@ -67,7 +67,7 @@ type MemberLimitsProps = {
   colorOf: MemberColorOf;
 };
 
-/** Per-member limits as absolute amounts; former members greyed (UX-01 AC 2, 5). */
+/** Per-member limits as absolute amounts; former members greyed. */
 function MemberLimits({ category, colorOf }: MemberLimitsProps) {
   const entries = category.memberLimits ?? [];
   if (entries.length === 0) return null;
@@ -112,9 +112,9 @@ type CategoryTreeRowProps = {
 };
 
 /**
- * One category, configuration only (UX-01). Wide: aligned columns with hover
- * actions (UX-02 AC 1). Narrow: a stacked row that opens the edit form on tap
- * (UX-02 AC 3). Both layouts render; CSS shows one.
+ * One category, configuration only. Wide: aligned columns with hover
+ * actions. Narrow: a stacked row that opens the edit form on tap
+ * Both layouts render; CSS shows one.
  */
 export function CategoryTreeRow({
   category,

@@ -238,7 +238,8 @@ export function useDeleteFinancialTransactionCategory(
           queryKey: financialTransactionCategoryKey(activePlanId, variables.id),
         });
         if (variables.reassignTo != null) {
-          // Reassignment moved transactions to another category.
+          // Reassignment moved transactions to another category, so cached transaction lists
+          // still show the deleted one.
           queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
         }
         options?.onSuccess?.(data, variables);

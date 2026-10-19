@@ -98,7 +98,7 @@ function CategorySection({
   );
 }
 
-/** Category management: structure and configured limits, no spend (UX-01). */
+/** Category management: structure and configured limits, no spend. */
 export function CategoriesTab() {
   const { canManageCategories: canManage } = usePlanPermissions();
   const { openCreate, openEdit } = useCategoryFormSheet();
