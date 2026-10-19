@@ -33,6 +33,11 @@ function returnsCall(body: string): string {
   return `function Summary() {\n  function renderContent() {\n    return <span />;\n  }\n${body}\n  return renderContent();\n}`;
 }
 
+/** A component whose only JSX is a fragment. */
+function returnsFragment(body: string): string {
+  return `function Summary() {\n${body}\n  return <>{v0}</>;\n}`;
+}
+
 function tooLong(name: string, count: number) {
   return [{ messageId: "tooLong", data: { name, count: String(count), max: "60" } }];
 }
@@ -68,6 +73,10 @@ ruleTester.run("local/component-logic-cap (STD-12 AC 3, 5)", componentLogicCap, 
       code: returnsCall(logic(57)),
     },
     {
+      name: "a component whose only JSX is a fragment, at 60 lines",
+      code: returnsFragment(logic(60)),
+    },
+    {
       name: "a PascalCase function returning a call, with no JSX anywhere",
       code: `function Summary() {\n${logic(80)}\n  return build();\n}`,
     },
@@ -78,6 +87,11 @@ ruleTester.run("local/component-logic-cap (STD-12 AC 3, 5)", componentLogicCap, 
     },
   ],
   invalid: [
+    {
+      name: "a component whose only JSX is a fragment, at 61 lines",
+      code: returnsFragment(logic(61)),
+      errors: tooLong("Summary", 61),
+    },
     {
       name: "a component returning a JSX variable at 61 lines",
       code: returnsVariable(logic(60)),

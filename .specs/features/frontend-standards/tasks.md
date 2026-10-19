@@ -3442,6 +3442,8 @@ Done: unit + tooling 921 → 924 tests. `setupUnit.test.ts` sends a fetch no han
 
 Done: tooling 13 → 18 rule cases (+5). Recognition moved from "a `return` argument is JSX" to "JSX appears anywhere in the function", nested callbacks included; `isJsx` removed. `pnpm lint` stays 0: no existing component was newly caught. `component-creation` and design decision 9 state the new criterion. Known limit: a component whose only JSX comes from a module-level render function (`return renderRow();` defined outside) is still not recognised; the rule cannot see JSX in another function without type or call-graph analysis.
 
+- Follow-up (Verifier iteration 2, mutant N2): RuleTester cases for a component whose only JSX is a fragment, at 61 (reported) and 60 (valid); removing the `JSXFragment` listener now fails the suite.
+
 **Tests**: tooling
 **Gate**: quick
 **Commit**: `fix(frontend): logic cap counts components returning jsx indirectly`
