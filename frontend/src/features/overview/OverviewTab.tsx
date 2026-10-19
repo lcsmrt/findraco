@@ -3,27 +3,22 @@ import {
   useGetDashboardTrend,
 } from "@/api/services/useDashboardService";
 import { useGetCategorySpending } from "@/api/services/useFinancialTransactionCategoryService";
-import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { useMemo } from "react";
 import {
   resolvePeriodDates,
   type Period,
 } from "./filters/overviewParams";
 import { useOverviewFilters } from "./filters/useOverviewFilters";
-import { PeriodNavigator } from "./components/PeriodNavigator";
 import { countMonths } from "./utils/scaleLimits";
 import { useMemberColors } from "@/hooks/useMemberColors";
 import {
   useOverviewMemberFilter,
   type MemberOption,
 } from "./useOverviewMemberFilter";
-import { CategorySpendingList } from "./components/CategorySpendingList";
-import { MemberFilterChips } from "./components/MemberFilterChips";
-import { MonthlyTrendChart } from "./components/MonthlyTrendChart";
 import { buildSpendingRows } from "./components/spendingRows";
-import { SummaryCards } from "./components/SummaryCards";
 import { summaryView } from "./components/summaryView";
 import { fillTrendMonths, trendWindow } from "./components/trendMonths";
+import { OverviewTabView } from "./OverviewTabView";
 
 export function OverviewTab() {
   const { overview, updateOverview } = useOverviewFilters();
@@ -101,42 +96,27 @@ export function OverviewTab() {
   }
 
   return (
-    <div className="flex flex-col gap-6 px-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <PeriodNavigator
-          range={range}
-          period={period}
-          isCustom={customRange != null}
-          onPresetChange={handlePeriodClick}
-          onRangeChange={handleRangeChange}
-        />
-        {showMemberPicker && (
-          <MemberFilterChips
-            members={memberOptions}
-            selectedId={effectiveMemberId}
-            onChange={handleMemberChange}
-            colorOf={colorOf}
-          />
-        )}
-      </div>
-
-      {isLoading || !summary ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <Skeleton className="h-28" />
-          <Skeleton className="hidden h-28 sm:block" />
-          <Skeleton className="hidden h-28 sm:block" />
-        </div>
-      ) : (
-        <SummaryCards view={summary} />
-      )}
-
-      {isSpendingLoading || !spendingView ? (
-        <Skeleton className="h-80" />
-      ) : (
-        <CategorySpendingList view={spendingView} />
-      )}
-
-      <MonthlyTrendChart months={trendMonths} isLoading={isTrendLoading} />
-    </div>
+    <OverviewTabView
+      navigator={{
+        range,
+        period,
+        isCustom: customRange != null,
+        onPresetChange: handlePeriodClick,
+        onRangeChange: handleRangeChange,
+      }}
+      memberFilter={
+        showMemberPicker
+          ? {
+              members: memberOptions,
+              selectedId: effectiveMemberId,
+              onChange: handleMemberChange,
+              colorOf,
+            }
+          : null
+      }
+      summary={isLoading ? null : summary}
+      spending={isSpendingLoading ? null : spendingView}
+      trend={{ months: trendMonths, isLoading: isTrendLoading }}
+    />
   );
 }

@@ -12,19 +12,10 @@ import {
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
-import { Badge } from "@/components/badge/base/Badge";
-import { Button } from "@/components/button/base/Button";
 import { useConfirm } from "@/components/dialog/useConfirm";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/input/base/InputGroup";
-import { Table, TableContent, TablePagination } from "@/components/table";
 import { Sorting } from "@/components/table/components/TableHeader";
 import { useDebounce } from "@/hooks/useDebounce";
-import { PlusIcon, SearchIcon, TagIcon, UploadIcon, XIcon } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTransactionFilters } from "./filters/useTransactionFilters";
 import { useTransactionFilterChips } from "./useTransactionFilterChips";
 import { useTransactionsPage } from "./useTransactionsPage";
@@ -34,8 +25,8 @@ import {
   TransactionFilterPopover,
 } from "./components/TransactionFilterPopover";
 import { TransactionFormDrawer } from "./components/TransactionFormDrawer";
-import { TransactionMobileList } from "./components/TransactionMobileList";
 import { buildTransactionColumns, InlineSaveBody } from "./components/transactionColumns";
+import { TransactionsTabView } from "./TransactionsTabView";
 
 const SEARCH_DEBOUNCE_MS = 400;
 
@@ -151,7 +142,6 @@ export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
   const chooseScope = useSeriesScope();
 
   const { mutate: importCsv, isPending: isImporting } = useImportNubankCsv();
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   type DrawerState =
     | { open: false }
@@ -163,18 +153,6 @@ export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
       };
 
   const [drawerState, setDrawerState] = useState<DrawerState>({ open: false });
-
-  function handleImportClick() {
-    fileInputRef.current?.click();
-  }
-
-  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (file) {
-      importCsv(file);
-      e.target.value = "";
-    }
-  }
 
   const pagination = financialTransactionsData
     ? {
@@ -268,122 +246,32 @@ export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
 
   return (
     <>
-      <div className="flex flex-col gap-2 px-2">
-        <div className="flex gap-2">
-          <div className="flex flex-1 justify-between gap-2">
-            <InputGroup className="flex-1 sm:max-w-sm">
-              <InputGroupInput
-                placeholder="Search transactions..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full pl-9"
-              />
-              <InputGroupAddon>
-                <SearchIcon className="text-muted-foreground pointer-events-none h-4 w-4" />
-              </InputGroupAddon>
-            </InputGroup>
-
-            <TransactionFilterPopover
-              appliedFilters={appliedFilters}
-              onApply={onApplyFilters}
-              members={members}
-            />
-          </div>
-
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={onManageCategories}>
-              <TagIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Manage Categories</span>
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleImportClick}
-              disabled={isImporting}
-            >
-              <UploadIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">
-                {isImporting ? "Importing..." : "Import CSV"}
-              </span>
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-            <Button onClick={handleOpenCreate}>
-              <PlusIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">New Transaction</span>
-            </Button>
-          </div>
-        </div>
-
-        {chips.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            {chips.map((chip) => (
-              <Badge key={chip.key} variant="outline" className="gap-1 pr-1">
-                {chip.label}
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-4 w-4 rounded"
-                  onClick={chip.onRemove}
-                >
-                  <XIcon className="h-3 w-3" />
-                </Button>
-              </Badge>
-            ))}
-            <Button
-              type="button"
-              variant="link"
-              size="xs"
-              className="text-muted-foreground h-auto p-0"
-              onClick={onClearFilters}
-            >
-              Clear all
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <TransactionMobileList
-        className="sm:hidden"
+      <TransactionsTabView
+        search={description}
+        onSearchChange={setDescription}
+        filters={
+          <TransactionFilterPopover
+            appliedFilters={appliedFilters}
+            onApply={onApplyFilters}
+            members={members}
+          />
+        }
+        chips={chips}
+        onClearFilters={onClearFilters}
+        onManageCategories={onManageCategories}
+        onImport={importCsv}
+        isImporting={isImporting}
+        onCreate={handleOpenCreate}
         transactions={financialTransactionsData?.content || []}
         isLoading={isLoadingTransactions}
         pagination={pagination}
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
+        columns={columns}
+        sorting={sorting}
+        onSortChange={onSortChange}
         onEdit={handleEdit}
       />
-
-      <div className="hidden sm:block">
-        <Table
-          tableId="financialTransactionsTable"
-          border="all"
-          className="mx-2 w-auto rounded-lg shadow-sm"
-          data={financialTransactionsData?.content || []}
-          columns={columns}
-        >
-          {(table) => (
-            <>
-              <TableContent
-                table={table}
-                sorting={sorting}
-                onSortChange={onSortChange}
-                emptyState="No transactions found."
-                isLoading={isLoadingTransactions}
-              />
-              <TablePagination
-                pagination={pagination}
-                onPageChange={onPageChange}
-                onPageSizeChange={onPageSizeChange}
-              />
-            </>
-          )}
-        </Table>
-      </div>
 
       <TransactionFormDrawer
         open={drawerState.open}

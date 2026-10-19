@@ -99,7 +99,8 @@ export function buildTransactionColumns({
       : []),
     {
       id: "actions",
-      header: "",
+      // Visually empty, but a header cell needs a name for screen readers.
+      header: () => createElement("span", { className: "sr-only" }, "Actions"),
       cell: ({ row }) =>
         createElement(ActionsCell, {
           transaction: row.original,
