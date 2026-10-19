@@ -23,6 +23,16 @@ function component(name: string, body: string): string {
   return `function ${name}() {\n${body}\n  return <div />;\n}`;
 }
 
+/** A component that hands its JSX back through a variable instead of a literal in the `return`. */
+function returnsVariable(body: string): string {
+  return `function Summary() {\n${body}\n  const content = <span />;\n  return content;\n}`;
+}
+
+/** A component that hands its JSX back through a local render helper. */
+function returnsCall(body: string): string {
+  return `function Summary() {\n  function renderContent() {\n    return <span />;\n  }\n${body}\n  return renderContent();\n}`;
+}
+
 function tooLong(name: string, count: number) {
   return [{ messageId: "tooLong", data: { name, count: String(count), max: "60" } }];
 }
@@ -50,12 +60,34 @@ ruleTester.run("local/component-logic-cap (STD-12 AC 3, 5)", componentLogicCap, 
       code: "const Summary = () => <div />;",
     },
     {
+      name: "a component returning a JSX variable at 60 lines",
+      code: returnsVariable(logic(59)),
+    },
+    {
+      name: "a component returning a render call at 60 lines",
+      code: returnsCall(logic(57)),
+    },
+    {
+      name: "a PascalCase function returning a call, with no JSX anywhere",
+      code: `function Summary() {\n${logic(80)}\n  return build();\n}`,
+    },
+    {
       name: "the max is an option",
       code: component("Summary", logic(10)),
       options: [{ max: 10 }],
     },
   ],
   invalid: [
+    {
+      name: "a component returning a JSX variable at 61 lines",
+      code: returnsVariable(logic(60)),
+      errors: tooLong("Summary", 61),
+    },
+    {
+      name: "a component returning a render call at 61 lines",
+      code: returnsCall(logic(58)),
+      errors: tooLong("Summary", 61),
+    },
     {
       name: "a component at 61 lines",
       code: component("Summary", logic(61)),

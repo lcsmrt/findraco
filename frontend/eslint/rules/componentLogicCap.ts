@@ -9,19 +9,7 @@ type FunctionNode =
   | ESTree.FunctionExpression
   | ESTree.ArrowFunctionExpression;
 
-type Frame = { node: FunctionNode; returnsJsx: boolean };
-
-// JSX nodes are not part of the ESTree types ESLint ships, so they are recognised by `type`.
-function isJsx(node: ESTree.Node | null | undefined): boolean {
-  if (!node) return false;
-  const type: string = node.type;
-  if (type === "JSXElement" || type === "JSXFragment") return true;
-  if (node.type === "ConditionalExpression") {
-    return isJsx(node.consequent) || isJsx(node.alternate);
-  }
-  if (node.type === "LogicalExpression") return isJsx(node.right);
-  return false;
-}
+type Frame = { node: FunctionNode; containsJsx: boolean };
 
 /** The name a function is known by: its own, or the variable it is assigned to (through `memo(...)`). */
 function componentName(node: FunctionNode & Rule.NodeParentExtension): string | null {
@@ -67,7 +55,11 @@ export const componentLogicCap: Rule.RuleModule = {
     const frames: Frame[] = [];
 
     function enter(node: FunctionNode) {
-      frames.push({ node, returnsJsx: false });
+      frames.push({ node, containsJsx: false });
+    }
+
+    function markJsx() {
+      for (const frame of frames) frame.containsJsx = true;
     }
 
     function codeLinesBetween(firstLine: number, lastLine: number): number {
@@ -83,7 +75,7 @@ export const componentLogicCap: Rule.RuleModule = {
 
     function exit(node: FunctionNode & Rule.NodeParentExtension) {
       const frame = frames.pop();
-      if (!frame?.returnsJsx || node.body.type !== "BlockStatement") return;
+      if (!frame?.containsJsx || node.body.type !== "BlockStatement") return;
       const name = componentName(node);
       if (!name || !PASCAL_CASE.test(name)) return;
 
@@ -104,10 +96,11 @@ export const componentLogicCap: Rule.RuleModule = {
       "FunctionDeclaration:exit": exit,
       "FunctionExpression:exit": exit,
       "ArrowFunctionExpression:exit": exit,
-      ReturnStatement(node) {
-        const frame = frames.at(-1);
-        if (frame && isJsx(node.argument)) frame.returnsJsx = true;
-      },
+      // A function is a component when JSX appears anywhere in it, nested callbacks included, so JSX
+      // handed back through a variable (`return content;`) or a local render helper
+      // (`return renderRow();`) is recognised as well as a JSX literal in the `return`.
+      JSXElement: markJsx,
+      JSXFragment: markJsx,
     };
   },
 };

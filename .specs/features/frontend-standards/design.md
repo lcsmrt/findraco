@@ -298,7 +298,7 @@ The user judges typography by seeing it and will adjust after the slice if neede
 **Decision.**
 
 - **Counting:** only lines with code count; blank lines and comment-only lines do not (the same criterion as the built-in `max-lines-per-function` with `skipBlankLines`/`skipComments`). Counting them would push code to be compacted and would penalise the "why" comments E5 wants next to their lines. The cap measures logic, which is what D4 limits. The skill states that a component may show more than 60 physical lines before its `return` and still pass.
-- **Component:** a PascalCase `function`, or a function assigned to a PascalCase variable (including inside `memo(...)`), with a `return` of JSX in its own body.
+- **Component:** a PascalCase `function`, or a function assigned to a PascalCase variable (including inside `memo(...)`), with JSX anywhere in its body (nested callbacks included), so JSX returned through a variable or a local render helper is recognised (amended after the iteration 1 Verifier report).
 - **Main `return`:** the last top-level `return` of the body; early returns (`if (!plan) return null`) count as logic. Without a final `return`, counting runs to the end of the body; an expression-bodied arrow counts 0.
 - **Message:** "Component `X` has N lines of logic before its return (max 60). Extract a hook." The max is one option in the config, the same for everyone.
 - **IIFE:** any call whose callee is an arrow or function expression inside a JSX expression container, in children or attributes.

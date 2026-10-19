@@ -3435,10 +3435,12 @@ Done: unit + tooling 921 → 924 tests. `setupUnit.test.ts` sends a fetch no han
 
 **Done when**:
 
-- [ ] `RuleTester`: `return content;` and `return renderX();` components at 61 lines reported, at 60 lines valid; existing cases unchanged
-- [ ] A PascalCase function with no JSX stays valid
-- [ ] `pnpm lint` exits 0 (any newly caught component gets its hook, reported)
-- [ ] Quick gate passes
+- [x] `RuleTester`: `return content;` and `return renderX();` components at 61 lines reported, at 60 lines valid; existing cases unchanged
+- [x] A PascalCase function with no JSX stays valid
+- [x] `pnpm lint` exits 0 (any newly caught component gets its hook, reported)
+- [x] Quick gate passes
+
+Done: tooling 13 → 18 rule cases (+5). Recognition moved from "a `return` argument is JSX" to "JSX appears anywhere in the function", nested callbacks included; `isJsx` removed. `pnpm lint` stays 0: no existing component was newly caught. `component-creation` and design decision 9 state the new criterion. Known limit: a component whose only JSX comes from a module-level render function (`return renderRow();` defined outside) is still not recognised; the rule cannot see JSX in another function without type or call-graph analysis.
 
 **Tests**: tooling
 **Gate**: quick
