@@ -5,6 +5,7 @@ import {
   removeItemFromStorage,
   storeItem,
 } from "@/lib/storage";
+import { z } from "zod";
 import { ReactNode, useCallback, useEffect, useMemo, useState } from "react";
 import { PlanContext } from "./usePlanContext";
 
@@ -12,7 +13,7 @@ export function PlanProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   const [activePlanId, setActivePlanIdState] = useState<number | null>(() =>
-    getItemFromStorage<number>("activePlanId"),
+    getItemFromStorage("activePlanId", z.number()),
   );
 
   const { data: plans = [], isLoading } = useGetPlans({

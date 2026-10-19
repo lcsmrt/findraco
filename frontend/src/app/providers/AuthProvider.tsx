@@ -12,6 +12,7 @@ import {
   storeItem,
 } from "@/lib/storage";
 import { useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const [user, setUser] = useState<User | null>(null);
   const [status, setStatusState] = useState<AuthStatus>(() =>
-    getItemFromStorage<boolean>("hasSession") ? "loading" : "anonymous",
+    getItemFromStorage("hasSession", z.boolean()) ? "loading" : "anonymous",
   );
   const statusRef = useRef(status);
   // Path where the session expired during start-up. Only the route guard

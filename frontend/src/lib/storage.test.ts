@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { clearSessionStorage } from "./storage";
+import { z } from "zod";
+import { clearSessionStorage, getItemFromStorage } from "./storage";
 
 // Theme key owned by app/providers/ThemeProvider.tsx
 const THEME_KEY = "findraco-theme";
@@ -32,5 +33,29 @@ describe("clearSessionStorage", () => {
     );
     expect(localStorage.getItem("homeFilters:1:11")).toBe("plan=11");
     expect(localStorage.getItem(THEME_KEY)).toBe("dark");
+  });
+});
+
+describe("getItemFromStorage", () => {
+  it("returns the stored value when it matches the schema", () => {
+    localStorage.setItem("activePlanId", "10");
+
+    expect(getItemFromStorage("activePlanId", z.number())).toBe(10);
+  });
+
+  it("returns null when the key is missing", () => {
+    expect(getItemFromStorage("activePlanId", z.number())).toBeNull();
+  });
+
+  it("returns null when the stored text is not JSON", () => {
+    localStorage.setItem("activePlanId", "{not json");
+
+    expect(getItemFromStorage("activePlanId", z.number())).toBeNull();
+  });
+
+  it("returns null when the stored value has the wrong shape", () => {
+    localStorage.setItem("activePlanId", '"10"');
+
+    expect(getItemFromStorage("activePlanId", z.number())).toBeNull();
   });
 });
