@@ -128,6 +128,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: design.md AD-009 (Secure session cookie) vs production served over plain HTTP at 72.60.1.97:8094 (deploy)
 - last seen: 2026-10-17T00:16:24Z
 
+### L-020 - Test a count-based guard at its boundary (exactly one item), not only with several
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `test-infrastructure` · harmful: 0
+- features: frontend-standards
+- evidence: validation.md M28 src/test/unhandledRequests.ts:19 (test-infrastructure)
+- last seen: 2026-10-19T05:32:26Z
+
+### L-021 - Prove global test-harness wiring with a test that triggers it, not only the helper it calls
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `test-infrastructure` · harmful: 0
+- features: frontend-standards
+- evidence: validation.md M29 src/test/setupUnit.ts:18 (test-infrastructure)
+- last seen: 2026-10-19T05:32:26Z
+
+### L-022 - A lint rule that recognises a construct syntactically needs RuleTester cases for its indirect forms (through a variable or a call), or it can be evaded
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `lint-rules` · harmful: 0
+- features: frontend-standards
+- evidence: STD-12 AC 3 eslint/rules/componentLogicCap.ts:15 (lint-rules)
+- last seen: 2026-10-19T05:32:26Z
+
+### L-023 - When an AC bans mocking our own modules, name which test kinds it covers (service hooks, other hooks, flows)
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `testing` · harmful: 0
+- features: frontend-standards
+- evidence: SP-3 STD-04 AC 4 (testing)
+- last seen: 2026-10-19T05:32:26Z
+
+### L-024 - Mark ACs that only review can check as review-enforced in the spec, so the Verifier does not expect a mechanical gate
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `spec` · harmful: 0
+- features: frontend-standards
+- evidence: SP-1 STD-10 AC 3; SP-2 STD-09 AC 3 (spec)
+- last seen: 2026-10-19T05:32:26Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

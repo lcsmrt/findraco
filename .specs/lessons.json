@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 20,
+  "next_id": 25,
   "lessons": [
     {
       "id": "L-001",
@@ -346,6 +346,96 @@
       ],
       "created": "2026-10-17T00:16:24Z",
       "last_seen": "2026-10-17T00:16:24Z"
+    },
+    {
+      "id": "L-020",
+      "key": "surviving_mutant::test a count based guard at its boundary exactly one item not only with several",
+      "text": "Test a count-based guard at its boundary (exactly one item), not only with several",
+      "signal": "surviving_mutant",
+      "scope": "test-infrastructure",
+      "status": "candidate",
+      "features": [
+        "frontend-standards"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M28 src/test/unhandledRequests.ts:19 (test-infrastructure)"
+      ],
+      "created": "2026-10-19T05:32:26Z",
+      "last_seen": "2026-10-19T05:32:26Z"
+    },
+    {
+      "id": "L-021",
+      "key": "surviving_mutant::prove global test harness wiring with a test that triggers it not only the helper it calls",
+      "text": "Prove global test-harness wiring with a test that triggers it, not only the helper it calls",
+      "signal": "surviving_mutant",
+      "scope": "test-infrastructure",
+      "status": "candidate",
+      "features": [
+        "frontend-standards"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M29 src/test/setupUnit.ts:18 (test-infrastructure)"
+      ],
+      "created": "2026-10-19T05:32:26Z",
+      "last_seen": "2026-10-19T05:32:26Z"
+    },
+    {
+      "id": "L-022",
+      "key": "ac_gap::a lint rule that recognises a construct syntactically needs ruletester cases for its indirect forms through a variable or a call or it can be evaded",
+      "text": "A lint rule that recognises a construct syntactically needs RuleTester cases for its indirect forms (through a variable or a call), or it can be evaded",
+      "signal": "ac_gap",
+      "scope": "lint-rules",
+      "status": "candidate",
+      "features": [
+        "frontend-standards"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "STD-12 AC 3 eslint/rules/componentLogicCap.ts:15 (lint-rules)"
+      ],
+      "created": "2026-10-19T05:32:26Z",
+      "last_seen": "2026-10-19T05:32:26Z"
+    },
+    {
+      "id": "L-023",
+      "key": "spec_precision_gap::when an ac bans mocking our own modules name which test kinds it covers service hooks other hooks flows",
+      "text": "When an AC bans mocking our own modules, name which test kinds it covers (service hooks, other hooks, flows)",
+      "signal": "spec_precision_gap",
+      "scope": "testing",
+      "status": "candidate",
+      "features": [
+        "frontend-standards"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SP-3 STD-04 AC 4 (testing)"
+      ],
+      "created": "2026-10-19T05:32:26Z",
+      "last_seen": "2026-10-19T05:32:26Z"
+    },
+    {
+      "id": "L-024",
+      "key": "spec_precision_gap::mark acs that only review can check as review enforced in the spec so the verifier does not expect a mechanical gate",
+      "text": "Mark ACs that only review can check as review-enforced in the spec, so the Verifier does not expect a mechanical gate",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "frontend-standards"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "SP-1 STD-10 AC 3; SP-2 STD-09 AC 3 (spec)"
+      ],
+      "created": "2026-10-19T05:32:26Z",
+      "last_seen": "2026-10-19T05:32:26Z"
     }
   ]
 }
