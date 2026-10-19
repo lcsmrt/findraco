@@ -946,6 +946,8 @@ Follow-up: the T18/T19 hook modules are renamed after their hooks (`useConfirm.t
 - [x] Quick gate passes
 - [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
+**Follow-up (2026-10-18, after T111)**: `refactor(frontend): remove forced type casts`. Lint cannot catch every forced `as`, so the remaining ones in `src` (non-test) went: `Sorting.by` is the column id (`string`), not `keyof TData`, which `TableHeader` and `TransactionsTab` had forced; Select views read labels through Base UI `items` and narrow `null` instead of casting (`TransactionFilterPopoverView`, `PlanMembersListView`); `RadioGroup` is generic, so `SeriesScopeDialog` gets its value type; CSS custom properties use the `StyleWithVariables` type (`ToasterView`, `Chart`); `Chart` iterates typed themes and reads payload fields through a `typeof` guard; `InputGroup` narrows with `instanceof Element`; `clearSessionStorage` iterates `Object.values`; the auth pages read the return location through `readReturnLocation` (tested). Only the `type Table as TanstackTable` import alias remains, which is not a cast.
+
 **Tests**: unit
 **Gate**: quick
 **Commit**: `refactor(frontend): type the table generics without any`

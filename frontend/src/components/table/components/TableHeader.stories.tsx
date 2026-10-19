@@ -14,8 +14,8 @@ const columns: ColumnDef<Expense>[] = [
 ];
 
 type DemoProps = {
-  sorting?: Sorting<Expense>[];
-  onSortChange?: (sorting: Sorting<Expense>[]) => void;
+  sorting?: Sorting[];
+  onSortChange?: (sorting: Sorting[]) => void;
   headers?: ColumnDef<Expense>[];
 };
 

@@ -45,7 +45,5 @@ export function clearStorage(): void {
  * `clearStorage`, keeps unrelated entries such as saved home filters and the theme.
  */
 export function clearSessionStorage(): void {
-  (Object.keys(STORAGE_KEYS) as (keyof typeof STORAGE_KEYS)[]).forEach(
-    removeItemFromStorage,
-  );
+  Object.values(STORAGE_KEYS).forEach((name) => localStorage.removeItem(name));
 }

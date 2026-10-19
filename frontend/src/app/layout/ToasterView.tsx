@@ -8,6 +8,14 @@ import {
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import { typographyVariants } from "@/components/typography/base/typographyVariants";
 import { cn } from "@/lib/mergeClasses";
+import type { StyleWithVariables } from "@/lib/styleWithVariables";
+
+const toasterStyle: StyleWithVariables = {
+  "--normal-bg": "var(--popover)",
+  "--normal-text": "var(--popover-foreground)",
+  "--normal-border": "var(--border)",
+  "--border-radius": "var(--radius)",
+};
 
 export function ToasterView(props: ToasterProps) {
   return (
@@ -42,14 +50,7 @@ export function ToasterView(props: ToasterProps) {
           </div>
         ),
       }}
-      style={
-        {
-          "--normal-bg": "var(--popover)",
-          "--normal-text": "var(--popover-foreground)",
-          "--normal-border": "var(--border)",
-          "--border-radius": "var(--radius)",
-        } as React.CSSProperties
-      }
+      style={toasterStyle}
       toastOptions={{
         classNames: {
           toast:

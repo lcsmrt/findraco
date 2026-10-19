@@ -1,9 +1,15 @@
 import { cn } from "@/lib/mergeClasses";
+import type { StyleWithVariables } from "@/lib/styleWithVariables";
 import { formatMoney } from "@/utils/money";
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
-const THEMES = { light: "", dark: ".dark" } as const;
+const THEMES = [
+  { name: "light", prefix: "" },
+  { name: "dark", prefix: ".dark" },
+] as const;
+
+type ThemeName = (typeof THEMES)[number]["name"];
 
 export type ChartConfig = {
   [k in string]: {
@@ -11,7 +17,7 @@ export type ChartConfig = {
     icon?: React.ComponentType;
   } & (
     | { color?: string; theme?: never }
-    | { color?: never; theme: Record<keyof typeof THEMES, string> }
+    | { color?: never; theme: Record<ThemeName, string> }
   );
 };
 
@@ -72,20 +78,18 @@ function ChartStyle({ id, config }: { id: string; config: ChartConfig }) {
   return (
     <style
       dangerouslySetInnerHTML={{
-        __html: Object.entries(THEMES)
-          .map(
-            ([theme, prefix]) => `
+        __html: THEMES.map(
+          ({ name, prefix }) => `
 ${prefix} [data-chart=${id}] {
 ${colorConfig
   .map(([key, itemConfig]) => {
-    const color = itemConfig.theme?.[theme as keyof typeof itemConfig.theme] || itemConfig.color;
+    const color = itemConfig.theme?.[name] || itemConfig.color;
     return color ? `  --color-${key}: ${color};` : null;
   })
   .join("\n")}
 }
 `,
-          )
-          .join("\n"),
+        ).join("\n"),
       }}
     />
   );
@@ -127,7 +131,7 @@ function ChartTooltipContent({
     const itemConfig = getPayloadConfigFromPayload(config, item, key);
     const value =
       !labelKey && typeof label === "string"
-        ? config[label as keyof typeof config]?.label || label
+        ? config[label]?.label || label
         : itemConfig?.label;
 
     if (labelFormatter) {
@@ -164,6 +168,10 @@ function ChartTooltipContent({
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color || item.payload.fill || item.color;
+            const indicatorStyle: StyleWithVariables = {
+              "--color-bg": indicatorColor,
+              "--color-border": indicatorColor,
+            };
 
             return (
               <div
@@ -192,12 +200,7 @@ function ChartTooltipContent({
                               "my-0.5": nestLabel && indicator === "dashed",
                             },
                           )}
-                          style={
-                            {
-                              "--color-bg": indicatorColor,
-                              "--color-border": indicatorColor,
-                            } as React.CSSProperties
-                          }
+                          style={indicatorStyle}
                         />
                       )
                     )}
@@ -297,19 +300,15 @@ function getPayloadConfigFromPayload(config: ChartConfig, payload: unknown, key:
       ? payload.payload
       : undefined;
 
-  let configLabelKey: string = key;
+  const configLabelKey =
+    stringField(payload, key) ?? (payloadPayload ? stringField(payloadPayload, key) : undefined) ?? key;
 
-  if (key in payload && typeof payload[key as keyof typeof payload] === "string") {
-    configLabelKey = payload[key as keyof typeof payload] as string;
-  } else if (
-    payloadPayload &&
-    key in payloadPayload &&
-    typeof payloadPayload[key as keyof typeof payloadPayload] === "string"
-  ) {
-    configLabelKey = payloadPayload[key as keyof typeof payloadPayload] as string;
-  }
+  return configLabelKey in config ? config[configLabelKey] : config[key];
+}
 
-  return configLabelKey in config ? config[configLabelKey] : config[key as keyof typeof config];
+function stringField(source: object, key: string) {
+  const value: unknown = Reflect.get(source, key);
+  return typeof value === "string" ? value : undefined;
 }
 
 export {

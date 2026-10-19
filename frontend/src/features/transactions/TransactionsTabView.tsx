@@ -33,8 +33,8 @@ type TransactionsTabViewProps = {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   columns: ColumnDef<FinancialTransaction>[];
-  sorting: Sorting<FinancialTransaction>[];
-  onSortChange: (next: Sorting<FinancialTransaction>[]) => void;
+  sorting: Sorting[];
+  onSortChange: (next: Sorting[]) => void;
   onEdit: (transaction: FinancialTransaction) => void;
 };
 

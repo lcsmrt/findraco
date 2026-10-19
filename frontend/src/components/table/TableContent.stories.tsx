@@ -29,7 +29,7 @@ type DemoProps = {
 
 // Sorting is server-side, so the story only holds the chosen sort like a screen's URL state does.
 function DemoTableContent({ data, isLoading, emptyState, expandable }: DemoProps) {
-  const [sorting, setSorting] = useState<Sorting<Expense>[]>([]);
+  const [sorting, setSorting] = useState<Sorting[]>([]);
   return (
     <TableRoot
       data={data}

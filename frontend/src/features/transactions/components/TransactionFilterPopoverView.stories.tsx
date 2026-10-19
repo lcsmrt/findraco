@@ -55,6 +55,7 @@ export const OpenSharedPlan: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Filters" }));
     await expect(await screen.findByText("Attributed to")).toBeVisible();
+    await expect(screen.getByLabelText("Type")).toHaveTextContent("All");
     await userEvent.click(screen.getByRole("button", { name: "Apply" }));
     await expect(args.onApply).toHaveBeenCalledWith(noFilters);
     // Applying closes the popover; the a11y check runs once it has left.

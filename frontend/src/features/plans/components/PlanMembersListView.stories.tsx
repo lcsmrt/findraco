@@ -27,6 +27,7 @@ type Story = StoryObj<typeof meta>;
 
 export const AsOwner: Story = {
   play: async ({ args, canvas, userEvent }) => {
+    await expect(canvas.getByLabelText("Role of Livia Souza")).toHaveTextContent("Editor");
     await userEvent.click(canvas.getByRole("button", { name: "Remove Ana Lima" }));
     await expect(args.onRemove).toHaveBeenCalledWith(members[2]);
   },

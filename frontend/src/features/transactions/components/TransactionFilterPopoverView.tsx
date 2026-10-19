@@ -125,17 +125,15 @@ export function TransactionFilterPopoverView({
             <FieldLabel htmlFor={`${fieldId}-type`}>Type</FieldLabel>
             <Select
               value={draft.type}
-              onValueChange={(v) =>
-                setDraft((d) => ({
-                  ...d,
-                  type: v as FinancialTransactionType | typeof TYPE_ALL,
-                }))
-              }
+              items={TYPE_LABELS}
+              onValueChange={(v) => {
+                if (v !== null) {
+                  setDraft((d) => ({ ...d, type: v }));
+                }
+              }}
             >
               <SelectTrigger id={`${fieldId}-type`}>
-                <SelectValue>
-                  {(v: string) => TYPE_LABELS[v as FinancialTransactionType | typeof TYPE_ALL]}
-                </SelectValue>
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value={TYPE_ALL}>All</SelectItem>

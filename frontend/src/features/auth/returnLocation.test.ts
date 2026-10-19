@@ -1,0 +1,23 @@
+import { describe, expect, it } from "vitest";
+import { readReturnLocation } from "./returnLocation";
+
+describe("readReturnLocation", () => {
+  it("returns the path and query string a guarded route stored", () => {
+    const state = { from: { pathname: "/plans", search: "?x=1", hash: "", key: "k1", state: null } };
+
+    expect(readReturnLocation(state)).toEqual({ pathname: "/plans", search: "?x=1" });
+  });
+
+  it.each([
+    ["no state", null],
+    ["a non-object state", "from"],
+    ["a state without from", { other: 1 }],
+    ["a null from", { from: null }],
+    ["a from without search", { from: { pathname: "/plans" } }],
+    ["a from without pathname", { from: { search: "" } }],
+    ["a non-string pathname", { from: { pathname: 42, search: "" } }],
+    ["a non-string search", { from: { pathname: "/plans", search: null } }],
+  ])("returns nothing for %s", (_, state) => {
+    expect(readReturnLocation(state)).toBeUndefined();
+  });
+});

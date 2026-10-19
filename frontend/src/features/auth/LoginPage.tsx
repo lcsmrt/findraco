@@ -1,13 +1,10 @@
 import { useLogin } from "@/api/services/useAuthService";
 import { PATHS } from "@/app/routing/paths";
 import { useAuth } from "@/app/providers/useAuth";
-import { useLocation, useNavigate, type Location } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import type { LoginFormOutput } from "./authForms";
 import { LoginView } from "./LoginView";
-
-type LoginLocationState = {
-  from?: Location;
-};
+import { readReturnLocation } from "./returnLocation";
 
 export function Login() {
   const { signIn } = useAuth();
@@ -15,7 +12,7 @@ export function Login() {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const from = (location.state as LoginLocationState | null)?.from;
+  const from = readReturnLocation(location.state);
 
   async function handleSubmit(credentials: LoginFormOutput) {
     // useLogin already shows the failure as a toast.

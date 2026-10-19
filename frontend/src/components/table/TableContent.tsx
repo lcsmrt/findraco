@@ -6,8 +6,8 @@ import { TableBase } from "./base/TableParts";
 
 type TableContentProps<TData> = {
   table: Table<TData>;
-  sorting?: Sorting<TData>[];
-  onSortChange?: (sorting: Sorting<TData>[]) => void;
+  sorting?: Sorting[];
+  onSortChange?: (sorting: Sorting[]) => void;
   stickyHeader?: boolean;
   renderSubComponent?: (row: Row<TData>) => ReactNode;
   emptyState?: ReactNode;

@@ -4,15 +4,16 @@ import { ChevronDownIcon, ChevronsUpDown, ChevronUpIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { TableHeadBase, TableHeaderBase, TableRowBase } from "../base/TableParts";
 
-export type Sorting<T> = {
-  by: keyof T;
+export type Sorting = {
+  /** The sorted column's id, which a column's accessor or `id` sets; not always a key of the row. */
+  by: string;
   direction: "asc" | "desc";
 };
 
 type TableHeaderProps<TData> = {
   table: Table<TData>;
-  sorting?: Sorting<TData>[];
-  onSortChange?: (sorting: Sorting<TData>[]) => void;
+  sorting?: Sorting[];
+  onSortChange?: (sorting: Sorting[]) => void;
   isSticky?: boolean;
 };
 
@@ -22,12 +23,12 @@ export function TableHeader<TData>({
   onSortChange,
   isSticky = true,
 }: TableHeaderProps<TData>) {
-  function toggleSort(columnId: keyof TData) {
+  function toggleSort(columnId: string) {
     const existing = (sorting ?? []).find((s) => s.by === columnId);
 
     // Single active sort key: clicking a column replaces any prior sort rather than appending, so the
     // shown arrow always matches the one column the server orders by (the backend reads sorting[0]).
-    let newSorting: Sorting<TData>[];
+    let newSorting: Sorting[];
     if (!existing) {
       newSorting = [{ by: columnId, direction: "asc" }];
     } else if (existing.direction === "asc") {
@@ -53,7 +54,7 @@ export function TableHeader<TData>({
                 {isPlaceholder ? null : canSort ? (
                   <SortableTableHeaderCell
                     direction={current?.direction}
-                    onClick={() => toggleSort(header.column.id as keyof TData)}
+                    onClick={() => toggleSort(header.column.id)}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
                   </SortableTableHeaderCell>

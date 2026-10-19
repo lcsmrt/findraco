@@ -89,7 +89,7 @@ export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
     ...(sort ? { sort } : {}),
   };
 
-  const sorting = useMemo<Sorting<FinancialTransaction>[]>(
+  const sorting = useMemo<Sorting[]>(
     () =>
       sort ? [{ by: SORT_COLUMNS[sort.by], direction: sort.direction }] : [],
     [sort],
@@ -118,9 +118,9 @@ export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
     updateTransactions((t) => ({ ...t, size: s }));
   }
 
-  function onSortChange(next: Sorting<FinancialTransaction>[]) {
+  function onSortChange(next: Sorting[]) {
     const active = next[0];
-    const by = active ? SORTABLE_FIELDS[active.by as string] : undefined;
+    const by = active ? SORTABLE_FIELDS[active.by] : undefined;
     updateTransactions((t) => ({
       ...t,
       sort: by ? { by, direction: active.direction } : null,

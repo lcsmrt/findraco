@@ -66,7 +66,7 @@ export function SeriesScopeDialog({
         </DialogHeader>
         <RadioGroup
           value={scope}
-          onValueChange={(value) => onScopeChange(value as SeriesEditScope)}
+          onValueChange={(value) => onScopeChange(value)}
         >
           {SCOPE_OPTIONS.map((option) => (
             <FieldLabel key={option.value} htmlFor={option.value}>

@@ -79,17 +79,18 @@ export function PlanMembersListView({
             <div className="flex shrink-0 items-center justify-end gap-2">
               <Select
                 value={member.role}
-                onValueChange={(value) =>
-                  onRoleChange(member, value as PlanRole)
-                }
+                items={ROLE_LABELS}
+                onValueChange={(value) => {
+                  if (value !== null) {
+                    onRoleChange(member, value);
+                  }
+                }}
               >
                 <SelectTrigger
                   className="h-8 w-[150px]"
                   aria-label={`Role of ${member.name}`}
                 >
-                  <SelectValue>
-                    {(v: string) => ROLE_LABELS[v as PlanRole]}
-                  </SelectValue>
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {ROLE_OPTIONS.map((option) => (
