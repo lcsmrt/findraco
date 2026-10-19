@@ -3235,9 +3235,9 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] Test with fake timers: debounce, URL sync both ways, clear
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test with fake timers: debounce, URL sync both ways, clear
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick
