@@ -7,12 +7,14 @@ import {
   RecurrenceDefinitionResponse,
   SeriesEditScope,
   SplitMode,
+  UpdateFinancialTransactionRequest,
   UpdateFinancialTransactionSeriesRequest,
 } from "@/api/dtos/financialTransaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
 import { addMonths, format } from "date-fns";
 import { z } from "zod";
+import type { InlineSaveBody } from "./transactionColumns";
 
 export type TransactionFormMode = "create" | "edit" | "duplicate";
 
@@ -385,6 +387,34 @@ export function toPayload(
       amount: item.amount,
       categoryId: item.category?.id,
     })),
+  };
+}
+
+/**
+ * The update a table cell edit sends. The API replaces the whole transaction, so every field the cell
+ * did not change is sent back as the transaction has it (the start date as its `yyyy-MM-dd` part).
+ */
+export function toInlineSavePayload(
+  transaction: FinancialTransaction,
+  change: InlineSaveBody,
+): UpdateFinancialTransactionRequest {
+  return {
+    params: { id: transaction.id },
+    body: {
+      type: transaction.type,
+      description: change.description ?? transaction.description,
+      amount: change.amount ?? transaction.amount,
+      categoryId: change.categoryId ?? transaction.category?.id,
+      startDate: change.startDate ?? transaction.startDate.split("T")[0],
+      splitMode: change.splitMode ?? transaction.splitMode,
+      participants:
+        change.participants ??
+        transaction.participants.map((p) => ({
+          memberId: p.id,
+          shareAmount:
+            transaction.splitMode === "EXACT" ? p.shareAmount : undefined,
+        })),
+    },
   };
 }
 
