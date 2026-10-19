@@ -3483,10 +3483,12 @@ Done: unit + tooling 929 tests, unchanged count. The case defines its own `/plan
 
 **Done when**:
 
-- [ ] No `vi.mock` of `@/` modules in the four files; `sonner` rendered for real or mocked only if unavoidable (reported)
-- [ ] Every previous scenario and assertion still present; test count ≥ before
-- [ ] No ` as ` casts in the four files
-- [ ] Quick gate passes
+- [x] No `vi.mock` of `@/` modules in the four files; `sonner` rendered for real or mocked only if unavoidable (reported)
+- [x] Every previous scenario and assertion still present; test count ≥ before
+- [x] No ` as ` casts in the four files
+- [x] Quick gate passes
+
+Done: unit + tooling 929 tests, unchanged (the four files keep 13 + 4 + 3 + 8 = 28 tests). No `vi.mock` and no ` as ` left in them; `sonner` is no longer mocked: the real `Toaster` renders and toasts are counted by their text (checked, reverted: an unconditional expiry toast fails 5 of the 13 session tests). The session tests use the real `findracoApi`/`renewSession`; mid-session expiry goes through `renewSession()` against a 401 refresh, which is how the handler fires in the app. Call assertions became recorded-request assertions (method + path, plus the Bearer header on sign-in). New handler factories: `authHandlers.refresh`, `refreshRejected`, `refreshNetworkError`, `logoutNetworkError`; `financialTransactionCategoryHandlers.getServerError`, `getNetworkError`. Context values are explicit (`auth` for `PrivateRoute`, `plan` for the two hooks); the location is read by returning `useLocation()` from the rendered hook.
 
 **Tests**: unit
 **Gate**: quick

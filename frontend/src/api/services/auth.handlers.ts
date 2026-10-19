@@ -28,6 +28,23 @@ export const authHandlers = {
   logout(): HttpHandler {
     return http.post("*/auth/logout", () => new HttpResponse(null, { status: 204 }));
   },
+  logoutNetworkError(): HttpHandler {
+    return http.post("*/auth/logout", () => HttpResponse.error());
+  },
+  refresh(response: LoginResponse): HttpHandler {
+    return http.post<NoParams, never, LoginResponse>("*/auth/refresh", () =>
+      HttpResponse.json(response),
+    );
+  },
+  /** The session cookie is gone or expired: the API cannot renew the session. */
+  refreshRejected(): HttpHandler {
+    return http.post<NoParams, never, ErrorBody>("*/auth/refresh", () =>
+      HttpResponse.json({ message: "Authentication required." }, { status: 401 }),
+    );
+  },
+  refreshNetworkError(): HttpHandler {
+    return http.post("*/auth/refresh", () => HttpResponse.error());
+  },
   me(user: User): HttpHandler {
     return http.get<NoParams, never, User>("*/user/me", () => HttpResponse.json(user));
   },

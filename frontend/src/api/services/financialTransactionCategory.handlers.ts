@@ -29,6 +29,14 @@ export const financialTransactionCategoryHandlers = {
       HttpResponse.json({ title: "Category not found" }, { status: 404 }),
     );
   },
+  getServerError(): HttpHandler {
+    return http.get<CategoryParams>(`${base}/:id`, () =>
+      HttpResponse.json({ title: "Internal server error" }, { status: 500 }),
+    );
+  },
+  getNetworkError(): HttpHandler {
+    return http.get<CategoryParams>(`${base}/:id`, () => HttpResponse.error());
+  },
   spending(tree: CategorySpending[]): HttpHandler {
     return http.get<PlanParams, never, CategorySpending[]>(`${base}/spending`, () =>
       HttpResponse.json(tree),
