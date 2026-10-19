@@ -1,41 +1,9 @@
-import { Invitation, InvitationType } from "@/api/dtos";
+import type { Invitation } from "@/api/dtos";
 import { useCreateInvitation } from "@/api/services/useInvitationService";
-import { Button } from "@/components/button/base/Button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/dialog/base/Dialog";
-import { FormField } from "@/components/form/FormField";
-import { Input } from "@/components/input/base/Input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/input/base/Select";
-import { Text } from "@/components/typography/base/Text";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { CopyIcon, SendIcon, XIcon } from "lucide-react";
 import { useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
-import { ROLE_LABELS, ROLE_OPTIONS } from "../utils/planLabels";
-import {
-  INVITE_FORM_DEFAULTS,
-  InviteFormOutput,
-  InviteFormValues,
-  inviteSchema,
-  toInvitePayload,
-} from "./inviteForm";
-
-const TYPE_LABELS: Record<InvitationType, string> = {
-  EMAIL: "Email",
-  LINK: "Link",
-};
+import { type InviteFormOutput, toInvitePayload } from "./inviteForm";
+import { InvitePlanDialogView } from "./InvitePlanDialogView";
 
 type InvitePlanDialogProps = {
   open: boolean;
@@ -57,27 +25,15 @@ export function InvitePlanDialog({
     null,
   );
 
-  const { control, handleSubmit, reset } = useForm<
-    InviteFormValues,
-    unknown,
-    InviteFormOutput
-  >({
-    resolver: zodResolver(inviteSchema),
-    defaultValues: INVITE_FORM_DEFAULTS,
-  });
-
   useEffect(() => {
-    reset(INVITE_FORM_DEFAULTS);
     setCreatedInvitation(null);
-  }, [open, reset]);
+  }, [open]);
 
   const { mutate: createInvitation, isPending } = useCreateInvitation({
     onSuccess: (invitation) => setCreatedInvitation(invitation),
   });
 
-  const type = useWatch({ control, name: "type" });
-
-  function onSubmit(values: InviteFormOutput) {
+  function handleCreate(values: InviteFormOutput) {
     createInvitation({ params: { planId }, body: toInvitePayload(values) });
   }
 
@@ -88,151 +44,14 @@ export function InvitePlanDialog({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Invite to plan</DialogTitle>
-        </DialogHeader>
-
-        {createdInvitation ? (
-          <div className="flex flex-col gap-3">
-            {createdInvitation.type === "LINK" ? (
-              <>
-                <Text as="p" variant="secondary">
-                  Share this link to invite someone:
-                </Text>
-                <div className="flex items-center gap-2">
-                  <Input
-                    readOnly
-                    value={buildInvitationLink(createdInvitation)}
-                    onFocus={(e) => e.target.select()}
-                  />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    onClick={copyLink}
-                  >
-                    <CopyIcon className="h-4 w-4" />
-                  </Button>
-                </div>
-              </>
-            ) : (
-              <Text as="p" variant="secondary">
-                Invitation sent to{" "}
-                <Text variant="label" className="text-foreground">
-                  {createdInvitation.email}
-                </Text>
-                .
-              </Text>
-            )}
-
-            <DialogFooter>
-              <Button type="button" onClick={() => onOpenChange(false)}>
-                Done
-              </Button>
-            </DialogFooter>
-          </div>
-        ) : (
-          <>
-            <FormField control={control} name="type" label="Invitation type">
-              {(field) => (
-                <Select
-                  items={TYPE_LABELS}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger
-                    id={field.id}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    aria-invalid={field["aria-invalid"]}
-                    className="w-full"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="EMAIL">Email</SelectItem>
-                    <SelectItem value="LINK">Link</SelectItem>
-                  </SelectContent>
-                </Select>
-              )}
-            </FormField>
-
-            <FormField control={control} name="role" label="Role">
-              {(field) => (
-                <Select
-                  items={ROLE_LABELS}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
-                  <SelectTrigger
-                    id={field.id}
-                    ref={field.ref}
-                    onBlur={field.onBlur}
-                    aria-invalid={field["aria-invalid"]}
-                    className="w-full"
-                  >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ROLE_OPTIONS.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {ROLE_LABELS[option]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </FormField>
-
-            {type === "EMAIL" && (
-              <FormField control={control} name="email" label="Email">
-                {(field) => (
-                  <Input
-                    {...field}
-                    type="email"
-                    placeholder="person@email.com"
-                    disabled={isPending}
-                  />
-                )}
-              </FormField>
-            )}
-
-            {type === "LINK" && (
-              <FormField
-                control={control}
-                name="expiresAt"
-                label="Expires at (optional)"
-              >
-                {(field) => (
-                  <Input {...field} type="datetime-local" disabled={isPending} />
-                )}
-              </FormField>
-            )}
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                type="button"
-                disabled={isPending}
-                onClick={() => onOpenChange(false)}
-              >
-                <XIcon className="h-4 w-4" />
-                Cancel
-              </Button>
-              <Button
-                type="button"
-                isLoading={isPending}
-                onClick={handleSubmit(onSubmit)}
-              >
-                <SendIcon className="h-4 w-4" />
-                {type === "LINK" ? "Generate link" : "Send invitation"}
-              </Button>
-            </DialogFooter>
-          </>
-        )}
-      </DialogContent>
-    </Dialog>
+    <InvitePlanDialogView
+      open={open}
+      onOpenChange={onOpenChange}
+      createdInvitation={createdInvitation}
+      invitationLink={createdInvitation ? buildInvitationLink(createdInvitation) : null}
+      isCreating={isPending}
+      onCreate={handleCreate}
+      onCopyLink={copyLink}
+    />
   );
 }

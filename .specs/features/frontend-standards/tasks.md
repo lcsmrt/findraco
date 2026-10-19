@@ -3004,10 +3004,10 @@ Notes: `typographySelectors` (Literal and TemplateElement over one regex: sizes 
 
 **Done when**:
 
-- [ ] Every container in `features/plans` that renders HTML elements of its own is split: the container keeps the hooks and renders only components; the view renders from props and has a story per the checklist
-- [ ] Behaviour unchanged; existing tests pass (moved with their subjects where needed)
-- [ ] Full gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Every container in `features/plans` that renders HTML elements of its own is split: the container keeps the hooks and renders only components; the view renders from props and has a story per the checklist
+- [x] Behaviour unchanged; existing tests pass (moved with their subjects where needed)
+- [x] Full gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: story
 **Gate**: full

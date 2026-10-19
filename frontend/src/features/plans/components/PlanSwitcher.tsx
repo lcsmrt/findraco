@@ -1,21 +1,9 @@
 import { PATHS } from "@/app/routing/paths";
-import { Button } from "@/components/button/base/Button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/dropdown/base/Dropdown";
-import { ChevronsUpDownIcon, PlusIcon, SettingsIcon } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { PlanNameDialog } from "./PlanNameDialog";
+import { PlanSwitcherView } from "./PlanSwitcherView";
 
 export function PlanSwitcher() {
   const navigate = useNavigate();
@@ -24,49 +12,14 @@ export function PlanSwitcher() {
 
   return (
     <>
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button
-              variant="outline"
-              size="sm"
-              className="max-w-52 justify-between gap-2"
-            >
-              <span className="truncate">
-                {activePlan?.name ?? "Select plan"}
-              </span>
-              <ChevronsUpDownIcon className="text-muted-foreground" />
-            </Button>
-          }
-        />
-
-        <DropdownMenuContent className="min-w-52" align="start">
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>Plans</DropdownMenuLabel>
-            <DropdownMenuRadioGroup
-              value={activePlanId != null ? String(activePlanId) : ""}
-              onValueChange={(value) => setActivePlanId(Number(value))}
-            >
-              {plans.map((plan) => (
-                <DropdownMenuRadioItem key={plan.id} value={String(plan.id)}>
-                  <span className="truncate">{plan.name}</span>
-                </DropdownMenuRadioItem>
-              ))}
-            </DropdownMenuRadioGroup>
-          </DropdownMenuGroup>
-
-          <DropdownMenuSeparator />
-
-          <DropdownMenuItem onClick={() => setIsCreateOpen(true)}>
-            <PlusIcon />
-            New plan
-          </DropdownMenuItem>
-          <DropdownMenuItem onClick={() => navigate(PATHS.plans)}>
-            <SettingsIcon />
-            Manage plans
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <PlanSwitcherView
+        plans={plans}
+        activePlanId={activePlanId}
+        activePlanName={activePlan?.name}
+        onSelectPlan={setActivePlanId}
+        onCreatePlan={() => setIsCreateOpen(true)}
+        onManagePlans={() => navigate(PATHS.plans)}
+      />
 
       <PlanNameDialog
         mode="create"

@@ -2,30 +2,7 @@ import {
   useGetPlanMembers,
   useTransferOwnership,
 } from "@/api/services/usePlanService";
-import { Button } from "@/components/button/base/Button";
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/dialog/base/Dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/input/base/Field";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/input/base/Select";
-import { Spinner } from "@/components/spinner/base/Spinner";
-import { Text } from "@/components/typography/base/Text";
-import { ArrowRightLeftIcon, XIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { TransferOwnershipDialogView } from "./TransferOwnershipDialogView";
 
 type TransferOwnershipDialogProps = {
   open: boolean;
@@ -41,11 +18,6 @@ export function TransferOwnershipDialog({
   const { data: members = [], isLoading } = useGetPlanMembers(planId, {
     enabled: open,
   });
-  const [selectedUserId, setSelectedUserId] = useState<string>("");
-
-  useEffect(() => {
-    setSelectedUserId("");
-  }, [open]);
 
   const candidates = members.filter((member) => member.role !== "OWNER");
 
@@ -53,77 +25,21 @@ export function TransferOwnershipDialog({
     onSuccess: () => onOpenChange(false),
   });
 
-  function onSubmit() {
-    if (!selectedUserId) return;
+  function handleTransfer(newOwnerUserId: number) {
     transferOwnership({
       params: { planId },
-      body: { newOwnerUserId: Number(selectedUserId) },
+      body: { newOwnerUserId },
     });
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-sm">
-        <DialogHeader>
-          <DialogTitle>Transfer ownership</DialogTitle>
-        </DialogHeader>
-
-        {isLoading ? (
-          <div className="flex justify-center py-6">
-            <Spinner />
-          </div>
-        ) : candidates.length === 0 ? (
-          <Text as="p" variant="secondary" className="py-6 text-center">
-            There are no other members to transfer ownership to.
-          </Text>
-        ) : (
-          <Field>
-            <FieldLabel>New owner</FieldLabel>
-            <Select
-              value={selectedUserId}
-              onValueChange={(value) => setSelectedUserId(value ?? "")}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select a member" />
-              </SelectTrigger>
-              <SelectContent>
-                {candidates.map((member) => (
-                  <SelectItem
-                    key={member.userId}
-                    value={String(member.userId)}
-                  >
-                    {member.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldDescription>
-              You will become an Editor of this plan.
-            </FieldDescription>
-          </Field>
-        )}
-
-        <DialogFooter>
-          <Button
-            variant="outline"
-            type="button"
-            disabled={isPending}
-            onClick={() => onOpenChange(false)}
-          >
-            <XIcon className="h-4 w-4" />
-            Cancel
-          </Button>
-          <Button
-            type="button"
-            isLoading={isPending}
-            disabled={!selectedUserId || candidates.length === 0}
-            onClick={onSubmit}
-          >
-            <ArrowRightLeftIcon className="h-4 w-4" />
-            Transfer
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <TransferOwnershipDialogView
+      open={open}
+      onOpenChange={onOpenChange}
+      candidates={candidates}
+      isLoading={isLoading}
+      isTransferring={isPending}
+      onTransfer={handleTransfer}
+    />
   );
 }

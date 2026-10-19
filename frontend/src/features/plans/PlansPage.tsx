@@ -1,29 +1,6 @@
 import { useDeletePlan, useLeavePlan } from "@/api/services/usePlanService";
-import { Badge } from "@/components/badge/base/Badge";
-import { Button } from "@/components/button/base/Button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/card/base/Card";
 import { useConfirm } from "@/components/dialog/useConfirm";
-import { PageHeader } from "@/components/pageHeader/PageHeader";
-import { Spinner } from "@/components/spinner/base/Spinner";
 import { PATHS } from "@/app/routing/paths";
-import { Text } from "@/components/typography/base/Text";
-import { cn } from "@/lib/mergeClasses";
-import {
-  ArchiveIcon,
-  ArrowLeftIcon,
-  ArrowRightLeftIcon,
-  CheckIcon,
-  LogOutIcon,
-  PencilIcon,
-  PlusIcon,
-  UserPlusIcon,
-} from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
@@ -33,7 +10,7 @@ import { InvitePlanDialog } from "./components/InvitePlanDialog";
 import { PlanInvitationsList } from "./components/PlanInvitationsList";
 import { PlanMembersList } from "./components/PlanMembersList";
 import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
-import { ROLE_LABELS } from "./utils/planLabels";
+import { PlansPageView } from "./PlansPageView";
 
 export function PlansPage() {
   const navigate = useNavigate();
@@ -78,126 +55,26 @@ export function PlansPage() {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="self-start"
-        onClick={() => navigate(PATHS.home)}
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        Back
-      </Button>
-
-      <PageHeader
-        title="Plans"
-        description="Manage your plans and switch between them."
-        actions={
-          <Button size="sm" onClick={() => setIsCreateOpen(true)}>
-            <PlusIcon className="h-4 w-4" />
-            New plan
-          </Button>
-        }
+    <>
+      <PlansPageView
+        plans={plans}
+        activePlan={activePlan}
+        activePlanId={activePlanId}
+        isLoading={isLoading}
+        canManagePlan={canManagePlan}
+        isArchiving={isDeletingPlan}
+        isLeaving={isLeavingPlan}
+        onBack={() => navigate(PATHS.home)}
+        onCreatePlan={() => setIsCreateOpen(true)}
+        onSelectPlan={setActivePlanId}
+        onRename={() => setIsRenameOpen(true)}
+        onTransferOwnership={() => setIsTransferOpen(true)}
+        onArchive={handleArchivePlan}
+        onInvite={() => setIsInviteOpen(true)}
+        onLeave={handleLeavePlan}
+        membersList={activePlan && <PlanMembersList planId={activePlan.id} />}
+        invitationsList={activePlan && <PlanInvitationsList planId={activePlan.id} />}
       />
-
-      {isLoading ? (
-        <div className="flex justify-center py-10">
-          <Spinner />
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {plans.map((plan) => {
-            const isActive = plan.id === activePlanId;
-            return (
-              <button
-                key={plan.id}
-                type="button"
-                onClick={() => setActivePlanId(plan.id)}
-                className={cn(
-                  "border-border bg-card hover:border-primary/50 flex flex-col gap-2 rounded-lg border p-4 text-left transition-colors",
-                  isActive && "border-primary ring-primary/30 ring-1",
-                )}
-              >
-                <div className="flex items-center justify-between gap-2">
-                  <Text variant="title">{plan.name}</Text>
-                  {isActive && <CheckIcon className="text-primary-ink h-4 w-4" />}
-                </div>
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="secondary">{ROLE_LABELS[plan.myRole]}</Badge>
-                  {plan.isDefault && <Badge variant="outline">Default</Badge>}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {activePlan && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Members of {activePlan.name}</CardTitle>
-            <CardAction className="flex items-center gap-2">
-              {canManagePlan ? (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => setIsRenameOpen(true)}
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => setIsTransferOpen(true)}
-                  >
-                    <ArrowRightLeftIcon className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="text-muted-foreground hover:bg-accent hover:text-destructive"
-                    isLoading={isDeletingPlan}
-                    disabled={isDeletingPlan}
-                    onClick={handleArchivePlan}
-                  >
-                    <ArchiveIcon className="h-4 w-4" />
-                  </Button>
-                  <Button size="sm" onClick={() => setIsInviteOpen(true)}>
-                    <UserPlusIcon className="h-4 w-4" />
-                    Invite
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  isLoading={isLeavingPlan}
-                  disabled={isLeavingPlan}
-                  onClick={handleLeavePlan}
-                >
-                  <LogOutIcon className="h-4 w-4" />
-                  Leave plan
-                </Button>
-              )}
-            </CardAction>
-          </CardHeader>
-          <CardContent>
-            <PlanMembersList planId={activePlan.id} />
-          </CardContent>
-        </Card>
-      )}
-
-      {activePlan && canManagePlan && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Invitations for {activePlan.name}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <PlanInvitationsList planId={activePlan.id} />
-          </CardContent>
-        </Card>
-      )}
 
       <PlanNameDialog
         mode="create"
@@ -230,6 +107,6 @@ export function PlansPage() {
           planId={activePlan.id}
         />
       )}
-    </div>
+    </>
   );
 }
