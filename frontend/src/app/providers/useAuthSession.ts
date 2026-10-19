@@ -1,0 +1,139 @@
+import { setAccessToken } from "@/api/clients/accessToken";
+import {
+  renewSession,
+  setSessionExpiredHandler,
+} from "@/api/clients/findracoApi";
+import { User } from "@/api/dtos/user";
+import { getUserProfile, logout } from "@/api/services/useAuthService";
+import { PATHS } from "@/app/routing/paths";
+import {
+  clearSessionStorage,
+  getItemFromStorage,
+  storeItem,
+} from "@/lib/storage";
+import { useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import type { AuthContextValue, AuthStatus } from "./useAuth";
+
+const SESSION_EXPIRED_MESSAGE = "Your session expired. Please sign in again.";
+
+// Written by the previous version, which kept the access token in localStorage.
+const LEGACY_ACCESS_TOKEN_KEY = "accessToken";
+
+/**
+ * The session behind `AuthProvider`: resumes it at start-up from the stored hint, signs in and out,
+ * and ends it when the API reports it expired.
+ */
+export function useAuthSession(): AuthContextValue {
+  const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [user, setUser] = useState<User | null>(null);
+  const [status, setStatusState] = useState<AuthStatus>(() =>
+    getItemFromStorage("hasSession", z.boolean()) ? "loading" : "anonymous",
+  );
+  const statusRef = useRef(status);
+  // Path where the session expired during start-up. Only the route guard
+  // announces it, so a public page stays silent.
+  const startUpExpiryPathRef = useRef<string | null>(null);
+
+  const setStatus = useCallback((next: AuthStatus) => {
+    statusRef.current = next;
+    setStatusState(next);
+  }, []);
+
+  const loadProfile = useCallback(async () => {
+    const profile = await queryClient.fetchQuery({
+      queryKey: ["profile"],
+      queryFn: getUserProfile,
+    });
+    setUser(profile);
+    setStatus("authenticated");
+  }, [queryClient, setStatus]);
+
+  const endSession = useCallback(() => {
+    setAccessToken(null);
+    queryClient.clear();
+    clearSessionStorage();
+    setUser(null);
+    setStatus("anonymous");
+  }, [queryClient, setStatus]);
+
+  const expireSession = useCallback(() => {
+    const wasAuthenticated = statusRef.current === "authenticated";
+    endSession();
+    // At start-up the route guard redirects private pages itself, so a public
+    // page (e.g. a reset-password link) is not taken away from the user.
+    if (wasAuthenticated) {
+      toast.error(SESSION_EXPIRED_MESSAGE);
+      navigate(PATHS.login, { replace: true, state: { from: location } });
+    } else {
+      startUpExpiryPathRef.current = location.pathname;
+    }
+  }, [endSession, navigate, location]);
+
+  const announceSessionExpiry = useCallback(() => {
+    if (startUpExpiryPathRef.current !== location.pathname) return;
+    startUpExpiryPathRef.current = null;
+    toast.error(SESSION_EXPIRED_MESSAGE);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    setSessionExpiredHandler(expireSession);
+  }, [expireSession]);
+
+  const resumeSession = useCallback(async () => {
+    setStatus("loading");
+    try {
+      await renewSession();
+      await loadProfile();
+    } catch {
+      // An expired session already went through expireSession (anonymous);
+      // anything else means the API could not be reached.
+      if (statusRef.current === "loading") setStatus("unreachable");
+    }
+  }, [loadProfile, setStatus]);
+
+  useEffect(() => {
+    localStorage.removeItem(LEGACY_ACCESS_TOKEN_KEY);
+    // Start-up only; later sessions begin through signIn.
+    if (statusRef.current === "loading") resumeSession();
+  }, [resumeSession]);
+
+  const signIn = useCallback(
+    async (token: string) => {
+      setAccessToken(token);
+      storeItem("hasSession", true);
+      await loadProfile();
+    },
+    [loadProfile],
+  );
+
+  const signOut = useCallback(async () => {
+    try {
+      await logout();
+    } catch {
+      // Signing out must work offline too; the session cookie then expires on its own.
+    }
+    endSession();
+    navigate(PATHS.login, { replace: true });
+  }, [endSession, navigate]);
+
+  const retry = useCallback(() => {
+    resumeSession();
+  }, [resumeSession]);
+
+  return {
+    user,
+    setUser,
+    status,
+    signIn,
+    signOut,
+    retry,
+    announceSessionExpiry,
+  };
+}

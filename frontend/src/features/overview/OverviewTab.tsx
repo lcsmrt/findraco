@@ -1,7 +1,4 @@
-import {
-  useGetDashboardSummary,
-  useGetDashboardTrend,
-} from "@/api/services/useDashboardService";
+import { useGetDashboardSummary } from "@/api/services/useDashboardService";
 import { useGetCategorySpending } from "@/api/services/useFinancialTransactionCategoryService";
 import { useMemo } from "react";
 import {
@@ -17,7 +14,7 @@ import {
 } from "./useOverviewMemberFilter";
 import { buildSpendingRows } from "./components/spendingRows";
 import { summaryView } from "./components/summaryView";
-import { fillTrendMonths, trendWindow } from "./components/trendMonths";
+import { useOverviewTrend } from "./useOverviewTrend";
 import { OverviewTabView } from "./OverviewTabView";
 
 export function OverviewTab() {
@@ -49,17 +46,7 @@ export function OverviewTab() {
 
   const monthCount = countMonths(range.startDate, range.endDate);
 
-  const trendRange = useMemo(() => trendWindow(range), [range]);
-  const trendFilter = useMemo(
-    () =>
-      effectiveMemberId != null ? { ...trendRange, memberId: effectiveMemberId } : trendRange,
-    [trendRange, effectiveMemberId],
-  );
-  const { data: trend, isLoading: isTrendLoading } = useGetDashboardTrend(trendFilter);
-  const trendMonths = useMemo(
-    () => (trend ? fillTrendMonths(trend, trendRange, range) : undefined),
-    [trend, trendRange, range],
-  );
+  const trend = useOverviewTrend(range, effectiveMemberId);
 
   const selectedName = selectedMember?.name;
   const focusedMember = useMemo(
@@ -116,7 +103,7 @@ export function OverviewTab() {
       }
       summary={isLoading ? null : summary}
       spending={isSpendingLoading ? null : spendingView}
-      trend={{ months: trendMonths, isLoading: isTrendLoading }}
+      trend={trend}
     />
   );
 }

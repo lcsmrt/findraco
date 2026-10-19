@@ -3368,11 +3368,11 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] `RuleTester` cases: 60 and 61 lines, non-component function, blank/comment lines not counted, early return counted, `memo` component
-- [ ] Config test asserts both local rules
-- [ ] `pnpm lint` exits 0
-- [ ] Build gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] `RuleTester` cases: 60 and 61 lines, non-component function, blank/comment lines not counted, early return counted, `memo` component
+- [x] Config test asserts both local rules
+- [x] `pnpm lint` exits 0
+- [x] Build gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: tooling
 **Gate**: build

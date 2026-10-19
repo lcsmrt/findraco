@@ -7,12 +7,14 @@ import globals from 'globals'
 import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
+import { componentLogicCap } from './eslint/rules/componentLogicCap.ts'
 import { noJsxIife } from './eslint/rules/noJsxIife.ts'
 
 // Rules we own, in TypeScript under eslint/rules/: Node's type stripping loads them, so they need
 // neither a build step nor a package.
 const local = {
   rules: {
+    'component-logic-cap': componentLogicCap,
     'no-jsx-iife': noJsxIife,
   },
 }
@@ -158,6 +160,9 @@ export default defineConfig({ ignores: ['dist'] }, {
   },
   rules: {
     ...reactHooks.configs.recommended.rules,
+    // Logic before a component's return belongs in a hook past this size; the number is the same
+    // for every file, and a wrong number changes here.
+    'local/component-logic-cap': ['error', { max: 60 }],
     'local/no-jsx-iife': 'error',
     'react-refresh/only-export-components': [
       'error',

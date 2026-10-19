@@ -115,6 +115,8 @@ function createQueryClient() {
   return new QueryClient({ defaultOptions: { queries: { retry: false } } });
 }
 
+// The session is rendered through AuthProvider, its only consumer: route guards and the probe read
+// it from the context, which is how the app sees it.
 function renderProvider(
   initialEntry = "/plans?tab=members",
   queryClient = createQueryClient(),

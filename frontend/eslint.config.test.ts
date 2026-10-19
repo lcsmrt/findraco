@@ -429,6 +429,22 @@ describe("eslint.config.js", () => {
   });
 
   describe("local rules", () => {
+    it("sets local/component-logic-cap to error at 60 lines (STD-12 AC 3)", () => {
+      expect(componentConfig.rules["local/component-logic-cap"]).toEqual([2, { max: 60 }]);
+    });
+
+    it.each([
+      [60, []],
+      [61, ["local/component-logic-cap"]],
+    ])("with %i lines of logic before the return reports %j (STD-12 AC 3)", async (lines, expected) => {
+      const logic = Array.from({ length: lines }, (_, i) => `  const v${i} = ${i};\n`).join("");
+      const ruleIds = await ruleIdsFor(
+        `export function Summary() {\n${logic}  return <span>{v0}</span>;\n}\n`,
+      );
+
+      expect(ruleIds.filter((id) => id === "local/component-logic-cap")).toEqual(expected);
+    });
+
     it("sets local/no-jsx-iife to error (STD-12 AC 4)", () => {
       expect(componentConfig.rules["local/no-jsx-iife"]).toEqual([2]);
     });
