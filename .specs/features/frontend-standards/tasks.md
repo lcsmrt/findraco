@@ -3191,9 +3191,9 @@ Done: `test` = `node scripts/check-siblings.ts && vitest run --project=unit --co
 
 **Done when**:
 
-- [ ] Test: first, middle, last, empty page
-- [ ] Quick gate passes
-- [ ] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
+- [x] Test: first, middle, last, empty page
+- [x] Quick gate passes
+- [x] Test count ≥ before; a test is removed only when it moves with its subject (report the count)
 
 **Tests**: unit
 **Gate**: quick
