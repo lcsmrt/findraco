@@ -256,12 +256,12 @@ describe("eslint.config.js", () => {
       ["src/utils/configProbe.ts", "@/features/transactions/filters/transactionParams", true, "C6"],
       ["src/lib/configProbe.ts", "@/features/auth/LoginPage", true, "C6"],
       ["src/api/services/configProbe.ts", "@/features/categories/CategoriesTab", true, "C6"],
-      ["src/test/configProbe.ts", "@/features/overview/OverviewTab", true, "C6"],
+      ["src/test/configProbe.ts", "@/features/overview/OverviewPage", true, "C6"],
       ["src/hooks/configProbe.ts", "@/app/layout/Navbar", true, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/routing/AppRouter", true, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/routing/paths", false, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/providers/usePlanContext", false, "AC 8"],
-      ["src/app/home/ConfigProbe.tsx", "@/features/overview/OverviewTab", false, "AC 8"],
+      ["src/app/home/ConfigProbe.tsx", "@/features/overview/OverviewPage", false, "AC 8"],
     ])("in %s, importing %s is restricted: %s (STD-05 %s)", async (filePath, specifier, restricted) => {
       expect(await restrictedImport(specifier, filePath)).toBe(restricted);
     });

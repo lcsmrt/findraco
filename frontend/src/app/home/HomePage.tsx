@@ -1,5 +1,5 @@
 import { CategoriesTab } from "@/features/categories/CategoriesTab";
-import { OverviewTab } from "@/features/overview/OverviewTab";
+import { OverviewPage } from "@/features/overview/OverviewPage";
 import { TransactionsTab } from "@/features/transactions/TransactionsTab";
 import { PlanFiltersGate } from "@/app/routing/PlanFiltersGate";
 import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
@@ -27,7 +27,7 @@ function HomeTabs() {
 
   return (
     <HomeTabsView activeTab={activeTab} onTabChange={setActiveTab}>
-      {activeTab === "overview" && <OverviewTab />}
+      {activeTab === "overview" && <OverviewPage />}
       {activeTab === "transactions" && (
         <TransactionsTab onManageCategories={() => setActiveTab("categories")} />
       )}

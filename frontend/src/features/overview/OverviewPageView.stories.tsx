@@ -5,7 +5,7 @@ import * as SpendingStories from "./components/CategorySpendingList.stories";
 import * as TrendStories from "./components/MonthlyTrendChart.stories";
 import PeriodNavigatorMeta from "./components/PeriodNavigator.stories";
 import * as SummaryStories from "./components/SummaryCards.stories";
-import { OverviewTabView } from "./OverviewTabView";
+import { OverviewPageView } from "./OverviewPageView";
 
 // The sections' own stories build their fixtures from the real builders; the tab reuses them.
 const members = [
@@ -15,8 +15,8 @@ const members = [
 const refs = members.map((member) => ({ userId: member.id }));
 
 const meta = {
-  title: "Overview/OverviewTabView",
-  component: OverviewTabView,
+  title: "Overview/OverviewPageView",
+  component: OverviewPageView,
   args: {
     navigator: PeriodNavigatorMeta.args,
     memberFilter: {
@@ -29,7 +29,7 @@ const meta = {
     spending: SpendingStories.default.args.view,
     trend: TrendStories.default.args,
   },
-} satisfies Meta<typeof OverviewTabView>;
+} satisfies Meta<typeof OverviewPageView>;
 export default meta;
 
 type Story = StoryObj<typeof meta>;

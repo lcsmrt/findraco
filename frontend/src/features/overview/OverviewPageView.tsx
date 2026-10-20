@@ -8,7 +8,7 @@ import type { SpendingRowsView } from "./components/spendingRows";
 import { SummaryCards } from "./components/SummaryCards";
 import type { SummaryView } from "./components/summaryView";
 
-type OverviewTabViewProps = {
+type OverviewPageViewProps = {
   navigator: ComponentProps<typeof PeriodNavigator>;
   /** `null` hides the member filter (a plan with a single member). */
   memberFilter: ComponentProps<typeof MemberFilterChips> | null;
@@ -19,13 +19,13 @@ type OverviewTabViewProps = {
   trend: ComponentProps<typeof MonthlyTrendChart>;
 };
 
-export function OverviewTabView({
+export function OverviewPageView({
   navigator,
   memberFilter,
   summary,
   spending,
   trend,
-}: OverviewTabViewProps) {
+}: OverviewPageViewProps) {
   return (
     <div className="flex flex-col gap-6 px-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">

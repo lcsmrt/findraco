@@ -15,9 +15,9 @@ import {
 import { buildSpendingRows } from "./components/spendingRows";
 import { summaryView } from "./components/summaryView";
 import { useOverviewTrend } from "./useOverviewTrend";
-import { OverviewTabView } from "./OverviewTabView";
+import { OverviewPageView } from "./OverviewPageView";
 
-export function OverviewTab() {
+export function OverviewPage() {
   const { overview, updateOverview } = useOverviewFilters();
   const { period, customRange } = overview;
   const { memberOptions, showMemberPicker, selectedMember, effectiveMemberId } =
@@ -83,7 +83,7 @@ export function OverviewTab() {
   }
 
   return (
-    <OverviewTabView
+    <OverviewPageView
       navigator={{
         range,
         period,

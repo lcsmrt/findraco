@@ -184,8 +184,8 @@ export function SummaryCards({ summary }: SummaryCardsProps) {
   return (…);
 }
 
-// OverviewTab.tsx: container, fetches and passes down
-export function OverviewTab() {
+// OverviewPage.tsx: container, fetches and passes down
+export function OverviewPage() {
   const { data: summary } = useGetDashboardSummary(filter);
   return <SummaryCards summary={summary} />;
 }

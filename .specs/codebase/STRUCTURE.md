@@ -120,7 +120,7 @@ The tree above is the target set by the frontend standards. Migration is in prog
 
 **Dashboard:**
 
-- UI: `frontend/src/features/overview/` (`OverviewTab.tsx`, `SummaryCards.tsx`, `CategorySpendingList.tsx`, `MonthlyTrendChart.tsx`, `filters/`)
+- UI: `frontend/src/features/overview/` (`OverviewPage.tsx`, `SummaryCards.tsx`, `CategorySpendingList.tsx`, `MonthlyTrendChart.tsx`, `filters/`)
 - Data access (FE): `api/services/useDashboardService.ts`, DTOs `api/dtos/dashboard.ts`
 - Business logic + data (BE): `services/DashboardService.java`, `controllers/DashboardController.java`, response DTOs `DashboardSummaryDto`, `CategoryBreakdownDto`, `MonthlyTrendDto`
 

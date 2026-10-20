@@ -39,7 +39,7 @@ describe("findMissingStories", () => {
     ['import { useAuth } from "@/app/providers/auth/useAuth";'],
     ['import { useNavigate } from "react-router-dom";'],
   ])("exempts a container that imports %s (STD-10 AC 1)", (importLine) => {
-    write("features/overview/OverviewTab.tsx", `${importLine}\nexport function OverviewTab() { return null; }\n`);
+    write("features/overview/OverviewPage.tsx", `${importLine}\nexport function OverviewPage() { return null; }\n`);
 
     expect(findMissingStories(srcDir)).toEqual([]);
   });
@@ -56,7 +56,7 @@ describe("findMissingStories", () => {
   it("ignores src/index.tsx, src/test/**, tests, stories and .ts modules (STD-10 AC 1)", () => {
     write("index.tsx");
     write("test/renderWithProviders.tsx");
-    write("features/overview/OverviewTab.test.tsx");
+    write("features/overview/OverviewPage.test.tsx");
     write("features/overview/Orphan.stories.tsx");
     write("utils/money.ts");
 
@@ -118,20 +118,20 @@ describe("container detection through real paths and our hooks", () => {
 describe("findContainersWithMarkup", () => {
   it("names a container that renders an intrinsic element, with the element (STD-10 AC 4)", () => {
     write(
-      "features/overview/OverviewTab.tsx",
-      'import { useNavigate } from "react-router-dom";\nexport function OverviewTab() { useNavigate(); return <div><span>Total</span></div>; }\n',
+      "features/overview/OverviewPage.tsx",
+      'import { useNavigate } from "react-router-dom";\nexport function OverviewPage() { useNavigate(); return <div><span>Total</span></div>; }\n',
     );
 
     expect(findContainersWithMarkup(srcDir)).toEqual([
-      { file: "features/overview/OverviewTab.tsx", elements: ["div", "span"] },
+      { file: "features/overview/OverviewPage.tsx", elements: ["div", "span"] },
     ]);
   });
 
   it("passes a container that renders only components and fragments (STD-10 AC 4)", () => {
     write(
-      "features/overview/OverviewTab.tsx",
+      "features/overview/OverviewPage.tsx",
       'import { useNavigate } from "react-router-dom";\nimport { OverviewView } from "./OverviewView";\n' +
-        "export function OverviewTab() { useNavigate(); return <><OverviewView title=\"Total\" /></>; }\n",
+        "export function OverviewPage() { useNavigate(); return <><OverviewView title=\"Total\" /></>; }\n",
     );
     write("features/overview/OverviewView.tsx", "export function OverviewView() { return <div>Total</div>; }\n");
 
