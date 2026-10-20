@@ -60,6 +60,8 @@ Proposed by the agent and accepted by the user as a block (2026-10-16):
 
 None. The discussion stayed within the feature scope. The remaining round-2 topics are queued as their own features.
 
+- `buildMutationOptions` still falls back to "Operation completed successfully." when a mutation gives no message (`frontend/src/api/utils/buildMutationOptions.ts`). Every service passes its own message today, so no toast shows it; aligning the fallback with the NAV-05 style is outside the message table (noted during Execute T6).
+
 ---
 
 ## Design-time changes (2026-10-19)

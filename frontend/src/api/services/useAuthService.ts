@@ -71,7 +71,7 @@ export function useRegisterUser(
   return useMutation({
     mutationFn: registerUser,
     ...buildMutationOptions(
-      { successMessage: "User registered successfully." },
+      { successMessage: "Account created." },
       options,
     ),
   });

@@ -194,9 +194,9 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Register's success toast is "Account created."; reset password's is unchanged
-- [ ] `grep -r successfully frontend/src/api/services` finds nothing outside tests
-- [ ] Gate check passes: Build
+- [x] Register's success toast is "Account created."; reset password's is unchanged
+- [x] `grep -r successfully frontend/src/api/services` finds nothing outside tests (finds nothing at all)
+- [x] Gate check passes: Build (lint, build, sibling gate, coverage; unit 84 files / 760 tests, tooling + storybook 95 files / 643 tests, passing)
 
 **Tests**: unit (service through MSW)
 **Gate**: build

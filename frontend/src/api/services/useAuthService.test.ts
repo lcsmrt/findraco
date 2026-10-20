@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { recordRequests } from "@/test/recordRequests";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
@@ -15,6 +16,15 @@ import {
 } from "./useAuthService";
 
 const user = { id: 3, name: "Ana", email: "ana@example.com" };
+
+// The toast is the user-visible outcome of a mutation; sonner is a third-party module.
+beforeEach(() => {
+  vi.spyOn(toast, "success");
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 describe("useLogin", () => {
   it("POSTs the credentials to /auth/login and resolves with the token", async () => {
@@ -61,7 +71,7 @@ describe("getUserProfile", () => {
 });
 
 describe("useRegisterUser", () => {
-  it("POSTs the registration to /user and resolves with the created user", async () => {
+  it(`POSTs the registration to /user, resolves with the created user and shows "Account created." (NAV-05 AC 1, 2)`, async () => {
     server.use(authHandlers.registerUser(user));
     const requests = recordRequests();
     const body = { name: "Ana", email: "ana@example.com", password: "secret" };
@@ -75,6 +85,7 @@ describe("useRegisterUser", () => {
     expect(new URL(requests[0].url).pathname).toBe("/api/findraco/user");
     expect(await requests[0].json()).toEqual(body);
     expect(result.current.data).toEqual(user);
+    expect(toast.success).toHaveBeenCalledWith("Account created.");
   });
 });
 
@@ -112,7 +123,7 @@ describe("useValidatePasswordResetToken", () => {
 });
 
 describe("useResetPassword", () => {
-  it("POSTs the token and new password to /auth/reset-password", async () => {
+  it(`POSTs the token and new password to /auth/reset-password and keeps its sign-in message (NAV-05 AC 2)`, async () => {
     server.use(authHandlers.resetPassword());
     const requests = recordRequests();
 
@@ -124,5 +135,6 @@ describe("useResetPassword", () => {
     expect(requests[0].method).toBe("POST");
     expect(new URL(requests[0].url).pathname).toBe("/api/findraco/auth/reset-password");
     expect(await requests[0].json()).toEqual({ token: "abc", password: "new-secret" });
+    expect(toast.success).toHaveBeenCalledWith("Password updated. Sign in with your new password.");
   });
 });
