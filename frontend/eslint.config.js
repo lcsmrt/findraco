@@ -32,7 +32,7 @@ const testSupportImports = [
   },
 ]
 
-// Outside app/, only the global context hooks and the route paths: layouts, the router and app/home
+// Outside app/, only the global context hooks and the route paths: layouts and the router
 // assemble features, so importing them from below would make the layers depend on each other.
 const appInternalsImports = [
   {

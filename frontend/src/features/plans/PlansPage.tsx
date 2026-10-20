@@ -64,7 +64,7 @@ export function PlansPage() {
         canManagePlan={canManagePlan}
         isArchiving={isDeletingPlan}
         isLeaving={isLeavingPlan}
-        onBack={() => navigate(PATHS.home)}
+        onBack={() => navigate(PATHS.overview)}
         onCreatePlan={() => setIsCreateOpen(true)}
         onSelectPlan={setActivePlanId}
         onRename={() => setIsRenameOpen(true)}

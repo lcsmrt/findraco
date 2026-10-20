@@ -21,7 +21,7 @@ export function AcceptInvitationPage() {
   const { mutate: acceptInvitation, isPending } = useAcceptInvitation({
     onSuccess: (result) => {
       setActivePlanId(result.planId);
-      navigate(PATHS.home);
+      navigate(PATHS.overview);
     },
   });
 
@@ -36,7 +36,7 @@ export function AcceptInvitationPage() {
       isError={isError}
       isAccepting={isPending}
       onAccept={handleAccept}
-      onGoHome={() => navigate(PATHS.home)}
+      onGoHome={() => navigate(PATHS.overview)}
     />
   );
 }

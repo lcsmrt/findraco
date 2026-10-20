@@ -216,8 +216,8 @@ describe("eslint.config.js", () => {
       ["src/lib/configProbe.ts", [testSupport, appInternals, crossFeature]],
       ["src/api/services/configProbe.ts", [testSupport, appInternals, crossFeature]],
       ["src/test/configProbe.ts", [appInternals, crossFeature]],
-      ["src/app/home/ConfigProbe.tsx", [testSupport]],
-      ["src/app/home/ConfigProbe.test.tsx", []],
+      ["src/app/routing/ConfigProbe.tsx", [testSupport]],
+      ["src/app/routing/ConfigProbe.test.tsx", []],
       ["src/features/x/ConfigProbe.tsx", [testSupport, appInternals, crossFeature]],
       ["src/features/x/ConfigProbe.test.tsx", [appInternals, crossFeature]],
       ["src/components/x/ConfigProbe.tsx", [testSupport, appInternals, crossFeature]],
@@ -243,7 +243,7 @@ describe("eslint.config.js", () => {
       ["src/features/overview/ConfigProbe.test.tsx", "@/features/plans/PlansPage", true, "AC 5"],
       ["src/features/overview/ConfigProbe.tsx", "./components/SummaryCards", false, "AC 5"],
       ["src/components/x/ConfigProbe.tsx", "@/features/plans/PlansPage", true, "AC 6"],
-      ["src/components/x/ConfigProbe.tsx", "@/app/home/homeParams", true, "AC 6"],
+      ["src/components/x/ConfigProbe.tsx", "@/app/routing/PlanFiltersGate", true, "AC 6"],
       ["src/components/x/ConfigProbe.tsx", "@/app/providers/useTheme", false, "AC 6"],
       ["src/components/x/ConfigProbe.tsx", "@/app/routing/paths", false, "AC 6"],
       ["src/components/x/ConfigProbe.tsx", "@/api/dtos", false, "AC 6"],
@@ -261,7 +261,7 @@ describe("eslint.config.js", () => {
       ["src/hooks/configProbe.ts", "@/app/routing/AppRouter", true, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/routing/paths", false, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/providers/usePlanContext", false, "AC 8"],
-      ["src/app/home/ConfigProbe.tsx", "@/features/overview/OverviewPage", false, "AC 8"],
+      ["src/app/routing/ConfigProbe.tsx", "@/features/overview/OverviewPage", false, "AC 8"],
     ])("in %s, importing %s is restricted: %s (STD-05 %s)", async (filePath, specifier, restricted) => {
       expect(await restrictedImport(specifier, filePath)).toBe(restricted);
     });
@@ -294,7 +294,7 @@ describe("eslint.config.js", () => {
       "src/components/x/ConfigProbe.tsx",
       "src/components/x/base/ConfigProbe.tsx",
       "src/components/x/base/configProbeVariants.ts",
-      "src/app/home/ConfigProbe.tsx",
+      "src/app/routing/ConfigProbe.tsx",
     ])("keeps the palette fragment active in %s (STD-06 AC 14)", async (filePath) => {
       const config = await eslint.calculateConfigForFile(filePath);
       const messages = syntaxMessages(config);
@@ -365,8 +365,8 @@ describe("eslint.config.js", () => {
       ["src/features/x/ConfigProbe.stories.tsx", true],
       ["src/features/x/ConfigProbe.test.tsx", true],
       ["src/components/x/ConfigProbe.tsx", true],
-      ["src/app/home/ConfigProbe.tsx", true],
-      ["src/app/home/ConfigProbe.test.tsx", true],
+      ["src/app/routing/ConfigProbe.tsx", true],
+      ["src/app/routing/ConfigProbe.test.tsx", true],
       ["src/components/x/base/ConfigProbe.tsx", false],
       ["src/components/x/base/configProbeVariants.ts", false],
       ["src/components/x/base/ConfigProbe.stories.tsx", false],

@@ -5,6 +5,7 @@ import {
   serializeOverviewFilters,
   type OverviewFilters,
 } from "./overviewParams";
+import * as overviewParams from "./overviewParams";
 
 function params(init: Record<string, string>) {
   return new URLSearchParams(init);
@@ -118,6 +119,36 @@ describe("resolvePeriodDates", () => {
     expect(resolvePeriodDates("last-3m", new Date(2026, 0, 15))).toEqual({
       startDate: "2025-11-01",
       endDate: "2026-01-31",
+    });
+  });
+});
+
+// UX-01 AC 1: the Categories screen has no period; links saved before still load.
+describe("legacy Categories period params", () => {
+  const legacy = params({
+    period: "this-year",
+    categoriesPeriod: "custom",
+    categoriesPeriodFrom: "2026-09-01",
+    categoriesPeriodTo: "2026-09-30",
+  });
+
+  it("parses a URL with categoriesPeriod without error and ignores it", () => {
+    expect(parseOverviewFilters(legacy)).toEqual({
+      period: "this-year",
+      customRange: null,
+      memberId: null,
+    });
+  });
+
+  it("has no Categories period codec", () => {
+    expect("parseCategoriesFilters" in overviewParams).toBe(false);
+    expect("serializeCategoriesFilters" in overviewParams).toBe(false);
+    expect("CATEGORIES_PARAM_KEYS" in overviewParams).toBe(false);
+  });
+
+  it("serializes no categories period", () => {
+    expect(serializeOverviewFilters(parseOverviewFilters(legacy))).toEqual({
+      period: "this-year",
     });
   });
 });

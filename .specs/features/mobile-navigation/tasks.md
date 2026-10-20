@@ -349,9 +349,9 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Routing test: `/` lands on `/overview`; each path renders its screen; the login redirect without `from` lands on `/overview`
-- [ ] No import of `app/home` remains; `HomeTabsView` story is gone; the sibling gate passes
-- [ ] Gate check passes: Build
+- [x] Routing test: `/` lands on `/overview`; each path renders its screen; the login redirect without `from` lands on `/overview`
+- [x] No import of `app/home` remains; `HomeTabsView` story is gone; the sibling gate passes
+- [x] Gate check passes: Build (lint, build, sibling gate, coverage; unit 85 files / 777 tests, tooling + storybook 94 files / 638 tests, passing)
 
 **Tests**: integration
 **Gate**: build

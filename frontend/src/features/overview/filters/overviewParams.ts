@@ -19,7 +19,7 @@ export type OverviewFilters = {
 
 export const DEFAULT_PERIOD: Period = "this-month";
 
-/** Every query param the Overview owns; the home gate persists exactly these. */
+/** Every query param the Overview owns; its filters gate keeps exactly these. */
 export const OVERVIEW_PARAM_KEYS = [
   "period",
   "periodFrom",

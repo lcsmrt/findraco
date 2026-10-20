@@ -91,7 +91,7 @@ function renderTab() {
     <CategoryFormSheetContext.Provider value={categorySheet}>
       <ConfirmDialogProvider>
         <SeriesScopeDialogProvider>
-          <TransactionsPage onManageCategories={vi.fn()} />
+          <TransactionsPage />
         </SeriesScopeDialogProvider>
       </ConfirmDialogProvider>
     </CategoryFormSheetContext.Provider>,

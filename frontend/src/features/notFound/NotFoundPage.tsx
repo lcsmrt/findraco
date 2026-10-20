@@ -6,5 +6,5 @@ import { NotFoundView } from "./NotFoundView";
 export function NotFound() {
   const navigate = useNavigate();
 
-  return <NotFoundView themeToggle={<ThemeToggle />} onGoHome={() => navigate(PATHS.home)} />;
+  return <NotFoundView themeToggle={<ThemeToggle />} onGoHome={() => navigate(PATHS.overview)} />;
 }

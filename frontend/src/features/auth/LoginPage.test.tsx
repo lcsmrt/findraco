@@ -72,14 +72,14 @@ describe("Login sign-in", () => {
     expect(signIn).toHaveBeenCalledExactlyOnceWith("login-token");
   });
 
-  it("goes to the home page when there is no previous location", async () => {
+  it("goes to the Overview when there is no previous location (NAV-06 AC 6)", async () => {
     const user = userEvent.setup();
     server.use(authHandlers.login({ token: "login-token" }));
     const { signIn } = renderLogin();
 
     await submitCredentials(user);
 
-    expect((await screen.findByLabelText("location")).textContent).toBe("/");
+    expect((await screen.findByLabelText("location")).textContent).toBe("/overview");
     expect(signIn).toHaveBeenCalledExactlyOnceWith("login-token");
   });
 

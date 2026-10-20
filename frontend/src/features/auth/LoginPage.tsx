@@ -20,7 +20,7 @@ export function Login() {
     if (!res) return;
 
     await signIn(res.token);
-    navigate(from ? `${from.pathname}${from.search}` : PATHS.home, {
+    navigate(from ? `${from.pathname}${from.search}` : PATHS.overview, {
       replace: true,
     });
   }

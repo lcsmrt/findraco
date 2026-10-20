@@ -15,7 +15,7 @@ export type TransactionFilters = {
 
 export const DEFAULT_PAGE_SIZE = 10;
 
-/** Every query param the Transactions tab owns; the home gate persists exactly these. */
+/** Every query param the Transactions screen owns; its filters gate keeps exactly these. */
 export const TRANSACTION_PARAM_KEYS = [
   "type",
   "category",

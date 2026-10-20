@@ -4,6 +4,7 @@ import {
   serializeTransactionFilters,
   type TransactionFilters,
 } from "./transactionParams";
+import * as transactionParams from "./transactionParams";
 
 function params(init: Record<string, string>) {
   return new URLSearchParams(init);
@@ -91,5 +92,29 @@ describe("transactions codec", () => {
       params({ category: "abc", member: "7" }),
     );
     expect(out.filter).toEqual({ memberId: 7 });
+  });
+});
+
+// UX-01 AC 1: the Categories screen has no period; links saved before still load.
+describe("legacy Categories period params", () => {
+  const legacy = params({
+    period: "this-year",
+    categoriesPeriod: "custom",
+    categoriesPeriodFrom: "2026-09-01",
+    categoriesPeriodTo: "2026-09-30",
+  });
+
+  it("parses a URL with categoriesPeriod without error and ignores it", () => {
+    expect(parseTransactionFilters(legacy)).toEqual(DEFAULT_TRANSACTIONS);
+  });
+
+  it("has no Categories period codec", () => {
+    expect("parseCategoriesFilters" in transactionParams).toBe(false);
+    expect("serializeCategoriesFilters" in transactionParams).toBe(false);
+    expect("CATEGORIES_PARAM_KEYS" in transactionParams).toBe(false);
+  });
+
+  it("serializes no categories period", () => {
+    expect(serializeTransactionFilters(parseTransactionFilters(legacy))).toEqual({});
   });
 });
