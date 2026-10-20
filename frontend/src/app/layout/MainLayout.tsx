@@ -5,7 +5,7 @@ import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { BottomBarView } from "./BottomBarView";
 import { MainLayoutView } from "./MainLayoutView";
 import { Navbar } from "./Navbar";
-import { currentDestination } from "./navigation";
+import { currentDestination } from "./utils/navigation";
 import { TabRowView } from "./TabRowView";
 
 export function MainLayout() {

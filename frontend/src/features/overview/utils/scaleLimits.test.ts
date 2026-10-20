@@ -18,14 +18,9 @@ function breakdown(
 }
 
 describe("countMonths", () => {
-  it.each([
-    ["this-month", 1],
-    ["last-3m", 3],
-    ["last-6m", 6],
-    ["this-year", 12],
-  ] as const)("counts %s as %i month(s)", (period, months) => {
-    const { startDate, endDate } = resolvePeriodDates(period, now);
-    expect(countMonths(startDate, endDate)).toBe(months);
+  it("counts a preset's months", () => {
+    const { startDate, endDate } = resolvePeriodDates("last-3m", now);
+    expect(countMonths(startDate, endDate)).toBe(3);
   });
 
   it("counts every calendar month a custom range touches", () => {
@@ -76,8 +71,8 @@ describe("scaleLimit", () => {
     });
   });
 
-  it.each([null, undefined])("leaves every limit field empty without a limit (%s)", (limit) => {
-    expect(scaleLimit(50, limit, 3)).toEqual({
+  it("leaves every limit field empty without a limit", () => {
+    expect(scaleLimit(50, null, 3)).toEqual({
       limit: undefined,
       remaining: undefined,
       percentUsed: undefined,

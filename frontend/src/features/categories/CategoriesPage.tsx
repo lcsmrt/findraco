@@ -6,7 +6,7 @@ import {
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { useMemo, useState } from "react";
 import { useMemberColors } from "@/hooks/useMemberColors";
-import { buildCategoryTree } from "./categoryTree";
+import { buildCategoryTree } from "./utils/categoryTree";
 import { CategoriesPageView } from "./CategoriesPageView";
 import { DeleteCategoryDialog } from "./components/DeleteCategoryDialog";
 import { useCategoryFormSheet } from "@/hooks/useCategoryFormSheet";

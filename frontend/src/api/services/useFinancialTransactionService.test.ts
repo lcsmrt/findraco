@@ -138,26 +138,6 @@ describe("useGetFinancialTransactions", () => {
     ]);
     expect(result.current.data).toEqual(page);
   });
-
-  it("sends no request without an active plan", () => {
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useGetFinancialTransactions(), { plan: planContext(null) });
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(requests).toEqual([]);
-  });
-
-  it("sends no request while the caller disables it", () => {
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useGetFinancialTransactions(undefined, { enabled: false }), {
-      plan: plan5,
-    });
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(requests).toEqual([]);
-  });
 });
 
 describe("useGetFinancialTransactionSeries", () => {
@@ -170,19 +150,6 @@ describe("useGetFinancialTransactionSeries", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map(sent)).toEqual([["GET", `${path}/series/s1`, {}]]);
     expect(result.current.data).toEqual(definition);
-  });
-
-  it.each([
-    ["without a series", undefined, plan5, undefined],
-    ["without an active plan", "s1", planContext(null), undefined],
-    ["while the caller disables it", "s1", plan5, { enabled: false }],
-  ])("sends no request %s", (_, seriesId, plan, options) => {
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useGetFinancialTransactionSeries(seriesId, options), { plan });
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(requests).toEqual([]);
   });
 });
 
@@ -207,28 +174,6 @@ describe("transaction mutations", () => {
     expect(onSuccess).toHaveBeenCalledWith(transaction, { body });
   });
 
-  it("a failed create refreshes nothing and shows no success toast (NAV-02 AC 7)", async () => {
-    server.use(handlers.createRejected("Amount must be positive"));
-
-    const { result, queryClient } = renderHookWithProviders(() => useCreateFinancialTransaction(), {
-      plan: plan5,
-      seed: seedLists,
-    });
-    result.current.mutate({ body });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-    expect(invalidated(queryClient)).toEqual({
-      lists: false,
-      usage: false,
-      spending: false,
-      summary: false,
-      trend: false,
-      series: false,
-      otherSeries: false,
-    });
-    expect(toast.success).not.toHaveBeenCalled();
-  });
-
   it(`update PUTs the body to the transaction's URL, refreshes the transaction, dashboard and category data and shows "Transaction updated." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.update(transaction));
     const requests = recordRequests();
@@ -247,17 +192,6 @@ describe("transaction mutations", () => {
     expect(toast.success).toHaveBeenCalledWith("Transaction updated.");
   });
 
-  it("update calls the caller's onSuccess with the result and the request", async () => {
-    server.use(handlers.update(transaction));
-    const onSuccess = vi.fn();
-
-    const { result } = renderHookWithProviders(() => useUpdateFinancialTransaction({ onSuccess }), { plan: plan5 });
-    result.current.mutate({ params: { id: 40 }, body });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onSuccess).toHaveBeenCalledWith(transaction, { params: { id: 40 }, body });
-  });
-
   it(`delete DELETEs the transaction's URL, refreshes the transaction, dashboard and category data and shows "Transaction deleted." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.remove());
     const requests = recordRequests();
@@ -274,19 +208,6 @@ describe("transaction mutations", () => {
     expect(invalidated(queryClient)).toMatchObject(transactionData);
     expect(toast.success).toHaveBeenCalledWith("Transaction deleted.");
     expect(onSuccess).toHaveBeenCalledWith(undefined, 40);
-  });
-
-  it("delete works without caller options", async () => {
-    server.use(handlers.remove());
-
-    const { result, queryClient } = renderHookWithProviders(() => useDeleteFinancialTransaction(), {
-      plan: plan5,
-      seed: seedLists,
-    });
-    result.current.mutate(40);
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(invalidated(queryClient)).toMatchObject(transactionData);
   });
 
   it(`import POSTs to the import URL, returns the count, refreshes the transaction, dashboard and category data and shows "Transactions imported." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
@@ -309,16 +230,6 @@ describe("transaction mutations", () => {
     expect(invalidated(queryClient)).toMatchObject(transactionData);
     expect(toast.success).toHaveBeenCalledWith("Transactions imported.");
     expect(onSuccess).toHaveBeenCalledWith({ imported: 12 }, file);
-  });
-
-  it("import works without caller options", async () => {
-    server.use(handlers.importCsv({ imported: 0 }));
-
-    const { result } = renderHookWithProviders(() => useImportNubankCsv(), { plan: plan5 });
-    result.current.mutate(new File([""], "empty.csv"));
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual({ imported: 0 });
   });
 });
 
@@ -345,16 +256,6 @@ describe("series mutations", () => {
     expect(onSuccess).toHaveBeenCalledWith(series, { body: seriesBody });
   });
 
-  it("create works without caller options", async () => {
-    server.use(handlers.createSeries(series));
-
-    const { result } = renderHookWithProviders(() => useCreateFinancialTransactionSeries(), { plan: plan5 });
-    result.current.mutate({ body: seriesBody });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(series);
-  });
-
   it(`update PUTs to the series URL, refreshes the transaction, dashboard and category data and that series only, and shows "Series updated." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.updateSeries(series));
     const requests = recordRequests();
@@ -379,16 +280,6 @@ describe("series mutations", () => {
     expect(onSuccess).toHaveBeenCalledWith(series, request);
   });
 
-  it("update works without caller options", async () => {
-    server.use(handlers.updateSeries(series));
-
-    const { result } = renderHookWithProviders(() => useUpdateFinancialTransactionSeries(), { plan: plan5 });
-    result.current.mutate({ params: { seriesId: "s1" }, body: { ...seriesBody, scope: "ALL" } });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(result.current.data).toEqual(series);
-  });
-
   it(`delete sends the scope and the pivot occurrence, refreshes the transaction, dashboard and category data and that series only, and shows "Series deleted." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.removeSeries());
     const requests = recordRequests();
@@ -408,16 +299,5 @@ describe("series mutations", () => {
     expect(invalidated(queryClient)).toEqual({ ...transactionData, series: true, otherSeries: false });
     expect(toast.success).toHaveBeenCalledWith("Series deleted.");
     expect(onSuccess).toHaveBeenCalledWith(undefined, request);
-  });
-
-  it("delete sends no pivot occurrence when the scope needs none", async () => {
-    server.use(handlers.removeSeries());
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useDeleteFinancialTransactionSeries(), { plan: plan5 });
-    result.current.mutate({ seriesId: "s1", scope: "ALL" });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(requests.map(sent)).toEqual([["DELETE", `${path}/series/s1`, { scope: "ALL" }]]);
   });
 });

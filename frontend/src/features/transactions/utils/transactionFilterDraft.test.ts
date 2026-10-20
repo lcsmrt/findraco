@@ -15,79 +15,42 @@ const groceries: FinancialTransactionCategory = {
 };
 
 describe("transaction filter draft mapping", () => {
-  it("keeps the category filter when applied before the category name has loaded", () => {
+  it("keeps the category and member filters when applied before their display objects have loaded", () => {
     const applied: AppliedFilters = {
-      filter: { categoryId: 12, type: "DEBIT" },
+      filter: { categoryId: 12, memberId: 7, type: "DEBIT" },
       categoryForDisplay: null,
       memberForDisplay: null,
     };
 
     expect(fromDraft(toDraft(applied)).filter).toEqual({
       categoryId: 12,
-      type: "DEBIT",
-    });
-  });
-
-  it("removes the category filter when the category is explicitly cleared", () => {
-    const applied: AppliedFilters = {
-      filter: { categoryId: 12, type: "DEBIT" },
-      categoryForDisplay: null,
-      memberForDisplay: null,
-    };
-
-    const draft = withDraftCategory(toDraft(applied), null);
-
-    expect(fromDraft(draft).filter).toEqual({ type: "DEBIT" });
-  });
-
-  it("applies a newly picked category with its display object", () => {
-    const draft = withDraftCategory(
-      toDraft({ filter: {}, categoryForDisplay: null, memberForDisplay: null }),
-      groceries,
-    );
-
-    expect(fromDraft(draft)).toEqual({
-      filter: { categoryId: 12 },
-      categoryForDisplay: groceries,
-      memberForDisplay: null,
-    });
-  });
-
-  it("keeps the member filter when applied before the plan members have loaded", () => {
-    const applied: AppliedFilters = {
-      filter: { memberId: 7, type: "DEBIT" },
-      categoryForDisplay: null,
-      memberForDisplay: null,
-    };
-
-    expect(fromDraft(toDraft(applied)).filter).toEqual({
       memberId: 7,
       type: "DEBIT",
     });
   });
 
-  it("removes the member filter when the member is explicitly cleared", () => {
+  it("removes the category and member filters when each is explicitly cleared", () => {
     const applied: AppliedFilters = {
-      filter: { memberId: 7, type: "DEBIT" },
+      filter: { categoryId: 12, memberId: 7, type: "DEBIT" },
       categoryForDisplay: null,
       memberForDisplay: null,
     };
 
-    const draft = withDraftMember(toDraft(applied), null);
+    const draft = withDraftMember(withDraftCategory(toDraft(applied), null), null);
 
     expect(fromDraft(draft).filter).toEqual({ type: "DEBIT" });
   });
 
-  it("applies a newly picked member with its display object", () => {
+  it("applies a newly picked category and member with their display objects", () => {
     const ana = { id: 7, name: "Ana" };
     const draft = withDraftMember(
-      toDraft({ filter: {}, categoryForDisplay: null, memberForDisplay: null }),
+      withDraftCategory(toDraft({ filter: {}, categoryForDisplay: null, memberForDisplay: null }), groceries),
       ana,
     );
 
     expect(fromDraft(draft)).toEqual({
-      filter: { memberId: 7 },
-      categoryForDisplay: null,
+      filter: { categoryId: 12, memberId: 7 },
+      categoryForDisplay: groceries,
       memberForDisplay: ana,
     });
   });

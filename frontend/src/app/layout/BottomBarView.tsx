@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/button/base/Button";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
-import { DESTINATION_LABELS, DESTINATION_PATHS, type Destination } from "./navigation";
+import { DESTINATION_LABELS, DESTINATION_PATHS, type Destination } from "./utils/navigation";
 
 const ICONS: Record<Destination, LucideIcon> = {
   overview: LayoutDashboard,

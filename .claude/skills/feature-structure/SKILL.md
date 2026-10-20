@@ -27,7 +27,7 @@ frontend/
     app/                    the only layer that imports features
       providers/            global context: XxxProvider.tsx + useXxx.ts (useAuth, usePlanContext, useTheme)
       routing/              AppRouter, PrivateRoute, paths.ts, PlanFiltersGate, planParams.ts, filterStorage.ts
-      layout/               app shell: MainLayout, AuthLayout, Navbar, Toaster, TabRowView, BottomBarView, navigation.ts
+      layout/               app shell: MainLayout, AuthLayout, Navbar, Toaster, TabRowView, BottomBarView, utils/navigation.ts
     components/             shared UI by family, primitives in <family>/base/
     features/
       overview/             filters/ (overview params + useOverviewFilters), components/, …
@@ -49,7 +49,7 @@ frontend/
 - A screen that is a route is named `XxxPage` (`OverviewPage`, `TransactionsPage`, `CategoriesPage`,
   `PlansPage`), with its view `XxxPageView`.
 - The navigation (tab row, bottom bar, global add) lives in `MainLayout`, which derives the current
-  destination from the pathname (`navigation.ts`); screens render content only.
+  destination from the pathname (`utils/navigation.ts`); screens render content only.
 - `auth` is one feature with four pages. `AuthCard` (on `Card`) and `PasswordInput` (on `InputGroup`)
   live in `auth/components/`, which states their real scope.
 - `notFound` uses `ThemeToggle`, which is why `ThemeToggle` stays in `src/components/` and not in the
@@ -234,5 +234,5 @@ green. So:
 3. Wire the page in `src/app/routing/AppRouter.tsx` as its own route, importing the page directly
    (`import { PlansPage } from "@/features/plans/PlansPage"`); no `index.ts` barrels. Add its path to
    `paths.ts`. A page with URL filters is wrapped in `PlanFiltersGate`; a new destination also joins
-   `navigation.ts`.
+   `utils/navigation.ts`.
 4. Shell pieces (navigation, layout) go to `src/app/layout/`, never into a feature.

@@ -3,7 +3,7 @@ import {
   ALL_CATEGORIES_PAGE_SIZE,
   useGetFinancialTransactionCategories,
 } from "@/api/services/useFinancialTransactionCategoryService";
-import type { AppliedFilters } from "./transactionFilterDraft";
+import type { AppliedFilters } from "../utils/transactionFilterDraft";
 import { TransactionFilterPopoverView } from "./TransactionFilterPopoverView";
 
 export type { AppliedFilters };

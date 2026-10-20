@@ -4,7 +4,7 @@ import { useAuth } from "@/app/providers/useAuth";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { LoginFormOutput } from "./authForms";
 import { LoginView } from "./LoginView";
-import { readReturnLocation } from "./returnLocation";
+import { readReturnLocation } from "./utils/returnLocation";
 
 export function Login() {
   const { signIn } = useAuth();

@@ -8,7 +8,7 @@ import {
   DESTINATION_PATHS,
   DESTINATIONS,
   type Destination,
-} from "./navigation";
+} from "./utils/navigation";
 
 type TabRowViewProps = {
   current: Destination;

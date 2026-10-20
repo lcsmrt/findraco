@@ -5,7 +5,6 @@ import {
   serializeOverviewFilters,
   type OverviewFilters,
 } from "./overviewParams";
-import * as overviewParams from "./overviewParams";
 
 function params(init: Record<string, string>) {
   return new URLSearchParams(init);
@@ -18,16 +17,11 @@ const DEFAULT_OVERVIEW: OverviewFilters = {
 };
 
 describe("overview codec", () => {
-  it.each(["this-month", "last-3m", "last-6m", "this-year"] as const)(
-    "round-trips preset %s with a member",
-    (period) => {
-      const filters: OverviewFilters = { period, customRange: null, memberId: 7 };
-      const out = parseOverviewFilters(
-        params(serializeOverviewFilters(filters)),
-      );
-      expect(out).toEqual(filters);
-    },
-  );
+  it("round-trips a preset with a member", () => {
+    const filters: OverviewFilters = { period: "last-3m", customRange: null, memberId: 7 };
+    const out = parseOverviewFilters(params(serializeOverviewFilters(filters)));
+    expect(out).toEqual(filters);
+  });
 
   it("round-trips a custom range", () => {
     const filters: OverviewFilters = {
@@ -132,21 +126,12 @@ describe("legacy Categories period params", () => {
     categoriesPeriodTo: "2026-09-30",
   });
 
-  it("parses a URL with categoriesPeriod without error and ignores it", () => {
+  it("parses a URL with categoriesPeriod, ignores it and serializes no categories period", () => {
     expect(parseOverviewFilters(legacy)).toEqual({
       period: "this-year",
       customRange: null,
       memberId: null,
     });
-  });
-
-  it("has no Categories period codec", () => {
-    expect("parseCategoriesFilters" in overviewParams).toBe(false);
-    expect("serializeCategoriesFilters" in overviewParams).toBe(false);
-    expect("CATEGORIES_PARAM_KEYS" in overviewParams).toBe(false);
-  });
-
-  it("serializes no categories period", () => {
     expect(serializeOverviewFilters(parseOverviewFilters(legacy))).toEqual({
       period: "this-year",
     });

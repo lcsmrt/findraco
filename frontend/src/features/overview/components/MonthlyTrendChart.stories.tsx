@@ -1,7 +1,7 @@
 import type { MonthlyTrend } from "@/api/dtos";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MonthlyTrendChart } from "./MonthlyTrendChart";
-import { fillTrendMonths, trendWindow } from "./trendMonths";
+import { fillTrendMonths, trendWindow } from "../utils/trendMonths";
 
 const october = { startDate: "2026-10-01", endDate: "2026-10-31" };
 

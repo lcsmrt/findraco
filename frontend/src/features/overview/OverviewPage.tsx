@@ -12,8 +12,8 @@ import {
   useOverviewMemberFilter,
   type MemberOption,
 } from "./useOverviewMemberFilter";
-import { buildSpendingRows } from "./components/spendingRows";
-import { summaryView } from "./components/summaryView";
+import { buildSpendingRows } from "./utils/spendingRows";
+import { summaryView } from "./utils/summaryView";
 import { useOverviewTrend } from "./useOverviewTrend";
 import { OverviewPageView } from "./OverviewPageView";
 

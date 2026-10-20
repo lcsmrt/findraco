@@ -638,46 +638,21 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
     expect(toInlineSavePayload(shared, {})).toEqual({ params: { id: 7 }, body: unchanged });
   });
 
-  it("sends a new description", () => {
-    expect(toInlineSavePayload(shared, { description: "Lunch" }).body).toEqual({
-      ...unchanged,
+  it("sends each changed field in place of the stored one", () => {
+    const change = {
       description: "Lunch",
-    });
-  });
-
-  it("sends a new amount", () => {
-    expect(toInlineSavePayload(shared, { amount: 420 }).body).toEqual({
-      ...unchanged,
       amount: 420,
-    });
-  });
-
-  it("sends a new category", () => {
-    expect(toInlineSavePayload(shared, { categoryId: 9 }).body).toEqual({
-      ...unchanged,
       categoryId: 9,
-    });
+      startDate: "2026-06-01",
+      participants: [{ memberId: 2 }],
+      splitMode: "PERCENT" as const,
+    };
+    expect(toInlineSavePayload(shared, change).body).toEqual({ ...unchanged, ...change });
   });
 
   it("sends no category for an uncategorised transaction", () => {
     const uncategorised: FinancialTransaction = { ...shared, category: undefined };
     expect(toInlineSavePayload(uncategorised, {}).body.categoryId).toBeUndefined();
-  });
-
-  it("sends a new start date", () => {
-    expect(toInlineSavePayload(shared, { startDate: "2026-06-01" }).body).toEqual({
-      ...unchanged,
-      startDate: "2026-06-01",
-    });
-  });
-
-  it("sends new participants and split mode", () => {
-    const change = { participants: [{ memberId: 2 }], splitMode: "PERCENT" as const };
-    expect(toInlineSavePayload(shared, change).body).toEqual({
-      ...unchanged,
-      participants: [{ memberId: 2 }],
-      splitMode: "PERCENT",
-    });
   });
 
   it("keeps each participant's share of an exact split", () => {

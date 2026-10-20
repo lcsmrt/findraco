@@ -4,7 +4,7 @@ import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
 import { getFirstName } from "@/utils/string/formatters";
 import { MemberDot } from "@/components/memberDot/MemberDot";
-import type { SummaryFigure, SummaryView } from "./summaryView";
+import type { SummaryFigure, SummaryView } from "../utils/summaryView";
 
 type MemberBarProps = {
   figure: SummaryFigure;

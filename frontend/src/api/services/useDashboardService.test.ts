@@ -42,28 +42,6 @@ describe("useGetDashboardSummary", () => {
     });
     expect(result.current.data).toEqual(summary);
   });
-
-  it("is not fetched without an active plan", () => {
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useGetDashboardSummary(params), {
-      plan: planContext(null),
-    });
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(requests).toEqual([]);
-  });
-
-  it("is not fetched while the caller disables it", () => {
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useGetDashboardSummary(params, { enabled: false }), {
-      plan: planContext(5),
-    });
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(requests).toEqual([]);
-  });
 });
 
 describe("useGetDashboardTrend (UX-05 AC 7)", () => {
@@ -88,41 +66,5 @@ describe("useGetDashboardTrend (UX-05 AC 7)", () => {
       memberId: "9",
     });
     expect(result.current.data).toEqual(trend);
-  });
-
-  it("keys the query by plan and params", async () => {
-    server.use(dashboardHandlers.trend(trend));
-
-    const { result, queryClient } = renderHookWithProviders(() => useGetDashboardTrend(params), {
-      plan: planContext(5),
-    });
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(queryClient.getQueryData(["dashboardTrend", 5, params])).toEqual(trend);
-    expect(
-      queryClient.getQueryData(["dashboardTrend", 5, { ...params, memberId: 10 }]),
-    ).toBeUndefined();
-  });
-
-  it("is not fetched without an active plan", () => {
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useGetDashboardTrend(params), {
-      plan: planContext(null),
-    });
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(requests).toEqual([]);
-  });
-
-  it("is not fetched while the caller disables it", () => {
-    const requests = recordRequests();
-
-    const { result } = renderHookWithProviders(() => useGetDashboardTrend(params, { enabled: false }), {
-      plan: planContext(5),
-    });
-
-    expect(result.current.fetchStatus).toBe("idle");
-    expect(requests).toEqual([]);
   });
 });

@@ -13,7 +13,7 @@ import { cn } from "@/lib/mergeClasses";
 import { format } from "date-fns";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { formatMoney } from "@/utils/money";
-import type { TrendMonth } from "./trendMonths";
+import type { TrendMonth } from "../utils/trendMonths";
 
 const chartConfig: ChartConfig = {
   income: { label: "Income", color: "var(--success)" },

@@ -25,7 +25,7 @@ import {
   describeUsage,
   eligibleDeleteTargets,
   isCategoryInUse,
-} from "./categoryDeletion";
+} from "../utils/categoryDeletion";
 import { categoryHasChildren } from "./categoryForm";
 
 type DeleteCategoryDialogProps = {

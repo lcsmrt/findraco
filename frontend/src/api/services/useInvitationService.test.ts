@@ -55,28 +55,3 @@ describe("invitation mutations show their short success message", () => {
     expect(toast.success).toHaveBeenCalledWith("You joined the plan.");
   });
 });
-
-describe("invitation mutations hand the result and the request to the caller's onSuccess", () => {
-  it("revoke", async () => {
-    server.use(invitationHandlers.revoke());
-    const onSuccess = vi.fn();
-    const request = { params: { planId: 7, invitationId: 2 } };
-
-    const { result } = renderHookWithProviders(() => useRevokeInvitation({ onSuccess }));
-    result.current.mutate(request);
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onSuccess).toHaveBeenCalledWith(undefined, request);
-  });
-
-  it("accept", async () => {
-    server.use(invitationHandlers.accept({ planId: 7, role: "VIEWER" }));
-    const onSuccess = vi.fn();
-
-    const { result } = renderHookWithProviders(() => useAcceptInvitation({ onSuccess }));
-    result.current.mutate("link-token");
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onSuccess).toHaveBeenCalledWith({ planId: 7, role: "VIEWER" }, "link-token");
-  });
-});

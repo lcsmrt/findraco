@@ -6,16 +6,8 @@ describe("countActiveFilters", () => {
     expect(countActiveFilters({})).toBe(0);
   });
 
-  it.each([
-    ["type", { type: "DEBIT" as const }],
-    ["category", { categoryId: 7 }],
-    ["member", { memberId: 3 }],
-    ["date range start only", { startDateFrom: "2026-07-01" }],
-    ["date range end only", { startDateTo: "2026-07-31" }],
-    ["amount minimum only", { amountMin: 10 }],
-    ["amount maximum only", { amountMax: 500 }],
-  ])("counts a %s as one filter", (_label, filter) => {
-    expect(countActiveFilters(filter)).toBe(1);
+  it("counts one applied filter as one", () => {
+    expect(countActiveFilters({ categoryId: 7 })).toBe(1);
   });
 
   it("counts a date range and an amount range once each, whatever bounds are set", () => {

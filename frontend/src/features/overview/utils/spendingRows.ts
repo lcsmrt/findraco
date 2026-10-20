@@ -1,5 +1,5 @@
 import type { CategorySpending, CategorySpendingMember } from "@/api/dtos";
-import { scaleTreeLimits, type ScaledNode } from "../utils/scaleLimits";
+import { scaleTreeLimits, type ScaledNode } from "./scaleLimits";
 
 /** Share of the limit from which a row reads as a warning. */
 export const WARNING_RATIO = 0.8;

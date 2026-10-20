@@ -61,10 +61,6 @@ describe("parentOptions", () => {
     expect(parentOptions(categories, "DEBIT").map((c) => c.id)).toEqual([1, 5, 3]);
   });
 
-  it("lists income roots for CREDIT", () => {
-    expect(parentOptions(categories, "CREDIT").map((c) => c.id)).toEqual([4]);
-  });
-
   it("excludes the category being edited", () => {
     expect(parentOptions(categories, "DEBIT", 5).map((c) => c.id)).toEqual([1, 3]);
   });

@@ -2,7 +2,7 @@ import type { FinancialTransactionCategory } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
-import { buildCategoryTree } from "./categoryTree";
+import { buildCategoryTree } from "./utils/categoryTree";
 import { CategoriesPageView } from "./CategoriesPageView";
 
 function colorOf(memberId: number) {

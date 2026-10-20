@@ -1,6 +1,6 @@
 import { useGetDashboardTrend } from "@/api/services/useDashboardService";
 import { useMemo } from "react";
-import { fillTrendMonths, trendWindow } from "./components/trendMonths";
+import { fillTrendMonths, trendWindow } from "./utils/trendMonths";
 import type { PeriodRange } from "./utils/periodNavigator";
 
 /**

@@ -27,21 +27,15 @@ describe("resolveErrorMessage", () => {
     );
   });
 
-  it("falls back when the API error carries no message", () => {
-    const error = new AxiosError("Network Error", AxiosError.ERR_NETWORK);
-
-    expect(resolveErrorMessage({ error, fallbackMessage: "Could not save." })).toBe("Could not save.");
-  });
-
   it("shows a plain error's message", () => {
     expect(resolveErrorMessage({ error: new Error("Boom"), fallbackMessage: "Could not save." })).toBe("Boom");
   });
 
-  it("falls back when a plain error has an empty message", () => {
-    expect(resolveErrorMessage({ error: new Error(""), fallbackMessage: "Could not save." })).toBe("Could not save.");
-  });
+  it("falls back for an error with no message and for a value that is not an error", () => {
+    const networkError = new AxiosError("Network Error", AxiosError.ERR_NETWORK);
 
-  it("falls back for a value that is not an error", () => {
+    expect(resolveErrorMessage({ error: networkError, fallbackMessage: "Could not save." })).toBe("Could not save.");
+    expect(resolveErrorMessage({ error: new Error(""), fallbackMessage: "Could not save." })).toBe("Could not save.");
     expect(resolveErrorMessage({ error: "Boom", fallbackMessage: "Could not save." })).toBe("Could not save.");
   });
 

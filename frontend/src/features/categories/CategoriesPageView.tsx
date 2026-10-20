@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon } from "lucide-react";
 import type { MemberColorOf } from "@/utils/memberColors";
-import type { CategoryTreeRoot, CategoryTreeSection } from "./categoryTree";
+import type { CategoryTreeRoot, CategoryTreeSection } from "./utils/categoryTree";
 import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./components/CategoryTreeRow";
 
 const SECTION_TITLES = { DEBIT: "Expenses", CREDIT: "Income" } as const;

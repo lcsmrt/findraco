@@ -23,7 +23,7 @@ import {
 } from "@/components/popover/base/Popover";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { useId, useMemo, useState } from "react";
-import { countActiveFilters } from "./activeFilterCount";
+import { countActiveFilters } from "../utils/activeFilterCount";
 import { groupCategoryOptions } from "../utils/categoryOptions";
 import {
   fromDraft,
@@ -34,7 +34,7 @@ import {
   type AppliedFilters,
   type FilterDraft,
   type MemberOption,
-} from "./transactionFilterDraft";
+} from "../utils/transactionFilterDraft";
 
 const TYPE_LABELS: Record<FinancialTransactionType | typeof TYPE_ALL, string> = {
   ALL: "All",

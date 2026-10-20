@@ -3,7 +3,7 @@ import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { SummaryCards } from "./SummaryCards";
-import { summaryView } from "./summaryView";
+import { summaryView } from "../utils/summaryView";
 
 // Both layouts are in the DOM and CSS shows one per breakpoint, so checks target the visible copy.
 function visibleText(canvas: { getAllByText: (text: string) => HTMLElement[] }, text: string) {

@@ -152,25 +152,6 @@ describe("useUpdateMemberRole", () => {
     expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
-
-  it("does not invalidate queries when the request fails", async () => {
-    server.use(planHandlers.updateMemberRoleNetworkError());
-
-    const { result, queryClient } = renderHookWithProviders(() => useUpdateMemberRole(), {
-      seed: (client) => client.setQueryData(["members", 5], []),
-    });
-    const invalidateSpy = vi.spyOn(queryClient, "invalidateQueries");
-
-    result.current.mutate({
-      params: { planId: 5, userId: 9 },
-      body: { role: "EDITOR" },
-    });
-
-    await waitFor(() => expect(result.current.isError).toBe(true));
-
-    expect(invalidateSpy).not.toHaveBeenCalled();
-    expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(false);
-  });
 });
 
 describe("membership and lifecycle mutations", () => {
@@ -268,51 +249,5 @@ describe("plan mutations hand the result and the request to the caller's onSucce
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(onSuccess).toHaveBeenCalledWith(member, request);
-  });
-
-  it("useRemoveMember", async () => {
-    server.use(planHandlers.removeMember());
-    const onSuccess = vi.fn();
-    const request = { params: { planId: 5, userId: 9 } };
-
-    const { result } = renderHookWithProviders(() => useRemoveMember({ onSuccess }));
-    result.current.mutate(request);
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onSuccess).toHaveBeenCalledWith(undefined, request);
-  });
-
-  it("useDeletePlan", async () => {
-    server.use(planHandlers.delete());
-    const onSuccess = vi.fn();
-
-    const { result } = renderHookWithProviders(() => useDeletePlan({ onSuccess }));
-    result.current.mutate(5);
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onSuccess).toHaveBeenCalledWith(undefined, 5);
-  });
-
-  it("useLeavePlan", async () => {
-    server.use(planHandlers.leave());
-    const onSuccess = vi.fn();
-
-    const { result } = renderHookWithProviders(() => useLeavePlan({ onSuccess }));
-    result.current.mutate(5);
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onSuccess).toHaveBeenCalledWith(undefined, 5);
-  });
-
-  it("useTransferOwnership", async () => {
-    server.use(planHandlers.transferOwnership());
-    const onSuccess = vi.fn();
-    const request = { params: { planId: 5 }, body: { newOwnerUserId: 9, previousOwnerRole: "EDITOR" as const } };
-
-    const { result } = renderHookWithProviders(() => useTransferOwnership({ onSuccess }));
-    result.current.mutate(request);
-
-    await waitFor(() => expect(result.current.isSuccess).toBe(true));
-    expect(onSuccess).toHaveBeenCalledWith(undefined, request);
   });
 });

@@ -7,7 +7,7 @@ import { Heading } from "@/components/typography/base/Heading";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatDate } from "@/utils/string/formatters";
-import { groupByDay } from "./groupByDay";
+import { groupByDay } from "../utils/groupByDay";
 
 type TransactionMobileRowProps = {
   transaction: FinancialTransaction;

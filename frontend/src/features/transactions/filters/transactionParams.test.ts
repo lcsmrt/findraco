@@ -4,7 +4,6 @@ import {
   serializeTransactionFilters,
   type TransactionFilters,
 } from "./transactionParams";
-import * as transactionParams from "./transactionParams";
 
 function params(init: Record<string, string>) {
   return new URLSearchParams(init);
@@ -49,17 +48,6 @@ describe("transactions codec", () => {
     expect(parseTransactionFilters(params(serialized))).toEqual(full);
   });
 
-  it("round-trips a search containing reserved characters", () => {
-    const filters: TransactionFilters = {
-      ...DEFAULT_TRANSACTIONS,
-      filter: { description: "a&b=c d" },
-    };
-    const url = new URLSearchParams(serializeTransactionFilters(filters));
-    expect(parseTransactionFilters(new URLSearchParams(url.toString()))).toEqual(
-      filters,
-    );
-  });
-
   it("omits defaults on serialize", () => {
     expect(serializeTransactionFilters(DEFAULT_TRANSACTIONS)).toEqual({});
   });
@@ -77,10 +65,7 @@ describe("transactions codec", () => {
     ["min", "abc"],
     ["max", "-5"],
     ["sort", "bogus.desc"],
-    ["sort", "amount.sideways"],
-    ["sort", "amount"],
     ["size", "0"],
-    ["size", "many"],
   ])("falls back to the default for unparseable %s=%s", (key, value) => {
     expect(parseTransactionFilters(params({ [key]: value }))).toEqual(
       DEFAULT_TRANSACTIONS,
@@ -104,17 +89,8 @@ describe("legacy Categories period params", () => {
     categoriesPeriodTo: "2026-09-30",
   });
 
-  it("parses a URL with categoriesPeriod without error and ignores it", () => {
+  it("parses a URL with categoriesPeriod, ignores it and serializes no categories period", () => {
     expect(parseTransactionFilters(legacy)).toEqual(DEFAULT_TRANSACTIONS);
-  });
-
-  it("has no Categories period codec", () => {
-    expect("parseCategoriesFilters" in transactionParams).toBe(false);
-    expect("serializeCategoriesFilters" in transactionParams).toBe(false);
-    expect("CATEGORIES_PARAM_KEYS" in transactionParams).toBe(false);
-  });
-
-  it("serializes no categories period", () => {
     expect(serializeTransactionFilters(parseTransactionFilters(legacy))).toEqual({});
   });
 });

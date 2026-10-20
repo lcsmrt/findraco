@@ -3,7 +3,7 @@ import { PATHS } from "@/app/routing/paths";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { RegisterUserFormOutput } from "./authForms";
 import { RegisterUserView } from "./RegisterUserView";
-import { readReturnLocation } from "./returnLocation";
+import { readReturnLocation } from "./utils/returnLocation";
 
 export function RegisterUser() {
   const { mutateAsync: registerUser, isPending: isRegisteringUser } =

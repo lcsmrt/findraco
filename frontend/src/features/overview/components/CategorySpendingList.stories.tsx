@@ -3,7 +3,7 @@ import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
 import { CategorySpendingList } from "./CategorySpendingList";
-import { buildSpendingRows, type SelectedMember } from "./spendingRows";
+import { buildSpendingRows, type SelectedMember } from "../utils/spendingRows";
 
 function colorOf(memberId: number) {
   return MEMBER_PALETTE[(memberId - 1) % MEMBER_PALETTE.length];

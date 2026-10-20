@@ -19,7 +19,7 @@ import {
 import { TransactionFormDrawer } from "./components/TransactionFormDrawer";
 import { buildTransactionColumns, InlineSaveBody } from "./components/transactionColumns";
 import { toInlineSavePayload } from "./components/transactionForm";
-import { toSorting, toTransactionSort } from "./components/transactionSort";
+import { toSorting, toTransactionSort } from "./utils/transactionSort";
 import { useCsvImport } from "./components/useCsvImport";
 import { useTransactionActions } from "./components/useTransactionActions";
 import { useTransactionSearch } from "./components/useTransactionSearch";

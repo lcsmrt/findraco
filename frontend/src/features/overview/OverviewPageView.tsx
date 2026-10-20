@@ -4,9 +4,9 @@ import { CategorySpendingList } from "./components/CategorySpendingList";
 import { MemberFilterChips } from "./components/MemberFilterChips";
 import { MonthlyTrendChart } from "./components/MonthlyTrendChart";
 import { PeriodNavigator } from "./components/PeriodNavigator";
-import type { SpendingRowsView } from "./components/spendingRows";
+import type { SpendingRowsView } from "./utils/spendingRows";
 import { SummaryCards } from "./components/SummaryCards";
-import type { SummaryView } from "./components/summaryView";
+import type { SummaryView } from "./utils/summaryView";
 
 type OverviewPageViewProps = {
   navigator: ComponentProps<typeof PeriodNavigator>;

@@ -322,8 +322,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Each file matches its audit row; `node scripts/check-siblings.ts` passes; critical coverage passes
-- [ ] Gate check passes: Quick (`pnpm exec vitest run --project=unit --project=tooling`)
+- [x] Each file matches its audit row; `node scripts/check-siblings.ts` passes; critical coverage passes
+- [x] Gate check passes: Quick (`pnpm exec vitest run --project=unit --project=tooling`)
 
 **Tests**: unit
 **Gate**: quick

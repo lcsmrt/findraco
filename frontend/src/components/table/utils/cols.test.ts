@@ -61,12 +61,4 @@ describe("stretchColumns", () => {
 
     expect(result.current.getState().columnSizing).toEqual({});
   });
-
-  it("leaves the sizes untouched when the columns are wider than the container (STD-02 AC 1)", () => {
-    const { result } = renderTable();
-
-    act(() => stretchColumns(result.current, 200));
-
-    expect(result.current.getState().columnSizing).toEqual({});
-  });
 });

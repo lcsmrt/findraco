@@ -21,18 +21,4 @@ describe("planNameSchema", () => {
       );
     }
   });
-
-  it("rejects a missing name field", () => {
-    const result = planNameSchema.safeParse({});
-
-    expect(result.success).toBe(false);
-  });
-
-  it("throws when parsing invalid input directly", () => {
-    expect(() => planNameSchema.parse({ name: "" })).toThrow();
-  });
-
-  it("does not throw when parsing valid input directly", () => {
-    expect(() => planNameSchema.parse({ name: "Vacation fund" })).not.toThrow();
-  });
 });

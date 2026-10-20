@@ -14,7 +14,7 @@ import type {
   SpendingRow,
   SpendingRowsView,
   Usage,
-} from "./spendingRows";
+} from "../utils/spendingRows";
 
 const OVERFLOW_HATCH =
   "repeating-linear-gradient(135deg, color-mix(in srgb, var(--destructive) 75%, transparent) 0 3px, transparent 3px 6px)";

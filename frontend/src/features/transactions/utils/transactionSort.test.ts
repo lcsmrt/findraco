@@ -1,18 +1,17 @@
 import { describe, expect, it } from "vitest";
 import { toSorting, toTransactionSort } from "./transactionSort";
 
-const pairs = [
-  ["startDate", "startDate"],
-  ["amount", "amount"],
-  ["description", "description"],
-  ["category", "category"],
-  ["participants", "attributedTo"],
-] as const;
-
 describe("toTransactionSort (STD-12 AC 1)", () => {
-  it.each(pairs)("sorts column %s by the API field %s", (column, field) => {
-    expect(toTransactionSort([{ by: column, direction: "desc" }])).toEqual({
-      by: field,
+  it("sorts a column by its API field", () => {
+    expect(toTransactionSort([{ by: "amount", direction: "desc" }])).toEqual({
+      by: "amount",
+      direction: "desc",
+    });
+  });
+
+  it("sorts the participants column by the API field attributedTo", () => {
+    expect(toTransactionSort([{ by: "participants", direction: "desc" }])).toEqual({
+      by: "attributedTo",
       direction: "desc",
     });
   });
@@ -27,9 +26,15 @@ describe("toTransactionSort (STD-12 AC 1)", () => {
 });
 
 describe("toSorting (STD-12 AC 1)", () => {
-  it.each(pairs)("shows column %s sorted for the API field %s", (column, field) => {
-    expect(toSorting({ by: field, direction: "asc" })).toEqual([
-      { by: column, direction: "asc" },
+  it("shows a column sorted for its API field", () => {
+    expect(toSorting({ by: "amount", direction: "asc" })).toEqual([
+      { by: "amount", direction: "asc" },
+    ]);
+  });
+
+  it("shows the participants column sorted for the API field attributedTo", () => {
+    expect(toSorting({ by: "attributedTo", direction: "asc" })).toEqual([
+      { by: "participants", direction: "asc" },
     ]);
   });
 

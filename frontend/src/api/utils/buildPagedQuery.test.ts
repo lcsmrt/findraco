@@ -6,11 +6,8 @@ function entries(query: string) {
 }
 
 describe("buildPagedQuery", () => {
-  it("returns an empty query without params", () => {
+  it("returns an empty query without params or with no field set", () => {
     expect(buildPagedQuery()).toBe("");
-  });
-
-  it("returns an empty query when no field is set", () => {
     expect(buildPagedQuery({})).toBe("");
   });
 

@@ -77,11 +77,11 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | `src/features/transactions/components/activeFilterCount.test.ts` | unit | move | pure computation outside a row → `utils/` | 10 → 4 | → `features/transactions/utils/`; seven per-field counts are one rule |
 | `src/features/transactions/components/groupByDay.test.ts` | unit | move | pure computation outside a row → `utils/` | 4 → 4 | → `features/transactions/utils/` |
 | `src/features/transactions/components/transactionColumns.test.ts` | unit | cut | glue outside every row | 2 → 0 | column definitions |
-| `src/features/transactions/components/transactionFilterDraft.test.ts` | unit | move | pure computation outside a row → `utils/` | 13 → 10 | → `features/transactions/utils/`; the member trio repeats the category trio's rules |
+| `src/features/transactions/components/transactionFilterDraft.test.ts` | unit | move | pure computation outside a row → `utils/` | 13 → 10 | → `features/transactions/utils/`; the member trio repeats the category trio's rules. Done (T12): the member field rides in the three category cases, so `withDraftMember` and `memberId` keep an assertion |
 | `src/features/transactions/components/transactionForm.series.test.ts` | unit | keep | critical module | 36 → 36 | each case a rule; keep the branch threshold |
 | `src/features/transactions/components/transactionForm.test.ts` | unit | keep | critical module | 53 → 49 | per-field inline-save cases are one rule; keep the branch threshold |
 | `src/features/transactions/components/transactionSort.test.ts` | unit | move | pure computation outside a row → `utils/` | 14 → 8 | → `features/transactions/utils/`; per-column mappings are one rule, the attributedTo and endDate cases are edges |
-| `src/features/transactions/filters/transactionParams.test.ts` | unit | keep | URL params | 20 → 14 | one invalid value per field; legacy-param cases are one rule |
+| `src/features/transactions/filters/transactionParams.test.ts` | unit | keep | URL params | 20 → 14 | one invalid value per field; legacy-param cases are one rule. Done (T12): those cuts give 15; the reserved-character round trip is also cut, as it asserts `URLSearchParams` encoding |
 | `src/features/transactions/utils/categoryOptions.test.ts` | unit | keep | business rule (`utils/`, `*Form(s).ts`) | 7 → 7 | each case a rule |
 | `src/lib/storage.test.ts` | unit | cut | glue outside every row | 6 → 0 | a storage wrapper |
 | `src/utils/memberColors.test.ts` | unit | keep | business rule (`utils/`, `*Form(s).ts`) | 3 → 3 | each case a rule |
