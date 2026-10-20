@@ -33,6 +33,7 @@ and the Vitest config read. **A module that matches no row gets no test, even wi
 | **Presentational component** | any other `.tsx` outside `base/` | story, sibling `Xxx.stories.tsx` | one story per state its own code handles, a `play` per interaction of its own ("Stories") |
 | **`base/` primitive** | `.tsx` under a `<family>/base/` folder | catalog story only | none runs as a test |
 | **Tooling**: local lint rules, gate scripts, lint config | `eslint/rules/*.ts`, `scripts/*.ts`, `eslint.config.js` | unit (Node) | one valid and one invalid case per behaviour the rule promises |
+| **Provider guard**: the throw when a hook is used outside its provider; developer-only, it fails on the first render in dev and never reaches users | a `throw` in a hook that reads a context | none | |
 | **Anything else**: UI glue (column definitions, labels, class maps, prop mapping, route lists), simple formatting, wrappers, types, DTOs, constants, `*.handlers.ts` | | none | |
 
 - Pure computation shown to the user (a sort, a grouping, a scale) is a business rule: it lives in the

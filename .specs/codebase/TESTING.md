@@ -118,6 +118,7 @@ pnpm test:coverage                                      # critical modules' cove
 | Frontend presentational components | story (a11y in error mode) | `frontend/src/**/*.stories.tsx` | `pnpm exec vitest run --project=storybook` | one story per state its own code handles, a `play` per interaction of its own |
 | Frontend `base/` primitives | catalog story only (`!test`) | `frontend/src/components/*/base/*.stories.tsx` | — | none runs as a test |
 | Frontend tooling (lint config, local rules, gate scripts) | unit (Node) | `frontend/eslint.config.test.ts`, `frontend/eslint/rules/*.test.ts`, `frontend/scripts/*.test.ts` | `pnpm exec vitest run --project=tooling` | one valid and one invalid case per behaviour |
+| Frontend provider guards (the throw when a hook is used outside its provider; developer-only, fails on the first render in dev, never reaches users) | none | — | — | none |
 | Frontend UI glue, formatting, wrappers, types, constants | none | — | — | none |
 | Frontend critical journeys | E2E (Playwright) | not yet in place (blocked by the local Docker database) | — | — |
 
