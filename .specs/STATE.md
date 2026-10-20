@@ -124,7 +124,7 @@
 
 ## Handoff
 
-- **Next (user)**: review test-calibration on branch `test-calibration` (pushed, CI green, **not merged**). Start with `.specs/features/test-calibration/audit.md` (per-file verdicts, before/after, follow-ups F1–F7), then `validation.md` (Verifier PASS, iteration 2). If it looks right: merge to `main` (that push deploys; decide whether it counts as a beta bump: tests/CI/docs plus 11 pure module moves to `utils/`, no behaviour change; spec assumes no bump, unconfirmed)
+- **Next (user)**: test-calibration is merged and deployed (`3996793`, run 39412960299 green, no beta bump). Optional review: `.specs/features/test-calibration/audit.md` (follow-ups F1–F7) and `validation.md`. Then the queue below
 - **Last delivered**: test-calibration Done (2026-10-20, run unattended at the user's request, no validation stops):
   - CI: 2 fixed workers on CI; push runs affected tests (`vitest --changed <last green>`, force-rerun triggers); full suite weekly (Mon 06:00 UTC) and on dispatch; coverage only in the `critical` project. Test step 247s → 74–119s full, 27s one-module affected push (pre-cut sample), 79s for a 56-file push
   - Tests 1439 → 868 (base/ stories catalog-only via `!test`, other stories only for states the component handles, flows only container decisions, trimmed unit/tooling, 11 modules moved to `utils/`)
@@ -137,4 +137,4 @@
 - **Explain to the user when asked (2026-10-18)**: (1) the story-gate refinement (design decision 8, T126; now superseded by AD-015); (2) the `interface` in `*.d.ts` exception (E1 addendum, T11)
 - **Low notes**: `buildMutationOptions` keeps an unreachable "Operation completed successfully." fallback; one Storybook duplicate-React flake after `react-router-dom` entered stories (fix: `optimizeDeps.include`); the two `setupUnit.test.ts` cases depend on their order; Vitest 3.2.7 `--changed` hits EISDIR on the tooling project (tooling runs in full, ~1s)
 - **Queue**: backend standards review, M5-06 period navigator, M5-07 PWA, M5-05 Claude MCP connector, M5-10 i18n, local Docker DB quick task, round-2 UX topics
-- **Blockers**: none. **Branch**: `test-calibration` (pushed); `main` has `882ed6a` and `3774b0e` (docs) local-only, not pushed. API/Vite not running
+- **Blockers**: none. **Branch**: main, pushed. API/Vite not running
