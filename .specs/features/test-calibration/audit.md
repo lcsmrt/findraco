@@ -24,13 +24,13 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | Logic | 42 | 486 | 37 | 398 | 37 | 398 |
 | Service hooks | 6 | 81 | 6 | 39 | 6 | 39 |
 | Hooks | 22 | 104 | 21 | 89 | 21 | 89 |
-| Flows and component tests (`.test.tsx`) | 14 | 114 | 12 | 63 | 12 | 64 |
+| Flows and component tests (`.test.tsx`) | 14 | 114 | 12 | 63 | 12 | 66 |
 | Tooling | 6 | 189 | 6 | 121 | 6 | 109 |
 | Stories outside `base/` | 63 | 323 | 63 | 166 | 63 | 166 |
 | Stories in `base/` | 29 | 142 | 0 | 0 | 0 | 0 |
-| **Total** | **182** | **1439** | **145** | **876** | **145** | **865** |
+| **Total** | **182** | **1439** | **145** | **876** | **145** | **867** |
 
-"After" is measured on the T15 commit with `vitest run --reporter=json` per project (unit 595, tooling 104, storybook 166 tests; `pnpm test` reports the same 865). The `critical` project re-runs the five critical modules' own tests (6 files, 169 tests) for coverage; they are counted once, under Logic. Two rows differ from the plan, each noted in its row: `CategoryFormSheet.test.tsx` keeps its edit case (+1) and `eslint.config.test.ts` lands at 35 (−12).
+"After" is measured on the T15 commit with `vitest run --reporter=json` per project (unit 597, tooling 104, storybook 166 tests; `pnpm test` reports the same 867). The `critical` project re-runs the five critical modules' own tests (6 files, 169 tests) for coverage; they are counted once, under Logic. Three rows differ from the plan, each noted in its row: `CategoryFormSheet.test.tsx` keeps its edit case (+1), `TransactionFormDrawer.test.tsx` gets its two owned-category cases back after validation (+2) and `eslint.config.test.ts` lands at 35 (−12).
 
 "Service hooks" counts `src/api/services/` only; the API client and `api/utils/` are under Logic. Files running after: a `base/` story file stays in the catalog but runs no test.
 
@@ -125,7 +125,7 @@ Local times are Vitest's reported duration for one run of each project on the sa
 | `src/app/routing/AppRouter.test.tsx` | flow | rewrite | container → flow (CAL-08) | 5 → 2 | the redirect and one served route; four routes are one decision |
 | `src/app/routing/PlanFiltersGate.test.tsx` | flow | rewrite | container → flow (CAL-08) | 32 → 20 | 14 per-key "screen param" cases are one rule per screen (2 stay); restore, link, plan-switch and storage-failure decisions stay |
 | `src/app/routing/PrivateRoute.test.tsx` | flow | keep | container → flow (CAL-08) | 4 → 4 | loading, unreachable, redirect, render: each a decision |
-| `src/components/input/CurrencyInput.test.tsx` | presentational | cut | presentational → story | 7 → 0 | digit rules: `currencyDigits.test.ts`; typing display: `CurrencyInput.stories.tsx` Empty play; the number reaching the payload: `src/features/transactions/components/TransactionFormDrawer.test.tsx:137` (kept as the happy submit); keypad is a hand check |
+| `src/components/input/CurrencyInput.test.tsx` | presentational | cut | presentational → story | 7 → 0 | digit rules: `currencyDigits.test.ts`; typing display: `CurrencyInput.stories.tsx` Empty play; the number reaching the payload: `src/features/transactions/components/TransactionFormDrawer.test.tsx:144` (kept as the happy submit); keypad is a hand check |
 | `src/components/input/DatePicker.test.tsx` | presentational | cut | presentational → story | 3 → 0 | form focus and blur wiring has no story play yet; follow-up F3 |
 | `src/features/auth/ForgotPasswordPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 2 → 1 | the empty-email rule is `authForms.test.ts` (forgotPasswordSchema) |
 | `src/features/auth/LoginPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 6 → 3 | field rules are `authForms.test.ts` (loginSchema); no remember-me is visual |
@@ -134,7 +134,7 @@ Local times are Vitest's reported duration for one run of each project on the sa
 | `src/features/plans/components/InvitePlanDialog.test.tsx` | flow | rewrite | container → flow (CAL-08) | 4 → 3 | missing email is `inviteForm.test.ts`; no cancel or API-failure case: follow-up F6 |
 | `src/features/plans/components/PlanNameDialog.test.tsx` | flow | rewrite | container → flow (CAL-08) | 3 → 2 | empty name is `planNameForm.test.ts` |
 | `src/features/transactions/TransactionsPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 8 → 7 | the sort mapping is `transactionSort.test.ts` |
-| `src/features/transactions/components/TransactionFormDrawer.test.tsx` | flow | rewrite | container → flow (CAL-08) | 15 → 6 | money, split, attribution and schema rules are `transactionForm.test.ts` / `transactionForm.series.test.ts` / `currencyDigits.test.ts`; happy create (full payload), edit, cancel, edit and create actions, series mutation stay |
+| `src/features/transactions/components/TransactionFormDrawer.test.tsx` | flow | rewrite | container → flow (CAL-08) | 15 → 8 | money, split, attribution and schema rules are `transactionForm.test.ts` / `transactionForm.series.test.ts` / `currencyDigits.test.ts`; happy create (full payload), edit, cancel, edit and create actions, series mutation stay. Validation fix: the two owned-category cases (CAT-17) are back (6 → 8), since they prove the drawer's own wiring (`applyCategoryAttribution` behind `canAttributeToOthers`, `participantsTouchedRef`), which `categoryAttribution`'s unit test does not reach |
 | `eslint.config.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 114 → 47 | per-path repeats of one fragment collapse to one invalid and one valid case per behaviour; each layer keeps its fragment case. Done (T15): 35. The config has three import blocks and three syntax blocks, so one fragment case per block (six import paths, tests included, and three syntax paths) holds every layer; the remaining cases are one invalid and one valid per rule (the palette and typography selectors keep one invalid case per AST selector) |
 | `eslint/rules/componentLogicCap.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 24 → 24 | already one valid and one invalid case per counting behaviour |
 | `eslint/rules/noJsxIife.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 6 → 6 | valid/invalid pairs |
