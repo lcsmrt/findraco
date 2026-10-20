@@ -413,8 +413,8 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Stories: with navigation and long content at 390px (`play` scrolls to the end and checks the last row sits above the bar); without navigation (accept-invitation)
-- [ ] Gate check passes: Full
+- [x] Stories: with navigation and long content at 390px (`play` scrolls to the end and checks the last row sits above the bar); without navigation (accept-invitation, `WithPage`, now asserting neither nav shows). With navigation the page gets the `py-4 gap-6` spacing the removed `HomeTabsView` gave the screens
+- [x] Gate check passes: Full (177 files, 1242 tests, passing; the bar-space check fails with the reserve removed)
 
 **Tests**: story
 **Gate**: full
