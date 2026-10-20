@@ -173,8 +173,8 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Each mutation's success toast text equals its table row
-- [ ] Gate check passes: Quick
+- [x] Each mutation's success toast text equals its table row (new `useInvitationService.test.ts`; `revoke` and `accept` handler factories added)
+- [x] Gate check passes: Quick (84 files, 760 tests, passing)
 
 **Tests**: unit (service through MSW)
 **Gate**: quick
