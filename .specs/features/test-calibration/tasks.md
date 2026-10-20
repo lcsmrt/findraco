@@ -133,9 +133,9 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] `pnpm exec vitest run --project=critical --coverage` reports exactly the five critical modules and passes
-- [ ] Temporarily skipping one `money.test.ts` case drops `money.ts` under 90% and fails it; reverted
-- [ ] Gate check passes: Build (phase end)
+- [x] `pnpm exec vitest run --project=critical --coverage` reports exactly the five critical modules and passes
+- [x] Temporarily skipping one `money.test.ts` case drops `money.ts` under 90% and fails it; reverted
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: none (config; proven by the gate)
 **Gate**: build

@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
+import { criticalModules } from "./scripts/testTable.ts";
 const dirname =
   typeof __dirname !== "undefined"
     ? __dirname
@@ -63,22 +64,17 @@ export default defineConfig({
     // the whole run under one busy process per core, on a 4-core CI runner as on a workstation.
     // Vitest types `maxWorkers` as root-only, so the two pools cannot get different caps.
     maxWorkers: "25%",
-    // Branch coverage on logic only (decision 8): `.ts` modules, never components, stories or test
-    // support. Type-only and constant modules emit no branches, so they cannot move the number.
-    // Each module must reach the floor on its own, so the failure names it and a module with few
-    // branches cannot hide behind well-tested ones. Measured on the `unit` project only (`pnpm test`):
-    // a story renders components that run our helpers without asserting their results.
-    // Only modules a test loads are measured (`all: false`). The sibling gate already gives every
-    // logic module a test that loads it; v8 reports any module no test loads (a barrel, a
-    // `new QueryClient()`) as 0% branches even when it has none, which would demand tests of
-    // re-exports and libraries.
+    // Branch coverage on the critical modules only: an error there writes wrong data or drops the
+    // session unnoticed, while a display error is visible. Each module must reach the floor on its
+    // own, so the failure names it. Coverage runs only in the `critical` project, over each module's
+    // own tests: an unrelated test that loads a critical module partly would fail it for no defect.
     coverage: {
       provider: "v8",
-      all: false,
-      include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "src/**/*.handlers.ts", "src/test/**", "src/**/*.d.ts"],
+      include: criticalModules.map((modulePath) => `src/${modulePath}`),
       reporter: ["text"],
-      thresholds: { branches: 90, perFile: true },
+      thresholds: Object.fromEntries(
+        criticalModules.map((modulePath) => [`src/${modulePath}`, { branches: 90 }]),
+      ),
     },
     projects: [
       {
@@ -114,6 +110,18 @@ export default defineConfig({
           name: "unit",
           environment: "jsdom",
           include: ["src/**/*.test.{ts,tsx}"],
+          setupFiles: ["src/test/setupUnit.ts"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "critical",
+          environment: "jsdom",
+          include: criticalModules.flatMap((modulePath) => {
+            const base = `src/${modulePath.replace(/\.ts$/, "")}`;
+            return [`${base}.test.ts`, `${base}.*.test.ts`];
+          }),
           setupFiles: ["src/test/setupUnit.ts"],
         },
       },

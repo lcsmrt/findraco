@@ -13,8 +13,8 @@
     "prepare": "cd .. && husky frontend/.husky",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "test": "node scripts/check-siblings.ts && vitest run --project=unit --coverage && vitest run --project=tooling --project=storybook",
-    "test:coverage": "vitest run --project=unit --coverage",
+    "test": "node scripts/check-siblings.ts && vitest run --project=unit --project=tooling --project=storybook && vitest run --project=critical --coverage",
+    "test:coverage": "vitest run --project=critical --coverage",
     "test:watch": "vitest --project=unit"
   },
   "dependencies": {
