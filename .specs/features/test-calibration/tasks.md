@@ -155,8 +155,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Locally, a whitespace change to `src/index.css` makes `pnpm exec vitest list --changed` (or `run --changed`) select every test file; a change to `src/utils/money.ts` selects only the related ones; reverted
-- [ ] Gate check passes: Quick (`pnpm exec vitest run --project=unit --project=tooling`)
+- [x] Locally, a whitespace change to `src/index.css` makes `pnpm exec vitest list --changed` (or `run --changed`) select every test file; a change to `src/utils/money.ts` selects only the related ones; reverted
+- [x] Gate check passes: Quick (`pnpm exec vitest run --project=unit --project=tooling`)
 
 **Tests**: none (config; proven by the local checks above)
 **Gate**: quick

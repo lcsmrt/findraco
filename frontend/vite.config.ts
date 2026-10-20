@@ -61,9 +61,23 @@ export default defineConfig({
     // both from this value, and default to one worker per core minus one each. Together with the
     // Vite server and Chromium's renderers that oversubscribed the CPU about twice over, and
     // user-event tests starved past their timeout at random. A quarter of the cores per pool keeps
-    // the whole run under one busy process per core, on a 4-core CI runner as on a workstation.
+    // a workstation under one busy process per core, but gives the 4-core CI runner a single worker,
+    // so CI gets a fixed number measured on the runner instead.
     // Vitest types `maxWorkers` as root-only, so the two pools cannot get different caps.
-    maxWorkers: "25%",
+    maxWorkers: process.env.CI ? 2 : "25%",
+    // `--changed` follows imports only. A change to a file tests depend on without importing it
+    // (theme CSS, test setup, Storybook config, the lockfile, the test table) reruns everything.
+    // Setting this replaces Vitest's defaults, so they are listed again first.
+    forceRerunTriggers: [
+      "**/package.json/**",
+      "**/vitest.config.*/**",
+      "**/vite.config.*/**",
+      "**/pnpm-lock.yaml",
+      "**/src/index.css",
+      "**/src/test/**",
+      "**/.storybook/**",
+      "**/scripts/testTable.ts",
+    ],
     // Branch coverage on the critical modules only: an error there writes wrong data or drops the
     // session unnoticed, while a display error is visible. Each module must reach the floor on its
     // own, so the failure names it. Coverage runs only in the `critical` project, over each module's
