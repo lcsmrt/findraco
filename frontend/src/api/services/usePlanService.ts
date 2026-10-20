@@ -81,7 +81,7 @@ export function useCreatePlan(
   return useMutation({
     mutationFn: createPlan,
     ...buildMutationOptions(
-      { successMessage: "Plan created successfully." },
+      { successMessage: "Plan created." },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -110,7 +110,7 @@ export function useUpdateMemberRole(
   return useMutation({
     mutationFn: updateMemberRole,
     ...buildMutationOptions(
-      { successMessage: "Member role updated successfully." },
+      { successMessage: "Role updated." },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -138,7 +138,7 @@ export function useRemoveMember(
   return useMutation({
     mutationFn: removeMember,
     ...buildMutationOptions(
-      { successMessage: "Member removed successfully." },
+      { successMessage: "Member removed." },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -168,7 +168,7 @@ export function useRenamePlan(
   return useMutation({
     mutationFn: renamePlan,
     ...buildMutationOptions(
-      { successMessage: "Plan renamed successfully." },
+      { successMessage: "Plan renamed." },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -189,7 +189,7 @@ export function useDeletePlan(options?: MutationOptions<void, number>) {
   return useMutation({
     mutationFn: deletePlan,
     ...buildMutationOptions(
-      { successMessage: "Plan archived successfully." },
+      { successMessage: "Plan archived." },
       {
         ...options,
         onSuccess: (data, planId) => {
@@ -211,7 +211,7 @@ export function useLeavePlan(options?: MutationOptions<void, number>) {
   return useMutation({
     mutationFn: leavePlan,
     ...buildMutationOptions(
-      { successMessage: "You left the plan successfully." },
+      { successMessage: "You left the plan." },
       {
         ...options,
         onSuccess: (data, planId) => {
@@ -240,7 +240,7 @@ export function useTransferOwnership(
   return useMutation({
     mutationFn: transferOwnership,
     ...buildMutationOptions(
-      { successMessage: "Plan ownership transferred successfully." },
+      { successMessage: "Ownership transferred." },
       {
         ...options,
         onSuccess: (data, variables) => {

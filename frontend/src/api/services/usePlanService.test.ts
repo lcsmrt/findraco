@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Plan, PlanMember, PlanResponse } from "@/api/dtos";
 import { recordRequests } from "@/test/recordRequests";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
@@ -17,6 +18,15 @@ import {
   useTransferOwnership,
   useUpdateMemberRole,
 } from "./usePlanService";
+
+// The toast is the user-visible outcome of a mutation; sonner is a third-party module.
+beforeEach(() => {
+  vi.spyOn(toast, "success");
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
 
 const wirePlan: PlanResponse = { id: 5, name: "Home", default: true, myRole: "OWNER" };
 const plan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "OWNER" };
@@ -69,7 +79,7 @@ describe("useGetPlanMembers", () => {
 });
 
 describe("useCreatePlan", () => {
-  it("POSTs the name to /plan, returns the mapped plan and invalidates the plans query", async () => {
+  it(`POSTs the name to /plan, returns the mapped plan, invalidates the plans query and shows "Plan created." (NAV-05 AC 1, 2)`, async () => {
     server.use(planHandlers.create({ ...wirePlan, default: false }));
     const requests = recordRequests();
 
@@ -79,6 +89,7 @@ describe("useCreatePlan", () => {
     result.current.mutate({ body: { name: "Home" } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Plan created.");
     expect(sent(requests)).toEqual([["POST", "/api/findraco/plan"]]);
     expect(await requests[0].json()).toEqual({ name: "Home" });
     expect(result.current.data).toEqual({ ...plan, isDefault: false });
@@ -87,7 +98,7 @@ describe("useCreatePlan", () => {
 });
 
 describe("useRenamePlan", () => {
-  it("PUTs to a plan-scoped URL and invalidates the plans query on success", async () => {
+  it(`PUTs to a plan-scoped URL, invalidates the plans query and shows "Plan renamed." on success (NAV-05 AC 1, 2)`, async () => {
     server.use(planHandlers.rename({ id: 5, name: "New name", default: false, myRole: "OWNER" }));
     const requests = recordRequests();
 
@@ -99,6 +110,7 @@ describe("useRenamePlan", () => {
     result.current.mutate({ params: { planId: 5 }, body: { name: "New name" } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Plan renamed.");
 
     expect(sent(requests)).toEqual([["PUT", "/api/findraco/plan/5"]]);
     expect(await requests[0].json()).toEqual({ name: "New name" });
@@ -109,7 +121,7 @@ describe("useRenamePlan", () => {
 });
 
 describe("useUpdateMemberRole", () => {
-  it("PUTs to a plan- and member-scoped URL and invalidates planMembers and plans on success", async () => {
+  it(`PUTs to a plan- and member-scoped URL, invalidates planMembers and plans and shows "Role updated." on success (NAV-05 AC 1, 2)`, async () => {
     const member: PlanMember = { userId: 9, name: "Bob", email: "bob@example.com", role: "EDITOR" };
     server.use(planHandlers.updateMemberRole(member));
     const requests = recordRequests();
@@ -128,6 +140,7 @@ describe("useUpdateMemberRole", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Role updated.");
 
     expect(sent(requests)).toEqual([["PUT", "/api/findraco/plan/5/members/9"]]);
     expect(await requests[0].json()).toEqual({ role: "EDITOR" });
@@ -161,7 +174,7 @@ describe("useUpdateMemberRole", () => {
 });
 
 describe("membership and lifecycle mutations", () => {
-  it("useRemoveMember DELETEs /plan/{planId}/members/{userId} and invalidates members and plans", async () => {
+  it(`useRemoveMember DELETEs /plan/{planId}/members/{userId}, invalidates members and plans and shows "Member removed." (NAV-05 AC 1, 2)`, async () => {
     server.use(planHandlers.removeMember());
     const requests = recordRequests();
 
@@ -174,12 +187,13 @@ describe("membership and lifecycle mutations", () => {
     result.current.mutate({ params: { planId: 5, userId: 9 } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Member removed.");
     expect(sent(requests)).toEqual([["DELETE", "/api/findraco/plan/5/members/9"]]);
     expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
 
-  it("useDeletePlan DELETEs /plan/{planId} and invalidates plans and its members", async () => {
+  it(`useDeletePlan DELETEs /plan/{planId}, invalidates plans and its members and shows "Plan archived." (NAV-05 AC 1, 2)`, async () => {
     server.use(planHandlers.delete());
     const requests = recordRequests();
 
@@ -192,12 +206,13 @@ describe("membership and lifecycle mutations", () => {
     result.current.mutate(5);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Plan archived.");
     expect(sent(requests)).toEqual([["DELETE", "/api/findraco/plan/5"]]);
     expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
 
-  it("useLeavePlan POSTs /plan/{planId}/leave with no body and invalidates plans and its members", async () => {
+  it(`useLeavePlan POSTs /plan/{planId}/leave with no body, invalidates plans and its members and shows "You left the plan." (NAV-05 AC 1, 2)`, async () => {
     server.use(planHandlers.leave());
     const requests = recordRequests();
 
@@ -210,13 +225,14 @@ describe("membership and lifecycle mutations", () => {
     result.current.mutate(5);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("You left the plan.");
     expect(sent(requests)).toEqual([["POST", "/api/findraco/plan/5/leave"]]);
     expect(await requests[0].text()).toBe("");
     expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });
 
-  it("useTransferOwnership POSTs the new owner to /plan/{planId}/transfer and invalidates plans and members", async () => {
+  it(`useTransferOwnership POSTs the new owner to /plan/{planId}/transfer, invalidates plans and members and shows "Ownership transferred." (NAV-05 AC 1, 2)`, async () => {
     server.use(planHandlers.transferOwnership());
     const requests = recordRequests();
 
@@ -232,6 +248,7 @@ describe("membership and lifecycle mutations", () => {
     });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Ownership transferred.");
     expect(sent(requests)).toEqual([["POST", "/api/findraco/plan/5/transfer"]]);
     expect(await requests[0].json()).toEqual({ newOwnerUserId: 9, previousOwnerRole: "EDITOR" });
     expect(queryClient.getQueryState(["members", 5])?.isInvalidated).toBe(true);
