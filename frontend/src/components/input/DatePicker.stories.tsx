@@ -1,7 +1,12 @@
+import { FormField } from "@/components/form/FormField";
+import { Button } from "@/components/button/base/Button";
+import { zodResolver } from "@hookform/resolvers/zod";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
-import { expect, screen, waitFor } from "storybook/test";
+import { useForm } from "react-hook-form";
+import { expect, fn, screen, waitFor } from "storybook/test";
+import { z } from "zod";
 import { DatePicker, DateRangePicker } from "./DatePicker";
 import { Field, FieldLabel } from "./base/Field";
 
@@ -45,6 +50,40 @@ function DemoRange({ initialValue, numberOfMonths }: DemoRangeProps) {
   );
 }
 
+const dueDateSchema = z.object({
+  dueDate: z.date({ required_error: "Pick a due date" }),
+});
+
+type DueDateValues = z.input<typeof dueDateSchema>;
+
+const submitDueDate = fn();
+
+// The form-creation binding: the picker takes the field's ref and onBlur like any other input, so
+// the form can focus it on an error and mark it touched.
+function DueDateForm() {
+  const { control, handleSubmit } = useForm<DueDateValues>({
+    resolver: zodResolver(dueDateSchema),
+    mode: "onTouched",
+  });
+
+  return (
+    <form className="flex w-56 flex-col gap-4" onSubmit={handleSubmit(submitDueDate)}>
+      <FormField control={control} name="dueDate" label="Due date">
+        {(field) => (
+          <DatePicker
+            id={field.id}
+            ref={field.ref}
+            onBlur={field.onBlur}
+            value={field.value}
+            onChange={field.onChange}
+          />
+        )}
+      </FormField>
+      <Button type="submit">Save</Button>
+    </form>
+  );
+}
+
 const meta = {
   title: "Input/DatePicker",
   component: DemoDatePicker,
@@ -59,6 +98,34 @@ export const Empty: Story = {
     await userEvent.type(input, "14/03/2026{Enter}");
     await expect(input).toHaveValue("14/03/2026");
     await expect(canvas.getByRole("button", { name: "Clear date" })).toBeVisible();
+  },
+};
+
+export const InForm: Story = {
+  render: () => <DueDateForm />,
+  play: async ({ canvas, userEvent, step }) => {
+    submitDueDate.mockClear();
+    const input = canvas.getByLabelText("Due date");
+
+    await step("leaving the empty field marks it touched", async () => {
+      await userEvent.click(input);
+      await expect(canvas.queryByRole("alert")).toBeNull();
+      await userEvent.tab();
+      await expect(await canvas.findByRole("alert")).toHaveTextContent("Pick a due date");
+    });
+
+    await step("an empty submit focuses the field", async () => {
+      await userEvent.click(canvas.getByRole("button", { name: "Save" }));
+      await waitFor(() => expect(input).toHaveFocus());
+      await expect(submitDueDate).not.toHaveBeenCalled();
+    });
+
+    await step("a typed date reaches the submitted value", async () => {
+      await userEvent.type(input, "05/03/2026");
+      await userEvent.click(canvas.getByRole("button", { name: "Save" }));
+      await waitFor(() => expect(submitDueDate).toHaveBeenCalledTimes(1));
+      await expect(submitDueDate.mock.calls[0][0]).toEqual({ dueDate: new Date(2026, 2, 5) });
+    });
   },
 };
 
