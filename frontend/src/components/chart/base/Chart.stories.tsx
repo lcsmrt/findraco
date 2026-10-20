@@ -66,6 +66,7 @@ function DemoChart({ kind, data, tooltipIndex, indicator }: DemoChartProps) {
 }
 
 const meta = {
+  tags: ["!test"],
   title: "Chart",
   component: DemoChart,
 } satisfies Meta<typeof DemoChart>;

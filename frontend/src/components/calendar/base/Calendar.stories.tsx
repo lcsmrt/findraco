@@ -7,6 +7,7 @@ import { Calendar } from "./Calendar";
 const march = new Date(2026, 2, 1);
 
 const meta = {
+  tags: ["!test"],
   title: "Calendar",
   component: Calendar,
   args: { defaultMonth: march },

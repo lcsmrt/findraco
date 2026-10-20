@@ -280,8 +280,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] `pnpm exec vitest run --project=storybook` reports every `base/` file skipped; `pnpm storybook` still lists them (check with `pnpm build-storybook` succeeding)
-- [ ] Gate check passes: Full
+- [x] `pnpm exec vitest run --project=storybook` reports every `base/` file skipped; `pnpm storybook` still lists them (check with `pnpm build-storybook` succeeding)
+- [x] Gate check passes: Full
 
 **Tests**: story (catalog only)
 **Gate**: full

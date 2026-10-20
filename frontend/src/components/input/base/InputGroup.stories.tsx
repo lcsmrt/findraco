@@ -11,6 +11,7 @@ import {
 } from "./InputGroup";
 
 const meta = {
+  tags: ["!test"],
   title: "Input/InputGroup",
   component: InputGroup,
 } satisfies Meta<typeof InputGroup>;

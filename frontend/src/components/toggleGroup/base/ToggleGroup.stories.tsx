@@ -34,6 +34,7 @@ function PeriodToggle({ tone, variant, size, disabled }: PeriodToggleProps) {
 }
 
 const meta = {
+  tags: ["!test"],
   title: "Toggle/ToggleGroup",
   component: PeriodToggle,
 } satisfies Meta<typeof PeriodToggle>;

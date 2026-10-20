@@ -37,6 +37,7 @@ function InstallmentsField({
 }
 
 const meta = {
+  tags: ["!test"],
   title: "Input/NumberField",
   component: InstallmentsField,
 } satisfies Meta<typeof InstallmentsField>;

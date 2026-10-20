@@ -6,6 +6,7 @@ const LONG_TEXT =
   "Groceries, pharmacy and the weekly market run split between three members of the household, with the remainder carried over to next month's budget so nothing is lost on the way.";
 
 const meta = {
+  tags: ["!test"],
   title: "Typography/Text",
   component: Text,
   args: { children: "Spending by category" },

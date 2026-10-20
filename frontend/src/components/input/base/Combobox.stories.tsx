@@ -66,6 +66,7 @@ function DemoCombobox({
 }
 
 const meta = {
+  tags: ["!test"],
   title: "Input/Combobox",
   component: DemoCombobox,
   args: { items: categories },

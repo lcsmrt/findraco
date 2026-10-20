@@ -4,6 +4,7 @@ import { Input } from "./Input";
 import { Label } from "./Label";
 
 const meta = {
+  tags: ["!test"],
   title: "Input/Label",
   component: Label,
 } satisfies Meta<typeof Label>;

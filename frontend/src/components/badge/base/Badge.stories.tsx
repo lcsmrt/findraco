@@ -3,6 +3,7 @@ import { CheckIcon } from "lucide-react";
 import { Badge } from "./Badge";
 
 const meta = {
+  tags: ["!test"],
   title: "Badge",
   component: Badge,
   args: { children: "Shared" },

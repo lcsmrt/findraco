@@ -6,7 +6,7 @@ const meta = {
   title: "Button",
   component: Button,
   parameters: { layout: "centered" },
-  tags: ["autodocs"],
+  tags: ["autodocs", "!test"],
   argTypes: {
     variant: {
       control: "select",

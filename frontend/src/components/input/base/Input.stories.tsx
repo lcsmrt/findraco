@@ -7,7 +7,7 @@ import { Search } from "lucide-react";
 const meta: Meta<typeof Input> = {
   title: "Input/Input",
   component: Input,
-  tags: ["autodocs"],
+  tags: ["autodocs", "!test"],
 };
 export default meta;
 

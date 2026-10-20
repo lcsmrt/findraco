@@ -5,7 +5,7 @@ import { Field, FieldLabel } from "./Field";
 const meta: Meta<typeof RadioGroup> = {
   title: "Input/RadioGroup",
   component: RadioGroup,
-  tags: ["autodocs"],
+  tags: ["autodocs", "!test"],
 };
 export default meta;
 

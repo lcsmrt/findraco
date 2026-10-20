@@ -13,7 +13,7 @@ import { Button } from "@/components/button/base/Button";
 const meta: Meta<typeof Card> = {
   title: "Card",
   component: Card,
-  tags: ["autodocs"],
+  tags: ["autodocs", "!test"],
 };
 export default meta;
 

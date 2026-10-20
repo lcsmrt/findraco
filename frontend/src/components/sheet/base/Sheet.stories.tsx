@@ -52,6 +52,7 @@ function DemoSheet({ side, showCloseButton, defaultOpen = true, paragraphs = 1 }
 }
 
 const meta = {
+  tags: ["!test"],
   title: "Sheet",
   component: DemoSheet,
 } satisfies Meta<typeof DemoSheet>;

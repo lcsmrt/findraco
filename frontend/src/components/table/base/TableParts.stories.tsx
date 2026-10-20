@@ -67,6 +67,7 @@ function DemoTable({ rows, withFooter = false, selectedIndex }: DemoTableProps) 
 }
 
 const meta = {
+  tags: ["!test"],
   title: "Table/TableParts",
   component: DemoTable,
 } satisfies Meta<typeof DemoTable>;

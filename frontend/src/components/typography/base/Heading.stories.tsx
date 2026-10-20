@@ -3,6 +3,7 @@ import { expect } from "storybook/test";
 import { Heading } from "./Heading";
 
 const meta = {
+  tags: ["!test"],
   title: "Typography/Heading",
   component: Heading,
   args: { level: 1, variant: "headline", children: "Plans" },

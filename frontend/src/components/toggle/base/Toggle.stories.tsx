@@ -4,6 +4,7 @@ import { expect } from "storybook/test";
 import { Toggle } from "./Toggle";
 
 const meta = {
+  tags: ["!test"],
   title: "Toggle/Toggle",
   component: Toggle,
   args: { "aria-label": "Bold", children: <BoldIcon /> },

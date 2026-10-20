@@ -14,7 +14,7 @@ import { Field, FieldLabel } from "./Field";
 const meta: Meta<typeof Select> = {
   title: "Input/Select",
   component: Select,
-  tags: ["autodocs"],
+  tags: ["autodocs", "!test"],
 };
 export default meta;
 

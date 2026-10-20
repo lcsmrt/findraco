@@ -5,7 +5,7 @@ import { Field, FieldError, FieldLabel } from "./Field";
 const meta: Meta<typeof Textarea> = {
   title: "Input/Textarea",
   component: Textarea,
-  tags: ["autodocs"],
+  tags: ["autodocs", "!test"],
 };
 export default meta;
 

@@ -16,6 +16,7 @@ import {
 import { Input } from "./Input";
 
 const meta = {
+  tags: ["!test"],
   title: "Input/Field",
   component: Field,
 } satisfies Meta<typeof Field>;
