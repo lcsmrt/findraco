@@ -1,4 +1,4 @@
-import { CategoriesTab } from "@/features/categories/CategoriesTab";
+import { CategoriesPage } from "@/features/categories/CategoriesPage";
 import { OverviewPage } from "@/features/overview/OverviewPage";
 import { TransactionsPage } from "@/features/transactions/TransactionsPage";
 import { PlanFiltersGate } from "@/app/routing/PlanFiltersGate";
@@ -31,7 +31,7 @@ function HomeTabs() {
       {activeTab === "transactions" && (
         <TransactionsPage onManageCategories={() => setActiveTab("categories")} />
       )}
-      {activeTab === "categories" && <CategoriesTab />}
+      {activeTab === "categories" && <CategoriesPage />}
     </HomeTabsView>
   );
 }

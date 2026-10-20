@@ -255,7 +255,7 @@ describe("eslint.config.js", () => {
       ["src/hooks/configProbe.ts", "@/features/plans/PlansPage", true, "C6"],
       ["src/utils/configProbe.ts", "@/features/transactions/filters/transactionParams", true, "C6"],
       ["src/lib/configProbe.ts", "@/features/auth/LoginPage", true, "C6"],
-      ["src/api/services/configProbe.ts", "@/features/categories/CategoriesTab", true, "C6"],
+      ["src/api/services/configProbe.ts", "@/features/categories/CategoriesPage", true, "C6"],
       ["src/test/configProbe.ts", "@/features/overview/OverviewPage", true, "C6"],
       ["src/hooks/configProbe.ts", "@/app/layout/Navbar", true, "AC 8"],
       ["src/hooks/configProbe.ts", "@/app/routing/AppRouter", true, "AC 8"],

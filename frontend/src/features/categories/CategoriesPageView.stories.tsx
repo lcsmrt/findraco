@@ -3,7 +3,7 @@ import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { buildCategoryTree } from "./categoryTree";
-import { CategoriesTabView } from "./CategoriesTabView";
+import { CategoriesPageView } from "./CategoriesPageView";
 
 function colorOf(memberId: number) {
   return MEMBER_PALETTE[(memberId - 1) % MEMBER_PALETTE.length];
@@ -30,8 +30,8 @@ const categories: FinancialTransactionCategory[] = [
 ];
 
 const meta = {
-  title: "Categories/CategoriesTabView",
-  component: CategoriesTabView,
+  title: "Categories/CategoriesPageView",
+  component: CategoriesPageView,
   // The sections come from the real builder, so each story shows what the tab would render.
   args: {
     sections: buildCategoryTree(categories),
@@ -42,7 +42,7 @@ const meta = {
     onDelete: fn(),
     onAddChild: fn(),
   },
-} satisfies Meta<typeof CategoriesTabView>;
+} satisfies Meta<typeof CategoriesPageView>;
 export default meta;
 
 type Story = StoryObj<typeof meta>;

@@ -89,7 +89,7 @@ function CategorySection({
   );
 }
 
-type CategoriesTabViewProps = {
+type CategoriesPageViewProps = {
   /** `null` while the categories load. */
   sections: CategoryTreeSection[] | null;
   colorOf: MemberColorOf;
@@ -101,7 +101,7 @@ type CategoriesTabViewProps = {
 };
 
 /** Category management: structure and configured limits, no spend. */
-export function CategoriesTabView({
+export function CategoriesPageView({
   sections,
   colorOf,
   canManage,
@@ -109,7 +109,7 @@ export function CategoriesTabView({
   onEdit,
   onDelete,
   onAddChild,
-}: CategoriesTabViewProps) {
+}: CategoriesPageViewProps) {
   return (
     <div className="flex flex-col gap-6 px-4">
       {canManage && (

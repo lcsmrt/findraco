@@ -7,12 +7,12 @@ import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { useMemo, useState } from "react";
 import { useMemberColors } from "@/hooks/useMemberColors";
 import { buildCategoryTree } from "./categoryTree";
-import { CategoriesTabView } from "./CategoriesTabView";
+import { CategoriesPageView } from "./CategoriesPageView";
 import { DeleteCategoryDialog } from "./components/DeleteCategoryDialog";
 import { useCategoryFormSheet } from "@/hooks/useCategoryFormSheet";
 
 /** Category management: structure and configured limits, no spend. */
-export function CategoriesTab() {
+export function CategoriesPage() {
   const { canManageCategories: canManage } = usePlanPermissions();
   const { openCreate, openEdit } = useCategoryFormSheet();
   const colorOf = useMemberColors();
@@ -39,7 +39,7 @@ export function CategoriesTab() {
 
   return (
     <>
-      <CategoriesTabView
+      <CategoriesPageView
         sections={isLoading || !categoriesPage ? null : sections}
         colorOf={colorOf}
         canManage={canManage}

@@ -114,7 +114,7 @@ The tree above is the target set by the frontend standards. Migration is in prog
 
 **Categories:**
 
-- UI: `frontend/src/features/categories/` (`CategoriesTab.tsx`, `CategoryFormSheet.tsx` + `categoryForm.ts`, `CategoryTreeRow.tsx`, `DeleteCategoryDialog.tsx`); the picker `CategoryCombobox.tsx` in `features/transactions/`
+- UI: `frontend/src/features/categories/` (`CategoriesPage.tsx`, `CategoryFormSheet.tsx` + `categoryForm.ts`, `CategoryTreeRow.tsx`, `DeleteCategoryDialog.tsx`); the picker `CategoryCombobox.tsx` in `features/transactions/`
 - Data access (FE): `api/services/useFinancialTransactionCategoryService.ts`, DTOs `api/dtos/financialTransactionCategory.ts`
 - Business logic + data (BE): `services/FinancialTransactionCategoryService.java`, `controllers/FinancialTransactionCategoryController.java`, `models/FinancialTransactionCategory.java`
 
