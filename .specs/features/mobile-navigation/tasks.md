@@ -238,10 +238,10 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Saving for one screen leaves another screen's entry unchanged; plans stay separate
-- [ ] An old `homeFilters:<user>:<plan>` entry is not returned
-- [ ] Storage that throws still never throws (existing cases kept)
-- [ ] Gate check passes: Quick
+- [x] Saving for one screen leaves another screen's entry unchanged; plans stay separate
+- [x] An old `homeFilters:<user>:<plan>` entry is not returned
+- [x] Storage that throws still never throws (existing cases kept; the key-format case now asserts the new key; `HomeFiltersGate` reads and writes the `overview` entry until T9, its test fixtures follow the new key; `storage.test.ts` fixtures use the new key)
+- [x] Gate check passes: Quick (85 files, 772 tests, passing)
 
 **Tests**: unit
 **Gate**: quick

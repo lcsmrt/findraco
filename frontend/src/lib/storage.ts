@@ -57,7 +57,7 @@ export function clearStorage(): void {
 
 /**
  * Removes only the session keys (auth token, user, active plan). Unlike
- * `clearStorage`, keeps unrelated entries such as saved home filters and the theme.
+ * `clearStorage`, keeps unrelated entries such as saved filters and the theme.
  */
 export function clearSessionStorage(): void {
   Object.values(STORAGE_KEYS).forEach((name) => localStorage.removeItem(name));

@@ -20,18 +20,18 @@ describe("clearSessionStorage", () => {
     expect(localStorage.getItem("activePlanId")).toBeNull();
   });
 
-  it("keeps saved home filters and the theme choice", () => {
+  it("keeps saved filters and the theme choice", () => {
     localStorage.setItem("hasSession", "true");
-    localStorage.setItem("homeFilters:1:10", "plan=10&tab=transactions");
-    localStorage.setItem("homeFilters:1:11", "plan=11");
+    localStorage.setItem("filters:transactions:1:10", "plan=10&q=market");
+    localStorage.setItem("filters:overview:1:11", "plan=11");
     localStorage.setItem(THEME_KEY, "dark");
 
     clearSessionStorage();
 
-    expect(localStorage.getItem("homeFilters:1:10")).toBe(
-      "plan=10&tab=transactions",
+    expect(localStorage.getItem("filters:transactions:1:10")).toBe(
+      "plan=10&q=market",
     );
-    expect(localStorage.getItem("homeFilters:1:11")).toBe("plan=11");
+    expect(localStorage.getItem("filters:overview:1:11")).toBe("plan=11");
     expect(localStorage.getItem(THEME_KEY)).toBe("dark");
   });
 });

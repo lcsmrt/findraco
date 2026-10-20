@@ -1,6 +1,6 @@
 import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { loadHomeFilters, saveHomeFilters } from "./filterStorage";
+import { loadFilters, saveFilters } from "@/app/routing/filterStorage";
 import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
 import { TRANSACTION_PARAM_KEYS } from "@/features/transactions/filters/transactionParams";
 import { useEffect, useRef, type ReactNode } from "react";
@@ -56,7 +56,7 @@ export function HomeFiltersGate({ children }: HomeFiltersGateProps) {
   useEffect(() => {
     if (!isCurrent) return;
     agreedPlanIdRef.current = activePlanId;
-    saveHomeFilters(userId, activePlanId, search);
+    saveFilters("overview", userId, activePlanId, search);
   }, [isCurrent, userId, activePlanId, search]);
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export function HomeFiltersGate({ children }: HomeFiltersGateProps) {
   const base =
     hasHomeParams && !hasPlanParam
       ? search
-      : (loadHomeFilters(userId, activePlanId) ?? "");
+      : (loadFilters("overview", userId, activePlanId) ?? "");
   const next = new URLSearchParams(base);
   next.set(PLAN_PARAM, String(activePlanId));
 

@@ -116,7 +116,7 @@ afterEach(() => {
 describe("HomeFiltersGate", () => {
   it("restores the saved state into the URL before the children render", () => {
     localStorage.setItem(
-      "homeFilters:1:5",
+      "filters:overview:1:5",
       "plan=5&tab=transactions&category=12&period=last-3m",
     );
 
@@ -144,7 +144,7 @@ describe("HomeFiltersGate", () => {
 
   it("restores a saved Categories tab whose state still carries a legacy period", () => {
     localStorage.setItem(
-      "homeFilters:1:5",
+      "filters:overview:1:5",
       "plan=5&tab=categories&categoriesPeriod=last-6m",
     );
 
@@ -160,7 +160,7 @@ describe("HomeFiltersGate", () => {
   });
 
   it("treats a link with only a legacy Categories period as no home params", () => {
-    localStorage.setItem("homeFilters:1:5", "plan=5&member=3");
+    localStorage.setItem("filters:overview:1:5", "plan=5&member=3");
 
     renderAt("/?categoriesPeriod=last-3m");
 
@@ -170,34 +170,34 @@ describe("HomeFiltersGate", () => {
   it.each([TAB_PARAM, ...OVERVIEW_PARAM_KEYS, ...TRANSACTION_PARAM_KEYS])(
     "treats the exported key %s as a home param: a link with only it applies to the active plan",
     (key) => {
-      localStorage.setItem("homeFilters:1:5", "plan=5&tab=categories&overviewMember=3");
+      localStorage.setItem("filters:overview:1:5", "plan=5&tab=categories&overviewMember=3");
 
       renderAt(`/?${key}=x`);
 
       expect(params()).toEqual({ [key]: "x", plan: "5" });
-      expect(localStorage.getItem("homeFilters:1:5")).toBe(`${key}=x&plan=5`);
+      expect(localStorage.getItem("filters:overview:1:5")).toBe(`${key}=x&plan=5`);
     },
   );
 
   it("applies URL params for the active plan and saves them as the new state", () => {
-    localStorage.setItem("homeFilters:1:5", "plan=5&member=3");
+    localStorage.setItem("filters:overview:1:5", "plan=5&member=3");
 
     renderAt("/?plan=5&tab=transactions&q=market");
 
     expect(location.search).toBe("?plan=5&tab=transactions&q=market");
     expect(childRenders.every((s) => s === "?plan=5&tab=transactions&q=market")).toBe(true);
-    expect(localStorage.getItem("homeFilters:1:5")).toBe(
+    expect(localStorage.getItem("filters:overview:1:5")).toBe(
       "plan=5&tab=transactions&q=market",
     );
   });
 
   it("applies URL params that have no plan to the active plan", () => {
-    localStorage.setItem("homeFilters:1:5", "plan=5&member=3");
+    localStorage.setItem("filters:overview:1:5", "plan=5&member=3");
 
     renderAt("/?tab=transactions&category=12");
 
     expect(params()).toEqual({ tab: "transactions", category: "12", plan: "5" });
-    expect(localStorage.getItem("homeFilters:1:5")).toBe(
+    expect(localStorage.getItem("filters:overview:1:5")).toBe(
       "tab=transactions&category=12&plan=5",
     );
   });
@@ -205,9 +205,9 @@ describe("HomeFiltersGate", () => {
   it("loads each plan's own saved state on plan switch and back, without bouncing to the URL's plan", () => {
     planState.activePlanId = 4;
     renderAt("/?plan=4&category=12");
-    expect(localStorage.getItem("homeFilters:1:4")).toBe("plan=4&category=12");
+    expect(localStorage.getItem("filters:overview:1:4")).toBe("plan=4&category=12");
 
-    localStorage.setItem("homeFilters:1:5", "plan=5&member=3");
+    localStorage.setItem("filters:overview:1:5", "plan=5&member=3");
     childRenders = [];
     act(() => setPlanState({ activePlanId: 5 }));
     expect(planState.activePlanId).toBe(5);
@@ -231,25 +231,25 @@ describe("HomeFiltersGate", () => {
         sort: { by: "amount", direction: "desc" },
       })),
     );
-    expect(localStorage.getItem("homeFilters:1:5")).toBe(
+    expect(localStorage.getItem("filters:overview:1:5")).toBe(
       "plan=5&category=12&q=market&sort=amount.desc",
     );
 
     act(() => filters.setTab("transactions"));
-    expect(localStorage.getItem("homeFilters:1:5")).toBe(
+    expect(localStorage.getItem("filters:overview:1:5")).toBe(
       "plan=5&category=12&q=market&sort=amount.desc&tab=transactions",
     );
 
     act(() => filters.clearTransactions());
-    expect(localStorage.getItem("homeFilters:1:5")).toBe(
+    expect(localStorage.getItem("filters:overview:1:5")).toBe(
       "plan=5&sort=amount.desc&tab=transactions",
     );
   });
 
   it("switches the active plan for a link to another plan the user belongs to and keeps its filters", () => {
     const consoleError = vi.spyOn(console, "error");
-    localStorage.setItem("homeFilters:1:4", "plan=4&member=3");
-    localStorage.setItem("homeFilters:1:5", "plan=5&tab=transactions");
+    localStorage.setItem("filters:overview:1:4", "plan=4&member=3");
+    localStorage.setItem("filters:overview:1:5", "plan=5&tab=transactions");
 
     renderAt("/?plan=4&tab=transactions&category=12");
 
@@ -259,10 +259,10 @@ describe("HomeFiltersGate", () => {
     expect(
       childPlans.every((c) => c.urlPlan === String(c.activePlanId)),
     ).toBe(true);
-    expect(localStorage.getItem("homeFilters:1:4")).toBe(
+    expect(localStorage.getItem("filters:overview:1:4")).toBe(
       "plan=4&tab=transactions&category=12",
     );
-    expect(localStorage.getItem("homeFilters:1:5")).toBe(
+    expect(localStorage.getItem("filters:overview:1:5")).toBe(
       "plan=5&tab=transactions",
     );
     expect(consoleError).not.toHaveBeenCalled();
@@ -286,7 +286,7 @@ describe("HomeFiltersGate", () => {
   });
 
   it("restores the active plan's state for a link to a plan the user does not belong to, never applying its ids", () => {
-    localStorage.setItem("homeFilters:1:5", "plan=5&tab=transactions");
+    localStorage.setItem("filters:overview:1:5", "plan=5&tab=transactions");
 
     renderAt("/?plan=9&category=12&member=3");
 
