@@ -260,7 +260,7 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Every test and story file has exactly one row and verdict
+- [x] Every test and story file has exactly one row and verdict
 
 **Tests**: none
 **Gate**: docs
