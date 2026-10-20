@@ -102,21 +102,24 @@ pnpm test:coverage                                      # critical modules' cove
 
 ## Test Coverage Matrix
 
-| Code Layer                           | Test Type              | Location Pattern                                              | Run Command                              |
-| ------------------------------------- | ----------------------- | --------------------------------------------------------------- | ----------------------------------------- |
-| Backend pure logic (resolvers/assemblers/authz) | unit (present)  | `backend/src/test/**/*Test.java`                       | `./mvnw test`                             |
-| Backend HTTP/security/DB slice        | integration (present)   | `backend/src/test/**/*IT.java`                          | `./mvnw verify`                           |
-| Backend controllers (beyond the *IT already covering create/edit/auth/dashboard/csv/invitations) | integration (partial) | same as above | `./mvnw verify` |
-| Backend migrations                    | integration (present)   | `backend/src/test/**/MigrationsIT.java`                 | `./mvnw verify`                           |
-| Frontend business rules (`*Form.ts`, `*Forms.ts`, `utils/**`), URL params (`*Params.ts`), shared hooks (`hooks/*.ts`) | unit (sibling gate; 90% branches on the critical modules only) | `frontend/src/**/*.test.ts` | `pnpm exec vitest run --project=unit` |
-| Frontend service hooks and API client | unit through MSW | `frontend/src/api/**/*.test.ts` + `*.handlers.ts` | `pnpm exec vitest run --project=unit` |
-| Frontend feature hooks | none (covered by the container's flow test) | — | — |
-| Frontend containers | flow test (`renderWithProviders`, MSW only; container decisions only) | `frontend/src/**/*.test.tsx` | `pnpm exec vitest run --project=unit` |
-| Frontend presentational components | story per state the component's own code handles, `play` for its own interaction (a11y in error mode) | `frontend/src/**/*.stories.tsx` | `pnpm exec vitest run --project=storybook` |
-| Frontend `base/` primitives | catalog story only (`!test`) | `frontend/src/components/*/base/*.stories.tsx` | — |
-| Frontend tooling (lint config, local rules, gate scripts) | unit (Node), one valid and one invalid case per behaviour | `frontend/eslint.config.test.ts`, `frontend/eslint/rules/*.test.ts`, `frontend/scripts/*.test.ts` | `pnpm exec vitest run --project=tooling` |
-| Frontend UI glue, formatting, wrappers, types, constants | none | — | — |
-| Frontend critical journeys | E2E (Playwright) | not yet in place (blocked by the local Docker database) | — |
+| Code Layer | Test Type | Location Pattern | Run Command | Amount |
+| --- | --- | --- | --- | --- |
+| Backend pure logic (resolvers/assemblers/authz) | unit (present) | `backend/src/test/**/*Test.java` | `./mvnw test` | — |
+| Backend HTTP/security/DB slice | integration (present) | `backend/src/test/**/*IT.java` | `./mvnw verify` | — |
+| Backend controllers (beyond the *IT already covering create/edit/auth/dashboard/csv/invitations) | integration (partial) | same as above | `./mvnw verify` | — |
+| Backend migrations | integration (present) | `backend/src/test/**/MigrationsIT.java` | `./mvnw verify` | — |
+| Frontend business rules (`*Form.ts`, `*Forms.ts`, `utils/**`) | unit (sibling gate; 90% branches on the critical modules only) | `frontend/src/**/*.test.ts` | `pnpm exec vitest run --project=unit` | one case per rule the spec states, plus the edges it names |
+| Frontend URL params (`*Params.ts`) | unit (sibling gate) | `frontend/src/**/*.test.ts` | `pnpm exec vitest run --project=unit` | a round trip, plus an invalid value |
+| Frontend shared hooks (`hooks/*.ts`) | unit through `renderHook` (sibling gate) | `frontend/src/hooks/*.test.ts` | `pnpm exec vitest run --project=unit` | one case per behaviour it promises its callers |
+| Frontend service hooks | unit through MSW, real `findracoApi` | `frontend/src/api/services/*.test.ts` + `*.handlers.ts` | `pnpm exec vitest run --project=unit` | one test per endpoint or mutation, asserting method, URL, params/body and response mapping |
+| Frontend API client | unit through MSW | `frontend/src/api/clients/*.test.ts` | `pnpm exec vitest run --project=unit` | the single 401 → refresh → retry test, plus one case per rule the client promises |
+| Frontend feature hooks | none (covered by the container's flow test) | — | — | none |
+| Frontend containers | flow test (`renderWithProviders`, MSW only) | `frontend/src/**/*.test.tsx` | `pnpm exec vitest run --project=unit` | the container's own decisions only (`frontend-testing` "Flow tests") |
+| Frontend presentational components | story (a11y in error mode) | `frontend/src/**/*.stories.tsx` | `pnpm exec vitest run --project=storybook` | one story per state its own code handles, a `play` per interaction of its own |
+| Frontend `base/` primitives | catalog story only (`!test`) | `frontend/src/components/*/base/*.stories.tsx` | — | none runs as a test |
+| Frontend tooling (lint config, local rules, gate scripts) | unit (Node) | `frontend/eslint.config.test.ts`, `frontend/eslint/rules/*.test.ts`, `frontend/scripts/*.test.ts` | `pnpm exec vitest run --project=tooling` | one valid and one invalid case per behaviour |
+| Frontend UI glue, formatting, wrappers, types, constants | none | — | — | none |
+| Frontend critical journeys | E2E (Playwright) | not yet in place (blocked by the local Docker database) | — | — |
 
 **Frontend floor and ceiling.** For a frontend layer, the test table in the `frontend-testing` skill sets both the floor and the ceiling of its matrix row; the existing tests set neither. A feature's Test Coverage Matrix copies the row's test kind and amount, and a row whose test kind is none gets no test, whatever older code has.
 
