@@ -4,6 +4,7 @@ import type {
   PagedResponse,
   Plan,
   PlanMember,
+  SeriesEditScope,
 } from "@/api/dtos";
 import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
 import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
@@ -42,6 +43,7 @@ const rent: FinancialTransaction = {
   participants: [],
   items: [],
 };
+const gym: FinancialTransaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
 
 const noCategories: PagedResponse<FinancialTransactionCategory> = {
   content: [],
@@ -81,9 +83,9 @@ function planValue(): PlanContextValue {
 
 const categorySheet: CategoryFormSheetContextValue = { openCreate: vi.fn(), openEdit: vi.fn() };
 
-function renderTab() {
+function renderTab(transactions: FinancialTransaction[] = [rent]) {
   server.use(
-    financialTransactionHandlers.list(pageOf([rent])),
+    financialTransactionHandlers.list(pageOf(transactions)),
     planHandlers.members([lucas, livia]),
     financialTransactionCategoryHandlers.list(noCategories),
   );
@@ -108,6 +110,16 @@ function listQueries(requests: Request[]) {
   return requests
     .filter((request) => request.method === "GET" && new URL(request.url).pathname === API)
     .map((request) => Object.fromEntries(new URL(request.url).searchParams));
+}
+
+/** Method and path with query of every write request, in order. */
+function writes(requests: Request[]) {
+  return requests
+    .filter((request) => request.method !== "GET")
+    .map((request) => {
+      const url = new URL(request.url);
+      return [request.method, url.pathname + url.search];
+    });
 }
 
 async function tableRow(description: string) {
@@ -170,6 +182,7 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
   it("opens the drawer on the transaction to edit it", async () => {
     const { user } = renderTab();
     const row = await tableRow("Rent");
+    expect(screen.queryByRole("dialog")).toBeNull();
 
     await user.click(row.getByRole("button", { name: "Edit" }));
 
@@ -251,5 +264,78 @@ describe("TransactionsPage CSV import (STD-12 AC 1)", () => {
     expect(importRequests(requests)).toHaveLength(1);
     expect(screen.queryByText("Transactions imported.")).toBeNull();
     expect(listQueries(requests)).toHaveLength(1);
+  });
+});
+
+describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
+  it("closes the drawer when it is cancelled", async () => {
+    const { user } = renderTab();
+    const row = await tableRow("Rent");
+    await user.click(row.getByRole("button", { name: "Edit" }));
+    const drawer = await screen.findByRole("dialog", { name: "Edit Transaction" });
+
+    await user.click(within(drawer).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+  });
+
+  it("closes the drawer before asking to delete from it", async () => {
+    const { requests, user } = renderTab();
+    const row = await tableRow("Rent");
+    server.use(financialTransactionHandlers.remove());
+    await user.click(row.getByRole("button", { name: "Edit" }));
+    const drawer = await screen.findByRole("dialog", { name: "Edit Transaction" });
+
+    await user.click(within(drawer).getByRole("button", { name: "Delete" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Confirm Deletion" });
+    expect(screen.queryByRole("dialog", { name: "Edit Transaction", hidden: true })).toBeNull();
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+    await waitFor(() => expect(writes(requests)).toEqual([["DELETE", `${API}/42`]]));
+  });
+
+  it("deletes nothing when the confirmation is cancelled", async () => {
+    const { requests, user } = renderTab();
+    const row = await tableRow("Rent");
+
+    await user.click(row.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog", { name: "Confirm Deletion" });
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(writes(requests)).toEqual([]);
+  });
+
+  it.each<[string, SeriesEditScope]>([
+    ["This one", "THIS_ONE"],
+    ["This and following", "THIS_AND_FOLLOWING"],
+    ["All", "ALL"],
+  ])("deletes %s of a series from the chosen occurrence", async (label, scope) => {
+    const { requests, user } = renderTab([gym]);
+    const row = await tableRow("Gym (3/12)");
+    server.use(financialTransactionHandlers.removeSeries());
+
+    await user.click(row.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog", { name: "Delete series" });
+    await user.click(within(dialog).getByRole("radio", { name: new RegExp(`^${label}`) }));
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+
+    await waitFor(() =>
+      expect(writes(requests)).toEqual([
+        ["DELETE", `${API}/series/s-1?scope=${scope}&pivotOccurrenceId=55`],
+      ]),
+    );
+  });
+
+  it("deletes nothing when the series scope is cancelled", async () => {
+    const { requests, user } = renderTab([gym]);
+    const row = await tableRow("Gym (3/12)");
+
+    await user.click(row.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog", { name: "Delete series" });
+    await user.click(within(dialog).getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(writes(requests)).toEqual([]);
   });
 });
