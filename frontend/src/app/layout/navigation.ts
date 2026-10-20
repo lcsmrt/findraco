@@ -9,12 +9,20 @@ export const DESTINATION_PATHS: Record<Destination, string> = {
   plans: PATHS.plans,
 };
 
-const DESTINATIONS: readonly Destination[] = [
+/** The destinations in the order the navigation shows them. */
+export const DESTINATIONS: readonly Destination[] = [
   "overview",
   "transactions",
   "categories",
   "plans",
 ];
+
+export const DESTINATION_LABELS: Record<Destination, string> = {
+  overview: "Overview",
+  transactions: "Transactions",
+  categories: "Categories",
+  plans: "Plans",
+};
 
 /** The destination a pathname belongs to (nested paths included), or null off the four. */
 export function currentDestination(pathname: string): Destination | null {
