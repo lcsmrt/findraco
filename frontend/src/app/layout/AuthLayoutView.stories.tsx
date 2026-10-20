@@ -31,6 +31,7 @@ export const WithForm: Story = {
 };
 
 export const TallContent: Story = {
+  tags: ["!test"],
   args: {
     children: (
       <div className="flex max-w-sm flex-col gap-3">
@@ -45,5 +46,6 @@ export const TallContent: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

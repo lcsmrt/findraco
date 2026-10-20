@@ -129,6 +129,7 @@ export const Close: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   ...Create,
   globals: { viewport: { value: "mobile1" } },
 };

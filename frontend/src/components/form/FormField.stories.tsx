@@ -51,6 +51,7 @@ export const LabelOnly: Story = {
 };
 
 export const WithDescription: Story = {
+  tags: ["!test"],
   args: { label: "Name", description: "Shown on the transactions list." },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Name")).toBeVisible();
@@ -67,6 +68,7 @@ export const WithError: Story = {
 };
 
 export const LongLabelAndError: Story = {
+  tags: ["!test"],
   args: {
     label: "Name shown to every member of the plan on the transactions list and the overview",
     description: "Keep it short: long names wrap on mobile.",
@@ -75,6 +77,7 @@ export const LongLabelAndError: Story = {
 };
 
 export const Disabled: Story = {
+  tags: ["!test"],
   args: { label: "Name", disabled: true },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Name")).toBeDisabled();

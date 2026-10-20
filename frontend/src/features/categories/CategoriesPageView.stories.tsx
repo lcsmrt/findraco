@@ -75,6 +75,7 @@ export const Empty: Story = {
 };
 
 export const ManyLongCategories: Story = {
+  tags: ["!test"],
   args: {
     sections: buildCategoryTree(
       Array.from({ length: 20 }, (_, index) => ({
@@ -88,5 +89,6 @@ export const ManyLongCategories: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

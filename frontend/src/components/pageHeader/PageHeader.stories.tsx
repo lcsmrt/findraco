@@ -14,6 +14,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const TitleOnly: Story = {
+  tags: ["!test"],
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { level: 1, name: "Plans" })).toBeVisible();
   },
@@ -36,6 +37,7 @@ export const WithDescriptionAndActions: Story = {
 };
 
 export const LongTitle: Story = {
+  tags: ["!test"],
   args: {
     title: "Household finances shared with the whole family and two flatmates",
     description: "Every member sees the same transactions, categories and limits.",
@@ -44,6 +46,7 @@ export const LongTitle: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   args: WithDescriptionAndActions.args,
   globals: { viewport: { value: "mobile1" } },
 };

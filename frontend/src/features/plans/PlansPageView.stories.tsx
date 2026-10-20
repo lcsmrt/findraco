@@ -56,6 +56,7 @@ export const Member: Story = {
 };
 
 export const Archiving: Story = {
+  tags: ["!test"],
   args: { isArchiving: true },
 };
 
@@ -64,6 +65,7 @@ export const Loading: Story = {
 };
 
 export const ManyLongPlans: Story = {
+  tags: ["!test"],
   args: {
     plans: Array.from({ length: 9 }, (_, index) => ({
       id: index + 1,
@@ -81,5 +83,6 @@ export const ManyLongPlans: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

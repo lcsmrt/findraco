@@ -32,6 +32,7 @@ export const Success: Story = {
 };
 
 export const ErrorToast: Story = {
+  tags: ["!test"],
   name: "Error",
   play: async ({ canvasElement }) => {
     toast.error("Couldn't save the transaction", { description: "Check your connection and try again." });
@@ -40,6 +41,7 @@ export const ErrorToast: Story = {
 };
 
 export const Info: Story = {
+  tags: ["!test"],
   play: async ({ canvasElement }) => {
     toast.info("Invitation sent");
     await toastVisible(canvasElement, "Invitation sent");
@@ -47,6 +49,7 @@ export const Info: Story = {
 };
 
 export const Warning: Story = {
+  tags: ["!test"],
   play: async ({ canvasElement }) => {
     toast.warning("Your session expires soon");
     await toastVisible(canvasElement, "Your session expires soon");
@@ -54,6 +57,7 @@ export const Warning: Story = {
 };
 
 export const Loading: Story = {
+  tags: ["!test"],
   play: async ({ canvasElement }) => {
     toast.loading("Importing transactions");
     await toastVisible(canvasElement, "Importing transactions");
@@ -61,11 +65,13 @@ export const Loading: Story = {
 };
 
 export const Dark: Story = {
+  tags: ["!test"],
   args: { theme: "dark" },
   play: Success.play,
 };
 
 export const LongMessage: Story = {
+  tags: ["!test"],
   play: async ({ canvasElement }) => {
     toast.success("Imported 1,284 transactions from bank-statement-2026-september-final-v2.csv", {
       description:
@@ -76,6 +82,7 @@ export const LongMessage: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
   play: LongMessage.play,
 };

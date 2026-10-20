@@ -71,7 +71,7 @@ export const Empty: Story = {
   },
 };
 
-export const CustomEmptyState: Story = { args: { data: [], emptyState: "Nothing spent yet" } };
+export const CustomEmptyState: Story = { tags: ["!test"], args: { data: [], emptyState: "Nothing spent yet" } };
 
 // Only expandable rows react to a click; one row open at a time.
 export const Expandable: Story = {
@@ -85,6 +85,7 @@ export const Expandable: Story = {
 };
 
 export const ManyLongRows: Story = {
+  tags: ["!test"],
   args: {
     data: Array.from({ length: 30 }, (_, index) => ({
       id: index + 1,

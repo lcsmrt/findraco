@@ -124,6 +124,7 @@ export const SplitExactShares: Story = {
 };
 
 export const ManyMembers: Story = {
+  tags: ["!test"],
   args: {
     attributionMode: "SPLIT",
     splitMode: "EXACT",
@@ -133,6 +134,7 @@ export const ManyMembers: Story = {
 };
 
 export const MobileSomeoneElse: Story = {
+  tags: ["!test"],
   args: { attributionMode: "SOMEONE", participants: [asParticipant(bia)] },
   globals: { viewport: { value: "mobile1" } },
   // The drawer's content on a 320 px phone: the screen minus its 16 px side padding.

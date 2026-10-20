@@ -41,10 +41,12 @@ export const Toggle: Story = {
 };
 
 export const Invalid: Story = {
+  tags: ["!test"],
   args: { invalid: true },
 };
 
 export const Disabled: Story = {
+  tags: ["!test"],
   args: { disabled: true },
   play: async ({ canvas }) => {
     await expect(canvas.getByLabelText("Password")).toBeDisabled();

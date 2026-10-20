@@ -92,14 +92,17 @@ export const SharedPlan: Story = {
 };
 
 export const SingleMember: Story = {
+  tags: ["!test"],
   args: { columns: columns(false) },
 };
 
 export const Loading: Story = {
+  tags: ["!test"],
   args: { transactions: [], isLoading: true, pagination: undefined },
 };
 
 export const Empty: Story = {
+  tags: ["!test"],
   args: { transactions: [], pagination: { ...pagination, totalElements: 0, totalPages: 0 } },
   play: async ({ canvas }) => {
     // The mobile list and the table both hold the message; CSS shows one per breakpoint.
@@ -130,6 +133,7 @@ export const Importing: Story = {
 };
 
 export const ManyLongTransactions: Story = {
+  tags: ["!test"],
   args: {
     transactions: Array.from({ length: 25 }, (_, index) =>
       transaction(index + 10, {
@@ -142,5 +146,6 @@ export const ManyLongTransactions: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

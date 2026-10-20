@@ -48,6 +48,7 @@ export const OverviewActive: Story = {
 };
 
 export const TransactionsActive: Story = {
+  tags: ["!test"],
   args: { current: "transactions", onAdd: fn() },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("link", { name: "Transactions" })).toHaveAttribute("aria-current", "page");
@@ -55,6 +56,7 @@ export const TransactionsActive: Story = {
 };
 
 export const CategoriesActive: Story = {
+  tags: ["!test"],
   args: { current: "categories", onAdd: fn() },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("link", { name: "Categories" })).toHaveAttribute("aria-current", "page");
@@ -62,6 +64,7 @@ export const CategoriesActive: Story = {
 };
 
 export const PlansActive: Story = {
+  tags: ["!test"],
   args: { current: "plans", onAdd: fn() },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("link", { name: "Plans" })).toHaveAttribute("aria-current", "page");

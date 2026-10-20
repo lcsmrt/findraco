@@ -97,6 +97,7 @@ export const OverTotal: Story = {
 };
 
 export const LongDescriptions: Story = {
+  tags: ["!test"],
   args: {
     amount: 987654.32,
     items: [

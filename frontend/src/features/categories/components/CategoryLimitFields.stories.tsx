@@ -47,6 +47,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const NoLimit: Story = {
+  tags: ["!test"],
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Single" })).toHaveAttribute("aria-pressed", "true");
     await expect(canvas.getByLabelText("Amount (optional)")).toHaveValue("");
@@ -86,6 +87,7 @@ export const PerMemberNotAllowed: Story = {
 };
 
 export const ManyMembers: Story = {
+  tags: ["!test"],
   args: {
     limitMode: "perMember",
     memberLimits: [

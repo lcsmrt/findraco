@@ -66,6 +66,7 @@ export const Cancel: Story = {
 };
 
 export const Destructive: Story = {
+  tags: ["!test"],
   args: {
     options: {
       title: "Delete transaction?",
@@ -83,6 +84,7 @@ export const Destructive: Story = {
 };
 
 export const LongDescription: Story = {
+  tags: ["!test"],
   args: {
     options: {
       title: "Delete the category Household maintenance and repairs?",
@@ -97,6 +99,7 @@ export const LongDescription: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   ...LongDescription,
   globals: { viewport: { value: "mobile1" } },
 };

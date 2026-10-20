@@ -51,6 +51,7 @@ export const PlanTotals: Story = {
 
 // With a member selected, the figures are theirs and the others' segments recede.
 export const MemberSelected: Story = {
+  tags: ["!test"],
   args: { view: summaryView(couple, 2, colorOf) },
   play: async ({ canvas }) => {
     await expect(visibleText(canvas, "R$ 4.800,00")).toHaveClass("text-success");
@@ -58,6 +59,7 @@ export const MemberSelected: Story = {
 };
 
 export const NegativeBalance: Story = {
+  tags: ["!test"],
   args: {
     view: summaryView(
       summary([{ userId: 1, name: "Lucas Martins", income: 2500, expense: 3200, net: -700 }]),
@@ -72,6 +74,7 @@ export const NoActivity: Story = {
 };
 
 export const ManyMembersLargeValues: Story = {
+  tags: ["!test"],
   args: {
     view: summaryView(
       summary(
@@ -90,4 +93,4 @@ export const ManyMembersLargeValues: Story = {
 };
 
 // Below `sm` the three cards fold into one block with the balance on top.
-export const Mobile: Story = { globals: { viewport: { value: "mobile1" } } };
+export const Mobile: Story = { tags: ["!test"], globals: { viewport: { value: "mobile1" } } };

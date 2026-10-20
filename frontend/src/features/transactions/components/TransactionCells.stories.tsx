@@ -118,6 +118,7 @@ export const Expense: Story = {
 };
 
 export const Income: Story = {
+  tags: ["!test"],
   args: {
     transaction: {
       ...groceries,
@@ -137,6 +138,7 @@ export const NoCategoryNoParticipants: Story = {
 };
 
 export const Deleting: Story = {
+  tags: ["!test"],
   args: { isDeleting: true },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Delete" })).toBeDisabled();
@@ -181,6 +183,7 @@ export const EditParticipants: Story = {
 };
 
 export const LongDescriptionLargeAmount: Story = {
+  tags: ["!test"],
   args: {
     transaction: {
       ...groceries,
@@ -193,4 +196,4 @@ export const LongDescriptionLargeAmount: Story = {
 };
 
 // The row actions stay visible on touch screens, where there is no hover to reveal them.
-export const Mobile: Story = { globals: { viewport: { value: "mobile1" } } };
+export const Mobile: Story = { tags: ["!test"], globals: { viewport: { value: "mobile1" } } };

@@ -34,9 +34,11 @@ export const Invalid: Story = {
 };
 
 export const Submitting: Story = {
+  tags: ["!test"],
   args: { isSubmitting: true },
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

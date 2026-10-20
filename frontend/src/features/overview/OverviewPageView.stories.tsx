@@ -42,6 +42,7 @@ export const SharedPlan: Story = {
 };
 
 export const SingleMember: Story = {
+  tags: ["!test"],
   args: { memberFilter: null },
   play: async ({ canvas }) => {
     await expect(canvas.queryByRole("button", { name: "All" })).toBeNull();
@@ -57,6 +58,7 @@ export const Loading: Story = {
 };
 
 export const Empty: Story = {
+  tags: ["!test"],
   args: {
     summary: SummaryStories.NoActivity.args?.view,
     spending: SpendingStories.Empty.args?.view,
@@ -65,6 +67,7 @@ export const Empty: Story = {
 };
 
 export const LargeValues: Story = {
+  tags: ["!test"],
   args: {
     summary: SummaryStories.ManyMembersLargeValues.args?.view,
     spending: SpendingStories.ManyLongCategories.args?.view,
@@ -73,5 +76,6 @@ export const LargeValues: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

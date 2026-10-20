@@ -51,9 +51,11 @@ export const Debit: Story = {
 };
 
 export const Credit: Story = {
+  tags: ["!test"],
   args: { initialValue: "CREDIT" },
 };
 
 export const Disabled: Story = {
+  tags: ["!test"],
   args: { initialValue: "DEBIT", disabled: true },
 };

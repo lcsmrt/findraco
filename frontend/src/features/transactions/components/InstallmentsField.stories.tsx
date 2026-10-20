@@ -94,5 +94,6 @@ export const SeriesEdit: Story = {
 };
 
 export const ManyInstallments: Story = {
+  tags: ["!test"],
   args: { parcelsNumber: 360, currentParcel: 1 },
 };

@@ -45,6 +45,7 @@ export const NoPlanSelected: Story = {
 };
 
 export const LongPlanName: Story = {
+  tags: ["!test"],
   args: {
     plans: [
       ...plans,

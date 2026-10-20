@@ -301,8 +301,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Each file matches its audit row; `node scripts/check-siblings.ts` passes
-- [ ] Gate check passes: Build (phase end)
+- [x] Each file matches its audit row; `node scripts/check-siblings.ts` passes
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: story
 **Gate**: build

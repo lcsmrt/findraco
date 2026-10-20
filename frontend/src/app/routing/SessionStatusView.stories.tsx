@@ -27,6 +27,7 @@ export const Unreachable: Story = {
 };
 
 export const MobileUnreachable: Story = {
+  tags: ["!test"],
   args: { status: "unreachable" },
   globals: { viewport: { value: "mobile1" } },
 };

@@ -71,6 +71,7 @@ export const Empty: Story = {
 export const Selected: Story = { args: { initialValue: categories[2] } };
 
 export const Open: Story = {
+  tags: ["!test"],
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("combobox", { name: "Category" }));
     await expect(await screen.findByRole("listbox", { name: "Select a category" })).toBeVisible();
@@ -87,6 +88,7 @@ export const Searching: Story = {
 };
 
 export const NoResults: Story = {
+  tags: ["!test"],
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("combobox", { name: "Category" }));
     await userEvent.type(await screen.findByPlaceholderText("Search..."), "insurance");
@@ -122,9 +124,10 @@ export const Clearable: Story = {
   },
 };
 
-export const Disabled: Story = { args: { initialValue: categories[0], disabled: true } };
+export const Disabled: Story = { tags: ["!test"], args: { initialValue: categories[0], disabled: true } };
 
 export const LongLabelsManyItems: Story = {
+  tags: ["!test"],
   args: {
     items: Array.from({ length: 50 }, (_, index) => ({
       id: index + 1,

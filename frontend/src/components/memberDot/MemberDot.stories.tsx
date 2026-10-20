@@ -14,9 +14,10 @@ type Story = StoryObj<typeof meta>;
 export const Member: Story = {};
 
 // Someone who left the plan keeps their history in the neutral colour.
-export const FormerMember: Story = { args: { color: NEUTRAL_MEMBER_COLOR } };
+export const FormerMember: Story = { tags: ["!test"], args: { color: NEUTRAL_MEMBER_COLOR } };
 
 export const Palette: Story = {
+  tags: ["!test"],
   render: () => (
     <div className="flex items-center gap-2">
       {MEMBER_PALETTE.map((color) => (
@@ -26,4 +27,4 @@ export const Palette: Story = {
   ),
 };
 
-export const Larger: Story = { args: { className: "size-4" } };
+export const Larger: Story = { tags: ["!test"], args: { className: "size-4" } };

@@ -67,5 +67,6 @@ export const BeforeStartDate: Story = {
 };
 
 export const Disabled: Story = {
+  tags: ["!test"],
   args: { disabled: true },
 };

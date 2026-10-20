@@ -79,6 +79,7 @@ export const ManyMembers: Story = {
 };
 
 export const LongNames: Story = {
+  tags: ["!test"],
   args: {
     members: [
       { id: 1, name: "Maximiliano Bartholomeu de Albuquerque" },

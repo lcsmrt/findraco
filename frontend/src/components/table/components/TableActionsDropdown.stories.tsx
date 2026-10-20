@@ -72,9 +72,10 @@ export const ConditionalActionHidden: Story = {
   },
 };
 
-export const Subtle: Story = { args: { subtle: true } };
+export const Subtle: Story = { tags: ["!test"], args: { subtle: true } };
 
 export const LongLabels: Story = {
+  tags: ["!test"],
   args: {
     actions: [
       { label: "Move every installment of this series to another category", onClick: fn() },

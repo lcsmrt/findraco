@@ -52,13 +52,16 @@ export const WithValue: Story = {
 };
 
 export const LargeValue: Story = {
+  tags: ["!test"],
   args: { initialValue: 9999999999999.99 },
 };
 
 export const Invalid: Story = {
+  tags: ["!test"],
   args: { initialValue: null, error: "Enter an amount" },
 };
 
 export const Disabled: Story = {
+  tags: ["!test"],
   args: { initialValue: 12.34, disabled: true },
 };

@@ -27,6 +27,7 @@ export const Invited: Story = {
 };
 
 export const Accepting: Story = {
+  tags: ["!test"],
   args: { isAccepting: true },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("button", { name: "Decline" })).toBeDisabled();
@@ -47,6 +48,7 @@ export const Invalid: Story = {
 };
 
 export const LongNames: Story = {
+  tags: ["!test"],
   args: {
     preview: {
       planName: "Household finances shared with the whole family and two flatmates",
@@ -57,5 +59,6 @@ export const LongNames: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

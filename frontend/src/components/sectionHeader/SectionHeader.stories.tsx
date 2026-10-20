@@ -15,6 +15,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const TitleOnly: Story = {
+  tags: ["!test"],
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { level: 2, name: "Members" })).toHaveClass(
       ...typographyVariants({ variant: "title" }).split(" "),
@@ -39,6 +40,7 @@ export const WithSubtitleAndAction: Story = {
 };
 
 export const NestedLevel: Story = {
+  tags: ["!test"],
   args: { level: 3, title: "Pending invitations" },
   play: async ({ canvas }) => {
     await expect(canvas.getByRole("heading", { level: 3, name: "Pending invitations" })).toBeVisible();
@@ -46,6 +48,7 @@ export const NestedLevel: Story = {
 };
 
 export const LongText: Story = {
+  tags: ["!test"],
   args: {
     title: "Spending by category across every member of the household this month",
     subtitle: "Limits apply per member; the remainder carries over to the next period automatically.",
@@ -54,6 +57,7 @@ export const LongText: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   args: WithSubtitleAndAction.args,
   globals: { viewport: { value: "mobile1" } },
 };

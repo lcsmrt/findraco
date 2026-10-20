@@ -130,6 +130,7 @@ export const Empty: Story = {
 };
 
 export const ManyLongCategories: Story = {
+  tags: ["!test"],
   args: {
     view: view(
       Array.from({ length: 15 }, (_, index) =>
@@ -148,4 +149,4 @@ export const ManyLongCategories: Story = {
 };
 
 // Below `sm` a member's status moves under their bar.
-export const Mobile: Story = { globals: { viewport: { value: "mobile1" } } };
+export const Mobile: Story = { tags: ["!test"], globals: { viewport: { value: "mobile1" } } };

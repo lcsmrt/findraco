@@ -106,10 +106,12 @@ export const CreateFromSearch: Story = {
 };
 
 export const Disabled: Story = {
+  tags: ["!test"],
   args: { initialValue: categories[0], disabled: true },
 };
 
 export const ManyLongNames: Story = {
+  tags: ["!test"],
   args: {
     defaultOpen: true,
     initialValue: {

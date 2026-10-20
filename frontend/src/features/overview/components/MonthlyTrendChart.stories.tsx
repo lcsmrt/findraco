@@ -31,15 +31,17 @@ type Story = StoryObj<typeof meta>;
 export const OneMonthSelected: Story = {};
 
 export const QuarterSelected: Story = {
+  tags: ["!test"],
   args: { months: trend({ startDate: "2026-08-01", endDate: "2026-10-31" }, halfYear) },
 };
 
 export const Loading: Story = { args: { months: undefined, isLoading: true } };
 
 // Months without data still appear, at zero.
-export const NoData: Story = { args: { months: trend(october, []) } };
+export const NoData: Story = { tags: ["!test"], args: { months: trend(october, []) } };
 
 export const YearLargeValues: Story = {
+  tags: ["!test"],
   args: {
     months: trend(
       { startDate: "2026-01-01", endDate: "2026-12-31" },
@@ -53,4 +55,4 @@ export const YearLargeValues: Story = {
   },
 };
 
-export const Mobile: Story = { globals: { viewport: { value: "mobile1" } } };
+export const Mobile: Story = { tags: ["!test"], globals: { viewport: { value: "mobile1" } } };

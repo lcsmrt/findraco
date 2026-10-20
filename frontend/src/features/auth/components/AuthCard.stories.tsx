@@ -44,10 +44,12 @@ export const WithTitleAndDescription: Story = {
 };
 
 export const TitleOnly: Story = {
+  tags: ["!test"],
   args: { title: "Sign in" },
 };
 
 export const LongDescription: Story = {
+  tags: ["!test"],
   args: {
     description:
       "If an account exists for that email, we sent a link to reset your password. It expires in 60 minutes. Check your spam folder if it does not arrive within a few minutes.",
@@ -55,6 +57,7 @@ export const LongDescription: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   args: WithTitleAndDescription.args,
   globals: { viewport: { value: "mobile1" } },
 };

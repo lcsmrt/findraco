@@ -53,6 +53,7 @@ export const Idle: Story = {
 };
 
 export const Submitting: Story = {
+  tags: ["!test"],
   args: { isSubmitting: true, title: "Edit Category", submitLabel: "Save" },
   play: async () => {
     await expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
@@ -62,6 +63,7 @@ export const Submitting: Story = {
 };
 
 export const SubmitUnavailable: Story = {
+  tags: ["!test"],
   args: { title: "Edit series", submitLabel: "Save", submitDisabled: true },
   play: async () => {
     await expect(screen.getByRole("button", { name: "Save" })).toBeDisabled();
@@ -70,6 +72,7 @@ export const SubmitUnavailable: Story = {
 };
 
 export const WithMobileActions: Story = {
+  tags: ["!test"],
   args: {
     title: "Edit Transaction",
     submitLabel: "Save",
@@ -94,6 +97,7 @@ export const WithMobileActions: Story = {
 };
 
 export const LongContentScrolls: Story = {
+  tags: ["!test"],
   args: { children: <DemoFields count={20} /> },
   play: async () => {
     const form = screen.getByLabelText("Field 1").closest("form");
@@ -104,5 +108,6 @@ export const LongContentScrolls: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

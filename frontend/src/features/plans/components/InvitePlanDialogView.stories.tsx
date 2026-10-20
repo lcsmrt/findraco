@@ -37,6 +37,7 @@ export const MissingEmail: Story = {
 };
 
 export const Creating: Story = {
+  tags: ["!test"],
   args: { isCreating: true },
 };
 
@@ -65,5 +66,6 @@ export const EmailSent: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

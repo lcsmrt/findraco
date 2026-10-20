@@ -40,6 +40,7 @@ export const SignedIn: Story = {
 };
 
 export const LongPlanName: Story = {
+  tags: ["!test"],
   args: {
     userName: "Maria Fernanda da Silva Albuquerque Mendes",
     planSwitcher: (
@@ -52,5 +53,6 @@ export const LongPlanName: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

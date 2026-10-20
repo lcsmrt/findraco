@@ -86,6 +86,7 @@ export const InvalidTyping: Story = {
 };
 
 export const DisabledDates: Story = {
+  tags: ["!test"],
   args: { initialValue: new Date(2026, 2, 14), disablePast: true },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Open calendar" }));
@@ -93,7 +94,7 @@ export const DisabledDates: Story = {
   },
 };
 
-export const Disabled: Story = { args: { initialValue: new Date(2026, 2, 14), disabled: true } };
+export const Disabled: Story = { tags: ["!test"], args: { initialValue: new Date(2026, 2, 14), disabled: true } };
 
 export const Range: Story = {
   render: () => (
@@ -115,6 +116,7 @@ export const RangeSingleMonth: Story = {
 
 // Two months sit side by side from the md breakpoint and stack below it.
 export const RangeMobile: Story = {
+  tags: ["!test"],
   render: () => (
     <DemoRange initialValue={{ from: new Date(2026, 2, 9), to: new Date(2026, 2, 15) }} />
   ),

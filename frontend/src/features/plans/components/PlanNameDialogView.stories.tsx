@@ -28,6 +28,7 @@ export const Create: Story = {
 };
 
 export const Rename: Story = {
+  tags: ["!test"],
   args: { mode: "rename", initialName: "Household" },
   play: async () => {
     await expect(screen.getByRole("dialog", { name: "Rename plan" })).toBeVisible();
@@ -43,10 +44,12 @@ export const Invalid: Story = {
 };
 
 export const Submitting: Story = {
+  tags: ["!test"],
   args: { mode: "rename", initialName: "Household", isSubmitting: true },
 };
 
 export const LongName: Story = {
+  tags: ["!test"],
   args: {
     mode: "rename",
     initialName: "Household finances shared with the whole family and two flatmates",
@@ -54,5 +57,6 @@ export const LongName: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

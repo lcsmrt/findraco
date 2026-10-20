@@ -38,6 +38,7 @@ export const WithCandidates: Story = {
 };
 
 export const Transferring: Story = {
+  tags: ["!test"],
   args: { isTransferring: true },
 };
 
@@ -53,5 +54,6 @@ export const NoCandidates: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

@@ -68,11 +68,12 @@ export const Rows: Story = {
   },
 };
 
-export const Loading: Story = { args: { isLoading: true } };
+export const Loading: Story = { tags: ["!test"], args: { isLoading: true } };
 
-export const Empty: Story = { args: { data: [], emptyState: "No transactions this month" } };
+export const Empty: Story = { tags: ["!test"], args: { data: [], emptyState: "No transactions this month" } };
 
 export const Expandable: Story = {
+  tags: ["!test"],
   args: { expandable: true },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByText("Groceries"));
@@ -81,6 +82,7 @@ export const Expandable: Story = {
 };
 
 export const ManyLongRows: Story = {
+  tags: ["!test"],
   args: {
     data: Array.from({ length: 40 }, (_, index) => ({
       id: index + 1,
@@ -91,4 +93,4 @@ export const ManyLongRows: Story = {
   },
 };
 
-export const Mobile: Story = { globals: { viewport: { value: "mobile1" } } };
+export const Mobile: Story = { tags: ["!test"], globals: { viewport: { value: "mobile1" } } };

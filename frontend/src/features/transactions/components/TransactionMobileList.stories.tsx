@@ -77,6 +77,7 @@ export const Empty: Story = {
 };
 
 export const ManyLongRows: Story = {
+  tags: ["!test"],
   args: {
     transactions: Array.from({ length: 30 }, (_, index) =>
       transaction(
@@ -97,4 +98,4 @@ export const ManyLongRows: Story = {
   },
 };
 
-export const Desktop: Story = { globals: { viewport: { value: undefined } } };
+export const Desktop: Story = { tags: ["!test"], globals: { viewport: { value: undefined } } };

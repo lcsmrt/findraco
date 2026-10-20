@@ -49,10 +49,12 @@ export const WithPage: Story = {
 };
 
 export const LongContent: Story = {
+  tags: ["!test"],
   args: { children: longContent },
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };
 

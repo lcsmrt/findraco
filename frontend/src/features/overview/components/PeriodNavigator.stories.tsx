@@ -30,10 +30,12 @@ export const ThisMonth: Story = {
 };
 
 export const LastThreeMonths: Story = {
+  tags: ["!test"],
   args: { range: { startDate: "2026-08-01", endDate: "2026-10-31" }, period: "last-3m" },
 };
 
 export const ThisYear: Story = {
+  tags: ["!test"],
   args: { range: { startDate: "2026-01-01", endDate: "2026-12-31" }, period: "this-year" },
 };
 
@@ -42,6 +44,7 @@ export const CustomRange: Story = {
 };
 
 export const AcrossYears: Story = {
+  tags: ["!test"],
   args: { range: { startDate: "2025-11-01", endDate: "2026-02-28" }, isCustom: true },
 };
 

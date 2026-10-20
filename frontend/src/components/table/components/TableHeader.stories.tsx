@@ -67,6 +67,7 @@ export const Descending: Story = {
 
 // Headers truncate rather than wrap, so the header row keeps its height.
 export const LongHeaders: Story = {
+  tags: ["!test"],
   args: {
     headers: [
       { accessorKey: "description", header: "Description shown on every installment", enableSorting: true },

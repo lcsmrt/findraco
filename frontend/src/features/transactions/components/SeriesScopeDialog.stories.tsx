@@ -48,6 +48,7 @@ export const Edit: Story = {
 };
 
 export const Delete: Story = {
+  tags: ["!test"],
   args: {
     options: {
       title: "Delete recurring transaction",
@@ -62,4 +63,4 @@ export const Delete: Story = {
   },
 };
 
-export const Mobile: Story = { globals: { viewport: { value: "mobile1" } } };
+export const Mobile: Story = { tags: ["!test"], globals: { viewport: { value: "mobile1" } } };

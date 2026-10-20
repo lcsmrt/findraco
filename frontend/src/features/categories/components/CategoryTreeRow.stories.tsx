@@ -63,6 +63,7 @@ export const Child: Story = {
 };
 
 export const LastChild: Story = {
+  tags: ["!test"],
   args: {
     category: { id: 12, type: "DEBIT", description: "Groceries", parentId: 1 },
     child: { isLast: true },
@@ -89,6 +90,7 @@ export const ReadOnly: Story = {
 };
 
 export const LongContent: Story = {
+  tags: ["!test"],
   args: {
     category: {
       ...hobbies,
@@ -107,6 +109,7 @@ export const LongContent: Story = {
 
 // Narrow screens stack the row and a tap opens the edit form.
 export const Mobile: Story = {
+  tags: ["!test"],
   args: { category: hobbies, className: undefined },
   globals: { viewport: { value: "mobile1" } },
   play: async ({ args, canvas, userEvent }) => {

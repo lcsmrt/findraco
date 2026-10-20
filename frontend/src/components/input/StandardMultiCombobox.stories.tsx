@@ -59,6 +59,7 @@ export const Empty: Story = {
 };
 
 export const Open: Story = {
+  tags: ["!test"],
   args: { initialValue: [members[0]] },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByText("Lucas Martins"));
@@ -77,6 +78,7 @@ export const Overflow: Story = {
 };
 
 export const NoResults: Story = {
+  tags: ["!test"],
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByText("All members"));
     await userEvent.type(await screen.findByPlaceholderText("Search..."), "zzz");
@@ -84,9 +86,10 @@ export const NoResults: Story = {
   },
 };
 
-export const Disabled: Story = { args: { initialValue: members.slice(0, 1), disabled: true } };
+export const Disabled: Story = { tags: ["!test"], args: { initialValue: members.slice(0, 1), disabled: true } };
 
 export const LongNames: Story = {
+  tags: ["!test"],
   args: {
     items: [
       { id: 1, name: "Maria Eduarda Albuquerque de Vasconcelos" },

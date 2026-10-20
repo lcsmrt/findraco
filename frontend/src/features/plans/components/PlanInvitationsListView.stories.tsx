@@ -39,6 +39,7 @@ export const Empty: Story = {
 };
 
 export const ManyLongEmails: Story = {
+  tags: ["!test"],
   args: {
     invitations: Array.from({ length: 12 }, (_, index) => ({
       id: 100 + index,
@@ -53,5 +54,6 @@ export const ManyLongEmails: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

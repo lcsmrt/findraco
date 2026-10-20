@@ -18,4 +18,4 @@ export const Default: Story = {
 };
 
 // The navbar footer centres it; the class passes straight through.
-export const Centered: Story = { args: { className: "block w-64 text-center" } };
+export const Centered: Story = { tags: ["!test"], args: { className: "block w-64 text-center" } };

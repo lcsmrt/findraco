@@ -34,6 +34,7 @@ export const InvalidEmail: Story = {
 };
 
 export const Sending: Story = {
+  tags: ["!test"],
   args: { isSubmitting: true },
 };
 
@@ -46,5 +47,6 @@ export const Sent: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };

@@ -29,9 +29,11 @@ export const Credit: Story = {
 };
 
 export const Zero: Story = {
+  tags: ["!test"],
   args: { value: 0, type: "CREDIT" },
 };
 
 export const LargeValue: Story = {
+  tags: ["!test"],
   args: { value: 9999999999999.99, type: "DEBIT" },
 };

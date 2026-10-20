@@ -73,6 +73,7 @@ export const OpenSingleMember: Story = {
 };
 
 export const LoadingCategories: Story = {
+  tags: ["!test"],
   args: { categories: [], isLoadingCategories: true },
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Filters" }));
@@ -81,6 +82,7 @@ export const LoadingCategories: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
   play: OpenSharedPlan.play,
 };

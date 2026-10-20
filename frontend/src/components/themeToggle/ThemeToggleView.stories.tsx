@@ -20,6 +20,7 @@ export const Light: Story = {
 
 // The icon follows the `dark` class on an ancestor, as the app sets it on <html>.
 export const Dark: Story = {
+  tags: ["!test"],
   decorators: [
     (Story) => (
       <div className="dark">

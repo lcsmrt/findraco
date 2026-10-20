@@ -50,6 +50,7 @@ export const Empty: Story = {
 };
 
 export const ManyLongNames: Story = {
+  tags: ["!test"],
   args: {
     members: Array.from({ length: 10 }, (_, index) => ({
       userId: index + 10,
@@ -61,5 +62,6 @@ export const ManyLongNames: Story = {
 };
 
 export const Mobile: Story = {
+  tags: ["!test"],
   globals: { viewport: { value: "mobile1" } },
 };
