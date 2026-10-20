@@ -10,14 +10,13 @@ import { useSeriesScope } from "./useSeriesScope";
 
 type DrawerState =
   | { open: false }
-  | { open: true; mode: "create" }
   | {
       open: true;
       mode: "edit" | "duplicate";
       transaction: FinancialTransaction;
     };
 
-/** What the transaction drawer renders from: closed, creating, or editing/duplicating a transaction. */
+/** What the transaction drawer renders from: closed, or editing/duplicating a transaction. */
 export type TransactionDrawer = {
   open: boolean;
   mode: TransactionFormMode;
@@ -26,12 +25,11 @@ export type TransactionDrawer = {
 
 function toDrawer(state: DrawerState): TransactionDrawer {
   if (!state.open) return { open: false, mode: "create" };
-  if (state.mode === "create") return { open: true, mode: "create" };
   return { open: true, mode: state.mode, transaction: state.transaction };
 }
 
 /**
- * A transaction's row actions and the drawer they open: create, edit, duplicate, and delete, which
+ * A transaction's row actions and the drawer they open: edit, duplicate, and delete, which
  * asks for the occurrences to delete when the transaction belongs to a series and for a plain
  * confirmation otherwise.
  */
@@ -42,10 +40,6 @@ export function useTransactionActions() {
   const { mutate: deleteTransaction, isPending: isDeleting } =
     useDeleteFinancialTransaction();
   const { mutate: deleteSeries } = useDeleteFinancialTransactionSeries();
-
-  function openCreate() {
-    setDrawerState({ open: true, mode: "create" });
-  }
 
   function edit(transaction: FinancialTransaction) {
     setDrawerState({ open: true, mode: "edit", transaction });
@@ -96,7 +90,6 @@ export function useTransactionActions() {
 
   return {
     drawer: toDrawer(drawerState),
-    openCreate,
     edit,
     duplicate,
     remove,

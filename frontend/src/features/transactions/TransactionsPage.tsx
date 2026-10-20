@@ -6,11 +6,9 @@ import {
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { toPagination } from "@/api/utils/toPagination";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { PATHS } from "@/app/routing/paths";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import type { Sorting } from "@/components/table/components/TableHeader";
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTransactionFilters } from "./filters/useTransactionFilters";
 import { useTransactionFilterChips } from "./useTransactionFilterChips";
 import { useTransactionsPage } from "./useTransactionsPage";
@@ -28,7 +26,6 @@ import { useTransactionSearch } from "./components/useTransactionSearch";
 import { TransactionsPageView } from "./TransactionsPageView";
 
 export function TransactionsPage() {
-  const navigate = useNavigate();
   const { transactions, updateTransactions, clearTransactions } =
     useTransactionFilters();
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
@@ -100,10 +97,8 @@ export function TransactionsPage() {
         }
         chips={chips}
         onClearFilters={onClearFilters}
-        onManageCategories={() => navigate(PATHS.categories)}
         onImport={importCsv}
         isImporting={isImporting}
-        onCreate={actions.openCreate}
         transactions={data?.content ?? []}
         isLoading={isLoading}
         pagination={data && toPagination(data)}

@@ -65,10 +65,8 @@ const meta = {
     ),
     chips: [],
     onClearFilters: fn(),
-    onManageCategories: fn(),
     onImport: fn(),
     isImporting: false,
-    onCreate: fn(),
     transactions,
     isLoading: false,
     pagination,
@@ -85,10 +83,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const SharedPlan: Story = {
-  play: async ({ args, canvas, userEvent }) => {
+  play: async ({ canvas }) => {
     await expect(canvas.getByRole("columnheader", { name: /Attributed/ })).toBeVisible();
-    await userEvent.click(canvas.getByRole("button", { name: "New Transaction" }));
-    await expect(args.onCreate).toHaveBeenCalledTimes(1);
+    await expect(canvas.getByRole("button", { name: "Import CSV" })).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "New Transaction" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Manage Categories" })).toBeNull();
   },
 };
 

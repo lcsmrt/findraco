@@ -74,14 +74,6 @@ describe("useTransactionActions — drawer (STD-12 AC 1)", () => {
     expect(actions.drawer).toEqual({ open: false, mode: "create" });
   });
 
-  it("opens the drawer empty to create", () => {
-    setup();
-
-    act(() => actions.openCreate());
-
-    expect(actions.drawer).toEqual({ open: true, mode: "create" });
-  });
-
   it("opens the drawer on the transaction to edit it", () => {
     setup();
 

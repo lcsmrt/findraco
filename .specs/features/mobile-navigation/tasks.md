@@ -460,9 +460,10 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Flow test: the toolbar shows search, filters and import, and neither removed button
-- [ ] Story updated; existing search, filter and import tests unchanged and green
-- [ ] Gate check passes: Full
+- [x] Flow test: the toolbar shows search, filters and import, and neither removed button
+- [x] Story updated (`SharedPlan` no longer clicks "New Transaction"; it checks import shows and neither removed button does); existing search, filter and import tests unchanged and green
+- [x] `useTransactionActions.openCreate` and its create state removed (unused); its "opens the drawer empty to create" test went with it
+- [x] Gate check passes: Full (178 files, 1256 tests, passing; Build also green: unit 86 / 791, tooling + storybook 96 / 649)
 
 **Tests**: integration
 **Gate**: full

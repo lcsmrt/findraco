@@ -11,7 +11,7 @@ import { Table, TableContent, TablePagination } from "@/components/table";
 import type { Sorting } from "@/components/table/components/TableHeader";
 import type { Pagination } from "@/components/table/TablePagination";
 import type { ColumnDef } from "@tanstack/react-table";
-import { PlusIcon, SearchIcon, TagIcon, UploadIcon, XIcon } from "lucide-react";
+import { SearchIcon, UploadIcon, XIcon } from "lucide-react";
 import { useRef } from "react";
 import type { FilterChip } from "./useTransactionFilterChips";
 import { TransactionMobileList } from "./components/TransactionMobileList";
@@ -23,10 +23,8 @@ type TransactionsPageViewProps = {
   filters: ReactNode;
   chips: FilterChip[];
   onClearFilters: () => void;
-  onManageCategories: () => void;
   onImport: (file: File) => void;
   isImporting: boolean;
-  onCreate: () => void;
   transactions: FinancialTransaction[];
   isLoading: boolean;
   pagination?: Partial<Pagination>;
@@ -44,10 +42,8 @@ export function TransactionsPageView({
   filters,
   chips,
   onClearFilters,
-  onManageCategories,
   onImport,
   isImporting,
-  onCreate,
   transactions,
   isLoading,
   pagination,
@@ -96,17 +92,9 @@ export function TransactionsPageView({
           <div className="flex gap-2">
             <Button
               variant="outline"
-              onClick={onManageCategories}
-              // The label hides below `sm`; the button keeps its name there.
-              aria-label="Manage Categories"
-            >
-              <TagIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">Manage Categories</span>
-            </Button>
-            <Button
-              variant="outline"
               onClick={handleImportClick}
               disabled={isImporting}
+              // The label hides below `sm`; the button keeps its name there.
               aria-label={isImporting ? "Importing..." : "Import CSV"}
             >
               <UploadIcon className="h-4 w-4" />
@@ -121,10 +109,6 @@ export function TransactionsPageView({
               className="hidden"
               onChange={handleFileChange}
             />
-            <Button onClick={onCreate} aria-label="New Transaction">
-              <PlusIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">New Transaction</span>
-            </Button>
           </div>
         </div>
 

@@ -117,6 +117,19 @@ async function tableRow(description: string) {
 
 afterEach(cleanup);
 
+describe("TransactionsPage toolbar", () => {
+  it("shows search, filters and import, and neither New Transaction nor Manage Categories (NAV-02 AC 8; NAV-04 AC 1, 2)", async () => {
+    renderTab();
+    await tableRow("Rent");
+
+    expect(screen.getByRole("textbox", { name: "Search transactions" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Filters" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "Import CSV" })).toBeTruthy();
+    expect(screen.queryByRole("button", { name: "New Transaction" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Manage Categories" })).toBeNull();
+  });
+});
+
 describe("TransactionsPage (STD-12 AC 1, 2)", () => {
   it("loads the first page of transactions", async () => {
     const { requests } = renderTab();
