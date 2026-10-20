@@ -109,7 +109,7 @@
 ### AD-014
 - **Decision**: Every frontend destination has its own route (`/overview`, `/transactions`, `/categories`, `/plans`), and its URL carries only that screen's filters; the active plan stays a `?plan=` query param. Saved filters are kept per (user, plan, screen).
 - **Reason**: Tabs as a `?tab=` param mixed location with filters, so a link from another screen lost the tab's filters; a path per screen also gives PWA shortcuts and nested screens a home.
-- **Trade-off**: Old `/?tab=` links need a redirect; filters saved before the change reset once. The plan in the path (`/plans/5/...`) was deferred.
+- **Trade-off**: Old `/?tab=` links land on `/overview` (not mapped); filters saved before the change reset once. The plan in the path (`/plans/5/...`) was deferred.
 - **Scope**: Frontend routing, `PlanFiltersGate`, filter storage; new screens add a route, not a tab.
 - **Date**: 2026-10-19
 - **Status**: active

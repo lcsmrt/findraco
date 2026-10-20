@@ -34,6 +34,7 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 | Transactions toolbar | "New Transaction" and "Manage Categories" removed; import, search and filters unchanged | Both are now redundant | y |
 | Safe area | The bar pads its bottom by `env(safe-area-inset-bottom)` | iOS home indicator; prepares the PWA | y |
 | History | Every destination switch pushes a history entry; each destination has its own path (NAV-06) | Changed at Design (user, 2026-10-19): the `?tab=` param mixed location with filters | y |
+| Old `/?tab=` links | Not mapped: like any `/` visit they land on `/overview` | Very few users and bookmarks; a mapping would be kept forever for a case that barely exists (user, 2026-10-19) | y |
 | Filters saved before NAV-06 | Not carried over: each screen starts from its defaults once after the deploy | Converting the old per-page format is code for one day (user, 2026-10-19) | y |
 | Target plan of "+" | The active plan from the switcher | One active plan everywhere (AD-005) | y |
 | Toast scope | "Transaction added." ("Series created." for a series) on every successful create, global add or not, duplicate included; edit and delete keep a success toast in the short style (NAV-05) | Corrected at Design (user, 2026-10-19): edit and duplicate already toasted; the earlier "stay without a toast" misdescribed them | y |
@@ -149,9 +150,9 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 3. WHEN the user changes a screen's filters THEN the system SHALL save them for that screen and the active plan, without changing another screen's saved filters.  <!-- event-driven -->
 4. WHEN the user switches the active plan THEN the system SHALL stay on the same screen and apply that plan's saved filters for it.  <!-- event-driven -->
 5. WHEN the user opens a screen's link that carries filter params THEN the system SHALL apply them, making the link's plan active when the user belongs to it.  <!-- event-driven -->
-6. WHEN the user opens `/` or a link of the form `/?tab=<screen>&...` THEN the system SHALL redirect to that screen's path (Overview when no tab is given), keeping the other params.  <!-- event-driven -->
+6. WHEN the user opens `/` THEN the system SHALL redirect to `/overview`.  <!-- event-driven -->
 
-**Independent Test**: Filter Transactions by "mercado", go to Plans, tap Transactions: the search is still "mercado"; tap Overview: its own period, untouched; open an old `/?tab=categories` bookmark: land on `/categories`.
+**Independent Test**: Filter Transactions by "mercado", go to Plans, tap Transactions: the search is still "mercado"; tap Overview: its own period, untouched; open the site root: land on `/overview`.
 
 ---
 
