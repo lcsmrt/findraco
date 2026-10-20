@@ -28,8 +28,8 @@ const linkInvitation: Invitation = {
   expiresAt: "2026-12-31T18:00",
 };
 
-function renderDialog() {
-  renderWithProviders(<InvitePlanDialog open onOpenChange={vi.fn()} planId={PLAN_ID} />);
+function renderDialog(onOpenChange: (open: boolean) => void = vi.fn()) {
+  renderWithProviders(<InvitePlanDialog open onOpenChange={onOpenChange} planId={PLAN_ID} />);
 }
 
 async function sentInvitation(requests: Request[]) {
@@ -94,5 +94,36 @@ describe("InvitePlanDialog", () => {
       expiresAt: "2026-12-31T18:00",
     });
     expect(screen.getByDisplayValue(`${window.location.origin}/invitation/link-token`)).toBeTruthy();
+  });
+
+  it("closes on Cancel without sending anything (STD-06 AC 9)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const onOpenChange = vi.fn();
+    renderDialog(onOpenChange);
+
+    await user.type(screen.getByLabelText("Email"), "ana@example.com");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(requests).toEqual([]);
+  });
+
+  it("stays open with the typed email when sending fails (STD-06 AC 9)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const onOpenChange = vi.fn();
+    server.use(invitationHandlers.createRejected("Already a member"));
+    renderDialog(onOpenChange);
+
+    await user.type(screen.getByLabelText("Email"), "ana@example.com");
+    await user.click(screen.getByRole("button", { name: "Send invitation" }));
+
+    await sentInvitation(requests);
+    const send = screen.getByRole<HTMLButtonElement>("button", { name: "Send invitation" });
+    await waitFor(() => expect(send.disabled).toBe(false));
+    expect(screen.getByLabelText<HTMLInputElement>("Email").value).toBe("ana@example.com");
+    expect(screen.queryByText(/Invitation sent to/)).toBeNull();
+    expect(onOpenChange).not.toHaveBeenCalled();
   });
 });

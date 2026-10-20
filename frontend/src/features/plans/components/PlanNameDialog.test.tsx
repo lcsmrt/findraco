@@ -61,4 +61,45 @@ describe("PlanNameDialog", () => {
     expect(await request?.json()).toEqual({ name: "Household" });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
+
+  it("closes on Cancel without sending anything (STD-06 AC 10)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const onOpenChange = vi.fn();
+    renderWithProviders(<PlanNameDialog mode="create" open onOpenChange={onOpenChange} />);
+
+    await user.type(screen.getByLabelText("Name"), "Household");
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(requests).toEqual([]);
+  });
+
+  it("stays open with the typed name when creating fails, locked while it runs (STD-06 AC 10)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const onSuccess = vi.fn();
+    const onOpenChange = vi.fn();
+    let fail: (() => void) | undefined;
+    const release = new Promise<void>((settle) => {
+      fail = settle;
+    });
+    server.use(planHandlers.createNetworkError(release));
+    renderWithProviders(
+      <PlanNameDialog mode="create" open onOpenChange={onOpenChange} onSuccess={onSuccess} />,
+    );
+
+    await user.type(screen.getByLabelText("Name"), "Household");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    await sentBody(requests, "POST");
+    const cancel = screen.getByRole<HTMLButtonElement>("button", { name: "Cancel" });
+    await waitFor(() => expect(cancel.disabled).toBe(true));
+    fail?.();
+    await waitFor(() => expect(cancel.disabled).toBe(false));
+    expect(screen.getByRole("dialog", { name: "New plan" })).toBeTruthy();
+    expect(screen.getByLabelText<HTMLInputElement>("Name").value).toBe("Household");
+    expect(onOpenChange).not.toHaveBeenCalled();
+    expect(onSuccess).not.toHaveBeenCalled();
+  });
 });

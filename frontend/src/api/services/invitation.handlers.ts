@@ -17,6 +17,11 @@ export const invitationHandlers = {
       () => HttpResponse.json(invitation, { status: 201 }),
     );
   },
+  createRejected(message: string): HttpHandler {
+    return http.post<PlanParams>("*/plan/:planId/invitation", () =>
+      HttpResponse.json({ message }, { status: 400 }),
+    );
+  },
   revoke(): HttpHandler {
     return http.delete<InvitationParams>(
       "*/plan/:planId/invitation/:invitationId",
