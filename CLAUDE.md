@@ -47,11 +47,11 @@ they are enforced. Read the matching skill before writing frontend code.
   callbacks. Named exports, never default, never `React.FC`. `type` everywhere, never `interface`; no
   `any`. Props `XxxProps`; files `PascalCase.tsx`, `useXxx.ts`, `camelCase.ts`. `cn()` for classes,
   `cva` for variants. → `/component-creation`
-- Component files export only components. Logic that hits an extraction trigger moves to a sibling
-  `.ts` with a test; at most 60 code lines before a component's main `return` (extract a hook); no IIFE
-  in JSX. → `/component-creation`
-- Every component with its own visual has a story; a container fetches and passes down, with no visual
-  of its own. → `/component-creation`, `/frontend-testing`
+- Component files export only components. Logic that hits an extraction trigger moves to a `.ts`
+  module (a business rule to the feature's `utils/`, with a test); at most 60 code lines before a
+  component's main `return` (extract a hook); no IIFE in JSX. → `/component-creation`
+- Every component with its own visual has a story, except `base/` primitives (catalog story, no gate);
+  a container fetches and passes down, with no visual of its own. → `/component-creation`, `/frontend-testing`
 - Primitives live in `src/components/<family>/base/` and are ours: edit them for app-wide changes only
   (tokens, variants, loading state, a11y); domain behaviour goes in a composition. Check shadcn and Base
   UI before writing a component by hand. → `/component-creation`
@@ -68,8 +68,13 @@ they are enforced. Read the matching skill before writing frontend code.
 - Forms: react-hook-form + zod; every field through `Controller` via `FormField`; domain-typed values
   (`XxxFormValues`); `useWatch` locally, never root `watch()` + `setValue()`; `useFieldArray` for every
   dynamic list. → `/form-creation`
-- Tests: logic → sibling unit test (90% branch coverage); visual → story (a11y violations fail); flow →
-  integration test with MSW, never `vi.mock` of our own modules. → `/frontend-testing`
+- Tests: a closed table decides them by path and file name (`scripts/testTable.ts`); a module matching
+  no row gets no test. Business rules, service hooks, URL params, shared hooks → unit; container → flow
+  test of its decisions, MSW only, never `vi.mock` of our own modules; presentational → story per state
+  it handles (a11y violations fail); 90% branches on five critical modules only; no test of library
+  behaviour. → `/frontend-testing`
+- The Verifier's discrimination sensor mutates only code in a test-table row whose test kind is not
+  none.
 - Comments explain why, never what; no spec IDs in code (traceability lives in test names).
   → `/component-creation`
 - No bypass: `eslint-disable` comments are ignored and `@ts-ignore`/`@ts-expect-error`/`@ts-nocheck` are
@@ -77,6 +82,7 @@ they are enforced. Read the matching skill before writing frontend code.
 - Every push that ships a frontend fix or change bumps the prerelease in `frontend/package.json`
   (`1.0.0-beta.N` → `N+1`), in its own `chore(release): <version>` commit; the app shows it.
 - CI gates deploy: a push that changes an app runs its lint, build and tests (docs-only pushes run
-  nothing); nothing reaches production without passing them. → `/frontend-testing`
+  nothing; the frontend runs the affected tests, the full suite weekly and on dispatch); nothing reaches
+  production without passing them. → `/frontend-testing`
 - Skills: `/component-creation`, `/feature-structure`, `/form-creation`, `/api-integration`,
   `/frontend-testing`.

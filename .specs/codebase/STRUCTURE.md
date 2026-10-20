@@ -32,7 +32,8 @@ finsight/
     eslint.config.js               Layered import/syntax restrictions built from named fragments
     eslint.config.test.ts          Asserts every fragment per layer (tooling project)
     eslint/rules/                  Local lint rules: component logic cap, no IIFE in JSX (+ tests)
-    scripts/check-siblings.ts      Gate: sibling test for logic modules, sibling story for visuals (+ test)
+    scripts/testTable.ts           The test table as code: unit rows and critical modules
+    scripts/check-siblings.ts      Gate: sibling test per the test table, sibling story for visuals (+ test)
     .husky/                        pre-commit (lint-staged), commit-msg (check_commit.py)
     .storybook/                    Storybook config; a11y addon in error mode
     src/

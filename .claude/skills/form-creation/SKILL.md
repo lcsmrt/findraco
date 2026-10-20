@@ -362,8 +362,9 @@ type ProductFormSheetProps = {
 - A form whose submit calls **one** mutation may submit inline:
   `onSubmit={handleSubmit((values) => createPlan({ body: toPayload(values) }))}`.
 - When submit **chooses between mutations** (create/edit/duplicate) or runs a **multi-step flow** (a
-  series-scope prompt, a confirmation), it lives in `useXxxFormSubmit.ts` next to the form, with a
-  sibling test. The component then stays under the logic cap (`component-creation`).
+  series-scope prompt, a confirmation), it lives in `useXxxFormSubmit.ts` next to the form; the form's
+  flow test covers it (`frontend-testing`). The component then stays under the logic cap
+  (`component-creation`).
 
 ```ts
 // useProductFormSubmit.ts

@@ -239,8 +239,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Sensor scope stated in CLAUDE.md and TESTING.md; floor/ceiling stated in TESTING.md
-- [ ] AD-012 marked `superseded by AD-015`
+- [x] Sensor scope stated in CLAUDE.md and TESTING.md; floor/ceiling stated in TESTING.md
+- [x] AD-012 marked `superseded by AD-015`
 
 **Tests**: none
 **Gate**: docs

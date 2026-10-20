@@ -91,7 +91,7 @@ function handleSave() {
 state only when the file exports nothing else; a mixed file forces a full reload.
 
 Non-exported helpers may stay in the component's file **unless they hit a trigger**. A helper moves
-to its own `.ts` module, with a sibling `.test.ts`, when it has any of:
+to its own `.ts` module when it has any of:
 
 1. a branch or loop that computes a value (`if`, ternary, `switch`, `reduce`, `map` with logic). A
    ternary that only picks a className does not count;
@@ -102,10 +102,11 @@ to its own `.ts` module, with a sibling `.test.ts`, when it has any of:
 What stays in the component file: one-expression formatters, className builders, constants, `cva`
 configs used only by this file, and JSX-only sub-components.
 
-- The new module sits **next to the component** (`spendingRows.ts` beside `CategorySpendingList.tsx`).
-  It moves up only when a second consumer appears: see the colocation ladder in `feature-structure`.
-- Its test is required by the sibling gate (`scripts/check-siblings.ts` fails when a `.ts` holding a
-  decision point, arithmetic or an iteration callback has no `.test.ts`). What to test: `frontend-testing`.
+- A business rule or a computation shown to the user (a sort, a grouping, a scale) goes to the
+  feature's `utils/` folder with a sibling `.test.ts`: the test table requires it there
+  (`frontend-testing`). Glue (column definitions, labels, class maps, prop mapping) sits **next to the
+  component** with no test.
+- Either moves up only when a second consumer appears: see the colocation ladder in `feature-structure`.
 - A `cva` config another module needs (a link styled as a button) moves to a sibling
   `buttonVariants.ts`.
 - Example: a form's schema and mappers live in `transactionForm.ts` beside `TransactionFormDrawer.tsx`.
@@ -130,8 +131,8 @@ everyone.
   logic.
 - Over the cap: extract a `useXxx` hook that holds the state, effects and handlers, and returns what the
   JSX needs. Extracting logic into a hook is always possible, so there is no exception. The hook sits
-  next to the component until a second consumer lifts it (`feature-structure`); a hook with logic needs
-  a sibling test (`frontend-testing`).
+  next to the component until a second consumer lifts it (`feature-structure`); a feature hook has no
+  test of its own, its container's flow test covers it (`frontend-testing`).
 
 **No immediately invoked function in JSX.** Enforced by lint `local/no-jsx-iife`. An IIFE hides logic
 from the cap. Compute a variable before the `return`, call a tested helper, or extract a component.
@@ -168,7 +169,8 @@ Rules:
 
 1. **A component with its own visual has a sibling `.stories.tsx`.** Enforced by the story report of
    `scripts/check-siblings.ts`: every `.tsx` under `src/` that is not a container needs one (tests,
-   stories, `src/index.tsx` and `src/test/**` excepted). The script resolves each import to its real
+   stories, `src/index.tsx`, `src/test/**` and `base/` primitives excepted; a primitive's story is
+   catalog only and the gate does not demand it). The script resolves each import to its real
    path (relative or `@/`) and treats a file as a container when it imports `@/api/services`,
    `@/app/providers`, or a `use*` hook, `Routes` or `Outlet` from `react-router-dom` (a namespace,
    default or `export *` import of it counts too), directly or through one of our `.ts` modules built
@@ -182,7 +184,7 @@ Rules:
    Providers and roots that render only components pass as they are.
 3. Never look for a way around the gate (moving markup into a callback, an untyped wrapper, a hook
    that returns JSX). A container that composes only components passes; its children carry the stories.
-4. Story content follows the story checklist in `frontend-testing`.
+4. Which stories run as tests and which are catalog only: `frontend-testing`.
 
 ```tsx
 // SummaryCards.tsx: presentational, story required
@@ -244,7 +246,7 @@ src/components/
 4. Convert to the project's style: `function` declarations, `type` instead of `interface`, PascalCase
    file names, non-component exports (variants) in a sibling `.ts`, raw palette colours replaced by
    tokens. Lint fails until this is done.
-5. Add a story (`frontend-testing`).
+5. Add a catalog story: the meta's `tags` hold `"!test"` (`frontend-testing`).
 
 ---
 

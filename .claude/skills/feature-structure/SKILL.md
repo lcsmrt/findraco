@@ -80,7 +80,7 @@ it moves up again, possibly to the root.
 | Rung | Components | Hooks and helpers |
 | --- | --- | --- |
 | 0 | inside the component's file (non-exported, JSX-only sub-components) | inside the component's file, until an extraction trigger fires (`component-creation`) |
-| 1 | the feature's `components/` | its own `.ts` next to its single consumer (`spendingRows.ts` beside `CategorySpendingList.tsx`, with its test) |
+| 1 | the feature's `components/` | its own `.ts` next to its single consumer; a business rule or pure computation goes to the feature's `utils/` with its test (`frontend-testing`) |
 | 2 | the parent module's `components/` (only when features are grouped under a module) | the feature's `hooks/` or `utils/` (second consumer in the feature) |
 | 3 | `src/components/` | `src/hooks/`, `src/utils/` (second feature) |
 
@@ -187,8 +187,9 @@ Why:
 2. Consumers import only the hook, so Provider internals never reach them.
 3. It keeps the "component files export only components" rule (`component-creation`) without exception.
 
-Enforced by lint `react-refresh/only-export-components` (the Provider file) and the sibling gate (the
-hook holds a decision point, so it needs `useXxx.test.ts`: throws outside, returns the value inside).
+Enforced by lint `react-refresh/only-export-components` (the Provider file). The hook has no test of
+its own: it is not a row of the test table, and the flows that render the provider cover it
+(`frontend-testing`).
 
 Global providers live in `app/providers/`; a provider used by one feature lives in that feature, next
 to its consumers (`CategoryFormSheetProvider.tsx` + `useCategoryFormSheet.ts`). Context-based compound

@@ -26,7 +26,7 @@ Some frontend conventions below are still being rolled out by the frontend-stand
 
 - Components, top-level helpers and handlers declared inside components are `function` declarations; arrows appear only as inline callbacks (`onClick={() => …}`, `.map((x) => …)`). Lint: `func-style: ["error", "declaration"]`.
 - Named exports only; never default (story files excepted, for `export default meta`); never `React.FC`.
-- A component `.tsx` exports only components (lint: `react-refresh/only-export-components`). Helpers that hit an extraction trigger (a branch or loop computing a value, arithmetic on money/dates/quantities, a business rule, more than 10 lines) live in a sibling `.ts` with a sibling test.
+- A component `.tsx` exports only components (lint: `react-refresh/only-export-components`). Helpers that hit an extraction trigger (a branch or loop computing a value, arithmetic on money/dates/quantities, a business rule, more than 10 lines) live in a `.ts` module: a business rule or pure computation in the feature's `utils/` with a test, glue beside the component with none (test table, `frontend-testing`).
 - A component has at most 60 code lines (blank and comment lines excluded) before its main `return`; above that, logic moves to a `useXxx` hook. No IIFE inside JSX. Lint: `local/component-logic-cap`, `local/no-jsx-iife`. There is no file-size cap.
 
 ## Code Organization
