@@ -90,9 +90,9 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] `needsUnitTest` matches each row and each critical module, and nothing else
-- [ ] `node scripts/check-siblings.ts` passes on the current tree
-- [ ] Gate check passes: Tooling
+- [x] `needsUnitTest` matches each row and each critical module, and nothing else
+- [x] `node scripts/check-siblings.ts` passes on the current tree
+- [x] Gate check passes: Tooling
 
 **Tests**: unit (tooling)
 **Gate**: tooling

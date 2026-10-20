@@ -2,6 +2,7 @@ import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import ts from "typescript";
+import { isCritical, needsUnitTest } from "./testTable.ts";
 
 // A component that imports one of these, directly or through one of our modules built on them,
 // takes data or causes effects from outside: a container. It fetches and passes down, so its visual
@@ -260,8 +261,9 @@ function isLogicNode(node: ts.Node) {
   );
 }
 
-// Decision 8's criterion: a decision point, arithmetic on non-literal operands, or an iteration
-// callback. Types emit no code, so they are never searched.
+// A decision point, arithmetic on non-literal operands, or an iteration callback. Inside a table row it
+// still spares a module with nothing to test (types, constants, a branchless wrapper). Types emit no
+// code, so they are never searched.
 function hasLogic(source: ts.SourceFile) {
   function visit(node: ts.Node): boolean {
     if (ts.isTypeNode(node) || ts.isTypeAliasDeclaration(node) || ts.isInterfaceDeclaration(node)) {
@@ -286,12 +288,18 @@ function hasSiblingTest(filePath: string) {
   return existsSync(`${base}.test.ts`) || existsSync(`${base}.test.tsx`);
 }
 
-/** Logic modules under `srcDir` that lack a sibling `.test.ts(x)`, relative to `srcDir`. */
+// The test table decides which modules need a test; a module outside every row needs none, logic or not.
+function requiresTest(srcDir: string, filePath: string) {
+  const relative = toRelative(srcDir, filePath);
+  return needsUnitTest(relative) && (isCritical(relative) || hasLogic(parse(filePath)));
+}
+
+/** Modules under `srcDir` the test table requires a test for and that lack a sibling `.test.ts(x)`. */
 export function findMissingTests(srcDir: string): string[] {
   return listFiles(srcDir)
     .filter((filePath) => isModuleFile(srcDir, filePath))
     .sort()
-    .filter((filePath) => !hasSiblingTest(filePath) && hasLogic(parse(filePath)))
+    .filter((filePath) => !hasSiblingTest(filePath) && requiresTest(srcDir, filePath))
     .map((filePath) => toRelative(srcDir, filePath));
 }
 
@@ -325,7 +333,7 @@ function main() {
   const missingStories = findMissingStories(srcDir);
   const containersWithMarkup = findContainersWithMarkup(srcDir);
   if (missingTests.length > 0) {
-    console.error("Logic modules without a sibling .test.ts:");
+    console.error("Modules the test table requires a test for, without a sibling .test.ts:");
     for (const file of missingTests) {
       console.error(`  src/${file}`);
     }

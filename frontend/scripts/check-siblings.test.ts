@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { findContainersWithMarkup, findMissingStories, findMissingTests } from "./check-siblings.ts";
+import { criticalModules } from "./testTable.ts";
 
 let srcDir: string;
 
@@ -160,96 +161,65 @@ describe("findContainersWithMarkup", () => {
 });
 
 describe("findMissingTests", () => {
-  it.each([
-    ["if", "export function f(a: number) { if (a > 0) { return 1; } return 0; }"],
-    ["a ternary", "export function f(a: boolean) { return a ? 1 : 0; }"],
-    ["switch", "export function f(a: string) { switch (a) { case 'x': return 1; default: return 0; } }"],
-    ["&& as a value", "export function f(a: boolean, b: boolean) { return a && b; }"],
-    ["|| as a value", "export function f(a: string) { return a || 'none'; }"],
-    ["?? as a value", "export function f(a?: string) { return a ?? 'none'; }"],
-    ["??= assignment", "export function f(a: { b?: number }) { a.b ??= 1; return a; }"],
-    ["a for loop", "export function f(xs: number[]) { for (let i = 0; i < xs.length; i = xs[i]) { xs.pop(); } }"],
-    ["a for-of loop", "export function f(xs: number[]) { let last = 0; for (const x of xs) { last = x; } return last; }"],
-    ["a for-in loop", "export function f(o: object) { const keys = []; for (const k in o) { keys.push(k); } return keys; }"],
-    ["a while loop", "export function f() { const xs = [1]; while (xs.pop()) { /* drain */ } }"],
-    ["a do-while loop", "export function f(read: () => boolean) { do { /* poll */ } while (read()); }"],
-    ["try/catch", "export function f(s: string) { try { return JSON.parse(s); } catch { return null; } }"],
-  ])("names a module with %s and no sibling test (STD-11 AC 1, 2)", (_, content) => {
-    write("utils/probe.ts", `${content}\n`);
+  const logic = "export function f(a: boolean) { return a ? 1 : 0; }\n";
 
-    expect(findMissingTests(srcDir)).toEqual(["utils/probe.ts"]);
+  const rowModules = [
+    ["form schema and mapper", "features/plans/components/inviteForm.ts"],
+    ["form schemas", "features/auth/authForms.ts"],
+    ["pure computation under utils/", "features/overview/utils/scaleLimits.ts"],
+    ["service hook", "api/services/usePlanService.ts"],
+    ["API client", "api/clients/accessToken.ts"],
+    ["URL params", "features/overview/filters/overviewParams.ts"],
+    ["shared hook", "hooks/usePlanPermissions.ts"],
+  ];
+
+  it.each(rowModules)("names a %s module with logic and no sibling test (CAL-04)", (_, modulePath) => {
+    write(modulePath, logic);
+
+    expect(findMissingTests(srcDir)).toEqual([modulePath]);
   });
 
-  it.each([
-    ["arithmetic on a non-literal operand", "export function cents(reais: number) { return reais * 100; }"],
-    ["arithmetic between two names", "export const total = (a: number, b: number) => a + b;"],
-    ["an increment", "export function next(state: { n: number }) { state.n++; return state; }"],
-    ["a compound assignment", "export function add(state: { n: number }, by: number) { state.n += by; return state; }"],
-  ])("names a module with %s (STD-11 AC 1, 2)", (_, content) => {
-    write("utils/probe.ts", `${content}\n`);
-
-    expect(findMissingTests(srcDir)).toEqual(["utils/probe.ts"]);
-  });
-
-  it.each([
-    ["map", "export function ids(xs: { id: number }[]) { return xs.map((x) => x.id); }"],
-    ["filter with a named callback", "function isPositive(n: number) { return n > 0; }\nexport const keep = (xs: number[]) => xs.filter(isPositive);"],
-    ["reduce", "export function sum(xs: number[]) { return xs.reduce((a, b) => Math.max(a, b), 0); }"],
-    ["forEach", "export function clear(keys: string[]) { keys.forEach((k) => localStorage.removeItem(k)); }"],
-  ])("names a module with an iteration callback: %s (STD-11 AC 1, 2)", (_, content) => {
-    write("utils/probe.ts", `${content}\n`);
-
-    expect(findMissingTests(srcDir)).toEqual(["utils/probe.ts"]);
-  });
-
-  it("passes a logic module with a sibling .test.ts or .test.tsx (STD-11 AC 1)", () => {
-    write("utils/a.ts", "export function f(a: boolean) { return a ? 1 : 0; }\n");
-    write("utils/a.test.ts", "");
-    write("hooks/useB.ts", "export function useB(a: boolean) { return a ? 1 : 0; }\n");
-    write("hooks/useB.test.tsx", "");
+  it.each(rowModules)("passes a %s module with a sibling test (CAL-04)", (_, modulePath) => {
+    write(modulePath, logic);
+    write(modulePath.replace(/\.ts$/, ".test.ts"), "");
 
     expect(findMissingTests(srcDir)).toEqual([]);
   });
 
-  it("exempts a type-only module, including conditional and union types (STD-11 AC 1)", () => {
-    write(
-      "api/dtos/plan.ts",
-      "export type Role = 'OWNER' | 'VIEWER';\n" +
-        "export type Maybe<T> = T extends null ? never : T;\n" +
-        "export interface Plan { id: number; role: Role }\n",
-    );
+  it.each(criticalModules)("names the critical module %s without a sibling test even with no logic (CAL-02)", (modulePath) => {
+    write(modulePath, "export const PLACEHOLDER = 1;\n");
+
+    expect(findMissingTests(srcDir)).toEqual([modulePath]);
+  });
+
+  it("passes a critical module with a sibling .test.tsx (CAL-02)", () => {
+    write("utils/money.ts", "export const PLACEHOLDER = 1;\n");
+    write("utils/money.test.tsx", "");
 
     expect(findMissingTests(srcDir)).toEqual([]);
   });
 
-  it("exempts a constant-only module, literal arithmetic included (STD-11 AC 1)", () => {
-    write(
-      "app/routing/paths.ts",
-      "export const PATHS = { home: '/', login: '/login' } as const;\nexport const STALE_MS = 5 * 60 * 1000;\n",
-    );
+  it("passes a logic module that matches no row (CAL-03)", () => {
+    write("features/overview/components/spendingRows.ts", logic);
+    write("features/plans/usePlanList.ts", logic);
+    write("api/services/queryKeys.ts", logic);
 
     expect(findMissingTests(srcDir)).toEqual([]);
   });
 
-  it("exempts a branchless wrapper (STD-11 AC 1)", () => {
-    write("lib/mergeClasses.ts", "import { clsx } from 'clsx';\nexport function cn(...inputs: string[]) { return clsx(inputs); }\n");
+  it("passes a row module with nothing to test: types, constants, a branchless wrapper (CAL-02)", () => {
+    write("api/clients/plan.ts", "export type Role = 'OWNER' | 'VIEWER';\nexport type Maybe<T> = T extends null ? never : T;\n");
+    write("utils/paths.ts", "export const PATHS = { home: '/' } as const;\nexport const STALE_MS = 5 * 60 * 1000;\n");
+    write("hooks/useDebounce.ts", "import { useDeferredValue } from 'react';\nexport function useDebounce<T>(v: T) { return useDeferredValue(v); }\n");
 
     expect(findMissingTests(srcDir)).toEqual([]);
   });
 
-  it("exempts *.handlers.ts, src/test/** and .d.ts even with logic (STD-11 AC 1)", () => {
-    const logic = "export function f(a: boolean) { return a ? 1 : 0; }\n";
-    write("api/services/planService.handlers.ts", logic);
-    write("test/scenarios.ts", logic);
-    write("vite-env.d.ts", "declare const flag: boolean;\n");
+  it("exempts *.handlers.ts, src/test/** and .d.ts inside a row, even with logic (CAL-02)", () => {
+    write("api/utils/paged.handlers.ts", logic);
+    write("test/utils/scenarios.ts", logic);
+    write("api/clients/axios.d.ts", "declare const flag: boolean;\n");
 
     expect(findMissingTests(srcDir)).toEqual([]);
-  });
-
-  it("names every offending module, sorted (STD-11 AC 2)", () => {
-    write("utils/z.ts", "export const z = (a: number) => a - 1;\n");
-    write("api/utils/a.ts", "export const a = (b?: string) => b ?? '';\n");
-
-    expect(findMissingTests(srcDir)).toEqual(["api/utils/a.ts", "utils/z.ts"]);
   });
 });
