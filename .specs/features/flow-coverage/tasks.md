@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: skipped (spec, Assumptions)
-**Status**: In Progress (Phases 1-2 done)
+**Status**: In Progress (all tasks done; Verifier pending)
 **Branch**: `flow-coverage`. Pushing this branch is allowed (CI runs, nothing deploys). Never push `main`, never merge; the orchestrator merges after the Verifier.
 
 ---
@@ -222,8 +222,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Import case passes; hook test cut or reduced per FLOW-10
-- [ ] Gate check passes: Quick
+- [x] Import case passes; hook test cut or reduced per FLOW-10
+- [x] Gate check passes: Quick
 
 **Tests**: flow
 **Gate**: quick
@@ -243,8 +243,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Scope cases pass; hook test cut or reduced per FLOW-10
-- [ ] Gate check passes: Quick
+- [x] Scope cases pass; hook test cut or reduced per FLOW-10
+- [x] Gate check passes: Quick
 
 **Tests**: flow
 **Gate**: quick
@@ -264,8 +264,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Filter cases pass; hook tests cut or reduced per FLOW-10
-- [ ] Gate check passes: Quick
+- [x] Filter cases pass; hook tests cut or reduced per FLOW-10
+- [x] Gate check passes: Quick
 
 **Tests**: flow
 **Gate**: quick
@@ -285,8 +285,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Scope cases pass; hook test cut or reduced per FLOW-10
-- [ ] Gate check passes: Quick
+- [x] Scope cases pass; hook test cut or reduced per FLOW-10
+- [x] Gate check passes: Quick
 
 **Tests**: flow
 **Gate**: quick
@@ -306,8 +306,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Every F1–F7 marked; counts reported
-- [ ] Gate check passes: Build (phase end)
+- [x] Every F1–F7 marked; counts reported
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: none
 **Gate**: build
