@@ -1,4 +1,3 @@
-// CI probe: measures an affected-only run; reverted in the next commit.
 import type { CategorySpendingMember } from "@/api/dtos";
 import { differenceInCalendarMonths, parseISO } from "date-fns";
 
