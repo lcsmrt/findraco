@@ -112,7 +112,7 @@ export function TransactionsPage() {
 
       <TransactionFormDrawer
         open={actions.drawer.open}
-        onOpenChange={actions.onDrawerOpenChange}
+        onOpenChange={actions.closeDrawer}
         transaction={actions.drawer.transaction}
         mode={actions.drawer.mode}
         onDuplicate={actions.duplicate}

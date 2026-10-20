@@ -48,8 +48,14 @@ export function useTransactionFormSubmit({
   const createSeries = useCreateFinancialTransactionSeries({ onSuccess: onDone });
   const updateSeries = useUpdateFinancialTransactionSeries({ onSuccess: onDone });
 
-  async function editSeries(values: TransactionFormOutput, seriesId: string) {
-    if (!transaction || !definition) return;
+  async function editSeries(
+    values: TransactionFormOutput,
+    seriesTransaction: FinancialTransaction,
+    seriesId: string,
+  ) {
+    // Unreachable from the drawer, which disables Save until the definition loads; it narrows
+    // the type, and returning keeps a series edit from falling through to a plain update.
+    if (!definition) return;
     const scope = seriesParcelsChanged(definition, values.parcelsNumber)
       ? "ALL"
       : await chooseScope({ title: "Edit series" });
@@ -59,7 +65,7 @@ export function useTransactionFormSubmit({
       params: { seriesId },
       body: toSeriesEditPayload(
         values,
-        transaction,
+        seriesTransaction,
         definition,
         scope,
         showAttribution,
@@ -70,7 +76,7 @@ export function useTransactionFormSubmit({
 
   async function submit(values: TransactionFormOutput) {
     if (mode === "edit" && transaction?.seriesId) {
-      await editSeries(values, transaction.seriesId);
+      await editSeries(values, transaction, transaction.seriesId);
       return;
     }
 

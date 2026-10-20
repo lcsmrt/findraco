@@ -78,8 +78,9 @@ export function useTransactionActions() {
     if (confirmed) deleteTransaction(transaction.id);
   }
 
-  function onDrawerOpenChange(open: boolean) {
-    if (!open) setDrawerState({ open: false });
+  /** The drawer has no trigger of its own, so it only ever asks to close. */
+  function closeDrawer() {
+    setDrawerState({ open: false });
   }
 
   /** The drawer closes first, so the delete dialog is not stacked on top of it. */
@@ -93,7 +94,7 @@ export function useTransactionActions() {
     edit,
     duplicate,
     remove,
-    onDrawerOpenChange,
+    closeDrawer,
     removeFromDrawer,
     isDeleting,
   };
