@@ -64,7 +64,7 @@ export default defineConfig({
     // a workstation under one busy process per core, but gives the 4-core CI runner a single worker,
     // so CI gets a fixed number measured on the runner instead.
     // Vitest types `maxWorkers` as root-only, so the two pools cannot get different caps.
-    maxWorkers: process.env.CI ? 2 : "25%",
+    maxWorkers: process.env.CI ? 3 : "25%",
     // `--changed` follows imports only. A change to a file tests depend on without importing it
     // (theme CSS, test setup, Storybook config, the lockfile, the test table) reruns everything.
     // Setting this replaces Vitest's defaults, so they are listed again first.
