@@ -74,6 +74,8 @@ they are enforced. Read the matching skill before writing frontend code.
   → `/component-creation`
 - No bypass: `eslint-disable` comments are ignored and `@ts-ignore`/`@ts-expect-error`/`@ts-nocheck` are
   lint errors. A wrong rule changes for the whole codebase. Lint is green on every `main` commit.
+- Every push that ships a frontend fix or change bumps the prerelease in `frontend/package.json`
+  (`1.0.0-beta.N` → `N+1`), in its own `chore(release): <version>` commit; the app shows it.
 - CI gates deploy: a push that changes an app runs its lint, build and tests (docs-only pushes run
   nothing); nothing reaches production without passing them. → `/frontend-testing`
 - Skills: `/component-creation`, `/feature-structure`, `/form-creation`, `/api-integration`,
