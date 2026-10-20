@@ -116,12 +116,25 @@
 
 ## Handoff
 
-- **Feature**: M5-09 mobile-navigation (`.specs/features/mobile-navigation/`) is **Done**: Verifier PASS at iteration 2 (`validation.md`), NAV-01..NAV-06 delivered (21 tasks + 2 fixes). Bottom bar and tab row in `MainLayout`, global "+", one route per screen (`/overview`, `/transactions`, `/categories`, `/plans`; `/` → `/overview`), filters saved per screen, short success toasts app-wide. `check-siblings` now counts router hooks, `Routes` and `Outlet` as container markers, not `Link`
-- **Pending UAT (user)**: bar icons (LayoutDashboard, ArrowLeftRight, Plus, Tags, Users) and the `primary-ink` active colour; hand checks from the spec: the safe-area inset on a real phone, and the New Transaction form covering the bar on a narrow screen. Earlier: production check of the frontend-standards push of 2026-10-21 (list in `frontend-standards/validation.md`)
-- **Process change (user, 2026-10-19)**: full gate once per phase, related tests per task, fewer and grouped tasks, test only what would really break (`.specs/codebase/TESTING.md` "Gate policy"). Workers stay
-- **Explain to the user when asked (user request, 2026-10-18)**: (1) the story-gate refinement (design decision 8, T126); (2) the `interface` in `*.d.ts` exception (E1 addendum, T11)
-- **Noted for later (ROADMAP todos)**: CI affected-only tests, then the test audit & calibration. Low notes from the Verifier: the `Routes`/`Outlet` branch of `check-siblings` has no test of its own; `buildMutationOptions` keeps an unreachable "Operation completed successfully." fallback; a one-off Storybook duplicate-React flake after adding `react-router-dom` to stories (fix: `optimizeDeps.include` in `vite.config.ts`)
-- **Residuals (non-blocking)**: the two `setupUnit.test.ts` cases depend on their order
-- **Next**: push mobile-navigation (needs the user's go-ahead), then UAT. Queue: backend standards review, M5-05 Claude MCP connector, M5-07 PWA, M5-10 i18n, local Docker DB quick task, round-2 UX topics
-- **Runtime state**: API/Vite not running
-- **Blockers**: none. **Branch**: main, local commits not pushed
+- **Next (user priority, 2026-10-20)**: test calibration, before any new feature. Start with tlc Specify; Discuss in Detailed mode, one topic per turn, short explanations. The user's goal is an objective rule for what to test and how, one that doesn't hinge on "philosophical" judgment: tests went from too few to too many. Proposed shape:
+  - (1) a fixed table "code kind → test kind" (e.g. domain rule → unit; service → one test per mutation with the essentials; purely visual component → one story without detail assertions; `base/` primitive → minimal), where anything not in the table gets no test;
+  - (2) review what forces excess tests: the per-file 90% branch threshold and the story-for-every-visual-component rule;
+  - (3) audit the existing ~1440 tests against the table and cut, with numbers before and after;
+  - (4) CI runs only affected tests (ROADMAP todo).
+  - Data: a frontend push costs ~7 min in CI (tests 247s, deploy 108s, lint+build+setup ~1 min). ROADMAP has the "Frontend test audit & calibration" and "CI: run only affected tests" todos
+- **Last delivered**: M5-09 mobile-navigation is **Done**. Verifier PASS (`.specs/features/mobile-navigation/validation.md`), pushed and deployed as `1.0.0-beta.11` (`abf8ecf`, CI green). `check-siblings` now counts router hooks, `Routes` and `Outlet` as container markers, not `Link`
+- **Pending UAT (user)**: bar icons and the `primary-ink` active colour; hand checks on a phone: the safe-area inset on iPhone, and the New Transaction form covering the bar on a narrow screen. Earlier: production check of the frontend-standards changes (list in `frontend-standards/validation.md`)
+- **Process rules (user, 2026-10-19)**:
+  - full gate once per phase, related tests per task, fewer and grouped tasks (`.specs/codebase/TESTING.md` "Gate policy");
+  - workers stay, for a clean context;
+  - every push that ships a frontend fix or change bumps `1.0.0-beta.N` (CLAUDE.md);
+  - release tags later (ROADMAP)
+- **1.0 criteria**: draft at the top of the ROADMAP (daily use on the phone, data safety, a settled base, a trial period)
+- **Explain to the user when asked (2026-10-18)**: (1) the story-gate refinement (design decision 8, T126); (2) the `interface` in `*.d.ts` exception (E1 addendum, T11)
+- **Low notes**:
+  - `check-siblings` has no test of its own for the `Routes`/`Outlet` branch;
+  - `buildMutationOptions` keeps an unreachable "Operation completed successfully." fallback;
+  - one Storybook duplicate-React flake after `react-router-dom` entered stories (fix: `optimizeDeps.include`);
+  - the two `setupUnit.test.ts` cases depend on their order
+- **Queue after calibration**: backend standards review, M5-06 period navigator, M5-07 PWA, M5-05 Claude MCP connector, M5-10 i18n, local Docker DB quick task, round-2 UX topics
+- **Blockers**: none. **Branch**: main; `882ed6a` (1.0 criteria) and this handoff are local, docs only, not pushed. API/Vite not running
