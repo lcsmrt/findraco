@@ -20,6 +20,7 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { Toaster } from "sonner";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SeriesScopeDialogProvider } from "./components/SeriesScopeDialogProvider";
 import { TransactionsPage } from "./TransactionsPage";
@@ -94,6 +95,8 @@ function renderTab() {
           <TransactionsPage />
         </SeriesScopeDialogProvider>
       </ConfirmDialogProvider>
+      {/* The real Toaster shows the outcome the user reads. */}
+      <Toaster />
     </CategoryFormSheetContext.Provider>,
     { auth: authValue(), plan: planValue() },
   );
@@ -202,5 +205,51 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     await waitFor(() =>
       expect(requests.some((r) => r.method === "DELETE" && new URL(r.url).pathname === `${API}/42`)).toBe(true),
     );
+  });
+});
+
+describe("TransactionsPage CSV import (STD-12 AC 1)", () => {
+  const csv = new File(["date,amount,id,title\n01/07/2026,10.00,a1,Coffee"], "nubank.csv", {
+    type: "text/csv",
+  });
+
+  function fileInput() {
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+    if (!input) throw new Error("No file input");
+    return input;
+  }
+
+  function importRequests(requests: Request[]) {
+    return requests.filter(
+      (request) => request.method === "POST" && new URL(request.url).pathname === `${API}/import`,
+    );
+  }
+
+  it("uploads the chosen file, shows the result and refreshes the list", async () => {
+    const { requests, user } = renderTab();
+    await tableRow("Rent");
+    server.use(financialTransactionHandlers.importCsv({ imported: 1 }));
+
+    await user.upload(fileInput(), csv);
+
+    expect(await screen.findByText("Transactions imported.")).toBeTruthy();
+    // jsdom's FormData reaches MSW unserialised, so the request is asserted by method and URL.
+    expect(importRequests(requests)).toHaveLength(1);
+    await waitFor(() => expect(listQueries(requests)).toHaveLength(2));
+  });
+
+  it("shows the API's message and leaves the list alone when the file is rejected", async () => {
+    const { requests, user } = renderTab();
+    await tableRow("Rent");
+    server.use(
+      financialTransactionHandlers.importCsvRejected("Line 3 of the CSV is invalid: bad date"),
+    );
+
+    await user.upload(fileInput(), csv);
+
+    expect(await screen.findByText("Line 3 of the CSV is invalid: bad date")).toBeTruthy();
+    expect(importRequests(requests)).toHaveLength(1);
+    expect(screen.queryByText("Transactions imported.")).toBeNull();
+    expect(listQueries(requests)).toHaveLength(1);
   });
 });
