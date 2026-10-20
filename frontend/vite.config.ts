@@ -67,11 +67,11 @@ export default defineConfig({
     maxWorkers: process.env.CI ? 3 : "25%",
     // `--changed` follows imports only. A change to a file tests depend on without importing it
     // (theme CSS, test setup, Storybook config, the lockfile, the test table) reruns everything.
-    // Setting this replaces Vitest's defaults, so they are listed again first.
+    // Setting this replaces Vitest's defaults, so they are listed again first; its config glob ends in
+    // `/**`, which never matches the config file itself, so it is written without one.
     forceRerunTriggers: [
       "**/package.json/**",
-      "**/vitest.config.*/**",
-      "**/vite.config.*/**",
+      "**/{vitest,vite}.config.*",
       "**/pnpm-lock.yaml",
       "**/src/index.css",
       "**/src/test/**",
