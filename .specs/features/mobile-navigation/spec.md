@@ -33,9 +33,10 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 | "Manage plans" in the switcher | Removed; "Create plan" stays | Plans is a destination now | y |
 | Transactions toolbar | "New Transaction" and "Manage Categories" removed; import, search and filters unchanged | Both are now redundant | y |
 | Safe area | The bar pads its bottom by `env(safe-area-inset-bottom)` | iOS home indicator; prepares the PWA | y |
-| History | A home tab switch pushes a history entry (current behaviour); Plans keeps `/plans` | No change to existing routing semantics | y |
+| History | Every destination switch pushes a history entry; each destination has its own path (NAV-06) | Changed at Design (user, 2026-10-19): the `?tab=` param mixed location with filters | y |
+| Filters saved before NAV-06 | Not carried over: each screen starts from its defaults once after the deploy | Converting the old per-page format is code for one day (user, 2026-10-19) | y |
 | Target plan of "+" | The active plan from the switcher | One active plan everywhere (AD-005) | y |
-| Toast scope | "Transaction added." on every successful create through the global add; edit and duplicate show no toast | Agent proposal, accepted | y |
+| Toast scope | "Transaction added." ("Series created." for a series) on every successful create, global add or not, duplicate included; edit and delete keep a success toast in the short style (NAV-05) | Corrected at Design (user, 2026-10-19): edit and duplicate already toasted; the earlier "stay without a toast" misdescribed them | y |
 | Role still loading | While the active plan or its role is not loaded, the global add is hidden | Avoids flashing the "+" for a VIEWER | n |
 | Accept-invitation page | Shows neither the bottom bar nor the tab row | A one-off flow before the user lands in the plan | n |
 
@@ -53,11 +54,11 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 
 **Acceptance Criteria**:
 
-1. WHILE the screen is narrow, the home page and the Plans page SHALL show a bar fixed to the bottom of the viewport with, in order: Overview, Transactions, a centre add button, Categories, Plans.  <!-- state-driven -->
-2. WHILE the screen is narrow, the home page SHALL NOT show the top tab row.  <!-- state-driven -->
+1. WHILE the screen is narrow, the Overview, Transactions, Categories and Plans screens SHALL show a bar fixed to the bottom of the viewport with, in order: Overview, Transactions, a centre add button, Categories, Plans.  <!-- state-driven -->
+2. WHILE the screen is narrow, the system SHALL NOT show the top tab row.  <!-- state-driven -->
 3. Each destination in the bottom bar SHALL show an icon and a visible text label.  <!-- ubiquitous -->
 4. WHEN the current screen is a destination THEN its bottom-bar item SHALL be shown in the `primary` colour and marked `aria-current="page"`.  <!-- event-driven -->
-5. WHEN the user taps Overview, Transactions or Categories THEN the system SHALL show the home page on that tab, keeping the tab's persisted filters (M5-03).  <!-- event-driven -->
+5. WHEN the user taps Overview, Transactions or Categories THEN the system SHALL navigate to that screen's path (NAV-06), with that screen's saved filters for the active plan.  <!-- event-driven -->
 6. WHEN the user taps Plans THEN the system SHALL navigate to `/plans`.  <!-- event-driven -->
 7. WHILE the bottom bar is shown, it SHALL stay visible during scrolling, and the page SHALL reserve bottom space equal to the bar's height so the last content is not covered.  <!-- state-driven -->
 8. The bottom bar SHALL pad its bottom edge by `env(safe-area-inset-bottom)`.  <!-- ubiquitous -->
@@ -74,13 +75,13 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 
 **Acceptance Criteria**:
 
-1. WHILE the screen is wide, the home page and the Plans page SHALL show a "New Transaction" button in the tab row.  <!-- state-driven -->
+1. WHILE the screen is wide, the Overview, Transactions, Categories and Plans screens SHALL show a "New Transaction" button in the tab row.  <!-- state-driven -->
 2. WHEN the user activates the bottom-bar add button or the "New Transaction" button THEN the system SHALL open the New Transaction form for the active plan with type Expense selected.  <!-- event-driven -->
-3. WHEN a transaction is created from the global add THEN the system SHALL close the form, keep the user on the screen they were on, and show the toast "Transaction added."  <!-- event-driven -->
+3. WHEN a transaction is created from the global add THEN the system SHALL close the form, keep the user on the screen they were on, and show the toast "Transaction added." ("Series created." when the form created a recurring or installment series).  <!-- event-driven -->
 4. WHEN a transaction is created from the global add THEN the system SHALL refresh the active plan's transaction, dashboard and category data so the current screen reflects it.  <!-- event-driven -->
 5. WHILE the user's role in the active plan is VIEWER the system SHALL NOT show the bottom-bar add button or the "New Transaction" button.  <!-- state-driven -->
 6. WHILE the add button is hidden the bottom bar SHALL show its four destinations evenly spaced.  <!-- state-driven -->
-7. IF creating the transaction fails THEN the system SHALL keep the form open with the entered values and SHALL NOT show the "Transaction added." toast.  <!-- unwanted-behavior -->
+7. IF creating the transaction fails THEN the system SHALL keep the form open with the entered values and SHALL NOT show a success toast.  <!-- unwanted-behavior -->
 8. The Transactions toolbar SHALL NOT show its own "New Transaction" button.  <!-- ubiquitous -->
 
 **Independent Test**: As an EDITOR on the Overview, tap "+", save an expense, stay on the Overview with the toast and updated totals; as a VIEWER, see no "+" and no "New Transaction".
@@ -96,7 +97,7 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 **Acceptance Criteria**:
 
 1. WHILE the screen is wide, the tab row SHALL show, in order: Overview, Transactions, Categories, Plans.  <!-- state-driven -->
-2. WHILE the screen is wide, the home page and the Plans page SHALL show the tab row, with the current destination marked active.  <!-- state-driven -->
+2. WHILE the screen is wide, the Overview, Transactions, Categories and Plans screens SHALL show the tab row, with the current destination marked active.  <!-- state-driven -->
 3. WHEN the user activates the Plans tab THEN the system SHALL navigate to `/plans`.  <!-- event-driven -->
 4. The Plans page SHALL NOT show a "Back" button.  <!-- ubiquitous -->
 5. The plan switcher dropdown SHALL NOT offer "Manage plans" and SHALL keep "Create plan".  <!-- ubiquitous -->
@@ -120,6 +121,40 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 
 ---
 
+### P3: Short success messages
+
+**User Story**: As a member, I want success messages short enough to read at a glance so that a toast confirms the action without stopping me.
+
+**Why P3**: Added at Design (user, 2026-10-19): "Transaction added." would sit next to "…successfully." messages; the user chose one short style for every success toast.
+
+**Acceptance Criteria**:
+
+1. Every success toast raised by an API service SHALL be a short past-tense sentence without the word "successfully", with the wording in the design's message table.  <!-- ubiquitous -->
+2. WHEN an API service's mutation succeeds THEN the system SHALL show the message the design's message table lists for that mutation.  <!-- event-driven -->
+
+**Independent Test**: Create, edit and delete a category, a plan rename and a transaction; each toast matches the table.
+
+---
+
+### P2: One address per screen
+
+**User Story**: As a member, I want each screen to have its own address so that a link, a bookmark or the Back button lands on that screen with its own filters.
+
+**Why P2**: Added at Design (user, 2026-10-19): with tabs as a query param, a link from Plans to a tab lost that tab's filters.
+
+**Acceptance Criteria**:
+
+1. The system SHALL serve Overview at `/overview`, Transactions at `/transactions`, Categories at `/categories` and Plans at `/plans`.  <!-- ubiquitous -->
+2. WHEN the user opens Overview, Transactions or Categories without filter params THEN the system SHALL apply that screen's last filters for the active plan, or its defaults when none are saved.  <!-- event-driven -->
+3. WHEN the user changes a screen's filters THEN the system SHALL save them for that screen and the active plan, without changing another screen's saved filters.  <!-- event-driven -->
+4. WHEN the user switches the active plan THEN the system SHALL stay on the same screen and apply that plan's saved filters for it.  <!-- event-driven -->
+5. WHEN the user opens a screen's link that carries filter params THEN the system SHALL apply them, making the link's plan active when the user belongs to it.  <!-- event-driven -->
+6. WHEN the user opens `/` or a link of the form `/?tab=<screen>&...` THEN the system SHALL redirect to that screen's path (Overview when no tab is given), keeping the other params.  <!-- event-driven -->
+
+**Independent Test**: Filter Transactions by "mercado", go to Plans, tap Transactions: the search is still "mercado"; tap Overview: its own period, untouched; open an old `/?tab=categories` bookmark: land on `/categories`.
+
+---
+
 ## Edge Cases
 
 - WHILE the active plan or the user's role in it is not loaded the system SHALL NOT show the global add.
@@ -139,7 +174,7 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 | Idempotency / retry | N/A because creation semantics are unchanged; the button is the existing form's |
 | Auth boundaries | Global add hidden for VIEWER (NAV-02 AC 5); backend enforcement unchanged |
 | Concurrency / ordering | N/A because the feature adds no shared state |
-| Data lifecycle | N/A because the feature stores nothing |
+| Data lifecycle | Saved filters move to one entry per (user, plan, screen) in local storage; old per-page entries are ignored (NAV-06) |
 | Observability | N/A because the project has no frontend telemetry conventions |
 | External-dependency failure | N/A because the feature calls no new service |
 | State-transition integrity | Role change on plan switch updates the add button (Edge Cases) |
@@ -154,10 +189,12 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 | NAV-02 | P1 Add from anywhere (AC 1–8) + Edge (role loading, plan switch, Plans page, form covers bar) | - | Pending |
 | NAV-03 | P2 Plans as a destination (AC 1–5) + Edge (accept-invitation page) | - | Pending |
 | NAV-04 | P3 Toolbar cleanup (AC 1–2) | - | Pending |
+| NAV-05 | P3 Short success messages (AC 1–2) | - | Pending |
+| NAV-06 | P2 One address per screen (AC 1–6) | - | Pending |
 
 **ID format:** `NAV-NN`; each ID covers the AC range named in its row.
 
-**Coverage:** 4 total, 0 mapped to tasks, 4 unmapped ⚠️ (before Tasks)
+**Coverage:** 6 total, 0 mapped to tasks, 6 unmapped ⚠️ (before Tasks)
 
 ---
 

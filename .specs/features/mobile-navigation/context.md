@@ -59,3 +59,13 @@ Proposed by the agent and accepted by the user as a block (2026-10-16):
 ## Deferred Ideas
 
 None. The discussion stayed within the feature scope. The remaining round-2 topics are queued as their own features.
+
+---
+
+## Design-time changes (2026-10-19)
+
+Decided with the user during Design; the spec carries them as requirements.
+
+- **One address per screen (NAV-06).** `/overview`, `/transactions`, `/categories`, `/plans` replace `/?tab=`. This replaces "browser back works as today": a destination switch still pushes a history entry, but each screen now has its own path and its own saved filters per plan. The plan stays a `?plan=` param.
+- **Success messages (NAV-05).** Every success toast uses a short past-tense sentence ("Transaction added.", "Series created.", "Category updated."). "Edit and duplicate stay without a toast" above misdescribed the app: both already toasted, and the user wants a toast on every case.
+- **Refresh after writes.** Every transaction write refreshes the Overview's data too, so saving from the "+" on the Overview updates its totals.
