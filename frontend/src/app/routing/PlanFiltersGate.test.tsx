@@ -174,29 +174,23 @@ describe("PlanFiltersGate", () => {
     expect(params()).toEqual({ plan: "5", period: "last-3m" });
   });
 
-  it.each(OVERVIEW_PARAM_KEYS)(
-    "treats the exported Overview key %s as a screen param: a link with only it applies to the active plan",
-    (key) => {
-      localStorage.setItem("filters:overview:1:5", "plan=5&overviewMember=3");
+  it("treats an Overview key as a screen param: a link with only it applies to the active plan", () => {
+    localStorage.setItem("filters:overview:1:5", "plan=5&overviewMember=3");
 
-      renderAt(`/overview?${key}=x`, "overview");
+    renderAt("/overview?period=x", "overview");
 
-      expect(params()).toEqual({ [key]: "x", plan: "5" });
-      expect(localStorage.getItem("filters:overview:1:5")).toBe(`${key}=x&plan=5`);
-    },
-  );
+    expect(params()).toEqual({ period: "x", plan: "5" });
+    expect(localStorage.getItem("filters:overview:1:5")).toBe("period=x&plan=5");
+  });
 
-  it.each(TRANSACTION_PARAM_KEYS)(
-    "treats the exported Transactions key %s as a screen param: a link with only it applies to the active plan",
-    (key) => {
-      localStorage.setItem("filters:transactions:1:5", "plan=5&member=3");
+  it("treats a Transactions key as a screen param: a link with only it applies to the active plan", () => {
+    localStorage.setItem("filters:transactions:1:5", "plan=5&member=3");
 
-      renderAt(`/transactions?${key}=x`);
+    renderAt("/transactions?category=x");
 
-      expect(params()).toEqual({ [key]: "x", plan: "5" });
-      expect(localStorage.getItem("filters:transactions:1:5")).toBe(`${key}=x&plan=5`);
-    },
-  );
+    expect(params()).toEqual({ category: "x", plan: "5" });
+    expect(localStorage.getItem("filters:transactions:1:5")).toBe("category=x&plan=5");
+  });
 
   it("applies URL params for the active plan and saves them as the new state", () => {
     localStorage.setItem("filters:transactions:1:5", "plan=5&member=3");

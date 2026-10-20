@@ -12,7 +12,6 @@ import { CategoryFormSheet } from "./CategoryFormSheet";
 
 const PLAN_ID = 5;
 const lucas: PlanMember = { userId: 1, name: "Lucas", email: "lucas@example.com", role: "OWNER" };
-const livia: PlanMember = { userId: 2, name: "Livia", email: "livia@example.com", role: "EDITOR" };
 
 const groceries: FinancialTransactionCategory = {
   id: 9,
@@ -70,65 +69,8 @@ async function sentBody(requests: Request[], method: string) {
   return requests.find((request) => request.method === method)?.json();
 }
 
-describe("CategoryFormSheet limits", () => {
+describe("CategoryFormSheet edit", () => {
   afterEach(cleanup);
-
-  it("submits a typed limit as a number (STD-06 AC 4)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionCategoryHandlers.create(groceries));
-    await renderLoadedSheet({ members: [lucas] });
-
-    await user.type(screen.getByLabelText("Name"), "Groceries");
-    await user.type(screen.getByLabelText("Amount (optional)"), "25050");
-    expect(screen.getByLabelText<HTMLInputElement>("Amount (optional)").value).toBe("R$ 250,50");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    expect(await sentBody(requests, "POST")).toEqual({
-      type: "DEBIT",
-      description: "Groceries",
-      parentId: null,
-      ownerId: null,
-      spendingLimit: 250.5,
-      memberLimits: [],
-    });
-  });
-
-  it("submits no limit when the limit is left empty (STD-06 AC 4)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionCategoryHandlers.create(groceries));
-    await renderLoadedSheet({ members: [lucas] });
-
-    await user.type(screen.getByLabelText("Name"), "Groceries");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body).toEqual({
-      type: "DEBIT",
-      description: "Groceries",
-      parentId: null,
-      ownerId: null,
-      memberLimits: [],
-    });
-    expect("spendingLimit" in body).toBe(false);
-  });
-
-  it("submits per-member limits as numbers and skips a member left empty (STD-06 AC 4)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionCategoryHandlers.create(groceries));
-    await renderLoadedSheet({ members: [lucas, livia] });
-
-    await user.type(screen.getByLabelText("Name"), "Groceries");
-    await user.click(screen.getByRole("button", { name: "Per member" }));
-    await user.type(await screen.findByLabelText("Limit for Lucas"), "26000");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.memberLimits).toEqual([{ memberId: 1, amount: 260 }]);
-    expect("spendingLimit" in body).toBe(false);
-  });
 
   it("shows a saved limit formatted and sends it back as a number (STD-06 AC 4)", async () => {
     const user = userEvent.setup();
@@ -148,41 +90,6 @@ describe("CategoryFormSheet limits", () => {
   });
 });
 
-describe("CategoryFormSheet limit mode", () => {
-  afterEach(cleanup);
-
-  it("marks the chosen limit mode as pressed (STD-06 AC 2)", async () => {
-    const user = userEvent.setup();
-    await renderLoadedSheet({ members: [lucas, livia] });
-    const single = screen.getByRole("button", { name: "Single" });
-    const perMember = screen.getByRole("button", { name: "Per member" });
-    expect(single.getAttribute("aria-pressed")).toBe("true");
-
-    await user.click(perMember);
-
-    expect(perMember.getAttribute("aria-pressed")).toBe("true");
-    expect(single.getAttribute("aria-pressed")).toBe("false");
-  });
-
-  it("sends the plain limit after switching back from per member to single (STD-06 AC 1)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionCategoryHandlers.create(groceries));
-    await renderLoadedSheet({ members: [lucas, livia] });
-
-    await user.type(screen.getByLabelText("Name"), "Groceries");
-    await user.click(screen.getByRole("button", { name: "Per member" }));
-    await user.type(await screen.findByLabelText("Limit for Lucas"), "26000");
-    await user.click(screen.getByRole("button", { name: "Single" }));
-    await user.type(await screen.findByLabelText("Amount (optional)"), "30000");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.spendingLimit).toBe(300);
-    expect(body.memberLimits).toEqual([]);
-  });
-});
-
 describe("CategoryFormSheet skeleton", () => {
   afterEach(cleanup);
 
@@ -199,7 +106,7 @@ describe("CategoryFormSheet skeleton", () => {
     expect(requests.filter((request) => request.method !== "GET")).toEqual([]);
   });
 
-  it("sends the form on Submit and closes once saved (STD-06 AC 8)", async () => {
+  it("sends the full form on Submit and closes once saved (STD-06 AC 4, 8)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
     const onOpenChange = vi.fn();
@@ -207,9 +114,17 @@ describe("CategoryFormSheet skeleton", () => {
     await renderLoadedSheet({ members: [lucas], onOpenChange });
 
     await user.type(screen.getByLabelText("Name"), "Groceries");
+    await user.type(screen.getByLabelText("Amount (optional)"), "25050");
     await user.click(screen.getByRole("button", { name: "Create" }));
 
-    expect((await sentBody(requests, "POST")).description).toBe("Groceries");
+    expect(await sentBody(requests, "POST")).toEqual({
+      type: "DEBIT",
+      description: "Groceries",
+      parentId: null,
+      ownerId: null,
+      spendingLimit: 250.5,
+      memberLimits: [],
+    });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 });

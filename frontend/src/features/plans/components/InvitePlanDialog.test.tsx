@@ -76,18 +76,6 @@ describe("InvitePlanDialog", () => {
     expect(await request?.json()).toEqual({ role: "EDITOR", type: "LINK" });
   });
 
-  it("asks for an email address and sends nothing without one (STD-06 AC 9)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    renderDialog();
-
-    await user.click(screen.getByRole("button", { name: "Send invitation" }));
-
-    expect(await screen.findByText("Enter an email address")).toBeTruthy();
-    expect(screen.getByLabelText("Email").getAttribute("aria-invalid")).toBe("true");
-    expect(requests).toEqual([]);
-  });
-
   it("generates a link invitation with the chosen expiry (STD-06 AC 9)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();

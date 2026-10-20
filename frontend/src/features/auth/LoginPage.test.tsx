@@ -3,7 +3,7 @@ import type { AuthContextValue } from "@/app/providers/useAuth";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders, type ProviderValues } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
-import { cleanup, screen, waitFor } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "sonner";
@@ -94,41 +94,5 @@ describe("Login sign-in", () => {
     expect(signIn).not.toHaveBeenCalled();
     expect(screen.getByRole("heading", { level: 1, name: "Sign in" })).toBeTruthy();
     expect(screen.queryByLabelText("location")).toBeNull();
-  });
-});
-
-describe("Login form", () => {
-  it("shows a message per empty field and sends nothing (STD-06 AC 9)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    renderLogin();
-
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
-
-    expect(await screen.findByText("Please enter your email")).toBeTruthy();
-    expect(screen.getByText("Please enter your password")).toBeTruthy();
-    expect(screen.getByLabelText("Email").getAttribute("aria-invalid")).toBe("true");
-    expect(screen.getByLabelText("Password").getAttribute("aria-invalid")).toBe("true");
-    expect(requests).toEqual([]);
-  });
-
-  it("rejects a malformed email and sends nothing (STD-06 AC 9)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    renderLogin();
-
-    await user.type(screen.getByLabelText("Email"), "ana");
-    await user.type(screen.getByLabelText("Password"), CREDENTIALS.password);
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
-
-    expect(await screen.findByText("Invalid email")).toBeTruthy();
-    await waitFor(() => expect(requests).toEqual([]));
-  });
-
-  it("offers no remember-me option", () => {
-    renderLogin();
-
-    expect(screen.queryByRole("checkbox")).toBeNull();
-    expect(screen.queryByText(/remember/i)).toBeNull();
   });
 });

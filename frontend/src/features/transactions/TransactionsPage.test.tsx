@@ -152,32 +152,6 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     expect(listQueries(requests).some((query) => query.description === "r")).toBe(false);
   });
 
-  it("sorts by the clicked column, mapping Attributed to onto attributedTo", async () => {
-    const { requests, user } = renderTab();
-    const table = await screen.findByRole("table");
-    await tableRow("Rent");
-
-    await user.click(within(table).getByRole("button", { name: /Amount/ }));
-    await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({
-        page: "0",
-        size: "10",
-        sortBy: "amount",
-        sortDirection: "asc",
-      }),
-    );
-
-    await user.click(within(table).getByRole("button", { name: /Attributed to/ }));
-    await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({
-        page: "0",
-        size: "10",
-        sortBy: "attributedTo",
-        sortDirection: "asc",
-      }),
-    );
-  });
-
   it("requests the next page from the pagination built from the response", async () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");

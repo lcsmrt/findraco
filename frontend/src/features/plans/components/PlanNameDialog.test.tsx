@@ -61,15 +61,4 @@ describe("PlanNameDialog", () => {
     expect(await request?.json()).toEqual({ name: "Household" });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
-
-  it("asks for a name instead of sending an empty one", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    renderWithProviders(<PlanNameDialog mode="create" open onOpenChange={vi.fn()} />);
-
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    expect(await screen.findByText("Enter a name for the plan")).toBeTruthy();
-    expect(requests).toEqual([]);
-  });
 });

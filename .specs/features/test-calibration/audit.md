@@ -56,7 +56,7 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | `src/api/utils/toPagination.test.ts` | unit | keep | business rule (`utils/`, `*Form(s).ts`) | 4 → 4 | first, middle, last, empty: the rule's edges |
 | `src/app/layout/navigation.test.ts` | unit | move | pure computation outside a row → `utils/` | 10 → 4 | `currentDestination` is a computation → `app/layout/utils/`; the path-list case is glue; four destination mappings are one rule |
 | `src/app/providers/resolveTheme.test.ts` | unit | cut | glue outside every row | 4 → 0 | a wrapper around `matchMedia` |
-| `src/app/routing/filterStorage.test.ts` | unit | cut | glue outside every row | 10 → 0 | a storage wrapper; per-screen and per-plan isolation: `src/app/routing/PlanFiltersGate.test.tsx:366`, `:224` |
+| `src/app/routing/filterStorage.test.ts` | unit | cut | glue outside every row | 10 → 0 | a storage wrapper; per-screen and per-plan isolation: `src/app/routing/PlanFiltersGate.test.tsx:360`, `:218` |
 | `src/app/routing/planParams.test.ts` | unit | keep | URL params | 5 → 2 | a round trip and an invalid value; four malformed values are one rule |
 | `src/components/input/currencyDigits.test.ts` | unit | keep | critical module | 18 → 12 | four "enters N from the right" and four zero cases repeat their rules; keep the branch threshold |
 | `src/components/table/utils/cols.test.ts` | unit | keep | business rule (`utils/`, `*Form(s).ts`) | 6 → 5 | two "untouched" cases are one rule |
@@ -107,8 +107,8 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | `src/features/plans/components/usePlanNameSubmit.test.ts` | feature hook | keep | feature hook | 3 → 1 | create and rename: `src/features/plans/components/PlanNameDialog.test.tsx:22`, `:45`; failure has no flow; follow-up F6 |
 | `src/features/transactions/components/useCsvImport.test.ts` | feature hook | keep | feature hook | 3 → 3 | no flow imports a file; follow-up F7 |
 | `src/features/transactions/components/useSeriesScope.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1 |
-| `src/features/transactions/components/useTransactionActions.test.tsx` | feature hook | keep | feature hook | 11 → 8 | edit, duplicate, delete: `src/features/transactions/TransactionsPage.test.tsx:193`, `:206`, `:219`; series scopes and cancels have no flow; follow-up F7 |
-| `src/features/transactions/components/useTransactionFormSubmit.test.ts` | feature hook | keep | feature hook | 11 → 9 | create and failure: `src/app/layout/MainLayout.test.tsx:226`, `:255`; series edits have no flow; follow-up F7 |
+| `src/features/transactions/components/useTransactionActions.test.tsx` | feature hook | keep | feature hook | 11 → 8 | edit, duplicate, delete: `src/features/transactions/TransactionsPage.test.tsx:167`, `:180`, `:193`; series scopes and cancels have no flow; follow-up F7 |
+| `src/features/transactions/components/useTransactionFormSubmit.test.ts` | feature hook | keep | feature hook | 11 → 9 | create and failure: `src/app/layout/MainLayout.test.tsx:221`, `:250`; series edits have no flow; follow-up F7 |
 | `src/features/transactions/components/useTransactionSearch.test.ts` | feature hook | keep | feature hook | 7 → 6 | settled search: `src/features/transactions/TransactionsPage.test.tsx:141`; the rest has no flow; follow-up F7 |
 | `src/features/transactions/filters/useTransactionFilters.test.tsx` | feature hook | keep | feature hook | 3 → 1 | URL write and foreign keys: `src/hooks/useSearchParamGroup.test.tsx:61`; the clear subset has no flow; follow-up F7 |
 | `src/features/transactions/useTransactionFilterChips.test.tsx` | feature hook | keep | feature hook | 8 → 8 | no flow shows chips; follow-up F7 |
@@ -121,12 +121,12 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | `src/app/routing/AppRouter.test.tsx` | flow | rewrite | container → flow (CAL-08) | 5 → 2 | the redirect and one served route; four routes are one decision |
 | `src/app/routing/PlanFiltersGate.test.tsx` | flow | rewrite | container → flow (CAL-08) | 32 → 20 | 14 per-key "screen param" cases are one rule per screen (2 stay); restore, link, plan-switch and storage-failure decisions stay |
 | `src/app/routing/PrivateRoute.test.tsx` | flow | keep | container → flow (CAL-08) | 4 → 4 | loading, unreachable, redirect, render: each a decision |
-| `src/components/input/CurrencyInput.test.tsx` | presentational | cut | presentational → story | 7 → 0 | digit rules: `currencyDigits.test.ts`; typing display: `CurrencyInput.stories.tsx` Empty play; the number reaching the payload: `src/features/transactions/components/TransactionFormDrawer.test.tsx:144` (kept as the happy submit); keypad is a hand check |
+| `src/components/input/CurrencyInput.test.tsx` | presentational | cut | presentational → story | 7 → 0 | digit rules: `currencyDigits.test.ts`; typing display: `CurrencyInput.stories.tsx` Empty play; the number reaching the payload: `src/features/transactions/components/TransactionFormDrawer.test.tsx:137` (kept as the happy submit); keypad is a hand check |
 | `src/components/input/DatePicker.test.tsx` | presentational | cut | presentational → story | 3 → 0 | form focus and blur wiring has no story play yet; follow-up F3 |
 | `src/features/auth/ForgotPasswordPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 2 → 1 | the empty-email rule is `authForms.test.ts` (forgotPasswordSchema) |
 | `src/features/auth/LoginPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 6 → 3 | field rules are `authForms.test.ts` (loginSchema); no remember-me is visual |
 | `src/features/auth/ResetPasswordPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 3 → 2 | passwords-differ is `authForms.test.ts` (resetPasswordSchema) |
-| `src/features/categories/components/CategoryFormSheet.test.tsx` | flow | rewrite | container → flow (CAL-08) | 8 → 2 | limit payload rules are `categoryForm.test.ts` (toPayload); aria-pressed is Base UI's; happy submit and cancel stay; no API-failure case: follow-up F4 |
+| `src/features/categories/components/CategoryFormSheet.test.tsx` | flow | rewrite | container → flow (CAL-08) | 8 → 3 | limit payload rules are `categoryForm.test.ts` (toPayload); aria-pressed is Base UI's; happy submit and cancel stay; no API-failure case: follow-up F4. Done (T14): the edit submit (PUT to the category's URL) is a container decision the plan missed, so it stays (AUD-04); the happy submit now types a limit and asserts the full payload |
 | `src/features/plans/components/InvitePlanDialog.test.tsx` | flow | rewrite | container → flow (CAL-08) | 4 → 3 | missing email is `inviteForm.test.ts`; no cancel or API-failure case: follow-up F6 |
 | `src/features/plans/components/PlanNameDialog.test.tsx` | flow | rewrite | container → flow (CAL-08) | 3 → 2 | empty name is `planNameForm.test.ts` |
 | `src/features/transactions/TransactionsPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 8 → 7 | the sort mapping is `transactionSort.test.ts` |
@@ -250,7 +250,7 @@ Behaviour the table asks a test for that no test at the right layer covers. The 
 - **F1. Provider guards.** `useAuth`, `usePlanContext`, `useTheme`, `useConfirm`, `useSeriesScope` each assert "throws outside its provider". No flow can reach that, and the feature-hook row says none. Decide it in the table (a row for provider hooks, or no test); the five files stay until then.
 - **F2. AuthProvider flow.** `useAuthSession.test.tsx` is a flow of `AuthProvider` with `PrivateRoute` (start-up, expiry, sign-out). Rename it as the provider's flow test; the cases stay.
 - **F3. DatePicker form wiring.** Focus on an empty required submit, touched on blur and the typed date reaching the form have no story `play` once `DatePicker.test.tsx` is cut. Add them to `DatePicker.stories.tsx`.
-- **F4. Category form flow.** `CategoryFormSheet.test.tsx` has no edit or API-failure case; with them, `useCategoryFormSubmit.test.ts` can go.
+- **F4. Category form flow.** `CategoryFormSheet.test.tsx` has no API-failure case (its edit case stays, T14); with it, `useCategoryFormSubmit.test.ts` can go.
 - **F5. Overview flow.** No `OverviewPage` flow test exists; the member filter and the per-member trend request live only in hook tests.
 - **F6. Plan dialogs.** `PlanNameDialog.test.tsx` and `InvitePlanDialog.test.tsx` have no cancel or API-failure case; with them, `usePlanNameSubmit.test.ts` can go.
 - **F7. Transactions flows.** `TransactionsPage.test.tsx` has no import, series-delete scope, filter-chip, page-reset or clear case, and `TransactionFormDrawer.test.tsx` no series-edit scope; with them, the remaining transactions feature-hook tests can go.

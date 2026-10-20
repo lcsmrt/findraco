@@ -121,36 +121,11 @@ describe("AppRouter", () => {
     expect(pathname).toBe("/overview");
   });
 
-  it("serves Overview at /overview (NAV-06 AC 1)", async () => {
-    renderAt("/overview");
-
-    expect(await screen.findByRole("button", { name: "Previous period" })).toBeTruthy();
-    expect(screen.queryByRole("textbox", { name: "Search transactions" })).toBeNull();
-    expect(pathname).toBe("/overview");
-  });
-
   it("serves Transactions at /transactions (NAV-06 AC 1)", async () => {
     renderAt("/transactions");
 
     expect(await screen.findByRole("textbox", { name: "Search transactions" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "Previous period" })).toBeNull();
     expect(pathname).toBe("/transactions");
-  });
-
-  it("serves Categories at /categories (NAV-06 AC 1)", async () => {
-    renderAt("/categories");
-
-    expect(await screen.findByText("Expenses")).toBeTruthy();
-    expect(screen.getByText("Income")).toBeTruthy();
-    expect(screen.queryByRole("textbox", { name: "Search transactions" })).toBeNull();
-    expect(pathname).toBe("/categories");
-  });
-
-  it("serves Plans at /plans (NAV-06 AC 1)", async () => {
-    renderAt("/plans");
-
-    expect(await screen.findByRole("heading", { name: "Plans" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Previous period" })).toBeNull();
-    expect(pathname).toBe("/plans");
   });
 });

@@ -364,8 +364,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Each file matches its audit row
-- [ ] Gate check passes: Quick
+- [x] Each file matches its audit row
+- [x] Gate check passes: Quick
 
 **Tests**: integration
 **Gate**: quick

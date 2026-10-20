@@ -162,19 +162,14 @@ afterEach(() => {
 });
 
 describe("MainLayout navigation", () => {
-  it.each([
-    ["Overview", "/overview"],
-    ["Transactions", "/transactions"],
-    ["Categories", "/categories"],
-    ["Plans", "/plans"],
-  ])("tapping %s in the bottom bar navigates to %s (NAV-01 AC 5, 6)", async (label, path) => {
+  it("tapping a destination in the bottom bar navigates to it and marks it active (NAV-01 AC 5, 6)", async () => {
     const user = userEvent.setup();
-    renderAt(label === "Plans" ? "/overview" : "/plans");
+    renderAt("/plans");
 
-    await user.click(within(bottomBar()).getByRole("link", { name: label }));
+    await user.click(within(bottomBar()).getByRole("link", { name: "Categories" }));
 
-    await waitFor(() => expect(pathname).toBe(path));
-    expect(within(bottomBar()).getByRole("link", { name: label }).getAttribute("aria-current")).toBe("page");
+    await waitFor(() => expect(pathname).toBe("/categories"));
+    expect(within(bottomBar()).getByRole("link", { name: "Categories" }).getAttribute("aria-current")).toBe("page");
   });
 
   it("tapping Transactions restores that screen's saved filters for the active plan (NAV-01 AC 5)", async () => {

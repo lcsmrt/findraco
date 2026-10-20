@@ -30,13 +30,6 @@ const lucas: PlanMember = {
   email: "lucas@example.com",
   role: "OWNER",
 };
-const livia: PlanMember = {
-  userId: 2,
-  name: "Livia",
-  email: "livia@example.com",
-  role: "EDITOR",
-};
-
 const savedTransaction: FinancialTransaction = {
   id: 42,
   type: "DEBIT",
@@ -164,81 +157,6 @@ describe("TransactionFormDrawer money fields", () => {
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 
-  it("rejects an empty amount without sending anything (STD-06 AC 4)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    renderDrawer({ members: [lucas] });
-
-    await user.type(screen.getByLabelText("Description"), "Groceries");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    expect(await screen.findByText("Amount must be positive")).toBeTruthy();
-    expect(screen.getByLabelText("Amount").getAttribute("aria-invalid")).toBe(
-      "true",
-    );
-    expect(requests.filter((request) => request.method === "POST")).toEqual([]);
-  });
-
-  it("shows the items error when the items exceed the total, and sends nothing (STD-06 AC 4)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    renderDrawer({ members: [lucas] });
-
-    await user.type(screen.getByLabelText("Description"), "Market");
-    await user.type(screen.getByLabelText("Amount"), "1000");
-    await user.click(screen.getByRole("button", { name: "Add item" }));
-    await user.type(screen.getByPlaceholderText("Item description"), "Snacks");
-    await user.type(screen.getByLabelText("Item 1 amount"), "2000");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    expect(
-      await screen.findByText("Items cannot exceed the transaction total"),
-    ).toBeTruthy();
-    // Testing Library collapses the non-breaking space pt-BR puts after "R$" into a plain space.
-    expect(screen.getByText("Remainder: -R$ 10,00")).toBeTruthy();
-    expect(requests.filter((request) => request.method === "POST")).toEqual([]);
-  });
-
-  it("sends item amounts as numbers (STD-06 AC 4)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
-    renderDrawer({ members: [lucas] });
-
-    await user.type(screen.getByLabelText("Description"), "Market");
-    await user.type(screen.getByLabelText("Amount"), "1000");
-    await user.click(screen.getByRole("button", { name: "Add item" }));
-    await user.type(screen.getByPlaceholderText("Item description"), "Snacks");
-    await user.type(screen.getByLabelText("Item 1 amount"), "250");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.amount).toBe(10);
-    expect(body.items).toEqual([{ description: "Snacks", amount: 2.5 }]);
-  });
-
-  it("sends exact split shares as numbers (STD-06 AC 4)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
-    renderDrawer({ members: [lucas, livia] });
-
-    await user.type(screen.getByLabelText("Description"), "Dinner");
-    await user.type(screen.getByLabelText("Amount"), "10000");
-    await user.click(await screen.findByRole("button", { name: "Split" }));
-    await user.click(screen.getByRole("button", { name: "Exact" }));
-    await user.type(screen.getByLabelText("Lucas's share"), "3025");
-    await user.type(screen.getByLabelText("Livia's share"), "6975");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.splitMode).toBe("EXACT");
-    expect(body.participants).toEqual([
-      { memberId: 1, shareAmount: 30.25 },
-      { memberId: 2, shareAmount: 69.75 },
-    ]);
-  });
-
   it("shows a saved amount formatted and sends it back as a number (STD-06 AC 4)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
@@ -330,11 +248,6 @@ describe("TransactionFormDrawer toggles", () => {
       }),
     );
     await user.click(screen.getByRole("button", { name: "Recurring" }));
-    expect(
-      screen
-        .getByRole("button", { name: "Recurring" })
-        .getAttribute("aria-pressed"),
-    ).toBe("true");
     await user.click(screen.getByRole("button", { name: "Create" }));
 
     const body = await sentBody(requests, "POST");
@@ -347,125 +260,5 @@ describe("TransactionFormDrawer toggles", () => {
       amount: 99.9,
     });
     expect(body.parcelsNumber).toBeUndefined();
-  });
-
-  it("creates an installment series when the Installments mode is chosen (STD-06 AC 1, 2)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionHandlers.createSeries(savedSeries));
-    renderDrawer({ members: [lucas] });
-
-    await fillRequired(user);
-    await user.click(
-      screen.getByRole("checkbox", {
-        name: "Repeat or split into installments?",
-      }),
-    );
-    await user.click(screen.getByRole("button", { name: "Installments" }));
-    await user.type(screen.getByLabelText("Number of installments"), "12");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body).toMatchObject({ mode: "INSTALLMENT", parcelsNumber: 12 });
-    expect(body.interval).toBeUndefined();
-  });
-
-  it("splits equally between every member when Split is chosen (STD-06 AC 1, 2)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
-    renderDrawer({ members: [lucas, livia] });
-
-    await fillRequired(user);
-    await user.click(await screen.findByRole("button", { name: "Split" }));
-    expect(
-      screen
-        .getByRole("button", { name: "Split" })
-        .getAttribute("aria-pressed"),
-    ).toBe("true");
-    expect(
-      screen.getByRole("button", { name: "Me" }).getAttribute("aria-pressed"),
-    ).toBe("false");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.splitMode).toBe("EQUAL");
-    expect(body.participants).toEqual([{ memberId: 1 }, { memberId: 2 }]);
-  });
-
-  it("attributes to the current user again when Me is chosen after Split (STD-06 AC 1)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
-    renderDrawer({ members: [lucas, livia] });
-
-    await fillRequired(user);
-    await user.click(await screen.findByRole("button", { name: "Split" }));
-    await user.click(screen.getByRole("button", { name: "Me" }));
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.participants).toEqual([{ memberId: 1 }]);
-  });
-});
-
-describe("TransactionFormDrawer owned-category attribution", () => {
-  afterEach(cleanup);
-
-  const liviasGym: FinancialTransactionCategory = {
-    id: 9,
-    type: "DEBIT",
-    description: "Livia's gym",
-    ownerId: livia.userId,
-    ownerName: livia.name,
-    ownerActive: true,
-  };
-
-  async function chooseCategory(user: ReturnType<typeof userEvent.setup>) {
-    await user.click(screen.getByLabelText("Category"));
-    await user.click(await screen.findByRole("option", { name: "Livia's gym" }));
-  }
-
-  it("attributes the transaction to the owner of the chosen category (CAT-17)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
-    renderDrawer({ members: [lucas, livia], categories: [liviasGym] });
-
-    await user.type(screen.getByLabelText("Description"), "Gym");
-    await user.type(screen.getByLabelText("Amount"), "9990");
-    await screen.findByRole("button", { name: "Someone else" });
-    await chooseCategory(user);
-
-    expect(
-      screen.getByRole("button", { name: "Someone else" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.categoryId).toBe(9);
-    expect(body.participants).toEqual([{ memberId: 2 }]);
-  });
-
-  it("keeps hand-edited participants when an owned category is chosen afterwards (CAT-17)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
-    renderDrawer({ members: [lucas, livia], categories: [liviasGym] });
-
-    await user.type(screen.getByLabelText("Description"), "Gym");
-    await user.type(screen.getByLabelText("Amount"), "9990");
-    await user.click(await screen.findByRole("button", { name: "Split" }));
-    await chooseCategory(user);
-
-    expect(
-      screen.getByRole("button", { name: "Split" }).getAttribute("aria-pressed"),
-    ).toBe("true");
-    await user.click(screen.getByRole("button", { name: "Create" }));
-
-    const body = await sentBody(requests, "POST");
-    expect(body.categoryId).toBe(9);
-    expect(body.splitMode).toBe("EQUAL");
-    expect(body.participants).toEqual([{ memberId: 1 }, { memberId: 2 }]);
   });
 });

@@ -30,16 +30,4 @@ describe("ForgotPassword", () => {
     expect(await requests[0].json()).toEqual({ email: "ana@example.com" });
     expect(screen.queryByLabelText("Email")).toBeNull();
   });
-
-  it("shows the field error for an empty email and sends nothing (STD-06 AC 9)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    renderWithProviders(<ForgotPassword />, { route: "/forgot-password" });
-
-    await user.click(screen.getByRole("button", { name: "Send reset link" }));
-
-    expect(await screen.findByText("Please enter your email")).toBeTruthy();
-    expect(screen.getByLabelText("Email").getAttribute("aria-invalid")).toBe("true");
-    expect(requests).toEqual([]);
-  });
 });

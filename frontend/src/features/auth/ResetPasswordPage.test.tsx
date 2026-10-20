@@ -2,7 +2,7 @@ import { authHandlers } from "@/api/services/auth.handlers";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
-import { cleanup, screen, waitFor } from "@testing-library/react";
+import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Route, Routes } from "react-router-dom";
 import { afterEach, describe, expect, it } from "vitest";
@@ -39,21 +39,6 @@ describe("ResetPassword", () => {
     const reset = requests.find((request) => request.method === "POST");
     expect(reset?.url).toMatch(/\/auth\/reset-password$/);
     expect(await reset?.json()).toEqual({ token: TOKEN, password: "new-secret" });
-  });
-
-  it("flags passwords that differ and sends no reset (STD-06 AC 9)", async () => {
-    const user = userEvent.setup();
-    const requests = recordRequests();
-    server.use(authHandlers.validateResetToken({ valid: true }));
-    renderReset();
-
-    await user.type(await screen.findByLabelText("New password"), "new-secret");
-    await user.type(screen.getByLabelText("Confirm new password"), "other-secret");
-    await user.click(screen.getByRole("button", { name: "Set new password" }));
-
-    expect(await screen.findByText("Passwords do not match")).toBeTruthy();
-    expect(screen.getByLabelText("Confirm new password").getAttribute("aria-invalid")).toBe("true");
-    await waitFor(() => expect(requests.filter((request) => request.method === "POST")).toEqual([]));
   });
 
   it("offers a new link when the token is no longer valid", async () => {
