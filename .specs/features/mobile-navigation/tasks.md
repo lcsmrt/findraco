@@ -307,8 +307,8 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] No `TransactionsTab` symbol or file remains; story titles follow
-- [ ] Gate check passes: Build
+- [x] No `TransactionsTab` symbol or file remains; story titles follow
+- [x] Gate check passes: Build (lint, build, sibling gate, coverage; unit 86 files / 776 tests, tooling + storybook 95 files / 643 tests, passing)
 
 **Tests**: none
 **Gate**: build

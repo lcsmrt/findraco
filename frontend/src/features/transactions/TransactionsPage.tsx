@@ -23,14 +23,14 @@ import { toSorting, toTransactionSort } from "./components/transactionSort";
 import { useCsvImport } from "./components/useCsvImport";
 import { useTransactionActions } from "./components/useTransactionActions";
 import { useTransactionSearch } from "./components/useTransactionSearch";
-import { TransactionsTabView } from "./TransactionsTabView";
+import { TransactionsPageView } from "./TransactionsPageView";
 
-type TransactionsTabProps = {
+type TransactionsPageProps = {
   /** Opens the Categories tab; the tab row belongs to the home page, not to this tab. */
   onManageCategories: () => void;
 };
 
-export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
+export function TransactionsPage({ onManageCategories }: TransactionsPageProps) {
   const { transactions, updateTransactions, clearTransactions } =
     useTransactionFilters();
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
@@ -90,7 +90,7 @@ export function TransactionsTab({ onManageCategories }: TransactionsTabProps) {
 
   return (
     <>
-      <TransactionsTabView
+      <TransactionsPageView
         search={search}
         onSearchChange={setSearch}
         filters={

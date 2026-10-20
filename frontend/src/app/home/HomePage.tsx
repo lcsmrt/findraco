@@ -1,6 +1,6 @@
 import { CategoriesTab } from "@/features/categories/CategoriesTab";
 import { OverviewPage } from "@/features/overview/OverviewPage";
-import { TransactionsTab } from "@/features/transactions/TransactionsTab";
+import { TransactionsPage } from "@/features/transactions/TransactionsPage";
 import { PlanFiltersGate } from "@/app/routing/PlanFiltersGate";
 import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
 import { TRANSACTION_PARAM_KEYS } from "@/features/transactions/filters/transactionParams";
@@ -29,7 +29,7 @@ function HomeTabs() {
     <HomeTabsView activeTab={activeTab} onTabChange={setActiveTab}>
       {activeTab === "overview" && <OverviewPage />}
       {activeTab === "transactions" && (
-        <TransactionsTab onManageCategories={() => setActiveTab("categories")} />
+        <TransactionsPage onManageCategories={() => setActiveTab("categories")} />
       )}
       {activeTab === "categories" && <CategoriesTab />}
     </HomeTabsView>

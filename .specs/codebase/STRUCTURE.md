@@ -107,7 +107,7 @@ The tree above is the target set by the frontend standards. Migration is in prog
 
 **Transactions:**
 
-- UI: `frontend/src/features/transactions/` (`TransactionsTab.tsx`, `TransactionFormDrawer.tsx` + `transactionForm.ts`, `TransactionFilterPopover.tsx`, `transactionColumns.tsx`, `filters/`)
+- UI: `frontend/src/features/transactions/` (`TransactionsPage.tsx`, `TransactionFormDrawer.tsx` + `transactionForm.ts`, `TransactionFilterPopover.tsx`, `transactionColumns.tsx`, `filters/`)
 - Data access (FE): `frontend/src/api/services/useFinancialTransactionService.ts`, DTOs `api/dtos/financialTransaction.ts`
 - Business logic (BE): `backend/services/FinancialTransactionService.java` (incl. Nubank CSV import)
 - API/Data (BE): `controllers/FinancialTransactionController.java`, `repositories/FinancialTransactionRepository.java`, `specifications/FinancialTransactionSpecification.java`, `models/FinancialTransaction.java`

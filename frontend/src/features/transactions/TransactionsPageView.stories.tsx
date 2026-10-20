@@ -5,7 +5,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { expect, fn } from "storybook/test";
 import { buildTransactionColumns } from "./components/transactionColumns";
-import { TransactionsTabView } from "./TransactionsTabView";
+import { TransactionsPageView } from "./TransactionsPageView";
 
 const members: PlanMember[] = [
   { userId: 1, name: "Lucas Martins", email: "lucas@example.com", role: "OWNER" },
@@ -52,8 +52,8 @@ function columns(sharedPlan: boolean) {
 const pagination = { number: 0, size: 10, totalElements: 3, totalPages: 1, first: true, last: true };
 
 const meta = {
-  title: "Transactions/TransactionsTabView",
-  component: TransactionsTabView,
+  title: "Transactions/TransactionsPageView",
+  component: TransactionsPageView,
   args: {
     search: "",
     onSearchChange: fn(),
@@ -79,7 +79,7 @@ const meta = {
     onSortChange: fn(),
     onEdit: fn(),
   },
-} satisfies Meta<typeof TransactionsTabView>;
+} satisfies Meta<typeof TransactionsPageView>;
 export default meta;
 
 type Story = StoryObj<typeof meta>;

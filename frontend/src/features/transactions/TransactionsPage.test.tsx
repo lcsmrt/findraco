@@ -22,7 +22,7 @@ import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SeriesScopeDialogProvider } from "./components/SeriesScopeDialogProvider";
-import { TransactionsTab } from "./TransactionsTab";
+import { TransactionsPage } from "./TransactionsPage";
 
 const PLAN_ID = 5;
 const API = `/api/findraco/plan/${PLAN_ID}/financial-transaction`;
@@ -91,7 +91,7 @@ function renderTab() {
     <CategoryFormSheetContext.Provider value={categorySheet}>
       <ConfirmDialogProvider>
         <SeriesScopeDialogProvider>
-          <TransactionsTab onManageCategories={vi.fn()} />
+          <TransactionsPage onManageCategories={vi.fn()} />
         </SeriesScopeDialogProvider>
       </ConfirmDialogProvider>
     </CategoryFormSheetContext.Provider>,
@@ -117,7 +117,7 @@ async function tableRow(description: string) {
 
 afterEach(cleanup);
 
-describe("TransactionsTab (STD-12 AC 1, 2)", () => {
+describe("TransactionsPage (STD-12 AC 1, 2)", () => {
   it("loads the first page of transactions", async () => {
     const { requests } = renderTab();
 

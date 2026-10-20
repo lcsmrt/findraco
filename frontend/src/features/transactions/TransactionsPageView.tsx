@@ -16,7 +16,7 @@ import { useRef } from "react";
 import type { FilterChip } from "./useTransactionFilterChips";
 import { TransactionMobileList } from "./components/TransactionMobileList";
 
-type TransactionsTabViewProps = {
+type TransactionsPageViewProps = {
   search: string;
   onSearchChange: (search: string) => void;
   /** The filter popover: a slot, because it loads the plan's categories itself. */
@@ -38,7 +38,7 @@ type TransactionsTabViewProps = {
   onEdit: (transaction: FinancialTransaction) => void;
 };
 
-export function TransactionsTabView({
+export function TransactionsPageView({
   search,
   onSearchChange,
   filters,
@@ -57,7 +57,7 @@ export function TransactionsTabView({
   sorting,
   onSortChange,
   onEdit,
-}: TransactionsTabViewProps) {
+}: TransactionsPageViewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleImportClick() {
@@ -170,7 +170,7 @@ export function TransactionsTabView({
 
       <div className="hidden sm:block">
         <Table
-          tableId="financialTransactionsTable"
+          tableId="financialTransactionsPagele"
           border="all"
           className="mx-2 w-auto rounded-lg shadow-sm"
           data={transactions}
