@@ -1,82 +1,106 @@
 ---
 name: frontend-testing
-description: Decide and write frontend tests in findraco, and know the gates that run them. Covers what gets a unit test, a story, an integration test or an E2E test; the content-based "logic module" criterion and the sibling test/story gate (`scripts/check-siblings.ts`); 90% branch coverage on logic only; the story checklist and `play` limits; Storybook a11y in error mode; integration tests with `renderWithProviders` and MSW (explicit per-test handlers, scenarios, unhandled requests fail); no `vi.mock` of our own modules in flow tests; the `unit`/`storybook`/`tooling` Vitest projects and commands; flaky tests; husky hooks and the CI/deploy gates. Use when writing or changing any test or story, adding a module that may need a test, mocking the network, or when a gate fails. Triggers on "test", "unit test", "vitest", "story", "storybook", "play function", "a11y", "integration test", "msw", "mock", "vi.mock", "renderHook", "coverage", "check-siblings", "flaky", "e2e", "playwright", "CI failed", "pre-commit".
+description: Decide and write frontend tests in findraco, and know the gates that run them. Covers the closed test table (code kind by path and file name → test kind → amount, `scripts/testTable.ts`) and the sibling test/story gate (`scripts/check-siblings.ts`); 90% branch coverage on the five critical modules only; stories that run as tests (states the component handles, its own `play`) versus catalog-only stories (`!test` tag, every `base/` primitive); Storybook a11y in error mode; flow tests that assert container decisions only, with `renderWithProviders` and MSW (explicit per-test handlers, scenarios, unhandled requests fail); no `vi.mock` of our own modules; no tests of library behaviour; the E2E overlap rule; how Specify and the Test Coverage Matrix use the table; the `unit`/`critical`/`storybook`/`tooling` Vitest projects and commands; affected-only CI runs and the weekly full run; flaky tests; husky hooks and the CI/deploy gates. Use when writing or changing any test or story, adding a module that may need a test, writing spec ACs or a Test Coverage Matrix, mocking the network, or when a gate fails. Triggers on "test", "unit test", "vitest", "story", "storybook", "play function", "a11y", "integration test", "msw", "mock", "vi.mock", "renderHook", "coverage", "check-siblings", "test table", "catalog story", "flaky", "e2e", "playwright", "CI failed", "pre-commit".
 metadata:
   type: reference
 ---
 
 # Frontend Testing
 
-Tests should fail on our defects. That decides everything below: logic is unit-tested, visuals are
-rendered in stories, flows run the real app with only the network simulated, and nothing tests a
+Tests should fail on our defects. That decides everything below: a closed table says which code gets
+which test and how much, flows run the real app with only the network simulated, and nothing tests a
 library on our behalf.
 
 Commands run from `frontend/` with pnpm.
 
 ---
 
-## What gets which test
+## The test table
 
-| What | Test | File | Enforced by |
+What to test is a lookup, not a judgment call. A module's kind is recognised by its path and file name
+only (paths under `src/`); the unit rows live as code in `scripts/testTable.ts`, which the sibling gate
+and the Vitest config read. **A module that matches no row gets no test, even with an `if` in it.**
+
+| Code kind | Recognised by | Test | Amount |
 | --- | --- | --- | --- |
-| **Logic**: a `.ts` module that meets the logic criterion below, our hooks with logic, form mappers, service hooks | unit test (Vitest; `renderHook` for hooks; service hooks through MSW) | sibling `xxx.test.ts` | sibling gate; 90% branch coverage |
-| **Visual**: every presentational component (`component-creation` defines it) | story, with `play` for basic interactions only | sibling `Xxx.stories.tsx` | story gate; a11y in error mode |
-| **Flow**: what a container orchestrates, as the spec's ACs describe it | integration test: Testing Library `render` of the real screen through `renderWithProviders`, network simulated by MSW only | sibling `Xxx.test.tsx` | the tlc execution contract and the Verifier (spec-anchored check, mutants) |
-| **Journey**: 3–5 critical paths (sign in, add a transaction, see it on the Overview, switch plans) | E2E with Playwright against the real backend and a disposable database | not yet in place | waits for the local Docker database; never runs against `dev_finsight` |
+| **Business rule**: form schema and mappers, money, recurrence, split, any pure computation | `*Form.ts`, `*Forms.ts`, any `.ts` under a `utils/` folder | unit, sibling `xxx.test.ts` | one case per rule the spec states, plus the edges it names |
+| **Service hook** | `api/services/use*Service.ts` | unit through MSW, real `findracoApi` | one test per endpoint or mutation, asserting method, URL, params/body and response mapping |
+| **API client** | `api/clients/*.ts` | unit through MSW | the single 401 → refresh → retry test, plus one case per rule the client promises |
+| **URL params** | `*Params.ts` | unit | a round trip, plus an invalid value |
+| **Shared hook** | `hooks/*.ts` | unit through `renderHook` | one case per behaviour it promises its callers |
+| **Feature hook** | `use*.ts` anywhere else | none of its own | its container's flow test covers it |
+| **Container** | a `.tsx` the gate's container rule matches (`component-creation`) | flow test, sibling `Xxx.test.tsx` | the container decisions below ("Flow tests") |
+| **Presentational component** | any other `.tsx` outside `base/` | story, sibling `Xxx.stories.tsx` | one story per state its own code handles, a `play` per interaction of its own ("Stories") |
+| **`base/` primitive** | `.tsx` under a `<family>/base/` folder | catalog story only | none runs as a test |
+| **Tooling**: local lint rules, gate scripts, lint config | `eslint/rules/*.ts`, `scripts/*.ts`, `eslint.config.js` | unit (Node) | one valid and one invalid case per behaviour the rule promises |
+| **Anything else**: UI glue (column definitions, labels, class maps, prop mapping, route lists), simple formatting, wrappers, types, DTOs, constants, `*.handlers.ts` | | none | |
 
-- Business logic is unit-tested, never simulated through clicks in a story.
-- No visual regression (story screenshot) tests for now: baselines would churn while the UI is still
-  being reworked.
-- Every new spec AC gets a test at the right row above. An existing flow without an integration test
-  gets one when a change touches it.
+- Pure computation shown to the user (a sort, a grouping, a scale) is a business rule: it lives in the
+  feature's `utils/` folder, not beside a component, and keeps its test. A `.ts` of glue beside a
+  component stays there with no test.
+- **No test in any layer asserts library behaviour**: Base UI, Tailwind, TanStack, react-hook-form, MSW,
+  zod's own parsing. A test of `cn` tests `tailwind-merge`, which cannot fail on our defects.
+- **Once E2E journeys exist, a happy path an E2E journey covers gets no flow test of its own.**
+- A rule is tested once, at its row. A flow test never repeats a unit rule through clicks, and a story
+  never asserts a business rule.
 - Derive tests from the spec's ACs, never from the implementation. Test names cite the AC they prove
   (`it("rejects an amount of zero (TXN-03 AC 2)")`): that is where spec traceability lives, not in code
   comments.
 - Testing Library is the query and interaction library everywhere: `storybook/test` re-exports it for
-  `play`, integration tests use it directly. A presentational interaction lives in `play`, not in a
-  second test.
+  `play`, flow tests use it directly.
+- No visual regression (story screenshot) tests for now: baselines would churn while the UI is still
+  being reworked.
+
+### The table in the spec-driven flow
+
+- **Specify.** A visual-only AC (layout, spacing, colour, an icon) becomes a story or a named hand check,
+  not a unit or flow test. An AC that restates a rule already specified at another layer (a form-schema rule
+  repeated as a screen AC) is not written.
+- **Tasks.** The table, not the existing tests, sets the floor and the ceiling of each layer's Test
+  Coverage Matrix row. A layer whose row says none gets none, whatever older code has.
+- **Verify.** The discrimination sensor's scope is set in `CLAUDE.md`: only code whose row has a test.
 
 ---
 
-## The logic criterion and the sibling gate
+## The sibling gate
 
-**A `.ts` module is logic, and needs a sibling `.test.ts`, when it contains at least one of:**
+`scripts/check-siblings.ts` prints three reports, each naming the files; any entry fails `pnpm test` and
+CI:
 
-- a decision point: `if`, ternary, `switch`, `&&` / `||` / `??` used as a value, a loop, `try`/`catch`;
-- arithmetic on non-literal operands;
-- an iteration callback: `map`, `filter`, `reduce`, `forEach`, ….
+1. modules the table requires a test for, without a sibling `.test.ts`: a module in a unit row that
+   holds logic (a decision point, arithmetic on non-literal operands or an iteration callback), or any
+   critical module. Inside a row, a module with nothing to test (types, constants, a branchless wrapper)
+   still needs none;
+2. component files that need a story and lack one: every `.tsx` that is not a container and not under a
+   `base/` folder;
+3. containers that render HTML elements of their own (`component-creation`).
 
-Hooks are `.ts` modules and follow the same criterion.
-
-- Classification is by content, never by name or path. A constants file that grows a function becomes
-  logic; no rename or folder escapes the gate.
-- Exempt by content: type-only and DTO modules, constant-only modules, branchless wrappers (`cn`,
-  `SessionExpiredError`, `useDebounce`). Do not write tests for them: a test of `cn` tests
-  `tailwind-merge`, which cannot fail on our defects.
-- Exempt by suffix: `*.handlers.ts` (test support, see `api-integration`).
-
-`scripts/check-siblings.ts` reads every module's AST and prints two reports, each naming the files:
-modules that need a test and lack one, and component files that need a story and lack one (the story
-rule is in `component-creation`). Any entry fails `pnpm test` and CI.
-
-When the gate names a file, write the missing test or story. When it names a component that should not
-need a story, the component is a container with a visual of its own: split it into container and view.
-There is no exemption list.
+When the gate names a module, write its test at the row's amount. When it names a component that should
+not need a story, the component is a container with a visual of its own: split it into container and
+view. There is no exemption list; a row that gives a wrong result is fixed in `testTable.ts` for every
+file.
 
 ---
 
-## Coverage: 90% branches on logic, nowhere else
+## Coverage: 90% branches on the critical modules only
 
-- Vitest `v8` coverage over `src/**/*.ts`, excluding tests, `*.handlers.ts`, `src/test/**` and `.d.ts`.
-  Branch threshold 90% per module; below it, `pnpm test` fails naming the module. Measured on the
-  `unit` project only: stories run helpers without asserting their results.
-- Coverage runs in its own invocation on `unit` (Vitest takes coverage settings only at the root) and
-  measures only modules a test loads (`all: false`): the sibling gate already gives every logic module a
-  test, and v8 would report an unloaded barrel as 0% branches.
-- Components (`.tsx`), stories, DTOs and types are outside the threshold. Never set a global number.
-- Coverage is a signal, not proof. Executing a branch without asserting its outcome games the number.
-  Every covered branch has an assertion on the result; the Verifier's mutation sensor catches tests that
-  would pass against a wrong implementation.
+| Critical module | Why |
+| --- | --- |
+| `utils/money.ts` | parses and compares every amount |
+| `components/input/currencyDigits.ts` | turns keystrokes into the amount saved |
+| `features/transactions/components/transactionForm.ts` | maps a transaction to the payload saved |
+| `features/categories/components/categoryForm.ts` | maps a category and its limits to the payload saved |
+| `api/clients/findracoApi.ts` | renews the session; a defect drops it |
+
+- An error in these writes wrong data or drops the session without the user noticing; a display error
+  is visible. Each must reach 90% branches on its own, so a failure names the module. No other module
+  has a threshold, and no global number exists.
+- Coverage runs only in the `critical` project, over each critical module's own tests
+  (`<module>.test.ts`, `<module>.*.test.ts`): an unrelated test that loads a critical module partly would
+  fail it for no defect.
+- A moved critical module moves in `criticalModules` (`scripts/testTable.ts`) in the same commit.
+- Coverage is a signal, not proof. Executing a branch without asserting its outcome games the number;
+  every covered branch has an assertion on the result.
 
 ---
 
@@ -85,18 +109,14 @@ There is no exemption list.
 Story types come from the framework package: `import type { Meta, StoryObj } from "@storybook/react-vite"`,
 never `@storybook/react`.
 
-**Story checklist.** A story file covers:
-
-1. each variant the component exposes;
-2. each state it handles: empty, loading, error;
-3. extreme content: long text, big values, many items;
-4. a mobile viewport when the layout changes on mobile.
-
-Not a token `Default` story. The story list is the component's state list.
+Every story is in the catalog; only some run as tests. **A story runs as a test only when it shows a
+state the component handles in its own code (with data, empty, loading, error) or holds a `play` for the
+component's own interaction.** Every other story (a variant showcase, extreme content, a mobile
+viewport) carries the `!test` tag, or is removed when it adds nothing to the catalog. Not a token
+`Default` story: the running stories are the component's state list.
 
 ```tsx
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
 import { SummaryCards } from "./SummaryCards";
 
 const meta = {
@@ -107,27 +127,33 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const PositiveBalance: Story = {
+// States SummaryCards handles itself: runs as a test.
+export const WithData: Story = {
   args: { summary: { totalIncome: 5000, totalExpenses: 3200, netBalance: 1800 } },
-};
-
-export const NegativeBalance: Story = {
-  args: { summary: { totalIncome: 2500, totalExpenses: 3200, netBalance: -700 } },
 };
 
 export const Loading: Story = { args: { summary: undefined, isLoading: true } };
 
+// Catalog only: extreme content and a mobile viewport show the layout, they test nothing of ours.
 export const LargeValues: Story = {
   args: { summary: { totalIncome: 987654321.99, totalExpenses: 123456789.01, netBalance: 864197532.98 } },
+  tags: ["!test"],
 };
 
 export const Mobile: Story = {
-  args: PositiveBalance.args,
+  args: WithData.args,
   globals: { viewport: { value: "mobile1" } },
+  tags: ["!test"],
 };
 ```
 
-- **`play` covers basic interactions only**: open, select, type into a field.
+- **A `base/` primitive's story file is catalog only**: `"!test"` goes into the meta's `tags`, and the
+  gate demands no story for a primitive. The user keeps the catalog; a primitive's behaviour is Base UI's.
+- **Merge tags, never add a second key.** Many metas already carry `tags: ["autodocs"]`; the catalog
+  meta is `tags: ["autodocs", "!test"]`. A second `tags` key silently overrides the first, and the file
+  keeps running. The same holds for a story that already has tags.
+- **`play` covers the component's own interactions only**: open, select, type into a field. Never a
+  business rule, never what a library does on its own (a Base UI popover opening on click).
   ```tsx
   play: async ({ canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Category" }));
@@ -136,17 +162,26 @@ export const Mobile: Story = {
   ```
 - A react-hook-form section (`ItemsField`) renders inside a small test form built in the story file with
   `useForm` and default values.
-- **Accessibility runs in error mode** (`a11y: { test: "error" }` in `.storybook/preview.tsx`): a
-  violation fails the story test. Fix the component or the story; never disable a check.
-- Stories run in a real browser, so they are a free render test as well as the workshop where a
-  component is built and every state is seen in isolation.
+- **Accessibility runs in error mode** (`a11y: { test: "error" }` in `.storybook/preview.tsx`) on every
+  story that runs as a test: a violation fails it. Fix the component or the story; never disable a check.
+- A catalog story that stops rendering fails no gate (`build-storybook` is not in CI). That is accepted;
+  fix it when seen.
 
 ---
 
-## Integration tests (flows)
+## Flow tests
 
-An integration test renders the real screen with the real providers, TanStack Query cache, hooks and
-`findracoApi` with its interceptors. **Only the network is simulated, by MSW.**
+A flow test renders a container with the real providers, TanStack Query cache, hooks and `findracoApi`
+with its interceptors. **Only the network is simulated, by MSW.** It asserts only container decisions:
+
+- one happy submit, asserting the full payload that reaches the network;
+- an API failure;
+- cancel;
+- permission (what a role sees or may do);
+- what happens after saving: navigation, toast, refetch.
+
+An assertion that depends only on a pure function's input and output lives in that function's unit test,
+not in a flow test. `MainLayout.test.tsx` is the model: each test is a decision of the screen.
 
 **Never `vi.mock` our own modules in a flow test**: services, `findracoApi`, providers, hooks. Why:
 mocking `findracoApi` skipped the session-refresh interceptor, the base URL and param serialisation,
@@ -195,18 +230,22 @@ it("shows the viewer no create action (PLAN-04 AC 2)", async () => {
 
 | Project | Environment | Runs |
 | --- | --- | --- |
-| `unit` | jsdom, MSW server per file | `src/**/*.test.{ts,tsx}`: logic, hooks, service hooks, integration tests |
-| `storybook` | Chromium (Playwright), a11y in error mode | every `*.stories.tsx` |
+| `unit` | jsdom, MSW server per file | `src/**/*.test.{ts,tsx}`: unit tests and flow tests |
+| `critical` | jsdom, like `unit` | the critical modules' own tests, with coverage and the 90% threshold |
+| `storybook` | Chromium (Playwright), a11y in error mode | every `*.stories.tsx` story without the `!test` tag |
 | `tooling` | Node | local lint rules (`eslint/rules/*.test.ts`), `scripts/check-siblings.test.ts`, `eslint.config.test.ts` |
 
 | Command | Use |
 | --- | --- |
-| `pnpm test` | everything: sibling gate, `unit` with coverage, then `tooling` and `storybook` (what CI runs) |
-| `pnpm exec vitest run --project=unit --project=tooling` | quick loop for logic, flows and tooling |
-| `pnpm exec vitest run` | every project, without the sibling and coverage gates |
+| `pnpm test` | the full suite: sibling gate, `unit`, `tooling` and `storybook`, then `critical` with coverage |
+| `pnpm exec vitest related --run <files>` | per task: only the tests that import the changed files |
+| `pnpm exec vitest run --project=unit --project=tooling` | quick loop for unit, flow and tooling tests |
+| `pnpm test:coverage` | the critical modules' coverage alone |
 
-**Flaky tests are fixed, never retried.** A test that fails intermittently has a cause; find and fix
-it. Adding retries hides it.
+- Workers: a quarter of the cores locally, a fixed 2 on CI (`process.env.CI`). Vitest's percentage gives
+  the 4-core runner one worker, and more workers than that made `user-event` tests time out at random.
+- **Flaky tests are fixed, never retried.** A test that fails intermittently has a cause; find and fix
+  it. Adding retries hides it.
 
 ---
 
@@ -216,9 +255,19 @@ it. Adding retries hides it.
 | --- | --- | --- |
 | `pre-commit` (husky, `frontend/.husky/`) | `lint-staged`: ESLint on the staged frontend files | the commit |
 | `commit-msg` (husky) | `check_commit.py`: Conventional Commits | the commit |
-| CI `frontend` job (`.github/workflows/ci.yml`, pushes that change `frontend/` or root files, diffed from the last green run) | lint, `build` (`tsc`), `pnpm test` (sibling gate, all projects, coverage) | deploy |
+| CI `frontend` job (`.github/workflows/ci.yml`, pushes that change `frontend/` or root files, diffed from the last green run) | lint, `build` (`tsc`), the sibling gate, then the affected tests or the full suite (below) | deploy |
+| CI weekly run (Mondays 06:00 UTC, on `main`) and manual dispatch | the full suite; never deploys; a failure ends the run red and GitHub emails it | nothing |
 | CI `backend` job (pushes that change `backend/` or root files) | `./mvnw test` | deploy |
 | CI `deploy` job (push to `main`) | needs each app job green or skipped as unchanged, and some app changed; one at a time; skipped when the tested commit is no longer the tip of `main` | production |
+
+**What a push tests.** With a usable base (the last green run on the branch), the `frontend` job runs
+only the `unit` and `storybook` tests that import a file changed since it (`vitest run --changed <base>`);
+`tooling` always runs whole (Vitest's related-file walk fails with `EISDIR` on its `eslint` import, and it
+takes a second), and so does `critical` with coverage. A change to a file tests depend on without
+importing it (theme CSS, `vite.config.ts`, `src/test/**`, `.storybook/**`, `package.json`, the lockfile,
+`scripts/testTable.ts`) reruns everything (`forceRerunTriggers`). Without a usable base (dispatch,
+schedule, first run, force push) the full suite runs. A test the import graph misses still runs in the
+weekly full run and in the full gate at each phase end.
 
 - `--no-verify` skips the hooks, not CI. A commit that skips them still fails CI and never deploys.
 - Fix forward. If an older commit's deploy is skipped because a newer one is the tip, and the newer one

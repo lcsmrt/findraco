@@ -219,7 +219,7 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Every rule from CAL-01..CAL-10 and PROC-01/03 stated once; no leftover "90% on every logic module" or "each variant" rule
+- [x] Every rule from CAL-01..CAL-10 and PROC-01/03 stated once; no leftover "90% on every logic module" or "each variant" rule
 
 **Tests**: none
 **Gate**: docs
