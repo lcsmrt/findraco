@@ -27,6 +27,16 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+// The token's colour as the browser computes it, to compare with an element's computed `color`.
+function tokenColor(token: string) {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${token})`;
+  document.body.append(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+}
+
 function itemNames(bar: HTMLElement) {
   return Array.from(bar.querySelectorAll("a, button")).map((item) => item.getAttribute("aria-label") ?? item.textContent);
 }
@@ -49,6 +59,11 @@ export const OverviewActive: Story = {
     await expect(within(bar).getByRole("link", { name: "Overview" })).toHaveAttribute("aria-current", "page");
     await expect(within(bar).getAllByRole("link").filter((link) => link.hasAttribute("aria-current"))).toHaveLength(1);
     await expect(within(bar).getByRole("link", { name: "Plans" })).toHaveAttribute("href", "/plans");
+
+    const activeColor = getComputedStyle(within(bar).getByRole("link", { name: "Overview" })).color;
+    await expect(activeColor).toBe(tokenColor("--primary-ink"));
+    await expect(getComputedStyle(within(bar).getByText("Overview")).color).toBe(activeColor);
+    await expect(getComputedStyle(within(bar).getByRole("link", { name: "Plans" })).color).not.toBe(activeColor);
 
     await userEvent.click(within(bar).getByRole("button", { name: "New Transaction" }));
     await expect(args.onAdd).toHaveBeenCalledTimes(1);

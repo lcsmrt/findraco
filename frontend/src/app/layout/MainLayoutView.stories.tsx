@@ -83,5 +83,8 @@ export const WithNavigationMobile: Story = {
     await waitFor(() =>
       expect(lastRow.getBoundingClientRect().bottom).toBeLessThanOrEqual(bar.getBoundingClientRect().top),
     );
+    // Pinned to the viewport, not laid out at the end of the page: it stays in view while scrolling.
+    await expect(getComputedStyle(bar).position).toBe("fixed");
+    await expect(Math.round(bar.getBoundingClientRect().bottom)).toBe(view?.innerHeight);
   },
 };
