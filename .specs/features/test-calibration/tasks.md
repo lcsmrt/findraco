@@ -176,8 +176,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] `actionlint` passes if installed (else YAML parses with `python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))'`)
-- [ ] The affected command and the full command both run green locally from `frontend/` (with `BASE=main`)
+- [x] `actionlint` passes if installed (else YAML parses with `python3 -c 'import yaml,sys; yaml.safe_load(open(sys.argv[1]))'`)
+- [x] The affected command and the full command both run green locally from `frontend/` (with `BASE=main`)
 
 **Tests**: none (workflow; proven by T6)
 **Gate**: build

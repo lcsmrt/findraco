@@ -3,6 +3,10 @@ name: CI
 on:
   push:
   workflow_dispatch:
+  # A push tests only what it can break; the weekly run on main tests everything, so a test the
+  # import graph misses still runs. A failure ends the run red, which GitHub reports by email.
+  schedule:
+    - cron: "0 6 * * 1"
 
 permissions:
   contents: read
@@ -19,6 +23,7 @@ jobs:
       frontend: ${{ steps.diff.outputs.frontend }}
       backend: ${{ steps.diff.outputs.backend }}
       deployable: ${{ steps.diff.outputs.deployable }}
+      base: ${{ steps.diff.outputs.base }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -40,11 +45,13 @@ jobs:
           frontend=true
           backend=true
           base=""
+          usable_base=""
           if [[ "$EVENT" == push ]]; then
             base=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --branch "$BRANCH" \
               --status success --limit 1 --json headSha --jq '.[0].headSha // ""')
           fi
           if [[ -n "$base" ]] && git merge-base --is-ancestor "$base" "$GITHUB_SHA" 2>/dev/null; then
+            usable_base=$base
             frontend=false
             backend=false
             # Docs touch no app; anything outside both apps (root config, the
@@ -65,6 +72,7 @@ jobs:
             echo "frontend=$frontend"
             echo "backend=$backend"
             echo "deployable=$deployable"
+            echo "base=$usable_base"
           } >> "$GITHUB_OUTPUT"
 
   frontend:
@@ -74,7 +82,10 @@ jobs:
     env:
       HUSKY: "0"
     steps:
+      # Full history: the affected test run diffs against the base commit.
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v5
         with:
@@ -131,9 +142,25 @@ jobs:
         working-directory: frontend
         run: pnpm exec playwright install-deps chromium
 
+      # With a usable base, only the tests importing a changed file run; a change to a file tests
+      # depend on without importing it reruns everything (`forceRerunTriggers`). Without a base
+      # (dispatch, schedule, first run, force push) the full suite runs. Either way the sibling gate
+      # covers the whole tree and the critical modules are measured by their own tests. Tooling runs
+      # whole: `--changed` mistakes its `eslint` package import for the `eslint/` folder and fails.
       - name: Test
         working-directory: frontend
-        run: pnpm test
+        env:
+          BASE: ${{ needs.changes.outputs.base }}
+        run: |
+          set -euo pipefail
+          if [[ -z "$BASE" ]]; then
+            pnpm test
+            exit 0
+          fi
+          node scripts/check-siblings.ts
+          pnpm exec vitest run --changed "$BASE" --passWithNoTests --project=unit --project=storybook
+          pnpm exec vitest run --project=tooling
+          pnpm exec vitest run --project=critical --coverage
 
   backend:
     needs: changes

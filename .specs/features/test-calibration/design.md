@@ -74,6 +74,7 @@ graph TD
 - `frontend` job: checkout with `fetch-depth: 0` (the diff needs the base commit). Test step:
   - with `base`: `node scripts/check-siblings.ts && pnpm exec vitest run --changed "$BASE" --passWithNoTests --project=unit --project=tooling --project=storybook && pnpm exec vitest run --project=critical --coverage`;
   - without: `pnpm test`.
+  - Deviation (T5): `tooling` runs whole, outside `--changed`. Vitest 3.2.7's related-file walk joins the bare `eslint` package import to the project root, hits the `eslint/` folder and fails with `EISDIR`. Tooling runs in ~1s, so running it whole costs nothing.
 - `deploy`: unchanged; its `github.event_name == 'push'` condition already keeps the schedule from deploying (CIT-05).
 
 ### Docs (changed)
