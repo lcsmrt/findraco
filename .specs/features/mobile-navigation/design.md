@@ -128,7 +128,7 @@ graph TD
 - **Purpose**: Narrow-screen fixed bar: Overview · Transactions · (+) · Categories · Plans; four evenly spaced items when `onAdd` is null.
 - **Location**: `src/app/layout/BottomBarView.tsx`
 - **Interfaces**: same as `TabRowView`
-- **Reuses**: lucide icons (`LayoutDashboard`, `ArrowLeftRight`, `Plus`, `Tags`, `Users`), `Text` for labels, `primary` token for the active item, `pb-[env(safe-area-inset-bottom)]`
+- **Reuses**: lucide icons (`LayoutDashboard`, `ArrowLeftRight`, `Plus`, `Tags`, `Users`), `Text` for labels, `primary-ink` token for the active item (plain `primary` amber fails text contrast), `pb-[env(safe-area-inset-bottom)]`
 
 ### Removals, renames and small changes
 

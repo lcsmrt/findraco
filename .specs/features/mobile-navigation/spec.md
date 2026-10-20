@@ -29,8 +29,8 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 | Assumption / decision | Chosen default | Rationale | Confirmed? |
 | --------------------- | -------------- | --------- | ---------- |
 | Narrow vs wide | Narrow = below the `sm` breakpoint (640px); wide = `sm` and up | The breakpoint the app already uses to swap the table for the mobile list | y |
-| Bar labels and active state | Icon with an always-visible label; active item in the `primary` colour | Agent proposal, accepted | y |
-| "Manage plans" in the switcher | Removed; "Create plan" stays | Plans is a destination now | y |
+| Bar labels and active state | Icon with an always-visible label; active item in the `primary-ink` colour | Agent proposal, accepted; `primary-ink`, not `primary`, because plain amber text fails contrast (Execute, 2026-10-19) | y |
+| "Manage plans" in the switcher | Removed; "New plan" (the existing create item) stays | Plans is a destination now | y |
 | Transactions toolbar | "New Transaction" and "Manage Categories" removed; import, search and filters unchanged | Both are now redundant | y |
 | Safe area | The bar pads its bottom by `env(safe-area-inset-bottom)` | iOS home indicator; prepares the PWA | y |
 | History | Every destination switch pushes a history entry; each destination has its own path (NAV-06) | Changed at Design (user, 2026-10-19): the `?tab=` param mixed location with filters | y |
@@ -58,11 +58,11 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 1. WHILE the screen is narrow, the Overview, Transactions, Categories and Plans screens SHALL show a bar fixed to the bottom of the viewport with, in order: Overview, Transactions, a centre add button, Categories, Plans.  <!-- state-driven -->
 2. WHILE the screen is narrow, the system SHALL NOT show the top tab row.  <!-- state-driven -->
 3. Each destination in the bottom bar SHALL show an icon and a visible text label.  <!-- ubiquitous -->
-4. WHEN the current screen is a destination THEN its bottom-bar item SHALL be shown in the `primary` colour and marked `aria-current="page"`.  <!-- event-driven -->
+4. WHEN the current screen is a destination THEN its bottom-bar item SHALL be shown in the `primary-ink` colour and marked `aria-current="page"`.  <!-- event-driven -->
 5. WHEN the user taps Overview, Transactions or Categories THEN the system SHALL navigate to that screen's path (NAV-06), with that screen's saved filters for the active plan.  <!-- event-driven -->
 6. WHEN the user taps Plans THEN the system SHALL navigate to `/plans`.  <!-- event-driven -->
 7. WHILE the bottom bar is shown, it SHALL stay visible during scrolling, and the page SHALL reserve bottom space equal to the bar's height so the last content is not covered.  <!-- state-driven -->
-8. The bottom bar SHALL pad its bottom edge by `env(safe-area-inset-bottom)`.  <!-- ubiquitous -->
+8. The bottom bar SHALL pad its bottom edge by `env(safe-area-inset-bottom)`. Checked by hand on a phone: the inset is 0 in the test browser.  <!-- ubiquitous -->
 
 **Independent Test**: On a 390px-wide viewport, tap each bar item and see the matching screen with the item highlighted; scroll a long list to the end and see its last row above the bar.
 
@@ -101,7 +101,7 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 2. WHILE the screen is wide, the Overview, Transactions, Categories and Plans screens SHALL show the tab row, with the current destination marked active.  <!-- state-driven -->
 3. WHEN the user activates the Plans tab THEN the system SHALL navigate to `/plans`.  <!-- event-driven -->
 4. The Plans page SHALL NOT show a "Back" button.  <!-- ubiquitous -->
-5. The plan switcher dropdown SHALL NOT offer "Manage plans" and SHALL keep "Create plan".  <!-- ubiquitous -->
+5. The plan switcher dropdown SHALL NOT offer "Manage plans" and SHALL keep "New plan".  <!-- ubiquitous -->
 
 **Independent Test**: On desktop, click Plans in the tab row, see the Plans page with the tab active and no "Back"; open the switcher and see no "Manage plans".
 
@@ -161,7 +161,7 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 - WHILE the active plan or the user's role in it is not loaded the system SHALL NOT show the global add.
 - WHEN the user switches the active plan to one where they are a VIEWER THEN the global add SHALL disappear without a reload.
 - WHEN the global add form is open on the Plans page and the user saves THEN the system SHALL stay on the Plans page.
-- WHILE the New Transaction form is open on a narrow screen it SHALL cover the bottom bar.
+- WHILE the New Transaction form is open on a narrow screen it SHALL cover the bottom bar. Checked by hand: it follows from the overlay layer (`z-50`) sitting above the bar (`z-20`).
 - The accept-invitation page SHALL show neither the bottom bar nor the tab row.
 
 ---

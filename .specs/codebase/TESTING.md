@@ -132,10 +132,17 @@ Remaining gaps (not "no coverage exists" anymore, but "coverage is not yet exhau
 | ---------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
 | Quick      | Backend change, unit tests only            | `cd backend && ./mvnw test` (needs the tunnel — `FinSightApplicationTests` boots a context) |
 | Docs (FE)  | Skill and doc changes                      | none; check the change against the feature's `context.md` and `design.md`                     |
-| Quick (FE) | Frontend logic, flow or tooling change     | `cd frontend && pnpm exec vitest run --project=unit --project=tooling`                        |
+| Quick (FE) | Every task that is not the last of its phase | `cd frontend && pnpm exec vitest related --run <changed files>` (only the tests that import them) |
 | Full       | Backend change touching HTTP/DB/security   | `cd backend && ./mvnw verify` (tunnel up; empties `dev_finsight` — see Local Environment Setup) |
 | Full (FE)  | Frontend change with stories               | `cd frontend && pnpm test` |
-| Build      | Phase completion, config, moves, lint rules | `cd backend && ./mvnw package` ; `cd frontend && pnpm lint && pnpm build && pnpm test` |
+| Build      | Last task of each phase only               | `cd backend && ./mvnw package` ; `cd frontend && pnpm lint && pnpm build && pnpm test` |
+
+**Gate policy (user, 2026-10-19):** per task, run only the tests related to the files it changed; lint,
+build and the whole suite run once, at the end of each phase. Lint already runs on staged files at every
+commit. Group mechanical changes (one message change across five services, one rename) into a single
+task rather than one per file. Test only what would really break: behaviour a user or a caller relies on,
+not markup details, library behaviour or a case another layer already covers. Visual properties the test
+browser cannot see (safe-area insets, stacking order) are a hand check named in the spec, not a test.
 
 Commands are extracted from `backend/pom.xml` (Maven wrapper, failsafe+jacoco bindings) and `frontend/package.json` scripts; the frontend rows match the Gate Check Commands of `.specs/features/frontend-standards/tasks.md`.
 
