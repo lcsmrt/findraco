@@ -1,8 +1,6 @@
 import { useDeletePlan, useLeavePlan } from "@/api/services/usePlanService";
 import { useConfirm } from "@/components/dialog/useConfirm";
-import { PATHS } from "@/app/routing/paths";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { PlanNameDialog } from "./components/PlanNameDialog";
@@ -13,7 +11,6 @@ import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
 import { PlansPageView } from "./PlansPageView";
 
 export function PlansPage() {
-  const navigate = useNavigate();
   const { plans, activePlan, activePlanId, setActivePlanId, isLoading } =
     usePlanContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -64,7 +61,6 @@ export function PlansPage() {
         canManagePlan={canManagePlan}
         isArchiving={isDeletingPlan}
         isLeaving={isLeavingPlan}
-        onBack={() => navigate(PATHS.overview)}
         onCreatePlan={() => setIsCreateOpen(true)}
         onSelectPlan={setActivePlanId}
         onRename={() => setIsRenameOpen(true)}

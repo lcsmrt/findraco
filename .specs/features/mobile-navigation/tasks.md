@@ -483,8 +483,8 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Story `play`: no "Back" button
-- [ ] Gate check passes: Full
+- [x] Story `play`: no "Back" button (in `Owner`; the page's own top padding became `px-4`, since the layout now gives the vertical spacing under the tab row)
+- [x] Gate check passes: Full (178 files, 1256 tests, passing)
 
 **Tests**: story
 **Gate**: full

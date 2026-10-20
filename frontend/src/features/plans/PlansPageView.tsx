@@ -15,7 +15,6 @@ import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import {
   ArchiveIcon,
-  ArrowLeftIcon,
   ArrowRightLeftIcon,
   CheckIcon,
   LogOutIcon,
@@ -34,7 +33,6 @@ type PlansPageViewProps = {
   canManagePlan: boolean;
   isArchiving: boolean;
   isLeaving: boolean;
-  onBack: () => void;
   onCreatePlan: () => void;
   onSelectPlan: (planId: number) => void;
   onRename: () => void;
@@ -55,7 +53,6 @@ export function PlansPageView({
   canManagePlan,
   isArchiving,
   isLeaving,
-  onBack,
   onCreatePlan,
   onSelectPlan,
   onRename,
@@ -67,17 +64,8 @@ export function PlansPageView({
   invitationsList,
 }: PlansPageViewProps) {
   return (
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 p-4">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="self-start"
-        onClick={onBack}
-      >
-        <ArrowLeftIcon className="h-4 w-4" />
-        Back
-      </Button>
-
+    // The layout gives the page its vertical spacing under the tab row, as for the other destinations.
+    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4">
       <PageHeader
         title="Plans"
         description="Manage your plans and switch between them."

@@ -20,7 +20,6 @@ const meta = {
     canManagePlan: true,
     isArchiving: false,
     isLeaving: false,
-    onBack: fn(),
     onCreatePlan: fn(),
     onSelectPlan: fn(),
     onRename: fn(),
@@ -39,6 +38,7 @@ type Story = StoryObj<typeof meta>;
 export const Owner: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("Invitations for Personal")).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "Back" })).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Rename plan" }));
     await expect(args.onRename).toHaveBeenCalledTimes(1);
     await userEvent.click(canvas.getByRole("button", { name: /Household/ }));
