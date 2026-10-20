@@ -11,7 +11,7 @@ import {
   serializeTransactionFilters,
   type TransactionFilters,
 } from "@/features/transactions/filters/transactionParams";
-import { parsePlanParam, parseTab, serializeTab } from "./homeParams";
+import { parseTab, serializeTab } from "./homeParams";
 
 function params(init: Record<string, string>) {
   return new URLSearchParams(init);
@@ -22,26 +22,6 @@ const DEFAULT_TRANSACTIONS: TransactionFilters = {
   sort: null,
   size: 10,
 };
-
-describe("plan param", () => {
-  it("reads the plan id", () => {
-    expect(parsePlanParam(params({ plan: "5", tab: "transactions" }))).toBe(5);
-  });
-
-  const malformed: Record<string, string>[] = [
-    {},
-    { plan: "abc" },
-    { plan: "0" },
-    { plan: "1.5" },
-  ];
-
-  it.each(malformed)(
-    "returns null for a missing or malformed plan %o",
-    (init) => {
-      expect(parsePlanParam(params(init))).toBeNull();
-    },
-  );
-});
 
 describe("tab codec", () => {
   it("defaults to overview and omits it on serialize", () => {

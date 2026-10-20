@@ -1,36 +1,25 @@
 import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
-import { loadFilters, saveFilters } from "@/app/routing/filterStorage";
-import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
-import { TRANSACTION_PARAM_KEYS } from "@/features/transactions/filters/transactionParams";
+import { loadFilters, saveFilters, type FilterScreen } from "./filterStorage";
 import { useEffect, useRef, type ReactNode } from "react";
 import { Navigate, useSearchParams } from "react-router-dom";
-import {
-  PLAN_PARAM,
-  parsePlanParam,
-  TAB_PARAM,
-} from "./homeParams";
+import { PLAN_PARAM, parsePlanParam } from "./planParams";
 
-const HOME_PARAM_KEYS = [
-  PLAN_PARAM,
-  TAB_PARAM,
-  ...OVERVIEW_PARAM_KEYS,
-  ...TRANSACTION_PARAM_KEYS,
-];
-
-type HomeFiltersGateProps = {
+type PlanFiltersGateProps = {
+  screen: FilterScreen;
+  paramKeys: readonly string[];
   children: ReactNode;
 };
 
 /**
- * Makes sure the home URL carries the active plan's filters before the tabs mount:
- * - matching plan → render the tabs and remember the query string;
- * - the user switched the active plan → redirect to that plan's saved state;
+ * Makes sure a screen's URL carries the active plan's filters for that screen before it mounts:
+ * - matching plan → render the screen and remember the query string for it;
+ * - the user switched the active plan → redirect to that plan's saved state for the screen;
  * - a link (or first mount) for another plan the user belongs to → make it active,
  *   keeping the URL filters;
- * - no home params or an unknown plan → redirect to the active plan's saved state.
+ * - no screen params or an unknown plan → redirect to the active plan's saved state for the screen.
  */
-export function HomeFiltersGate({ children }: HomeFiltersGateProps) {
+export function PlanFiltersGate({ screen, paramKeys, children }: PlanFiltersGateProps) {
   const { user } = useAuth();
   const { activePlanId, setActivePlanId, plans, isLoading } = usePlanContext();
   const [searchParams] = useSearchParams();
@@ -56,8 +45,8 @@ export function HomeFiltersGate({ children }: HomeFiltersGateProps) {
   useEffect(() => {
     if (!isCurrent) return;
     agreedPlanIdRef.current = activePlanId;
-    saveFilters("overview", userId, activePlanId, search);
-  }, [isCurrent, userId, activePlanId, search]);
+    saveFilters(screen, userId, activePlanId, search);
+  }, [isCurrent, screen, userId, activePlanId, search]);
 
   useEffect(() => {
     if (linkedPlanId != null) setActivePlanId(linkedPlanId);
@@ -68,14 +57,14 @@ export function HomeFiltersGate({ children }: HomeFiltersGateProps) {
   // Nothing renders until the URL and the active plan agree, so no query mixes them.
   if (isAwaitingPlans || linkedPlanId != null) return null;
 
-  const hasHomeParams = HOME_PARAM_KEYS.some((key) => searchParams.has(key));
+  const hasScreenParams = paramKeys.some((key) => searchParams.has(key));
   const hasPlanParam = searchParams.has(PLAN_PARAM);
   // Params without a `plan` (e.g. a hand-written link) are applied as-is for the
   // active plan; otherwise (plan switch, unknown plan) restore its saved state.
   const base =
-    hasHomeParams && !hasPlanParam
+    hasScreenParams && !hasPlanParam
       ? search
-      : (loadFilters("overview", userId, activePlanId) ?? "");
+      : (loadFilters(screen, userId, activePlanId) ?? "");
   const next = new URLSearchParams(base);
   next.set(PLAN_PARAM, String(activePlanId));
 

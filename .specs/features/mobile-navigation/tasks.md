@@ -261,12 +261,12 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Every existing `HomeFiltersGate.test.tsx` case passes against `PlanFiltersGate` (adapted only in names and the screen prop)
-- [ ] New: opening a screen without params restores that screen's saved filters, or none (AC 2)
-- [ ] New: a filter change on Transactions leaves the Overview's saved entry unchanged (AC 3)
-- [ ] New: a plan switch on a screen redirects to the same path with the new plan's saved filters (AC 4)
-- [ ] New: a link with filter params and another member plan applies them and makes that plan active (AC 5)
-- [ ] Gate check passes: Quick
+- [x] Every existing `HomeFiltersGate.test.tsx` case passes against `PlanFiltersGate` (adapted only in names, paths, the screen prop and per-screen fixtures; the `tab` row of the exported-keys table and the tab step of the "saves changes" case went with the tab param; the exported-keys table runs per screen)
+- [x] New: opening a screen without params restores that screen's saved filters, or none (AC 2)
+- [x] New: a filter change on Transactions leaves the Overview's saved entry unchanged (AC 3)
+- [x] New: a plan switch on a screen redirects to the same path with the new plan's saved filters (AC 4)
+- [x] New: a link with filter params and another member plan applies them and makes that plan active (AC 5)
+- [x] Gate check passes: Quick (86 files, 776 tests, passing)
 
 **Tests**: integration
 **Gate**: quick
