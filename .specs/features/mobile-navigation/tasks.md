@@ -131,8 +131,8 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Each mutation's success toast text equals its table row
-- [ ] Gate check passes: Quick
+- [x] Each mutation's success toast text equals its table row
+- [x] Gate check passes: Quick (83 files, 755 tests, passing)
 
 **Tests**: unit (service through MSW)
 **Gate**: quick

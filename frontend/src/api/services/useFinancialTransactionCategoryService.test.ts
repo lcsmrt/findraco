@@ -1,5 +1,6 @@
 import { waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { toast } from "sonner";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   CategorySpending,
   CreateFinancialTransactionCategoryRequest,
@@ -352,6 +353,36 @@ describe("delete with reassignment", () => {
   });
 });
 
+const categoryMutations = {
+  create: {
+    handler: () => categoryHandlers.create(category),
+    useCase: function useCreateCase() {
+      const m = useCreateFinancialTransactionCategory();
+      return {
+        isSuccess: m.isSuccess,
+        run: () => m.mutate({ body: { type: "DEBIT", description: "Groceries" } }),
+      };
+    },
+  },
+  update: {
+    handler: () => categoryHandlers.update(category),
+    useCase: function useUpdateCase() {
+      const m = useUpdateFinancialTransactionCategory();
+      return {
+        isSuccess: m.isSuccess,
+        run: () => m.mutate({ params: { id: 12 }, body: { description: "Groceries" } }),
+      };
+    },
+  },
+  delete: {
+    handler: () => categoryHandlers.delete(),
+    useCase: function useDeleteCase() {
+      const m = useDeleteFinancialTransactionCategory();
+      return { isSuccess: m.isSuccess, run: () => m.mutate({ id: 12 }) };
+    },
+  },
+};
+
 describe("every category mutation refreshes categories, spending and dashboard", () => {
   const seededKeys = [
     ["financialTransactionCategories", 5, undefined],
@@ -359,40 +390,10 @@ describe("every category mutation refreshes categories, spending and dashboard",
     ["dashboardSummary", 5, { startDate: "2026-10-01", endDate: "2026-10-31" }],
   ];
 
-  const mutations = {
-    create: {
-      handler: () => categoryHandlers.create(category),
-      useCase: function useCreateCase() {
-        const m = useCreateFinancialTransactionCategory();
-        return {
-          isSuccess: m.isSuccess,
-          run: () => m.mutate({ body: { type: "DEBIT", description: "Groceries" } }),
-        };
-      },
-    },
-    update: {
-      handler: () => categoryHandlers.update(category),
-      useCase: function useUpdateCase() {
-        const m = useUpdateFinancialTransactionCategory();
-        return {
-          isSuccess: m.isSuccess,
-          run: () => m.mutate({ params: { id: 12 }, body: { description: "Groceries" } }),
-        };
-      },
-    },
-    delete: {
-      handler: () => categoryHandlers.delete(),
-      useCase: function useDeleteCase() {
-        const m = useDeleteFinancialTransactionCategory();
-        return { isSuccess: m.isSuccess, run: () => m.mutate({ id: 12 }) };
-      },
-    },
-  };
-
   it.each(["create", "update", "delete"] as const)("%s", async (name) => {
-    server.use(mutations[name].handler());
+    server.use(categoryMutations[name].handler());
 
-    const { result, queryClient } = renderHookWithProviders(mutations[name].useCase, {
+    const { result, queryClient } = renderHookWithProviders(categoryMutations[name].useCase, {
       plan: plan5,
       seed: (client) => seededKeys.forEach((key) => client.setQueryData(key, [])),
     });
@@ -404,6 +405,28 @@ describe("every category mutation refreshes categories, spending and dashboard",
       true,
       true,
     ]);
+  });
+});
+
+describe("every category mutation shows its short success message", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it.each([
+    ["create", "Category created."],
+    ["update", "Category updated."],
+    ["delete", "Category deleted."],
+  ] as const)(`%s shows "%s" (NAV-05 AC 1, 2)`, async (name, message) => {
+    // sonner is a third-party module; the toast is the user-visible outcome.
+    const success = vi.spyOn(toast, "success");
+    server.use(categoryMutations[name].handler());
+
+    const { result } = renderHookWithProviders(categoryMutations[name].useCase, { plan: plan5 });
+    result.current.run();
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(success).toHaveBeenCalledWith(message);
   });
 });
 

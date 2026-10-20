@@ -166,7 +166,7 @@ export function useCreateFinancialTransactionCategory(
   return useMutation({
     mutationFn: (payload: CreateFinancialTransactionCategoryRequest) =>
       createFinancialTransactionCategory(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Category created successfully." }, {
+    ...buildMutationOptions({ successMessage: "Category created." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateCategoryViews(queryClient);
@@ -199,7 +199,7 @@ export function useUpdateFinancialTransactionCategory(
   return useMutation({
     mutationFn: (payload: UpdateFinancialTransactionCategoryRequest) =>
       updateFinancialTransactionCategory(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Category updated successfully." }, {
+    ...buildMutationOptions({ successMessage: "Category updated." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateCategoryViews(queryClient);
@@ -230,7 +230,7 @@ export function useDeleteFinancialTransactionCategory(
   return useMutation({
     mutationFn: (payload: DeleteFinancialTransactionCategoryRequest) =>
       deleteFinancialTransactionCategory(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Category deleted successfully." }, {
+    ...buildMutationOptions({ successMessage: "Category deleted." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateCategoryViews(queryClient);
