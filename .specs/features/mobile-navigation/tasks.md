@@ -392,8 +392,8 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Stories at 390px: each destination active; without add; `play` checks the order, the labels, `aria-current`, and that the add button calls `onAdd`
-- [ ] Gate check passes: Full
+- [x] Stories at 390px: each destination active; without add; `play` checks the order, the labels, `aria-current`, and that the add button calls `onAdd` (without add, `play` also checks four equal widths filling the bar; the active item uses `text-primary-ink`, the primary hue at text contrast, since plain `primary` fails the a11y contrast check)
+- [x] Gate check passes: Full (177 files, 1241 tests, passing)
 
 **Tests**: story
 **Gate**: full
