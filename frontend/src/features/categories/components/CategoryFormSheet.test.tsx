@@ -7,7 +7,8 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
 import { cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CategoryFormSheet } from "./CategoryFormSheet";
 
 const PLAN_ID = 5;
@@ -31,9 +32,10 @@ type RenderSheetOptions = {
   /** Edits this category; creates one when left out. */
   editing?: FinancialTransactionCategory;
   onOpenChange?: (open: boolean) => void;
+  onSuccess?: (category: FinancialTransactionCategory) => void;
 };
 
-function renderSheet({ members, editing, onOpenChange = vi.fn() }: RenderSheetOptions) {
+function renderSheet({ members, editing, onOpenChange = vi.fn(), onSuccess }: RenderSheetOptions) {
   server.use(
     planHandlers.members(members),
     financialTransactionCategoryHandlers.list({
@@ -51,6 +53,7 @@ function renderSheet({ members, editing, onOpenChange = vi.fn() }: RenderSheetOp
       onOpenChange={onOpenChange}
       mode={editing ? "edit" : "create"}
       category={editing}
+      onSuccess={onSuccess}
     />,
     { plan: planValue() },
   );
@@ -69,14 +72,25 @@ async function sentBody(requests: Request[], method: string) {
   return requests.find((request) => request.method === method)?.json();
 }
 
+beforeEach(() => {
+  // The toast is the user-visible outcome of a save; sonner is a third-party module.
+  vi.spyOn(toast, "success");
+  vi.spyOn(toast, "error");
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 describe("CategoryFormSheet edit", () => {
   afterEach(cleanup);
 
   it("shows a saved limit formatted and sends it back as a number (STD-06 AC 4)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
+    const onSuccess = vi.fn();
     server.use(financialTransactionCategoryHandlers.update(groceries));
-    await renderLoadedSheet({ members: [lucas], editing: groceries });
+    await renderLoadedSheet({ members: [lucas], editing: groceries, onSuccess });
 
     const limit = screen.getByLabelText<HTMLInputElement>("Amount (optional)");
     await waitFor(() => expect(limit.value).toBe("R$ 200,00"));
@@ -87,6 +101,7 @@ describe("CategoryFormSheet edit", () => {
     expect(requests.find((request) => request.method === "PUT")?.url).toMatch(
       /\/plan\/5\/financial-transaction-category\/9$/,
     );
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(groceries));
   });
 });
 
@@ -110,8 +125,9 @@ describe("CategoryFormSheet skeleton", () => {
     const user = userEvent.setup();
     const requests = recordRequests();
     const onOpenChange = vi.fn();
+    const onSuccess = vi.fn();
     server.use(financialTransactionCategoryHandlers.create(groceries));
-    await renderLoadedSheet({ members: [lucas], onOpenChange });
+    await renderLoadedSheet({ members: [lucas], onOpenChange, onSuccess });
 
     await user.type(screen.getByLabelText("Name"), "Groceries");
     await user.type(screen.getByLabelText("Amount (optional)"), "25050");
@@ -126,5 +142,27 @@ describe("CategoryFormSheet skeleton", () => {
       memberLimits: [],
     });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+    expect(onSuccess).toHaveBeenCalledWith(groceries);
+  });
+
+  it("keeps the sheet open with the typed values when saving fails, with no success toast (STD-06 AC 8)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const onOpenChange = vi.fn();
+    const onSuccess = vi.fn();
+    server.use(financialTransactionCategoryHandlers.createRejected("Name already in use"));
+    await renderLoadedSheet({ members: [lucas], onOpenChange, onSuccess });
+
+    await user.type(screen.getByLabelText("Name"), "Groceries");
+    await user.type(screen.getByLabelText("Amount (optional)"), "25050");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    await sentBody(requests, "POST");
+    await waitFor(() => expect(toast.error).toHaveBeenCalled());
+    expect(screen.getByLabelText<HTMLInputElement>("Name").value).toBe("Groceries");
+    expect(screen.getByLabelText<HTMLInputElement>("Amount (optional)").value).toBe("R$ 250,50");
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
+    expect(onSuccess).not.toHaveBeenCalled();
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });
