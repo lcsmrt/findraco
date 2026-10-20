@@ -3,6 +3,8 @@ import type {
   FinancialTransactionCategory,
   Plan,
   PlanMember,
+  RecurrenceDefinitionResponse,
+  SeriesEditScope,
 } from "@/api/dtos";
 import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
 import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
@@ -16,7 +18,7 @@ import {
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
-import { cleanup, screen, waitFor } from "@testing-library/react";
+import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { SeriesScopeDialogProvider } from "./SeriesScopeDialogProvider";
@@ -168,7 +170,7 @@ describe("TransactionFormDrawer money fields", () => {
     const user = userEvent.setup();
     const requests = recordRequests();
     server.use(financialTransactionHandlers.update(savedTransaction));
-    renderDrawer({
+    const { onOpenChange } = renderDrawer({
       mode: "edit",
       transaction: savedTransaction,
       members: [lucas],
@@ -184,6 +186,29 @@ describe("TransactionFormDrawer money fields", () => {
     expect(requests.find((request) => request.method === "PUT")?.url).toMatch(
       /\/plan\/5\/financial-transaction\/42$/,
     );
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
+  it("creates a new transaction when duplicating, leaving the original untouched (STD-07 AC 2)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(financialTransactionHandlers.create(savedTransaction));
+    const { onOpenChange } = renderDrawer({
+      mode: "duplicate",
+      transaction: savedTransaction,
+      members: [lucas],
+    });
+
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body).toMatchObject({ description: "Rent", amount: 150.5 });
+    expect(
+      requests
+        .filter((request) => request.method !== "GET")
+        .map((request) => [request.method, new URL(request.url).pathname]),
+    ).toEqual([["POST", "/api/findraco/plan/5/financial-transaction"]]);
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 });
 
@@ -323,5 +348,122 @@ describe("TransactionFormDrawer owned-category attribution", () => {
     expect(body.categoryId).toBe(9);
     expect(body.splitMode).toBe("EQUAL");
     expect(body.participants).toEqual([{ memberId: 1 }, { memberId: 2 }]);
+  });
+});
+
+describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
+  afterEach(cleanup);
+
+  const occurrence: FinancialTransaction = {
+    ...savedTransaction,
+    id: 55,
+    seriesId: "s-1",
+    description: "Gym (3/12)",
+  };
+  const installments: RecurrenceDefinitionResponse = {
+    id: 9,
+    seriesId: "s-1",
+    type: "DEBIT",
+    amount: 150.5,
+    description: "Gym",
+    mode: "INSTALLMENT",
+    parcelsNumber: 12,
+    firstParcel: 3,
+    startDate: "2026-05-01",
+    splitMode: "EQUAL",
+    participants: [],
+  };
+  const updatedSeries = { seriesId: "s-1", count: 12, occurrences: [occurrence] };
+
+  function writes(requests: Request[]) {
+    return requests
+      .filter((request) => request.method !== "GET")
+      .map((request) => [request.method, new URL(request.url).pathname]);
+  }
+
+  /** Renders the drawer on a series occurrence and waits for the series definition. */
+  async function renderSeriesEdit() {
+    server.use(
+      financialTransactionHandlers.series(installments),
+      financialTransactionHandlers.updateSeries(updatedSeries),
+    );
+    const rendered = renderDrawer({ mode: "edit", transaction: occurrence, members: [lucas] });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Save" })).toHaveProperty("disabled", false),
+    );
+    return rendered;
+  }
+
+  async function scopeDialog() {
+    const radio = await screen.findByRole("radio", { name: /^This one/ });
+    const dialog = radio.closest<HTMLElement>("[role='dialog']");
+    if (!dialog) throw new Error("No scope dialog");
+    return within(dialog);
+  }
+
+  it("offers no save while the series definition is loading", async () => {
+    server.use(financialTransactionHandlers.series(installments));
+    renderDrawer({ mode: "edit", transaction: occurrence, members: [lucas] });
+
+    expect(screen.getByRole("button", { name: "Save" })).toHaveProperty("disabled", true);
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Save" })).toHaveProperty("disabled", false),
+    );
+  });
+
+  it.each<[string, SeriesEditScope]>([
+    ["This one", "THIS_ONE"],
+    ["This and following", "THIS_AND_FOLLOWING"],
+    ["All", "ALL"],
+  ])("edits %s of the series from the occurrence", async (label, scope) => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const { onOpenChange } = await renderSeriesEdit();
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    const dialog = await scopeDialog();
+    await user.click(dialog.getByRole("radio", { name: new RegExp(`^${label}`) }));
+    await user.click(dialog.getByRole("button", { name: "Continue" }));
+
+    const body = await sentBody(requests, "PUT");
+    expect(writes(requests)).toEqual([
+      ["PUT", "/api/findraco/plan/5/financial-transaction/series/s-1"],
+    ]);
+    expect(body).toMatchObject({
+      scope,
+      pivotOccurrenceId: 55,
+      description: "Gym",
+      parcelsNumber: 12,
+    });
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
+  });
+
+  it("edits the whole series without asking when the number of installments changed", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    await renderSeriesEdit();
+
+    const parcels = screen.getByLabelText("Number of installments");
+    await user.clear(parcels);
+    await user.type(parcels, "10");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    const body = await sentBody(requests, "PUT");
+    expect(body).toMatchObject({ scope: "ALL", parcelsNumber: 10 });
+    expect(screen.queryByRole("radio", { name: /^This one/ })).toBeNull();
+  });
+
+  it("sends nothing and stays open when the scope is cancelled", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const { onOpenChange } = await renderSeriesEdit();
+
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    const dialog = await scopeDialog();
+    await user.click(dialog.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("radio", { name: /^This one/ })).toBeNull());
+    expect(writes(requests)).toEqual([]);
+    expect(onOpenChange).not.toHaveBeenCalledWith(false);
   });
 });
