@@ -124,14 +124,14 @@
 
 ## Handoff
 
-- **Next (user)**: test-calibration is merged and deployed (`3996793`, run 39412960299 green, no beta bump). Optional review: `.specs/features/test-calibration/audit.md` (follow-ups F1–F7) and `validation.md`. Then the queue below
+- **Next**: feature `flow-coverage` (user, 2026-10-20): the test-calibration audit follow-ups F1–F7 (`.specs/features/test-calibration/audit.md`), started with tlc Specify. test-calibration itself is merged and deployed (`3996793`, run 39412960299 green, no beta bump)
 - **Last delivered**: test-calibration Done (2026-10-20, run unattended at the user's request, no validation stops):
   - CI: 2 fixed workers on CI; push runs affected tests (`vitest --changed <last green>`, force-rerun triggers); full suite weekly (Mon 06:00 UTC) and on dispatch; coverage only in the `critical` project. Test step 247s → 74–119s full, 27s one-module affected push (pre-cut sample), 79s for a 56-file push
   - Tests 1439 → 868 (base/ stories catalog-only via `!test`, other stories only for states the component handles, flows only container decisions, trimmed unit/tooling, 11 modules moved to `utils/`)
   - The table lives in `frontend/scripts/testTable.ts`; AD-015 supersedes AD-012; docs updated (frontend-testing, component-creation, feature-structure, form-creation skills, TESTING.md, CLAUDE.md, CONVENTIONS/STRUCTURE)
 - **Pending decisions (user)**: spec assumptions marked unconfirmed (pure computation moved to `utils/`; no version bump); audit follow-ups F1–F7 (provider-guard tests, flow gaps that would let more feature-hook tests go); explain flow test vs E2E with a concrete example when E2E starts (user still unsure why both)
 - **Affected ≤60s goal**: no typical post-cut sample yet; check on the next small push
-- **Pending UAT (user)**: from mobile-navigation: bar icons and the `primary-ink` active colour; on a phone, the safe-area inset on iPhone and the New Transaction form covering the bar on a narrow screen. Earlier: production check of the frontend-standards changes (`frontend-standards/validation.md`)
+- **UAT**: mobile-navigation and frontend-standards checks done by the user (2026-10-20), all OK
 - **Process rules (user, 2026-10-19)**: full gate once per phase, related tests per task, fewer and grouped tasks; workers stay; every push that ships a frontend fix or change bumps `1.0.0-beta.N`; release tags later (ROADMAP)
 - **1.0 criteria**: draft at the top of the ROADMAP
 - **Explain to the user when asked (2026-10-18)**: (1) the story-gate refinement (design decision 8, T126; now superseded by AD-015); (2) the `interface` in `*.d.ts` exception (E1 addendum, T11)
