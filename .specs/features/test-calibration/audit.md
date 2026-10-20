@@ -21,16 +21,16 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 
 | Kind | Files before | Tests before | Files running after (planned) | Tests after (planned) | Files running after | Tests after |
 | --- | --- | --- | --- | --- | --- | --- |
-| Logic | 42 | 486 | 37 | 398 | 37 | 398 |
+| Logic | 42 | 486 | 37 | 398 | 37 | 399 |
 | Service hooks | 6 | 81 | 6 | 39 | 6 | 39 |
 | Hooks | 22 | 104 | 21 | 89 | 21 | 89 |
 | Flows and component tests (`.test.tsx`) | 14 | 114 | 12 | 63 | 12 | 66 |
 | Tooling | 6 | 189 | 6 | 121 | 6 | 109 |
 | Stories outside `base/` | 63 | 323 | 63 | 166 | 63 | 166 |
 | Stories in `base/` | 29 | 142 | 0 | 0 | 0 | 0 |
-| **Total** | **182** | **1439** | **145** | **876** | **145** | **867** |
+| **Total** | **182** | **1439** | **145** | **876** | **145** | **868** |
 
-"After" is measured on the T15 commit with `vitest run --reporter=json` per project (unit 597, tooling 104, storybook 166 tests; `pnpm test` reports the same 867). The `critical` project re-runs the five critical modules' own tests (6 files, 169 tests) for coverage; they are counted once, under Logic. Three rows differ from the plan, each noted in its row: `CategoryFormSheet.test.tsx` keeps its edit case (+1), `TransactionFormDrawer.test.tsx` gets its two owned-category cases back after validation (+2) and `eslint.config.test.ts` lands at 35 (−12).
+"After" is measured on the T15 commit with `vitest run --reporter=json` per project (unit 598, tooling 104, storybook 166 tests; `pnpm test` reports the same 868). The `critical` project re-runs the five critical modules' own tests (6 files, 169 tests) for coverage; they are counted once, under Logic. Four rows differ from the plan, each noted in its row: `CategoryFormSheet.test.tsx` keeps its edit case (+1), `TransactionFormDrawer.test.tsx` gets its two owned-category cases back after validation (+2), `transactionSort.test.ts` gains a mapping case after validation (+1) and `eslint.config.test.ts` lands at 35 (−12).
 
 "Service hooks" counts `src/api/services/` only; the API client and `api/utils/` are under Logic. Files running after: a `base/` story file stays in the catalog but runs no test.
 
@@ -84,7 +84,7 @@ Local times are Vitest's reported duration for one run of each project on the sa
 | `src/features/transactions/components/transactionFilterDraft.test.ts` | unit | move | pure computation outside a row → `utils/` | 13 → 10 | → `features/transactions/utils/`; the member trio repeats the category trio's rules. Done (T12): the member field rides in the three category cases, so `withDraftMember` and `memberId` keep an assertion |
 | `src/features/transactions/components/transactionForm.series.test.ts` | unit | keep | critical module | 36 → 36 | each case a rule; keep the branch threshold |
 | `src/features/transactions/components/transactionForm.test.ts` | unit | keep | critical module | 53 → 49 | per-field inline-save cases are one rule; keep the branch threshold |
-| `src/features/transactions/components/transactionSort.test.ts` | unit | move | pure computation outside a row → `utils/` | 14 → 8 | → `features/transactions/utils/`; per-column mappings are one rule, the attributedTo and endDate cases are edges |
+| `src/features/transactions/components/transactionSort.test.ts` | unit | move | pure computation outside a row → `utils/` | 14 → 9 | → `features/transactions/utils/`; per-column mappings are one rule, the attributedTo and endDate cases are edges. Validation fix: one table-driven case asserts every column ↔ field pair both ways (8 → 9), since the mapping is data and a wrong entry is a realistic typo |
 | `src/features/transactions/filters/transactionParams.test.ts` | unit | keep | URL params | 20 → 14 | one invalid value per field; legacy-param cases are one rule. Done (T12): those cuts give 15; the reserved-character round trip is also cut, as it asserts `URLSearchParams` encoding |
 | `src/features/transactions/utils/categoryOptions.test.ts` | unit | keep | business rule (`utils/`, `*Form(s).ts`) | 7 → 7 | each case a rule |
 | `src/lib/storage.test.ts` | unit | cut | glue outside every row | 6 → 0 | a storage wrapper |

@@ -1,6 +1,29 @@
 import { describe, expect, it } from "vitest";
 import { toSorting, toTransactionSort } from "./transactionSort";
 
+describe("transaction sort mapping (STD-12 AC 1)", () => {
+  // Each pair is a sortable column and the API field it sorts by; a wrong entry is one typo away.
+  const columnToField = [
+    ["startDate", "startDate"],
+    ["amount", "amount"],
+    ["description", "description"],
+    ["category", "category"],
+    ["participants", "attributedTo"],
+  ] as const;
+
+  it("maps every sortable column to its API field and back", () => {
+    for (const [column, field] of columnToField) {
+      expect(toTransactionSort([{ by: column, direction: "asc" }])).toEqual({
+        by: field,
+        direction: "asc",
+      });
+      expect(toSorting({ by: field, direction: "asc" })).toEqual([
+        { by: column, direction: "asc" },
+      ]);
+    }
+  });
+});
+
 describe("toTransactionSort (STD-12 AC 1)", () => {
   it("sorts a column by its API field", () => {
     expect(toTransactionSort([{ by: "amount", direction: "desc" }])).toEqual({
