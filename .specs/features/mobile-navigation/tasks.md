@@ -216,9 +216,9 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] `PATHS` gains `overview`, `transactions`, `categories`; `home` stays `/` for the redirect only
-- [ ] Tests: each of the four paths maps to its destination; `/invitation/abc`, `/` and an unknown path map to `null`; a trailing slash and a nested path (`/transactions/42`) map to the parent destination
-- [ ] Gate check passes: Quick
+- [x] `PATHS` gains `overview`, `transactions`, `categories`; `home` stays `/` for the redirect only
+- [x] Tests: each of the four paths maps to its destination; `/invitation/abc`, `/` and an unknown path map to `null`; a trailing slash and a nested path (`/transactions/42`) map to the parent destination
+- [x] Gate check passes: Quick (85 files, 770 tests, passing)
 
 **Tests**: unit
 **Gate**: quick
