@@ -197,9 +197,9 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Three green full runs at the chosen N; test-step times recorded
-- [ ] One affected run recorded with its file count
-- [ ] Any probe commit (the one-module change) is reverted in a following commit
+- [x] Three green full runs at the chosen N; test-step times recorded
+- [x] One affected run recorded with its file count
+- [x] Any probe commit (the one-module change) is reverted in a following commit
 
 **Tests**: none (measurement)
 **Gate**: CI

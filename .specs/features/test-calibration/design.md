@@ -58,7 +58,7 @@ graph TD
 ### `vite.config.ts` (changed)
 
 - `maxWorkers: process.env.CI ? <N> : "25%"` - N fixed by measurement on the CI runner (start at 2); local runs keep 25% (5 workers on a 20-core workstation) (CIT-01).
-- `forceRerunTriggers`: Vitest's defaults (`**/package.json/**`, `**/vitest.config.*/**`, `**/vite.config.*/**`) plus `**/pnpm-lock.yaml`, `**/src/index.css`, `**/src/test/**`, `**/.storybook/**`, `**/scripts/testTable.ts` (CIT-03).
+- `forceRerunTriggers`: Vitest's defaults (`**/package.json/**`, and the config glob written as `**/{vitest,vite}.config.*`: the default's trailing `/**` never matches the file, found in T6) plus `**/pnpm-lock.yaml`, `**/src/index.css`, `**/src/test/**`, `**/.storybook/**`, `**/scripts/testTable.ts` (CIT-03).
 - `coverage.include`: the critical modules; `thresholds`: one `{ branches: 90 }` entry per critical module; no global number (CAL-05).
 - New project `critical` (jsdom, `src/test/setupUnit.ts`, like `unit`) whose `include` is each critical module's sibling tests (`<module>.test.ts` and `<module>.*.test.ts`, which picks up `transactionForm.series.test.ts`). Coverage runs only in this project, so a critical module is always measured by its own tests (CIT-07).
 
@@ -139,5 +139,29 @@ One row per test and story file (182): file, kind, verdict (keep, cut, catalog, 
 | Local worker count | Unchanged (25%) | The fixed number targets the 4-vCPU runner; 25% of 20 cores is already 5 |
 | Catalog mechanism | Storybook tags, not a path exclude | Works per story as well as per file, and the file itself says it is catalog |
 | Schedule | Mondays 06:00 UTC | Off-hours, start of the week |
+
+## CI measurements
+
+Measured in T6 on `test-calibration` (4-vCPU `ubuntu-latest`, before the audit cut). Time is the frontend job's Test step, from the jobs API.
+
+| Run | Trigger | N | Kind | Test step |
+| --- | --- | --- | --- | --- |
+| 39373349005 | push (no green base) | 2 | full | 95s |
+| 39373598053 | dispatch | 2 | full | 144s |
+| 39373607617 | dispatch | 2 | full | 139s |
+| 39373953726 | push (`vite.config.ts`) | 3 | affected, 0 unit/story files | 17s |
+| 39373963170 | dispatch | 3 | full | 103s |
+| 39373971949 | dispatch | 3 | full | 127s |
+| 39374330976 | push (trigger fix) | 3 | full via `forceRerunTriggers` | 149s |
+| 39374717962 | dispatch | 3 | full | 140s |
+| 39374710094 | dispatch | 3 | full | 136s |
+| 39375055561 | push (`vite.config.ts`) | 2 | full via `forceRerunTriggers` | 153s |
+| 39375064571 | dispatch | 2 | full | 100s |
+| 39375424397 | push (comment in `features/overview/utils/scaleLimits.ts`) | 2 | affected | 27s |
+
+- **N = 2.** Five green full runs each: N=2 mean 126s (95-153), N=3 mean 131s (103-149). Runner speed varies more than N moves it, so the lower count wins on the tie: fewer workers keep the `user-event` timeouts away. No timeout or flake in any run, `setupUnit.test.ts` included.
+- **Affected run:** the probe ran 11 unit and story files (99 tests: `scaleLimits.test.ts`, `spendingRows.test.ts` and the overview stories importing them), plus tooling (4) and critical (6) whole; Test step 27s, under the 60s goal.
+- **Full run is not yet ≤ 120s** (mean 126s, from 247s). The rest is expected from the audit cut (Phases 4-5); T15 measures again.
+- **Fixed in T6:** run 39373953726 changed `vite.config.ts` and ran no unit or story test. Vitest's default config glob `**/vite.config.*/**` does not match the file; the trigger is now `**/{vitest,vite}.config.*` (commit 9cd669b), proven by run 39374330976.
 
 > **Project-level decision:** AD-015 supersedes AD-012 (testing model): the closed table replaces the content-based criterion and the global per-file threshold.
