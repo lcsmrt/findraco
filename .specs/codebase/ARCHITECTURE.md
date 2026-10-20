@@ -77,7 +77,7 @@ Every backend request is scoped to the authenticated user; ownership is re-check
 - `features/` — self-contained feature modules (pages, components, hooks).
 - `hooks/`, `lib/`, `utils/` — shared logic.
 
-**Example:** The whole app is currently one feature — `features/home/HomePage.tsx` (tabbed Overview + Transactions).
+**Example:** `features/overview`, `transactions`, `categories` and `plans` are sibling features, each served at its own route (`/overview`, `/transactions`, `/categories`, `/plans`); `app/layout/MainLayout.tsx` holds the navigation between them.
 
 ### Service-Hook Data Layer
 

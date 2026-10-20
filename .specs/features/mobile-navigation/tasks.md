@@ -525,9 +525,9 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Each rule above present in its file (`/api-integration` and `.specs/codebase/STRUCTURE.md` included)
-- [ ] No mention of `app/home`, `HomeTabs` or `?tab=` remains in skills, `CLAUDE.md`, `AGENTS.md` or `.specs/codebase/`
-- [ ] Gate check passes: Build
+- [x] Each rule above present in its file (`/api-integration` and `.specs/codebase/STRUCTURE.md` included; `ARCHITECTURE.md`'s stale tabbed-home example updated too)
+- [x] No mention of `app/home`, `HomeTabs` or `?tab=` remains in skills, `CLAUDE.md`, `AGENTS.md` or `.specs/codebase/` (historical audits name old files such as `TransactionsTab.tsx`, none of these terms)
+- [x] Gate check passes: Build (lint, build, sibling gate, coverage; unit 86 files / 791 tests, tooling + storybook 96 files / 649 tests, passing)
 
 **Tests**: none
 **Gate**: build

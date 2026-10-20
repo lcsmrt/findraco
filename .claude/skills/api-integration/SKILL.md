@@ -131,7 +131,7 @@ export function useCreateProduct(options?: MutationOptions<Product, CreateProduc
   return useMutation({
     mutationFn: createProduct,
     ...buildMutationOptions(
-      { successMessage: "Product created successfully." },
+      { successMessage: "Product created." },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -147,6 +147,9 @@ export function useCreateProduct(options?: MutationOptions<Product, CreateProduc
 - `buildMutationOptions(defaults, options)` wires the success and error toasts. Service-level defaults go
   in the first argument; callers override through `options` (`successMessage`, `errorMessage`,
   `showSuccessToast`, `showErrorToast`, `onSuccess`, `onError`).
+- A success message is a short past-tense sentence that names what happened ("Transaction added.",
+  "Plan renamed."), never with "successfully". Why: a toast confirms the action at a glance; long
+  messages make the user stop and read.
 - A mutation that changes list data invalidates the related queries in `onSuccess`, then calls the
   caller's `onSuccess`.
 - A failed session renewal already shows its own message, so `buildMutationOptions` skips the error toast

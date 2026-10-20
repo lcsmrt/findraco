@@ -45,9 +45,8 @@ finsight/
       app/                         The only layer that imports features
         App.tsx
         providers/                 XxxProvider.tsx + useXxx.ts (Auth, Plan, Theme), TanStackQueryProvider + queryClient, AppProvider
-        routing/                   AppRouter, PrivateRoute, paths.ts
-        layout/                    App shell: MainLayout, AuthLayout, Navbar, Toaster, mobile navigation
-        home/                      HomePage (tabs), HomeFiltersGate, tab/plan params, useHomeTab, filterStorage
+        routing/                   AppRouter, PrivateRoute, paths.ts, PlanFiltersGate, planParams, filterStorage
+        layout/                    App shell: MainLayout, AuthLayout, Navbar, Toaster, TabRowView, BottomBarView, navigation.ts
       components/                  Shared UI by family; primitives in <family>/base/
         button/base/, input/base/, table/base/, toggle/base/, toggleGroup/base/, …
         typography/base/           Heading, Text, typographyVariants (seven-step scale)
@@ -77,7 +76,7 @@ The tree above is the target set by the frontend standards. Migration is in prog
 | Providers split into `XxxProvider.tsx` + `useXxx.ts`; `eslint.config.test.ts` and the `tooling` Vitest project | provider and hook in one file; no config test | STD-02 |
 | `.github/workflows/ci.yml`, `frontend/.husky/` hooks | `deploy.yml` deploys untested; no hooks | STD-03 |
 | `src/test/`, `*.handlers.ts`; Storybook in `pnpm test` with a11y errors | service tests `vi.mock` the client; stories run separately | STD-04 |
-| `features/overview`, `transactions`, `categories`, `auth`; `app/layout`, `app/home`; families with `base/`; `useSearchParamGroup` | `features/home` (tabs, filters, hooks), `login`/`registerUser`/`forgotPassword`/`resetPassword`, `components/layout`, `navbar`, `sonner`, flat primitives | STD-05 |
+| `features/overview`, `transactions`, `categories`, `auth`; `app/layout`; families with `base/`; `useSearchParamGroup` | `features/home` (tabs, filters, hooks), `login`/`registerUser`/`forgotPassword`/`resetPassword`, `components/layout`, `navbar`, `sonner`, flat primitives | STD-05 |
 | `money.ts`, `CurrencyInput`, `FormField`, `FormSheet`, `Amount`, toggles, `usePlanPermissions`, `AuthCard`, `PasswordInput` | `formatCurrency`/`maskCurrency`, hand-built toggles, inline role checks | STD-06 |
 | `typography/base/`, `PageHeader` | raw `<p>`/`<span>` with size classes | STD-08 |
 | `scripts/check-siblings.ts` (story and test reports) | no gate | STD-10, STD-11 |
@@ -95,7 +94,7 @@ The tree above is the target set by the frontend standards. Migration is in prog
 
 **Purpose:** React + TypeScript client.
 **Location:** `frontend/src/`
-**Key files:** `app/routing/AppRouter.tsx`, `app/home/HomePage.tsx`, `api/services/*`, `components/input/base/Field.tsx`. Code lives where it is used and moves up one level per wider consumer (colocation ladder, `feature-structure` skill): inside a component's file → next to it → the feature's `hooks/`/`utils/`/`components/` → `src/`. Imports are layered and lint-enforced: features never import each other, only `app/` imports features, `components/**/base/**` imports neither features, `app/` nor `api/`.
+**Key files:** `app/routing/AppRouter.tsx`, `app/layout/MainLayout.tsx`, `api/services/*`, `components/input/base/Field.tsx`. Code lives where it is used and moves up one level per wider consumer (colocation ladder, `feature-structure` skill): inside a component's file → next to it → the feature's `hooks/`/`utils/`/`components/` → `src/`. Imports are layered and lint-enforced: features never import each other, only `app/` imports features, `components/**/base/**` imports neither features, `app/` nor `api/`.
 
 ### Frontend API layer (global)
 

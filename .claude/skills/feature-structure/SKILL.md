@@ -1,6 +1,6 @@
 ---
 name: feature-structure
-description: Decide where frontend code lives in the findraco SPA and which imports are allowed. Covers the folder map (features, `app/layout`, `app/home`, `components/` families, `hooks/`, `lib/` vs `utils/`, `src/test/`), the colocation ladder for components, hooks and helpers, the layered import rules and their lint fragments, the provider pattern (`XxxProvider.tsx` + `useXxx.ts`), per-feature URL filter state with `useSearchParamGroup`, and wiring pages into the router. Use when scaffolding a feature, adding a file and deciding its folder, lifting shared code, adding a context provider, touching `eslint.config.js` layer restrictions, or judging an import. Triggers on "new feature", "feature structure", "folder structure", "scaffold a feature", "where does this file go", "move to shared", "lift to root", "provider", "context", "createContext", "cross-feature import", "no-restricted-imports", "app shell", "layout".
+description: Decide where frontend code lives in the findraco SPA and which imports are allowed. Covers the folder map (features, `app/layout`, `app/routing`, `components/` families, `hooks/`, `lib/` vs `utils/`, `src/test/`), the colocation ladder for components, hooks and helpers, the layered import rules and their lint fragments, the provider pattern (`XxxProvider.tsx` + `useXxx.ts`), per-feature URL filter state with `useSearchParamGroup` and `PlanFiltersGate`, and wiring pages into the router (one route per destination). Use when scaffolding a feature, adding a file and deciding its folder, lifting shared code, adding a context provider, touching `eslint.config.js` layer restrictions, or judging an import. Triggers on "new feature", "feature structure", "folder structure", "scaffold a feature", "where does this file go", "move to shared", "lift to root", "provider", "context", "createContext", "cross-feature import", "no-restricted-imports", "app shell", "layout".
 metadata:
   type: reference
 ---
@@ -26,9 +26,8 @@ frontend/
     api/                    clients/, dtos/, services/ (useXxxService.ts + xxx.handlers.ts), types/, utils/
     app/                    the only layer that imports features
       providers/            global context: XxxProvider.tsx + useXxx.ts (useAuth, usePlanContext, useTheme)
-      routing/              AppRouter, PrivateRoute, paths.ts
-      layout/               app shell: MainLayout, AuthLayout, Navbar, Toaster, mobile navigation
-      home/                 HomePage (tab composition), HomeFiltersGate, homeParams.ts, useHomeTab.ts, filterStorage.ts
+      routing/              AppRouter, PrivateRoute, paths.ts, PlanFiltersGate, planParams.ts, filterStorage.ts
+      layout/               app shell: MainLayout, AuthLayout, Navbar, Toaster, TabRowView, BottomBarView, navigation.ts
     components/             shared UI by family, primitives in <family>/base/
     features/
       overview/             filters/ (overview params + useOverviewFilters), components/, …
@@ -44,8 +43,13 @@ frontend/
 ```
 
 - Features: `overview`, `transactions`, `categories`, `plans`, `auth`, `notFound`. There is no `home`
-  feature: Overview, Transactions and Categories are siblings, composed into tabs by `app/home/`.
-  Routes stay as they are (`/?tab=…`).
+  feature and no tab composition: each destination is its own route (`/overview`, `/transactions`,
+  `/categories`, `/plans`) and `/` redirects to `/overview`. The URL carries only that screen's filters
+  and the plan (`?plan=`).
+- A screen that is a route is named `XxxPage` (`OverviewPage`, `TransactionsPage`, `CategoriesPage`,
+  `PlansPage`), with its view `XxxPageView`.
+- The navigation (tab row, bottom bar, global add) lives in `MainLayout`, which derives the current
+  destination from the pathname (`navigation.ts`); screens render content only.
 - `auth` is one feature with four pages. `AuthCard` (on `Card`) and `PasswordInput` (on `InputGroup`)
   live in `auth/components/`, which states their real scope.
 - `notFound` uses `ThemeToggle`, which is why `ThemeToggle` stays in `src/components/` and not in the
@@ -100,7 +104,7 @@ uses the code, and a layer for a handful of files is premature abstraction.
 - `src/utils/`: our own pure functions with no external dependency (formatting, masking, calculating,
   `money.ts`).
 - A module that serves one area is not generic and goes down the ladder to that area:
-  `filterStorage.ts` lives in `app/home/` with the filter state it persists.
+  `filterStorage.ts` lives in `app/routing/` with the filters gate that uses it.
 
 ---
 
@@ -111,12 +115,12 @@ uses the code, and a layer for a handful of files is premature abstraction.
   above features. In `src/components/` they would create a two-way dependency with features.
 - `app/` is the only layer that may import features.
 - **Outside `app/`, import only `@/app/providers/*` (global context hooks: `useAuth`, `usePlanContext`,
-  `useTheme`) and `@/app/routing/paths`.** Layouts, the router, `app/home` and any future `app/` folder
-  are never imported from outside `app/`. Enforced by lint `no-restricted-imports`.
+  `useTheme`) and `@/app/routing/paths`.** Layouts, the router, the filters gate and any future `app/`
+  folder are never imported from outside `app/`. Enforced by lint `no-restricted-imports`.
 - Why not a "shell" feature: it must import other features, so it would start life as an exception to
   "features never import features".
 
-### Home filter state
+### Screen filter state
 
 URL filter state is split by owner:
 
@@ -124,14 +128,17 @@ URL filter state is split by owner:
 | --- | --- |
 | Overview params + `useOverviewFilters` | `features/overview/filters/` |
 | Transactions params + `useTransactionFilters` | `features/transactions/filters/` |
-| `HomePage`, `HomeFiltersGate`, tab and plan params + `useHomeTab`, `filterStorage` | `src/app/home/` |
+| `PlanFiltersGate`, plan param (`planParams.ts`), `filterStorage` | `src/app/routing/` |
 | The "update this key group" mechanics | `src/hooks/useSearchParamGroup.ts` |
 
 - A feature's filter hook builds on `useSearchParamGroup(keys, parse, serialize)`, which returns
-  `{ value, update(fn), clear(keys?) }`. Filter updates use `replace`; tab switches push history.
-- Each feature exports its list of filter keys. `HomeFiltersGate` builds its key list from those lists
-  and saves/restores the whole query string per (user, plan). A new filter param missing from its
-  feature's list is not persisted, so add it to the list in the same change.
+  `{ value, update(fn), clear(keys?) }`. Filter updates use `replace`; a destination switch is a
+  `<Link>` and pushes history.
+- Every screen with filters goes through `PlanFiltersGate({ screen, paramKeys, children })` in
+  `AppRouter`. Each feature exports its list of filter keys and the route passes it as `paramKeys`. The
+  gate saves and restores that screen's query string per (user, plan, screen), so one screen's filters
+  never change another's. A new filter param missing from its feature's list is not persisted, so add it
+  to the list in the same change.
 - Features share no filter. A filter that two features need would follow the ladder like anything else.
 
 ---
@@ -223,7 +230,8 @@ green. So:
 
 1. Propose the smallest valid tree (levels above) and say why each folder exists.
 2. Name anything that must be lifted (a second feature needs it) and where it lands on the ladder.
-3. Wire the page in `src/app/routing/AppRouter.tsx`, importing the page directly
+3. Wire the page in `src/app/routing/AppRouter.tsx` as its own route, importing the page directly
    (`import { PlansPage } from "@/features/plans/PlansPage"`); no `index.ts` barrels. Add its path to
-   `paths.ts`.
+   `paths.ts`. A page with URL filters is wrapped in `PlanFiltersGate`; a new destination also joins
+   `navigation.ts`.
 4. Shell pieces (navigation, layout) go to `src/app/layout/`, never into a feature.
