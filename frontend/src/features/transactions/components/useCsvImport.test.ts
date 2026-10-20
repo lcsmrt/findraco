@@ -50,7 +50,7 @@ describe("useCsvImport (STD-12 AC 1)", () => {
     act(() => result.current.importCsv(csv));
 
     await waitFor(() =>
-      expect(toast.success).toHaveBeenCalledWith("Transactions imported successfully."),
+      expect(toast.success).toHaveBeenCalledWith("Transactions imported."),
     );
     expect(requests).toHaveLength(1);
     expect(requests[0].method).toBe("POST");
@@ -68,7 +68,7 @@ describe("useCsvImport (STD-12 AC 1)", () => {
     act(() => result.current.importCsv(csv));
 
     await waitFor(() =>
-      expect(toast.success).toHaveBeenCalledWith("Transactions imported successfully."),
+      expect(toast.success).toHaveBeenCalledWith("Transactions imported."),
     );
     expect(toast.error).not.toHaveBeenCalled();
     expect(queryClient.getQueryState(LIST_KEY)?.isInvalidated).toBe(true);

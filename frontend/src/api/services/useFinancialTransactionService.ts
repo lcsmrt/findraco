@@ -85,7 +85,7 @@ export function useCreateFinancialTransaction(
   return useMutation({
     mutationFn: (payload: CreateFinancialTransactionRequest) =>
       createFinancialTransaction(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Transaction created successfully." }, {
+    ...buildMutationOptions({ successMessage: "Transaction added." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -118,7 +118,7 @@ export function useUpdateFinancialTransaction(
   return useMutation({
     mutationFn: (payload: UpdateFinancialTransactionRequest) =>
       updateFinancialTransaction(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Transaction updated successfully." }, {
+    ...buildMutationOptions({ successMessage: "Transaction updated." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -151,7 +151,7 @@ export function useImportNubankCsv(
   const { activePlanId } = usePlanContext();
   return useMutation({
     mutationFn: (file: File) => importNubankCsv(activePlanId!, file),
-    ...buildMutationOptions({ successMessage: "Transactions imported successfully." }, {
+    ...buildMutationOptions({ successMessage: "Transactions imported." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -183,7 +183,7 @@ export function useCreateFinancialTransactionSeries(
   return useMutation({
     mutationFn: (payload: CreateFinancialTransactionSeriesRequest) =>
       createFinancialTransactionSeries(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Series created successfully." }, {
+    ...buildMutationOptions({ successMessage: "Series created." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -214,7 +214,7 @@ export function useDeleteFinancialTransactionSeries(
   return useMutation({
     mutationFn: (payload: DeleteFinancialTransactionSeriesRequest) =>
       deleteFinancialTransactionSeries(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Series deleted successfully." }, {
+    ...buildMutationOptions({ successMessage: "Series deleted." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -278,7 +278,7 @@ export function useUpdateFinancialTransactionSeries(
   return useMutation({
     mutationFn: (payload: UpdateFinancialTransactionSeriesRequest) =>
       updateFinancialTransactionSeries(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Series updated successfully." }, {
+    ...buildMutationOptions({ successMessage: "Series updated." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -305,7 +305,7 @@ export function useDeleteFinancialTransaction(
   const { activePlanId } = usePlanContext();
   return useMutation({
     mutationFn: (id: number) => deleteFinancialTransaction(activePlanId!, id),
-    ...buildMutationOptions({ successMessage: "Transaction deleted successfully." }, {
+    ...buildMutationOptions({ successMessage: "Transaction deleted." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);

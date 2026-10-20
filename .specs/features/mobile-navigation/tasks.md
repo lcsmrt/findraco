@@ -108,10 +108,10 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Each mutation's success toast text equals its table row (spy on `sonner`'s `toast.success`, an external module)
-- [ ] `useCsvImport.test.ts` and any other assertion of the old text updated to the table
-- [ ] No string in the file contains "successfully"
-- [ ] Gate check passes: Quick
+- [x] Each mutation's success toast text equals its table row (spy on `sonner`'s `toast.success`, an external module)
+- [x] `useCsvImport.test.ts` and any other assertion of the old text updated to the table (two assertions in `useCsvImport.test.ts`; no other)
+- [x] No string in the file contains "successfully"
+- [x] Gate check passes: Quick (83 files, 752 tests, passing)
 
 **Tests**: unit (service through MSW)
 **Gate**: quick

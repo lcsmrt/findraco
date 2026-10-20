@@ -1,6 +1,7 @@
 import { waitFor } from "@testing-library/react";
 import type { QueryClient } from "@tanstack/react-query";
-import { describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   CreateFinancialTransactionRequest,
   FinancialTransaction,
@@ -96,6 +97,15 @@ function invalidated(client: QueryClient) {
   };
 }
 
+// The toast is the user-visible outcome of a mutation; sonner is a third-party module.
+beforeEach(() => {
+  vi.spyOn(toast, "success");
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
 const transactionData = { lists: true, usage: true, spending: true, summary: true, trend: true };
 
 describe("useGetFinancialTransactions", () => {
@@ -177,7 +187,7 @@ describe("useGetFinancialTransactionSeries", () => {
 });
 
 describe("transaction mutations", () => {
-  it("create POSTs the body, returns the transaction, refreshes the transaction, dashboard and category data and calls the caller's onSuccess (NAV-02 AC 4)", async () => {
+  it(`create POSTs the body, returns the transaction, refreshes the transaction, dashboard and category data, shows "Transaction added." and calls the caller's onSuccess (NAV-02 AC 3, 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.create(transaction));
     const requests = recordRequests();
     const onSuccess = vi.fn();
@@ -193,10 +203,11 @@ describe("transaction mutations", () => {
     expect(await requests[0].json()).toEqual(body);
     expect(result.current.data).toEqual(transaction);
     expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Transaction added.");
     expect(onSuccess).toHaveBeenCalledWith(transaction, { body });
   });
 
-  it("a failed create refreshes nothing (NAV-02 AC 7)", async () => {
+  it("a failed create refreshes nothing and shows no success toast (NAV-02 AC 7)", async () => {
     server.use(handlers.createRejected("Amount must be positive"));
 
     const { result, queryClient } = renderHookWithProviders(() => useCreateFinancialTransaction(), {
@@ -215,9 +226,10 @@ describe("transaction mutations", () => {
       series: false,
       otherSeries: false,
     });
+    expect(toast.success).not.toHaveBeenCalled();
   });
 
-  it("update PUTs the body to the transaction's URL and refreshes the transaction, dashboard and category data (NAV-02 AC 4)", async () => {
+  it(`update PUTs the body to the transaction's URL, refreshes the transaction, dashboard and category data and shows "Transaction updated." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.update(transaction));
     const requests = recordRequests();
 
@@ -232,6 +244,7 @@ describe("transaction mutations", () => {
     expect(await requests[0].json()).toEqual(body);
     expect(result.current.data).toEqual(transaction);
     expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Transaction updated.");
   });
 
   it("update calls the caller's onSuccess with the result and the request", async () => {
@@ -245,7 +258,7 @@ describe("transaction mutations", () => {
     expect(onSuccess).toHaveBeenCalledWith(transaction, { params: { id: 40 }, body });
   });
 
-  it("delete DELETEs the transaction's URL and refreshes the transaction, dashboard and category data (NAV-02 AC 4)", async () => {
+  it(`delete DELETEs the transaction's URL, refreshes the transaction, dashboard and category data and shows "Transaction deleted." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.remove());
     const requests = recordRequests();
     const onSuccess = vi.fn();
@@ -259,6 +272,7 @@ describe("transaction mutations", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map(sent)).toEqual([["DELETE", `${path}/40`, {}]]);
     expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Transaction deleted.");
     expect(onSuccess).toHaveBeenCalledWith(undefined, 40);
   });
 
@@ -275,7 +289,7 @@ describe("transaction mutations", () => {
     expect(invalidated(queryClient)).toMatchObject(transactionData);
   });
 
-  it("import POSTs to the import URL, returns the count and refreshes the transaction, dashboard and category data (NAV-02 AC 4)", async () => {
+  it(`import POSTs to the import URL, returns the count, refreshes the transaction, dashboard and category data and shows "Transactions imported." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.importCsv({ imported: 12 }));
     const requests = recordRequests();
     const onSuccess = vi.fn();
@@ -293,6 +307,7 @@ describe("transaction mutations", () => {
     expect(requests.map(sent)).toEqual([["POST", `${path}/import`, {}]]);
     expect(result.current.data).toEqual({ imported: 12 });
     expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Transactions imported.");
     expect(onSuccess).toHaveBeenCalledWith({ imported: 12 }, file);
   });
 
@@ -310,7 +325,7 @@ describe("transaction mutations", () => {
 describe("series mutations", () => {
   const seriesBody = { ...body, mode: "INSTALLMENT" as const, parcelsNumber: 3, currentParcel: 1 };
 
-  it("create POSTs the series body, returns the series and refreshes the transaction, dashboard and category data (NAV-02 AC 4)", async () => {
+  it(`create POSTs the series body, returns the series, refreshes the transaction, dashboard and category data and shows "Series created." (NAV-02 AC 3, 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.createSeries(series));
     const requests = recordRequests();
     const onSuccess = vi.fn();
@@ -326,6 +341,7 @@ describe("series mutations", () => {
     expect(await requests[0].json()).toEqual(seriesBody);
     expect(result.current.data).toEqual(series);
     expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Series created.");
     expect(onSuccess).toHaveBeenCalledWith(series, { body: seriesBody });
   });
 
@@ -339,7 +355,7 @@ describe("series mutations", () => {
     expect(result.current.data).toEqual(series);
   });
 
-  it("update PUTs to the series URL and refreshes the transaction, dashboard and category data and that series only (NAV-02 AC 4)", async () => {
+  it(`update PUTs to the series URL, refreshes the transaction, dashboard and category data and that series only, and shows "Series updated." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.updateSeries(series));
     const requests = recordRequests();
     const onSuccess = vi.fn();
@@ -359,6 +375,7 @@ describe("series mutations", () => {
     expect(await requests[0].json()).toEqual(request.body);
     expect(result.current.data).toEqual(series);
     expect(invalidated(queryClient)).toEqual({ ...transactionData, series: true, otherSeries: false });
+    expect(toast.success).toHaveBeenCalledWith("Series updated.");
     expect(onSuccess).toHaveBeenCalledWith(series, request);
   });
 
@@ -372,7 +389,7 @@ describe("series mutations", () => {
     expect(result.current.data).toEqual(series);
   });
 
-  it("delete sends the scope and the pivot occurrence and refreshes the transaction, dashboard and category data and that series only (NAV-02 AC 4)", async () => {
+  it(`delete sends the scope and the pivot occurrence, refreshes the transaction, dashboard and category data and that series only, and shows "Series deleted." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
     server.use(handlers.removeSeries());
     const requests = recordRequests();
     const onSuccess = vi.fn();
@@ -389,6 +406,7 @@ describe("series mutations", () => {
       ["DELETE", `${path}/series/s1`, { scope: "THIS_AND_FOLLOWING", pivotOccurrenceId: "40" }],
     ]);
     expect(invalidated(queryClient)).toEqual({ ...transactionData, series: true, otherSeries: false });
+    expect(toast.success).toHaveBeenCalledWith("Series deleted.");
     expect(onSuccess).toHaveBeenCalledWith(undefined, request);
   });
 
