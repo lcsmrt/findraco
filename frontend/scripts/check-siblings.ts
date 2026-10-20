@@ -164,10 +164,16 @@ function classify(srcDir: string) {
     .map((filePath) => ({ filePath, container: isContainer(filePath) }));
 }
 
+// A `base/` primitive's story is catalog only and runs no test, so the gate does not demand one.
+function isBasePrimitive(srcDir: string, filePath: string) {
+  return /(^|\/)base\//.test(toRelative(srcDir, filePath));
+}
+
 /** Component files under `srcDir` that need a sibling story and lack one, relative to `srcDir`. */
 export function findMissingStories(srcDir: string): string[] {
   return classify(srcDir)
-    .filter(({ filePath, container }) => !container && !existsSync(filePath.replace(/\.tsx$/, ".stories.tsx")))
+    .filter(({ filePath, container }) => !container && !isBasePrimitive(srcDir, filePath))
+    .filter(({ filePath }) => !existsSync(filePath.replace(/\.tsx$/, ".stories.tsx")))
     .map(({ filePath }) => toRelative(srcDir, filePath));
 }
 

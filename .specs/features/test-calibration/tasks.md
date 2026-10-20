@@ -112,8 +112,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] A `base/` component without a story passes; a non-`base/` presentational one without a story still fails
-- [ ] Gate check passes: Tooling
+- [x] A `base/` component without a story passes; a non-`base/` presentational one without a story still fails
+- [x] Gate check passes: Tooling
 
 **Tests**: unit (tooling)
 **Gate**: tooling

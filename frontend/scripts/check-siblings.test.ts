@@ -35,6 +35,12 @@ describe("findMissingStories", () => {
     expect(findMissingStories(srcDir)).toEqual([]);
   });
 
+  it("passes a base/ primitive without a story (CAL-07)", () => {
+    write("components/button/base/Button.tsx");
+
+    expect(findMissingStories(srcDir)).toEqual([]);
+  });
+
   it.each([
     ['import { useGetSummary } from "@/api/services/dashboardService";'],
     ['import { useAuth } from "@/app/providers/auth/useAuth";'],
