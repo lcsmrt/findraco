@@ -186,12 +186,12 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| NAV-01 | P1 Bottom bar (AC 1–8) | Execute | Implemented (pending verification) |
-| NAV-02 | P1 Add from anywhere (AC 1–8) + Edge (role loading, plan switch, Plans page, form covers bar) | Execute | Implemented (pending verification) |
-| NAV-03 | P2 Plans as a destination (AC 1–5) + Edge (accept-invitation page) | Execute | Implemented (pending verification) |
-| NAV-04 | P3 Toolbar cleanup (AC 1–2) | Execute | Implemented (pending verification) |
-| NAV-05 | P3 Short success messages (AC 1–2) | Execute | Implemented (pending verification) |
-| NAV-06 | P2 One address per screen (AC 1–6) | Execute | Implemented (pending verification) |
+| NAV-01 | P1 Bottom bar (AC 1–8) | Execute | Verified |
+| NAV-02 | P1 Add from anywhere (AC 1–8) + Edge (role loading, plan switch, Plans page, form covers bar) | Execute | Verified |
+| NAV-03 | P2 Plans as a destination (AC 1–5) + Edge (accept-invitation page) | Execute | Verified |
+| NAV-04 | P3 Toolbar cleanup (AC 1–2) | Execute | Verified |
+| NAV-05 | P3 Short success messages (AC 1–2) | Execute | Verified |
+| NAV-06 | P2 One address per screen (AC 1–6) | Execute | Verified |
 
 **ID format:** `NAV-NN`; each ID covers the AC range named in its row.
 
