@@ -103,23 +103,6 @@ function sent(requests: Request[]) {
 }
 
 describe("useTransactionFormSubmit — single transactions (STD-07 AC 2)", () => {
-  it("creates a transaction and finishes", async () => {
-    server.use(financialTransactionHandlers.create(saved));
-    const { result, requests, onDone } = setup({ mode: "create" });
-
-    await act(() => result.current.submit(values));
-
-    await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
-    expect(sent(requests)).toEqual([["POST", API]]);
-    expect(await requests[0].json()).toEqual({
-      type: "DEBIT",
-      description: "Rent",
-      amount: 150.5,
-      startDate: "2026-07-01",
-      items: [],
-    });
-  });
-
   it("updates the edited transaction and finishes", async () => {
     server.use(financialTransactionHandlers.update(saved));
     const { result, requests, onDone } = setup({ mode: "edit", transaction: saved });
@@ -152,17 +135,6 @@ describe("useTransactionFormSubmit — single transactions (STD-07 AC 2)", () =>
     await waitFor(() => expect(onDone).toHaveBeenCalledOnce());
     expect(sent(requests)).toEqual([["POST", `${API}/series`]]);
     expect(await requests[0].json()).toMatchObject({ mode: "RECURRING", interval: "MONTHLY" });
-  });
-
-  it("keeps the form open when the request fails", async () => {
-    server.use(financialTransactionHandlers.createRejected("Category not found"));
-    const { result, requests, onDone } = setup({ mode: "create" });
-
-    await act(() => result.current.submit(values));
-
-    await waitFor(() => expect(requests).toHaveLength(1));
-    await waitFor(() => expect(result.current.isSubmitting).toBe(false));
-    expect(onDone).not.toHaveBeenCalled();
   });
 });
 

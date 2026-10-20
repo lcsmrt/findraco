@@ -343,8 +343,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Every cut has a cited covering test in `audit.md`
-- [ ] Gate check passes: Quick
+- [x] Every cut has a cited covering test in `audit.md`
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick

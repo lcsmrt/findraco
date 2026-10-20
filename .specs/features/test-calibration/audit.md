@@ -101,7 +101,7 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | `src/app/providers/useTheme.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1 |
 | `src/components/dialog/useConfirm.test.tsx` | feature hook | keep | feature hook | 2 → 2 | `components/dialog/useConfirm.ts` is no shared hook; follow-up F1 |
 | `src/features/categories/components/useCategoryFormSubmit.test.ts` | feature hook | keep | feature hook | 3 → 3 | update and failure decisions have no flow; follow-up F4 |
-| `src/features/overview/filters/useOverviewFilters.test.tsx` | feature hook | cut | feature hook | 3 → 0 | URL write without history and foreign keys untouched: `src/hooks/useSearchParamGroup.test.tsx:61`; legacy period: `src/features/overview/filters/overviewParams.test.ts:135`, `:149` |
+| `src/features/overview/filters/useOverviewFilters.test.tsx` | feature hook | cut | feature hook | 3 → 0 | URL write without history and foreign keys untouched: `src/hooks/useSearchParamGroup.test.tsx:61`; legacy period parsed, ignored and never serialized: `src/features/overview/filters/overviewParams.test.ts:129` (T12 merged the two legacy cases) |
 | `src/features/overview/useOverviewMemberFilter.test.tsx` | feature hook | keep | feature hook | 3 → 3 | no Overview flow test; follow-up F5 |
 | `src/features/overview/useOverviewTrend.test.ts` | feature hook | keep | feature hook | 3 → 1 | window and fill are `trendMonths.test.ts`; the per-member request has no flow; follow-up F5 |
 | `src/features/plans/components/usePlanNameSubmit.test.ts` | feature hook | keep | feature hook | 3 → 1 | create and rename: `src/features/plans/components/PlanNameDialog.test.tsx:22`, `:45`; failure has no flow; follow-up F6 |

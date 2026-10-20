@@ -46,19 +46,6 @@ describe("useTransactionSearch (STD-12 AC 1)", () => {
     expect(q(result.current.location.search)).toBe("rent");
   });
 
-  it("writes the draft to q once typing settles for 400 ms", () => {
-    const { result } = setup("/?q=rent");
-
-    act(() => result.current.setSearch("gro"));
-    act(() => vi.advanceTimersByTime(200));
-    act(() => result.current.setSearch("groceries"));
-    act(() => vi.advanceTimersByTime(399));
-    expect(q(result.current.location.search)).toBe("rent");
-
-    act(() => vi.advanceTimersByTime(1));
-    expect(q(result.current.location.search)).toBe("groceries");
-  });
-
   it("keeps the other params when it writes q", () => {
     const { result } = setup("/?plan=1&type=DEBIT");
 

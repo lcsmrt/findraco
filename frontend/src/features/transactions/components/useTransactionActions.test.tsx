@@ -74,22 +74,6 @@ describe("useTransactionActions — drawer (STD-12 AC 1)", () => {
     expect(actions.drawer).toEqual({ open: false, mode: "create" });
   });
 
-  it("opens the drawer on the transaction to edit it", () => {
-    setup();
-
-    act(() => actions.edit(rent));
-
-    expect(actions.drawer).toEqual({ open: true, mode: "edit", transaction: rent });
-  });
-
-  it("opens the drawer prefilled with the transaction to duplicate it", () => {
-    setup();
-
-    act(() => actions.duplicate(rent));
-
-    expect(actions.drawer).toEqual({ open: true, mode: "duplicate", transaction: rent });
-  });
-
   it("closes the drawer when it asks to close, and ignores a request to open", () => {
     setup();
     act(() => actions.edit(rent));
@@ -103,17 +87,6 @@ describe("useTransactionActions — drawer (STD-12 AC 1)", () => {
 });
 
 describe("useTransactionActions — delete (STD-12 AC 1)", () => {
-  it("deletes a single transaction once confirmed", async () => {
-    server.use(financialTransactionHandlers.remove());
-    const { requests, user } = setup();
-
-    act(() => void actions.remove(rent));
-    await screen.findByRole("dialog", { name: "Confirm Deletion" });
-    await user.click(screen.getByRole("button", { name: "Delete" }));
-
-    await waitFor(() => expect(sent(requests)).toEqual([["DELETE", `${API}/42`]]));
-  });
-
   it("deletes nothing when the confirmation is cancelled", async () => {
     const { requests, user } = setup();
 
