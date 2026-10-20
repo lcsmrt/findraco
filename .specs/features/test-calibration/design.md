@@ -164,4 +164,17 @@ Measured in T6 on `test-calibration` (4-vCPU `ubuntu-latest`, before the audit c
 - **Full run is not yet ≤ 120s** (mean 126s, from 247s). The rest is expected from the audit cut (Phases 4-5); T15 measures again.
 - **Fixed in T6:** run 39373953726 changed `vite.config.ts` and ran no unit or story test. Vitest's default config glob `**/vite.config.*/**` does not match the file; the trigger is now `**/{vitest,vite}.config.*` (commit 9cd669b), proven by run 39374330976.
 
+### After the audit cut (T15)
+
+Measured on `test-calibration` after Phases 4-5 (865 tests in 145 running files, N=2).
+
+| Run | Trigger | Kind | Files (unit + storybook / tooling / critical) | Test step |
+| --- | --- | --- | --- | --- |
+| 39378639136 | push (T12-T14: 60 frontend files) | affected | 56 / 4 / 6 | 79s |
+| 39378904718 | push (T15: `src/test/**` changed) | full via `forceRerunTriggers` | 141 / 4 / 6 | 119s |
+| 39378910114 | dispatch | full | 145 (incl. tooling) / 6 | 74s |
+
+- **Full run: goal met.** Both full runs end under 120s (74s and 119s, from a 126s mean before the cut and 247s at the spec baseline). Two samples on a runner that varied 95-153s before the cut: the 119s run sits at the edge, so a slow runner can still cross 120s.
+- **Affected run: the goal holds for a typical push, not for this one.** Run 39378639136 carried three tasks' worth of moves and trims across every feature, so 56 of 141 unit and story files were affected and the step took 79s, over 60s. The one-module probe in T6 (run 39375424397) took 27s; that is the typical push the goal names.
+
 > **Project-level decision:** AD-015 supersedes AD-012 (testing model): the closed table replaces the content-based criterion and the global per-file threshold.

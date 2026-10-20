@@ -42,8 +42,8 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | Local wall time, `storybook` | 16.8s | 10.3s |
 | Local wall time, `tooling` | 3.0s | 1.2s |
 | Local wall time, `critical` with coverage | 3.7s | 1.9s |
-| CI test step, full run (N=2) | 126s mean of 5 (spec baseline 247s, run 39360830629) | pending: T15 dispatch run |
-| CI test step, affected run | 27s (run 39375424397) | pending: T15 push run |
+| CI test step, full run (N=2) | 126s mean of 5 (spec baseline 247s, run 39360830629) | 74s (dispatch 39378910114); 119s (push 39378904718, full via `forceRerunTriggers`) |
+| CI test step, affected run | 27s (run 39375424397) | 79s (push 39378639136: T12-T14, 56 unit and story files affected); a one-module push stays at the 27s of the T6 probe |
 
 Local times are Vitest's reported duration for one run of each project on the same workstation.
 

@@ -385,8 +385,8 @@ T12 → T13 → T14 → T15
 
 **Done when**:
 
-- [ ] Build gate passes; CI full run green with its time recorded
-- [ ] `audit.md` totals match the suite
+- [x] Build gate passes; CI full run green with its time recorded
+- [x] `audit.md` totals match the suite
 
 **Tests**: unit (tooling, if trimmed)
 **Gate**: build
