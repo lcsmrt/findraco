@@ -7,6 +7,17 @@
 
 ---
 
+## 1.0 Release Criteria (draft, user, 2026-10-19)
+
+Leaving beta means "you can rely on it every day, without a backup spreadsheet". 1.0 ships when all hold:
+
+1. **Daily use on the phone without friction**: mobile navigation (M5-09, shipped), PWA (M5-07), period navigator (M5-06).
+2. **Data safety**: no known bug that loses or corrupts data; backups exist and a restore has been tested; permanent plan deletion with retention (M4-07).
+3. **A settled base**: backend standards review and the ProblemDetail error-contract migration done, so later changes are features rather than restructuring.
+4. **A trial period**: a stretch of using only findraco with no serious bug found.
+
+Not required for 1.0: the Claude MCP connector (M5-05) and invoice import (M5-01). They add features, not trust. Criteria get adjusted as we go.
+
 ## Prioritized Backlog (MoSCoW)
 
 Features are grouped by user-facing goal and tagged with their source milestone/track. Ordering inside a bucket is the suggested delivery sequence.
