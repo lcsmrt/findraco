@@ -164,6 +164,18 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: validation.md iteration 1: N2 (componentLogicCap.ts JSXFragment listener) (eslint-rules)
 - last seen: 2026-10-19T12:00:37Z
 
+### L-026 - When trimming a flow test because a pure function's unit test covers its values, keep a flow case for any component wiring around that function (when it is called, guards, refs that change its inputs)
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
+- features: test-calibration
+- evidence: AUD-04; validation.md M9/M10 (frontend flow tests)
+- last seen: 2026-10-20T06:24:27Z
+
+### L-027 - A lookup table or mapping is data, not one rule: assert every entry in one table-driven case rather than a single sample entry
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend unit tests` · harmful: 0
+- features: test-calibration
+- evidence: M6 transactionSort.ts:13 (frontend unit tests)
+- last seen: 2026-10-20T06:24:28Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

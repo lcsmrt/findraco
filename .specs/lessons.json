@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 26,
+  "next_id": 28,
   "lessons": [
     {
       "id": "L-001",
@@ -454,6 +454,42 @@
       ],
       "created": "2026-10-19T12:00:37Z",
       "last_seen": "2026-10-19T12:00:37Z"
+    },
+    {
+      "id": "L-026",
+      "key": "ac_gap::when trimming a flow test because a pure function s unit test covers its values keep a flow case for any component wiring around that function when it is called guards refs that change its inputs",
+      "text": "When trimming a flow test because a pure function's unit test covers its values, keep a flow case for any component wiring around that function (when it is called, guards, refs that change its inputs)",
+      "signal": "ac_gap",
+      "scope": "frontend flow tests",
+      "status": "candidate",
+      "features": [
+        "test-calibration"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AUD-04; validation.md M9/M10 (frontend flow tests)"
+      ],
+      "created": "2026-10-20T06:24:27Z",
+      "last_seen": "2026-10-20T06:24:27Z"
+    },
+    {
+      "id": "L-027",
+      "key": "surviving_mutant::a lookup table or mapping is data not one rule assert every entry in one table driven case rather than a single sample entry",
+      "text": "A lookup table or mapping is data, not one rule: assert every entry in one table-driven case rather than a single sample entry",
+      "signal": "surviving_mutant",
+      "scope": "frontend unit tests",
+      "status": "candidate",
+      "features": [
+        "test-calibration"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M6 transactionSort.ts:13 (frontend unit tests)"
+      ],
+      "created": "2026-10-20T06:24:28Z",
+      "last_seen": "2026-10-20T06:24:28Z"
     }
   ]
 }
