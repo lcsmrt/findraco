@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/dropdown/base/Dropdown";
-import { ChevronsUpDownIcon, PlusIcon, SettingsIcon } from "lucide-react";
+import { ChevronsUpDownIcon, PlusIcon } from "lucide-react";
 
 type PlanSwitcherViewProps = {
   plans: Plan[];
@@ -19,7 +19,6 @@ type PlanSwitcherViewProps = {
   activePlanName: string | undefined;
   onSelectPlan: (planId: number) => void;
   onCreatePlan: () => void;
-  onManagePlans: () => void;
 };
 
 export function PlanSwitcherView({
@@ -28,7 +27,6 @@ export function PlanSwitcherView({
   activePlanName,
   onSelectPlan,
   onCreatePlan,
-  onManagePlans,
 }: PlanSwitcherViewProps) {
   return (
     <DropdownMenu>
@@ -67,10 +65,6 @@ export function PlanSwitcherView({
         <DropdownMenuItem onClick={onCreatePlan}>
           <PlusIcon />
           New plan
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={onManagePlans}>
-          <SettingsIcon />
-          Manage plans
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

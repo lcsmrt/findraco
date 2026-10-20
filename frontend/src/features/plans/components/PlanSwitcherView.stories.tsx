@@ -17,7 +17,6 @@ const meta = {
     activePlanName: "Personal",
     onSelectPlan: fn(),
     onCreatePlan: fn(),
-    onManagePlans: fn(),
   },
 } satisfies Meta<typeof PlanSwitcherView>;
 export default meta;
@@ -29,6 +28,9 @@ export const Selected: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /Personal/ }));
     await userEvent.click(await screen.findByRole("menuitemradio", { name: "Household" }));
     await expect(args.onSelectPlan).toHaveBeenCalledWith(2);
+    // Plans is a destination of the navigation now; the menu only creates a plan.
+    await expect(screen.getByRole("menuitem", { name: "New plan" })).toBeVisible();
+    await expect(screen.queryByRole("menuitem", { name: "Manage plans" })).toBeNull();
     // A radio item keeps the menu open; Escape closes it so the a11y check runs once it has left.
     await userEvent.keyboard("{Escape}");
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());

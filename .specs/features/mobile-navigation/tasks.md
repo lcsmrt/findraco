@@ -504,8 +504,8 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Story `play` opens the menu: "Create plan" present, "Manage plans" absent
-- [ ] Gate check passes: Full
+- [x] Story `play` opens the menu: "Create plan" present, "Manage plans" absent (in `Selected`; the create item's label is "New plan")
+- [x] Gate check passes: Full (178 files, 1256 tests, passing)
 
 **Tests**: story
 **Gate**: full
