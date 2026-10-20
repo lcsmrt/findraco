@@ -44,6 +44,16 @@ describe("findMissingStories", () => {
     expect(findMissingStories(srcDir)).toEqual([]);
   });
 
+  it("does not exempt a view that only renders router components (STD-10 AC 1)", () => {
+    write(
+      "app/layout/TabRowView.tsx",
+      'import { Link } from "react-router-dom";\nexport function TabRowView() { return <nav><Link to="/">Home</Link></nav>; }\n',
+    );
+
+    expect(findMissingStories(srcDir)).toEqual(["app/layout/TabRowView.tsx"]);
+    expect(findContainersWithMarkup(srcDir)).toEqual([]);
+  });
+
   it("does not exempt a type-only import, which brings no data or effects (STD-10 AC 1)", () => {
     write(
       "features/overview/SummaryCards.tsx",
@@ -84,6 +94,16 @@ describe("container detection through real paths and our hooks", () => {
     write(
       "features/plans/PlansPage.tsx",
       'import { usePlanList } from "./usePlanList";\nexport function PlansPage() { usePlanList(); return null; }\n',
+    );
+
+    expect(findMissingStories(srcDir)).toEqual([]);
+  });
+
+  it("treats a component using our helper built on a router hook as a container (STD-10 AC 1)", () => {
+    write("app/layout/activeTab.ts", 'import { useLocation } from "react-router-dom";\nexport function useActiveTab() { return useLocation().pathname; }\n');
+    write(
+      "app/layout/TabRow.tsx",
+      'import { useActiveTab } from "./activeTab";\nexport function TabRow() { useActiveTab(); return null; }\n',
     );
 
     expect(findMissingStories(srcDir)).toEqual([]);

@@ -7,7 +7,11 @@ import ts from "typescript";
 // takes data or causes effects from outside: a container. It fetches and passes down, so its visual
 // lives in a view that has the story.
 const containerDirs = ["api/services", "app/providers"];
-const containerPackages = ["react-router-dom"];
+// The router's hooks read app state, and so do `Routes` and `Outlet`, which render whatever the
+// current location resolves to. Its other components (`Link`, `NavLink`, `Navigate`) only render, so
+// a view using them stays presentational and its story just wraps it in a router.
+const routerPackage = "react-router-dom";
+const routerStateComponents = new Set(["Routes", "Outlet"]);
 
 export type ContainerWithMarkup = {
   file: string;
@@ -30,17 +34,45 @@ function parse(filePath: string) {
   return ts.createSourceFile(filePath, readFileSync(filePath, "utf-8"), ts.ScriptTarget.Latest, true, kind);
 }
 
+type RuntimeImport = {
+  specifier: string;
+  // Names the statement binds at runtime; `undefined` when it binds the whole module (namespace,
+  // default, side-effect or `export *`), which could reach anything in it.
+  names: string[] | undefined;
+};
+
+function runtimeNames(bindings: ts.NamedImportBindings | ts.NamedExportBindings | undefined) {
+  if (!bindings || !(ts.isNamedImports(bindings) || ts.isNamedExports(bindings))) {
+    return undefined;
+  }
+  return bindings.elements.filter((element) => !element.isTypeOnly).map((element) => (element.propertyName ?? element.name).text);
+}
+
 // Type-only imports bring no data or effects, so they never make a file a container.
-function runtimeSpecifiers(source: ts.SourceFile) {
+function runtimeImports(source: ts.SourceFile): RuntimeImport[] {
   return source.statements.flatMap((statement) => {
-    if (ts.isImportDeclaration(statement) && !statement.importClause?.isTypeOnly) {
-      return ts.isStringLiteral(statement.moduleSpecifier) ? [statement.moduleSpecifier.text] : [];
+    if (ts.isImportDeclaration(statement) && !statement.importClause?.isTypeOnly && ts.isStringLiteral(statement.moduleSpecifier)) {
+      const clause = statement.importClause;
+      const names = clause && !clause.name ? runtimeNames(clause.namedBindings) : undefined;
+      return [{ specifier: statement.moduleSpecifier.text, names }];
     }
-    if (ts.isExportDeclaration(statement) && !statement.isTypeOnly && statement.moduleSpecifier) {
-      return ts.isStringLiteral(statement.moduleSpecifier) ? [statement.moduleSpecifier.text] : [];
+    if (
+      ts.isExportDeclaration(statement) &&
+      !statement.isTypeOnly &&
+      statement.moduleSpecifier &&
+      ts.isStringLiteral(statement.moduleSpecifier)
+    ) {
+      return [{ specifier: statement.moduleSpecifier.text, names: runtimeNames(statement.exportClause) }];
     }
     return [];
   });
+}
+
+function importsRouterHook({ specifier, names }: RuntimeImport) {
+  if (specifier !== routerPackage && !specifier.startsWith(`${routerPackage}/`)) {
+    return false;
+  }
+  return names === undefined || names.some((name) => name.startsWith("use") || routerStateComponents.has(name));
 }
 
 function createResolver(srcDir: string) {
@@ -90,10 +122,11 @@ function createContainerCheck(srcDir: string) {
       return false;
     }
     visiting.add(filePath);
-    const result = runtimeSpecifiers(parse(filePath)).some((specifier) => {
-      if (containerPackages.some((name) => specifier === name || specifier.startsWith(`${name}/`))) {
+    const result = runtimeImports(parse(filePath)).some((runtimeImport) => {
+      if (importsRouterHook(runtimeImport)) {
         return true;
       }
+      const { specifier } = runtimeImport;
       const target = resolve(specifier, filePath);
       if (!target) {
         return false;

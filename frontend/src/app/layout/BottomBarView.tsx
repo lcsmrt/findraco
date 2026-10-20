@@ -1,10 +1,10 @@
 import type { LucideIcon } from "lucide-react";
 import { ArrowLeftRight, LayoutDashboard, Plus, Tags, Users } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/button/base/Button";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { DESTINATION_LABELS, DESTINATION_PATHS, type Destination } from "./navigation";
-import { RouterLink } from "./RouterLink";
 
 const ICONS: Record<Destination, LucideIcon> = {
   overview: LayoutDashboard,
@@ -61,7 +61,7 @@ function BarItem({ destination, current }: BarItemProps) {
   const active = destination === current;
 
   return (
-    <RouterLink
+    <Link
       to={DESTINATION_PATHS[destination]}
       aria-current={active ? "page" : undefined}
       className={cn(
@@ -74,6 +74,6 @@ function BarItem({ destination, current }: BarItemProps) {
       <Text variant="caption" className={active ? "text-primary-ink" : undefined}>
         {DESTINATION_LABELS[destination]}
       </Text>
-    </RouterLink>
+    </Link>
   );
 }

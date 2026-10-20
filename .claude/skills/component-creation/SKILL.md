@@ -157,8 +157,12 @@ const lastInstallment = lastInstallmentDate(startDate, count);
   open, hover, input drafts). react-hook-form sections (`useFieldArray`, `useWatch` on a passed
   `control`) count as presentational.
 - **Container**: takes data or causes effects from outside: service hooks (`@/api/services`), app
-  context hooks (`@/app/providers`), router hooks (`react-router-dom`), or our hooks built on them.
-- Practical test: can a story render it with props only, with no provider, API or router?
+  context hooks (`@/app/providers`), router state (`use*` hooks, `Routes` and `Outlet` from
+  `react-router-dom`), or our hooks built on them. Other router components (`Link`, `NavLink`,
+  `Navigate`) do not count: a view rendering them stays presentational, and its story wraps it in a
+  `MemoryRouter`.
+- Practical test: can a story render it with props only (plus a router around it for links), with no
+  provider, API or router hook?
 
 Rules:
 
@@ -166,9 +170,11 @@ Rules:
    `scripts/check-siblings.ts`: every `.tsx` under `src/` that is not a container needs one (tests,
    stories, `src/index.tsx` and `src/test/**` excepted). The script resolves each import to its real
    path (relative or `@/`) and treats a file as a container when it imports `@/api/services`,
-   `@/app/providers` or `react-router-dom`, directly or through one of our `.ts` modules built on them
-   (followed transitively). Importing a component does not count: rendering a container does not make
-   the parent one.
+   `@/app/providers`, or a `use*` hook, `Routes` or `Outlet` from `react-router-dom` (a namespace,
+   default or `export *` import of it counts too), directly or through one of our `.ts` modules built
+   on them (followed transitively). Importing only other router components (`Link`, `NavLink`) does
+   not count. Importing a component does not count: rendering a container does not make the parent
+   one.
 2. **A container renders only components.** It fetches and passes down. Any intrinsic HTML element
    (`div`, `span`, `form`, `img`…; fragments are fine) in a container file fails the same report,
    naming the file and the elements. Split it: the container keeps the hooks and effects and renders

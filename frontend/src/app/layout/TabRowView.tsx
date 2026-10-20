@@ -1,4 +1,5 @@
 import { PlusIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/button/base/Button";
 import { buttonVariants } from "@/components/button/base/buttonVariants";
 import { cn } from "@/lib/mergeClasses";
@@ -8,7 +9,6 @@ import {
   DESTINATIONS,
   type Destination,
 } from "./navigation";
-import { RouterLink } from "./RouterLink";
 
 type TabRowViewProps = {
   current: Destination;
@@ -25,7 +25,7 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
     >
       <div className="flex flex-1">
         {DESTINATIONS.map((destination) => (
-          <RouterLink
+          <Link
             key={destination}
             to={DESTINATION_PATHS[destination]}
             aria-current={destination === current ? "page" : undefined}
@@ -38,7 +38,7 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
             )}
           >
             {DESTINATION_LABELS[destination]}
-          </RouterLink>
+          </Link>
         ))}
       </div>
 

@@ -371,7 +371,7 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [x] Stories: each destination active; without add (VIEWER); `play` checks order Overview · Transactions · Categories · Plans and `aria-current` on the active one (links render through `RouterLink`, so the view stays presentational; stories wrap it in a `MemoryRouter` at a 1024px viewport)
+- [x] Stories: each destination active; without add (VIEWER); `play` checks order Overview · Transactions · Categories · Plans and `aria-current` on the active one (links render through `Link`; router components do not make a file a container, so the view stays presentational; stories wrap it in a `MemoryRouter` at a 1024px viewport)
 - [x] Gate check passes: Full (176 files, 1236 tests, passing)
 
 **Tests**: story
