@@ -85,10 +85,10 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] One helper; no transaction mutation lists keys of its own
-- [ ] Tests: after a successful create, update, delete and series create, a seeded `dashboardSummary`, `dashboardTrend` and `categorySpending` query is invalidated (state `isInvalidated` or refetched), and the transactions query too
-- [ ] A failed create invalidates nothing
-- [ ] Gate check passes: Quick
+- [x] One helper; no transaction mutation lists keys of its own (series update/delete still invalidate their own `financialTransactionSeries` entry, the series definition, which is not transaction-derived list data)
+- [x] Tests: after a successful create, update, delete and series create, a seeded `dashboardSummary`, `dashboardTrend` and `categorySpending` query is invalidated (state `isInvalidated` or refetched), and the transactions query too (also import, series update and series delete)
+- [x] A failed create invalidates nothing
+- [x] Gate check passes: Quick (83 files, 752 tests, passing)
 
 **Tests**: unit (service through MSW)
 **Gate**: quick

@@ -187,7 +187,7 @@ On a phone, the home tabs sit at the top, out of thumb reach, and adding a trans
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
 | NAV-01 | P1 Bottom bar (AC 1–8) | - | Pending |
-| NAV-02 | P1 Add from anywhere (AC 1–8) + Edge (role loading, plan switch, Plans page, form covers bar) | - | Pending |
+| NAV-02 | P1 Add from anywhere (AC 1–8) + Edge (role loading, plan switch, Plans page, form covers bar) | Execute | In Progress |
 | NAV-03 | P2 Plans as a destination (AC 1–5) + Edge (accept-invitation page) | - | Pending |
 | NAV-04 | P3 Toolbar cleanup (AC 1–2) | - | Pending |
 | NAV-05 | P3 Short success messages (AC 1–2) | - | Pending |

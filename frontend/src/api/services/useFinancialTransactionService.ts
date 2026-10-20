@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { findracoApi } from "../clients/findracoApi";
 import {
   CreateFinancialTransactionRequest,
@@ -19,6 +19,19 @@ import { QueryOptions } from "../types/queryOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 import { buildPagedQuery } from "../utils/buildPagedQuery";
 import { usePlanContext } from "@/app/providers/usePlanContext";
+
+/**
+ * A transaction write changes every view derived from transactions: the lists, the category usage
+ * counts, the spending tree and the dashboard totals and trend. One list here keeps the mutations
+ * from drifting apart. Not awaited: active queries refetch on their own, inactive ones turn stale.
+ */
+function invalidateTransactionData(queryClient: QueryClient) {
+  queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+  queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+  queryClient.invalidateQueries({ queryKey: ["categorySpending"] });
+  queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
+  queryClient.invalidateQueries({ queryKey: ["dashboardTrend"] });
+}
 
 async function getFinancialTransactions(
   planId: number,
@@ -75,8 +88,7 @@ export function useCreateFinancialTransaction(
     ...buildMutationOptions({ successMessage: "Transaction created successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
-        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+        invalidateTransactionData(queryClient);
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -109,8 +121,7 @@ export function useUpdateFinancialTransaction(
     ...buildMutationOptions({ successMessage: "Transaction updated successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
-        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+        invalidateTransactionData(queryClient);
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -143,8 +154,7 @@ export function useImportNubankCsv(
     ...buildMutationOptions({ successMessage: "Transactions imported successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
-        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+        invalidateTransactionData(queryClient);
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -176,8 +186,7 @@ export function useCreateFinancialTransactionSeries(
     ...buildMutationOptions({ successMessage: "Series created successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
-        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+        invalidateTransactionData(queryClient);
         options?.onSuccess?.(data, variables);
       },
     }),
@@ -208,8 +217,7 @@ export function useDeleteFinancialTransactionSeries(
     ...buildMutationOptions({ successMessage: "Series deleted successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
-        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+        invalidateTransactionData(queryClient);
         queryClient.invalidateQueries({
           queryKey: [
             "financialTransactionSeries",
@@ -273,8 +281,7 @@ export function useUpdateFinancialTransactionSeries(
     ...buildMutationOptions({ successMessage: "Series updated successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
-        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+        invalidateTransactionData(queryClient);
         queryClient.invalidateQueries({
           queryKey: ["financialTransactionSeries", activePlanId, variables.params.seriesId],
         });
@@ -301,8 +308,7 @@ export function useDeleteFinancialTransaction(
     ...buildMutationOptions({ successMessage: "Transaction deleted successfully." }, {
       ...options,
       onSuccess: (data, variables) => {
-        queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
-        queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
+        invalidateTransactionData(queryClient);
         options?.onSuccess?.(data, variables);
       },
     }),
