@@ -19,16 +19,18 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 
 ## Totals
 
-| Kind | Files before | Tests before | Files running after (planned) | Tests after (planned) |
-| --- | --- | --- | --- | --- |
-| Logic | 42 | 486 | 37 | 398 |
-| Service hooks | 6 | 81 | 6 | 39 |
-| Hooks | 22 | 104 | 21 | 89 |
-| Flows and component tests (`.test.tsx`) | 14 | 114 | 12 | 63 |
-| Tooling | 6 | 189 | 6 | 121 |
-| Stories outside `base/` | 63 | 323 | 63 | 166 |
-| Stories in `base/` | 29 | 142 | 0 | 0 |
-| **Total** | **182** | **1439** | **145** | **876** |
+| Kind | Files before | Tests before | Files running after (planned) | Tests after (planned) | Files running after | Tests after |
+| --- | --- | --- | --- | --- | --- | --- |
+| Logic | 42 | 486 | 37 | 398 | 37 | 398 |
+| Service hooks | 6 | 81 | 6 | 39 | 6 | 39 |
+| Hooks | 22 | 104 | 21 | 89 | 21 | 89 |
+| Flows and component tests (`.test.tsx`) | 14 | 114 | 12 | 63 | 12 | 64 |
+| Tooling | 6 | 189 | 6 | 121 | 6 | 109 |
+| Stories outside `base/` | 63 | 323 | 63 | 166 | 63 | 166 |
+| Stories in `base/` | 29 | 142 | 0 | 0 | 0 | 0 |
+| **Total** | **182** | **1439** | **145** | **876** | **145** | **865** |
+
+"After" is measured on the T15 commit with `vitest run --reporter=json` per project (unit 595, tooling 104, storybook 166 tests; `pnpm test` reports the same 865). The `critical` project re-runs the five critical modules' own tests (6 files, 169 tests) for coverage; they are counted once, under Logic. Two rows differ from the plan, each noted in its row: `CategoryFormSheet.test.tsx` keeps its edit case (+1) and `eslint.config.test.ts` lands at 35 (−12).
 
 "Service hooks" counts `src/api/services/` only; the API client and `api/utils/` are under Logic. Files running after: a `base/` story file stays in the catalog but runs no test.
 
@@ -36,12 +38,14 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 
 | Measure | Before | After |
 | --- | --- | --- |
-| Local wall time, `unit` (20 cores, 5 workers) | 24.9s | T15 |
-| Local wall time, `storybook` | 16.8s | T15 |
-| Local wall time, `tooling` | 3.0s | T15 |
-| Local wall time, `critical` with coverage | 3.7s | T15 |
-| CI test step, full run (N=2) | 126s mean of 5 (spec baseline 247s, run 39360830629) | T15 |
-| CI test step, affected run | 27s (run 39375424397) | — |
+| Local wall time, `unit` (20 cores, 5 workers) | 24.9s | 19.7s |
+| Local wall time, `storybook` | 16.8s | 10.3s |
+| Local wall time, `tooling` | 3.0s | 1.2s |
+| Local wall time, `critical` with coverage | 3.7s | 1.9s |
+| CI test step, full run (N=2) | 126s mean of 5 (spec baseline 247s, run 39360830629) | pending: T15 dispatch run |
+| CI test step, affected run | 27s (run 39375424397) | pending: T15 push run |
+
+Local times are Vitest's reported duration for one run of each project on the same workstation.
 
 ## Verdicts
 
@@ -131,12 +135,12 @@ Every test and story file (182, from `vitest list` per project) has one row: kin
 | `src/features/plans/components/PlanNameDialog.test.tsx` | flow | rewrite | container → flow (CAL-08) | 3 → 2 | empty name is `planNameForm.test.ts` |
 | `src/features/transactions/TransactionsPage.test.tsx` | flow | rewrite | container → flow (CAL-08) | 8 → 7 | the sort mapping is `transactionSort.test.ts` |
 | `src/features/transactions/components/TransactionFormDrawer.test.tsx` | flow | rewrite | container → flow (CAL-08) | 15 → 6 | money, split, attribution and schema rules are `transactionForm.test.ts` / `transactionForm.series.test.ts` / `currencyDigits.test.ts`; happy create (full payload), edit, cancel, edit and create actions, series mutation stay |
-| `eslint.config.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 114 → 47 | per-path repeats of one fragment collapse to one invalid and one valid case per behaviour; each layer keeps its fragment case |
+| `eslint.config.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 114 → 47 | per-path repeats of one fragment collapse to one invalid and one valid case per behaviour; each layer keeps its fragment case. Done (T15): 35. The config has three import blocks and three syntax blocks, so one fragment case per block (six import paths, tests included, and three syntax paths) holds every layer; the remaining cases are one invalid and one valid per rule (the palette and typography selectors keep one invalid case per AST selector) |
 | `eslint/rules/componentLogicCap.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 24 → 24 | already one valid and one invalid case per counting behaviour |
 | `eslint/rules/noJsxIife.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 6 → 6 | valid/invalid pairs |
 | `scripts/check-siblings.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 39 → 39 | one requiring and one passing case per row and per exemption (T1) |
 | `src/test/setupUnit.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 2 → 2 | the unhandled-request guard is gate code; the pair proves one behaviour |
-| `src/test/unhandledRequests.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 4 → 3 | naming one and every request is one behaviour |
+| `src/test/unhandledRequests.test.ts` | tooling | keep | tooling: one valid + one invalid per behaviour | 4 → 3 | naming one and every request is one behaviour. Done (T15): the kept case now also asserts the message header the cut case held |
 | `src/app/layout/AuthLayoutView.stories.tsx` | story | catalog (story-level) | presentational → story per own state / own `play` (CAL-06) | 3 → 1 | no own branch: with-data render; tall content and mobile are catalog; `!test`: TallContent, Mobile |
 | `src/app/layout/BottomBarView.stories.tsx` | story | catalog (story-level) | presentational → story per own state / own `play` (CAL-06) | 5 → 2 | own add interaction and the no-add branch; other active tabs repeat the active branch; `!test`: TransactionsActive, CategoriesActive, PlansActive |
 | `src/app/layout/MainLayoutView.stories.tsx` | story | catalog (story-level) | presentational → story per own state / own `play` (CAL-06) | 4 → 2 | with and without the navigation branch (only story with it); `!test`: LongContent, Mobile |

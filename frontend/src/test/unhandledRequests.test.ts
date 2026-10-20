@@ -8,16 +8,6 @@ describe("createUnhandledRequestRecorder (STD-04 AC 3)", () => {
     expect(() => recorder.assertNone()).not.toThrow();
   });
 
-  it("throws naming a single recorded request", () => {
-    const recorder = createUnhandledRequestRecorder();
-
-    recorder.record(new Request("http://localhost/api/findraco/plan"));
-
-    expect(() => recorder.assertNone()).toThrow(
-      /^Requests without an MSW handler \(add one with server\.use\):\nGET http:\/\/localhost\/api\/findraco\/plan$/,
-    );
-  });
-
   it("throws naming the method and URL of every recorded request", () => {
     const recorder = createUnhandledRequestRecorder();
 
@@ -25,7 +15,7 @@ describe("createUnhandledRequestRecorder (STD-04 AC 3)", () => {
     recorder.record(new Request("http://localhost/api/findraco/user", { method: "POST" }));
 
     expect(() => recorder.assertNone()).toThrow(
-      /GET http:\/\/localhost\/api\/findraco\/plan\nPOST http:\/\/localhost\/api\/findraco\/user$/,
+      /^Requests without an MSW handler \(add one with server\.use\):\nGET http:\/\/localhost\/api\/findraco\/plan\nPOST http:\/\/localhost\/api\/findraco\/user$/,
     );
   });
 
