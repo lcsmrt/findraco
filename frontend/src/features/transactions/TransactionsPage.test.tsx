@@ -45,14 +45,13 @@ const rent: FinancialTransaction = {
 };
 const gym: FinancialTransaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
 
-const noCategories: PagedResponse<FinancialTransactionCategory> = {
-  content: [],
-  page: 0,
-  size: 1000,
-  totalElements: 0,
-  totalPages: 0,
-  last: true,
-};
+const groceries: FinancialTransactionCategory = { id: 12, type: "DEBIT", description: "Groceries" };
+
+function categoryPage(
+  content: FinancialTransactionCategory[],
+): PagedResponse<FinancialTransactionCategory> {
+  return { content, page: 0, size: 1000, totalElements: content.length, totalPages: 1, last: true };
+}
 
 function pageOf(content: FinancialTransaction[], page = 0): PagedResponse<FinancialTransaction> {
   return { content, page, size: 10, totalElements: 25, totalPages: 3, last: page === 2 };
@@ -83,11 +82,18 @@ function planValue(): PlanContextValue {
 
 const categorySheet: CategoryFormSheetContextValue = { openCreate: vi.fn(), openEdit: vi.fn() };
 
-function renderTab(transactions: FinancialTransaction[] = [rent]) {
+type TabOptions = {
+  transactions?: FinancialTransaction[];
+  /** The starting URL; its query string holds the filters. */
+  route?: string;
+  categories?: FinancialTransactionCategory[];
+};
+
+function renderTab({ transactions = [rent], route = "/", categories = [] }: TabOptions = {}) {
   server.use(
     financialTransactionHandlers.list(pageOf(transactions)),
     planHandlers.members([lucas, livia]),
-    financialTransactionCategoryHandlers.list(noCategories),
+    financialTransactionCategoryHandlers.list(categoryPage(categories)),
   );
   const requests = recordRequests();
   renderWithProviders(
@@ -100,7 +106,7 @@ function renderTab(transactions: FinancialTransaction[] = [rent]) {
       {/* The real Toaster shows the outcome the user reads. */}
       <Toaster />
     </CategoryFormSheetContext.Provider>,
-    { auth: authValue(), plan: planValue() },
+    { auth: authValue(), plan: planValue(), route },
   );
   return { requests, user: userEvent.setup() };
 }
@@ -120,6 +126,27 @@ function writes(requests: Request[]) {
       const url = new URL(request.url);
       return [request.method, url.pathname + url.search];
     });
+}
+
+function searchBox() {
+  return screen.getByRole("textbox", { name: "Search transactions" });
+}
+
+/** The labels of the active-filter chips, in order. */
+function chipLabels() {
+  return screen
+    .queryAllByRole("button", { name: /^Remove / })
+    // Money is formatted with a non-breaking space; the labels compare with plain spaces.
+    .map((button) => button.getAttribute("aria-label")?.replace(/^Remove /, "").replace(/\s/g, " "));
+}
+
+/** How many times the category behind a filter was fetched by id. */
+function categoryFetches(requests: Request[], id: number) {
+  return requests.filter(
+    (request) =>
+      new URL(request.url).pathname ===
+      `/api/findraco/plan/${PLAN_ID}/financial-transaction-category/${id}`,
+  ).length;
 }
 
 async function tableRow(description: string) {
@@ -151,17 +178,31 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
 
     await tableRow("Rent");
     expect(listQueries(requests)).toEqual([{ page: "0", size: "10" }]);
+    expect(searchBox()).toHaveProperty("value", "");
   });
 
-  it("searches by description once typing settles", async () => {
-    const { requests, user } = renderTab();
+  it("starts the search box and the request from the URL's search", async () => {
+    const { requests } = renderTab({ route: "/?q=rent" });
+
+    await tableRow("Rent");
+    expect(searchBox()).toHaveProperty("value", "rent");
+    expect(listQueries(requests)).toEqual([{ page: "0", size: "10", description: "rent" }]);
+  });
+
+  it("searches by description once typing settles, keeping the other filters", async () => {
+    const { requests, user } = renderTab({ route: "/?type=DEBIT" });
     await tableRow("Rent");
 
-    await user.type(screen.getByRole("textbox", { name: "Search transactions" }), "rent");
+    await user.type(searchBox(), "rent");
 
     await waitFor(
       () =>
-        expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", description: "rent" }),
+        expect(listQueries(requests).at(-1)).toEqual({
+          page: "0",
+          size: "10",
+          type: "DEBIT",
+          description: "rent",
+        }),
       { timeout: 2000 },
     );
     expect(listQueries(requests).some((query) => query.description === "r")).toBe(false);
@@ -311,7 +352,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
     ["This and following", "THIS_AND_FOLLOWING"],
     ["All", "ALL"],
   ])("deletes %s of a series from the chosen occurrence", async (label, scope) => {
-    const { requests, user } = renderTab([gym]);
+    const { requests, user } = renderTab({ transactions: [gym] });
     const row = await tableRow("Gym (3/12)");
     server.use(financialTransactionHandlers.removeSeries());
 
@@ -328,7 +369,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
   });
 
   it("deletes nothing when the series scope is cancelled", async () => {
-    const { requests, user } = renderTab([gym]);
+    const { requests, user } = renderTab({ transactions: [gym] });
     const row = await tableRow("Gym (3/12)");
 
     await user.click(row.getByRole("button", { name: "Delete" }));
@@ -337,5 +378,174 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
 
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
     expect(writes(requests)).toEqual([]);
+  });
+});
+
+describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
+  it("shows every active filter as a chip, with the category and member names, and requests it", async () => {
+    server.use(financialTransactionCategoryHandlers.get(groceries));
+    const { requests } = renderTab({
+      route: "/?type=DEBIT&category=12&member=2&from=2026-10-01&to=2026-10-31&min=50&max=200",
+    });
+
+    await waitFor(() => expect(chipLabels()).toHaveLength(5));
+    expect(chipLabels()).toEqual([
+      "Debit",
+      "Groceries",
+      "Livia",
+      "01/10/2026 – 31/10/2026",
+      "R$ 50,00 – R$ 200,00",
+    ]);
+    expect(listQueries(requests)).toEqual([
+      {
+        page: "0",
+        size: "10",
+        type: "DEBIT",
+        categoryId: "12",
+        memberId: "2",
+        startDateFrom: "2026-10-01",
+        startDateTo: "2026-10-31",
+        amountMin: "50",
+        amountMax: "200",
+      },
+    ]);
+  });
+
+  it.each([
+    ["/?type=CREDIT&from=2026-10-01&min=50", ["Credit", "From 01/10/2026", "≥ R$ 50,00"]],
+    ["/?to=2026-10-31&max=200", ["Until 31/10/2026", "≤ R$ 200,00"]],
+  ])("labels open-ended ranges and the type (%s)", async (route, labels) => {
+    renderTab({ route });
+
+    await tableRow("Rent");
+    expect(chipLabels()).toEqual(labels);
+  });
+
+  it("removing a chip clears only its filter and goes back to the first page", async () => {
+    const { requests, user } = renderTab({ route: "/?type=DEBIT&from=2026-10-01&to=2026-10-31" });
+    await tableRow("Rent");
+    await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
+    await waitFor(() => expect(listQueries(requests).at(-1)?.page).toBe("1"));
+
+    await user.click(screen.getByRole("button", { name: "Remove 01/10/2026 – 31/10/2026" }));
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", type: "DEBIT" }),
+    );
+    expect(chipLabels()).toEqual(["Debit"]);
+  });
+
+  it("goes back to the first page when the sort changes", async () => {
+    const { requests, user } = renderTab();
+    await tableRow("Rent");
+    await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
+    await waitFor(() => expect(listQueries(requests).at(-1)?.page).toBe("1"));
+
+    const header = screen.getByRole("columnheader", { name: /Amount/ });
+    await user.click(within(header).getByRole("button"));
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({
+        page: "0",
+        size: "10",
+        sortBy: "amount",
+        sortDirection: "asc",
+      }),
+    );
+  });
+
+  it("goes back to the first page when the page size changes", async () => {
+    const { requests, user } = renderTab();
+    await tableRow("Rent");
+    await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
+    await waitFor(() => expect(listQueries(requests).at(-1)?.page).toBe("1"));
+
+    await user.click(screen.getAllByRole("combobox", { name: "Lines per page" })[0]);
+    await user.click(await screen.findByRole("option", { name: "20" }));
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "20" }),
+    );
+  });
+
+  it("clear all empties the search at once and drops filters and search, keeping sort and page size", async () => {
+    const { requests, user } = renderTab({
+      route: "/?q=rent&type=DEBIT&sort=amount.asc&size=25",
+    });
+    await tableRow("Rent");
+    await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
+    await waitFor(() => expect(listQueries(requests).at(-1)?.page).toBe("1"));
+
+    const sentBeforeClear = listQueries(requests).length;
+
+    await user.click(screen.getByRole("button", { name: "Clear all" }));
+
+    expect(searchBox()).toHaveProperty("value", "");
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({
+        page: "0",
+        size: "25",
+        sortBy: "amount",
+        sortDirection: "asc",
+      }),
+    );
+    expect(chipLabels()).toEqual([]);
+    // Past the search debounce: the cleared search is never written back.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    const sentAfterClear = listQueries(requests).slice(sentBeforeClear);
+    expect(sentAfterClear.some((query) => query.description !== undefined)).toBe(false);
+  });
+
+  it("drops a category that no longer exists (404) from the filters", async () => {
+    server.use(financialTransactionCategoryHandlers.getNotFound());
+    const { requests } = renderTab({ route: "/?category=12&type=DEBIT" });
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", type: "DEBIT" }),
+    );
+    expect(chipLabels()).toEqual(["Debit"]);
+    expect(categoryFetches(requests, 12)).toBe(1);
+  });
+
+  it.each([
+    ["a server error (500)", financialTransactionCategoryHandlers.getServerError],
+    ["a network error", financialTransactionCategoryHandlers.getNetworkError],
+  ])("keeps the category filter when fetching it fails with %s", async (_, failure) => {
+    server.use(failure());
+    const { requests } = renderTab({ route: "/?category=12&type=DEBIT" });
+
+    // The first try and its single retry.
+    await waitFor(() => expect(categoryFetches(requests, 12)).toBe(2), { timeout: 3000 });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(listQueries(requests)).toEqual([
+      { page: "0", size: "10", type: "DEBIT", categoryId: "12" },
+    ]);
+  });
+
+  it("drops a member who is not in the plan once the members are loaded", async () => {
+    server.use(financialTransactionCategoryHandlers.get(groceries));
+    const { requests } = renderTab({ route: "/?member=99&category=12" });
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", categoryId: "12" }),
+    );
+    await waitFor(() => expect(chipLabels()).toEqual(["Groceries"]));
+  });
+
+  it("shows a category picked in the filters without fetching it again", async () => {
+    const { requests, user } = renderTab({ categories: [groceries] });
+    await tableRow("Rent");
+
+    await user.click(screen.getByRole("button", { name: "Filters" }));
+    const filters = await screen.findByRole("dialog", { name: "Filters" });
+    await user.click(within(filters).getByLabelText("Category"));
+    await user.click(await screen.findByRole("option", { name: "Groceries" }));
+    await user.click(within(filters).getByRole("button", { name: "Apply" }));
+
+    await waitFor(() => expect(chipLabels()).toEqual(["Groceries"]));
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", categoryId: "12" }),
+    );
+    expect(categoryFetches(requests, 12)).toBe(0);
   });
 });
