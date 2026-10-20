@@ -154,35 +154,35 @@ The frontend went from too few tests to too many: 1442 tests in 182 files (2026-
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| CIT-01 | P1: Faster CI | Design | Pending |
-| CIT-02 | P1: Faster CI | Design | Pending |
-| CIT-03 | P1: Faster CI | Design | Pending |
-| CIT-04 | P1: Faster CI | Design | Pending |
-| CIT-05 | P1: Faster CI | Design | Pending |
-| CIT-06 | P1: Faster CI | Design | Pending |
-| CIT-07 | P1: Faster CI | Design | Pending |
-| CIT-08 | P1: Faster CI | Design | Pending |
-| CAL-01 | P2: Test table | Design | Pending |
-| CAL-02 | P2: Test table | Design | Pending |
-| CAL-03 | P2: Test table | Design | Pending |
-| CAL-04 | P2: Test table | Design | Pending |
-| CAL-05 | P2: Test table | Design | Pending |
-| CAL-06 | P2: Test table | Design | Pending |
-| CAL-07 | P2: Test table | Design | Pending |
-| CAL-08 | P2: Test table | Design | Pending |
-| CAL-09 | P2: Test table | Design | Pending |
-| CAL-10 | P2: Test table | Design | Pending |
-| PROC-01 | P2: Process | Design | Pending |
-| PROC-02 | P2: Process | Design | Pending |
-| PROC-03 | P2: Process | Design | Pending |
-| AUD-01 | P3: Audit | Design | Pending |
-| AUD-02 | P3: Audit | Design | Pending |
-| AUD-03 | P3: Audit | Design | Pending |
-| AUD-04 | P3: Audit | Design | Pending |
-| AUD-05 | P3: Audit | Design | Pending |
-| AUD-06 | P3: Audit | Design | Pending |
+| CIT-01 | P1: Faster CI | T1-T15 | Verified |
+| CIT-02 | P1: Faster CI | T1-T15 | Verified |
+| CIT-03 | P1: Faster CI | T1-T15 | Verified |
+| CIT-04 | P1: Faster CI | T1-T15 | Verified |
+| CIT-05 | P1: Faster CI | T1-T15 | Verified |
+| CIT-06 | P1: Faster CI | T1-T15 | Verified |
+| CIT-07 | P1: Faster CI | T1-T15 | Verified |
+| CIT-08 | P1: Faster CI | T1-T15 | Verified |
+| CAL-01 | P2: Test table | T1-T15 | Verified |
+| CAL-02 | P2: Test table | T1-T15 | Verified |
+| CAL-03 | P2: Test table | T1-T15 | Verified |
+| CAL-04 | P2: Test table | T1-T15 | Verified |
+| CAL-05 | P2: Test table | T1-T15 | Verified |
+| CAL-06 | P2: Test table | T1-T15 | Verified |
+| CAL-07 | P2: Test table | T1-T15 | Verified |
+| CAL-08 | P2: Test table | T1-T15 | Verified |
+| CAL-09 | P2: Test table | T1-T15 | Verified |
+| CAL-10 | P2: Test table | T1-T15 | Verified |
+| PROC-01 | P2: Process | T1-T15 | Verified |
+| PROC-02 | P2: Process | T1-T15 | Verified |
+| PROC-03 | P2: Process | T1-T15 | Verified |
+| AUD-01 | P3: Audit | T1-T15 | Verified |
+| AUD-02 | P3: Audit | T1-T15 | Verified |
+| AUD-03 | P3: Audit | T1-T15 | Verified |
+| AUD-04 | P3: Audit | T1-T15 | Verified |
+| AUD-05 | P3: Audit | T1-T15 | Verified |
+| AUD-06 | P3: Audit | T1-T15 | Verified |
 
-**Coverage:** 27 total, 0 mapped to tasks, 27 unmapped ⚠️ (tasks not written yet)
+**Coverage:** 27 total, 27 mapped to tasks, 0 unmapped
 
 ---
 

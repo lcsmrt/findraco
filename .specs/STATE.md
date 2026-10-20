@@ -124,25 +124,17 @@
 
 ## Handoff
 
-- **Next (user priority, 2026-10-20)**: test calibration, before any new feature. Start with tlc Specify; Discuss in Detailed mode, one topic per turn, short explanations. The user's goal is an objective rule for what to test and how, one that doesn't hinge on "philosophical" judgment: tests went from too few to too many. Proposed shape:
-  - (1) a fixed table "code kind → test kind" (e.g. domain rule → unit; service → one test per mutation with the essentials; purely visual component → one story without detail assertions; `base/` primitive → minimal), where anything not in the table gets no test;
-  - (2) review what forces excess tests: the per-file 90% branch threshold and the story-for-every-visual-component rule;
-  - (3) audit the existing ~1440 tests against the table and cut, with numbers before and after;
-  - (4) CI runs only affected tests (ROADMAP todo).
-  - Data: a frontend push costs ~7 min in CI (tests 247s, deploy 108s, lint+build+setup ~1 min). ROADMAP has the "Frontend test audit & calibration" and "CI: run only affected tests" todos
-- **Last delivered**: M5-09 mobile-navigation is **Done**. Verifier PASS (`.specs/features/mobile-navigation/validation.md`), pushed and deployed as `1.0.0-beta.11` (`abf8ecf`, CI green). `check-siblings` now counts router hooks, `Routes` and `Outlet` as container markers, not `Link`
-- **Pending UAT (user)**: bar icons and the `primary-ink` active colour; hand checks on a phone: the safe-area inset on iPhone, and the New Transaction form covering the bar on a narrow screen. Earlier: production check of the frontend-standards changes (list in `frontend-standards/validation.md`)
-- **Process rules (user, 2026-10-19)**:
-  - full gate once per phase, related tests per task, fewer and grouped tasks (`.specs/codebase/TESTING.md` "Gate policy");
-  - workers stay, for a clean context;
-  - every push that ships a frontend fix or change bumps `1.0.0-beta.N` (CLAUDE.md);
-  - release tags later (ROADMAP)
-- **1.0 criteria**: draft at the top of the ROADMAP (daily use on the phone, data safety, a settled base, a trial period)
-- **Explain to the user when asked (2026-10-18)**: (1) the story-gate refinement (design decision 8, T126); (2) the `interface` in `*.d.ts` exception (E1 addendum, T11)
-- **Low notes**:
-  - `check-siblings` has no test of its own for the `Routes`/`Outlet` branch;
-  - `buildMutationOptions` keeps an unreachable "Operation completed successfully." fallback;
-  - one Storybook duplicate-React flake after `react-router-dom` entered stories (fix: `optimizeDeps.include`);
-  - the two `setupUnit.test.ts` cases depend on their order
-- **Queue after calibration**: backend standards review, M5-06 period navigator, M5-07 PWA, M5-05 Claude MCP connector, M5-10 i18n, local Docker DB quick task, round-2 UX topics
-- **Blockers**: none. **Branch**: main; `882ed6a` (1.0 criteria) and this handoff are local, docs only, not pushed. API/Vite not running
+- **Next (user)**: review test-calibration on branch `test-calibration` (pushed, CI green, **not merged**). Start with `.specs/features/test-calibration/audit.md` (per-file verdicts, before/after, follow-ups F1–F7), then `validation.md` (Verifier PASS, iteration 2). If it looks right: merge to `main` (that push deploys; decide whether it counts as a beta bump: tests/CI/docs plus 11 pure module moves to `utils/`, no behaviour change; spec assumes no bump, unconfirmed)
+- **Last delivered**: test-calibration Done (2026-10-20, run unattended at the user's request, no validation stops):
+  - CI: 2 fixed workers on CI; push runs affected tests (`vitest --changed <last green>`, force-rerun triggers); full suite weekly (Mon 06:00 UTC) and on dispatch; coverage only in the `critical` project. Test step 247s → 74–119s full, 27s one-module affected push (pre-cut sample), 79s for a 56-file push
+  - Tests 1439 → 868 (base/ stories catalog-only via `!test`, other stories only for states the component handles, flows only container decisions, trimmed unit/tooling, 11 modules moved to `utils/`)
+  - The table lives in `frontend/scripts/testTable.ts`; AD-015 supersedes AD-012; docs updated (frontend-testing, component-creation, feature-structure, form-creation skills, TESTING.md, CLAUDE.md, CONVENTIONS/STRUCTURE)
+- **Pending decisions (user)**: spec assumptions marked unconfirmed (pure computation moved to `utils/`; no version bump); audit follow-ups F1–F7 (provider-guard tests, flow gaps that would let more feature-hook tests go); explain flow test vs E2E with a concrete example when E2E starts (user still unsure why both)
+- **Affected ≤60s goal**: no typical post-cut sample yet; check on the next small push
+- **Pending UAT (user)**: from mobile-navigation: bar icons and the `primary-ink` active colour; on a phone, the safe-area inset on iPhone and the New Transaction form covering the bar on a narrow screen. Earlier: production check of the frontend-standards changes (`frontend-standards/validation.md`)
+- **Process rules (user, 2026-10-19)**: full gate once per phase, related tests per task, fewer and grouped tasks; workers stay; every push that ships a frontend fix or change bumps `1.0.0-beta.N`; release tags later (ROADMAP)
+- **1.0 criteria**: draft at the top of the ROADMAP
+- **Explain to the user when asked (2026-10-18)**: (1) the story-gate refinement (design decision 8, T126; now superseded by AD-015); (2) the `interface` in `*.d.ts` exception (E1 addendum, T11)
+- **Low notes**: `buildMutationOptions` keeps an unreachable "Operation completed successfully." fallback; one Storybook duplicate-React flake after `react-router-dom` entered stories (fix: `optimizeDeps.include`); the two `setupUnit.test.ts` cases depend on their order; Vitest 3.2.7 `--changed` hits EISDIR on the tooling project (tooling runs in full, ~1s)
+- **Queue**: backend standards review, M5-06 period navigator, M5-07 PWA, M5-05 Claude MCP connector, M5-10 i18n, local Docker DB quick task, round-2 UX topics
+- **Blockers**: none. **Branch**: `test-calibration` (pushed); `main` has `882ed6a` and `3774b0e` (docs) local-only, not pushed. API/Vite not running

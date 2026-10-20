@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/test-calibration/design.md`
-**Status**: Approved (user asked for an unattended run, 2026-10-20)
+**Status**: Done (Verifier PASS, iteration 2, 2026-10-20)
 **Branch**: `test-calibration`. Pushing this branch is allowed (CI runs, nothing deploys). Never push `main`, never merge.
 
 ---
