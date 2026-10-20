@@ -10,12 +10,6 @@ import {
 afterEach(cleanup);
 
 describe("useConfirm", () => {
-  it("throws when used outside a ConfirmDialogProvider (STD-02 AC 6)", () => {
-    expect(() => renderHook(() => useConfirm())).toThrow(
-      "useConfirm must be used within a ConfirmDialogProvider",
-    );
-  });
-
   it("returns the provided confirm function inside a ConfirmDialogProvider (STD-02 AC 6)", () => {
     const value: ConfirmDialogContextValue = { confirm: vi.fn() };
     function wrapper({ children }: { children: ReactNode }) {

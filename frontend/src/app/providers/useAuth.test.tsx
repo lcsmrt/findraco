@@ -6,12 +6,6 @@ import { AuthContext, type AuthContextValue, useAuth } from "./useAuth";
 afterEach(cleanup);
 
 describe("useAuth", () => {
-  it("throws when used outside an AuthProvider (STD-02 AC 6)", () => {
-    expect(() => renderHook(() => useAuth())).toThrow(
-      "useAuth must be used within an AuthProvider",
-    );
-  });
-
   it("returns the provided value inside an AuthProvider (STD-02 AC 6)", () => {
     const value: AuthContextValue = {
       user: { id: 1, name: "Ana Lima", email: "ana@example.com" },

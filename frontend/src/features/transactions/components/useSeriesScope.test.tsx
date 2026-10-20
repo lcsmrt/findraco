@@ -10,12 +10,6 @@ import {
 afterEach(cleanup);
 
 describe("useSeriesScope", () => {
-  it("throws when used outside a SeriesScopeDialogProvider (STD-02 AC 6)", () => {
-    expect(() => renderHook(() => useSeriesScope())).toThrow(
-      "useSeriesScope must be used within a SeriesScopeDialogProvider",
-    );
-  });
-
   it("returns the provided chooseScope function inside a SeriesScopeDialogProvider (STD-02 AC 6)", () => {
     const value: SeriesScopeDialogContextValue = { chooseScope: vi.fn() };
     function wrapper({ children }: { children: ReactNode }) {

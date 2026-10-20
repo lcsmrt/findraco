@@ -6,12 +6,6 @@ import { PlanContext, type PlanContextValue, usePlanContext } from "./usePlanCon
 afterEach(cleanup);
 
 describe("usePlanContext", () => {
-  it("throws when used outside a PlanProvider (STD-02 AC 6)", () => {
-    expect(() => renderHook(() => usePlanContext())).toThrow(
-      "usePlanContext must be used within a PlanProvider",
-    );
-  });
-
   it("returns the provided value inside a PlanProvider (STD-02 AC 6)", () => {
     const plan = { id: 7, name: "Household", isDefault: true, myRole: "OWNER" as const };
     const value: PlanContextValue = {

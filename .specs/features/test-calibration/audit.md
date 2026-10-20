@@ -99,25 +99,25 @@ Local times are Vitest's reported duration for one run of each project on the sa
 | `src/api/services/useFinancialTransactionService.test.ts` | service | keep | service hook | 21 → 9 | one per endpoint/mutation (list, series, create, update, delete, import, series create/update/delete); "works without caller options" and `enabled` cases cut |
 | `src/api/services/useInvitationService.test.ts` | service | keep | service hook | 5 → 3 | one per mutation; caller-onSuccess cases repeat the one kept in `usePlanService.test.ts` |
 | `src/api/services/usePlanService.test.ts` | service | keep | service hook | 16 → 11 | one per endpoint/mutation, plus one caller-onSuccess case (the five repeat one rule, which `buildMutationOptions.test.ts` does not hold); the failed-request case is TanStack's |
-| `src/app/providers/useAuth.test.tsx` | feature hook | keep | feature hook | 2 → 2 | throw-outside-provider is covered by no flow; follow-up F1 |
+| `src/app/providers/useAuth.test.tsx` | feature hook | keep | feature hook | 2 → 2 | throw-outside-provider is covered by no flow; follow-up F1. Done (flow-coverage): the guard case is cut, as provider guards get no test (`frontend-testing` table); 1 case left |
 | `src/app/providers/useAuthSession.test.tsx` | feature hook | keep | feature hook | 13 → 13 | AuthProvider start-up/expiry decisions; no flow covers them; follow-up F2 |
-| `src/app/providers/usePlanContext.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1 |
-| `src/app/providers/useTheme.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1 |
-| `src/components/dialog/useConfirm.test.tsx` | feature hook | keep | feature hook | 2 → 2 | `components/dialog/useConfirm.ts` is no shared hook; follow-up F1 |
+| `src/app/providers/usePlanContext.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1. Done (flow-coverage): the guard case is cut, as provider guards get no test (`frontend-testing` table); 1 case left |
+| `src/app/providers/useTheme.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1. Done (flow-coverage): the guard case is cut, as provider guards get no test (`frontend-testing` table); 1 case left |
+| `src/components/dialog/useConfirm.test.tsx` | feature hook | keep | feature hook | 2 → 2 | `components/dialog/useConfirm.ts` is no shared hook; follow-up F1. Done (flow-coverage): the guard case is cut, as provider guards get no test (`frontend-testing` table); 1 case left |
 | `src/features/categories/components/useCategoryFormSubmit.test.ts` | feature hook | keep | feature hook | 3 → 3 | update and failure decisions have no flow; follow-up F4 |
 | `src/features/overview/filters/useOverviewFilters.test.tsx` | feature hook | cut | feature hook | 3 → 0 | URL write without history and foreign keys untouched: `src/hooks/useSearchParamGroup.test.tsx:61`; legacy period parsed, ignored and never serialized: `src/features/overview/filters/overviewParams.test.ts:129` (T12 merged the two legacy cases) |
 | `src/features/overview/useOverviewMemberFilter.test.tsx` | feature hook | keep | feature hook | 3 → 3 | no Overview flow test; follow-up F5 |
 | `src/features/overview/useOverviewTrend.test.ts` | feature hook | keep | feature hook | 3 → 1 | window and fill are `trendMonths.test.ts`; the per-member request has no flow; follow-up F5 |
 | `src/features/plans/components/usePlanNameSubmit.test.ts` | feature hook | keep | feature hook | 3 → 1 | create and rename: `src/features/plans/components/PlanNameDialog.test.tsx:22`, `:45`; failure has no flow; follow-up F6 |
 | `src/features/transactions/components/useCsvImport.test.ts` | feature hook | keep | feature hook | 3 → 3 | no flow imports a file; follow-up F7 |
-| `src/features/transactions/components/useSeriesScope.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1 |
+| `src/features/transactions/components/useSeriesScope.test.tsx` | feature hook | keep | feature hook | 2 → 2 | follow-up F1. Done (flow-coverage): the guard case is cut, as provider guards get no test (`frontend-testing` table); 1 case left |
 | `src/features/transactions/components/useTransactionActions.test.tsx` | feature hook | keep | feature hook | 11 → 8 | edit, duplicate, delete: `src/features/transactions/TransactionsPage.test.tsx:167`, `:180`, `:193`; series scopes and cancels have no flow; follow-up F7 |
 | `src/features/transactions/components/useTransactionFormSubmit.test.ts` | feature hook | keep | feature hook | 11 → 9 | create and failure: `src/app/layout/MainLayout.test.tsx:221`, `:250`; series edits have no flow; follow-up F7 |
 | `src/features/transactions/components/useTransactionSearch.test.ts` | feature hook | keep | feature hook | 7 → 6 | settled search: `src/features/transactions/TransactionsPage.test.tsx:141`; the rest has no flow; follow-up F7 |
 | `src/features/transactions/filters/useTransactionFilters.test.tsx` | feature hook | keep | feature hook | 3 → 1 | URL write and foreign keys: `src/hooks/useSearchParamGroup.test.tsx:61`; the clear subset has no flow; follow-up F7 |
 | `src/features/transactions/useTransactionFilterChips.test.tsx` | feature hook | keep | feature hook | 8 → 8 | no flow shows chips; follow-up F7 |
 | `src/features/transactions/useTransactionsPage.test.ts` | feature hook | keep | feature hook | 6 → 6 | page resets have no flow; follow-up F7 |
-| `src/hooks/useCategoryFormSheet.test.tsx` | shared hook | keep | shared hook | 2 → 2 | throws outside, returns inside |
+| `src/hooks/useCategoryFormSheet.test.tsx` | shared hook | keep | shared hook | 2 → 2 | throws outside, returns inside. Done (flow-coverage): the guard case is cut, as provider guards get no test (`frontend-testing` table); 1 case left |
 | `src/hooks/useMemberColors.test.ts` | shared hook | keep | shared hook | 4 → 4 | each case a promised behaviour |
 | `src/hooks/usePlanPermissions.test.ts` | shared hook | keep | shared hook | 6 → 6 | one per role and the two not-ready states |
 | `src/hooks/useSearchParamGroup.test.tsx` | shared hook | keep | shared hook | 5 → 5 | each case a promised behaviour |

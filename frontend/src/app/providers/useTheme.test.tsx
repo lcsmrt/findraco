@@ -6,12 +6,6 @@ import { ThemeContext, type ThemeContextValue, useTheme } from "./useTheme";
 afterEach(cleanup);
 
 describe("useTheme", () => {
-  it("throws when used outside a ThemeProvider (STD-02 AC 6)", () => {
-    expect(() => renderHook(() => useTheme())).toThrow(
-      "useTheme must be used within a ThemeProvider",
-    );
-  });
-
   it("returns the provided value inside a ThemeProvider (STD-02 AC 6)", () => {
     const value: ThemeContextValue = {
       theme: "dark",

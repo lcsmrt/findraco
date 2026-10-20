@@ -10,12 +10,6 @@ import {
 afterEach(cleanup);
 
 describe("useCategoryFormSheet", () => {
-  it("throws when used outside a CategoryFormSheetProvider (STD-02 AC 6)", () => {
-    expect(() => renderHook(() => useCategoryFormSheet())).toThrow(
-      "useCategoryFormSheet must be used within a CategoryFormSheetProvider",
-    );
-  });
-
   it("returns the provided value inside a CategoryFormSheetProvider (STD-02 AC 6)", () => {
     const value: CategoryFormSheetContextValue = {
       openCreate: vi.fn(),
