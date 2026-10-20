@@ -124,12 +124,11 @@
 
 ## Handoff
 
-- **Next**: feature `flow-coverage` (user, 2026-10-20): the test-calibration audit follow-ups F1–F7 (`.specs/features/test-calibration/audit.md`), started with tlc Specify. test-calibration itself is merged and deployed (`3996793`, run 39412960299 green, no beta bump)
-- **Last delivered**: test-calibration Done (2026-10-20, run unattended at the user's request, no validation stops):
-  - CI: 2 fixed workers on CI; push runs affected tests (`vitest --changed <last green>`, force-rerun triggers); full suite weekly (Mon 06:00 UTC) and on dispatch; coverage only in the `critical` project. Test step 247s → 74–119s full, 27s one-module affected push (pre-cut sample), 79s for a 56-file push
-  - Tests 1439 → 868 (base/ stories catalog-only via `!test`, other stories only for states the component handles, flows only container decisions, trimmed unit/tooling, 11 modules moved to `utils/`)
-  - The table lives in `frontend/scripts/testTable.ts`; AD-015 supersedes AD-012; docs updated (frontend-testing, component-creation, feature-structure, form-creation skills, TESTING.md, CLAUDE.md, CONVENTIONS/STRUCTURE)
-- **Pending decisions (user)**: spec assumptions marked unconfirmed (pure computation moved to `utils/`; no version bump); audit follow-ups F1–F7 (provider-guard tests, flow gaps that would let more feature-hook tests go); explain flow test vs E2E with a concrete example when E2E starts (user still unsure why both)
+- **Next**: pick from the Queue (user)
+- **Last delivered**: flow-coverage Done (2026-10-20): audit follow-ups F1–F7 closed. Provider guards get no test (table + TESTING.md); `useAuthSession.test.tsx` → `AuthProvider.test.tsx`; DatePicker `InForm` story `play`; new `OverviewPage.test.tsx`; category, plan dialog, transactions page and drawer flows gained the decisions the hook tests held. Feature-hook test cases 74 → 1 (`useCategoryFormSheet`, shared-hook row). Verifier PASS first run, 8/8 mutants killed. No beta bump (tests and docs only)
+- **Verifier lesson**: never run `pnpm install` in a sensor worktree; symlink the real `node_modules` instead (a first run relinked and broke the real install; restored from the lockfile)
+- **Pending decisions (user)**: explain flow test vs E2E with a concrete example when E2E starts (user still unsure why both)
+- **Known test limits**: CSV import flow asserts the POST, not the file (jsdom FormData); two hook branches unreachable from any screen (recorded in test-calibration `audit.md` F7)
 - **Affected ≤60s goal**: no typical post-cut sample yet; check on the next small push
 - **UAT**: mobile-navigation and frontend-standards checks done by the user (2026-10-20), all OK
 - **Process rules (user, 2026-10-19)**: full gate once per phase, related tests per task, fewer and grouped tasks; workers stay; every push that ships a frontend fix or change bumps `1.0.0-beta.N`; release tags later (ROADMAP)

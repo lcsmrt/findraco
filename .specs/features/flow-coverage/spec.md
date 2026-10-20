@@ -6,8 +6,8 @@ The test-calibration audit (`.specs/features/test-calibration/audit.md`, follow-
 
 ## Goals
 
-- [ ] Every decision listed in F3–F7 is asserted in a flow test or a story `play`, and the feature-hook tests they replace are cut.
-- [ ] The table says what provider guards get (nothing), and the guard tests are gone.
+- [x] Every decision listed in F3–F7 is asserted in a flow test or a story `play`, and the feature-hook tests they replace are cut.
+- [x] The table says what provider guards get (nothing), and the guard tests are gone.
 
 ## Out of Scope
 
@@ -103,25 +103,25 @@ Remaining dimensions N/A for this scope: the feature changes tests and docs only
 
 | Requirement ID | Story | Phase | Status |
 | --- | --- | --- | --- |
-| FLOW-01 | P1: DatePicker | Tasks | Pending |
-| FLOW-02 | P1: DatePicker | Tasks | Pending |
-| FLOW-03 | P1: DatePicker | Tasks | Pending |
-| FLOW-04 | P1: Flows | Tasks | Pending |
-| FLOW-05 | P1: Flows | Tasks | Pending |
-| FLOW-06 | P1: Flows | Tasks | Pending |
-| FLOW-07 | P1: Flows | Tasks | Pending |
-| FLOW-08 | P1: Flows | Tasks | Pending |
-| FLOW-09 | P1: Flows | Tasks | Pending |
-| FLOW-10 | P1: Flows | Tasks | Pending |
-| FLOW-11 | P2: Guards | Tasks | Pending |
-| FLOW-12 | P2: Guards | Tasks | Pending |
-| FLOW-13 | P2: Guards | Tasks | Pending |
+| FLOW-01 | P1: DatePicker | Execute | Verified |
+| FLOW-02 | P1: DatePicker | Execute | Verified |
+| FLOW-03 | P1: DatePicker | Execute | Verified |
+| FLOW-04 | P1: Flows | Execute | Verified |
+| FLOW-05 | P1: Flows | Execute | Verified |
+| FLOW-06 | P1: Flows | Execute | Verified |
+| FLOW-07 | P1: Flows | Execute | Verified |
+| FLOW-08 | P1: Flows | Execute | Verified |
+| FLOW-09 | P1: Flows | Execute | Verified |
+| FLOW-10 | P1: Flows | Execute | Verified |
+| FLOW-11 | P2: Guards | Execute | Verified |
+| FLOW-12 | P2: Guards | Execute | Verified |
+| FLOW-13 | P2: Guards | Execute | Verified |
 
-**Coverage:** 13 total, 0 mapped to tasks, 13 unmapped ⚠️ (tasks not written yet)
+**Coverage:** 13 total, 13 mapped to tasks, 13 verified (validation.md PASS)
 
 ---
 
 ## Success Criteria
 
-- [ ] F1–F7 marked resolved in `audit.md`, each with its covering test or the reason a hook test stays.
-- [ ] Feature-hook test count reported before → after.
+- [x] F1–F7 marked resolved in `audit.md`, each with its covering test or the reason a hook test stays.
+- [x] Feature-hook test count reported before → after.
