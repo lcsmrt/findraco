@@ -434,13 +434,13 @@ T18 → T19 → T20 → T21
 
 **Done when**:
 
-- [ ] Integration (`MainLayout.test.tsx`, real router, MSW): tapping each destination navigates to its path; Plans → `/plans`
-- [ ] As EDITOR on `/overview`: "+" opens "New Transaction" with Expense selected; saving closes the form, stays on `/overview`, shows "Transaction added.", and the summary request runs again
-- [ ] Saving from `/plans` stays on `/plans`
-- [ ] A failed create keeps the form open with its values and shows no success toast
-- [ ] As VIEWER: no "+" and no "New Transaction"; switching from an EDITOR plan to a VIEWER plan hides them without a reload; while plans load, neither shows
-- [ ] `/invitation/:token` shows neither the tab row nor the bar
-- [ ] Gate check passes: Build
+- [x] Integration (`MainLayout.test.tsx`, real router, MSW): tapping each destination navigates to its path; Plans → `/plans` (also: tapping Transactions restores its saved search; the tab row's Plans tab navigates and turns active)
+- [x] As EDITOR on `/overview`: "+" opens "New Transaction" with Expense selected; saving closes the form, stays on `/overview`, shows "Transaction added.", and the summary request runs again
+- [x] Saving from `/plans` stays on `/plans`
+- [x] A failed create keeps the form open with its values and shows no success toast
+- [x] As VIEWER: no "+" and no "New Transaction"; switching from an EDITOR plan to a VIEWER plan hides them without a reload (through the real switcher); while plans load, neither shows
+- [x] `/invitation/:token` shows neither the tab row nor the bar (`invitationHandlers.preview` factory added)
+- [x] Gate check passes: Build (lint, build, sibling gate, coverage; unit 86 files / 791 tests, tooling + storybook 96 files / 649 tests, passing)
 
 **Tests**: integration
 **Gate**: build
