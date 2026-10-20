@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: skipped (spec, Assumptions)
-**Status**: Approved (user, 2026-10-20)
+**Status**: In Progress (Phases 1-2 done)
 **Branch**: `flow-coverage`. Pushing this branch is allowed (CI runs, nothing deploys). Never push `main`, never merge; the orchestrator merges after the Verifier.
 
 ---
@@ -76,7 +76,7 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Both docs state it in one line each, in the table's own style
+- [x] Both docs state it in one line each, in the table's own style
 
 **Tests**: none
 **Gate**: docs
@@ -96,8 +96,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] `grep -r "must be used within" src --include=*.test.*` finds nothing
-- [ ] `node scripts/check-siblings.ts` passes
+- [x] `grep -r "must be used within" src --include=*.test.*` finds nothing
+- [x] `node scripts/check-siblings.ts` passes
 
 **Tests**: none (removal)
 **Gate**: quick
@@ -117,8 +117,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] 13 cases pass under the new name
-- [ ] Gate check passes: Quick
+- [x] 13 cases pass under the new name
+- [x] Gate check passes: Quick
 
 **Tests**: flow
 **Gate**: quick
@@ -138,8 +138,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Each `play` check fails when its wiring is broken (checked by a temporary mutation, reverted)
-- [ ] Gate check passes: Build (phase end)
+- [x] Each `play` check fails when its wiring is broken (checked by a temporary mutation, reverted)
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: story
 **Gate**: build
@@ -159,8 +159,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Failure case passes; hook test cut or reduced per FLOW-10
-- [ ] Gate check passes: Quick
+- [x] Failure case passes; hook test cut or reduced per FLOW-10
+- [x] Gate check passes: Quick
 
 **Tests**: flow
 **Gate**: quick
@@ -180,8 +180,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Flow passes; hook tests cut or reduced per FLOW-10
-- [ ] Gate check passes: Quick
+- [x] Flow passes; hook tests cut or reduced per FLOW-10
+- [x] Gate check passes: Quick
 
 **Tests**: flow
 **Gate**: quick
@@ -201,8 +201,8 @@ T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] New cases pass; hook test cut per FLOW-10
-- [ ] Gate check passes: Build (phase end)
+- [x] New cases pass; hook test cut per FLOW-10
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: flow
 **Gate**: build

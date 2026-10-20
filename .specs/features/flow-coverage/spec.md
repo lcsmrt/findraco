@@ -59,7 +59,7 @@ The test-calibration audit (`.specs/features/test-calibration/audit.md`, follow-
 **Acceptance Criteria**:
 
 1. FLOW-04: IF saving a category fails THEN `CategoryFormSheet.test.tsx` SHALL assert the sheet stays open with the typed values and no success toast shows. (F4)
-2. FLOW-05: WHEN a member is chosen in the Overview's member filter THEN a new `OverviewPage` flow test SHALL assert the summary and trend requests carry that member, and the trend request is the per-member one. (F5)
+2. FLOW-05: WHEN a member is chosen in the Overview's member filter THEN a new `OverviewPage` flow test SHALL assert the trend request carries that member and the chosen member's figures are shown (the summary request stays plan-wide by design; the member is applied on screen). (F5)
 3. FLOW-06: WHEN Cancel is chosen in `PlanNameDialog` or `InvitePlanDialog` THEN their flow tests SHALL assert nothing reaches the network and the dialog closes. (F6)
 4. FLOW-07: IF the request of `PlanNameDialog` or `InvitePlanDialog` fails THEN their flow tests SHALL assert the dialog stays open with its values. (F6)
 5. FLOW-08: `TransactionsPage.test.tsx` SHALL assert: a CSV import reaching the network and its result shown; the series-delete scope choice reaching the network; the active filters shown as chips and a chip's removal clearing that filter; the page resetting to the first page when a filter changes; clearing all filters. (F7)
