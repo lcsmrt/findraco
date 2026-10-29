@@ -85,7 +85,12 @@ export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
 cd backend
 ./mvnw test          # *Test (surefire), no Docker needed
 ./mvnw verify         # unit + integration (*Test + *IT on the container) + jacoco:check — needs Docker
+./mvnw verify -Dit.test=OpenApiSnapshotIT -Dopenapi.update=true   # rewrite backend/openapi.json after a contract change
 ```
+
+`OpenApiSnapshotIT` compares the generated `/v3/api-docs` (keys sorted, no server URL, no app version) with the
+committed `backend/openapi.json` and fails with the diff. Every change to a request or response regenerates the
+file in the same commit.
 
 **Frontend:**
 

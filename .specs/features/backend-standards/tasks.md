@@ -820,8 +820,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Renaming a response field without regenerating fails with the diff (checked, reverted)
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Renaming a response field without regenerating fails with the diff (checked, reverted)
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build

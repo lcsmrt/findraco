@@ -93,6 +93,13 @@ captured by Mailpit (UI at http://localhost:8025, see `.env.example`), not deliv
 
 Swagger UI: **http://localhost:3000/swagger-ui.html**
 
+The contract is committed as [`openapi.json`](openapi.json): `OpenApiSnapshotIT` fails with a diff when the
+generated `/v3/api-docs` differs from it. A change to a request or response regenerates it in the same commit:
+
+```bash
+./mvnw verify -Dit.test=OpenApiSnapshotIT -Dopenapi.update=true
+```
+
 Recurring/installment endpoints (base `/api/findraco/financial-transaction`):
 
 - `POST /series` — create a series. Body: `{ type, amount, description, categoryId?, mode: "INSTALLMENT" | "RECURRING", startDate, parcelsNumber?, interval?: "MONTHLY", endDate? }`. `amount` is per occurrence; `INSTALLMENT` needs `parcelsNumber`, `RECURRING` needs `interval` + `endDate`. Returns `{ seriesId, count, occurrences[] }`.
