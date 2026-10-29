@@ -5,6 +5,7 @@ import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -39,18 +40,22 @@ public class OpenEndedSeriesTopUpService {
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final TransactionRepository transactionRepository;
     private final RecurringTransactionGenerator recurringTransactionGenerator;
+    private final EntityManager entityManager;
 
     public OpenEndedSeriesTopUpService(
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             TransactionRepository transactionRepository,
-            RecurringTransactionGenerator recurringTransactionGenerator) {
+            RecurringTransactionGenerator recurringTransactionGenerator,
+            EntityManager entityManager) {
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.transactionRepository = transactionRepository;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
+        this.entityManager = entityManager;
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void topUp(Plan plan, LocalDate today) {
+    public void topUp(long planId, LocalDate today) {
+        Plan plan = entityManager.getReference(Plan.class, planId);
         LocalDate horizonCap = today.plusMonths(HORIZON_MONTHS);
 
         List<RecurrenceDefinition> due = recurrenceDefinitionRepository.findOpenEndedDue(plan, horizonCap);

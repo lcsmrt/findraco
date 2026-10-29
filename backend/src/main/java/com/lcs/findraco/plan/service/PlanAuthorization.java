@@ -2,7 +2,6 @@ package com.lcs.findraco.plan.service;
 
 import com.lcs.findraco.plan.exception.PlanExceptions;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.user.model.User;
 import org.springframework.stereotype.Component;
 
 /**
@@ -24,11 +23,11 @@ public class PlanAuthorization {
      * OWNER/EDITOR may modify any transaction; CONTRIBUTOR only their own;
      * VIEWER none.
      */
-    public void requireCanModifyTransaction(PlanRole role, User rowOwner, User actor) {
+    public void requireCanModifyTransaction(PlanRole role, Long rowOwnerId, long actorId) {
         switch (role) {
             case OWNER, EDITOR -> {}
             case CONTRIBUTOR -> {
-                if (rowOwner == null || actor == null || !rowOwner.getId().equals(actor.getId())) {
+                if (rowOwnerId == null || rowOwnerId != actorId) {
                     throw new PlanExceptions.CannotModifyOthersTransactionException();
                 }
             }

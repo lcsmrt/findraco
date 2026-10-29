@@ -409,7 +409,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         // Bounded series are excluded entirely by the top-up due-query: firing it must not add rows
         // (i.e. the dashboard's on-read top-up would not refill past the new bound either).
-        topUpService.topUp(plan, LocalDate.now());
+        topUpService.topUp(plan.getId(), LocalDate.now());
         JsonNode definitionAfterTopUp = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definitionAfterTopUp.get("endDate").asString()).isEqualTo(newEnd.toString());
         for (int i = 0; i <= 3; i++) {
@@ -450,7 +450,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         // Already topped up to the horizon by the edit itself: firing top-up again must be a no-op
         // (idempotent), proving no duplicate occurrences and a stable watermark.
-        topUpService.topUp(plan, LocalDate.now());
+        topUpService.topUp(plan.getId(), LocalDate.now());
         List<Transaction> allOccurrences = transactionRepository.findAllByPlanAndSeriesId(plan, seriesId);
         assertThat(allOccurrences).hasSize(OPEN_ENDED_HORIZON_MONTHS + 1);
         RecurrenceDefinition reloaded = recurrenceDefinitionRepository

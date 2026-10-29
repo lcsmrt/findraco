@@ -5,28 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.plan.exception.PlanExceptions;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.user.model.User;
-import java.lang.reflect.Field;
 import org.junit.jupiter.api.Test;
 
 class PlanAuthorizationTest {
 
     private final PlanAuthorization authorization = new PlanAuthorization();
 
-    private final User alice = userWithId(1L);
-    private final User bob = userWithId(2L);
-
-    private static User userWithId(Long id) {
-        User user = new User();
-        try {
-            Field field = User.class.getDeclaredField("id");
-            field.setAccessible(true);
-            field.set(user, id);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e);
-        }
-        return user;
-    }
+    private static final long ALICE = 1L;
+    private static final long BOB = 2L;
 
     @Test
     void createAllowedForOwner() {
@@ -54,49 +40,49 @@ class PlanAuthorizationTest {
 
     @Test
     void modifyOwnAllowedForOwner() {
-        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.OWNER, alice, alice))
+        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.OWNER, ALICE, ALICE))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void modifyOwnAllowedForEditor() {
-        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.EDITOR, alice, alice))
+        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.EDITOR, ALICE, ALICE))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void modifyOwnAllowedForContributor() {
-        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.CONTRIBUTOR, alice, alice))
+        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.CONTRIBUTOR, ALICE, ALICE))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void modifyOwnDeniedForViewer() {
-        assertThatThrownBy(() -> authorization.requireCanModifyTransaction(PlanRole.VIEWER, alice, alice))
+        assertThatThrownBy(() -> authorization.requireCanModifyTransaction(PlanRole.VIEWER, ALICE, ALICE))
                 .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
     }
 
     @Test
     void modifyOthersAllowedForOwner() {
-        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.OWNER, alice, bob))
+        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.OWNER, ALICE, BOB))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void modifyOthersAllowedForEditor() {
-        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.EDITOR, alice, bob))
+        assertThatCode(() -> authorization.requireCanModifyTransaction(PlanRole.EDITOR, ALICE, BOB))
                 .doesNotThrowAnyException();
     }
 
     @Test
     void modifyOthersDeniedForContributor() {
-        assertThatThrownBy(() -> authorization.requireCanModifyTransaction(PlanRole.CONTRIBUTOR, alice, bob))
+        assertThatThrownBy(() -> authorization.requireCanModifyTransaction(PlanRole.CONTRIBUTOR, ALICE, BOB))
                 .isInstanceOf(PlanExceptions.CannotModifyOthersTransactionException.class);
     }
 
     @Test
     void modifyOthersDeniedForViewer() {
-        assertThatThrownBy(() -> authorization.requireCanModifyTransaction(PlanRole.VIEWER, alice, bob))
+        assertThatThrownBy(() -> authorization.requireCanModifyTransaction(PlanRole.VIEWER, ALICE, BOB))
                 .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
     }
 

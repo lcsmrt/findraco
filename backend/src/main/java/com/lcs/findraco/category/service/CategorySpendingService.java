@@ -14,6 +14,7 @@ import com.lcs.findraco.transaction.service.ItemShareAllocator.Allocation;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
 import com.lcs.findraco.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -42,6 +43,7 @@ public class CategorySpendingService {
     private final CategorySpendingAssembler assembler;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
     private final Clock clock;
+    private final EntityManager entityManager;
 
     public CategorySpendingService(
             TransactionRepository transactionRepository,
@@ -51,7 +53,8 @@ public class CategorySpendingService {
             ItemShareAllocator itemShareAllocator,
             CategorySpendingAssembler assembler,
             OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
-            Clock clock) {
+            Clock clock,
+            EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.planMembershipRepository = planMembershipRepository;
@@ -60,6 +63,7 @@ public class CategorySpendingService {
         this.assembler = assembler;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
         this.clock = clock;
+        this.entityManager = entityManager;
     }
 
     /**
@@ -68,13 +72,14 @@ public class CategorySpendingService {
      */
     @Transactional(readOnly = true)
     public List<CategorySpendingResponse> getSpending(CategorySpendingFilter filter, PlanContext ctx) {
-        openEndedSeriesTopUpService.topUp(ctx.getPlan(), LocalDate.now(clock));
-        return compute(ctx.getPlan(), filter.startDate(), filter.endDate(), null);
+        openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
+        return compute(ctx.planId(), filter.startDate(), filter.endDate(), null);
     }
 
     /** Every category of the plan (DEBIT then CREDIT trees, zero spend included) for the period. */
     @Transactional(readOnly = true)
-    public List<CategorySpendingResponse> compute(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
+    public List<CategorySpendingResponse> compute(long planId, LocalDate startDate, LocalDate endDate, Long memberId) {
+        Plan plan = entityManager.getReference(Plan.class, planId);
         Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
         Facts credit = facts(plan, TransactionType.CREDIT, startDate, endDate, memberId);
         Members members = members(plan, debit, credit);
@@ -91,7 +96,8 @@ public class CategorySpendingService {
     /** The Overview breakdown: DEBIT roots with rolled-up spend, children nested. */
     @Transactional(readOnly = true)
     public List<CategorySpendingResponse> computeOverview(
-            Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
+            long planId, LocalDate startDate, LocalDate endDate, Long memberId) {
+        Plan plan = entityManager.getReference(Plan.class, planId);
         Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
         List<Category> categories = categoryRepository.findAllByPlanWithDetails(plan);
         Members members = members(plan, debit);

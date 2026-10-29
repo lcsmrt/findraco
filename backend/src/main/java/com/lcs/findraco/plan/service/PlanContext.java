@@ -1,36 +1,10 @@
 package com.lcs.findraco.plan.service;
 
-import com.lcs.findraco.plan.controller.PlanContextArgumentResolver;
-import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.user.model.User;
 
 /**
- * Immutable per-request holder for the active plan, the acting user and their role
- * within that plan. Produced by {@link PlanContextArgumentResolver} from the
- * {@code {planId}} path variable and declared as a controller method parameter.
+ * The active plan of a plan-scoped request, the acting user and their role in it, as values. The
+ * resolver in {@code plan.controller} builds it from the {@code {planId}} path variable after checking
+ * membership; services reload what they need inside their own transaction.
  */
-public final class PlanContext {
-
-    private final Plan plan;
-    private final User user;
-    private final PlanRole role;
-
-    public PlanContext(Plan plan, User user, PlanRole role) {
-        this.plan = plan;
-        this.user = user;
-        this.role = role;
-    }
-
-    public Plan getPlan() {
-        return plan;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public PlanRole getRole() {
-        return role;
-    }
-}
+public record PlanContext(long planId, long userId, PlanRole role) {}

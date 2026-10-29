@@ -1,5 +1,6 @@
 package com.lcs.findraco.auth.service;
 
+import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.user.model.User;
 import java.util.Collection;
 import java.util.Collections;
@@ -31,5 +32,9 @@ public class CustomUserDetails implements UserDetails {
 
     public User getUser() {
         return user;
+    }
+
+    public AuthenticatedUser authenticatedUser() {
+        return new AuthenticatedUser(user.getId());
     }
 }

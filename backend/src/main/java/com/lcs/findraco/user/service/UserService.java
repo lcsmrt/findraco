@@ -42,8 +42,17 @@ public class UserService {
         return savedUser;
     }
 
+    /** The authenticated caller, loaded in full: the token proves the account exists. */
+    @Transactional(readOnly = true)
+    public User getById(long userId) {
+        return userRepository
+                .findById(userId)
+                .orElseThrow(() -> new IllegalStateException("Authenticated user " + userId + " no longer exists."));
+    }
+
     @Transactional
-    public User update(User user, UpdateUserRequest dto) {
+    public User update(UpdateUserRequest dto, long userId) {
+        User user = getById(userId);
         user.setName(dto.name());
         user.setEmail(dto.email());
         String encryptedPassword = encoder.encode(dto.password());

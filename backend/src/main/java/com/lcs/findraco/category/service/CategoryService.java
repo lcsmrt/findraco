@@ -22,6 +22,7 @@ import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionItemRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
@@ -45,6 +46,7 @@ public class CategoryService {
     private final CategoryMemberLimitRepository memberLimitRepository;
     private final PlanMembershipRepository planMembershipRepository;
     private final PlanAuthorization planAuthorization;
+    private final EntityManager entityManager;
 
     public CategoryService(
             CategoryRepository categoryRepository,
@@ -53,7 +55,8 @@ public class CategoryService {
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             CategoryMemberLimitRepository memberLimitRepository,
             PlanMembershipRepository planMembershipRepository,
-            PlanAuthorization planAuthorization) {
+            PlanAuthorization planAuthorization,
+            EntityManager entityManager) {
         this.categoryRepository = categoryRepository;
         this.transactionRepository = transactionRepository;
         this.transactionItemRepository = transactionItemRepository;
@@ -61,12 +64,17 @@ public class CategoryService {
         this.memberLimitRepository = memberLimitRepository;
         this.planMembershipRepository = planMembershipRepository;
         this.planAuthorization = planAuthorization;
+        this.entityManager = entityManager;
+    }
+
+    private Plan plan(PlanContext ctx) {
+        return entityManager.getReference(Plan.class, ctx.planId());
     }
 
     @Transactional(readOnly = true)
     public Category findById(Long id, PlanContext ctx) {
         return categoryRepository
-                .findByIdAndPlan(id, ctx.getPlan())
+                .findByIdAndPlan(id, plan(ctx))
                 .orElseThrow(() -> new CategoryExceptions.CategoryNotFoundException(id));
     }
 
@@ -85,15 +93,14 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public CategoryResponse getById(Long id, PlanContext ctx) {
-        return CategoryResponse.from(
-                findById(id, ctx), activeMembers(ctx.getPlan()).keySet());
+        return CategoryResponse.from(findById(id, ctx), activeMembers(plan(ctx)).keySet());
     }
 
     private static final Set<String> SORTABLE_FIELDS = Set.of("description", "spendingLimit");
 
     @Transactional(readOnly = true)
     public List<Category> findAllByPlan(PlanContext ctx) {
-        return categoryRepository.findAllByPlan(ctx.getPlan());
+        return categoryRepository.findAllByPlan(plan(ctx));
     }
 
     @Transactional(readOnly = true)
@@ -101,11 +108,11 @@ public class CategoryService {
         PageRequest pageable = filter.toPageable(SORTABLE_FIELDS);
 
         Specification<Category> spec = Specification.allOf(
-                CategorySpecification.belongsToPlan(ctx.getPlan()),
+                CategorySpecification.belongsToPlan(plan(ctx)),
                 CategorySpecification.descriptionContains(filter.description()),
                 CategorySpecification.typeEquals(filter.type()));
 
-        Set<Long> activeMemberIds = activeMembers(ctx.getPlan()).keySet();
+        Set<Long> activeMemberIds = activeMembers(plan(ctx)).keySet();
         return categoryRepository
                 .findAll(spec, pageable)
                 .map(category -> CategoryResponse.from(category, activeMemberIds));
@@ -113,15 +120,15 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponse create(CreateCategoryRequest dto, PlanContext ctx) {
-        planAuthorization.requireCanManageCategories(ctx.getRole());
+        planAuthorization.requireCanManageCategories(ctx.role());
 
         Category category = new Category();
 
-        category.setPlan(ctx.getPlan());
+        category.setPlan(plan(ctx));
         category.setType(dto.type());
         category.setDescription(dto.description());
         category.setParent(resolveParent(null, dto.parentId(), dto.type(), ctx));
-        Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
+        Map<Long, User> activeMembers = activeMembers(plan(ctx));
         category.setOwner(resolveOwner(category, dto.ownerId(), activeMembers));
         applyLimits(category, dto.spendingLimit(), dto.memberLimits(), activeMembers);
 
@@ -130,7 +137,7 @@ public class CategoryService {
 
     @Transactional
     public CategoryResponse update(Long id, UpdateCategoryRequest dto, PlanContext ctx) {
-        planAuthorization.requireCanManageCategories(ctx.getRole());
+        planAuthorization.requireCanManageCategories(ctx.role());
 
         Category existingCategory = findById(id, ctx);
         boolean hasChildren = categoryRepository.existsByParent(existingCategory);
@@ -146,7 +153,7 @@ public class CategoryService {
         existingCategory.setType(dto.type());
         existingCategory.setDescription(dto.description());
         existingCategory.setParent(parent);
-        Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
+        Map<Long, User> activeMembers = activeMembers(plan(ctx));
         existingCategory.setOwner(resolveOwner(existingCategory, dto.ownerId(), activeMembers));
         if (existingCategory.getOwner() != null
                 && hasChildren
@@ -290,7 +297,7 @@ public class CategoryService {
      */
     @Transactional
     public void delete(Long id, Long reassignToId, PlanContext ctx) {
-        planAuthorization.requireCanManageCategories(ctx.getRole());
+        planAuthorization.requireCanManageCategories(ctx.role());
 
         Category category = findById(id, ctx);
         Category target = reassignToId == null ? null : resolveReassignTarget(category, reassignToId, ctx);

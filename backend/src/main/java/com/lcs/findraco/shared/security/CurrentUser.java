@@ -8,13 +8,12 @@ import java.lang.annotation.Target;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 /**
- * Injects the authenticated {@link com.lcs.findraco.user.model.User} into a controller handler,
- * resolved from the {@link CustomUserDetails} principal that {@link JwtAuthenticationFilter}
- * already placed in the security context — no extra database lookup. This is the account-level
- * counterpart to {@link PlanContext} for endpoints that are not plan-scoped.
+ * Injects the {@link AuthenticatedUser} into a controller handler, read from the principal the JWT
+ * filter already placed in the security context. This is the account-level counterpart to the plan
+ * context for endpoints that are not plan-scoped.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-@AuthenticationPrincipal(expression = "user")
+@AuthenticationPrincipal(expression = "authenticatedUser()")
 public @interface CurrentUser {}

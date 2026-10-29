@@ -71,7 +71,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         definition.setAmount(new BigDecimal("75.00"));
         recurrenceDefinitionRepository.save(definition);
 
-        topUpService.topUp(plan, TODAY);
+        topUpService.topUp(plan.getId(), TODAY);
 
         List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
 
@@ -99,7 +99,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         definition.setGeneratedThrough(HORIZON_CAP);
         recurrenceDefinitionRepository.save(definition);
 
-        topUpService.topUp(plan, TODAY);
+        topUpService.topUp(plan.getId(), TODAY);
 
         List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(occurrences).isEmpty();
@@ -118,12 +118,12 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         RecurrenceDefinition definition =
                 anOpenEndedDefinition(plan, owner, start, "Internet", new BigDecimal("100.00"));
 
-        topUpService.topUp(plan, TODAY);
+        topUpService.topUp(plan.getId(), TODAY);
         List<Transaction> firstPass = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
         assertThat(firstPass).hasSize((int) expectedTotal);
 
-        topUpService.topUp(plan, TODAY);
+        topUpService.topUp(plan.getId(), TODAY);
         List<Transaction> secondPass = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(secondPass).hasSize((int) expectedTotal);
 
@@ -141,7 +141,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         RecurrenceDefinition definition =
                 anOpenEndedDefinition(plan, owner, start, "Cloud storage", new BigDecimal("15.00"));
 
-        topUpService.topUp(plan, TODAY);
+        topUpService.topUp(plan.getId(), TODAY);
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
         assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
                 .hasSize((int) expectedTotal);
@@ -154,7 +154,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         reloaded.setGeneratedThrough(start);
         recurrenceDefinitionRepository.save(reloaded);
 
-        topUpService.topUp(plan, TODAY);
+        topUpService.topUp(plan.getId(), TODAY);
 
         List<Transaction> afterSecondFire =
                 transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
@@ -175,7 +175,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         RecurrenceDefinition definition =
                 aBoundedDefinition(plan, owner, start, end, "Car loan", new BigDecimal("400.00"));
 
-        topUpService.topUp(plan, TODAY);
+        topUpService.topUp(plan.getId(), TODAY);
 
         List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(occurrences).isEmpty();

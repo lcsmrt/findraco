@@ -5,10 +5,12 @@ import com.lcs.findraco.plan.model.InvitationStatus;
 import com.lcs.findraco.plan.model.InvitationType;
 import com.lcs.findraco.plan.model.PlanInvitation;
 import com.lcs.findraco.plan.model.PlanMembership;
-import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanInvitationRepository;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
+import com.lcs.findraco.plan.repository.PlanRepository;
+import com.lcs.findraco.plan.request.CreateInvitationRequest;
 import com.lcs.findraco.user.model.User;
+import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -20,32 +22,38 @@ public class PlanInvitationService {
 
     private final PlanInvitationRepository invitationRepository;
     private final PlanMembershipRepository membershipRepository;
+    private final PlanRepository planRepository;
     private final PlanAuthorization planAuthorization;
+    private final EntityManager entityManager;
 
     public PlanInvitationService(
             PlanInvitationRepository invitationRepository,
             PlanMembershipRepository membershipRepository,
-            PlanAuthorization planAuthorization) {
+            PlanRepository planRepository,
+            PlanAuthorization planAuthorization,
+            EntityManager entityManager) {
         this.invitationRepository = invitationRepository;
         this.membershipRepository = membershipRepository;
+        this.planRepository = planRepository;
         this.planAuthorization = planAuthorization;
+        this.entityManager = entityManager;
     }
 
     /** Only the plan owner may invite. Builds and persists a PENDING invitation. */
     @Transactional
-    public PlanInvitation createInvite(
-            PlanContext ctx, PlanRole role, InvitationType type, String email, LocalDateTime expiresAt) {
-        planAuthorization.requireOwner(ctx.getRole());
+    public PlanInvitation createInvite(CreateInvitationRequest request, PlanContext ctx) {
+        planAuthorization.requireOwner(ctx.role());
 
+        InvitationType type = request.type();
         PlanInvitation invitation = new PlanInvitation();
-        invitation.setPlan(ctx.getPlan());
-        invitation.setRole(role);
+        invitation.setPlan(planRepository.getReferenceById(ctx.planId()));
+        invitation.setRole(request.role());
         invitation.setType(type);
-        invitation.setEmail(type == InvitationType.EMAIL ? email : null);
+        invitation.setEmail(type == InvitationType.EMAIL ? request.email() : null);
         invitation.setToken(UUID.randomUUID().toString());
         invitation.setStatus(InvitationStatus.PENDING);
-        invitation.setInvitedBy(ctx.getUser());
-        invitation.setExpiresAt(type == InvitationType.LINK ? expiresAt : null);
+        invitation.setInvitedBy(entityManager.getReference(User.class, ctx.userId()));
+        invitation.setExpiresAt(type == InvitationType.LINK ? request.expiresAt() : null);
 
         return invitationRepository.save(invitation);
     }
@@ -65,8 +73,9 @@ public class PlanInvitationService {
      * EMAIL invites are single-use (marked ACCEPTED); LINK invites stay PENDING (reusable).
      */
     @Transactional
-    public AcceptResult accept(String token, User actor) {
+    public AcceptResult accept(String token, long userId) {
         PlanInvitation invitation = loadValidInvitation(token);
+        User actor = entityManager.getReference(User.class, userId);
 
         if (invitation.getType() == InvitationType.EMAIL
                 && !invitation.getEmail().equalsIgnoreCase(actor.getEmail())) {
@@ -100,17 +109,17 @@ public class PlanInvitationService {
     /** Only the plan owner may list the active plan's invitations. */
     @Transactional(readOnly = true)
     public List<PlanInvitation> listInvitations(PlanContext ctx) {
-        planAuthorization.requireOwner(ctx.getRole());
-        return invitationRepository.findAllByPlan(ctx.getPlan());
+        planAuthorization.requireOwner(ctx.role());
+        return invitationRepository.findAllByPlan(planRepository.getReferenceById(ctx.planId()));
     }
 
     /** Only the plan owner may revoke an invitation belonging to the active plan. */
     @Transactional
-    public void revoke(PlanContext ctx, Long invitationId) {
-        planAuthorization.requireOwner(ctx.getRole());
+    public void revoke(long invitationId, PlanContext ctx) {
+        planAuthorization.requireOwner(ctx.role());
 
         PlanInvitation invitation = invitationRepository
-                .findByIdAndPlan(invitationId, ctx.getPlan())
+                .findByIdAndPlan(invitationId, planRepository.getReferenceById(ctx.planId()))
                 .orElseThrow(() -> new PlanExceptions.InvitationNotFoundException(String.valueOf(invitationId)));
 
         invitation.setStatus(InvitationStatus.REVOKED);

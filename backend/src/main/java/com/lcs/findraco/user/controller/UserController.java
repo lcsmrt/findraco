@@ -1,5 +1,6 @@
 package com.lcs.findraco.user.controller;
 
+import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.request.CreateUserRequest;
@@ -35,15 +36,15 @@ public class UserController {
 
     @Operation(summary = "Returns the authenticated user's data")
     @GetMapping("/me")
-    public ResponseEntity<UserResponse> getCurrentUser(@CurrentUser User user) {
-        return ResponseEntity.ok(UserResponse.from(user));
+    public ResponseEntity<UserResponse> getCurrentUser(@CurrentUser AuthenticatedUser user) {
+        return ResponseEntity.ok(UserResponse.from(userService.getById(user.id())));
     }
 
     @Operation(summary = "Updates the authenticated user")
     @PutMapping
     public ResponseEntity<UserResponse> updateUser(
-            @RequestBody @Valid UpdateUserRequest dto, @CurrentUser User loggedUser) {
-        User updatedUser = userService.update(loggedUser, dto);
+            @RequestBody @Valid UpdateUserRequest dto, @CurrentUser AuthenticatedUser user) {
+        User updatedUser = userService.update(dto, user.id());
         return ResponseEntity.ok(UserResponse.from(updatedUser));
     }
 }

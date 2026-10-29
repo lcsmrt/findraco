@@ -11,6 +11,7 @@ import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
+import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -28,22 +29,25 @@ public class DashboardService {
     private final CategorySpendingService categorySpendingService;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
     private final Clock clock;
+    private final EntityManager entityManager;
 
     public DashboardService(
             TransactionRepository transactionRepository,
             CategorySpendingService categorySpendingService,
             OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
-            Clock clock) {
+            Clock clock,
+            EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
         this.categorySpendingService = categorySpendingService;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
         this.clock = clock;
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
     public DashboardSummaryResponse getSummary(DashboardFilter filter, PlanContext ctx) {
-        Plan plan = ctx.getPlan();
-        openEndedSeriesTopUpService.topUp(plan, LocalDate.now(clock));
+        Plan plan = entityManager.getReference(Plan.class, ctx.planId());
+        openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
 
         LocalDate startDate = filter.startDate();
         LocalDate endDate = filter.endDate();
@@ -68,14 +72,14 @@ public class DashboardService {
     /** Income and expenses per calendar month of the range, optionally for one member's shares (UX-05 AC 7). */
     @Transactional(readOnly = true)
     public List<MonthlyTrendResponse> getTrend(DashboardFilter filter, PlanContext ctx) {
-        Plan plan = ctx.getPlan();
-        openEndedSeriesTopUpService.topUp(plan, LocalDate.now(clock));
+        Plan plan = entityManager.getReference(Plan.class, ctx.planId());
+        openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
         return buildMonthlyTrend(plan, filter.startDate(), filter.endDate(), filter.memberId());
     }
 
     private List<CategoryBreakdownResponse> buildCategoryBreakdown(
             Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        return categorySpendingService.computeOverview(plan, startDate, endDate, memberId).stream()
+        return categorySpendingService.computeOverview(plan.getId(), startDate, endDate, memberId).stream()
                 .map(CategoryBreakdownResponse::from)
                 .toList();
     }

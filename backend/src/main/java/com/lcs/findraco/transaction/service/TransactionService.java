@@ -2,6 +2,7 @@ package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.service.CategoryService;
+import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
@@ -29,6 +30,7 @@ import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
+import jakarta.persistence.EntityManager;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -68,6 +70,7 @@ public class TransactionService {
     private final UserRepository userRepository;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final SeriesRegenerator seriesRegenerator;
+    private final EntityManager entityManager;
 
     public TransactionService(
             TransactionRepository transactionRepository,
@@ -79,7 +82,8 @@ public class TransactionService {
             PlanMembershipRepository planMembershipRepository,
             UserRepository userRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
-            SeriesRegenerator seriesRegenerator) {
+            SeriesRegenerator seriesRegenerator,
+            EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
         this.categoryService = categoryService;
         this.dateUtils = dateUtils;
@@ -90,12 +94,27 @@ public class TransactionService {
         this.userRepository = userRepository;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.seriesRegenerator = seriesRegenerator;
+        this.entityManager = entityManager;
+    }
+
+    private Plan plan(PlanContext ctx) {
+        return entityManager.getReference(Plan.class, ctx.planId());
+    }
+
+    private User user(PlanContext ctx) {
+        return entityManager.getReference(User.class, ctx.userId());
+    }
+
+    private static Long createdById(Transaction transaction) {
+        return transaction.getCreatedBy() == null
+                ? null
+                : transaction.getCreatedBy().getId();
     }
 
     @Transactional(readOnly = true)
     public Transaction findById(Long id, PlanContext ctx) {
         return transactionRepository
-                .findByIdAndPlan(id, ctx.getPlan())
+                .findByIdAndPlan(id, plan(ctx))
                 .orElseThrow(() -> new TransactionExceptions.TransactionNotFoundException(id));
     }
 
@@ -106,7 +125,7 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public List<Transaction> findAllByPlan(PlanContext ctx) {
-        return transactionRepository.findAllByPlan(ctx.getPlan());
+        return transactionRepository.findAllByPlan(plan(ctx));
     }
 
     @Transactional(readOnly = true)
@@ -118,7 +137,7 @@ public class TransactionService {
         Sort.Direction direction = Sort.Direction.fromString(filter.sortDirection());
 
         List<Specification<Transaction>> specs = new ArrayList<>(List.of(
-                TransactionSpecification.belongsToPlan(ctx.getPlan()),
+                TransactionSpecification.belongsToPlan(plan(ctx)),
                 TransactionSpecification.typeEquals(filter.type()),
                 TransactionSpecification.categoryInTree(filter.categoryId()),
                 TransactionSpecification.hasParticipant(filter.memberId()),
@@ -147,7 +166,7 @@ public class TransactionService {
 
     @Transactional
     public Transaction create(CreateTransactionRequest dto, PlanContext ctx) {
-        planAuthorization.requireCanCreateTransaction(ctx.getRole());
+        planAuthorization.requireCanCreateTransaction(ctx.role());
         dateUtils.checkIfStartDateIsBeforeEndDate(dto.startDate(), dto.endDate());
 
         Transaction transaction = new Transaction();
@@ -157,8 +176,8 @@ public class TransactionService {
             throw new TransactionExceptions.CategoryTypeMismatchException();
         }
 
-        transaction.setPlan(ctx.getPlan());
-        transaction.setCreatedBy(ctx.getUser());
+        transaction.setPlan(plan(ctx));
+        transaction.setCreatedBy(user(ctx));
         transaction.setCategory(category);
         transaction.setType(dto.type());
         transaction.setAmount(dto.amount());
@@ -178,7 +197,7 @@ public class TransactionService {
         dateUtils.checkIfStartDateIsBeforeEndDate(dto.startDate(), dto.endDate());
 
         Transaction existingTransaction = findById(id, ctx);
-        planAuthorization.requireCanModifyTransaction(ctx.getRole(), existingTransaction.getCreatedBy(), ctx.getUser());
+        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(existingTransaction), ctx.userId());
 
         Category category = dto.categoryId() != null ? categoryService.findById(dto.categoryId(), ctx) : null;
 
@@ -208,7 +227,7 @@ public class TransactionService {
             BigDecimal amount,
             PlanContext ctx) {
         if (participantInputs == null || participantInputs.isEmpty()) {
-            return new ResolvedParticipants(SplitMode.EQUAL, List.of(new ResolvedParticipant(ctx.getUser(), amount)));
+            return new ResolvedParticipants(SplitMode.EQUAL, List.of(new ResolvedParticipant(user(ctx), amount)));
         }
 
         Set<Long> seenMemberIds = new HashSet<>();
@@ -220,7 +239,7 @@ public class TransactionService {
             }
             User member = userRepository
                     .findById(input.memberId())
-                    .filter(u -> planMembershipRepository.existsByPlanAndUser(ctx.getPlan(), u))
+                    .filter(u -> planMembershipRepository.existsByPlanAndUser(plan(ctx), u))
                     .orElseThrow(() -> new IllegalArgumentException("Participant is not a member of the plan."));
             membersById.put(member.getId(), member);
             resolverInputs.add(new SplitResolver.ParticipantInput(member.getId(), input.shareAmount()));
@@ -238,13 +257,9 @@ public class TransactionService {
 
     private void requireAttributionAuthorizedIfNeeded(ResolvedParticipants resolved, PlanContext ctx) {
         boolean isSelfOnly = resolved.shares().size() == 1
-                && resolved.shares()
-                        .get(0)
-                        .member()
-                        .getId()
-                        .equals(ctx.getUser().getId());
+                && resolved.shares().get(0).member().getId().equals(ctx.userId());
         if (!isSelfOnly) {
-            planAuthorization.requireCanAttributeToOthers(ctx.getRole());
+            planAuthorization.requireCanAttributeToOthers(ctx.role());
         }
     }
 
@@ -331,13 +346,13 @@ public class TransactionService {
     @Transactional
     public void delete(Long id, PlanContext ctx) {
         Transaction transaction = findById(id, ctx);
-        planAuthorization.requireCanModifyTransaction(ctx.getRole(), transaction.getCreatedBy(), ctx.getUser());
+        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
         transactionRepository.delete(transaction);
     }
 
     @Transactional
     public List<Transaction> createSeries(CreateSeriesRequest dto, PlanContext ctx) {
-        planAuthorization.requireCanCreateTransaction(ctx.getRole());
+        planAuthorization.requireCanCreateTransaction(ctx.role());
 
         if (dto.mode() == RecurrenceMode.INSTALLMENT) {
             if (dto.parcelsNumber() == null) {
@@ -368,16 +383,16 @@ public class TransactionService {
         String seriesId = UUID.randomUUID().toString();
         List<Transaction> occurrences = recurringTransactionGenerator.generate(
                 dto,
-                ctx.getPlan(),
-                ctx.getUser(),
+                plan(ctx),
+                user(ctx),
                 category,
                 seriesId,
                 resolvedParticipants.splitMode(),
                 resolvedParticipants.shares());
 
         RecurrenceDefinition definition = new RecurrenceDefinition();
-        definition.setPlan(ctx.getPlan());
-        definition.setCreatedBy(ctx.getUser());
+        definition.setPlan(plan(ctx));
+        definition.setCreatedBy(user(ctx));
         definition.setCategory(category);
         definition.setSeriesId(seriesId);
         definition.setType(dto.type());
@@ -417,7 +432,7 @@ public class TransactionService {
 
     @Transactional
     public void deleteSeries(String seriesId, SeriesEditScope scope, Long pivotOccurrenceId, PlanContext ctx) {
-        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(ctx.getPlan(), seriesId);
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan(ctx), seriesId);
 
         if (occurrences.isEmpty()) {
             throw new TransactionExceptions.TransactionSeriesNotFoundException(seriesId);
@@ -445,7 +460,7 @@ public class TransactionService {
         }
 
         for (Transaction occurrence : inScope) {
-            planAuthorization.requireCanModifyTransaction(ctx.getRole(), occurrence.getCreatedBy(), ctx.getUser());
+            planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(occurrence), ctx.userId());
         }
 
         transactionRepository.deleteAll(inScope);
@@ -459,7 +474,7 @@ public class TransactionService {
                 .toList();
 
         RecurrenceDefinition definition = recurrenceDefinitionRepository
-                .findByPlanAndSeriesId(ctx.getPlan(), seriesId)
+                .findByPlanAndSeriesId(plan(ctx), seriesId)
                 .orElse(null);
 
         if (remaining.isEmpty()) {
@@ -490,7 +505,7 @@ public class TransactionService {
     @Transactional(readOnly = true)
     public RecurrenceDefinitionResponse getSeriesDefinition(String seriesId, PlanContext ctx) {
         RecurrenceDefinition definition = recurrenceDefinitionRepository
-                .findByPlanAndSeriesId(ctx.getPlan(), seriesId)
+                .findByPlanAndSeriesId(plan(ctx), seriesId)
                 .orElseThrow(() -> new TransactionExceptions.TransactionSeriesNotFoundException(seriesId));
         return RecurrenceDefinitionResponse.from(definition);
     }
@@ -507,13 +522,13 @@ public class TransactionService {
 
     @Transactional
     public TransactionSeriesResponse editSeries(String seriesId, UpdateSeriesRequest dto, PlanContext ctx) {
-        planAuthorization.requireCanCreateTransaction(ctx.getRole());
+        planAuthorization.requireCanCreateTransaction(ctx.role());
 
         RecurrenceDefinition definition = recurrenceDefinitionRepository
-                .findByPlanAndSeriesId(ctx.getPlan(), seriesId)
+                .findByPlanAndSeriesId(plan(ctx), seriesId)
                 .orElseThrow(() -> new TransactionExceptions.TransactionSeriesNotFoundException(seriesId));
 
-        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(ctx.getPlan(), seriesId);
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan(ctx), seriesId);
 
         Category category = dto.categoryId() != null ? categoryService.findById(dto.categoryId(), ctx) : null;
 
@@ -554,7 +569,7 @@ public class TransactionService {
         }
 
         for (Transaction occurrence : inScope) {
-            planAuthorization.requireCanModifyTransaction(ctx.getRole(), occurrence.getCreatedBy(), ctx.getUser());
+            planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(occurrence), ctx.userId());
         }
 
         if (dto.scope() == SeriesEditScope.THIS_ONE) {
@@ -671,7 +686,7 @@ public class TransactionService {
 
     @Transactional
     public int importFromNubankCsv(MultipartFile file, PlanContext ctx) {
-        planAuthorization.requireCanCreateTransaction(ctx.getRole());
+        planAuthorization.requireCanCreateTransaction(ctx.role());
 
         List<String> lines;
         try {
@@ -707,14 +722,14 @@ public class TransactionService {
         }
 
         Set<String> existingIds = transactionRepository.findExistingExternalIds(
-                ctx.getPlan(), parsed.stream().map(ParsedRow::externalId).toList());
+                plan(ctx), parsed.stream().map(ParsedRow::externalId).toList());
 
         for (ParsedRow row : parsed) {
             if (existingIds.contains(row.externalId())) continue;
 
             Transaction t = new Transaction();
-            t.setPlan(ctx.getPlan());
-            t.setCreatedBy(ctx.getUser());
+            t.setPlan(plan(ctx));
+            t.setCreatedBy(user(ctx));
             t.setExternalId(row.externalId());
             t.setStartDate(row.date());
             t.setAmount(row.rawAmount().abs());

@@ -616,9 +616,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Non-member request answers 404 before the controller (existing IT)
-- [ ] Suite green
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Non-member request answers 404 before the controller (existing IT)
+- [x] Suite green
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

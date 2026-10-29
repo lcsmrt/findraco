@@ -7,8 +7,8 @@ import com.lcs.findraco.plan.response.InvitationPreviewResponse;
 import com.lcs.findraco.plan.response.InvitationResponse;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanInvitationService;
+import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
-import com.lcs.findraco.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -32,8 +32,7 @@ public class PlanInvitationController {
     @PostMapping(PlanRoutes.PLAN_INVITATION)
     public ResponseEntity<InvitationResponse> createInvitation(
             @RequestBody @Valid CreateInvitationRequest dto, PlanContext ctx) {
-        PlanInvitation invitation =
-                invitationService.createInvite(ctx, dto.role(), dto.type(), dto.email(), dto.expiresAt());
+        PlanInvitation invitation = invitationService.createInvite(dto, ctx);
         return ResponseEntity.status(HttpStatus.CREATED).body(InvitationResponse.from(invitation));
     }
 
@@ -49,7 +48,7 @@ public class PlanInvitationController {
     @Operation(summary = "Revokes an invitation (owner only)")
     @DeleteMapping(PlanRoutes.PLAN_INVITATION + "/{invitationId}")
     public ResponseEntity<Void> revokeInvitation(@PathVariable Long invitationId, PlanContext ctx) {
-        invitationService.revoke(ctx, invitationId);
+        invitationService.revoke(invitationId, ctx);
         return ResponseEntity.noContent().build();
     }
 
@@ -63,8 +62,8 @@ public class PlanInvitationController {
     @Operation(summary = "Accepts an invitation by token for the authenticated user")
     @PostMapping(PlanRoutes.INVITATION + "/{token}/accept")
     public ResponseEntity<AcceptInvitationResponse> acceptInvitation(
-            @PathVariable String token, @CurrentUser User actor) {
-        PlanInvitationService.AcceptResult result = invitationService.accept(token, actor);
+            @PathVariable String token, @CurrentUser AuthenticatedUser user) {
+        PlanInvitationService.AcceptResult result = invitationService.accept(token, user.id());
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(AcceptInvitationResponse.from(result.membership()));
     }
