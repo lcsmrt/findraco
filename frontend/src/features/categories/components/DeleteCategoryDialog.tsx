@@ -1,8 +1,8 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
+import { Category } from "@/api/dtos";
 import {
-  useDeleteFinancialTransactionCategory,
+  useDeleteCategory,
   useGetCategoryUsage,
-} from "@/api/services/useFinancialTransactionCategoryService";
+} from "@/api/services/useCategoryService";
 import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -31,8 +31,8 @@ import { categoryHasChildren } from "./categoryForm";
 type DeleteCategoryDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  category: FinancialTransactionCategory | null;
-  categories: FinancialTransactionCategory[];
+  category: Category | null;
+  categories: Category[];
 };
 
 export function DeleteCategoryDialog({
@@ -56,7 +56,7 @@ export function DeleteCategoryDialog({
   } = useGetCategoryUsage(category?.id ?? null, { enabled: open });
 
   const { mutate: deleteCategory, isPending } =
-    useDeleteFinancialTransactionCategory({
+    useDeleteCategory({
       showErrorToast: false,
       onSuccess: () => onOpenChange(false),
       onError: (error) => {

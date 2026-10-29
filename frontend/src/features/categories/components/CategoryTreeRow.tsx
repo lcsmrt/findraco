@@ -1,4 +1,4 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import { Button } from "@/components/button/base/Button";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
@@ -36,7 +36,7 @@ function TreeGuide({ isLast }: TreeGuideProps) {
 }
 
 type OwnerLabelProps = {
-  category: FinancialTransactionCategory;
+  category: Category;
   colorOf: MemberColorOf;
 };
 
@@ -63,7 +63,7 @@ function OwnerLabel({ category, colorOf }: OwnerLabelProps) {
 }
 
 type MemberLimitsProps = {
-  category: FinancialTransactionCategory;
+  category: Category;
   colorOf: MemberColorOf;
 };
 
@@ -95,19 +95,19 @@ function MemberLimits({ category, colorOf }: MemberLimitsProps) {
 }
 
 /** The configured monthly limit: the per-member sum, or the plain limit. */
-function monthlyLimit(category: FinancialTransactionCategory) {
+function monthlyLimit(category: Category) {
   return category.effectiveLimit ?? category.spendingLimit ?? null;
 }
 
 type CategoryTreeRowProps = {
-  category: FinancialTransactionCategory;
+  category: Category;
   /** Position under its root; undefined for a root. */
   child?: { isLast: boolean };
   colorOf: MemberColorOf;
   canManage: boolean;
-  onEdit: (category: FinancialTransactionCategory) => void;
-  onDelete: (category: FinancialTransactionCategory) => void;
-  onAddChild: (root: FinancialTransactionCategory) => void;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
+  onAddChild: (root: Category) => void;
   className?: string;
 };
 

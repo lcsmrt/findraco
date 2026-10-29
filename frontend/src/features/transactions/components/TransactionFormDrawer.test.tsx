@@ -1,13 +1,13 @@
 import type {
-  FinancialTransaction,
-  FinancialTransactionCategory,
+  Transaction,
+  Category,
   Plan,
   PlanMember,
   RecurrenceDefinitionResponse,
   SeriesEditScope,
 } from "@/api/dtos";
-import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { transactionHandlers } from "@/api/services/transaction.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
@@ -39,7 +39,7 @@ const livia: PlanMember = {
   role: "EDITOR",
 };
 
-const savedTransaction: FinancialTransaction = {
+const savedTransaction: Transaction = {
   id: 42,
   type: "DEBIT",
   amount: 150.5,
@@ -86,12 +86,12 @@ const categorySheet: CategoryFormSheetContextValue = {
 
 type RenderDrawerOptions = {
   mode?: TransactionFormMode;
-  transaction?: FinancialTransaction;
+  transaction?: Transaction;
   /** Two or more members show the attribution fields to an owner. */
   members: PlanMember[];
-  categories?: FinancialTransactionCategory[];
-  onDelete?: (transaction: FinancialTransaction) => void;
-  onDuplicate?: (transaction: FinancialTransaction) => void;
+  categories?: Category[];
+  onDelete?: (transaction: Transaction) => void;
+  onDuplicate?: (transaction: Transaction) => void;
 };
 
 function renderDrawer({
@@ -104,7 +104,7 @@ function renderDrawer({
 }: RenderDrawerOptions) {
   server.use(
     planHandlers.members(members),
-    financialTransactionCategoryHandlers.list({
+    categoryHandlers.list({
       content: categories,
       page: 0,
       size: 1000,
@@ -146,7 +146,7 @@ describe("TransactionFormDrawer money fields", () => {
   it("submits the typed amount 1234 as 12.34 (STD-06 AC 4)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
+    server.use(transactionHandlers.create(savedTransaction));
     const { onOpenChange } = renderDrawer({ members: [lucas] });
 
     await user.type(screen.getByLabelText("Description"), "Groceries");
@@ -169,7 +169,7 @@ describe("TransactionFormDrawer money fields", () => {
   it("shows a saved amount formatted and sends it back as a number (STD-06 AC 4)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.update(savedTransaction));
+    server.use(transactionHandlers.update(savedTransaction));
     const { onOpenChange } = renderDrawer({
       mode: "edit",
       transaction: savedTransaction,
@@ -184,7 +184,7 @@ describe("TransactionFormDrawer money fields", () => {
     const body = await sentBody(requests, "PUT");
     expect(body.amount).toBe(150.5);
     expect(requests.find((request) => request.method === "PUT")?.url).toMatch(
-      /\/plan\/5\/financial-transaction\/42$/,
+      /\/plan\/5\/transaction\/42$/,
     );
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
@@ -192,7 +192,7 @@ describe("TransactionFormDrawer money fields", () => {
   it("creates a new transaction when duplicating, leaving the original untouched (STD-07 AC 2)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
+    server.use(transactionHandlers.create(savedTransaction));
     const { onOpenChange } = renderDrawer({
       mode: "duplicate",
       transaction: savedTransaction,
@@ -207,7 +207,7 @@ describe("TransactionFormDrawer money fields", () => {
       requests
         .filter((request) => request.method !== "GET")
         .map((request) => [request.method, new URL(request.url).pathname]),
-    ).toEqual([["POST", "/api/findraco/plan/5/financial-transaction"]]);
+    ).toEqual([["POST", "/api/findraco/plan/5/transaction"]]);
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
 });
@@ -270,7 +270,7 @@ describe("TransactionFormDrawer toggles", () => {
   it("creates a monthly series when the Recurring mode is chosen (STD-06 AC 1, 2)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.createSeries(savedSeries));
+    server.use(transactionHandlers.createSeries(savedSeries));
     renderDrawer({ members: [lucas] });
 
     await fillRequired(user);
@@ -284,7 +284,7 @@ describe("TransactionFormDrawer toggles", () => {
 
     const body = await sentBody(requests, "POST");
     expect(requests.find((request) => request.method === "POST")?.url).toMatch(
-      /\/plan\/5\/financial-transaction\/series$/,
+      /\/plan\/5\/transaction\/series$/,
     );
     expect(body).toMatchObject({
       mode: "RECURRING",
@@ -298,7 +298,7 @@ describe("TransactionFormDrawer toggles", () => {
 describe("TransactionFormDrawer owned-category attribution", () => {
   afterEach(cleanup);
 
-  const liviasGym: FinancialTransactionCategory = {
+  const liviasGym: Category = {
     id: 9,
     type: "DEBIT",
     description: "Livia's gym",
@@ -320,7 +320,7 @@ describe("TransactionFormDrawer owned-category attribution", () => {
   it("attributes the transaction to the owner of the chosen category (CAT-17)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
+    server.use(transactionHandlers.create(savedTransaction));
     renderDrawer({ members: [lucas, livia], categories: [liviasGym] });
 
     await fillRequired(user);
@@ -336,7 +336,7 @@ describe("TransactionFormDrawer owned-category attribution", () => {
   it("keeps hand-edited participants when an owned category is chosen afterwards (CAT-17)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(savedTransaction));
+    server.use(transactionHandlers.create(savedTransaction));
     renderDrawer({ members: [lucas, livia], categories: [liviasGym] });
 
     await fillRequired(user);
@@ -354,7 +354,7 @@ describe("TransactionFormDrawer owned-category attribution", () => {
 describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
   afterEach(cleanup);
 
-  const occurrence: FinancialTransaction = {
+  const occurrence: Transaction = {
     ...savedTransaction,
     id: 55,
     seriesId: "s-1",
@@ -384,8 +384,8 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
   /** Renders the drawer on a series occurrence and waits for the series definition. */
   async function renderSeriesEdit() {
     server.use(
-      financialTransactionHandlers.series(installments),
-      financialTransactionHandlers.updateSeries(updatedSeries),
+      transactionHandlers.series(installments),
+      transactionHandlers.updateSeries(updatedSeries),
     );
     const rendered = renderDrawer({ mode: "edit", transaction: occurrence, members: [lucas] });
     await waitFor(() =>
@@ -402,7 +402,7 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
   }
 
   it("offers no save while the series definition is loading", async () => {
-    server.use(financialTransactionHandlers.series(installments));
+    server.use(transactionHandlers.series(installments));
     renderDrawer({ mode: "edit", transaction: occurrence, members: [lucas] });
 
     expect(screen.getByRole("button", { name: "Save" })).toHaveProperty("disabled", true);
@@ -427,7 +427,7 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
 
     const body = await sentBody(requests, "PUT");
     expect(writes(requests)).toEqual([
-      ["PUT", "/api/findraco/plan/5/financial-transaction/series/s-1"],
+      ["PUT", "/api/findraco/plan/5/transaction/series/s-1"],
     ]);
     expect(body).toMatchObject({
       scope,

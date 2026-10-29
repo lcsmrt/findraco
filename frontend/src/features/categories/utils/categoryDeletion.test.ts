@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders } from "axios";
 import { describe, expect, it } from "vitest";
 import { SessionExpiredError } from "@/api/clients/sessionExpiredError";
-import type { CategoryUsage, FinancialTransactionCategory } from "@/api/dtos";
+import type { CategoryUsage, Category } from "@/api/dtos";
 import {
   buildDeleteRequest,
   classifyDeleteError,
@@ -13,8 +13,8 @@ import {
 function cat(
   id: number,
   description: string,
-  overrides: Partial<FinancialTransactionCategory> = {},
-): FinancialTransactionCategory {
+  overrides: Partial<Category> = {},
+): Category {
   return {
     id,
     description,

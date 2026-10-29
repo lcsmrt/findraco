@@ -1,18 +1,18 @@
 import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { findracoApi } from "../clients/findracoApi";
 import {
-  CreateFinancialTransactionRequest,
-  CreateFinancialTransactionSeriesRequest,
-  FinancialTransaction,
-  FinancialTransactionSeriesResponse,
-  FinancialTransactionSortBy,
-  PagedFinancialTransactionsFilter,
+  CreateTransactionRequest,
+  CreateTransactionSeriesRequest,
+  Transaction,
+  TransactionSeriesResponse,
+  TransactionSortBy,
+  PagedTransactionsFilter,
   PagedRequest,
   PagedResponse,
   RecurrenceDefinitionResponse,
-  DeleteFinancialTransactionSeriesRequest,
-  UpdateFinancialTransactionSeriesRequest,
-  UpdateFinancialTransactionRequest,
+  DeleteTransactionSeriesRequest,
+  UpdateTransactionSeriesRequest,
+  UpdateTransactionRequest,
 } from "../dtos";
 import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
@@ -26,65 +26,65 @@ import { usePlanContext } from "@/app/providers/usePlanContext";
  * from drifting apart. Not awaited: active queries refetch on their own, inactive ones turn stale.
  */
 function invalidateTransactionData(queryClient: QueryClient) {
-  queryClient.invalidateQueries({ queryKey: ["financialTransactions"] });
+  queryClient.invalidateQueries({ queryKey: ["transactions"] });
   queryClient.invalidateQueries({ queryKey: ["categoryUsage"] });
   queryClient.invalidateQueries({ queryKey: ["categorySpending"] });
   queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
   queryClient.invalidateQueries({ queryKey: ["dashboardTrend"] });
 }
 
-async function getFinancialTransactions(
+async function getTransactions(
   planId: number,
   params?: PagedRequest<
-    PagedFinancialTransactionsFilter,
-    FinancialTransactionSortBy
+    PagedTransactionsFilter,
+    TransactionSortBy
   >,
-): Promise<PagedResponse<FinancialTransaction>> {
+): Promise<PagedResponse<Transaction>> {
   const query = buildPagedQuery(params);
   const { data } = await findracoApi.get(
-    `/plan/${planId}/financial-transaction?${query}`,
+    `/plan/${planId}/transaction?${query}`,
   );
   return data;
 }
 
-export function useGetFinancialTransactions(
+export function useGetTransactions(
   params?: PagedRequest<
-    PagedFinancialTransactionsFilter,
-    FinancialTransactionSortBy
+    PagedTransactionsFilter,
+    TransactionSortBy
   >,
-  options?: QueryOptions<PagedResponse<FinancialTransaction>>,
+  options?: QueryOptions<PagedResponse<Transaction>>,
 ) {
   const { activePlanId } = usePlanContext();
   return useQuery({
-    queryFn: () => getFinancialTransactions(activePlanId!, params),
-    queryKey: ["financialTransactions", activePlanId, params],
+    queryFn: () => getTransactions(activePlanId!, params),
+    queryKey: ["transactions", activePlanId, params],
     ...options,
     enabled: activePlanId != null && (options?.enabled ?? true),
   });
 }
 
-async function createFinancialTransaction(
+async function createTransaction(
   planId: number,
-  payload: CreateFinancialTransactionRequest,
-): Promise<FinancialTransaction> {
+  payload: CreateTransactionRequest,
+): Promise<Transaction> {
   const { data } = await findracoApi.post(
-    `/plan/${planId}/financial-transaction`,
+    `/plan/${planId}/transaction`,
     payload.body,
   );
   return data;
 }
 
-export function useCreateFinancialTransaction(
+export function useCreateTransaction(
   options?: MutationOptions<
-    FinancialTransaction,
-    CreateFinancialTransactionRequest
+    Transaction,
+    CreateTransactionRequest
   >,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
-    mutationFn: (payload: CreateFinancialTransactionRequest) =>
-      createFinancialTransaction(activePlanId!, payload),
+    mutationFn: (payload: CreateTransactionRequest) =>
+      createTransaction(activePlanId!, payload),
     ...buildMutationOptions({ successMessage: "Transaction added." }, {
       ...options,
       onSuccess: (data, variables) => {
@@ -95,29 +95,29 @@ export function useCreateFinancialTransaction(
   });
 }
 
-async function updateFinancialTransaction(
+async function updateTransaction(
   planId: number,
-  payload: UpdateFinancialTransactionRequest,
-): Promise<FinancialTransaction> {
+  payload: UpdateTransactionRequest,
+): Promise<Transaction> {
   const { params, body } = payload;
   const { data } = await findracoApi.put(
-    `/plan/${planId}/financial-transaction/${params.id}`,
+    `/plan/${planId}/transaction/${params.id}`,
     body,
   );
   return data;
 }
 
-export function useUpdateFinancialTransaction(
+export function useUpdateTransaction(
   options?: MutationOptions<
-    FinancialTransaction,
-    UpdateFinancialTransactionRequest
+    Transaction,
+    UpdateTransactionRequest
   >,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
-    mutationFn: (payload: UpdateFinancialTransactionRequest) =>
-      updateFinancialTransaction(activePlanId!, payload),
+    mutationFn: (payload: UpdateTransactionRequest) =>
+      updateTransaction(activePlanId!, payload),
     ...buildMutationOptions({ successMessage: "Transaction updated." }, {
       ...options,
       onSuccess: (data, variables) => {
@@ -135,7 +135,7 @@ async function importNubankCsv(
   const formData = new FormData();
   formData.append("file", file);
   const { data } = await findracoApi.post(
-    `/plan/${planId}/financial-transaction/import`,
+    `/plan/${planId}/transaction/import`,
     formData,
     {
       headers: { "Content-Type": "multipart/form-data" },
@@ -161,28 +161,28 @@ export function useImportNubankCsv(
   });
 }
 
-async function createFinancialTransactionSeries(
+async function createTransactionSeries(
   planId: number,
-  payload: CreateFinancialTransactionSeriesRequest,
-): Promise<FinancialTransactionSeriesResponse> {
+  payload: CreateTransactionSeriesRequest,
+): Promise<TransactionSeriesResponse> {
   const { data } = await findracoApi.post(
-    `/plan/${planId}/financial-transaction/series`,
+    `/plan/${planId}/transaction/series`,
     payload.body,
   );
   return data;
 }
 
-export function useCreateFinancialTransactionSeries(
+export function useCreateTransactionSeries(
   options?: MutationOptions<
-    FinancialTransactionSeriesResponse,
-    CreateFinancialTransactionSeriesRequest
+    TransactionSeriesResponse,
+    CreateTransactionSeriesRequest
   >,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
-    mutationFn: (payload: CreateFinancialTransactionSeriesRequest) =>
-      createFinancialTransactionSeries(activePlanId!, payload),
+    mutationFn: (payload: CreateTransactionSeriesRequest) =>
+      createTransactionSeries(activePlanId!, payload),
     ...buildMutationOptions({ successMessage: "Series created." }, {
       ...options,
       onSuccess: (data, variables) => {
@@ -193,34 +193,34 @@ export function useCreateFinancialTransactionSeries(
   });
 }
 
-async function deleteFinancialTransactionSeries(
+async function deleteTransactionSeries(
   planId: number,
-  { seriesId, scope, pivotOccurrenceId }: DeleteFinancialTransactionSeriesRequest,
+  { seriesId, scope, pivotOccurrenceId }: DeleteTransactionSeriesRequest,
 ): Promise<void> {
   const query = new URLSearchParams({ scope });
   if (pivotOccurrenceId != null) {
     query.set("pivotOccurrenceId", String(pivotOccurrenceId));
   }
   await findracoApi.delete(
-    `/plan/${planId}/financial-transaction/series/${seriesId}?${query}`,
+    `/plan/${planId}/transaction/series/${seriesId}?${query}`,
   );
 }
 
-export function useDeleteFinancialTransactionSeries(
-  options?: MutationOptions<void, DeleteFinancialTransactionSeriesRequest>,
+export function useDeleteTransactionSeries(
+  options?: MutationOptions<void, DeleteTransactionSeriesRequest>,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
-    mutationFn: (payload: DeleteFinancialTransactionSeriesRequest) =>
-      deleteFinancialTransactionSeries(activePlanId!, payload),
+    mutationFn: (payload: DeleteTransactionSeriesRequest) =>
+      deleteTransactionSeries(activePlanId!, payload),
     ...buildMutationOptions({ successMessage: "Series deleted." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
         queryClient.invalidateQueries({
           queryKey: [
-            "financialTransactionSeries",
+            "transactionSeries",
             activePlanId,
             variables.seriesId,
           ],
@@ -231,59 +231,59 @@ export function useDeleteFinancialTransactionSeries(
   });
 }
 
-async function getFinancialTransactionSeries(
+async function getTransactionSeries(
   planId: number,
   seriesId: string,
 ): Promise<RecurrenceDefinitionResponse> {
   const { data } = await findracoApi.get(
-    `/plan/${planId}/financial-transaction/series/${seriesId}`,
+    `/plan/${planId}/transaction/series/${seriesId}`,
   );
   return data;
 }
 
-export function useGetFinancialTransactionSeries(
+export function useGetTransactionSeries(
   seriesId: string | undefined,
   options?: QueryOptions<RecurrenceDefinitionResponse>,
 ) {
   const { activePlanId } = usePlanContext();
   return useQuery({
-    queryFn: () => getFinancialTransactionSeries(activePlanId!, seriesId!),
-    queryKey: ["financialTransactionSeries", activePlanId, seriesId],
+    queryFn: () => getTransactionSeries(activePlanId!, seriesId!),
+    queryKey: ["transactionSeries", activePlanId, seriesId],
     ...options,
     enabled:
       activePlanId != null && seriesId != null && (options?.enabled ?? true),
   });
 }
 
-async function updateFinancialTransactionSeries(
+async function updateTransactionSeries(
   planId: number,
-  payload: UpdateFinancialTransactionSeriesRequest,
-): Promise<FinancialTransactionSeriesResponse> {
+  payload: UpdateTransactionSeriesRequest,
+): Promise<TransactionSeriesResponse> {
   const { params, body } = payload;
   const { data } = await findracoApi.put(
-    `/plan/${planId}/financial-transaction/series/${params.seriesId}`,
+    `/plan/${planId}/transaction/series/${params.seriesId}`,
     body,
   );
   return data;
 }
 
-export function useUpdateFinancialTransactionSeries(
+export function useUpdateTransactionSeries(
   options?: MutationOptions<
-    FinancialTransactionSeriesResponse,
-    UpdateFinancialTransactionSeriesRequest
+    TransactionSeriesResponse,
+    UpdateTransactionSeriesRequest
   >,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
-    mutationFn: (payload: UpdateFinancialTransactionSeriesRequest) =>
-      updateFinancialTransactionSeries(activePlanId!, payload),
+    mutationFn: (payload: UpdateTransactionSeriesRequest) =>
+      updateTransactionSeries(activePlanId!, payload),
     ...buildMutationOptions({ successMessage: "Series updated." }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
         queryClient.invalidateQueries({
-          queryKey: ["financialTransactionSeries", activePlanId, variables.params.seriesId],
+          queryKey: ["transactionSeries", activePlanId, variables.params.seriesId],
         });
         options?.onSuccess?.(data, variables);
       },
@@ -291,20 +291,20 @@ export function useUpdateFinancialTransactionSeries(
   });
 }
 
-async function deleteFinancialTransaction(
+async function deleteTransaction(
   planId: number,
   id: number,
 ): Promise<void> {
-  await findracoApi.delete(`/plan/${planId}/financial-transaction/${id}`);
+  await findracoApi.delete(`/plan/${planId}/transaction/${id}`);
 }
 
-export function useDeleteFinancialTransaction(
+export function useDeleteTransaction(
   options?: MutationOptions<void, number>,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
-    mutationFn: (id: number) => deleteFinancialTransaction(activePlanId!, id),
+    mutationFn: (id: number) => deleteTransaction(activePlanId!, id),
     ...buildMutationOptions({ successMessage: "Transaction deleted." }, {
       ...options,
       onSuccess: (data, variables) => {

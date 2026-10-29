@@ -1,10 +1,10 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
-import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import type { Category } from "@/api/dtos";
+import type { TransactionType } from "@/api/dtos/transaction";
 import { createContext, useContext } from "react";
 
 export type CategoryFormDefaults = {
   description?: string;
-  type?: FinancialTransactionType;
+  type?: TransactionType;
   /** Starts a subcategory of this root; the type follows the parent. */
   parentId?: number;
 };
@@ -12,10 +12,10 @@ export type CategoryFormDefaults = {
 export type CategoryFormSheetContextValue = {
   openCreate: (
     defaults?: CategoryFormDefaults,
-  ) => Promise<FinancialTransactionCategory | null>;
+  ) => Promise<Category | null>;
   openEdit: (
-    category: FinancialTransactionCategory,
-  ) => Promise<FinancialTransactionCategory | null>;
+    category: Category,
+  ) => Promise<Category | null>;
 };
 
 export const CategoryFormSheetContext = createContext<CategoryFormSheetContextValue | null>(null);

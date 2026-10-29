@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import type { SeriesEditScope } from "@/api/dtos/financialTransaction";
+import type { SeriesEditScope } from "@/api/dtos/transaction";
 import { expect, fn, screen } from "storybook/test";
 import { SeriesScopeDialog } from "./SeriesScopeDialog";
 import type { ScopeDialogOptions } from "./useSeriesScope";

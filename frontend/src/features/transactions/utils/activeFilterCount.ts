@@ -1,7 +1,7 @@
-import type { PagedFinancialTransactionsFilter } from "@/api/dtos";
+import type { PagedTransactionsFilter } from "@/api/dtos";
 
 export function countActiveFilters(
-  filter: PagedFinancialTransactionsFilter,
+  filter: PagedTransactionsFilter,
 ): number {
   let n = 0;
   if (filter.type) n++;

@@ -1,15 +1,15 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import {
-  CreateFinancialTransactionRequest,
-  CreateFinancialTransactionSeriesRequest,
-  FinancialTransaction,
+  CreateTransactionRequest,
+  CreateTransactionSeriesRequest,
+  Transaction,
   ParticipantInput,
   RecurrenceDefinitionResponse,
   SeriesEditScope,
   SplitMode,
-  UpdateFinancialTransactionRequest,
-  UpdateFinancialTransactionSeriesRequest,
-} from "@/api/dtos/financialTransaction";
+  UpdateTransactionRequest,
+  UpdateTransactionSeriesRequest,
+} from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
 import { addMonths, format } from "date-fns";
@@ -192,7 +192,7 @@ export type TransactionFormValues = z.input<typeof transactionFormSchema>;
 export type TransactionFormOutput = z.output<typeof transactionFormSchema>;
 
 function deriveAttributionMode(
-  participants: FinancialTransaction["participants"],
+  participants: Transaction["participants"],
   currentUserId?: number,
 ): TransactionFormValues["attributionMode"] {
   if (participants.length === 0) return "ME";
@@ -203,7 +203,7 @@ function deriveAttributionMode(
 }
 
 type OwnerDefaultInput = {
-  category: Pick<FinancialTransactionCategory, "ownerId"> | null | undefined;
+  category: Pick<Category, "ownerId"> | null | undefined;
   members: PlanMember[];
   currentUserId?: number;
   /** True once the user changed the attribution or participants by hand. */
@@ -367,7 +367,7 @@ export function toPayload(
   values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
-): CreateFinancialTransactionRequest["body"] {
+): CreateTransactionRequest["body"] {
   const { participants, splitMode } = attributionToPayload(
     values,
     showAttribution,
@@ -395,9 +395,9 @@ export function toPayload(
  * did not change is sent back as the transaction has it (the start date as its `yyyy-MM-dd` part).
  */
 export function toInlineSavePayload(
-  transaction: FinancialTransaction,
+  transaction: Transaction,
   change: InlineSaveBody,
-): UpdateFinancialTransactionRequest {
+): UpdateTransactionRequest {
   return {
     params: { id: transaction.id },
     body: {
@@ -422,7 +422,7 @@ export function toSeriesCreatePayload(
   values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
-): CreateFinancialTransactionSeriesRequest["body"] {
+): CreateTransactionSeriesRequest["body"] {
   const { participants, splitMode } = attributionToPayload(
     values,
     showAttribution,
@@ -454,12 +454,12 @@ export function toSeriesCreatePayload(
 
 export function toSeriesEditPayload(
   values: TransactionFormOutput,
-  transaction: FinancialTransaction,
+  transaction: Transaction,
   definition: RecurrenceDefinitionResponse,
   scope: SeriesEditScope,
   showAttribution: boolean,
   currentUserId?: number,
-): UpdateFinancialTransactionSeriesRequest["body"] {
+): UpdateTransactionSeriesRequest["body"] {
   const { participants, splitMode } = attributionToPayload(
     values,
     showAttribution,
@@ -488,7 +488,7 @@ export function toSeriesEditPayload(
 }
 
 export function buildDefaultValues(
-  transaction?: FinancialTransaction,
+  transaction?: Transaction,
   currentUserId?: number,
   definition?: RecurrenceDefinitionResponse,
 ): TransactionFormValues {

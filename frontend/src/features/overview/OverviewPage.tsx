@@ -1,5 +1,5 @@
 import { useGetDashboardSummary } from "@/api/services/useDashboardService";
-import { useGetCategorySpending } from "@/api/services/useFinancialTransactionCategoryService";
+import { useGetCategorySpending } from "@/api/services/useCategoryService";
 import { useMemo } from "react";
 import {
   resolvePeriodDates,

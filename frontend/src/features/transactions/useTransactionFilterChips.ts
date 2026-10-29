@@ -1,11 +1,11 @@
 import type {
-  FinancialTransactionCategory,
-  PagedFinancialTransactionsFilter,
+  Category,
+  PagedTransactionsFilter,
 } from "@/api/dtos";
 import {
-  financialTransactionCategoryKey,
-  useGetFinancialTransactionCategory,
-} from "@/api/services/useFinancialTransactionCategoryService";
+  categoryKey,
+  useGetCategory,
+} from "@/api/services/useCategoryService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { formatMoney } from "@/utils/money";
@@ -15,7 +15,7 @@ import { isAxiosError } from "axios";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTransactionFilters } from "./filters/useTransactionFilters";
 
-type FilterKey = keyof PagedFinancialTransactionsFilter;
+type FilterKey = keyof PagedTransactionsFilter;
 
 export type FilterChip = { key: string; label: string; onRemove: () => void };
 
@@ -38,7 +38,7 @@ export function useTransactionFilterChips() {
     activePlanId ?? undefined,
   );
   const { data: category = null, error: categoryError } =
-    useGetFinancialTransactionCategory(filter.categoryId ?? null, {
+    useGetCategory(filter.categoryId ?? null, {
       // A missing category will not reappear; other errors get the usual single retry.
       retry: (failureCount, error) => !isNotFound(error) && failureCount < 1,
     });
@@ -73,9 +73,9 @@ export function useTransactionFilterChips() {
   }, [isCategoryStale, isMemberStale, removeFilters]);
 
   const seedCategory = useCallback(
-    (picked: FinancialTransactionCategory) =>
+    (picked: Category) =>
       queryClient.setQueryData(
-        financialTransactionCategoryKey(activePlanId, picked.id),
+        categoryKey(activePlanId, picked.id),
         picked,
       ),
     [queryClient, activePlanId],

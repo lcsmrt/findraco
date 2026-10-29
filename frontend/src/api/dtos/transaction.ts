@@ -1,6 +1,6 @@
-import { FinancialTransactionCategory } from ".";
+import { Category } from ".";
 
-export type FinancialTransactionType = "CREDIT" | "DEBIT";
+export type TransactionType = "CREDIT" | "DEBIT";
 
 export type SplitMode = "EQUAL" | "EXACT" | "PERCENT";
 
@@ -15,13 +15,13 @@ export type TransactionItem = {
   description: string;
   amount: number;
   quantity: number;
-  category?: FinancialTransactionCategory;
+  category?: Category;
 };
 
-export type FinancialTransaction = {
+export type Transaction = {
   id: number;
-  category?: FinancialTransactionCategory;
-  type: FinancialTransactionType;
+  category?: Category;
+  type: TransactionType;
   amount: number;
   description: string;
   parcelsNumber?: number;
@@ -50,7 +50,7 @@ export type ItemInput = {
   quantity?: number;
 };
 
-export type FinancialTransactionSortBy =
+export type TransactionSortBy =
   | "startDate"
   | "endDate"
   | "amount"
@@ -58,8 +58,8 @@ export type FinancialTransactionSortBy =
   | "category"
   | "attributedTo";
 
-export type PagedFinancialTransactionsFilter = {
-  type?: FinancialTransactionType;
+export type PagedTransactionsFilter = {
+  type?: TransactionType;
   categoryId?: number;
   memberId?: number;
   description?: string;
@@ -69,9 +69,9 @@ export type PagedFinancialTransactionsFilter = {
   amountMax?: number;
 }
 
-export type CreateFinancialTransactionRequest = {
+export type CreateTransactionRequest = {
   body: {
-    type: FinancialTransactionType;
+    type: TransactionType;
     amount: number;
     description: string;
     categoryId?: number;
@@ -83,18 +83,18 @@ export type CreateFinancialTransactionRequest = {
   };
 };
 
-export type UpdateFinancialTransactionRequest = {
+export type UpdateTransactionRequest = {
   params: { id: number };
-  body: CreateFinancialTransactionRequest["body"];
+  body: CreateTransactionRequest["body"];
 };
 
 export type RecurrenceMode = "INSTALLMENT" | "RECURRING";
 
 export type RecurrenceInterval = "MONTHLY";
 
-export type CreateFinancialTransactionSeriesRequest = {
+export type CreateTransactionSeriesRequest = {
   body: {
-    type: FinancialTransactionType;
+    type: TransactionType;
     amount: number;
     description: string;
     categoryId?: number;
@@ -110,10 +110,10 @@ export type CreateFinancialTransactionSeriesRequest = {
   };
 };
 
-export type FinancialTransactionSeriesResponse = {
+export type TransactionSeriesResponse = {
   seriesId: string;
   count: number;
-  occurrences: FinancialTransaction[];
+  occurrences: Transaction[];
 };
 
 export type SeriesEditScope = "THIS_ONE" | "THIS_AND_FOLLOWING" | "ALL";
@@ -126,7 +126,7 @@ export type RecurrenceDefinitionParticipantTemplate = {
 export type RecurrenceDefinitionResponse = {
   id: number;
   seriesId: string;
-  type: FinancialTransactionType;
+  type: TransactionType;
   amount: number;
   description: string;
   categoryId?: number;
@@ -140,16 +140,16 @@ export type RecurrenceDefinitionResponse = {
   participants: RecurrenceDefinitionParticipantTemplate[];
 };
 
-export type DeleteFinancialTransactionSeriesRequest = {
+export type DeleteTransactionSeriesRequest = {
   seriesId: string;
   scope: SeriesEditScope;
   pivotOccurrenceId?: number;
 };
 
-export type UpdateFinancialTransactionSeriesRequest = {
+export type UpdateTransactionSeriesRequest = {
   params: { seriesId: string };
   body: {
-    type: FinancialTransactionType;
+    type: TransactionType;
     amount: number;
     description: string;
     categoryId?: number;

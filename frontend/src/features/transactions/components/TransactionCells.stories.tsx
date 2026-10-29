@@ -1,4 +1,4 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { TableBase, TableBodyBase, TableCellBase, TableRowBase } from "@/components/table/base/TableParts";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -18,7 +18,7 @@ const members: PlanMember[] = [
   { userId: 3, name: "Ana Lima", email: "ana@example.com", role: "VIEWER" },
 ];
 
-const groceries: FinancialTransaction = {
+const groceries: Transaction = {
   id: 1,
   type: "DEBIT",
   amount: 320,
@@ -35,7 +35,7 @@ const groceries: FinancialTransaction = {
 };
 
 type DemoRowProps = {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   canEditParticipants?: boolean;
   isDeleting?: boolean;
   onSave: () => void;

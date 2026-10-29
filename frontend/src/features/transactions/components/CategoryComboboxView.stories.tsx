@@ -1,4 +1,4 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect, fn, screen } from "storybook/test";
@@ -6,7 +6,7 @@ import { FieldLabel } from "@/components/input/base/Field";
 import { groupCategoryOptions } from "../utils/categoryOptions";
 import { CategoryComboboxView } from "./CategoryComboboxView";
 
-const categories: FinancialTransactionCategory[] = [
+const categories: Category[] = [
   { id: 1, type: "DEBIT", description: "Food" },
   { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1 },
   { id: 12, type: "DEBIT", description: "Groceries", parentId: 1 },
@@ -15,9 +15,9 @@ const categories: FinancialTransactionCategory[] = [
 ];
 
 type DemoProps = {
-  categories: FinancialTransactionCategory[];
+  categories: Category[];
   initialSearch?: string;
-  initialValue?: FinancialTransactionCategory | null;
+  initialValue?: Category | null;
   isLoading?: boolean;
   disabled?: boolean;
   defaultOpen?: boolean;
@@ -36,7 +36,7 @@ function Demo({
   onCreate = () => {},
 }: DemoProps) {
   const [search, setSearch] = useState(initialSearch);
-  const [value, setValue] = useState<FinancialTransactionCategory | null | undefined>(initialValue);
+  const [value, setValue] = useState<Category | null | undefined>(initialValue);
 
   return (
     <div className="flex w-72 flex-col gap-2">

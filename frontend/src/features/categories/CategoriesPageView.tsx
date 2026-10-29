@@ -1,4 +1,4 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import { Text } from "@/components/typography/base/Text";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -21,9 +21,9 @@ type CategorySectionProps = {
   roots: CategoryTreeRoot[];
   colorOf: MemberColorOf;
   canManage: boolean;
-  onEdit: (category: FinancialTransactionCategory) => void;
-  onDelete: (category: FinancialTransactionCategory) => void;
-  onAddChild: (root: FinancialTransactionCategory) => void;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
+  onAddChild: (root: Category) => void;
 };
 
 function CategorySection({
@@ -95,9 +95,9 @@ type CategoriesPageViewProps = {
   colorOf: MemberColorOf;
   canManage: boolean;
   onCreate: () => void;
-  onEdit: (category: FinancialTransactionCategory) => void;
-  onDelete: (category: FinancialTransactionCategory) => void;
-  onAddChild: (root: FinancialTransactionCategory) => void;
+  onEdit: (category: Category) => void;
+  onDelete: (category: Category) => void;
+  onAddChild: (root: Category) => void;
 };
 
 /** Category management: structure and configured limits, no spend. */

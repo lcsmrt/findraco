@@ -1,14 +1,14 @@
 import type {
   DashboardSummaryResponse,
-  FinancialTransaction,
-  FinancialTransactionCategory,
+  Transaction,
+  Category,
   PagedResponse,
   Plan,
   PlanMember,
 } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
-import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { transactionHandlers } from "@/api/services/transaction.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
@@ -102,9 +102,9 @@ beforeEach(() => {
     planHandlers.members([ana]),
     dashboardHandlers.summary(emptySummary),
     dashboardHandlers.trend([]),
-    financialTransactionCategoryHandlers.spending([]),
-    financialTransactionCategoryHandlers.list(emptyPage<FinancialTransactionCategory>()),
-    financialTransactionHandlers.list(emptyPage<FinancialTransaction>()),
+    categoryHandlers.spending([]),
+    categoryHandlers.list(emptyPage<Category>()),
+    transactionHandlers.list(emptyPage<Transaction>()),
   );
 });
 

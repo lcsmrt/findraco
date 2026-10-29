@@ -1,4 +1,4 @@
-import { SeriesEditScope } from "@/api/dtos/financialTransaction";
+import { SeriesEditScope } from "@/api/dtos/transaction";
 import { createContext, useContext } from "react";
 
 export type ScopeDialogOptions = {

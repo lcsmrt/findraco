@@ -1,13 +1,13 @@
 import type {
-  FinancialTransaction,
-  FinancialTransactionCategory,
+  Transaction,
+  Category,
   PagedResponse,
   Plan,
   PlanMember,
   SeriesEditScope,
 } from "@/api/dtos";
-import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { transactionHandlers } from "@/api/services/transaction.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
@@ -27,12 +27,12 @@ import { SeriesScopeDialogProvider } from "./components/SeriesScopeDialogProvide
 import { TransactionsPage } from "./TransactionsPage";
 
 const PLAN_ID = 5;
-const API = `/api/findraco/plan/${PLAN_ID}/financial-transaction`;
+const API = `/api/findraco/plan/${PLAN_ID}/transaction`;
 
 const lucas: PlanMember = { userId: 1, name: "Lucas", email: "lucas@example.com", role: "OWNER" };
 const livia: PlanMember = { userId: 2, name: "Livia", email: "livia@example.com", role: "EDITOR" };
 
-const rent: FinancialTransaction = {
+const rent: Transaction = {
   id: 42,
   type: "DEBIT",
   amount: 150.5,
@@ -43,17 +43,17 @@ const rent: FinancialTransaction = {
   participants: [],
   items: [],
 };
-const gym: FinancialTransaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
+const gym: Transaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
 
-const groceries: FinancialTransactionCategory = { id: 12, type: "DEBIT", description: "Groceries" };
+const groceries: Category = { id: 12, type: "DEBIT", description: "Groceries" };
 
 function categoryPage(
-  content: FinancialTransactionCategory[],
-): PagedResponse<FinancialTransactionCategory> {
+  content: Category[],
+): PagedResponse<Category> {
   return { content, page: 0, size: 1000, totalElements: content.length, totalPages: 1, last: true };
 }
 
-function pageOf(content: FinancialTransaction[], page = 0): PagedResponse<FinancialTransaction> {
+function pageOf(content: Transaction[], page = 0): PagedResponse<Transaction> {
   return { content, page, size: 10, totalElements: 25, totalPages: 3, last: page === 2 };
 }
 
@@ -83,17 +83,17 @@ function planValue(): PlanContextValue {
 const categorySheet: CategoryFormSheetContextValue = { openCreate: vi.fn(), openEdit: vi.fn() };
 
 type TabOptions = {
-  transactions?: FinancialTransaction[];
+  transactions?: Transaction[];
   /** The starting URL; its query string holds the filters. */
   route?: string;
-  categories?: FinancialTransactionCategory[];
+  categories?: Category[];
 };
 
 function renderTab({ transactions = [rent], route = "/", categories = [] }: TabOptions = {}) {
   server.use(
-    financialTransactionHandlers.list(pageOf(transactions)),
+    transactionHandlers.list(pageOf(transactions)),
     planHandlers.members([lucas, livia]),
-    financialTransactionCategoryHandlers.list(categoryPage(categories)),
+    categoryHandlers.list(categoryPage(categories)),
   );
   const requests = recordRequests();
   renderWithProviders(
@@ -145,7 +145,7 @@ function categoryFetches(requests: Request[], id: number) {
   return requests.filter(
     (request) =>
       new URL(request.url).pathname ===
-      `/api/findraco/plan/${PLAN_ID}/financial-transaction-category/${id}`,
+      `/api/findraco/plan/${PLAN_ID}/category/${id}`,
   ).length;
 }
 
@@ -250,7 +250,7 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
   it("deletes the transaction once confirmed", async () => {
     const { requests, user } = renderTab();
     const row = await tableRow("Rent");
-    server.use(financialTransactionHandlers.remove());
+    server.use(transactionHandlers.remove());
 
     await user.click(row.getByRole("button", { name: "Delete" }));
     const dialog = await screen.findByRole("dialog", { name: "Confirm Deletion" });
@@ -282,7 +282,7 @@ describe("TransactionsPage CSV import (STD-12 AC 1)", () => {
   it("uploads the chosen file, shows the result and refreshes the list", async () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");
-    server.use(financialTransactionHandlers.importCsv({ imported: 1 }));
+    server.use(transactionHandlers.importCsv({ imported: 1 }));
 
     await user.upload(fileInput(), csv);
 
@@ -296,7 +296,7 @@ describe("TransactionsPage CSV import (STD-12 AC 1)", () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");
     server.use(
-      financialTransactionHandlers.importCsvRejected("Line 3 of the CSV is invalid: bad date"),
+      transactionHandlers.importCsvRejected("Line 3 of the CSV is invalid: bad date"),
     );
 
     await user.upload(fileInput(), csv);
@@ -323,7 +323,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
   it("closes the drawer before asking to delete from it", async () => {
     const { requests, user } = renderTab();
     const row = await tableRow("Rent");
-    server.use(financialTransactionHandlers.remove());
+    server.use(transactionHandlers.remove());
     await user.click(row.getByRole("button", { name: "Edit" }));
     const drawer = await screen.findByRole("dialog", { name: "Edit Transaction" });
 
@@ -354,7 +354,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
   ])("deletes %s of a series from the chosen occurrence", async (label, scope) => {
     const { requests, user } = renderTab({ transactions: [gym] });
     const row = await tableRow("Gym (3/12)");
-    server.use(financialTransactionHandlers.removeSeries());
+    server.use(transactionHandlers.removeSeries());
 
     await user.click(row.getByRole("button", { name: "Delete" }));
     const dialog = await screen.findByRole("dialog", { name: "Delete series" });
@@ -383,7 +383,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
 
 describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   it("shows every active filter as a chip, with the category and member names, and requests it", async () => {
-    server.use(financialTransactionCategoryHandlers.get(groceries));
+    server.use(categoryHandlers.get(groceries));
     const { requests } = renderTab({
       route: "/?type=DEBIT&category=12&member=2&from=2026-10-01&to=2026-10-31&min=50&max=200",
     });
@@ -497,7 +497,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it("drops a category that no longer exists (404) from the filters", async () => {
-    server.use(financialTransactionCategoryHandlers.getNotFound());
+    server.use(categoryHandlers.getNotFound());
     const { requests } = renderTab({ route: "/?category=12&type=DEBIT" });
 
     await waitFor(() =>
@@ -508,8 +508,8 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it.each([
-    ["a server error (500)", financialTransactionCategoryHandlers.getServerError],
-    ["a network error", financialTransactionCategoryHandlers.getNetworkError],
+    ["a server error (500)", categoryHandlers.getServerError],
+    ["a network error", categoryHandlers.getNetworkError],
   ])("keeps the category filter when fetching it fails with %s", async (_, failure) => {
     server.use(failure());
     const { requests } = renderTab({ route: "/?category=12&type=DEBIT" });
@@ -523,7 +523,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it("drops a member who is not in the plan once the members are loaded", async () => {
-    server.use(financialTransactionCategoryHandlers.get(groceries));
+    server.use(categoryHandlers.get(groceries));
     const { requests } = renderTab({ route: "/?member=99&category=12" });
 
     await waitFor(() =>

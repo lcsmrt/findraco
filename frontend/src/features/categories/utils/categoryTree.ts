@@ -1,21 +1,21 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
-import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import type { Category } from "@/api/dtos";
+import type { TransactionType } from "@/api/dtos/transaction";
 
 export type CategoryTreeRoot = {
-  category: FinancialTransactionCategory;
-  children: FinancialTransactionCategory[];
+  category: Category;
+  children: Category[];
 };
 
 export type CategoryTreeSection = {
-  type: FinancialTransactionType;
+  type: TransactionType;
   roots: CategoryTreeRoot[];
 };
 
-const SECTION_TYPES: readonly FinancialTransactionType[] = ["DEBIT", "CREDIT"];
+const SECTION_TYPES: readonly TransactionType[] = ["DEBIT", "CREDIT"];
 
 function byName(
-  a: FinancialTransactionCategory,
-  b: FinancialTransactionCategory,
+  a: Category,
+  b: Category,
 ) {
   return a.description.localeCompare(b.description, undefined, {
     sensitivity: "base",
@@ -28,10 +28,10 @@ function byName(
  * list is shown as a root.
  */
 export function buildCategoryTree(
-  categories: FinancialTransactionCategory[],
+  categories: Category[],
 ): CategoryTreeSection[] {
   const ids = new Set(categories.map((c) => c.id));
-  function isRoot(c: FinancialTransactionCategory) {
+  function isRoot(c: Category) {
     return c.parentId == null || !ids.has(c.parentId);
   }
 

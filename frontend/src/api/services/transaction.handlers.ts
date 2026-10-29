@@ -1,24 +1,24 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
-  CreateFinancialTransactionRequest,
-  CreateFinancialTransactionSeriesRequest,
-  FinancialTransaction,
-  FinancialTransactionSeriesResponse,
+  CreateTransactionRequest,
+  CreateTransactionSeriesRequest,
+  Transaction,
+  TransactionSeriesResponse,
   PagedResponse,
   RecurrenceDefinitionResponse,
-  UpdateFinancialTransactionRequest,
-  UpdateFinancialTransactionSeriesRequest,
+  UpdateTransactionRequest,
+  UpdateTransactionSeriesRequest,
 } from "../dtos";
 
 type PlanParams = { planId: string };
 type TransactionParams = PlanParams & { id: string };
 type SeriesParams = PlanParams & { seriesId: string };
 
-const base = "*/plan/:planId/financial-transaction";
+const base = "*/plan/:planId/transaction";
 
-export const financialTransactionHandlers = {
-  list(page: PagedResponse<FinancialTransaction>): HttpHandler {
-    return http.get<PlanParams, never, PagedResponse<FinancialTransaction>>(base, () =>
+export const transactionHandlers = {
+  list(page: PagedResponse<Transaction>): HttpHandler {
+    return http.get<PlanParams, never, PagedResponse<Transaction>>(base, () =>
       HttpResponse.json(page),
     );
   },
@@ -43,35 +43,35 @@ export const financialTransactionHandlers = {
   removeSeries(): HttpHandler {
     return http.delete<SeriesParams>(`${base}/series/:seriesId`, () => new HttpResponse(null, { status: 204 }));
   },
-  create(transaction: FinancialTransaction): HttpHandler {
+  create(transaction: Transaction): HttpHandler {
     return http.post<
       PlanParams,
-      CreateFinancialTransactionRequest["body"],
-      FinancialTransaction
+      CreateTransactionRequest["body"],
+      Transaction
     >(base, () => HttpResponse.json(transaction, { status: 201 }));
   },
-  createSeries(series: FinancialTransactionSeriesResponse): HttpHandler {
+  createSeries(series: TransactionSeriesResponse): HttpHandler {
     return http.post<
       PlanParams,
-      CreateFinancialTransactionSeriesRequest["body"],
-      FinancialTransactionSeriesResponse
+      CreateTransactionSeriesRequest["body"],
+      TransactionSeriesResponse
     >(`${base}/series`, () => HttpResponse.json(series, { status: 201 }));
   },
-  update(transaction: FinancialTransaction): HttpHandler {
+  update(transaction: Transaction): HttpHandler {
     return http.put<
       TransactionParams,
-      UpdateFinancialTransactionRequest["body"],
-      FinancialTransaction
+      UpdateTransactionRequest["body"],
+      Transaction
     >(`${base}/:id`, () => HttpResponse.json(transaction));
   },
   createRejected(message: string): HttpHandler {
     return http.post<PlanParams>(base, () => HttpResponse.json({ message }, { status: 400 }));
   },
-  updateSeries(series: FinancialTransactionSeriesResponse): HttpHandler {
+  updateSeries(series: TransactionSeriesResponse): HttpHandler {
     return http.put<
       SeriesParams,
-      UpdateFinancialTransactionSeriesRequest["body"],
-      FinancialTransactionSeriesResponse
+      UpdateTransactionSeriesRequest["body"],
+      TransactionSeriesResponse
     >(`${base}/series/:seriesId`, () => HttpResponse.json(series));
   },
 };

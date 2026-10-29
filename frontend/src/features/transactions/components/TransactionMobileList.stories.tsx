@@ -1,4 +1,4 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
 import { TransactionMobileList } from "./TransactionMobileList";
@@ -7,8 +7,8 @@ function transaction(
   id: number,
   description: string,
   startDate: string,
-  overrides: Partial<FinancialTransaction> = {},
-): FinancialTransaction {
+  overrides: Partial<Transaction> = {},
+): Transaction {
   return {
     id,
     type: "DEBIT",
@@ -24,7 +24,7 @@ function transaction(
   };
 }
 
-const week: FinancialTransaction[] = [
+const week: Transaction[] = [
   transaction(1, "Groceries", "2026-10-14", { amount: 320 }),
   transaction(2, "Salary", "2026-10-14", {
     type: "CREDIT",

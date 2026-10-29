@@ -1,9 +1,9 @@
-import type { FinancialTransactionCategory, PlanMember } from "@/api/dtos";
+import type { Category, PlanMember } from "@/api/dtos";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, screen, waitFor } from "storybook/test";
 import { TransactionFilterPopoverView } from "./TransactionFilterPopoverView";
 
-const categories: FinancialTransactionCategory[] = [
+const categories: Category[] = [
   { id: 1, type: "DEBIT", description: "Food" },
   { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1 },
   { id: 2, type: "DEBIT", description: "Housing" },

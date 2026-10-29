@@ -1,4 +1,4 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import { useRef, useState, type ReactNode } from "react";
 import { CategoryFormSheet } from "./CategoryFormSheet";
 import {
@@ -10,7 +10,7 @@ import {
 type SheetState =
   | { open: false }
   | { open: true; mode: "create"; defaults?: CategoryFormDefaults }
-  | { open: true; mode: "edit"; category: FinancialTransactionCategory };
+  | { open: true; mode: "edit"; category: Category };
 
 type CategoryFormSheetProviderProps = {
   children: ReactNode;
@@ -22,13 +22,13 @@ export function CategoryFormSheetProvider({
 }: CategoryFormSheetProviderProps) {
   const [state, setState] = useState<SheetState>({ open: false });
   const resolverRef = useRef<
-    ((category: FinancialTransactionCategory | null) => void) | null
+    ((category: Category | null) => void) | null
   >(null);
 
   function openWith(next: SheetState) {
     resolverRef.current?.(null);
     setState(next);
-    return new Promise<FinancialTransactionCategory | null>((resolve) => {
+    return new Promise<Category | null>((resolve) => {
       resolverRef.current = resolve;
     });
   }
@@ -38,7 +38,7 @@ export function CategoryFormSheetProvider({
     openEdit: (category) => openWith({ open: true, mode: "edit", category }),
   };
 
-  function handleSuccess(saved: FinancialTransactionCategory) {
+  function handleSuccess(saved: Category) {
     resolverRef.current?.(saved);
     resolverRef.current = null;
   }

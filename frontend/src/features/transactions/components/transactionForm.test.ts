@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import { Transaction } from "@/api/dtos/transaction";
 import {
   TransactionFormOutput,
   TransactionFormValues,
@@ -28,7 +28,7 @@ const validValues: TransactionFormOutput = {
   items: [],
 };
 
-const baseTransaction: FinancialTransaction = {
+const baseTransaction: Transaction = {
   id: 42,
   type: "DEBIT",
   amount: 150.5,
@@ -511,7 +511,7 @@ describe("categoryAttribution — participants follow the selected category (CAT
   });
 
   it("restores the duplicated transaction's participants as the default when duplicating", () => {
-    const duplicated: FinancialTransaction = {
+    const duplicated: Transaction = {
       ...baseTransaction,
       participants: [{ id: 4, name: "Rafa", shareAmount: 150.5 }],
     };
@@ -606,7 +606,7 @@ describe("participantsForMode — the participants an attribution mode starts wi
 });
 
 describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
-  const shared: FinancialTransaction = {
+  const shared: Transaction = {
     id: 7,
     type: "CREDIT",
     amount: 300,
@@ -651,12 +651,12 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
   });
 
   it("sends no category for an uncategorised transaction", () => {
-    const uncategorised: FinancialTransaction = { ...shared, category: undefined };
+    const uncategorised: Transaction = { ...shared, category: undefined };
     expect(toInlineSavePayload(uncategorised, {}).body.categoryId).toBeUndefined();
   });
 
   it("keeps each participant's share of an exact split", () => {
-    const exact: FinancialTransaction = {
+    const exact: Transaction = {
       ...shared,
       splitMode: "EXACT",
       participants: [

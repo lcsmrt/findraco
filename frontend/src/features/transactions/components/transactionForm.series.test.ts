@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  FinancialTransaction,
+  Transaction,
   RecurrenceDefinitionResponse,
-} from "@/api/dtos/financialTransaction";
+} from "@/api/dtos/transaction";
 import {
   TransactionFormOutput,
   buildDefaultValues,
@@ -27,7 +27,7 @@ const baseValues: TransactionFormOutput = {
   items: [],
 };
 
-const installmentTransaction: FinancialTransaction = {
+const installmentTransaction: Transaction = {
   id: 55,
   seriesId: "series-abc",
   type: "DEBIT",
@@ -285,7 +285,7 @@ describe("buildDefaultValues — series edit mode", () => {
   });
 
   it("maps a recurring series into edit defaults with a parsed end date", () => {
-    const recurringTransaction: FinancialTransaction = {
+    const recurringTransaction: Transaction = {
       ...installmentTransaction,
       seriesId: "series-xyz",
       description: "Salary",
@@ -446,7 +446,7 @@ describe("toSeriesEditPayload", () => {
   });
 
   it("omits endDate when a recurring series edit is left open-ended", () => {
-    const recurringTransaction: FinancialTransaction = {
+    const recurringTransaction: Transaction = {
       ...installmentTransaction,
       seriesId: "series-xyz",
       description: "Salary",

@@ -1,6 +1,6 @@
-import type { FinancialTransactionCategory, Plan, PlanMember } from "@/api/dtos";
+import type { Category, Plan, PlanMember } from "@/api/dtos";
 import type { PagedResponse } from "@/api/dtos/paged";
-import { ALL_CATEGORIES_PAGE_SIZE } from "@/api/services/useFinancialTransactionCategoryService";
+import { ALL_CATEGORIES_PAGE_SIZE } from "@/api/services/useCategoryService";
 import { PlanContext, type PlanContextValue } from "@/app/providers/usePlanContext";
 import { Button } from "@/components/button/base/Button";
 import { Text } from "@/components/typography/base/Text";
@@ -26,7 +26,7 @@ const members: PlanMember[] = [
   { userId: 2, name: "Livia Souza", email: "livia@example.com", role: "EDITOR" },
 ];
 
-const food: FinancialTransactionCategory = {
+const food: Category = {
   id: 7,
   type: "DEBIT",
   description: "Food",
@@ -34,7 +34,7 @@ const food: FinancialTransactionCategory = {
   spendingLimit: 2000,
 };
 
-const categoriesPage: PagedResponse<FinancialTransactionCategory> = {
+const categoriesPage: PagedResponse<Category> = {
   content: [food],
   page: 0,
   size: ALL_CATEGORIES_PAGE_SIZE,
@@ -50,21 +50,21 @@ function seededClient() {
     defaultOptions: { queries: { staleTime: Infinity, retry: false } },
   });
   client.setQueryData(
-    ["financialTransactionCategories", PLAN_ID, { size: ALL_CATEGORIES_PAGE_SIZE }],
+    ["categories", PLAN_ID, { size: ALL_CATEGORIES_PAGE_SIZE }],
     categoriesPage,
   );
   client.setQueryData(["members", PLAN_ID], members);
   return client;
 }
 
-type AskButtonsProps = { editing: FinancialTransactionCategory };
+type AskButtonsProps = { editing: Category };
 
 // A screen opens the sheet through `useCategoryFormSheet`; the answer shows below.
 function AskButtons({ editing }: AskButtonsProps) {
   const { openCreate, openEdit } = useCategoryFormSheet();
   const [answer, setAnswer] = useState("No answer yet");
 
-  async function show(result: Promise<FinancialTransactionCategory | null>) {
+  async function show(result: Promise<Category | null>) {
     const saved = await result;
     setAnswer(saved ? `Saved ${saved.description}` : "Closed without saving");
   }

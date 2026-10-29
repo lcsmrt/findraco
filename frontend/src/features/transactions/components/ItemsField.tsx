@@ -1,5 +1,5 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
-import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import type { Category } from "@/api/dtos";
+import type { TransactionType } from "@/api/dtos/transaction";
 import { Button } from "@/components/button/base/Button";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
@@ -19,9 +19,9 @@ import {
 /** What an item row hands its category picker. */
 export type ItemCategoryPicker = {
   index: number;
-  type: FinancialTransactionType;
-  value: FinancialTransactionCategory | null;
-  onValueChange: (value: FinancialTransactionCategory | null | undefined) => void;
+  type: TransactionType;
+  value: Category | null;
+  onValueChange: (value: Category | null | undefined) => void;
   disabled?: boolean;
 };
 

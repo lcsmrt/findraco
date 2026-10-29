@@ -34,7 +34,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Through-the-API proof of {@code GET .../financial-transaction-category/spending} (spec P1 "Categories
+ * Through-the-API proof of {@code GET .../category/spending} (spec P1 "Categories
  * tab" AC 2-3 and 8; CAT-01, CAT-02): every category of the plan as DEBIT then CREDIT trees, children
  * nested, with the period's spend and limit usage per row, readable by any plan member. Also the
  * per-member rows (P2 AC 2, 5-6, 11-12; CAT-12, CAT-14), owned rows (P3 AC 5, 7; CAT-14, CAT-16) and

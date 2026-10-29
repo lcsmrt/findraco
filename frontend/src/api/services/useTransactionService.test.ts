@@ -3,38 +3,38 @@ import type { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
-  CreateFinancialTransactionRequest,
-  FinancialTransaction,
-  FinancialTransactionSeriesResponse,
+  CreateTransactionRequest,
+  Transaction,
+  TransactionSeriesResponse,
   PagedResponse,
   RecurrenceDefinitionResponse,
-  UpdateFinancialTransactionSeriesRequest,
+  UpdateTransactionSeriesRequest,
 } from "@/api/dtos";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
 import { recordRequests } from "@/test/recordRequests";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
-import { financialTransactionHandlers as handlers } from "./financialTransaction.handlers";
+import { transactionHandlers as handlers } from "./transaction.handlers";
 import {
-  useCreateFinancialTransaction,
-  useCreateFinancialTransactionSeries,
-  useDeleteFinancialTransaction,
-  useDeleteFinancialTransactionSeries,
-  useGetFinancialTransactions,
-  useGetFinancialTransactionSeries,
+  useCreateTransaction,
+  useCreateTransactionSeries,
+  useDeleteTransaction,
+  useDeleteTransactionSeries,
+  useGetTransactions,
+  useGetTransactionSeries,
   useImportNubankCsv,
-  useUpdateFinancialTransaction,
-  useUpdateFinancialTransactionSeries,
-} from "./useFinancialTransactionService";
+  useUpdateTransaction,
+  useUpdateTransactionSeries,
+} from "./useTransactionService";
 
 function planContext(activePlanId: number | null): PlanContextValue {
   return { activePlanId, setActivePlanId: () => {}, plans: [], isLoading: false };
 }
 
 const plan5 = planContext(5);
-const path = "/api/findraco/plan/5/financial-transaction";
+const path = "/api/findraco/plan/5/transaction";
 
-const transaction: FinancialTransaction = {
+const transaction: Transaction = {
   id: 40,
   type: "DEBIT",
   amount: 120.5,
@@ -46,14 +46,14 @@ const transaction: FinancialTransaction = {
   items: [],
 };
 
-const body: CreateFinancialTransactionRequest["body"] = {
+const body: CreateTransactionRequest["body"] = {
   type: "DEBIT",
   amount: 120.5,
   description: "Groceries",
   startDate: "2026-10-01",
 };
 
-const series: FinancialTransactionSeriesResponse = { seriesId: "s1", count: 1, occurrences: [transaction] };
+const series: TransactionSeriesResponse = { seriesId: "s1", count: 1, occurrences: [transaction] };
 
 const definition: RecurrenceDefinitionResponse = {
   id: 3,
@@ -76,24 +76,24 @@ function sent(request: Request) {
 // The caches every transaction mutation must refresh: the lists, the category usage counts, the
 // spending tree and the dashboard totals and trend.
 function seedLists(client: QueryClient) {
-  client.setQueryData(["financialTransactions", 5, undefined], { content: [] });
+  client.setQueryData(["transactions", 5, undefined], { content: [] });
   client.setQueryData(["categoryUsage", 5, 12], { transactions: 1 });
   client.setQueryData(["categorySpending", 5, { startDate: "2026-10-01" }], []);
   client.setQueryData(["dashboardSummary", 5, { startDate: "2026-10-01" }], { totalIncome: 0 });
   client.setQueryData(["dashboardTrend", 5, { months: 6 }], []);
-  client.setQueryData(["financialTransactionSeries", 5, "s1"], definition);
-  client.setQueryData(["financialTransactionSeries", 5, "other"], definition);
+  client.setQueryData(["transactionSeries", 5, "s1"], definition);
+  client.setQueryData(["transactionSeries", 5, "other"], definition);
 }
 
 function invalidated(client: QueryClient) {
   return {
-    lists: client.getQueryState(["financialTransactions", 5, undefined])?.isInvalidated,
+    lists: client.getQueryState(["transactions", 5, undefined])?.isInvalidated,
     usage: client.getQueryState(["categoryUsage", 5, 12])?.isInvalidated,
     spending: client.getQueryState(["categorySpending", 5, { startDate: "2026-10-01" }])?.isInvalidated,
     summary: client.getQueryState(["dashboardSummary", 5, { startDate: "2026-10-01" }])?.isInvalidated,
     trend: client.getQueryState(["dashboardTrend", 5, { months: 6 }])?.isInvalidated,
-    series: client.getQueryState(["financialTransactionSeries", 5, "s1"])?.isInvalidated,
-    otherSeries: client.getQueryState(["financialTransactionSeries", 5, "other"])?.isInvalidated,
+    series: client.getQueryState(["transactionSeries", 5, "s1"])?.isInvalidated,
+    otherSeries: client.getQueryState(["transactionSeries", 5, "other"])?.isInvalidated,
   };
 }
 
@@ -108,9 +108,9 @@ afterEach(() => {
 
 const transactionData = { lists: true, usage: true, spending: true, summary: true, trend: true };
 
-describe("useGetFinancialTransactions", () => {
+describe("useGetTransactions", () => {
   it("GETs the plan-scoped page with paging, sort and filter in the query and returns it", async () => {
-    const page: PagedResponse<FinancialTransaction> = {
+    const page: PagedResponse<Transaction> = {
       content: [transaction],
       page: 0,
       size: 10,
@@ -123,7 +123,7 @@ describe("useGetFinancialTransactions", () => {
 
     const { result } = renderHookWithProviders(
       () =>
-        useGetFinancialTransactions({
+        useGetTransactions({
           page: 0,
           size: 10,
           sort: { by: "amount", direction: "desc" },
@@ -140,12 +140,12 @@ describe("useGetFinancialTransactions", () => {
   });
 });
 
-describe("useGetFinancialTransactionSeries", () => {
+describe("useGetTransactionSeries", () => {
   it("GETs the plan-scoped series definition and returns it", async () => {
     server.use(handlers.series(definition));
     const requests = recordRequests();
 
-    const { result } = renderHookWithProviders(() => useGetFinancialTransactionSeries("s1"), { plan: plan5 });
+    const { result } = renderHookWithProviders(() => useGetTransactionSeries("s1"), { plan: plan5 });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map(sent)).toEqual([["GET", `${path}/series/s1`, {}]]);
@@ -159,7 +159,7 @@ describe("transaction mutations", () => {
     const requests = recordRequests();
     const onSuccess = vi.fn();
 
-    const { result, queryClient } = renderHookWithProviders(() => useCreateFinancialTransaction({ onSuccess }), {
+    const { result, queryClient } = renderHookWithProviders(() => useCreateTransaction({ onSuccess }), {
       plan: plan5,
       seed: seedLists,
     });
@@ -178,7 +178,7 @@ describe("transaction mutations", () => {
     server.use(handlers.update(transaction));
     const requests = recordRequests();
 
-    const { result, queryClient } = renderHookWithProviders(() => useUpdateFinancialTransaction(), {
+    const { result, queryClient } = renderHookWithProviders(() => useUpdateTransaction(), {
       plan: plan5,
       seed: seedLists,
     });
@@ -197,7 +197,7 @@ describe("transaction mutations", () => {
     const requests = recordRequests();
     const onSuccess = vi.fn();
 
-    const { result, queryClient } = renderHookWithProviders(() => useDeleteFinancialTransaction({ onSuccess }), {
+    const { result, queryClient } = renderHookWithProviders(() => useDeleteTransaction({ onSuccess }), {
       plan: plan5,
       seed: seedLists,
     });
@@ -242,7 +242,7 @@ describe("series mutations", () => {
     const onSuccess = vi.fn();
 
     const { result, queryClient } = renderHookWithProviders(
-      () => useCreateFinancialTransactionSeries({ onSuccess }),
+      () => useCreateTransactionSeries({ onSuccess }),
       { plan: plan5, seed: seedLists },
     );
     result.current.mutate({ body: seriesBody });
@@ -260,13 +260,13 @@ describe("series mutations", () => {
     server.use(handlers.updateSeries(series));
     const requests = recordRequests();
     const onSuccess = vi.fn();
-    const request: UpdateFinancialTransactionSeriesRequest = {
+    const request: UpdateTransactionSeriesRequest = {
       params: { seriesId: "s1" },
       body: { ...seriesBody, scope: "THIS_AND_FOLLOWING", pivotOccurrenceId: 40 },
     };
 
     const { result, queryClient } = renderHookWithProviders(
-      () => useUpdateFinancialTransactionSeries({ onSuccess }),
+      () => useUpdateTransactionSeries({ onSuccess }),
       { plan: plan5, seed: seedLists },
     );
     result.current.mutate(request);
@@ -287,7 +287,7 @@ describe("series mutations", () => {
     const request = { seriesId: "s1", scope: "THIS_AND_FOLLOWING" as const, pivotOccurrenceId: 40 };
 
     const { result, queryClient } = renderHookWithProviders(
-      () => useDeleteFinancialTransactionSeries({ onSuccess }),
+      () => useDeleteTransactionSeries({ onSuccess }),
       { plan: plan5, seed: seedLists },
     );
     result.current.mutate(request);

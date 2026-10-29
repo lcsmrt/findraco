@@ -1,11 +1,11 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
+import { Category } from "@/api/dtos";
 import type { PlanMember } from "@/api/dtos/plan";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import {
   ALL_CATEGORIES_PAGE_SIZE,
-  useGetFinancialTransactionCategories,
-} from "@/api/services/useFinancialTransactionCategoryService";
+  useGetCategories,
+} from "@/api/services/useCategoryService";
 import { Button } from "@/components/button/base/Button";
 import {
   Field,
@@ -47,11 +47,11 @@ type CategoryFormSheetProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   mode: "create" | "edit";
-  category?: FinancialTransactionCategory | null;
+  category?: Category | null;
   defaults?: CategoryFormDefaults;
-  onSuccess?: (category: FinancialTransactionCategory) => void;
+  onSuccess?: (category: Category) => void;
   /** Edit footer, narrow screens: opens a create form under this root. */
-  onNewSubcategory?: (root: FinancialTransactionCategory) => void;
+  onNewSubcategory?: (root: Category) => void;
 };
 
 export function CategoryFormSheet({
@@ -65,7 +65,7 @@ export function CategoryFormSheet({
 }: CategoryFormSheetProps) {
   const editing = mode === "edit" ? category : null;
 
-  const { data: categoriesPage } = useGetFinancialTransactionCategories(
+  const { data: categoriesPage } = useGetCategories(
     { size: ALL_CATEGORIES_PAGE_SIZE },
     { enabled: open },
   );
@@ -93,7 +93,7 @@ export function CategoryFormSheet({
   }, [editing, defaults, members, categories, open, reset]);
 
   // Kept after the sheet closes, so the delete dialog outlives it.
-  const [deleting, setDeleting] = useState<FinancialTransactionCategory | null>(null);
+  const [deleting, setDeleting] = useState<Category | null>(null);
 
   const { submit, isSubmitting: isPending } = useCategoryFormSubmit({
     editing,
@@ -178,7 +178,7 @@ export function CategoryFormSheet({
 type SectionProps = {
   control: CategoryFormControl;
   setValue: UseFormSetValue<CategoryFormValues>;
-  categories: FinancialTransactionCategory[];
+  categories: Category[];
   disabled: boolean;
 };
 
@@ -214,7 +214,7 @@ function TypeField({ control, setValue, disabled, hasChildren }: SectionProps & 
 }
 
 type ParentFieldProps = SectionProps & {
-  editing: FinancialTransactionCategory | null | undefined;
+  editing: Category | null | undefined;
   hasChildren: boolean;
 };
 
@@ -256,7 +256,7 @@ function ParentField({ control, setValue, categories, disabled, editing, hasChil
 }
 
 type OwnerFieldProps = SectionProps & {
-  editing: FinancialTransactionCategory | null | undefined;
+  editing: Category | null | undefined;
   members: PlanMember[];
 };
 

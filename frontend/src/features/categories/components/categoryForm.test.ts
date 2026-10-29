@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import type { PlanMember } from "@/api/dtos/plan";
 import {
   buildDefaultValues,
@@ -16,8 +16,8 @@ import {
 function cat(
   id: number,
   description: string,
-  overrides: Partial<FinancialTransactionCategory> = {},
-): FinancialTransactionCategory {
+  overrides: Partial<Category> = {},
+): Category {
   return {
     id,
     description,
@@ -166,7 +166,7 @@ describe("buildDefaultValues", () => {
   });
 
   it("treats a category without parentId as a root", () => {
-    const withoutParent: FinancialTransactionCategory = {
+    const withoutParent: Category = {
       id: 1,
       type: "DEBIT",
       description: "Food",

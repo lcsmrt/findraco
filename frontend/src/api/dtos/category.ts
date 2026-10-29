@@ -1,4 +1,4 @@
-import type { FinancialTransactionType } from "./financialTransaction";
+import type { TransactionType } from "./transaction";
 
 export type CategoryMemberLimit = {
   memberId: number;
@@ -7,9 +7,9 @@ export type CategoryMemberLimit = {
   active: boolean;
 };
 
-export type FinancialTransactionCategory = {
+export type Category = {
   id: number;
-  type: FinancialTransactionType;
+  type: TransactionType;
   description: string;
   spendingLimit?: number | null;
   // SPEC_DEVIATION: optional (design: required) so the partial category shapes
@@ -24,18 +24,18 @@ export type FinancialTransactionCategory = {
   effectiveLimit?: number | null;
 };
 
-export type FinancialTransactionCategorySortBy =
+export type CategorySortBy =
   | "description"
   | "spendingLimit";
 
-export type PagedFinancialTransactionCategoriesFilter = {
+export type PagedCategoriesFilter = {
   description?: string;
-  type?: FinancialTransactionType;
+  type?: TransactionType;
 }
 
-export type CreateFinancialTransactionCategoryRequest = {
+export type CreateCategoryRequest = {
   body: {
-    type: FinancialTransactionType;
+    type: TransactionType;
     description: string;
     spendingLimit?: number;
     parentId?: number | null;
@@ -46,12 +46,12 @@ export type CreateFinancialTransactionCategoryRequest = {
   };
 };
 
-export type UpdateFinancialTransactionCategoryRequest = {
+export type UpdateCategoryRequest = {
   params: { id: number };
-  body: Partial<CreateFinancialTransactionCategoryRequest["body"]>;
+  body: Partial<CreateCategoryRequest["body"]>;
 };
 
-export type DeleteFinancialTransactionCategoryRequest = {
+export type DeleteCategoryRequest = {
   id: number;
   /** Category that receives the deleted category's transactions, items and recurrences. */
   reassignTo?: number;
@@ -85,7 +85,7 @@ export type CategorySpending = {
   categoryId: number;
   parentId: number | null;
   name: string;
-  type: FinancialTransactionType;
+  type: TransactionType;
   ownerId: number | null;
   ownerName: string | null;
   /** false when the owner left the plan; null without an owner. Children inherit the parent's. */

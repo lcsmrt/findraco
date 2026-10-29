@@ -1,16 +1,16 @@
 import { SessionExpiredError } from "@/api/clients/sessionExpiredError";
 import {
   CategoryUsage,
-  DeleteFinancialTransactionCategoryRequest,
-  FinancialTransactionCategory,
+  DeleteCategoryRequest,
+  Category,
 } from "@/api/dtos";
 import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
 import { AxiosError } from "axios";
 
 /** Categories that can receive a deleted category's references: same type, not itself, not its children. */
 export function eligibleDeleteTargets(
-  category: FinancialTransactionCategory,
-  categories: FinancialTransactionCategory[],
+  category: Category,
+  categories: Category[],
 ) {
   return categories
     .filter(
@@ -42,7 +42,7 @@ export type DeleteState = {
 export function buildDeleteRequest(
   categoryId: number,
   { hasChildren, usage, targetId }: DeleteState,
-): DeleteFinancialTransactionCategoryRequest | null {
+): DeleteCategoryRequest | null {
   if (hasChildren || usage == null) return null;
   if (isCategoryInUse(usage)) {
     return targetId == null ? null : { id: categoryId, reassignTo: targetId };

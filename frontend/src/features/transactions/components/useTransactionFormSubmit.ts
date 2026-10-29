@@ -1,13 +1,13 @@
 import type {
-  FinancialTransaction,
+  Transaction,
   RecurrenceDefinitionResponse,
-} from "@/api/dtos/financialTransaction";
+} from "@/api/dtos/transaction";
 import {
-  useCreateFinancialTransaction,
-  useCreateFinancialTransactionSeries,
-  useUpdateFinancialTransaction,
-  useUpdateFinancialTransactionSeries,
-} from "@/api/services/useFinancialTransactionService";
+  useCreateTransaction,
+  useCreateTransactionSeries,
+  useUpdateTransaction,
+  useUpdateTransactionSeries,
+} from "@/api/services/useTransactionService";
 import {
   seriesParcelsChanged,
   toPayload,
@@ -20,7 +20,7 @@ import type { SeriesScopeDialogContextValue } from "./useSeriesScope";
 
 type UseTransactionFormSubmitArgs = {
   mode: TransactionFormMode;
-  transaction?: FinancialTransaction;
+  transaction?: Transaction;
   /** The edited series' definition; a series edit waits for it. */
   definition?: RecurrenceDefinitionResponse;
   showAttribution: boolean;
@@ -43,14 +43,14 @@ export function useTransactionFormSubmit({
   chooseScope,
   onDone,
 }: UseTransactionFormSubmitArgs) {
-  const createTransaction = useCreateFinancialTransaction({ onSuccess: onDone });
-  const updateTransaction = useUpdateFinancialTransaction({ onSuccess: onDone });
-  const createSeries = useCreateFinancialTransactionSeries({ onSuccess: onDone });
-  const updateSeries = useUpdateFinancialTransactionSeries({ onSuccess: onDone });
+  const createTransaction = useCreateTransaction({ onSuccess: onDone });
+  const updateTransaction = useUpdateTransaction({ onSuccess: onDone });
+  const createSeries = useCreateTransactionSeries({ onSuccess: onDone });
+  const updateSeries = useUpdateTransactionSeries({ onSuccess: onDone });
 
   async function editSeries(
     values: TransactionFormOutput,
-    seriesTransaction: FinancialTransaction,
+    seriesTransaction: Transaction,
     seriesId: string,
   ) {
     // Unreachable from the drawer, which disables Save until the definition loads; it narrows

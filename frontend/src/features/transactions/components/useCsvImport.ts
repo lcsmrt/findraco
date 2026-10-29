@@ -1,4 +1,4 @@
-import { useImportNubankCsv } from "@/api/services/useFinancialTransactionService";
+import { useImportNubankCsv } from "@/api/services/useTransactionService";
 
 /**
  * Imports a Nubank CSV export into the active plan. The service shows the result toast and refreshes

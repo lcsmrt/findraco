@@ -1,4 +1,4 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
@@ -9,7 +9,7 @@ function colorOf(memberId: number) {
   return MEMBER_PALETTE[(memberId - 1) % MEMBER_PALETTE.length];
 }
 
-const categories: FinancialTransactionCategory[] = [
+const categories: Category[] = [
   { id: 1, type: "DEBIT", description: "Food", spendingLimit: 2000 },
   { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },
   { id: 12, type: "DEBIT", description: "Groceries", parentId: 1 },

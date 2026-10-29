@@ -2,25 +2,25 @@ import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
   CategorySpending,
   CategoryUsage,
-  CreateFinancialTransactionCategoryRequest,
-  FinancialTransactionCategory,
+  CreateCategoryRequest,
+  Category,
   PagedResponse,
-  UpdateFinancialTransactionCategoryRequest,
+  UpdateCategoryRequest,
 } from "../dtos";
 
 type PlanParams = { planId: string };
 type CategoryParams = PlanParams & { id: string };
 
-const base = "*/plan/:planId/financial-transaction-category";
+const base = "*/plan/:planId/category";
 
-export const financialTransactionCategoryHandlers = {
-  list(page: PagedResponse<FinancialTransactionCategory>): HttpHandler {
-    return http.get<PlanParams, never, PagedResponse<FinancialTransactionCategory>>(base, () =>
+export const categoryHandlers = {
+  list(page: PagedResponse<Category>): HttpHandler {
+    return http.get<PlanParams, never, PagedResponse<Category>>(base, () =>
       HttpResponse.json(page),
     );
   },
-  get(category: FinancialTransactionCategory): HttpHandler {
-    return http.get<CategoryParams, never, FinancialTransactionCategory>(`${base}/:id`, () =>
+  get(category: Category): HttpHandler {
+    return http.get<CategoryParams, never, Category>(`${base}/:id`, () =>
       HttpResponse.json(category),
     );
   },
@@ -47,21 +47,21 @@ export const financialTransactionCategoryHandlers = {
       HttpResponse.json(usage),
     );
   },
-  create(category: FinancialTransactionCategory): HttpHandler {
+  create(category: Category): HttpHandler {
     return http.post<
       PlanParams,
-      CreateFinancialTransactionCategoryRequest["body"],
-      FinancialTransactionCategory
+      CreateCategoryRequest["body"],
+      Category
     >(base, () => HttpResponse.json(category, { status: 201 }));
   },
   createRejected(message: string): HttpHandler {
     return http.post<PlanParams>(base, () => HttpResponse.json({ message }, { status: 400 }));
   },
-  update(category: FinancialTransactionCategory): HttpHandler {
+  update(category: Category): HttpHandler {
     return http.put<
       CategoryParams,
-      UpdateFinancialTransactionCategoryRequest["body"],
-      FinancialTransactionCategory
+      UpdateCategoryRequest["body"],
+      Category
     >(`${base}/:id`, () => HttpResponse.json(category));
   },
   delete(): HttpHandler {

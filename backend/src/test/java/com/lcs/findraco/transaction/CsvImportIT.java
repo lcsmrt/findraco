@@ -21,7 +21,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Proves that {@code POST /financial-transaction/import} (Nubank CSV import,
+ * Proves that {@code POST /transaction/import} (Nubank CSV import,
  * {@link com.lcs.findraco.transaction.service.TransactionService#importFromNubankCsv}) dedups on
  * {@code externalId} (the CSV's third column): re-importing the exact same file a second time
  * must not create duplicate rows, since

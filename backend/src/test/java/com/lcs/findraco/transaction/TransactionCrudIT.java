@@ -26,7 +26,7 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of the PUT full-replace contract described in the transaction update
- * memory note: {@code PUT /financial-transaction/{id}} is a full replace, not a patch. A caller
+ * memory note: {@code PUT /transaction/{id}} is a full replace, not a patch. A caller
  * must send the complete desired state (participants, items included); the server discards any
  * child rows (participants/items) not present in the new request rather than merging them in.
  *

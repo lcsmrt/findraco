@@ -1,14 +1,14 @@
 import type {
   DashboardSummaryResponse,
-  FinancialTransaction,
-  FinancialTransactionCategory,
+  Transaction,
+  Category,
   PagedResponse,
   Plan,
   PlanMember,
 } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
-import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { transactionHandlers } from "@/api/services/transaction.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { invitationHandlers } from "@/api/services/invitation.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
@@ -44,7 +44,7 @@ const emptySummary: DashboardSummaryResponse = {
   personBreakdown: [],
 };
 
-const created: FinancialTransaction = {
+const created: Transaction = {
   id: 42,
   type: "DEBIT",
   amount: 12.34,
@@ -149,9 +149,9 @@ beforeEach(() => {
     planHandlers.members([ana]),
     dashboardHandlers.summary(emptySummary),
     dashboardHandlers.trend([]),
-    financialTransactionCategoryHandlers.spending([]),
-    financialTransactionCategoryHandlers.list(emptyPage<FinancialTransactionCategory>()),
-    financialTransactionHandlers.list(emptyPage<FinancialTransaction>()),
+    categoryHandlers.spending([]),
+    categoryHandlers.list(emptyPage<Category>()),
+    transactionHandlers.list(emptyPage<Transaction>()),
   );
 });
 
@@ -221,7 +221,7 @@ describe("MainLayout global add", () => {
   it("saving from the Overview closes the form, stays there, shows \"Transaction added.\" and refetches the summary (NAV-02 AC 1, 3, 4)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(created));
+    server.use(transactionHandlers.create(created));
     renderAt("/overview");
     await waitFor(() => expect(summaryRequests(requests)).toHaveLength(1));
 
@@ -236,7 +236,7 @@ describe("MainLayout global add", () => {
 
   it("saving from the Plans page stays on the Plans page (NAV-02 edge)", async () => {
     const user = userEvent.setup();
-    server.use(financialTransactionHandlers.create(created));
+    server.use(transactionHandlers.create(created));
     renderAt("/plans");
 
     await user.click(within(bottomBar()).getByRole("button", { name: "New Transaction" }));
@@ -250,7 +250,7 @@ describe("MainLayout global add", () => {
   it("a failed create keeps the form open with its values and shows no success toast (NAV-02 AC 7)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.createRejected("Amount too large"));
+    server.use(transactionHandlers.createRejected("Amount too large"));
     renderAt("/overview");
 
     await user.click(within(bottomBar()).getByRole("button", { name: "New Transaction" }));

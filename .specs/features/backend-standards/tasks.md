@@ -569,10 +569,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] An IT: each old path answers 404
-- [ ] Frontend service tests green on the new paths
+- [x] An IT: each old path answers 404
+- [x] Frontend service tests green on the new paths
 - [ ] Frontend beta bumped in its own commit
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build

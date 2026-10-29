@@ -1,5 +1,5 @@
-import type { FinancialTransactionCategory, Plan, PlanMember } from "@/api/dtos";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import type { Category, Plan, PlanMember } from "@/api/dtos";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
 import { recordRequests } from "@/test/recordRequests";
@@ -14,7 +14,7 @@ import { CategoryFormSheet } from "./CategoryFormSheet";
 const PLAN_ID = 5;
 const lucas: PlanMember = { userId: 1, name: "Lucas", email: "lucas@example.com", role: "OWNER" };
 
-const groceries: FinancialTransactionCategory = {
+const groceries: Category = {
   id: 9,
   type: "DEBIT",
   description: "Groceries",
@@ -30,15 +30,15 @@ function planValue(): PlanContextValue {
 type RenderSheetOptions = {
   members: PlanMember[];
   /** Edits this category; creates one when left out. */
-  editing?: FinancialTransactionCategory;
+  editing?: Category;
   onOpenChange?: (open: boolean) => void;
-  onSuccess?: (category: FinancialTransactionCategory) => void;
+  onSuccess?: (category: Category) => void;
 };
 
 function renderSheet({ members, editing, onOpenChange = vi.fn(), onSuccess }: RenderSheetOptions) {
   server.use(
     planHandlers.members(members),
-    financialTransactionCategoryHandlers.list({
+    categoryHandlers.list({
       content: editing ? [editing] : [],
       page: 0,
       size: 1000,
@@ -89,7 +89,7 @@ describe("CategoryFormSheet edit", () => {
     const user = userEvent.setup();
     const requests = recordRequests();
     const onSuccess = vi.fn();
-    server.use(financialTransactionCategoryHandlers.update(groceries));
+    server.use(categoryHandlers.update(groceries));
     await renderLoadedSheet({ members: [lucas], editing: groceries, onSuccess });
 
     const limit = screen.getByLabelText<HTMLInputElement>("Amount (optional)");
@@ -99,7 +99,7 @@ describe("CategoryFormSheet edit", () => {
     const body = await sentBody(requests, "PUT");
     expect(body.spendingLimit).toBe(200);
     expect(requests.find((request) => request.method === "PUT")?.url).toMatch(
-      /\/plan\/5\/financial-transaction-category\/9$/,
+      /\/plan\/5\/category\/9$/,
     );
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(groceries));
   });
@@ -126,7 +126,7 @@ describe("CategoryFormSheet skeleton", () => {
     const requests = recordRequests();
     const onOpenChange = vi.fn();
     const onSuccess = vi.fn();
-    server.use(financialTransactionCategoryHandlers.create(groceries));
+    server.use(categoryHandlers.create(groceries));
     await renderLoadedSheet({ members: [lucas], onOpenChange, onSuccess });
 
     await user.type(screen.getByLabelText("Name"), "Groceries");
@@ -150,7 +150,7 @@ describe("CategoryFormSheet skeleton", () => {
     const requests = recordRequests();
     const onOpenChange = vi.fn();
     const onSuccess = vi.fn();
-    server.use(financialTransactionCategoryHandlers.createRejected("Name already in use"));
+    server.use(categoryHandlers.createRejected("Name already in use"));
     await renderLoadedSheet({ members: [lucas], onOpenChange, onSuccess });
 
     await user.type(screen.getByLabelText("Name"), "Groceries");

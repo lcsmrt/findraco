@@ -1,6 +1,6 @@
 import type { DashboardSummaryResponse, Plan, PlanMember } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
 import { recordRequests } from "@/test/recordRequests";
@@ -54,7 +54,7 @@ function renderOverview(route: string, members: PlanMember[]) {
     planHandlers.members(members),
     dashboardHandlers.summary(summary),
     dashboardHandlers.trend([]),
-    financialTransactionCategoryHandlers.spending([]),
+    categoryHandlers.spending([]),
   );
   const requests = recordRequests();
   renderWithProviders(

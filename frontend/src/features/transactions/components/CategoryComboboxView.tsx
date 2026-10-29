@@ -1,4 +1,4 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
+import { Category } from "@/api/dtos";
 import { Button } from "@/components/button/base/Button";
 import {
   Combobox,
@@ -20,9 +20,9 @@ import type { CategoryOption } from "../utils/categoryOptions";
 
 type CategoryComboboxViewProps = {
   id?: string;
-  value: FinancialTransactionCategory | null | undefined;
+  value: Category | null | undefined;
   onValueChange: (
-    value: FinancialTransactionCategory | null | undefined,
+    value: Category | null | undefined,
   ) => void;
   /** Grouped and already filtered by `search`. */
   options: CategoryOption[];
@@ -135,7 +135,7 @@ export function CategoryComboboxView({
           <ComboboxEmpty>No results</ComboboxEmpty>
         )}
         <ComboboxList>
-          {(cat: FinancialTransactionCategory) => (
+          {(cat: Category) => (
             <ComboboxItem
               key={String(cat.id)}
               value={cat}

@@ -4,38 +4,38 @@ import { toast } from "sonner";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type {
   CategorySpending,
-  CreateFinancialTransactionCategoryRequest,
-  FinancialTransactionCategory,
+  CreateCategoryRequest,
+  Category,
 } from "@/api/dtos";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
 import { recordRequests } from "@/test/recordRequests";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
-import { financialTransactionCategoryHandlers as categoryHandlers } from "./financialTransactionCategory.handlers";
+import { categoryHandlers as categoryHandlers } from "./category.handlers";
 import {
   categoryUsageKey,
-  financialTransactionCategoryKey,
-  useCreateFinancialTransactionCategory,
-  useDeleteFinancialTransactionCategory,
+  categoryKey,
+  useCreateCategory,
+  useDeleteCategory,
   useGetCategorySpending,
   useGetCategoryUsage,
-  useGetFinancialTransactionCategories,
-  useGetFinancialTransactionCategory,
-  useUpdateFinancialTransactionCategory,
-} from "./useFinancialTransactionCategoryService";
+  useGetCategories,
+  useGetCategory,
+  useUpdateCategory,
+} from "./useCategoryService";
 
 function planContext(activePlanId: number | null): PlanContextValue {
   return { activePlanId, setActivePlanId: () => {}, plans: [], isLoading: false };
 }
 
 const plan5 = planContext(5);
-const categoriesPath = "/api/findraco/plan/5/financial-transaction-category";
+const categoriesPath = "/api/findraco/plan/5/category";
 
-const category: FinancialTransactionCategory = { id: 12, type: "DEBIT", description: "Groceries" };
+const category: Category = { id: 12, type: "DEBIT", description: "Groceries" };
 
 // Every category mutation refreshes these views.
 const categoryViewKeys = [
-  ["financialTransactionCategories", 5, undefined],
+  ["categories", 5, undefined],
   ["categorySpending", 5, { startDate: "2026-10-01", endDate: "2026-10-31" }],
   ["dashboardSummary", 5, { startDate: "2026-10-01", endDate: "2026-10-31" }],
 ];
@@ -52,7 +52,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("useGetFinancialTransactionCategories", () => {
+describe("useGetCategories", () => {
   it("GETs the plan-scoped page with paging, sort and filter in the query and returns it", async () => {
     const page = { content: [category], page: 1, size: 20, totalElements: 21, totalPages: 2, last: true };
     server.use(categoryHandlers.list(page));
@@ -60,7 +60,7 @@ describe("useGetFinancialTransactionCategories", () => {
 
     const { result } = renderHookWithProviders(
       () =>
-        useGetFinancialTransactionCategories({
+        useGetCategories({
           page: 1,
           size: 20,
           sort: { by: "description", direction: "asc" },
@@ -85,12 +85,12 @@ describe("useGetFinancialTransactionCategories", () => {
   });
 });
 
-describe("useGetFinancialTransactionCategory", () => {
+describe("useGetCategory", () => {
   it("GETs the plan-scoped category by id and returns it", async () => {
     server.use(categoryHandlers.get(category));
     const requests = recordRequests();
 
-    const { result } = renderHookWithProviders(() => useGetFinancialTransactionCategory(12), {
+    const { result } = renderHookWithProviders(() => useGetCategory(12), {
       plan: plan5,
     });
 
@@ -102,20 +102,20 @@ describe("useGetFinancialTransactionCategory", () => {
   });
 });
 
-describe("useCreateFinancialTransactionCategory", () => {
+describe("useCreateCategory", () => {
   it("POSTs the body to the plan-scoped collection, resolves with the created category, refreshes the category views and toasts (NAV-05 AC 1)", async () => {
     server.use(categoryHandlers.create(category));
     const requests = recordRequests();
     // sonner is a third-party module; the toast is the user-visible outcome.
     const success = vi.spyOn(toast, "success");
-    const body: CreateFinancialTransactionCategoryRequest["body"] = {
+    const body: CreateCategoryRequest["body"] = {
       type: "DEBIT",
       description: "Groceries",
       spendingLimit: 400,
       memberLimits: [{ memberId: 9, amount: 150 }],
     };
 
-    const { result, queryClient } = renderHookWithProviders(() => useCreateFinancialTransactionCategory(), {
+    const { result, queryClient } = renderHookWithProviders(() => useCreateCategory(), {
       plan: plan5,
       seed: seedCategoryViews,
     });
@@ -132,20 +132,20 @@ describe("useCreateFinancialTransactionCategory", () => {
   });
 });
 
-describe("useUpdateFinancialTransactionCategory", () => {
+describe("useUpdateCategory", () => {
   it("PUTs the body, refreshes the edited category and the category views, leaves other categories cached and toasts (NAV-05 AC 1)", async () => {
     server.use(categoryHandlers.update({ ...category, description: "Food" }));
     const requests = recordRequests();
     const success = vi.spyOn(toast, "success");
 
     const { result, queryClient } = renderHookWithProviders(
-      () => useUpdateFinancialTransactionCategory(),
+      () => useUpdateCategory(),
       {
         plan: plan5,
         seed: (client) => {
           seedCategoryViews(client);
-          client.setQueryData(financialTransactionCategoryKey(5, 12), category);
-          client.setQueryData(financialTransactionCategoryKey(5, 13), {
+          client.setQueryData(categoryKey(5, 12), category);
+          client.setQueryData(categoryKey(5, 13), {
             id: 13,
             type: "DEBIT",
             description: "Rent",
@@ -163,29 +163,29 @@ describe("useUpdateFinancialTransactionCategory", () => {
     expect(
       invalidated(queryClient, [
         ...categoryViewKeys,
-        financialTransactionCategoryKey(5, 12),
-        financialTransactionCategoryKey(5, 13),
+        categoryKey(5, 12),
+        categoryKey(5, 13),
       ]),
     ).toEqual([true, true, true, true, false]);
     expect(success).toHaveBeenCalledWith("Category updated.");
   });
 });
 
-describe("useDeleteFinancialTransactionCategory", () => {
+describe("useDeleteCategory", () => {
   it("DELETEs with reassignTo, refreshes the deleted category, the category views, usage and transactions, and toasts (NAV-05 AC 2)", async () => {
     server.use(categoryHandlers.delete());
     const requests = recordRequests();
     const success = vi.spyOn(toast, "success");
-    const transactionsKey = ["financialTransactions", 5, {}];
+    const transactionsKey = ["transactions", 5, {}];
     const usage = { transactions: 0, items: 0, recurrenceDefinitions: 0 };
 
     const { result, queryClient } = renderHookWithProviders(
-      () => useDeleteFinancialTransactionCategory(),
+      () => useDeleteCategory(),
       {
         plan: plan5,
         seed: (client) => {
           seedCategoryViews(client);
-          client.setQueryData(financialTransactionCategoryKey(5, 12), category);
+          client.setQueryData(categoryKey(5, 12), category);
           client.setQueryData(categoryUsageKey(5, 30), usage);
           client.setQueryData(transactionsKey, { content: [] });
         },
@@ -202,7 +202,7 @@ describe("useDeleteFinancialTransactionCategory", () => {
     expect(
       invalidated(queryClient, [
         ...categoryViewKeys,
-        financialTransactionCategoryKey(5, 12),
+        categoryKey(5, 12),
         categoryUsageKey(5, 30),
         transactionsKey,
       ]),

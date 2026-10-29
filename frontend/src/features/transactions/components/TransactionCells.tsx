@@ -1,8 +1,8 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
+import { Category } from "@/api/dtos";
 import {
-  FinancialTransaction,
+  Transaction,
   ParticipantShare,
-} from "@/api/dtos/financialTransaction";
+} from "@/api/dtos/transaction";
 import { PlanMember } from "@/api/dtos/plan";
 import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
 import { Badge } from "@/components/badge/base/Badge";
@@ -33,8 +33,8 @@ import { CategoryCombobox } from "./CategoryCombobox";
 import type { InlineSaveBody } from "./transactionColumns";
 
 type EditableCellProps = {
-  transaction: FinancialTransaction;
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+  transaction: Transaction;
+  onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 }
 
 function EditableDescriptionCell({
@@ -134,7 +134,7 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
   const [editing, setEditing] = useState(false);
 
   function handleValueChange(
-    newCategory: FinancialTransactionCategory | null | undefined,
+    newCategory: Category | null | undefined,
   ) {
     if (newCategory != null) {
       onSave(transaction, { categoryId: newCategory.id });
@@ -262,9 +262,9 @@ function EditableParticipantsCell({
   members,
   onSave,
 }: {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   members: PlanMember[];
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+  onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<number[]>([]);
@@ -343,10 +343,10 @@ export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
 }
 
 type ParticipantsCellProps = {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   members: PlanMember[];
   canEdit?: boolean;
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+  onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 };
 
 export function ParticipantsCell({
@@ -368,11 +368,11 @@ export function ParticipantsCell({
 }
 
 type ActionsCellProps = {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   isDeleting?: boolean;
-  onDuplicate: (transaction: FinancialTransaction) => void;
-  onEdit: (transaction: FinancialTransaction) => void;
-  onDelete: (transaction: FinancialTransaction) => void;
+  onDuplicate: (transaction: Transaction) => void;
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
 };
 
 export function ActionsCell({
