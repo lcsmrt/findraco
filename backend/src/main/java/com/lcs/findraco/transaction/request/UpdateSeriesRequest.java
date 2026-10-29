@@ -23,6 +23,8 @@ import java.util.List;
  * @param currentParcel the first parcel to generate (1-based, default 1); generation produces parcels
  *     currentParcel..parcelsNumber.
  * @param pivotOccurrenceId required (validated at the service layer) for THIS_ONE and THIS_AND_FOLLOWING scopes.
+ * @param version the series definition's version the caller read; an edit of a version that changed since
+ *     answers 409.
  */
 public record UpdateSeriesRequest(
         @NotNull(message = "Transaction type cannot be null.")
@@ -51,4 +53,5 @@ public record UpdateSeriesRequest(
         SplitMode splitMode,
         @Valid List<TransactionParticipantRequest> participants,
         @NotNull(message = "Edit scope cannot be null.") SeriesEditScope scope,
-        Long pivotOccurrenceId) {}
+        Long pivotOccurrenceId,
+        @NotNull(message = "Version cannot be null.") Long version) {}

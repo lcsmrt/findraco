@@ -27,6 +27,9 @@ public class RecurrenceDefinition {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Version
+    private long version;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_recdef_plan"))
     private Plan plan;
@@ -189,6 +192,10 @@ public class RecurrenceDefinition {
 
     public Long getId() {
         return id;
+    }
+
+    public long getVersion() {
+        return version;
     }
 
     public Plan getPlan() {

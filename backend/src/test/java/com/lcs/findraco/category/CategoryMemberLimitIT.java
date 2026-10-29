@@ -484,10 +484,13 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
                 .content(objectMapper.writeValueAsString(body)));
     }
 
+    /** Sends the stored version unless the body carries one. */
     private ResultActions update(Plan plan, User asUser, Long id, Map<String, Object> body) throws Exception {
+        Map<String, Object> versioned = new HashMap<>(body);
+        versioned.putIfAbsent("version", fixtures.categoryVersion(id));
         return mockMvc.perform(put(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), id)
                 .with(testAuthHelper.asUser(asUser))
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(body)));
+                .content(objectMapper.writeValueAsString(versioned)));
     }
 }

@@ -141,7 +141,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                                     own.getId())
                             .with(testAuthHelper.asUser(member))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(transactionBody("41.00", "Updated by owner of the row")))
+                            .content(transactionEditBody("41.00", "Updated by owner of the row")))
                     .andExpect(status().isOk());
         }
     }
@@ -157,7 +157,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", cast.plan().getId(), ownedByViewer.getId())
                         .with(testAuthHelper.asUser(cast.viewer()))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(transactionBody("999.00", "Should not persist")))
+                        .content(transactionEditBody("999.00", "Should not persist")))
                 .andExpect(status().isForbidden());
 
         assertUnchanged(ownedByViewer.getId(), "40.00");
@@ -177,7 +177,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                                     ownedByContributor.getId())
                             .with(testAuthHelper.asUser(member))
                             .contentType(MediaType.APPLICATION_JSON)
-                            .content(transactionBody("61.00", "Edited by non-owner-of-the-row")))
+                            .content(transactionEditBody("61.00", "Edited by non-owner-of-the-row")))
                     .andExpect(status().isOk());
         }
     }
@@ -191,7 +191,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", cast.plan().getId(), ownedByOwner.getId())
                         .with(testAuthHelper.asUser(cast.contributor()))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(transactionBody("999.00", "Should not persist")))
+                        .content(transactionEditBody("999.00", "Should not persist")))
                 .andExpect(status().isForbidden());
 
         assertUnchanged(ownedByOwner.getId(), "70.00");
@@ -215,7 +215,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", cast.plan().getId(), ownedByOwner.getId())
                         .with(testAuthHelper.asUser(cast.viewer()))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(transactionBody("999.00", "Should not persist")))
+                        .content(transactionEditBody("999.00", "Should not persist")))
                 .andExpect(status().isForbidden());
 
         assertUnchanged(ownedByOwner.getId(), "70.00");
@@ -230,7 +230,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", cast.plan().getId(), tx.getId())
                         .with(testAuthHelper.asUser(cast.nonMember()))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(transactionBody("999.00", "Should not persist")))
+                        .content(transactionEditBody("999.00", "Should not persist")))
                 .andExpect(status().isNotFound());
 
         assertUnchanged(tx.getId(), "70.00");
@@ -277,6 +277,21 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("name", "Should not persist"))))
                 .andExpect(status().isNotFound());
+    }
+
+    /** An edit of a transaction the test has just created, so at its first version. */
+    private String transactionEditBody(String amount, String description) throws Exception {
+        return objectMapper.writeValueAsString(Map.of(
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal(amount),
+                "description",
+                description,
+                "startDate",
+                today.toString(),
+                "version",
+                0));
     }
 
     private String transactionBody(String amount, String description) throws Exception {

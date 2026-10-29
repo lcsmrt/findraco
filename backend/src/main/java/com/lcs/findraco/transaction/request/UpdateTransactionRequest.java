@@ -10,6 +10,11 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * The body of a transaction edit; it replaces every editable field, participants and items included.
+ *
+ * @param version the version the caller read; an edit of a version that changed since answers 409.
+ */
 public record UpdateTransactionRequest(
         Long categoryId,
 
@@ -25,4 +30,5 @@ public record UpdateTransactionRequest(
         LocalDate endDate,
         SplitMode splitMode,
         @Valid List<TransactionParticipantRequest> participants,
-        @Valid List<TransactionItemRequest> items) {}
+        @Valid List<TransactionItemRequest> items,
+        @NotNull(message = "Version cannot be null.") Long version) {}

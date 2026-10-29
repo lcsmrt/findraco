@@ -65,7 +65,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         RecurrenceDefinition definition = anOpenEndedDefinition(plan, owner, start, "Gym", new BigDecimal("50.00"));
         seedOccurrences(definition, start, generatedThrough);
         definition.markGeneratedThrough(generatedThrough);
-        recurrenceDefinitionRepository.save(definition);
+        definition = recurrenceDefinitionRepository.save(definition);
 
         // Simulate the definition having been edited (scope ALL) after the last materialization,
         // before the rolling top-up runs: newly materialized months must reflect this, not the

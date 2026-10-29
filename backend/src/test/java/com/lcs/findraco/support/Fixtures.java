@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @TestComponent
@@ -43,6 +44,30 @@ public class Fixtures {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    /** The stored version of a transaction, which an edit sends back; 0 when there is no such row. */
+    public long transactionVersion(long id) {
+        return version("SELECT version FROM transactions WHERE id = ?", id);
+    }
+
+    /** The stored version of a category, which an edit sends back; 0 when there is no such row. */
+    public long categoryVersion(long id) {
+        return version("SELECT version FROM categories WHERE id = ?", id);
+    }
+
+    /** The stored version of a series definition, which a series edit sends back; 0 when there is no such row. */
+    public long seriesVersion(String seriesId) {
+        return version("SELECT version FROM recurrence_definitions WHERE series_id = ?", seriesId);
+    }
+
+    private long version(String sql, Object key) {
+        return jdbcTemplate.queryForList(sql, Long.class, key).stream()
+                .findFirst()
+                .orElse(0L);
+    }
 
     public User aUser() {
         return aUser("user-" + UUID.randomUUID() + "@test.com");

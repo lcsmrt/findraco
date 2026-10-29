@@ -1029,9 +1029,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: two edits with the same version → second 409 and the first's split survives
-- [ ] Snapshot regenerated
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT: two edits with the same version → second 409 and the first's split survives
+- [x] Snapshot regenerated
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

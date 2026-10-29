@@ -395,7 +395,13 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         mockMvc.perform(put(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), deliveryId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("type", "DEBIT", "description", "Delivery"))))
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "type",
+                                "DEBIT",
+                                "description",
+                                "Delivery",
+                                "version",
+                                fixtures.categoryVersion(deliveryId)))))
                 .andExpect(status().isOk());
 
         JsonNode afterMove = fetchDashboard(plan, owner).get("categoryBreakdown");

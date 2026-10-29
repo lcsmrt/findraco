@@ -15,6 +15,7 @@ import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.StreamSupport;
@@ -23,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -64,12 +66,14 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody(
-                                "DEBIT",
-                                "100.00",
-                                "Groceries",
-                                owner,
-                                List.of(Map.of("description", "Item C", "amount", new BigDecimal("70.00"))))))
+                        .content(versioned(
+                                transactionId,
+                                requestBody(
+                                        "DEBIT",
+                                        "100.00",
+                                        "Groceries",
+                                        owner,
+                                        List.of(Map.of("description", "Item C", "amount", new BigDecimal("70.00")))))))
                 .andExpect(status().isOk());
 
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
@@ -99,7 +103,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(splitRequestBody("100.00", List.of(owner))))
+                        .content(versioned(transactionId, splitRequestBody("100.00", List.of(owner)))))
                 .andExpect(status().isOk());
 
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
@@ -125,12 +129,15 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody(
-                                "DEBIT",
-                                "100.00",
-                                "Groceries",
-                                owner,
-                                List.of(Map.of("description", "Too much", "amount", new BigDecimal("150.00"))))))
+                        .content(versioned(
+                                transactionId,
+                                requestBody(
+                                        "DEBIT",
+                                        "100.00",
+                                        "Groceries",
+                                        owner,
+                                        List.of(Map.of(
+                                                "description", "Too much", "amount", new BigDecimal("150.00")))))))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "items-exceed-amount"));
 
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
@@ -151,7 +158,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("DEBIT", "100.00", "   ", owner, List.of())))
+                        .content(versioned(transactionId, requestBody("DEBIT", "100.00", "   ", owner, List.of()))))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
     }
 
@@ -169,12 +176,15 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody(
-                                "DEBIT",
-                                "100.00",
-                                "Groceries",
-                                owner,
-                                List.of(Map.of("description", "Refund-ish", "amount", new BigDecimal("-10.00"))))))
+                        .content(versioned(
+                                transactionId,
+                                requestBody(
+                                        "DEBIT",
+                                        "100.00",
+                                        "Groceries",
+                                        owner,
+                                        List.of(Map.of(
+                                                "description", "Refund-ish", "amount", new BigDecimal("-10.00")))))))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
     }
 
@@ -192,7 +202,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("DEBIT", "-50.00", "Groceries", owner, List.of())))
+                        .content(versioned(
+                                transactionId, requestBody("DEBIT", "-50.00", "Groceries", owner, List.of()))))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
 
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
@@ -214,23 +225,25 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "type",
-                                "DEBIT",
-                                "categoryId",
-                                creditCategoryId,
-                                "amount",
-                                new BigDecimal("100.00"),
-                                "description",
-                                "Groceries",
-                                "startDate",
-                                today.toString(),
-                                "splitMode",
-                                "EQUAL",
-                                "participants",
-                                new Object[] {Map.of("memberId", owner.getId())},
-                                "items",
-                                List.of()))))
+                        .content(versioned(
+                                transactionId,
+                                objectMapper.writeValueAsString(Map.of(
+                                        "type",
+                                        "DEBIT",
+                                        "categoryId",
+                                        creditCategoryId,
+                                        "amount",
+                                        new BigDecimal("100.00"),
+                                        "description",
+                                        "Groceries",
+                                        "startDate",
+                                        today.toString(),
+                                        "splitMode",
+                                        "EQUAL",
+                                        "participants",
+                                        new Object[] {Map.of("memberId", owner.getId())},
+                                        "items",
+                                        List.of())))))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "transaction-category-type-mismatch"));
     }
 
@@ -256,23 +269,25 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "type",
-                                "DEBIT",
-                                "categoryId",
-                                foreignCategoryId,
-                                "amount",
-                                new BigDecimal("100.00"),
-                                "description",
-                                "Groceries",
-                                "startDate",
-                                today.toString(),
-                                "splitMode",
-                                "EQUAL",
-                                "participants",
-                                new Object[] {Map.of("memberId", owner.getId())},
-                                "items",
-                                List.of()))))
+                        .content(versioned(
+                                transactionId,
+                                objectMapper.writeValueAsString(Map.of(
+                                        "type",
+                                        "DEBIT",
+                                        "categoryId",
+                                        foreignCategoryId,
+                                        "amount",
+                                        new BigDecimal("100.00"),
+                                        "description",
+                                        "Groceries",
+                                        "startDate",
+                                        today.toString(),
+                                        "splitMode",
+                                        "EQUAL",
+                                        "participants",
+                                        new Object[] {Map.of("memberId", owner.getId())},
+                                        "items",
+                                        List.of())))))
                 .andExpect(status().isNotFound());
     }
 
@@ -285,6 +300,15 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());
     }
+
+    /** The edit body with the transaction's stored version, as a client sends back the one it read. */
+    private String versioned(long transactionId, String body) throws Exception {
+        Map<String, Object> versioned = new HashMap<>(objectMapper.readValue(body, MAP));
+        versioned.put("version", fixtures.transactionVersion(transactionId));
+        return objectMapper.writeValueAsString(versioned);
+    }
+
+    private static final TypeReference<Map<String, Object>> MAP = new TypeReference<>() {};
 
     private JsonNode fetchTransaction(Plan plan, User asUser, long transactionId) throws Exception {
         MvcResult result = mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)

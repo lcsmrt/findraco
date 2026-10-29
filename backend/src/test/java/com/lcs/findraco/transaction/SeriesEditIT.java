@@ -368,6 +368,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         editBody.put("endDate", overflowEnd.toString());
         editBody.put("splitMode", "EQUAL");
         editBody.put("scope", "ALL");
+        editBody.put("version", fixtures.seriesVersion(seriesId));
 
         MvcResult result = mockMvc.perform(
                         put(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
@@ -653,11 +654,13 @@ class SeriesEditIT extends AbstractIntegrationTest {
     private JsonNode editSeries(
             Plan plan, User asUser, String seriesId, Map<String, Object> body, ResultMatcher expectedStatus)
             throws Exception {
+        Map<String, Object> versioned = new LinkedHashMap<>(body);
+        versioned.putIfAbsent("version", fixtures.seriesVersion(seriesId));
         MvcResult result = mockMvc.perform(
                         put(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                                 .with(testAuthHelper.asUser(asUser))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(body)))
+                                .content(objectMapper.writeValueAsString(versioned)))
                 .andExpect(expectedStatus)
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());

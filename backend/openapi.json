@@ -162,9 +162,13 @@
           },
           "type" : {
             "$ref" : "#/components/schemas/TransactionType"
+          },
+          "version" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
-        "required" : [ "description", "id", "type" ],
+        "required" : [ "description", "id", "type", "version" ],
         "type" : "object"
       },
       "CategorySortField" : {
@@ -826,9 +830,13 @@
           },
           "type" : {
             "$ref" : "#/components/schemas/TransactionType"
+          },
+          "version" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "id", "mode", "participants", "seriesId", "splitMode", "startDate", "type" ],
+        "required" : [ "amount", "description", "id", "mode", "participants", "seriesId", "splitMode", "startDate", "type", "version" ],
         "type" : "object"
       },
       "RecurrenceInterval" : {
@@ -1021,9 +1029,13 @@
           },
           "type" : {
             "$ref" : "#/components/schemas/TransactionType"
+          },
+          "version" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "id", "items", "participants", "splitMode", "startDate", "type" ],
+        "required" : [ "amount", "description", "id", "items", "participants", "splitMode", "startDate", "type", "version" ],
         "type" : "object"
       },
       "TransactionSeriesResponse" : {
@@ -1091,9 +1103,13 @@
           },
           "type" : {
             "$ref" : "#/components/schemas/TransactionType"
+          },
+          "version" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
-        "required" : [ "description", "type" ],
+        "required" : [ "description", "type", "version" ],
         "type" : "object"
       },
       "UpdateMemberRoleRequest" : {
@@ -1172,9 +1188,13 @@
           },
           "type" : {
             "$ref" : "#/components/schemas/TransactionType"
+          },
+          "version" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "mode", "scope", "startDate", "type" ],
+        "required" : [ "amount", "description", "mode", "scope", "startDate", "type", "version" ],
         "type" : "object"
       },
       "UpdateTransactionRequest" : {
@@ -1220,9 +1240,13 @@
           },
           "type" : {
             "$ref" : "#/components/schemas/TransactionType"
+          },
+          "version" : {
+            "format" : "int64",
+            "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "startDate", "type" ],
+        "required" : [ "amount", "description", "startDate", "type", "version" ],
         "type" : "object"
       },
       "UpdateUserRequest" : {

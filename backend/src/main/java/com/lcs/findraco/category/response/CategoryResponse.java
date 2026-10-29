@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 public record CategoryResponse(
         Long id,
+        long version,
         TransactionType type,
         String description,
         @Nullable BigDecimal spendingLimit,
@@ -29,6 +30,7 @@ public record CategoryResponse(
         User owner = effectiveOwner(category);
         return new CategoryResponse(
                 category.getId(),
+                category.getVersion(),
                 category.getType(),
                 category.getDescription(),
                 category.getSpendingLimit(),
@@ -62,6 +64,7 @@ public record CategoryResponse(
                 : active.stream().map(CategoryMemberLimitResponse::amount).reduce(BigDecimal.ZERO, BigDecimal::add);
         return new CategoryResponse(
                 category.getId(),
+                category.getVersion(),
                 category.getType(),
                 category.getDescription(),
                 category.getSpendingLimit(),

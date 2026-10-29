@@ -6,6 +6,7 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
+import com.lcs.findraco.shared.error.StaleVersionException;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.ItemDraft;
@@ -38,6 +39,7 @@ import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -189,6 +191,7 @@ public class TransactionService {
     public TransactionResponse update(Long id, UpdateTransactionRequest dto, PlanContext ctx) {
         Transaction transaction = load(id, ctx);
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
+        claimVersion(transaction, transaction.getVersion(), dto.version());
 
         RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
         TransactionDetails details = new TransactionDetails(
@@ -201,7 +204,17 @@ public class TransactionService {
                 dto.parcelsNumber());
         transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
 
-        return TransactionResponse.from(transactionRepository.save(transaction));
+        return TransactionResponse.from(transactionRepository.saveAndFlush(transaction));
+    }
+
+    /**
+     * Refuses an edit of a version other than the stored one, then bumps the version at once: a change
+     * to the children alone (a split, the items) must count as a change too, and a concurrent editor who
+     * read the same version then fails instead of overwriting this edit.
+     */
+    private void claimVersion(Object root, long stored, long sent) {
+        StaleVersionException.requireCurrent(stored, sent);
+        entityManager.lock(root, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
     }
 
     private Category category(Long categoryId, PlanContext ctx) {
@@ -377,6 +390,7 @@ public class TransactionService {
         RecurrenceDefinition definition = recurrenceDefinitionRepository
                 .findByPlanAndSeriesId(plan(ctx), seriesId)
                 .orElseThrow(() -> new TransactionExceptions.TransactionSeriesNotFoundException(seriesId));
+        claimVersion(definition, definition.getVersion(), dto.version());
 
         List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan(ctx), seriesId);
 
@@ -430,7 +444,7 @@ public class TransactionService {
                     split.mode(),
                     split.shares());
 
-            transactionRepository.save(pivot);
+            transactionRepository.saveAndFlush(pivot);
             return TransactionSeriesResponse.from(List.of(pivot));
         }
 
@@ -470,7 +484,7 @@ public class TransactionService {
             definition.markGeneratedThrough(generatedThrough);
         }
 
-        recurrenceDefinitionRepository.save(definition);
+        recurrenceDefinitionRepository.saveAndFlush(definition);
 
         return TransactionSeriesResponse.from(combined);
     }

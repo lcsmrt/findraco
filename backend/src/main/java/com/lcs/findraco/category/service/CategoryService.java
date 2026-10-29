@@ -18,10 +18,12 @@ import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
+import com.lcs.findraco.shared.error.StaleVersionException;
 import com.lcs.findraco.transaction.service.CategoryReferenceCounts;
 import com.lcs.findraco.transaction.service.TransactionCategoryService;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +127,11 @@ public class CategoryService {
         planAuthorization.requireCanManageCategories(ctx.role());
 
         Category category = findById(id, ctx);
+        // A change to the member limits alone counts as a change too, so the version moves at once and a
+        // concurrent editor who read the same version fails instead of overwriting this edit.
+        StaleVersionException.requireCurrent(category.getVersion(), dto.version());
+        entityManager.lock(category, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+
         boolean hasChildren = categoryRepository.existsByParent(category);
         if (dto.type() != category.getType()) {
             if (hasChildren) {
@@ -147,7 +154,7 @@ public class CategoryService {
         }
         category.changeLimits(dto.spendingLimit(), memberLimits(category, dto.memberLimits(), activeMembers));
 
-        return CategoryResponse.from(categoryRepository.save(category), activeMembers.keySet());
+        return CategoryResponse.from(categoryRepository.saveAndFlush(category), activeMembers.keySet());
     }
 
     /**

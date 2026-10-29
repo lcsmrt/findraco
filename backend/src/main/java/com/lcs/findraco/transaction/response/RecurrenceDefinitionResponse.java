@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 
 public record RecurrenceDefinitionResponse(
         Long id,
+        long version,
         String seriesId,
         TransactionType type,
         BigDecimal amount,
@@ -29,6 +30,7 @@ public record RecurrenceDefinitionResponse(
     public static RecurrenceDefinitionResponse from(RecurrenceDefinition def) {
         return new RecurrenceDefinitionResponse(
                 def.getId(),
+                def.getVersion(),
                 def.getSeriesId(),
                 def.getType(),
                 def.getAmount(),

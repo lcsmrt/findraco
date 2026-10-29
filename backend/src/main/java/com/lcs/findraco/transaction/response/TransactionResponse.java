@@ -11,6 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 public record TransactionResponse(
         Long id,
+        long version,
         @Nullable CategoryResponse category,
         TransactionType type,
         BigDecimal amount,
@@ -27,6 +28,7 @@ public record TransactionResponse(
     public static TransactionResponse from(Transaction transaction) {
         return new TransactionResponse(
                 transaction.getId(),
+                transaction.getVersion(),
                 transaction.getCategory() != null ? CategoryResponse.from(transaction.getCategory()) : null,
                 transaction.getType(),
                 transaction.getAmount(),
