@@ -12,7 +12,7 @@ import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionType;
-import com.lcs.findraco.transaction.request.TransactionSeriesRequestDto;
+import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.user.model.User;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
@@ -51,14 +51,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void installmentSeriesExpandsToOneOccurrencePerParcel() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.INSTALLMENT);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Laptop");
-        when(dto.getParcelsNumber()).thenReturn(12);
-        when(dto.getCurrentParcel()).thenReturn(null);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 15));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.INSTALLMENT);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Laptop");
+        when(dto.parcelsNumber()).thenReturn(12);
+        when(dto.currentParcel()).thenReturn(null);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 15));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -82,14 +82,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void inProgressInstallmentGeneratesCurrentParcelThroughLast() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.INSTALLMENT);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Laptop");
-        when(dto.getParcelsNumber()).thenReturn(12);
-        when(dto.getCurrentParcel()).thenReturn(5);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 15));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.INSTALLMENT);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Laptop");
+        when(dto.parcelsNumber()).thenReturn(12);
+        when(dto.currentParcel()).thenReturn(5);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 15));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -103,14 +103,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void installmentWithCurrentParcelOneMatchesDefaultBehaviour() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.INSTALLMENT);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Laptop");
-        when(dto.getParcelsNumber()).thenReturn(12);
-        when(dto.getCurrentParcel()).thenReturn(1);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 15));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.INSTALLMENT);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Laptop");
+        when(dto.parcelsNumber()).thenReturn(12);
+        when(dto.currentParcel()).thenReturn(1);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 15));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -123,14 +123,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void inProgressInstallmentAtLastParcelGeneratesSingleRow() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.INSTALLMENT);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Laptop");
-        when(dto.getParcelsNumber()).thenReturn(12);
-        when(dto.getCurrentParcel()).thenReturn(12);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 15));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.INSTALLMENT);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Laptop");
+        when(dto.parcelsNumber()).thenReturn(12);
+        when(dto.currentParcel()).thenReturn(12);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 15));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -141,35 +141,35 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void installmentCapAppliesToGeneratedCountNotTotal() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.INSTALLMENT);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Laptop");
-        when(dto.getParcelsNumber()).thenReturn(200);
-        when(dto.getCurrentParcel()).thenReturn(1);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 15));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.INSTALLMENT);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Laptop");
+        when(dto.parcelsNumber()).thenReturn(200);
+        when(dto.currentParcel()).thenReturn(1);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 15));
 
         assertThatThrownBy(() -> generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("too many occurrences");
 
-        when(dto.getParcelsNumber()).thenReturn(200);
-        when(dto.getCurrentParcel()).thenReturn(81);
+        when(dto.parcelsNumber()).thenReturn(200);
+        when(dto.currentParcel()).thenReturn(81);
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
         assertThat(result).hasSize(120);
     }
 
     @Test
     void recurringMonthlySeriesExpandsInclusiveOfEndDate() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Gym membership");
-        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 1));
-        when(dto.getEndDate()).thenReturn(LocalDate.of(2026, 12, 1));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Gym membership");
+        when(dto.interval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 1));
+        when(dto.endDate()).thenReturn(LocalDate.of(2026, 12, 1));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -187,14 +187,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void installmentSeriesClampsDayOfMonthOverflow() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.INSTALLMENT);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Rent deposit");
-        when(dto.getParcelsNumber()).thenReturn(2);
-        when(dto.getCurrentParcel()).thenReturn(null);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 31));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.INSTALLMENT);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Rent deposit");
+        when(dto.parcelsNumber()).thenReturn(2);
+        when(dto.currentParcel()).thenReturn(null);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 31));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -205,14 +205,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void recurringSeriesKeepsTheStartDayAfterAShortMonth() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Rent");
-        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 31));
-        when(dto.getEndDate()).thenReturn(LocalDate.of(2026, 4, 30));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Rent");
+        when(dto.interval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 31));
+        when(dto.endDate()).thenReturn(LocalDate.of(2026, 4, 30));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -225,14 +225,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void recurringSeriesExceedingCapThrows() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Forever");
-        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 1));
-        when(dto.getEndDate()).thenReturn(LocalDate.of(2050, 1, 1));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Forever");
+        when(dto.interval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 1));
+        when(dto.endDate()).thenReturn(LocalDate.of(2050, 1, 1));
 
         assertThatThrownBy(() -> generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares))
                 .isInstanceOf(IllegalArgumentException.class)
@@ -241,14 +241,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void installmentSeriesStampsSameParticipantSharesOnEveryOccurrence() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.INSTALLMENT);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Rent");
-        when(dto.getParcelsNumber()).thenReturn(3);
-        when(dto.getCurrentParcel()).thenReturn(null);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 1));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.INSTALLMENT);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Rent");
+        when(dto.parcelsNumber()).thenReturn(3);
+        when(dto.currentParcel()).thenReturn(null);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 1));
 
         List<ResolvedParticipant> shares = List.of(
                 new ResolvedParticipant(user, new BigDecimal("150.00")),
@@ -272,14 +272,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void recurringSeriesStampsSameParticipantSharesOnEveryOccurrence() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Gym membership");
-        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 1));
-        when(dto.getEndDate()).thenReturn(LocalDate.of(2026, 3, 1));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Gym membership");
+        when(dto.interval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 1));
+        when(dto.endDate()).thenReturn(LocalDate.of(2026, 3, 1));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -294,14 +294,14 @@ class RecurringTransactionGeneratorTest {
     @Test
     void recurringSeriesWithEndDateIgnoresClockAndProducesBoundedOutputUnchanged() {
         // Regression: presence of an injected Clock must not alter bounded (endDate-present) output at all.
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Gym membership");
-        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 1));
-        when(dto.getEndDate()).thenReturn(LocalDate.of(2026, 12, 1));
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Gym membership");
+        when(dto.interval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 1));
+        when(dto.endDate()).thenReturn(LocalDate.of(2026, 12, 1));
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -312,14 +312,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void openEndedRecurringSeriesGeneratesTwelveMonthHorizonFromToday() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Streaming subscription");
-        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 7, 24));
-        when(dto.getEndDate()).thenReturn(null);
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Streaming subscription");
+        when(dto.interval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.startDate()).thenReturn(LocalDate.of(2026, 7, 24));
+        when(dto.endDate()).thenReturn(null);
 
         List<Transaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
 
@@ -336,14 +336,14 @@ class RecurringTransactionGeneratorTest {
 
     @Test
     void openEndedRecurringSeriesWithVeryOldStartHitsMaxOccurrencesGuard() {
-        TransactionSeriesRequestDto dto = mock(TransactionSeriesRequestDto.class);
-        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
-        when(dto.getType()).thenReturn(TransactionType.DEBIT);
-        when(dto.getAmount()).thenReturn(amount);
-        when(dto.getDescription()).thenReturn("Ancient subscription");
-        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
-        when(dto.getStartDate()).thenReturn(LocalDate.of(2005, 1, 1));
-        when(dto.getEndDate()).thenReturn(null);
+        CreateSeriesRequest dto = mock(CreateSeriesRequest.class);
+        when(dto.mode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.type()).thenReturn(TransactionType.DEBIT);
+        when(dto.amount()).thenReturn(amount);
+        when(dto.description()).thenReturn("Ancient subscription");
+        when(dto.interval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.startDate()).thenReturn(LocalDate.of(2005, 1, 1));
+        when(dto.endDate()).thenReturn(null);
 
         // Span from 2005-01-01 to horizon (2027-07-24, fixed clock + 12mo) is ~270 months, well past 120.
         assertThatThrownBy(() -> generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares))

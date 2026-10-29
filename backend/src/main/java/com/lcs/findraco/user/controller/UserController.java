@@ -2,8 +2,9 @@ package com.lcs.findraco.user.controller;
 
 import com.lcs.findraco.shared.security.CurrentUser;
 import com.lcs.findraco.user.model.User;
-import com.lcs.findraco.user.request.UserRequestDto;
-import com.lcs.findraco.user.response.UserResponseDto;
+import com.lcs.findraco.user.request.CreateUserRequest;
+import com.lcs.findraco.user.request.UpdateUserRequest;
+import com.lcs.findraco.user.response.UserResponse;
 import com.lcs.findraco.user.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -27,22 +28,22 @@ public class UserController {
     @Operation(summary = "Creates a new user")
     @SecurityRequirements
     @PostMapping
-    public ResponseEntity<UserResponseDto> createUser(@RequestBody @Valid UserRequestDto dto) {
+    public ResponseEntity<UserResponse> createUser(@RequestBody @Valid CreateUserRequest dto) {
         User createdUser = userService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new UserResponseDto(createdUser));
+        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(createdUser));
     }
 
     @Operation(summary = "Returns the authenticated user's data")
     @GetMapping("/me")
-    public ResponseEntity<UserResponseDto> getCurrentUser(@CurrentUser User user) {
-        return ResponseEntity.ok(new UserResponseDto(user));
+    public ResponseEntity<UserResponse> getCurrentUser(@CurrentUser User user) {
+        return ResponseEntity.ok(UserResponse.from(user));
     }
 
     @Operation(summary = "Updates the authenticated user")
     @PutMapping
-    public ResponseEntity<UserResponseDto> updateUser(
-            @RequestBody @Valid UserRequestDto dto, @CurrentUser User loggedUser) {
+    public ResponseEntity<UserResponse> updateUser(
+            @RequestBody @Valid UpdateUserRequest dto, @CurrentUser User loggedUser) {
         User updatedUser = userService.update(loggedUser, dto);
-        return ResponseEntity.ok(new UserResponseDto(updatedUser));
+        return ResponseEntity.ok(UserResponse.from(updatedUser));
     }
 }

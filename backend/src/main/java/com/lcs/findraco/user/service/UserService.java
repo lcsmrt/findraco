@@ -4,7 +4,8 @@ import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.user.exception.UserExceptions;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
-import com.lcs.findraco.user.request.UserRequestDto;
+import com.lcs.findraco.user.request.CreateUserRequest;
+import com.lcs.findraco.user.request.UpdateUserRequest;
 import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,16 +25,16 @@ public class UserService {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @Transactional
-    public User create(UserRequestDto dto) {
-        Optional<User> existingUser = userRepository.findByEmail(dto.getEmail());
+    public User create(CreateUserRequest dto) {
+        Optional<User> existingUser = userRepository.findByEmail(dto.email());
         if (existingUser.isPresent()) {
-            throw new UserExceptions.EmailAlreadyExistsException(dto.getEmail());
+            throw new UserExceptions.EmailAlreadyExistsException(dto.email());
         }
 
         User user = new User();
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        String encryptedPassword = encoder.encode(dto.getPassword());
+        user.setName(dto.name());
+        user.setEmail(dto.email());
+        String encryptedPassword = encoder.encode(dto.password());
         user.setPassword(encryptedPassword);
 
         User savedUser = userRepository.save(user);
@@ -42,10 +43,10 @@ public class UserService {
     }
 
     @Transactional
-    public User update(User user, UserRequestDto dto) {
-        user.setName(dto.getName());
-        user.setEmail(dto.getEmail());
-        String encryptedPassword = encoder.encode(dto.getPassword());
+    public User update(User user, UpdateUserRequest dto) {
+        user.setName(dto.name());
+        user.setEmail(dto.email());
+        String encryptedPassword = encoder.encode(dto.password());
         user.setPassword(encryptedPassword);
 
         return userRepository.save(user);

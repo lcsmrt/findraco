@@ -1,11 +1,11 @@
 package com.lcs.findraco.dashboard.service;
 
 import com.lcs.findraco.category.service.CategorySpendingService;
-import com.lcs.findraco.dashboard.request.DashboardFilterDto;
-import com.lcs.findraco.dashboard.response.CategoryBreakdownDto;
-import com.lcs.findraco.dashboard.response.DashboardSummaryResponseDto;
-import com.lcs.findraco.dashboard.response.MonthlyTrendDto;
-import com.lcs.findraco.dashboard.response.PersonBreakdownDto;
+import com.lcs.findraco.dashboard.request.DashboardFilter;
+import com.lcs.findraco.dashboard.response.CategoryBreakdownResponse;
+import com.lcs.findraco.dashboard.response.DashboardSummaryResponse;
+import com.lcs.findraco.dashboard.response.MonthlyTrendResponse;
+import com.lcs.findraco.dashboard.response.PersonBreakdownResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.transaction.model.TransactionType;
@@ -41,13 +41,13 @@ public class DashboardService {
     }
 
     @Transactional(readOnly = true)
-    public DashboardSummaryResponseDto getSummary(DashboardFilterDto filter, PlanContext ctx) {
+    public DashboardSummaryResponse getSummary(DashboardFilter filter, PlanContext ctx) {
         Plan plan = ctx.getPlan();
         openEndedSeriesTopUpService.topUp(plan, LocalDate.now(clock));
 
-        LocalDate startDate = filter.getStartDate();
-        LocalDate endDate = filter.getEndDate();
-        Long memberId = filter.getMemberId();
+        LocalDate startDate = filter.startDate();
+        LocalDate endDate = filter.endDate();
+        Long memberId = filter.memberId();
 
         BigDecimal totalIncome = transactionRepository.sumByPlanAndTypeAndDateRange(
                 plan, TransactionType.CREDIT, startDate, endDate, memberId);
@@ -57,32 +57,33 @@ public class DashboardService {
 
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
 
-        List<CategoryBreakdownDto> categoryBreakdown = buildCategoryBreakdown(plan, startDate, endDate, memberId);
-        List<MonthlyTrendDto> monthlyTrend = buildMonthlyTrend(plan, startDate, endDate, memberId);
-        List<PersonBreakdownDto> personBreakdown = buildPersonBreakdown(plan, startDate, endDate, memberId);
+        List<CategoryBreakdownResponse> categoryBreakdown = buildCategoryBreakdown(plan, startDate, endDate, memberId);
+        List<MonthlyTrendResponse> monthlyTrend = buildMonthlyTrend(plan, startDate, endDate, memberId);
+        List<PersonBreakdownResponse> personBreakdown = buildPersonBreakdown(plan, startDate, endDate, memberId);
 
-        return new DashboardSummaryResponseDto(
+        return new DashboardSummaryResponse(
                 totalIncome, totalExpenses, netBalance, categoryBreakdown, monthlyTrend, personBreakdown);
     }
 
     /** Income and expenses per calendar month of the range, optionally for one member's shares (UX-05 AC 7). */
     @Transactional(readOnly = true)
-    public List<MonthlyTrendDto> getTrend(DashboardFilterDto filter, PlanContext ctx) {
+    public List<MonthlyTrendResponse> getTrend(DashboardFilter filter, PlanContext ctx) {
         Plan plan = ctx.getPlan();
         openEndedSeriesTopUpService.topUp(plan, LocalDate.now(clock));
-        return buildMonthlyTrend(plan, filter.getStartDate(), filter.getEndDate(), filter.getMemberId());
+        return buildMonthlyTrend(plan, filter.startDate(), filter.endDate(), filter.memberId());
     }
 
-    private List<CategoryBreakdownDto> buildCategoryBreakdown(
+    private List<CategoryBreakdownResponse> buildCategoryBreakdown(
             Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         return categorySpendingService.computeOverview(plan, startDate, endDate, memberId).stream()
-                .map(CategoryBreakdownDto::new)
+                .map(CategoryBreakdownResponse::from)
                 .toList();
     }
 
     private record MonthKey(int year, int month) {}
 
-    private List<MonthlyTrendDto> buildMonthlyTrend(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
+    private List<MonthlyTrendResponse> buildMonthlyTrend(
+            Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         List<Object[]> rows = transactionRepository.findMonthlyTrend(plan, startDate, endDate, memberId);
 
         Map<MonthKey, BigDecimal[]> amountsByMonth = new LinkedHashMap<>();
@@ -101,15 +102,15 @@ public class DashboardService {
             }
         }
 
-        List<MonthlyTrendDto> trend = new ArrayList<>();
+        List<MonthlyTrendResponse> trend = new ArrayList<>();
         for (Map.Entry<MonthKey, BigDecimal[]> entry : amountsByMonth.entrySet()) {
-            trend.add(new MonthlyTrendDto(
+            trend.add(new MonthlyTrendResponse(
                     entry.getKey().year(), entry.getKey().month(), entry.getValue()[0], entry.getValue()[1]));
         }
         return trend;
     }
 
-    private List<PersonBreakdownDto> buildPersonBreakdown(
+    private List<PersonBreakdownResponse> buildPersonBreakdown(
             Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         List<Object[]> rows = transactionRepository.findPersonBreakdown(plan, startDate, endDate, memberId);
 
@@ -131,10 +132,10 @@ public class DashboardService {
             }
         }
 
-        List<PersonBreakdownDto> breakdown = new ArrayList<>();
+        List<PersonBreakdownResponse> breakdown = new ArrayList<>();
         for (Map.Entry<Long, BigDecimal[]> entry : amountsByUserId.entrySet()) {
             Long userId = entry.getKey();
-            breakdown.add(new PersonBreakdownDto(
+            breakdown.add(PersonBreakdownResponse.of(
                     userId, namesByUserId.get(userId), entry.getValue()[0], entry.getValue()[1]));
         }
         return breakdown;

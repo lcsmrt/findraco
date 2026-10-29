@@ -2,7 +2,7 @@ package com.lcs.findraco.auth.service;
 
 import com.lcs.findraco.auth.model.PasswordResetToken;
 import com.lcs.findraco.auth.repository.PasswordResetTokenRepository;
-import com.lcs.findraco.auth.request.ResetPasswordRequestDto;
+import com.lcs.findraco.auth.request.ResetPasswordRequest;
 import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.user.exception.UserExceptions;
 import com.lcs.findraco.user.repository.UserRepository;
@@ -73,11 +73,11 @@ public class PasswordResetService {
 
     /** Sets the new password, consumes the token (single use) and signs the user out everywhere. */
     @Transactional
-    public void resetPassword(ResetPasswordRequestDto dto) {
+    public void resetPassword(ResetPasswordRequest dto) {
         PasswordResetToken resetToken =
-                findValidToken(dto.getToken()).orElseThrow(UserExceptions.InvalidPasswordResetTokenException::new);
+                findValidToken(dto.token()).orElseThrow(UserExceptions.InvalidPasswordResetTokenException::new);
 
-        userService.changePassword(resetToken.getUser(), dto.getPassword());
+        userService.changePassword(resetToken.getUser(), dto.password());
         tokenRepository.deleteAllByUser(resetToken.getUser());
         sessionService.revokeAll(resetToken.getUser());
     }

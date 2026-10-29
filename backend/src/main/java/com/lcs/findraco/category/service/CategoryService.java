@@ -6,11 +6,12 @@ import com.lcs.findraco.category.model.CategoryMemberLimit;
 import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
 import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.category.repository.CategorySpecification;
-import com.lcs.findraco.category.request.CategoryFilterDto;
-import com.lcs.findraco.category.request.CategoryRequestDto;
-import com.lcs.findraco.category.request.MemberLimitDto;
-import com.lcs.findraco.category.response.CategoryResponseDto;
-import com.lcs.findraco.category.response.CategoryUsageDto;
+import com.lcs.findraco.category.request.CategoryFilter;
+import com.lcs.findraco.category.request.CategoryMemberLimitRequest;
+import com.lcs.findraco.category.request.CreateCategoryRequest;
+import com.lcs.findraco.category.request.UpdateCategoryRequest;
+import com.lcs.findraco.category.response.CategoryResponse;
+import com.lcs.findraco.category.response.CategoryUsageResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
@@ -21,6 +22,7 @@ import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionItemRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -70,20 +72,20 @@ public class CategoryService {
 
     /** Usage counts of a category of the plan (CAT-10, P1 Sub AC 18); not in the plan → 404. Any member may read it. */
     @Transactional(readOnly = true)
-    public CategoryUsageDto getUsage(Long id, PlanContext ctx) {
+    public CategoryUsageResponse getUsage(Long id, PlanContext ctx) {
         return usageOf(findById(id, ctx));
     }
 
-    private CategoryUsageDto usageOf(Category category) {
-        return new CategoryUsageDto(
+    private CategoryUsageResponse usageOf(Category category) {
+        return new CategoryUsageResponse(
                 transactionRepository.countByCategory(category),
                 transactionItemRepository.countByCategory(category),
                 recurrenceDefinitionRepository.countByCategory(category));
     }
 
     @Transactional(readOnly = true)
-    public CategoryResponseDto getById(Long id, PlanContext ctx) {
-        return new CategoryResponseDto(
+    public CategoryResponse getById(Long id, PlanContext ctx) {
+        return CategoryResponse.from(
                 findById(id, ctx), activeMembers(ctx.getPlan()).keySet());
     }
 
@@ -95,66 +97,66 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public Page<CategoryResponseDto> findAllByPlanPaged(CategoryFilterDto filter, PlanContext ctx) {
+    public Page<CategoryResponse> findAllByPlanPaged(CategoryFilter filter, PlanContext ctx) {
         PageRequest pageable = filter.toPageable(SORTABLE_FIELDS);
 
         Specification<Category> spec = Specification.allOf(
                 CategorySpecification.belongsToPlan(ctx.getPlan()),
-                CategorySpecification.descriptionContains(filter.getDescription()),
-                CategorySpecification.typeEquals(filter.getType()));
+                CategorySpecification.descriptionContains(filter.description()),
+                CategorySpecification.typeEquals(filter.type()));
 
         Set<Long> activeMemberIds = activeMembers(ctx.getPlan()).keySet();
         return categoryRepository
                 .findAll(spec, pageable)
-                .map(category -> new CategoryResponseDto(category, activeMemberIds));
+                .map(category -> CategoryResponse.from(category, activeMemberIds));
     }
 
     @Transactional
-    public CategoryResponseDto create(CategoryRequestDto dto, PlanContext ctx) {
+    public CategoryResponse create(CreateCategoryRequest dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
         Category category = new Category();
 
         category.setPlan(ctx.getPlan());
-        category.setType(dto.getType());
-        category.setDescription(dto.getDescription());
-        category.setParent(resolveParent(null, dto, ctx));
+        category.setType(dto.type());
+        category.setDescription(dto.description());
+        category.setParent(resolveParent(null, dto.parentId(), dto.type(), ctx));
         Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
-        category.setOwner(resolveOwner(category, dto, activeMembers));
-        applyLimits(category, dto, activeMembers);
+        category.setOwner(resolveOwner(category, dto.ownerId(), activeMembers));
+        applyLimits(category, dto.spendingLimit(), dto.memberLimits(), activeMembers);
 
-        return new CategoryResponseDto(categoryRepository.save(category), activeMembers.keySet());
+        return CategoryResponse.from(categoryRepository.save(category), activeMembers.keySet());
     }
 
     @Transactional
-    public CategoryResponseDto update(Long id, CategoryRequestDto dto, PlanContext ctx) {
+    public CategoryResponse update(Long id, UpdateCategoryRequest dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
         Category existingCategory = findById(id, ctx);
         boolean hasChildren = categoryRepository.existsByParent(existingCategory);
-        if (hasChildren && dto.getType() != existingCategory.getType()) {
+        if (hasChildren && dto.type() != existingCategory.getType()) {
             throw new CategoryExceptions.CategoryWithChildrenTypeChangeException();
         }
 
-        Category parent = resolveParent(existingCategory, dto, ctx);
+        Category parent = resolveParent(existingCategory, dto.parentId(), dto.type(), ctx);
         if (parent != null && hasChildren) {
             throw new CategoryExceptions.CategoryWithChildrenCannotHaveParentException();
         }
 
-        existingCategory.setType(dto.getType());
-        existingCategory.setDescription(dto.getDescription());
+        existingCategory.setType(dto.type());
+        existingCategory.setDescription(dto.description());
         existingCategory.setParent(parent);
         Map<Long, User> activeMembers = activeMembers(ctx.getPlan());
-        existingCategory.setOwner(resolveOwner(existingCategory, dto, activeMembers));
+        existingCategory.setOwner(resolveOwner(existingCategory, dto.ownerId(), activeMembers));
         if (existingCategory.getOwner() != null
                 && hasChildren
                 && memberLimitRepository.existsByCategory_Parent(existingCategory)) {
             // Children inherit the owner, and an owned category cannot have per-member limits.
             throw new CategoryExceptions.CategoryMemberLimitsOnOwnedException();
         }
-        applyLimits(existingCategory, dto, activeMembers);
+        applyLimits(existingCategory, dto.spendingLimit(), dto.memberLimits(), activeMembers);
 
-        return new CategoryResponseDto(categoryRepository.save(existingCategory), activeMembers.keySet());
+        return CategoryResponse.from(categoryRepository.save(existingCategory), activeMembers.keySet());
     }
 
     /**
@@ -162,8 +164,7 @@ public class CategoryService {
      * kept when sent back after they left the plan, so a former member's ownership stays dormant
      * until the OWNER clears or changes it (CAT-14). Parent must already be set.
      */
-    private User resolveOwner(Category category, CategoryRequestDto dto, Map<Long, User> activeMembers) {
-        Long ownerId = dto.getOwnerId();
+    private User resolveOwner(Category category, Long ownerId, Map<Long, User> activeMembers) {
         if (ownerId == null) {
             return null;
         }
@@ -193,12 +194,16 @@ public class CategoryService {
      * owner must already be set. While per-member entries exist the plain limit sent is ignored and
      * the stored one cleared, so the category limit is always the sum of the active entries.
      */
-    private void applyLimits(Category category, CategoryRequestDto dto, Map<Long, User> activeMembers) {
-        if (dto.getMemberLimits() != null) {
-            replaceMemberLimits(category, dto.getMemberLimits(), activeMembers);
+    private void applyLimits(
+            Category category,
+            BigDecimal spendingLimit,
+            List<CategoryMemberLimitRequest> memberLimits,
+            Map<Long, User> activeMembers) {
+        if (memberLimits != null) {
+            replaceMemberLimits(category, memberLimits, activeMembers);
         }
         if (category.getMemberLimits().isEmpty()) {
-            category.setSpendingLimit(category.getType() == TransactionType.CREDIT ? null : dto.getSpendingLimit());
+            category.setSpendingLimit(category.getType() == TransactionType.CREDIT ? null : spendingLimit);
             return;
         }
         if (category.getType() == TransactionType.CREDIT) {
@@ -216,31 +221,32 @@ public class CategoryService {
      * member's stored entry is kept when sent back unchanged and deleted when omitted; it can never be
      * created or changed (CAT-13 AC 7, CAT-14).
      */
-    private void replaceMemberLimits(Category category, List<MemberLimitDto> requested, Map<Long, User> activeMembers) {
+    private void replaceMemberLimits(
+            Category category, List<CategoryMemberLimitRequest> requested, Map<Long, User> activeMembers) {
         Map<Long, CategoryMemberLimit> stored = category.getMemberLimits().stream()
                 .collect(Collectors.toMap(entry -> entry.getMember().getId(), Function.identity()));
         Set<Long> kept = new HashSet<>();
-        for (MemberLimitDto request : requested) {
-            Long memberId = request.getMemberId();
+        for (CategoryMemberLimitRequest request : requested) {
+            Long memberId = request.memberId();
             if (!kept.add(memberId)) {
                 throw new CategoryExceptions.CategoryMemberLimitDuplicateMemberException(memberId);
             }
             CategoryMemberLimit existing = stored.get(memberId);
             User member = activeMembers.get(memberId);
             if (member == null) {
-                if (existing == null || existing.getAmount().compareTo(request.getAmount()) != 0) {
+                if (existing == null || existing.getAmount().compareTo(request.amount()) != 0) {
                     throw new CategoryExceptions.CategoryMemberLimitInactiveMemberException(memberId);
                 }
                 continue;
             }
             if (existing != null) {
-                existing.setAmount(request.getAmount());
+                existing.setAmount(request.amount());
                 continue;
             }
             CategoryMemberLimit entry = new CategoryMemberLimit();
             entry.setCategory(category);
             entry.setMember(member);
-            entry.setAmount(request.getAmount());
+            entry.setAmount(request.amount());
             category.getMemberLimits().add(entry);
         }
         category.getMemberLimits()
@@ -258,18 +264,18 @@ public class CategoryService {
      * Resolves and validates the requested parent (two-level hierarchy, CAT-06). Returns null when no
      * parent is requested. {@code self} is null on create.
      */
-    private Category resolveParent(Category self, CategoryRequestDto dto, PlanContext ctx) {
-        if (dto.getParentId() == null) {
+    private Category resolveParent(Category self, Long parentId, TransactionType type, PlanContext ctx) {
+        if (parentId == null) {
             return null;
         }
-        Category parent = findById(dto.getParentId(), ctx);
+        Category parent = findById(parentId, ctx);
         if (self != null && parent.getId().equals(self.getId())) {
             throw new CategoryExceptions.CategoryParentIsItselfException();
         }
         if (parent.getParent() != null) {
             throw new CategoryExceptions.CategoryParentIsChildException(parent.getId());
         }
-        if (parent.getType() != dto.getType()) {
+        if (parent.getType() != type) {
             throw new CategoryExceptions.CategoryParentTypeMismatchException();
         }
         return parent;
@@ -293,11 +299,11 @@ public class CategoryService {
             throw new CategoryExceptions.CategoryHasChildrenException(id);
         }
 
-        CategoryUsageDto usage = usageOf(category);
+        CategoryUsageResponse usage = usageOf(category);
 
         if (usage.inUse() && target == null) {
             throw new CategoryExceptions.CategoryInUseException(
-                    id, usage.getTransactions(), usage.getItems(), usage.getRecurrenceDefinitions());
+                    id, usage.transactions(), usage.items(), usage.recurrenceDefinitions());
         }
         if (usage.inUse()) {
             transactionRepository.reassignCategory(category, target);

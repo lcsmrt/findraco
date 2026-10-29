@@ -2,7 +2,8 @@ package com.lcs.findraco.category.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.response.CategorySpendingDto;
+import com.lcs.findraco.category.response.CategoryMemberSpendingResponse;
+import com.lcs.findraco.category.response.CategorySpendingResponse;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.ItemShareAllocator;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
@@ -41,11 +42,11 @@ import org.springframework.stereotype.Component;
 @Component
 public class CategorySpendingAssembler {
 
-    private static final Comparator<CategorySpendingDto> BY_NAME =
-            Comparator.comparing(CategorySpendingDto::getName, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
+    private static final Comparator<CategorySpendingResponse> BY_NAME =
+            Comparator.comparing(CategorySpendingResponse::name, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
 
-    private static final Comparator<CategorySpendingDto> BY_SPENT_DESC =
-            Comparator.comparing(CategorySpendingDto::getSpent).reversed().thenComparing(BY_NAME);
+    private static final Comparator<CategorySpendingResponse> BY_SPENT_DESC =
+            Comparator.comparing(CategorySpendingResponse::spent).reversed().thenComparing(BY_NAME);
 
     /**
      * Every category of the plan, zero-spend included: DEBIT roots then CREDIT roots, each by name,
@@ -59,7 +60,7 @@ public class CategorySpendingAssembler {
      * @param memberNames     display name by user id, for every member that has spend facts
      * @param memberId        the member filter, or null for the whole plan
      */
-    public List<CategorySpendingDto> assemble(
+    public List<CategorySpendingResponse> assemble(
             List<Object[]> rowsA,
             List<MemberFact> removed,
             List<MemberFact> added,
@@ -69,11 +70,11 @@ public class CategorySpendingAssembler {
             Long memberId) {
         Facts facts = Facts.of(rowsA, removed, added);
         Limits limits = new Limits(activeMemberIds, memberNames, memberId);
-        List<CategorySpendingDto> roots = buildTree(facts, limits, categories, category -> true, BY_NAME);
+        List<CategorySpendingResponse> roots = buildTree(facts, limits, categories, category -> true, BY_NAME);
 
-        List<CategorySpendingDto> result = new ArrayList<>();
-        roots.stream().filter(root -> root.getType() == TransactionType.DEBIT).forEach(result::add);
-        roots.stream().filter(root -> root.getType() != TransactionType.DEBIT).forEach(result::add);
+        List<CategorySpendingResponse> result = new ArrayList<>();
+        roots.stream().filter(root -> root.type() == TransactionType.DEBIT).forEach(result::add);
+        roots.stream().filter(root -> root.type() != TransactionType.DEBIT).forEach(result::add);
         return result;
     }
 
@@ -82,7 +83,7 @@ public class CategorySpendingAssembler {
      * As before the hierarchy, a category is listed when it has spend facts in the period or a limit;
      * a root is also listed when one of its children is.
      */
-    public List<CategorySpendingDto> assembleOverview(
+    public List<CategorySpendingResponse> assembleOverview(
             List<Object[]> rowsA,
             List<MemberFact> removed,
             List<MemberFact> added,
@@ -100,12 +101,12 @@ public class CategorySpendingAssembler {
         return buildTree(facts, limits, debit, listed, BY_SPENT_DESC);
     }
 
-    private static List<CategorySpendingDto> buildTree(
+    private static List<CategorySpendingResponse> buildTree(
             Facts facts,
             Limits limits,
             List<Category> categories,
             Predicate<Category> listed,
-            Comparator<CategorySpendingDto> order) {
+            Comparator<CategorySpendingResponse> order) {
         Set<Long> ids = new HashSet<>();
         categories.forEach(category -> ids.add(category.getId()));
 
@@ -122,9 +123,9 @@ public class CategorySpendingAssembler {
             }
         }
 
-        List<CategorySpendingDto> rootNodes = new ArrayList<>();
+        List<CategorySpendingResponse> rootNodes = new ArrayList<>();
         for (Category root : roots) {
-            List<CategorySpendingDto> childNodes = new ArrayList<>();
+            List<CategorySpendingResponse> childNodes = new ArrayList<>();
             Map<Long, BigDecimal> rolledUp = new LinkedHashMap<>(facts.byMember(root.getId()));
             for (Category child : childrenByParent.getOrDefault(root.getId(), List.of())) {
                 Map<Long, BigDecimal> childSpent = facts.byMember(child.getId());
@@ -143,8 +144,11 @@ public class CategorySpendingAssembler {
     }
 
     /** One row from its spend per member (own for a child, rolled up for a root). */
-    private static CategorySpendingDto node(
-            Category category, Map<Long, BigDecimal> spentByMember, Limits limits, List<CategorySpendingDto> children) {
+    private static CategorySpendingResponse node(
+            Category category,
+            Map<Long, BigDecimal> spentByMember,
+            Limits limits,
+            List<CategorySpendingResponse> children) {
         User owner = category.getParent() == null
                 ? category.getOwner()
                 : category.getParent().getOwner();
@@ -161,18 +165,18 @@ public class CategorySpendingAssembler {
                 memberIds.add(member);
             }
         });
-        List<CategorySpendingDto.Member> members = memberIds.stream()
+        List<CategoryMemberSpendingResponse> members = memberIds.stream()
                 .map(member -> {
                     CategoryMemberLimit entry = entries.get(member);
                     BigDecimal memberSpent = spentByMember.getOrDefault(member, BigDecimal.ZERO);
                     return entry == null
-                            ? new CategorySpendingDto.Member(
+                            ? CategoryMemberSpendingResponse.of(
                                     member,
                                     limits.memberNames().get(member),
                                     memberSpent,
                                     null,
                                     limits.activeMemberIds().contains(member))
-                            : new CategorySpendingDto.Member(
+                            : CategoryMemberSpendingResponse.of(
                                     member,
                                     entry.getMember().getName(),
                                     memberSpent,
@@ -180,24 +184,24 @@ public class CategorySpendingAssembler {
                                     limits.isActive(entry));
                 })
                 .toList();
-        return new CategorySpendingDto(category, null, spent, limits.forRow(category), members, children);
+        return CategorySpendingResponse.of(category, null, spent, limits.forRow(category), members, children);
     }
 
     /**
      * An owned row (CAT-16): the owner's spend against the category limit; every member with a share,
      * owner included, is listed without a limit, so nothing is hidden (UX-04 AC 1).
      */
-    private static CategorySpendingDto ownedNode(
+    private static CategorySpendingResponse ownedNode(
             Category category,
             User owner,
             Map<Long, BigDecimal> spentByMember,
             Limits limits,
-            List<CategorySpendingDto> children) {
+            List<CategorySpendingResponse> children) {
         BigDecimal spent = spentByMember.getOrDefault(owner.getId(), BigDecimal.ZERO);
-        List<CategorySpendingDto.Member> members = spentByMember.entrySet().stream()
+        List<CategoryMemberSpendingResponse> members = spentByMember.entrySet().stream()
                 .filter(share -> share.getValue().signum() != 0)
                 .sorted(Map.Entry.comparingByKey())
-                .map(share -> new CategorySpendingDto.Member(
+                .map(share -> CategoryMemberSpendingResponse.of(
                         share.getKey(),
                         limits.memberNames().get(share.getKey()),
                         share.getValue(),
@@ -205,7 +209,7 @@ public class CategorySpendingAssembler {
                         limits.activeMemberIds().contains(share.getKey())))
                 .toList();
         boolean ownerActive = limits.activeMemberIds().contains(owner.getId());
-        return new CategorySpendingDto(category, ownerActive, spent, limits.forRow(category), members, children);
+        return CategorySpendingResponse.of(category, ownerActive, spent, limits.forRow(category), members, children);
     }
 
     /** Limit rules shared by every row: effective limit, dormancy and the member filter. */

@@ -594,9 +594,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `/v3/api-docs` field names diffed against the BST-02 baseline: identical
-- [ ] Suite green
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `/v3/api-docs` field names diffed against the BST-02 baseline: identical
+- [x] Suite green
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

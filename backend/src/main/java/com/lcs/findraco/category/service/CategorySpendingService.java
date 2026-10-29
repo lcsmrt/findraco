@@ -2,8 +2,8 @@ package com.lcs.findraco.category.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.repository.CategoryRepository;
-import com.lcs.findraco.category.request.CategorySpendingFilterDto;
-import com.lcs.findraco.category.response.CategorySpendingDto;
+import com.lcs.findraco.category.request.CategorySpendingFilter;
+import com.lcs.findraco.category.response.CategorySpendingResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanContext;
@@ -67,14 +67,14 @@ public class CategorySpendingService {
      * topped up first, as the dashboard does, so the tab and the Overview read the same transactions.
      */
     @Transactional(readOnly = true)
-    public List<CategorySpendingDto> getSpending(CategorySpendingFilterDto filter, PlanContext ctx) {
+    public List<CategorySpendingResponse> getSpending(CategorySpendingFilter filter, PlanContext ctx) {
         openEndedSeriesTopUpService.topUp(ctx.getPlan(), LocalDate.now(clock));
-        return compute(ctx.getPlan(), filter.getStartDate(), filter.getEndDate(), null);
+        return compute(ctx.getPlan(), filter.startDate(), filter.endDate(), null);
     }
 
     /** Every category of the plan (DEBIT then CREDIT trees, zero spend included) for the period. */
     @Transactional(readOnly = true)
-    public List<CategorySpendingDto> compute(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
+    public List<CategorySpendingResponse> compute(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
         Facts credit = facts(plan, TransactionType.CREDIT, startDate, endDate, memberId);
         Members members = members(plan, debit, credit);
@@ -90,7 +90,8 @@ public class CategorySpendingService {
 
     /** The Overview breakdown: DEBIT roots with rolled-up spend, children nested. */
     @Transactional(readOnly = true)
-    public List<CategorySpendingDto> computeOverview(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
+    public List<CategorySpendingResponse> computeOverview(
+            Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
         Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
         List<Category> categories = categoryRepository.findAllByPlanWithDetails(plan);
         Members members = members(plan, debit);

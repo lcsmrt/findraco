@@ -31,7 +31,7 @@ import tools.jackson.databind.ObjectMapper;
  * requires-parcels guard are asserted unchanged, as regression coverage for the same code path.
  *
  * <p>{@code generatedThrough} is not (yet) exposed on {@link
- * com.lcs.findraco.transaction.response.RecurrenceDefinitionResponseDto}, so it is asserted by autowiring
+ * com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse}, so it is asserted by autowiring
  * {@link RecurrenceDefinitionRepository} directly and re-fetching the persisted definition — the
  * same escape hatch used by {@code InvitationLifecycleIT}/{@code CsvImportIT} for state the API
  * does not surface.

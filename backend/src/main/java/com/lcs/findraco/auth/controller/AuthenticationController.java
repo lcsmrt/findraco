@@ -1,10 +1,10 @@
 package com.lcs.findraco.auth.controller;
 
-import com.lcs.findraco.auth.request.ForgotPasswordRequestDto;
-import com.lcs.findraco.auth.request.LoginRequestDto;
-import com.lcs.findraco.auth.request.ResetPasswordRequestDto;
-import com.lcs.findraco.auth.response.AuthenticationResponseDto;
-import com.lcs.findraco.auth.response.PasswordResetTokenValidationResponseDto;
+import com.lcs.findraco.auth.request.ForgotPasswordRequest;
+import com.lcs.findraco.auth.request.LoginRequest;
+import com.lcs.findraco.auth.request.ResetPasswordRequest;
+import com.lcs.findraco.auth.response.AuthenticationResponse;
+import com.lcs.findraco.auth.response.PasswordResetTokenValidationResponse;
 import com.lcs.findraco.auth.service.AuthenticationService;
 import com.lcs.findraco.auth.service.PasswordResetService;
 import com.lcs.findraco.auth.service.SessionService;
@@ -41,20 +41,20 @@ public class AuthenticationController {
     @Operation(summary = "Authenticates a user; returns an access token and sets the session cookie")
     @SecurityRequirements
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponseDto> login(@RequestBody @Valid LoginRequestDto dto) {
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid LoginRequest dto) {
         IssuedSession session = authenticationService.authenticate(dto);
 
         return ResponseEntity.ok()
                 .header(
                         HttpHeaders.SET_COOKIE,
                         sessionCookies.issue(session.sessionToken()).toString())
-                .body(new AuthenticationResponseDto(session.accessToken()));
+                .body(new AuthenticationResponse(session.accessToken()));
     }
 
     @Operation(summary = "Renews the session from its cookie; returns a new access token and rotates the cookie")
     @SecurityRequirements
     @PostMapping("/refresh")
-    public ResponseEntity<AuthenticationResponseDto> refresh(
+    public ResponseEntity<AuthenticationResponse> refresh(
             @CookieValue(name = SessionCookies.NAME, required = false) String sessionToken) {
         IssuedSession session = sessionService.rotate(sessionToken);
 
@@ -62,7 +62,7 @@ public class AuthenticationController {
                 .header(
                         HttpHeaders.SET_COOKIE,
                         sessionCookies.issue(session.sessionToken()).toString())
-                .body(new AuthenticationResponseDto(session.accessToken()));
+                .body(new AuthenticationResponse(session.accessToken()));
     }
 
     @Operation(summary = "Signs out this device: revokes the cookie's session, if any, and clears the cookie")
@@ -79,8 +79,8 @@ public class AuthenticationController {
     @Operation(summary = "Emails a password reset link; responds the same whether or not the account exists")
     @SecurityRequirements
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequestDto dto) {
-        passwordResetService.requestReset(dto.getEmail());
+    public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequest dto) {
+        passwordResetService.requestReset(dto.email());
 
         return ResponseEntity.noContent().build();
     }
@@ -88,16 +88,16 @@ public class AuthenticationController {
     @Operation(summary = "Checks whether a password reset link is still valid, without consuming it")
     @SecurityRequirements
     @GetMapping("/reset-password/validate")
-    public ResponseEntity<PasswordResetTokenValidationResponseDto> validateResetToken(@RequestParam String token) {
+    public ResponseEntity<PasswordResetTokenValidationResponse> validateResetToken(@RequestParam String token) {
         boolean valid = passwordResetService.isTokenValid(token);
 
-        return ResponseEntity.ok(new PasswordResetTokenValidationResponseDto(valid));
+        return ResponseEntity.ok(new PasswordResetTokenValidationResponse(valid));
     }
 
     @Operation(summary = "Sets a new password using a password reset link")
     @SecurityRequirements
     @PostMapping("/reset-password")
-    public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequestDto dto) {
+    public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest dto) {
         passwordResetService.resetPassword(dto);
 
         return ResponseEntity.noContent().build();

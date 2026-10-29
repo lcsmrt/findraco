@@ -144,7 +144,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // description carries @NotBlank on TransactionRequestDto: a blank value fails
+        // description carries @NotBlank on CreateTransactionRequest: a blank value fails
         // bean validation before the service is even invoked (MethodArgumentNotValidException -> 400).
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
@@ -162,7 +162,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // ItemDto.amount carries @Positive: a negative item amount fails bean validation.
+        // TransactionItemRequest.amount carries @Positive: a negative item amount fails bean validation.
         // (TransactionService.applyItems also redundantly re-checks this server-side.)
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
@@ -185,8 +185,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // TransactionRequestDto.amount carries @Positive: a negative (or zero) top-level
-        // amount fails bean validation before the service is invoked, same as ItemDto.amount.
+        // CreateTransactionRequest.amount carries @Positive: a negative (or zero) top-level
+        // amount fails bean validation before the service is invoked, same as TransactionItemRequest.amount.
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)

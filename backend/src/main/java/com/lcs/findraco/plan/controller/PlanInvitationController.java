@@ -1,10 +1,10 @@
 package com.lcs.findraco.plan.controller;
 
 import com.lcs.findraco.plan.model.PlanInvitation;
-import com.lcs.findraco.plan.request.InvitationRequestDto;
-import com.lcs.findraco.plan.response.AcceptInvitationResponseDto;
-import com.lcs.findraco.plan.response.InvitationPreviewResponseDto;
-import com.lcs.findraco.plan.response.InvitationResponseDto;
+import com.lcs.findraco.plan.request.CreateInvitationRequest;
+import com.lcs.findraco.plan.response.AcceptInvitationResponse;
+import com.lcs.findraco.plan.response.InvitationPreviewResponse;
+import com.lcs.findraco.plan.response.InvitationResponse;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanInvitationService;
 import com.lcs.findraco.shared.security.CurrentUser;
@@ -30,18 +30,18 @@ public class PlanInvitationController {
 
     @Operation(summary = "Creates an invitation (email or link) for the plan; owner only")
     @PostMapping(PlanRoutes.PLAN_INVITATION)
-    public ResponseEntity<InvitationResponseDto> createInvitation(
-            @RequestBody @Valid InvitationRequestDto dto, PlanContext ctx) {
+    public ResponseEntity<InvitationResponse> createInvitation(
+            @RequestBody @Valid CreateInvitationRequest dto, PlanContext ctx) {
         PlanInvitation invitation =
-                invitationService.createInvite(ctx, dto.getRole(), dto.getType(), dto.getEmail(), dto.getExpiresAt());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new InvitationResponseDto(invitation));
+                invitationService.createInvite(ctx, dto.role(), dto.type(), dto.email(), dto.expiresAt());
+        return ResponseEntity.status(HttpStatus.CREATED).body(InvitationResponse.from(invitation));
     }
 
     @Operation(summary = "Lists a plan's invitations (owner only)")
     @GetMapping(PlanRoutes.PLAN_INVITATION)
-    public ResponseEntity<List<InvitationResponseDto>> listInvitations(PlanContext ctx) {
-        List<InvitationResponseDto> invitations = invitationService.listInvitations(ctx).stream()
-                .map(InvitationResponseDto::new)
+    public ResponseEntity<List<InvitationResponse>> listInvitations(PlanContext ctx) {
+        List<InvitationResponse> invitations = invitationService.listInvitations(ctx).stream()
+                .map(InvitationResponse::from)
                 .toList();
         return ResponseEntity.ok(invitations);
     }
@@ -56,16 +56,16 @@ public class PlanInvitationController {
     @Operation(summary = "Previews an invitation by token before accepting")
     @SecurityRequirements
     @GetMapping(PlanRoutes.INVITATION + "/{token}")
-    public ResponseEntity<InvitationPreviewResponseDto> previewInvitation(@PathVariable String token) {
-        return ResponseEntity.ok(new InvitationPreviewResponseDto(invitationService.preview(token)));
+    public ResponseEntity<InvitationPreviewResponse> previewInvitation(@PathVariable String token) {
+        return ResponseEntity.ok(InvitationPreviewResponse.from(invitationService.preview(token)));
     }
 
     @Operation(summary = "Accepts an invitation by token for the authenticated user")
     @PostMapping(PlanRoutes.INVITATION + "/{token}/accept")
-    public ResponseEntity<AcceptInvitationResponseDto> acceptInvitation(
+    public ResponseEntity<AcceptInvitationResponse> acceptInvitation(
             @PathVariable String token, @CurrentUser User actor) {
         PlanInvitationService.AcceptResult result = invitationService.accept(token, actor);
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
-        return ResponseEntity.status(status).body(new AcceptInvitationResponseDto(result.membership()));
+        return ResponseEntity.status(status).body(AcceptInvitationResponse.from(result.membership()));
     }
 }

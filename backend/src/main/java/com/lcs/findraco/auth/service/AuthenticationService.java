@@ -1,6 +1,6 @@
 package com.lcs.findraco.auth.service;
 
-import com.lcs.findraco.auth.request.LoginRequestDto;
+import com.lcs.findraco.auth.request.LoginRequest;
 import com.lcs.findraco.auth.service.SessionService.IssuedSession;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,9 +21,9 @@ public class AuthenticationService {
 
     /** Checks the credentials and opens a new persistent session for the user. */
     @Transactional
-    public IssuedSession authenticate(LoginRequestDto dto) {
+    public IssuedSession authenticate(LoginRequest dto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
+                new UsernamePasswordAuthenticationToken(dto.email(), dto.password()));
 
         return sessionService.open(((CustomUserDetails) authentication.getPrincipal()).getUser());
     }

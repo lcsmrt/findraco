@@ -1,11 +1,12 @@
 package com.lcs.findraco.plan.controller;
 
 import com.lcs.findraco.plan.model.PlanMembership;
-import com.lcs.findraco.plan.request.PlanRequestDto;
-import com.lcs.findraco.plan.request.TransferOwnershipRequestDto;
-import com.lcs.findraco.plan.request.UpdateMemberRoleRequestDto;
-import com.lcs.findraco.plan.response.PlanMemberResponseDto;
-import com.lcs.findraco.plan.response.PlanResponseDto;
+import com.lcs.findraco.plan.request.CreatePlanRequest;
+import com.lcs.findraco.plan.request.TransferOwnershipRequest;
+import com.lcs.findraco.plan.request.UpdateMemberRoleRequest;
+import com.lcs.findraco.plan.request.UpdatePlanRequest;
+import com.lcs.findraco.plan.response.PlanMemberResponse;
+import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.security.CurrentUser;
 import com.lcs.findraco.shared.web.ApiRoutes;
@@ -31,41 +32,41 @@ public class PlanController {
 
     @Operation(summary = "Creates a new plan owned by the authenticated user")
     @PostMapping
-    public ResponseEntity<PlanResponseDto> createPlan(
-            @RequestBody @Valid PlanRequestDto dto, @CurrentUser User loggedUser) {
-        PlanMembership membership = planService.createPlan(dto.getName(), loggedUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new PlanResponseDto(membership));
+    public ResponseEntity<PlanResponse> createPlan(
+            @RequestBody @Valid CreatePlanRequest dto, @CurrentUser User loggedUser) {
+        PlanMembership membership = planService.createPlan(dto.name(), loggedUser);
+        return ResponseEntity.status(HttpStatus.CREATED).body(PlanResponse.from(membership));
     }
 
     @Operation(summary = "Fetches all plans the authenticated user belongs to")
     @GetMapping
-    public ResponseEntity<List<PlanResponseDto>> getPlans(@CurrentUser User loggedUser) {
-        List<PlanResponseDto> plans = planService.findMembershipsForUser(loggedUser).stream()
-                .map(PlanResponseDto::new)
+    public ResponseEntity<List<PlanResponse>> getPlans(@CurrentUser User loggedUser) {
+        List<PlanResponse> plans = planService.findMembershipsForUser(loggedUser).stream()
+                .map(PlanResponse::from)
                 .toList();
         return ResponseEntity.ok(plans);
     }
 
     @Operation(summary = "Fetches a plan the authenticated user belongs to")
     @GetMapping("/{id}")
-    public ResponseEntity<PlanResponseDto> getPlan(@PathVariable Long id, @CurrentUser User loggedUser) {
-        return ResponseEntity.ok(new PlanResponseDto(planService.getMembership(id, loggedUser)));
+    public ResponseEntity<PlanResponse> getPlan(@PathVariable Long id, @CurrentUser User loggedUser) {
+        return ResponseEntity.ok(PlanResponse.from(planService.getMembership(id, loggedUser)));
     }
 
     @Operation(summary = "Fetches the members of a plan the authenticated user belongs to")
     @GetMapping("/{id}/members")
-    public ResponseEntity<List<PlanMemberResponseDto>> getMembers(@PathVariable Long id, @CurrentUser User loggedUser) {
-        List<PlanMemberResponseDto> members = planService.getMembers(id, loggedUser).stream()
-                .map(PlanMemberResponseDto::new)
+    public ResponseEntity<List<PlanMemberResponse>> getMembers(@PathVariable Long id, @CurrentUser User loggedUser) {
+        List<PlanMemberResponse> members = planService.getMembers(id, loggedUser).stream()
+                .map(PlanMemberResponse::from)
                 .toList();
         return ResponseEntity.ok(members);
     }
 
     @Operation(summary = "Renames a plan (owner only)")
     @PutMapping("/{id}")
-    public ResponseEntity<PlanResponseDto> renamePlan(
-            @PathVariable Long id, @RequestBody @Valid PlanRequestDto dto, @CurrentUser User loggedUser) {
-        return ResponseEntity.ok(new PlanResponseDto(planService.renamePlan(id, dto.getName(), loggedUser)));
+    public ResponseEntity<PlanResponse> renamePlan(
+            @PathVariable Long id, @RequestBody @Valid UpdatePlanRequest dto, @CurrentUser User loggedUser) {
+        return ResponseEntity.ok(PlanResponse.from(planService.renamePlan(id, dto.name(), loggedUser)));
     }
 
     @Operation(summary = "Deletes (soft-delete) a plan (owner only)")
@@ -85,20 +86,20 @@ public class PlanController {
     @Operation(summary = "Transfers plan ownership to another member (owner only)")
     @PostMapping("/{id}/transfer")
     public ResponseEntity<Void> transferOwnership(
-            @PathVariable Long id, @RequestBody @Valid TransferOwnershipRequestDto dto, @CurrentUser User loggedUser) {
-        planService.transferOwnership(id, dto.getNewOwnerUserId(), dto.getPreviousOwnerRole(), loggedUser);
+            @PathVariable Long id, @RequestBody @Valid TransferOwnershipRequest dto, @CurrentUser User loggedUser) {
+        planService.transferOwnership(id, dto.newOwnerUserId(), dto.previousOwnerRole(), loggedUser);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Changes the role of a plan member (owner only)")
     @PutMapping("/{id}/members/{userId}")
-    public ResponseEntity<PlanMemberResponseDto> updateMemberRole(
+    public ResponseEntity<PlanMemberResponse> updateMemberRole(
             @PathVariable Long id,
             @PathVariable Long userId,
-            @RequestBody @Valid UpdateMemberRoleRequestDto dto,
+            @RequestBody @Valid UpdateMemberRoleRequest dto,
             @CurrentUser User loggedUser) {
         return ResponseEntity.ok(
-                new PlanMemberResponseDto(planService.changeMemberRole(id, userId, dto.getRole(), loggedUser)));
+                PlanMemberResponse.from(planService.changeMemberRole(id, userId, dto.role(), loggedUser)));
     }
 
     @Operation(summary = "Removes a member from a plan (owner only)")

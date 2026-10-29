@@ -1,15 +1,16 @@
 package com.lcs.findraco.category.controller;
 
-import com.lcs.findraco.category.request.CategoryFilterDto;
-import com.lcs.findraco.category.request.CategoryRequestDto;
-import com.lcs.findraco.category.request.CategorySpendingFilterDto;
-import com.lcs.findraco.category.response.CategoryResponseDto;
-import com.lcs.findraco.category.response.CategorySpendingDto;
-import com.lcs.findraco.category.response.CategoryUsageDto;
+import com.lcs.findraco.category.request.CategoryFilter;
+import com.lcs.findraco.category.request.CategorySpendingFilter;
+import com.lcs.findraco.category.request.CreateCategoryRequest;
+import com.lcs.findraco.category.request.UpdateCategoryRequest;
+import com.lcs.findraco.category.response.CategoryResponse;
+import com.lcs.findraco.category.response.CategorySpendingResponse;
+import com.lcs.findraco.category.response.CategoryUsageResponse;
 import com.lcs.findraco.category.service.CategoryService;
 import com.lcs.findraco.category.service.CategorySpendingService;
 import com.lcs.findraco.plan.service.PlanContext;
-import com.lcs.findraco.shared.web.PagedResponseDto;
+import com.lcs.findraco.shared.web.PageResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -36,41 +37,41 @@ public class CategoryController {
             summary =
                     "Returns every category of the plan as DEBIT and CREDIT trees with the period's spend and limit usage")
     @GetMapping("/spending")
-    public ResponseEntity<List<CategorySpendingDto>> getSpending(
-            @ParameterObject @ModelAttribute @Valid CategorySpendingFilterDto filter, PlanContext ctx) {
+    public ResponseEntity<List<CategorySpendingResponse>> getSpending(
+            @ParameterObject @ModelAttribute @Valid CategorySpendingFilter filter, PlanContext ctx) {
         return ResponseEntity.ok(categorySpendingService.getSpending(filter, ctx));
     }
 
     @Operation(summary = "Fetches a transaction category by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable Long id, PlanContext ctx) {
+    public ResponseEntity<CategoryResponse> getCategory(@PathVariable Long id, PlanContext ctx) {
         return ResponseEntity.ok(categoryService.getById(id, ctx));
     }
 
     @Operation(summary = "Counts the transactions, items and recurrence definitions that use a transaction category")
     @GetMapping("/{id}/usage")
-    public ResponseEntity<CategoryUsageDto> getCategoryUsage(@PathVariable Long id, PlanContext ctx) {
+    public ResponseEntity<CategoryUsageResponse> getCategoryUsage(@PathVariable Long id, PlanContext ctx) {
         return ResponseEntity.ok(categoryService.getUsage(id, ctx));
     }
 
     @Operation(summary = "Fetches all transaction categories for the plan")
     @GetMapping
-    public ResponseEntity<PagedResponseDto<CategoryResponseDto>> getAllCategories(
-            @ParameterObject @ModelAttribute @Valid CategoryFilterDto filter, PlanContext ctx) {
-        return ResponseEntity.ok(new PagedResponseDto<>(categoryService.findAllByPlanPaged(filter, ctx)));
+    public ResponseEntity<PageResponse<CategoryResponse>> getAllCategories(
+            @ParameterObject @ModelAttribute @Valid CategoryFilter filter, PlanContext ctx) {
+        return ResponseEntity.ok(PageResponse.from(categoryService.findAllByPlanPaged(filter, ctx)));
     }
 
     @Operation(summary = "Creates a new transaction category for the plan")
     @PostMapping
-    public ResponseEntity<CategoryResponseDto> createCategory(
-            @RequestBody @Valid CategoryRequestDto dto, PlanContext ctx) {
+    public ResponseEntity<CategoryResponse> createCategory(
+            @RequestBody @Valid CreateCategoryRequest dto, PlanContext ctx) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(dto, ctx));
     }
 
     @Operation(summary = "Updates a transaction category for the plan")
     @PutMapping("/{id}")
-    public ResponseEntity<CategoryResponseDto> updateCategory(
-            @PathVariable Long id, @RequestBody @Valid CategoryRequestDto dto, PlanContext ctx) {
+    public ResponseEntity<CategoryResponse> updateCategory(
+            @PathVariable Long id, @RequestBody @Valid UpdateCategoryRequest dto, PlanContext ctx) {
         return ResponseEntity.ok(categoryService.update(id, dto, ctx));
     }
 
