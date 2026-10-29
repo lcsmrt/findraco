@@ -19,20 +19,31 @@ Personal-finance app: Spring Boot API (`backend`) + React/TS SPA (`frontend`).
 
 ## Backend (`backend`)
 
+- Package by feature: `com.lcs.findraco.<auth|user|plan|category|transaction|dashboard>.<layer>`, layers
+  `controller`, `service`, `repository`, `model`, `request`, `response`, `exception`, `config` (plus
+  `transaction.importer`); cross-cutting code in `shared.<config|error|openapi|security|web|ratelimit>`.
+  Another feature is reached through its `service`, `model` or `response` only, never its controllers,
+  requests, exceptions or configuration (ArchUnit); the repository reads still crossing features move
+  behind their owner in BST-05.
 - Layered: **controller → service → repository**. Controller resolves identity, delegates one call,
-  wraps in a response DTO — no business logic.
+  wraps in a response record — no business logic.
 - Status: `201` create, `204` delete, `200` read/update (`HttpStatus.CREATED`, not raw `201`).
-- Identity: `PlanContext` for plan-scoped endpoints, `@AuthenticationPrincipal` otherwise. `@Valid` on
-  every body.
+- Identity: values, never entities. `PlanContext(planId, userId, role)` for plan-scoped endpoints (its
+  resolver checks membership, 404 otherwise), `@CurrentUser AuthenticatedUser` otherwise; services take
+  ids and reload what they need in their own transaction. No controller parameter is a JPA entity
+  (ArchUnit). Parameter order: target ids, then the request, identity last. `@Valid` on every body.
 - Services: `@Transactional` (`readOnly` for reads). Ownership mismatch → **not-found (privacy)**, not
   403. Roles via `PlanAuthorization`. Throw typed `XxxExceptions`.
-- DTOs (**no Lombok, no MapStruct**): `XxxRequestDto` with Bean Validation; `XxxResponseDto` immutable,
-  built from the entity; map by hand.
+- DTOs (**no Lombok, no MapStruct**) are records, one public type per file, nothing nested:
+  `CreateXxxRequest`/`UpdateXxxRequest` (or `XxxFilter` for query parameters) with Bean Validation in
+  `request/`; `XxxResponse`/`XxxSummaryResponse` in `response/`, built by `static from(entity)`. Simple
+  names are unique across features (ArchUnit).
 - Exceptions: nested in `XxxExceptions`, one per semantic, each mapped in `GlobalExceptionHandler` with an
   explicit status. Error bodies use RFC 7807 `ProblemDetail` (own `type` URIs, field errors under an
   `errors` extension). _ProblemDetail migration pending — decided in `.specs/features/backend-standards/context.md` S15._
-- Constructor injection only (no field `@Autowired`). Routes as `ApiRoutes` constants. All user-data
-  queries plan-scoped.
+- Constructor injection only (no field `@Autowired`). Routes as constants in the feature's
+  `controller/XxxRoutes` (`ApiRoutes` holds `BASE` and `PLAN`); a route open without authentication is a
+  `PublicEndpoints` bean declared by its feature. All user-data queries plan-scoped.
 - Tests: unit `*Test` / integration `*IT` — see `.specs/codebase/TESTING.md`.
 - Skills: `/backend-endpoint`, `/backend-exceptions`.
 

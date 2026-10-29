@@ -1,13 +1,11 @@
 package com.lcs.findraco.auth.config;
 
 import com.lcs.findraco.auth.controller.AuthRoutes;
-import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.shared.error.JsonAuthenticationEntryPoint;
-import com.lcs.findraco.user.controller.UserRoutes;
+import com.lcs.findraco.shared.security.PublicEndpoints;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,16 +31,19 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
     private final CorsProperties corsProperties;
+    private final List<PublicEndpoints> featurePublicEndpoints;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             UserDetailsService userDetailsService,
             JsonAuthenticationEntryPoint authenticationEntryPoint,
-            CorsProperties corsProperties) {
+            CorsProperties corsProperties,
+            List<PublicEndpoints> featurePublicEndpoints) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
         this.corsProperties = corsProperties;
+        this.featurePublicEndpoints = List.copyOf(featurePublicEndpoints);
     }
 
     @Bean
@@ -50,23 +51,24 @@ public class SecurityConfig {
 
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, UserRoutes.USER)
-                        .permitAll()
-                        .requestMatchers(HttpMethod.GET, PlanRoutes.INVITATION + "/*")
-                        .permitAll()
-                        .requestMatchers(
-                                AuthRoutes.AUTH + "/login",
-                                AuthRoutes.AUTH + "/refresh",
-                                AuthRoutes.AUTH + "/logout",
-                                AuthRoutes.AUTH + "/forgot-password",
-                                AuthRoutes.AUTH + "/reset-password",
-                                AuthRoutes.AUTH + "/reset-password/validate",
-                                "/swagger-ui/**",
-                                "/swagger-ui.html",
-                                "/v3/api-docs/**")
-                        .permitAll()
-                        .anyRequest()
-                        .authenticated())
+                .authorizeHttpRequests(request -> {
+                    featurePublicEndpoints.forEach(endpoints -> request.requestMatchers(
+                                    endpoints.method(), endpoints.patterns().toArray(String[]::new))
+                            .permitAll());
+                    request.requestMatchers(
+                                    AuthRoutes.AUTH + "/login",
+                                    AuthRoutes.AUTH + "/refresh",
+                                    AuthRoutes.AUTH + "/logout",
+                                    AuthRoutes.AUTH + "/forgot-password",
+                                    AuthRoutes.AUTH + "/reset-password",
+                                    AuthRoutes.AUTH + "/reset-password/validate",
+                                    "/swagger-ui/**",
+                                    "/swagger-ui.html",
+                                    "/v3/api-docs/**")
+                            .permitAll()
+                            .anyRequest()
+                            .authenticated();
+                })
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -638,9 +638,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Each rule fails once on a planted violation (checked, reverted)
-- [ ] Green on the code
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Each rule fails once on a planted violation (checked, reverted)
+- [x] Green on the code
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: build
@@ -730,6 +730,7 @@ T73 → T74 → T75 → T76 → T77 → T78
 - [ ] `ProblemProducersIT`: advice, 401, 403 and a filter all answer `application/problem+json` with a URN `type` and `requestId`
 - [ ] A field error answers 422 with `code` = constraint name
 - [ ] Malformed JSON answers 400
+- [ ] `ArchitectureTest`: `shared` depends on no feature (`noClasses` in `..shared..` depend on any feature package), green once `GlobalExceptionHandler` no longer imports feature exceptions or `SessionCookies` (handed off by T18)
 - [ ] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
@@ -865,6 +866,7 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 - [ ] `CategoryDeleteIT` green
 - [ ] Adding `save` to the dashboard repository fails ArchUnit (checked, reverted)
+- [ ] `ArchitectureTest.CROSS_FEATURE_LAYERS` drops `repository`: no class depends on another feature's repository package, and the S2 read-only repository rule above covers repositories over another feature's entity (handed off by T18; the category usage counts move behind `TransactionService` too)
 - [ ] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
@@ -1067,6 +1069,7 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 - [ ] Snapshot diff shows only these changes
 - [ ] Frontend build green
+- [ ] `ArchitectureTest` cross-feature rule: another feature's `response` is reachable only from a `response` package (a response embedding another feature's response, S10); green once `DashboardService` no longer reads `CategorySpendingResponse` (handed off by T18)
 - [ ] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration

@@ -23,6 +23,8 @@ public interface PlanMembershipRepository extends JpaRepository<PlanMembership, 
 
     boolean existsByPlanAndUser(Plan plan, User user);
 
+    boolean existsByPlan_IdAndUser_Id(long planId, long userId);
+
     List<PlanMembership> findAllByPlan(Plan plan);
 
     long countByPlanAndRole(Plan plan, PlanRole role);

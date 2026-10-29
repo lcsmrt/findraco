@@ -80,6 +80,17 @@ public class PlanService {
                 .orElseThrow(() -> new PlanExceptions.NotAMemberException(planId));
     }
 
+    /** Every membership of the plan, for features that read the plan's members (no requester check). */
+    @Transactional(readOnly = true)
+    public List<PlanMembership> findMemberships(long planId) {
+        return membershipRepository.findAllByPlan(planRepository.getReferenceById(planId));
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isMember(long planId, long userId) {
+        return membershipRepository.existsByPlan_IdAndUser_Id(planId, userId);
+    }
+
     @Transactional(readOnly = true)
     public List<PlanMembership> getMembers(long planId, long requesterId) {
         PlanMembership requesterMembership = getMembership(planId, requesterId);

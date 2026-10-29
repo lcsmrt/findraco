@@ -6,6 +6,8 @@ import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import com.lcs.findraco.user.request.CreateUserRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -40,6 +42,21 @@ public class UserService {
         User savedUser = userRepository.save(user);
         planService.provisionDefaultPlan(savedUser);
         return savedUser;
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<User> findById(long userId) {
+        return userRepository.findById(userId);
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findAllById(Collection<Long> userIds) {
+        return userRepository.findAllById(userIds);
     }
 
     /** The authenticated caller, loaded in full: the token proves the account exists. */

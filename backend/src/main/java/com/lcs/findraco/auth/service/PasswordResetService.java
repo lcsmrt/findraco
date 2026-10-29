@@ -1,11 +1,10 @@
 package com.lcs.findraco.auth.service;
 
+import com.lcs.findraco.auth.exception.AuthenticationExceptions;
 import com.lcs.findraco.auth.model.PasswordResetToken;
 import com.lcs.findraco.auth.repository.PasswordResetTokenRepository;
 import com.lcs.findraco.auth.request.ResetPasswordRequest;
 import com.lcs.findraco.shared.config.AppProperties;
-import com.lcs.findraco.user.exception.UserExceptions;
-import com.lcs.findraco.user.repository.UserRepository;
 import com.lcs.findraco.user.service.UserService;
 import java.time.Clock;
 import java.time.Duration;
@@ -19,7 +18,6 @@ public class PasswordResetService {
 
     public static final Duration TOKEN_TTL = Duration.ofMinutes(60);
 
-    private final UserRepository userRepository;
     private final PasswordResetTokenRepository tokenRepository;
     private final UserService userService;
     private final EmailService emailService;
@@ -28,14 +26,12 @@ public class PasswordResetService {
     private final String appUrl;
 
     public PasswordResetService(
-            UserRepository userRepository,
             PasswordResetTokenRepository tokenRepository,
             UserService userService,
             EmailService emailService,
             SessionService sessionService,
             Clock clock,
             AppProperties appProperties) {
-        this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.userService = userService;
         this.emailService = emailService;
@@ -51,7 +47,7 @@ public class PasswordResetService {
      */
     @Transactional
     public void requestReset(String email) {
-        userRepository.findByEmail(email).ifPresent(user -> {
+        userService.findByEmail(email).ifPresent(user -> {
             tokenRepository.deleteAllByUser(user);
 
             String token = OpaqueTokens.generate();
@@ -74,8 +70,8 @@ public class PasswordResetService {
     /** Sets the new password, consumes the token (single use) and signs the user out everywhere. */
     @Transactional
     public void resetPassword(ResetPasswordRequest dto) {
-        PasswordResetToken resetToken =
-                findValidToken(dto.token()).orElseThrow(UserExceptions.InvalidPasswordResetTokenException::new);
+        PasswordResetToken resetToken = findValidToken(dto.token())
+                .orElseThrow(AuthenticationExceptions.InvalidPasswordResetTokenException::new);
 
         userService.changePassword(resetToken.getUser(), dto.password());
         tokenRepository.deleteAllByUser(resetToken.getUser());

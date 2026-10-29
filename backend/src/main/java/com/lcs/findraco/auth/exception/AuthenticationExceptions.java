@@ -8,4 +8,10 @@ public class AuthenticationExceptions {
             super("Authentication required.");
         }
     }
+
+    public static class InvalidPasswordResetTokenException extends RuntimeException {
+        public InvalidPasswordResetTokenException() {
+            super("This password reset link is invalid or has expired.");
+        }
+    }
 }

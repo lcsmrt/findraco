@@ -14,9 +14,9 @@ import com.lcs.findraco.category.response.CategoryResponse;
 import com.lcs.findraco.category.response.CategoryUsageResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanMembership;
-import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
+import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionItemRepository;
@@ -44,7 +44,7 @@ public class CategoryService {
     private final TransactionItemRepository transactionItemRepository;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final CategoryMemberLimitRepository memberLimitRepository;
-    private final PlanMembershipRepository planMembershipRepository;
+    private final PlanService planService;
     private final PlanAuthorization planAuthorization;
     private final EntityManager entityManager;
 
@@ -54,7 +54,7 @@ public class CategoryService {
             TransactionItemRepository transactionItemRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             CategoryMemberLimitRepository memberLimitRepository,
-            PlanMembershipRepository planMembershipRepository,
+            PlanService planService,
             PlanAuthorization planAuthorization,
             EntityManager entityManager) {
         this.categoryRepository = categoryRepository;
@@ -62,7 +62,7 @@ public class CategoryService {
         this.transactionItemRepository = transactionItemRepository;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.memberLimitRepository = memberLimitRepository;
-        this.planMembershipRepository = planMembershipRepository;
+        this.planService = planService;
         this.planAuthorization = planAuthorization;
         this.entityManager = entityManager;
     }
@@ -191,7 +191,7 @@ public class CategoryService {
 
     /** Active members of the plan by user id. A user without a membership row is a former member (CAT-14). */
     private Map<Long, User> activeMembers(Plan plan) {
-        return planMembershipRepository.findAllByPlan(plan).stream()
+        return planService.findMemberships(plan.getId()).stream()
                 .map(PlanMembership::getUser)
                 .collect(Collectors.toMap(User::getId, Function.identity()));
     }

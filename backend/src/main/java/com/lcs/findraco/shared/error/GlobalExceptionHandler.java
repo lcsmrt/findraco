@@ -184,9 +184,9 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }
 
-    @ExceptionHandler(UserExceptions.InvalidPasswordResetTokenException.class)
+    @ExceptionHandler(AuthenticationExceptions.InvalidPasswordResetTokenException.class)
     public ResponseEntity<ErrorResponseDto> handleInvalidPasswordResetToken(
-            UserExceptions.InvalidPasswordResetTokenException exception, HttpServletRequest request) {
+            AuthenticationExceptions.InvalidPasswordResetTokenException exception, HttpServletRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
     }

@@ -1,7 +1,7 @@
 package com.lcs.findraco.auth.service;
 
 import com.lcs.findraco.user.model.User;
-import com.lcs.findraco.user.repository.UserRepository;
+import com.lcs.findraco.user.service.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,10 +10,10 @@ import org.springframework.stereotype.Service;
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UserService userService;
 
-    public CustomUserDetailsService(UserRepository userRepository) {
-        this.userRepository = userRepository;
+    public CustomUserDetailsService(UserService userService) {
+        this.userService = userService;
     }
 
     @Override
@@ -23,7 +23,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         // BadCredentialsException — identical 401 to a wrong password. A custom exception would
         // instead be wrapped in InternalAuthenticationServiceException (HTTP 500) and, by responding
         // differently, would let a caller enumerate which emails are registered.
-        User user = userRepository
+        User user = userService
                 .findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found for email " + email + "."));
 

@@ -3,9 +3,9 @@ package com.lcs.findraco.transaction.service;
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.service.CategoryService;
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
+import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
@@ -29,7 +29,7 @@ import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
 import com.lcs.findraco.user.model.User;
-import com.lcs.findraco.user.repository.UserRepository;
+import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -66,8 +66,8 @@ public class TransactionService {
     private final RecurringTransactionGenerator recurringTransactionGenerator;
     private final PlanAuthorization planAuthorization;
     private final SplitResolver splitResolver;
-    private final PlanMembershipRepository planMembershipRepository;
-    private final UserRepository userRepository;
+    private final PlanService planService;
+    private final UserService userService;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final SeriesRegenerator seriesRegenerator;
     private final EntityManager entityManager;
@@ -79,8 +79,8 @@ public class TransactionService {
             RecurringTransactionGenerator recurringTransactionGenerator,
             PlanAuthorization planAuthorization,
             SplitResolver splitResolver,
-            PlanMembershipRepository planMembershipRepository,
-            UserRepository userRepository,
+            PlanService planService,
+            UserService userService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             SeriesRegenerator seriesRegenerator,
             EntityManager entityManager) {
@@ -90,8 +90,8 @@ public class TransactionService {
         this.recurringTransactionGenerator = recurringTransactionGenerator;
         this.planAuthorization = planAuthorization;
         this.splitResolver = splitResolver;
-        this.planMembershipRepository = planMembershipRepository;
-        this.userRepository = userRepository;
+        this.planService = planService;
+        this.userService = userService;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.seriesRegenerator = seriesRegenerator;
         this.entityManager = entityManager;
@@ -237,9 +237,9 @@ public class TransactionService {
             if (!seenMemberIds.add(input.memberId())) {
                 throw new IllegalArgumentException("Duplicate participant in transaction.");
             }
-            User member = userRepository
+            User member = userService
                     .findById(input.memberId())
-                    .filter(u -> planMembershipRepository.existsByPlanAndUser(plan(ctx), u))
+                    .filter(u -> planService.isMember(ctx.planId(), u.getId()))
                     .orElseThrow(() -> new IllegalArgumentException("Participant is not a member of the plan."));
             membersById.put(member.getId(), member);
             resolverInputs.add(new SplitResolver.ParticipantInput(member.getId(), input.shareAmount()));

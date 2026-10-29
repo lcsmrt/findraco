@@ -5,15 +5,15 @@ import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.category.request.CategorySpendingFilter;
 import com.lcs.findraco.category.response.CategorySpendingResponse;
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanContext;
+import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.ItemShareAllocator;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.Allocation;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
-import com.lcs.findraco.user.repository.UserRepository;
+import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -37,8 +37,8 @@ public class CategorySpendingService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
-    private final PlanMembershipRepository planMembershipRepository;
-    private final UserRepository userRepository;
+    private final PlanService planService;
+    private final UserService userService;
     private final ItemShareAllocator itemShareAllocator;
     private final CategorySpendingAssembler assembler;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
@@ -48,8 +48,8 @@ public class CategorySpendingService {
     public CategorySpendingService(
             TransactionRepository transactionRepository,
             CategoryRepository categoryRepository,
-            PlanMembershipRepository planMembershipRepository,
-            UserRepository userRepository,
+            PlanService planService,
+            UserService userService,
             ItemShareAllocator itemShareAllocator,
             CategorySpendingAssembler assembler,
             OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
@@ -57,8 +57,8 @@ public class CategorySpendingService {
             EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
-        this.planMembershipRepository = planMembershipRepository;
-        this.userRepository = userRepository;
+        this.planService = planService;
+        this.userService = userService;
         this.itemShareAllocator = itemShareAllocator;
         this.assembler = assembler;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
@@ -121,7 +121,7 @@ public class CategorySpendingService {
     private Members members(Plan plan, Facts... facts) {
         Map<Long, String> names = new HashMap<>();
         Set<Long> activeIds = new HashSet<>();
-        planMembershipRepository.findAllByPlan(plan).forEach(membership -> {
+        planService.findMemberships(plan.getId()).forEach(membership -> {
             activeIds.add(membership.getUser().getId());
             names.put(membership.getUser().getId(), membership.getUser().getName());
         });
@@ -134,7 +134,7 @@ public class CategorySpendingService {
         missing.removeAll(names.keySet());
         missing.remove(null);
         if (!missing.isEmpty()) {
-            userRepository.findAllById(missing).forEach(user -> names.put(user.getId(), user.getName()));
+            userService.findAllById(missing).forEach(user -> names.put(user.getId(), user.getName()));
         }
         return new Members(activeIds, names);
     }
