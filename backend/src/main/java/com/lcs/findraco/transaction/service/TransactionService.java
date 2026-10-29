@@ -164,9 +164,12 @@ public class TransactionService {
                         PageRequest.of(filter.page(), filter.size(), Sort.by(direction, sortBy.name()));
                 };
 
-        return transactionRepository
-                .findAll(Specification.allOf(specs), pageable)
-                .map(TransactionResponse::from);
+        Page<Transaction> page = transactionRepository.findAll(Specification.allOf(specs), pageable);
+        if (page.hasContent()) {
+            transactionRepository.fetchParticipants(page.getContent());
+            transactionRepository.fetchItems(page.getContent());
+        }
+        return page.map(TransactionResponse::from);
     }
 
     @Transactional

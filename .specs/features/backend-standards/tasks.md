@@ -919,8 +919,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] 5 and 20 rows issue the same number of statements
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] 5 and 20 rows issue the same number of statements
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build

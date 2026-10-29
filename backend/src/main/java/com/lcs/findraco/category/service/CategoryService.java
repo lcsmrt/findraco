@@ -102,9 +102,11 @@ public class CategoryService {
                 CategorySpecification.typeEquals(filter.type()));
 
         Set<Long> activeMemberIds = activeMembers(plan(ctx)).keySet();
-        return categoryRepository
-                .findAll(spec, pageable)
-                .map(category -> CategoryResponse.from(category, activeMemberIds));
+        Page<Category> page = categoryRepository.findAll(spec, pageable);
+        if (page.hasContent()) {
+            categoryRepository.fetchMemberLimits(page.getContent());
+        }
+        return page.map(category -> CategoryResponse.from(category, activeMemberIds));
     }
 
     @Transactional
