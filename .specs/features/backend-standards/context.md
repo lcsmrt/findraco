@@ -330,7 +330,7 @@ Backend coding standards in `finsight`: how each kind of backend code is structu
 1. **Skills (G4).** `backend-endpoint` and `backend-exceptions` are rewritten with the real names (`PlanContext`, `PlanAuthorization`, `ApiRoutes`), describing only what exists, each rule tagged with what checks it (ArchUnit, test, review). New: `backend-testing` (S8) and one skill for structure, persistence and migrations; short Security and Logging sections. Same shape as the five frontend skills.
 2. **Docs (G5).** One pass over the six stale docs (~30 old identifiers; CONCERNS' "no migration tool", TESTING's tunnel). Docs point to folders instead of listing files.
 3. **Dead code (G6).** `backend/bin/` (17 tracked `.class` files of `expensesmanager`), unused finders and the duplicated `findAllByPlan` go; one jjwt version property; `pom.xml` comments in English.
-4. **One name per domain, code and database.** The package name is the domain name: `Category*` and `Transaction*` replace `FinancialTransactionCategory*` and `FinancialTransaction*`. Tables `financial_transactions` → `transactions`, `financial_transaction_categories` → `categories`; their sequences, primary keys, checks, foreign keys and indexes renamed to the S9 convention (`pk_transactions`, `ck_transactions_type`, `fk_transactions_categories`, `idx_...`). Routes unchanged; JSON unchanged.
+4. **One name per domain, code and database.** The package name is the domain name: `Category*` and `Transaction*` replace `FinancialTransactionCategory*` and `FinancialTransaction*`. Tables `financial_transactions` → `transactions`, `financial_transaction_categories` → `categories`; their sequences, primary keys, checks, foreign keys and indexes renamed to the S9 convention (`pk_transactions`, `ck_transactions_type`, `fk_transactions_categories`, `idx_...`). JSON unchanged; routes: see the amendment below.
    - One rename migration, in the same slice as S1 and S10 (they already touch every one of these files). `ALTER ... RENAME` is metadata only, instant and transactional; references are by internal id, so nothing breaks inside the database. Single instance and Flyway before start: no window with old code on new names. The migration checks the old names exist and aborts otherwise (S9); `pg_dump` before the deploy.
    - Java side: `@Table` on two entities and the two constraint/index names the code quotes; no native queries.
    - Frontend: generated type names change (`FinancialTransactionResponse` → `TransactionResponse`), guided by the compiler.
@@ -338,6 +338,7 @@ Backend coding standards in `finsight`: how each kind of backend code is structu
 - Rejected: (b) rename `Category*` only (leaves `FinancialTransaction` as the exception); (c) accept the mix; (d) code only, tables untouched (user, 2026-10-29: "consistency" includes the database).
 - Residual cost: near zero inside the S1/S10 slice; one migration. Nothing outside the app references these names (user confirmed). Reversible by a forward migration.
 - User, 2026-10-29: adopted, tables included.
+- Amended 2026-10-29 (user, at spec review): routes follow too. `/financial-transaction` → `/transaction`, `/financial-transaction-category` → `/category`; the old paths answer 404 (no alias: the web is the only client). Same slice as the code and table renames.
 
 ### S25 — A series remembers its skipped dates (audit H8)
 
