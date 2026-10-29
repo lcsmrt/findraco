@@ -22,7 +22,7 @@ class HarnessSmokeIT extends AbstractIntegrationTest {
     private DataSource dataSource;
 
     @Test
-    void bootsAgainstTheDevDatabaseWithTheFlywayChainApplied() {
+    void bootsAgainstTheContainerWithTheFlywayChainApplied() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         Integer failedMigrations = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM flyway_schema_history WHERE success = false", Integer.class);
