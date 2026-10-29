@@ -1,5 +1,6 @@
 package com.lcs.findraco.category;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -17,6 +18,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -97,20 +99,21 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
 
     // AC 2
     @Test
-    void parentThatIsItselfAChildIsRejectedWith400() throws Exception {
+    void parentThatIsItselfAChildIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
         Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
 
-        create(plan, owner, body("DEBIT", "Pizza", delivery.getId())).andExpect(status().isBadRequest());
+        create(plan, owner, body("DEBIT", "Pizza", delivery.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-parent-is-subcategory"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).hasSize(2);
     }
 
     // AC 3
     @Test
-    void categoryWithChildrenGivenAParentIsRejectedWith400() throws Exception {
+    void categoryWithChildrenGivenAParentIsRejectedWith409() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
@@ -118,7 +121,7 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
         Category essentials = fixtures.aCategory(plan, TransactionType.DEBIT, "Essentials");
 
         update(plan, owner, food.getId(), body("DEBIT", "Food", essentials.getId()))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.CONFLICT, "category-subcategories-block-parent"));
 
         assertThat(categoryRepository.findById(food.getId()).orElseThrow().getParent())
                 .isNull();
@@ -126,12 +129,13 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
 
     // State-transition integrity (CAT-06): a category cannot be its own parent.
     @Test
-    void categoryGivenItselfAsParentIsRejectedWith400() throws Exception {
+    void categoryGivenItselfAsParentIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
 
-        update(plan, owner, food.getId(), body("DEBIT", "Food", food.getId())).andExpect(status().isBadRequest());
+        update(plan, owner, food.getId(), body("DEBIT", "Food", food.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-parent-is-itself"));
 
         assertThat(categoryRepository.findById(food.getId()).orElseThrow().getParent())
                 .isNull();
@@ -139,14 +143,16 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
 
     // AC 4
     @Test
-    void parentOfDifferentTypeIsRejectedWith400() throws Exception {
+    void parentOfDifferentTypeIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary");
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
 
-        create(plan, owner, body("DEBIT", "Delivery", salary.getId())).andExpect(status().isBadRequest());
-        update(plan, owner, food.getId(), body("DEBIT", "Food", salary.getId())).andExpect(status().isBadRequest());
+        create(plan, owner, body("DEBIT", "Delivery", salary.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-parent-type-mismatch"));
+        update(plan, owner, food.getId(), body("DEBIT", "Food", salary.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-parent-type-mismatch"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).hasSize(2);
         assertThat(categoryRepository.findById(food.getId()).orElseThrow().getParent())
@@ -185,13 +191,14 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
 
     // AC 6
     @Test
-    void typeChangeOnCategoryWithChildrenIsRejectedWith400() throws Exception {
+    void typeChangeOnCategoryWithChildrenIsRejectedWith409() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
         fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
 
-        update(plan, owner, food.getId(), body("CREDIT", "Food", null)).andExpect(status().isBadRequest());
+        update(plan, owner, food.getId(), body("CREDIT", "Food", null))
+                .andExpect(problem(HttpStatus.CONFLICT, "category-subcategories-block-type-change"));
 
         assertThat(categoryRepository.findById(food.getId()).orElseThrow().getType())
                 .isEqualTo(TransactionType.DEBIT);

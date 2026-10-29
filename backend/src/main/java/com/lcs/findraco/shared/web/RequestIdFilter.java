@@ -25,23 +25,44 @@ public class RequestIdFilter extends OncePerRequestFilter {
     public static final String HEADER = "X-Request-Id";
     public static final String MDC_KEY = "requestId";
 
+    /** Keeps the id for the error dispatch, which runs after the first pass cleared the MDC. */
+    private static final String ATTRIBUTE = RequestIdFilter.class.getName() + ".requestId";
+
     /** Anything else (spaces, line breaks, markup) could forge or break a log line. */
     private static final Pattern ACCEPTED = Pattern.compile("[A-Za-z0-9-]{1,64}");
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        String incoming = request.getHeader(HEADER);
-        String requestId = incoming != null && ACCEPTED.matcher(incoming).matches()
-                ? incoming
-                : UUID.randomUUID().toString();
+        String requestId = request.getAttribute(ATTRIBUTE) instanceof String known ? known : newRequestId(request);
 
         MDC.put(MDC_KEY, requestId);
+        request.setAttribute(ATTRIBUTE, requestId);
         response.setHeader(HEADER, requestId);
         try {
             chain.doFilter(request, response);
         } finally {
             MDC.remove(MDC_KEY);
         }
+    }
+
+    /** The error page answers a problem carrying the same id as the request that failed. */
+    @Override
+    protected boolean shouldNotFilterErrorDispatch() {
+        return false;
+    }
+
+    @Override
+    protected void doFilterNestedErrorDispatch(
+            HttpServletRequest request, HttpServletResponse response, FilterChain chain)
+            throws ServletException, IOException {
+        doFilterInternal(request, response, chain);
+    }
+
+    private static String newRequestId(HttpServletRequest request) {
+        String incoming = request.getHeader(HEADER);
+        return incoming != null && ACCEPTED.matcher(incoming).matches()
+                ? incoming
+                : UUID.randomUUID().toString();
     }
 }

@@ -167,8 +167,10 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 objectMapper.readTree(wrongPassword.getResponse().getContentAsString());
         JsonNode unknownEmailBody =
                 objectMapper.readTree(unknownEmail.getResponse().getContentAsString());
-        assertThat(unknownEmailBody.get("message").asString())
-                .isEqualTo(wrongPasswordBody.get("message").asString());
+        assertThat(unknownEmailBody.get("type").asString())
+                .isEqualTo(wrongPasswordBody.get("type").asString());
+        assertThat(unknownEmailBody.get("detail").asString())
+                .isEqualTo(wrongPasswordBody.get("detail").asString());
     }
 
     @Test
@@ -212,14 +214,14 @@ class AuthenticationIT extends AbstractIntegrationTest {
     void requestWithoutTokenIsRejectedForProtectedEndpoint() throws Exception {
         mockMvc.perform(get(ApiRoutes.PLAN))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Authentication required."));
+                .andExpect(jsonPath("$.type").value("urn:findraco:problem:unauthenticated"));
     }
 
     @Test
     void malformedTokenIsRejectedWith401() throws Exception {
         mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Authentication required."));
+                .andExpect(jsonPath("$.type").value("urn:findraco:problem:unauthenticated"));
     }
 
     @Test
@@ -235,7 +237,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
         mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + forged))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Authentication required."));
+                .andExpect(jsonPath("$.type").value("urn:findraco:problem:unauthenticated"));
     }
 
     @Test
@@ -251,7 +253,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
         mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + expired))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Authentication required."));
+                .andExpect(jsonPath("$.type").value("urn:findraco:problem:unauthenticated"));
     }
 
     @Test

@@ -1,7 +1,9 @@
 package com.lcs.findraco.auth.config;
 
 import com.lcs.findraco.auth.controller.AuthRoutes;
-import com.lcs.findraco.shared.error.JsonAuthenticationEntryPoint;
+import com.lcs.findraco.shared.error.ProblemAccessDeniedHandler;
+import com.lcs.findraco.shared.error.ProblemAuthenticationEntryPoint;
+import com.lcs.findraco.shared.error.ProblemErrorController;
 import com.lcs.findraco.shared.security.PublicEndpoints;
 import com.lcs.findraco.shared.web.RequestIdFilter;
 import java.util.List;
@@ -30,19 +32,22 @@ public class SecurityConfig {
 
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    private final JsonAuthenticationEntryPoint authenticationEntryPoint;
+    private final ProblemAuthenticationEntryPoint authenticationEntryPoint;
+    private final ProblemAccessDeniedHandler accessDeniedHandler;
     private final CorsProperties corsProperties;
     private final List<PublicEndpoints> featurePublicEndpoints;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             UserDetailsService userDetailsService,
-            JsonAuthenticationEntryPoint authenticationEntryPoint,
+            ProblemAuthenticationEntryPoint authenticationEntryPoint,
+            ProblemAccessDeniedHandler accessDeniedHandler,
             CorsProperties corsProperties,
             List<PublicEndpoints> featurePublicEndpoints) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.accessDeniedHandler = accessDeniedHandler;
         this.corsProperties = corsProperties;
         this.featurePublicEndpoints = List.copyOf(featurePublicEndpoints);
     }
@@ -65,12 +70,17 @@ public class SecurityConfig {
                                     AuthRoutes.AUTH + "/reset-password/validate",
                                     "/swagger-ui/**",
                                     "/swagger-ui.html",
-                                    "/v3/api-docs/**")
+                                    "/v3/api-docs/**",
+                                    // The error page renders a failure that happened before or outside
+                                    // a controller; behind authentication it would turn into a 401.
+                                    ProblemErrorController.PATH)
                             .permitAll()
                             .anyRequest()
                             .authenticated();
                 })
-                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint(authenticationEntryPoint)
+                        .accessDeniedHandler(accessDeniedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();

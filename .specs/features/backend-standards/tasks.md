@@ -727,11 +727,11 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `ProblemProducersIT`: advice, 401, 403 and a filter all answer `application/problem+json` with a URN `type` and `requestId`
-- [ ] A field error answers 422 with `code` = constraint name
-- [ ] Malformed JSON answers 400
-- [ ] `ArchitectureTest`: `shared` depends on no feature (`noClasses` in `..shared..` depend on any feature package), green once `GlobalExceptionHandler` no longer imports feature exceptions or `SessionCookies` (handed off by T18)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `ProblemProducersIT`: advice, 401, 403 and a filter all answer `application/problem+json` with a URN `type` and `requestId`
+- [x] A field error answers 422 with `code` = constraint name
+- [x] Malformed JSON answers 400
+- [x] `ArchitectureTest`: `shared` depends on no feature (`noClasses` in `..shared..` depend on any feature package), green once `GlobalExceptionHandler` no longer imports feature exceptions or `SessionCookies` (handed off by T18)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

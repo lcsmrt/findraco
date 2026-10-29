@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -19,6 +20,7 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
@@ -129,7 +131,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                 "Groceries",
                                 owner,
                                 List.of(Map.of("description", "Too much", "amount", new BigDecimal("150.00"))))))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "items-exceed-amount"));
 
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
         assertThat(persisted.get("items")).isEmpty();
@@ -150,7 +152,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("DEBIT", "100.00", "   ", owner, List.of())))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
     }
 
     @Test
@@ -173,7 +175,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                 "Groceries",
                                 owner,
                                 List.of(Map.of("description", "Refund-ish", "amount", new BigDecimal("-10.00"))))))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
     }
 
     @Test
@@ -191,7 +193,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("DEBIT", "-50.00", "Groceries", owner, List.of())))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
 
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
         assertThat(persisted.get("amount").decimalValue()).isEqualByComparingTo("100.00");
@@ -230,7 +232,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                 new Object[] {Map.of("memberId", owner.getId())},
                                 "items",
                                 List.of()))))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "transaction-category-type-mismatch"));
     }
 
     @Test

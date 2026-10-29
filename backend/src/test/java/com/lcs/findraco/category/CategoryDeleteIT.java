@@ -1,5 +1,6 @@
 package com.lcs.findraco.category;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,6 +26,7 @@ import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -73,8 +75,10 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
         Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
 
-        deleteCategory(plan, owner, food.getId(), null).andExpect(status().isConflict());
-        deleteCategory(plan, owner, food.getId(), other.getId()).andExpect(status().isConflict());
+        deleteCategory(plan, owner, food.getId(), null)
+                .andExpect(problem(HttpStatus.CONFLICT, "category-has-subcategories"));
+        deleteCategory(plan, owner, food.getId(), other.getId())
+                .andExpect(problem(HttpStatus.CONFLICT, "category-has-subcategories"));
 
         assertThat(categoryRepository.findById(food.getId())).isPresent();
         assertThat(categoryRepository.findById(delivery.getId())).isPresent();
@@ -95,12 +99,12 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
 
         MvcResult result = deleteCategory(plan, owner, source.getId(), null)
-                .andExpect(status().isConflict())
+                .andExpect(problem(HttpStatus.CONFLICT, "category-in-use"))
                 .andReturn();
 
         String message = objectMapper
                 .readTree(result.getResponse().getContentAsString())
-                .get("message")
+                .get("detail")
                 .asString();
         assertThat(message).contains("2 transaction(s)", "1 item(s)", "1 recurrence definition(s)");
 
@@ -136,13 +140,14 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 
     // AC 16: target is the category itself
     @Test
-    void targetIsTheCategoryItselfIsRejectedWith400() throws Exception {
+    void targetIsTheCategoryItselfIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
         Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
 
-        deleteCategory(plan, owner, source.getId(), source.getId()).andExpect(status().isBadRequest());
+        deleteCategory(plan, owner, source.getId(), source.getId())
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-invalid-reassign-target"));
 
         assertThat(categoryRepository.findById(source.getId())).isPresent();
         assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId()))
@@ -151,14 +156,15 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 
     // AC 16: target is one of its children
     @Test
-    void targetIsOneOfItsChildrenIsRejectedWith400() throws Exception {
+    void targetIsOneOfItsChildrenIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
         Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
         Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, food);
 
-        deleteCategory(plan, owner, food.getId(), delivery.getId()).andExpect(status().isBadRequest());
+        deleteCategory(plan, owner, food.getId(), delivery.getId())
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-invalid-reassign-target"));
 
         assertThat(categoryRepository.findById(food.getId())).isPresent();
         assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId()))
@@ -167,14 +173,15 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
 
     // AC 16: target of a different type
     @Test
-    void targetOfDifferentTypeIsRejectedWith400() throws Exception {
+    void targetOfDifferentTypeIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
         Category salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary");
         Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
 
-        deleteCategory(plan, owner, source.getId(), salary.getId()).andExpect(status().isBadRequest());
+        deleteCategory(plan, owner, source.getId(), salary.getId())
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-invalid-reassign-target"));
 
         assertThat(categoryRepository.findById(source.getId())).isPresent();
         assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId()))

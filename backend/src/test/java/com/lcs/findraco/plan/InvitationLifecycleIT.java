@@ -1,5 +1,6 @@
 package com.lcs.findraco.plan;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -15,6 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
@@ -83,16 +85,13 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         acceptAs(token, invitee).andExpect(status().isCreated());
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(2);
 
-        acceptAs(token, invitee).andExpect(status().isGone()).andExpect(result -> {
-            JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertThat(body.get("message").asString()).isEqualTo("This invitation has already been used.");
-        });
+        acceptAs(token, invitee).andExpect(problem(HttpStatus.CONFLICT, "invitation-used"));
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(2);
     }
 
     @Test
-    void acceptingAnExpiredLinkInvitationReturns410Gone() throws Exception {
+    void acceptingAnExpiredLinkInvitationIsRejectedWith409() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         User invitee = fixtures.aUser();
@@ -105,16 +104,13 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 null,
                 LocalDateTime.now().minusDays(1));
 
-        acceptAs(token, invitee).andExpect(status().isGone()).andExpect(result -> {
-            JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertThat(body.get("message").asString()).isEqualTo("This invitation has expired.");
-        });
+        acceptAs(token, invitee).andExpect(problem(HttpStatus.CONFLICT, "invitation-expired"));
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
     }
 
     @Test
-    void acceptingARevokedInvitationIsRejectedWith410Gone() throws Exception {
+    void acceptingARevokedInvitationIsRejectedWith409() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         User invitee = fixtures.aUser();
@@ -133,10 +129,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isNoContent());
 
-        acceptAs(token, invitee).andExpect(status().isGone()).andExpect(result -> {
-            JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-            assertThat(body.get("message").asString()).isEqualTo("This invitation has been revoked.");
-        });
+        acceptAs(token, invitee).andExpect(problem(HttpStatus.CONFLICT, "invitation-revoked"));
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
     }

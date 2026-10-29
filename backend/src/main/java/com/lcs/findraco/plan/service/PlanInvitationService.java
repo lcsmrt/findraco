@@ -120,7 +120,7 @@ public class PlanInvitationService {
 
         PlanInvitation invitation = invitationRepository
                 .findByIdAndPlan(invitationId, planRepository.getReferenceById(ctx.planId()))
-                .orElseThrow(() -> new PlanExceptions.InvitationNotFoundException(String.valueOf(invitationId)));
+                .orElseThrow(PlanExceptions.InvitationNotFoundException::new);
 
         invitation.setStatus(InvitationStatus.REVOKED);
     }
@@ -133,9 +133,8 @@ public class PlanInvitationService {
      * a schema migration out of scope here.
      */
     private PlanInvitation loadValidInvitation(String token) {
-        PlanInvitation invitation = invitationRepository
-                .findByToken(token)
-                .orElseThrow(() -> new PlanExceptions.InvitationNotFoundException(token));
+        PlanInvitation invitation =
+                invitationRepository.findByToken(token).orElseThrow(PlanExceptions.InvitationNotFoundException::new);
 
         if (invitation.getStatus() == InvitationStatus.REVOKED) {
             throw new PlanExceptions.InvitationRevokedException();
@@ -144,7 +143,7 @@ public class PlanInvitationService {
             throw new PlanExceptions.InvitationAlreadyUsedException();
         }
         if (invitation.getExpiresAt() != null && invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
-            throw new PlanExceptions.InvitationExpiredException("This invitation has expired.");
+            throw new PlanExceptions.InvitationExpiredException();
         }
 
         return invitation;

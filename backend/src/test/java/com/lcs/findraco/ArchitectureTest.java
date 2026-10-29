@@ -98,6 +98,15 @@ class ArchitectureTest {
             .because("a feature's controllers, requests, exceptions and configuration are its own");
 
     @ArchTest
+    static final ArchRule sharedDependsOnNoFeature = noClasses()
+            .that()
+            .resideInAPackage(ROOT + ".shared..")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage(ROOT + ".[auth|user|plan|category|transaction|dashboard]..")
+            .because("every feature builds on shared, so shared cannot know any of them");
+
+    @ArchTest
     static final ArchRule dtosAreRecords = classes()
             .that()
             .resideInAnyPackage(ROOT + ".*.request", ROOT + ".*.response")

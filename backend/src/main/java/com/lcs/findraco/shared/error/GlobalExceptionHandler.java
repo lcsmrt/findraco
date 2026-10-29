@@ -1,208 +1,148 @@
 package com.lcs.findraco.shared.error;
 
-import com.lcs.findraco.auth.controller.SessionCookies;
-import com.lcs.findraco.auth.exception.AuthenticationExceptions;
-import com.lcs.findraco.category.exception.CategoryExceptions;
-import com.lcs.findraco.plan.exception.PlanExceptions;
-import com.lcs.findraco.transaction.exception.TransactionExceptions;
-import com.lcs.findraco.user.exception.UserExceptions;
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
-import org.jspecify.annotations.NonNull;
+import java.util.stream.Stream;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.MessageSourceResolvable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.context.request.ServletWebRequest;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-@ControllerAdvice
+/**
+ * Turns every exception a controller lets escape into a problem: a {@link DomainException} with its own
+ * type and status, Spring's request errors typed by status (400 when the request cannot be read, 422 when
+ * a constraint fails), a stale version as 409 and anything else as a 500 with a fixed detail.
+ */
+@RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
-    private final SessionCookies sessionCookies;
+    private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    public GlobalExceptionHandler(SessionCookies sessionCookies) {
-        this.sessionCookies = sessionCookies;
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ProblemDetail> handleDomain(DomainException exception) {
+        return ResponseEntity.status(exception.status()).body(Problems.of(exception));
     }
 
-    @Override
-    protected ResponseEntity<Object> handleMethodArgumentNotValid(
-            @NonNull MethodArgumentNotValidException exception,
-            @NonNull HttpHeaders headers,
-            @NonNull HttpStatusCode status,
-            @NonNull WebRequest request) {
-        List<FieldErrorDto> errors = exception.getBindingResult().getFieldErrors().stream()
-                .map(error -> new FieldErrorDto(error.getField(), error.getDefaultMessage()))
-                .toList();
-        ErrorResponseDto errorResponse = new ErrorResponseDto(
-                "Validation error.", ((ServletWebRequest) request).getRequest().getRequestURI(), errors);
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    /** Login only: the answer never says whether the e-mail or the password was wrong. */
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ProblemDetail> handleAuthentication(AuthenticationException exception) {
+        return problem(HttpStatus.UNAUTHORIZED, ProblemType.INVALID_CREDENTIALS, "Invalid e-mail or password.");
     }
 
-    @ExceptionHandler(BadCredentialsException.class)
-    public ResponseEntity<ErrorResponseDto> handleBadCredentials(
-            BadCredentialsException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto("Invalid username or password.", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<ProblemDetail> handleAccessDenied(AccessDeniedException exception) {
+        return problem(HttpStatus.FORBIDDEN, ProblemType.FORBIDDEN, "Access denied.");
     }
 
-    /** The session can't be renewed: answer like any unauthenticated request and drop the dead cookie. */
-    @ExceptionHandler(AuthenticationExceptions.InvalidSessionException.class)
-    public ResponseEntity<ErrorResponseDto> handleInvalidSession(
-            AuthenticationExceptions.InvalidSessionException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .header(HttpHeaders.SET_COOKIE, sessionCookies.clear().toString())
-                .body(errorResponse);
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<ProblemDetail> handleStaleVersion(ObjectOptimisticLockingFailureException exception) {
+        return problem(
+                HttpStatus.CONFLICT,
+                ProblemType.STALE_VERSION,
+                "The resource was changed by another request. Reload it and try again.");
     }
 
-    @ExceptionHandler(TransactionExceptions.TransactionNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleTransactionNotFound(
-            TransactionExceptions.TransactionNotFoundException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
-    @ExceptionHandler(TransactionExceptions.TransactionSeriesNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleTransactionSeriesNotFound(
-            TransactionExceptions.TransactionSeriesNotFoundException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
-    @ExceptionHandler(CategoryExceptions.CategoryNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleCategoryNotFound(
-            CategoryExceptions.CategoryNotFoundException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
-    @ExceptionHandler({
-        CategoryExceptions.CategoryParentIsChildException.class,
-        CategoryExceptions.CategoryParentIsItselfException.class,
-        CategoryExceptions.CategoryWithChildrenCannotHaveParentException.class,
-        CategoryExceptions.CategoryParentTypeMismatchException.class,
-        CategoryExceptions.CategoryWithChildrenTypeChangeException.class,
-        CategoryExceptions.CategoryInvalidReassignTargetException.class
-    })
-    public ResponseEntity<ErrorResponseDto> handleCategoryHierarchyInvariant(
-            RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler({
-        CategoryExceptions.CategoryMemberLimitsOnCreditException.class,
-        CategoryExceptions.CategoryMemberLimitsOnOwnedException.class,
-        CategoryExceptions.CategoryMemberLimitDuplicateMemberException.class,
-        CategoryExceptions.CategoryMemberLimitInactiveMemberException.class,
-        CategoryExceptions.CategoryOwnerOnChildException.class,
-        CategoryExceptions.CategoryOwnerInactiveMemberException.class
-    })
-    public ResponseEntity<ErrorResponseDto> handleCategoryMemberInvariant(
-            RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler({
-        CategoryExceptions.CategoryHasChildrenException.class,
-        CategoryExceptions.CategoryInUseException.class
-    })
-    public ResponseEntity<ErrorResponseDto> handleCategoryConflict(
-            RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-    }
-
-    @ExceptionHandler(UserExceptions.EmailAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponseDto> handleEmailAlreadyUsed(
-            UserExceptions.EmailAlreadyExistsException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-    }
-
-    @ExceptionHandler({
-        PlanExceptions.PlanNotFoundException.class,
-        PlanExceptions.NotAMemberException.class,
-        PlanExceptions.MemberNotFoundException.class,
-        PlanExceptions.InvitationNotFoundException.class
-    })
-    public ResponseEntity<ErrorResponseDto> handlePlanNotFound(RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
-    }
-
-    @ExceptionHandler({
-        PlanExceptions.InsufficientPlanRoleException.class,
-        PlanExceptions.CannotModifyOthersTransactionException.class
-    })
-    public ResponseEntity<ErrorResponseDto> handlePlanForbidden(
-            RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
-    }
-
-    @ExceptionHandler({PlanExceptions.LastPlanException.class, PlanExceptions.LastOwnerException.class})
-    public ResponseEntity<ErrorResponseDto> handlePlanConflict(RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(errorResponse);
-    }
-
-    @ExceptionHandler(PlanExceptions.InvitationEmailMismatchException.class)
-    public ResponseEntity<ErrorResponseDto> handleInvitationEmailMismatch(
-            PlanExceptions.InvitationEmailMismatchException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler({
-        PlanExceptions.InvitationExpiredException.class,
-        PlanExceptions.InvitationRevokedException.class,
-        PlanExceptions.InvitationAlreadyUsedException.class
-    })
-    public ResponseEntity<ErrorResponseDto> handleInvitationGone(
-            RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.GONE).body(errorResponse);
-    }
-
-    @ExceptionHandler({
-        TransactionExceptions.CategoryTypeMismatchException.class,
-        TransactionExceptions.ItemCategoryTypeMismatchException.class,
-        TransactionExceptions.ItemsTotalExceedsAmountException.class,
-        TransactionExceptions.ParticipantSharesMismatchException.class
-    })
-    public ResponseEntity<ErrorResponseDto> handleTransactionInvariant(
-            RuntimeException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
-    @ExceptionHandler(AuthenticationExceptions.InvalidPasswordResetTokenException.class)
-    public ResponseEntity<ErrorResponseDto> handleInvalidPasswordResetToken(
-            AuthenticationExceptions.InvalidPasswordResetTokenException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
-    }
-
+    // SPEC_DEVIATION: an IllegalArgumentException still answers 400 until the next change names each one.
+    // Reason: about 20 user errors are still thrown that way; mapping them to 500 first would break them.
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorResponseDto> handleIllegalArgument(
-            IllegalArgumentException exception, HttpServletRequest request) {
-        ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);
+    public ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException exception) {
+        return problem(HttpStatus.BAD_REQUEST, ProblemType.MALFORMED_REQUEST, exception.getMessage());
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorResponseDto> handleUnexpected(Exception exception, HttpServletRequest request) {
-        logger.error("Unexpected error: ", exception);
-        ErrorResponseDto errorResponse =
-                new ErrorResponseDto("An internal error occurred. Please try again later.", request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+    public ResponseEntity<ProblemDetail> handleUnexpected(Exception exception) {
+        log.error("Unexpected error", exception);
+        return problem(HttpStatus.INTERNAL_SERVER_ERROR, ProblemType.INTERNAL, Problems.INTERNAL_DETAIL);
+    }
+
+    /** A value that could not be bound (a wrong type in a query parameter) is unreadable, not invalid. */
+    @Override
+    protected ResponseEntity<Object> handleMethodArgumentNotValid(
+            MethodArgumentNotValidException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        if (exception.getBindingResult().getFieldErrors().stream().anyMatch(FieldError::isBindingFailure)) {
+            return new ResponseEntity<>(
+                    Problems.of(HttpStatus.BAD_REQUEST, ProblemType.MALFORMED_REQUEST, "A value has the wrong type."),
+                    headers,
+                    HttpStatus.BAD_REQUEST);
+        }
+        Stream<FieldProblem> fieldErrors = exception.getBindingResult().getFieldErrors().stream()
+                .map(error -> new FieldProblem(error.getField(), code(error), message(error)));
+        Stream<FieldProblem> objectErrors = exception.getBindingResult().getGlobalErrors().stream()
+                .map(error -> new FieldProblem(null, code(error), message(error)));
+        return validationFailed(Stream.concat(fieldErrors, objectErrors).toList(), headers);
+    }
+
+    @Override
+    protected ResponseEntity<Object> handleHandlerMethodValidationException(
+            HandlerMethodValidationException exception,
+            HttpHeaders headers,
+            HttpStatusCode status,
+            WebRequest request) {
+        if (exception.isForReturnValue()) {
+            return handleExceptionInternal(exception, null, headers, HttpStatus.INTERNAL_SERVER_ERROR, request);
+        }
+        List<FieldProblem> errors = exception.getParameterValidationResults().stream()
+                .flatMap(result -> result.getResolvableErrors().stream()
+                        .map(error -> new FieldProblem(
+                                error instanceof FieldError fieldError
+                                        ? fieldError.getField()
+                                        : result.getMethodParameter().getParameterName(),
+                                code(error),
+                                message(error))))
+                .toList();
+        return validationFailed(errors, headers);
+    }
+
+    /** Every other Spring MVC error keeps its status and gets the problem type of that status. */
+    @Override
+    protected ResponseEntity<Object> handleExceptionInternal(
+            Exception exception,
+            @Nullable Object body,
+            HttpHeaders headers,
+            HttpStatusCode statusCode,
+            WebRequest request) {
+        HttpStatus status = HttpStatus.valueOf(statusCode.value());
+        if (status.is5xxServerError()) {
+            log.error("Unexpected error", exception);
+        }
+        String detail = exception instanceof ErrorResponse errorResponse
+                        && errorResponse.getBody().getDetail() != null
+                ? errorResponse.getBody().getDetail()
+                : status.getReasonPhrase() + ".";
+        return new ResponseEntity<>(Problems.forStatus(status, detail), headers, status);
+    }
+
+    private static ResponseEntity<Object> validationFailed(List<FieldProblem> errors, HttpHeaders headers) {
+        return new ResponseEntity<>(Problems.validationFailed(errors), headers, HttpStatus.UNPROCESSABLE_CONTENT);
+    }
+
+    private static ResponseEntity<ProblemDetail> problem(HttpStatus status, ProblemType type, String detail) {
+        return ResponseEntity.status(status).body(Problems.of(status, type, detail));
+    }
+
+    /** The most general code Spring resolves for a constraint is its simple name ({@code NotBlank}). */
+    private static String code(MessageSourceResolvable error) {
+        String[] codes = error.getCodes();
+        return codes == null || codes.length == 0 ? "Invalid" : codes[codes.length - 1];
+    }
+
+    private static String message(MessageSourceResolvable error) {
+        String message = error.getDefaultMessage();
+        return message != null ? message : "is invalid";
     }
 }

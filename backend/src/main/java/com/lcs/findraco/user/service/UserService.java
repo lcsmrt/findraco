@@ -30,7 +30,7 @@ public class UserService {
     public User create(CreateUserRequest dto) {
         Optional<User> existingUser = userRepository.findByEmail(dto.email());
         if (existingUser.isPresent()) {
-            throw new UserExceptions.EmailAlreadyExistsException(dto.email());
+            throw new UserExceptions.EmailAlreadyExistsException();
         }
 
         User user = new User();

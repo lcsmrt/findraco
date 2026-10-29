@@ -122,7 +122,7 @@ class SessionIT extends AbstractIntegrationTest {
 
         login(user.getEmail(), "not-the-password")
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Invalid username or password."))
+                .andExpect(jsonPath("$.type").value("urn:findraco:problem:invalid-credentials"))
                 .andExpect(result -> assertThat(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE))
                         .isEmpty());
         assertThat(tokenHashesOf(user)).isEmpty();
@@ -289,10 +289,10 @@ class SessionIT extends AbstractIntegrationTest {
                 .getValue();
     }
 
-    /** 401 "Authentication required." and a Set-Cookie that deletes the session cookie. */
+    /** 401 {@code session-invalid} and a Set-Cookie that deletes the session cookie. */
     private static void assertRejectedAndCleared(ResultActions response) throws Exception {
         MvcResult result = response.andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.message").value("Authentication required."))
+                .andExpect(jsonPath("$.type").value("urn:findraco:problem:session-invalid"))
                 .andReturn();
         assertCleared(result);
     }

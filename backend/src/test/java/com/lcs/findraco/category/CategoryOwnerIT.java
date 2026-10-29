@@ -1,5 +1,6 @@
 package com.lcs.findraco.category;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -28,6 +29,7 @@ import java.util.Map;
 import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -119,15 +121,16 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
 
     // AC 3
     @Test
-    void ownerSentForAChildIsRejectedWith400() throws Exception {
+    void ownerSentForAChildIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
         Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
 
-        create(plan, owner, body("Dining out", food.getId(), owner.getId())).andExpect(status().isBadRequest());
+        create(plan, owner, body("Dining out", food.getId(), owner.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-owner-on-subcategory"));
         update(plan, owner, delivery.getId(), body("Delivery", food.getId(), owner.getId()))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-owner-on-subcategory"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).hasSize(2);
         assertThat(categoryRepository.findById(delivery.getId()).orElseThrow().getOwner())
@@ -136,14 +139,16 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
 
     // AC 4
     @Test
-    void ownerWhoIsNotAnActiveMemberIsRejectedWith400() throws Exception {
+    void ownerWhoIsNotAnActiveMemberIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         User stranger = fixtures.aUser();
         Category rent = fixtures.aCategory(plan, TransactionType.DEBIT, "Rent");
 
-        create(plan, owner, body("Professional", null, stranger.getId())).andExpect(status().isBadRequest());
-        update(plan, owner, rent.getId(), body("Rent", null, stranger.getId())).andExpect(status().isBadRequest());
+        create(plan, owner, body("Professional", null, stranger.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-owner-not-member"));
+        update(plan, owner, rent.getId(), body("Rent", null, stranger.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-owner-not-member"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).hasSize(1);
         assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner())
@@ -216,7 +221,8 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Category rent = fixtures.aCategory(plan, TransactionType.DEBIT, "Rent");
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
-        update(plan, owner, rent.getId(), body("Rent", null, partner.getId())).andExpect(status().isBadRequest());
+        update(plan, owner, rent.getId(), body("Rent", null, partner.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-owner-not-member"));
 
         assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner())
                 .isNull();
@@ -276,7 +282,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
 
     // P2 AC 10 through inheritance: a root whose children have per-member limits cannot become owned.
     @Test
-    void ownerOnARootWhoseChildHasPerMemberLimitsIsRejectedWith400() throws Exception {
+    void ownerOnARootWhoseChildHasPerMemberLimitsIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
@@ -287,7 +293,8 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         entry.setAmount(new BigDecimal("260.00"));
         memberLimitRepository.save(entry);
 
-        update(plan, owner, food.getId(), body("Food", null, owner.getId())).andExpect(status().isBadRequest());
+        update(plan, owner, food.getId(), body("Food", null, owner.getId()))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limits-on-owned"));
 
         assertThat(categoryRepository.findById(food.getId()).orElseThrow().getOwner())
                 .isNull();

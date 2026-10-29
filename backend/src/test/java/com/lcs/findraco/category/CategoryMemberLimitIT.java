@@ -1,5 +1,6 @@
 package com.lcs.findraco.category;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -172,7 +174,7 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
 
     // AC 7
     @Test
-    void perMemberLimitForAUserWhoIsNotAnActiveMemberIsRejectedWith400() throws Exception {
+    void perMemberLimitForAUserWhoIsNotAnActiveMemberIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         User stranger = fixtures.aUser();
@@ -181,50 +183,50 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
                         plan,
                         owner,
                         body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", stranger.getId(), "140.00")))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limit-not-member"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).isEmpty();
     }
 
     // AC 8
     @Test
-    void perMemberLimitsListingTheSameMemberTwiceAreRejectedWith400() throws Exception {
+    void perMemberLimitsListingTheSameMemberTwiceAreRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
         create(plan, owner, body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", owner.getId(), "140.00")))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limit-duplicate"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).isEmpty();
     }
 
     // AC 9
     @Test
-    void negativePerMemberLimitIsRejectedWith400() throws Exception {
+    void negativePerMemberLimitIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
         create(plan, owner, body("DEBIT", "Groceries", null, limits(owner.getId(), "-1.00")))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).isEmpty();
     }
 
     // AC 10 (CREDIT)
     @Test
-    void perMemberLimitsOnACreditCategoryAreRejectedWith400() throws Exception {
+    void perMemberLimitsOnACreditCategoryAreRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
         create(plan, owner, body("CREDIT", "Salary", null, limits(owner.getId(), "100.00")))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limits-on-income"));
 
         assertThat(categoryRepository.findAllByPlan(plan)).isEmpty();
     }
 
     // AC 10 (owned; a child inherits its parent's owner)
     @Test
-    void perMemberLimitsOnAnOwnedCategoryAreRejectedWith400() throws Exception {
+    void perMemberLimitsOnAnOwnedCategoryAreRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category professional = fixtures.aCategory(plan, TransactionType.DEBIT, "Professional");
@@ -233,9 +235,10 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
 
         Map<String, Object> ownedUpdate = body("DEBIT", "Professional", null, limits(owner.getId(), "100.00"));
         ownedUpdate.put("ownerId", owner.getId()); // PUT is a full replace: the owner is resent (CAT-15)
-        update(plan, owner, professional.getId(), ownedUpdate).andExpect(status().isBadRequest());
+        update(plan, owner, professional.getId(), ownedUpdate)
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limits-on-owned"));
         create(plan, owner, body("DEBIT", "Courses", null, limits(owner.getId(), "100.00"), professional.getId()))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limits-on-owned"));
 
         assertThat(memberLimitRepository.findAllByCategory(professional)).isEmpty();
         assertThat(categoryRepository.findAllByPlan(plan)).hasSize(1);
@@ -254,7 +257,7 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
                         owner,
                         groceries.getId(),
                         body("DEBIT", "Renamed", null, limits(owner.getId(), "300.00", stranger.getId(), "100.00")))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limit-not-member"));
 
         Map<Long, BigDecimal> stored = storedAmounts(groceries);
         assertThat(stored).containsOnlyKeys(owner.getId());
@@ -310,7 +313,7 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
 
     // AC 7 + 11: a former member's entry can be kept or removed, never changed.
     @Test
-    void changingAFormerMembersAmountIsRejectedWith400() throws Exception {
+    void changingAFormerMembersAmountIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
@@ -323,7 +326,7 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
                         owner,
                         groceries.getId(),
                         body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", partner.getId(), "200.00")))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limit-not-member"));
 
         assertThat(storedAmounts(groceries).get(partner.getId())).isEqualByComparingTo("140.00");
     }

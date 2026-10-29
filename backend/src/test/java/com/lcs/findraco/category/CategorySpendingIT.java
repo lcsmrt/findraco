@@ -1,5 +1,6 @@
 package com.lcs.findraco.category;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -27,6 +28,7 @@ import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
@@ -142,14 +144,14 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void missingPeriodIsRejectedWith400() throws Exception {
+    void missingPeriodIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
         mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .param("startDate", today.toString()))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
     }
 
     // P2 independent test (AC 2, 5, 6): limit = sum of the entries; each member's share against their own limit.

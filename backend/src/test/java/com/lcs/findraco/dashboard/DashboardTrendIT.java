@@ -1,5 +1,6 @@
 package com.lcs.findraco.dashboard;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -18,6 +19,7 @@ import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import tools.jackson.databind.JsonNode;
@@ -95,12 +97,12 @@ class DashboardTrendIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void missingRangeIsRejectedWith400() throws Exception {
+    void missingRangeIsRejectedWith422() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
         fetch(get(DashboardRoutes.DASHBOARD + "/trend", plan.getId()).with(testAuthHelper.asUser(owner)))
-                .andExpect(status().isBadRequest());
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
     }
 
     private record Seed(Plan plan, User owner, User partner) {}

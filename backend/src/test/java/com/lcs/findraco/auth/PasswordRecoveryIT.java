@@ -1,5 +1,6 @@
 package com.lcs.findraco.auth;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -27,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
@@ -135,7 +137,8 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         resetPassword(token, "new-password").andExpect(status().isNoContent());
 
         validate(token).andExpect(status().isOk()).andExpect(jsonPath("$.valid").value(false));
-        resetPassword(token, "another-password").andExpect(status().isBadRequest());
+        resetPassword(token, "another-password")
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "reset-token-invalid"));
     }
 
     @Test
@@ -147,7 +150,8 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
 
         validate(tokens.get(0)).andExpect(jsonPath("$.valid").value(false));
         validate(tokens.get(1)).andExpect(jsonPath("$.valid").value(true));
-        resetPassword(tokens.get(0), "new-password").andExpect(status().isBadRequest());
+        resetPassword(tokens.get(0), "new-password")
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "reset-token-invalid"));
     }
 
     @Test
@@ -162,7 +166,8 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         tokenRepository.save(stored);
 
         validate(token).andExpect(jsonPath("$.valid").value(false));
-        resetPassword(token, "new-password").andExpect(status().isBadRequest());
+        resetPassword(token, "new-password")
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "reset-token-invalid"));
     }
 
     @Test
@@ -201,7 +206,8 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         User user = fixtures.aUser();
         String device = sessionCookie(user);
 
-        resetPassword(OpaqueTokens.generate(), "new-password").andExpect(status().isBadRequest());
+        resetPassword(OpaqueTokens.generate(), "new-password")
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "reset-token-invalid"));
 
         refresh(device).andExpect(status().isOk());
     }
@@ -212,7 +218,7 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         forgotPassword(user.getEmail());
         String token = emailedTokens(user.getEmail()).get(0);
 
-        resetPassword(token, "").andExpect(status().isBadRequest());
+        resetPassword(token, "").andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
         validate(token).andExpect(jsonPath("$.valid").value(true));
     }
 }
