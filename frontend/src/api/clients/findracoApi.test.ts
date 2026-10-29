@@ -13,7 +13,7 @@ type RefreshOutcome = "ok" | "unauthorized" | "network";
 
 type Deferred = { promise: Promise<void>; resolve: () => void };
 
-const AUTH_REQUIRED = { message: "Authentication required." };
+const AUTH_REQUIRED = { type: "urn:findraco:problem:unauthenticated", status: 401 };
 const PROTECTED_URLS = ["/plans", "/categories", "/transactions"];
 const API_PATH = "/api/findraco";
 
@@ -53,7 +53,7 @@ function refreshRoute(outcome: RefreshOutcome, hold?: Promise<void>): HttpHandle
 
 function loginRejected(): HttpHandler {
   return http.post(`*${API_PATH}/auth/login`, () =>
-    HttpResponse.json({ message: "Invalid username or password." }, { status: 401 }),
+    HttpResponse.json({ type: "urn:findraco:problem:invalid-credentials", status: 401 }, { status: 401 }),
   );
 }
 
@@ -204,7 +204,7 @@ describe("findracoApi session renewal", () => {
     expect(error).toMatchObject({
       response: {
         status: 401,
-        data: { message: "Invalid username or password." },
+        data: { type: "urn:findraco:problem:invalid-credentials", status: 401 },
       },
     });
     expect(requests.map(pathOf)).toEqual(["/auth/login"]);

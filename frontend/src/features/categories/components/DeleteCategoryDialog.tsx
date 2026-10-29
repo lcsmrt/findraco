@@ -3,7 +3,7 @@ import {
   useDeleteCategory,
   useGetCategoryUsage,
 } from "@/api/services/useCategoryService";
-import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
+import { problemMessage, problemToast } from "@/api/utils/problems";
 import { Button } from "@/components/button/base/Button";
 import {
   Dialog,
@@ -63,14 +63,14 @@ export function DeleteCategoryDialog({
         const kind = classifyDeleteError(error);
         // The session-expired handler already told the user.
         if (kind === "session-expired") return;
-        const message = resolveErrorMessage({ error });
         if (kind == null) {
-          toast.error(message);
+          const { message, description } = problemToast(error);
+          toast.error(message, description ? { description } : undefined);
           return;
         }
         // The category changed since the dialog opened (a child or a reference
         // was added): show why and reload the counts.
-        setConflict(message);
+        setConflict(problemMessage(error));
         refetchUsage();
       },
     });

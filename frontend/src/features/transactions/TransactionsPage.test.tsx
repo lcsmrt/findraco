@@ -292,16 +292,18 @@ describe("TransactionsPage CSV import (STD-12 AC 1)", () => {
     await waitFor(() => expect(listQueries(requests)).toHaveLength(2));
   });
 
-  it("shows the API's message and leaves the list alone when the file is rejected", async () => {
+  it("shows the copy of the problem type, not the API's detail, and leaves the list alone when the file is rejected (BST-08 AC 11)", async () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");
     server.use(
-      transactionHandlers.importCsvRejected("Line 3 of the CSV is invalid: bad date"),
+      transactionHandlers.importCsvRejected(422, "import-line-invalid"),
     );
 
     await user.upload(fileInput(), csv);
 
-    expect(await screen.findByText("Line 3 of the CSV is invalid: bad date")).toBeTruthy();
+    expect(
+      await screen.findByText("The file has a line that could not be read. Check the file and try again."),
+    ).toBeTruthy();
     expect(importRequests(requests)).toHaveLength(1);
     expect(screen.queryByText("Transactions imported.")).toBeNull();
     expect(listQueries(requests)).toHaveLength(1);

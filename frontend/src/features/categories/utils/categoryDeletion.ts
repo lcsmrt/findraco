@@ -4,8 +4,7 @@ import {
   DeleteCategoryRequest,
   Category,
 } from "@/api/dtos";
-import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
-import { AxiosError } from "axios";
+import { problemType } from "@/api/utils/problems";
 
 /** Categories that can receive a deleted category's references: same type, not itself, not its children. */
 export function eligibleDeleteTargets(
@@ -62,14 +61,17 @@ export function describeUsage({
   return `${count(transactions, "transaction", "transactions")}, ${count(items, "item", "items")} and ${count(recurrenceDefinitions, "recurrence definition", "recurrence definitions")}`;
 }
 
-/** Tells the two 409s of a category delete apart. */
+/** Tells the two 409s of a category delete apart by problem type, never by wording. */
 export function classifyDeleteError(
   error: unknown,
 ): "has-children" | "in-use" | "session-expired" | null {
   if (error instanceof SessionExpiredError) return "session-expired";
-  if (!(error instanceof AxiosError) || error.response?.status !== 409) {
-    return null;
+  switch (problemType(error)) {
+    case "category-has-subcategories":
+      return "has-children";
+    case "category-in-use":
+      return "in-use";
+    default:
+      return null;
   }
-  const message = resolveErrorMessage({ error });
-  return message.includes("subcategories") ? "has-children" : "in-use";
 }

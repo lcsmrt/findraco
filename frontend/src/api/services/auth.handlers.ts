@@ -1,5 +1,6 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
+  Problem,
   ForgotPasswordRequest,
   LoginRequest,
   LoginResponse,
@@ -12,7 +13,6 @@ import type {
 type NoParams = Record<string, never>;
 
 /** The API's error body before the ProblemDetail migration: the message toasts show. */
-type ErrorBody = { message: string };
 
 export const authHandlers = {
   login(response: LoginResponse): HttpHandler {
@@ -20,9 +20,13 @@ export const authHandlers = {
       HttpResponse.json(response),
     );
   },
-  loginRejected(message: string): HttpHandler {
-    return http.post<NoParams, LoginRequest["body"], ErrorBody>("*/auth/login", () =>
-      HttpResponse.json({ message }, { status: 401 }),
+  /** A wrong e-mail or password: the API never says which. */
+  loginRejected(): HttpHandler {
+    return http.post<NoParams, LoginRequest["body"], Problem>("*/auth/login", () =>
+      HttpResponse.json(
+        { type: "urn:findraco:problem:invalid-credentials", status: 401, requestId: "req-login" },
+        { status: 401 },
+      ),
     );
   },
   logout(): HttpHandler {
@@ -38,8 +42,8 @@ export const authHandlers = {
   },
   /** The session cookie is gone or expired: the API cannot renew the session. */
   refreshRejected(): HttpHandler {
-    return http.post<NoParams, never, ErrorBody>("*/auth/refresh", () =>
-      HttpResponse.json({ message: "Authentication required." }, { status: 401 }),
+    return http.post<NoParams, never, Problem>("*/auth/refresh", () =>
+      HttpResponse.json({ type: "urn:findraco:problem:session-invalid", status: 401 }, { status: 401 }),
     );
   },
   refreshNetworkError(): HttpHandler {

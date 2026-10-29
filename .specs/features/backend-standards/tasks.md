@@ -774,10 +774,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests: known type, unknown type → status fallback, 422 field mapping
-- [ ] Category delete flow test tells both 409s apart
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Unit tests: known type, unknown type → status fallback, 422 field mapping
+- [x] Category delete flow test tells both 409s apart
+- [x] Frontend beta bumped
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: build

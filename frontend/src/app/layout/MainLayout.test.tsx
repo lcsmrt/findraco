@@ -250,7 +250,7 @@ describe("MainLayout global add", () => {
   it("a failed create keeps the form open with its values and shows no success toast (NAV-02 AC 7)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(transactionHandlers.createRejected("Amount too large"));
+    server.use(transactionHandlers.createRejected(422, "items-exceed-amount"));
     renderAt("/overview");
 
     await user.click(within(bottomBar()).getByRole("button", { name: "New Transaction" }));

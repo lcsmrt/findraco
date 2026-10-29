@@ -2,39 +2,15 @@ import {
   QueryClient,
   type MutationFunctionContext,
 } from "@tanstack/react-query";
-import {
-  AxiosError,
-  AxiosHeaders,
-  type InternalAxiosRequestConfig,
-} from "axios";
 import { toast } from "sonner";
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { problemError } from "@/test/problems";
 import { SessionExpiredError } from "../clients/sessionExpiredError";
 import { buildMutationOptions } from "./buildMutationOptions";
 
 vi.mock("sonner", () => ({ toast: { error: vi.fn(), success: vi.fn() } }));
 
 const mockedToastError = vi.mocked(toast.error);
-
-const requestConfig: InternalAxiosRequestConfig = {
-  headers: new AxiosHeaders(),
-};
-
-function apiError(status: number, message: string) {
-  return new AxiosError(
-    `Request failed with status code ${status}`,
-    AxiosError.ERR_BAD_REQUEST,
-    requestConfig,
-    null,
-    {
-      data: { message },
-      status,
-      statusText: "",
-      headers: {},
-      config: requestConfig,
-    },
-  );
-}
 
 const mutationContext: MutationFunctionContext = {
   client: new QueryClient(),
@@ -49,7 +25,7 @@ describe("buildMutationOptions onError", () => {
   it("shows no error toast when the session could not be renewed, and still calls the caller's onError", () => {
     const onError = vi.fn();
     const error = new SessionExpiredError(
-      apiError(401, "Authentication required."),
+      problemError(401, "session-invalid"),
     );
 
     buildMutationOptions<void, void>(undefined, { onError }).onError?.(
@@ -63,9 +39,9 @@ describe("buildMutationOptions onError", () => {
     expect(onError).toHaveBeenCalledExactlyOnceWith(error);
   });
 
-  it("shows the resolved message for any other error and calls the caller's onError", () => {
+  it("shows the type's copy and the request id, never the detail, and calls the caller's onError (BST-08 AC 11)", () => {
     const onError = vi.fn();
-    const error = apiError(404, "Category not found.");
+    const error = problemError(404, "category-not-found", { requestId: "req-1" });
 
     buildMutationOptions<void, void>(undefined, { onError }).onError?.(
       error,
@@ -75,7 +51,8 @@ describe("buildMutationOptions onError", () => {
     );
 
     expect(mockedToastError).toHaveBeenCalledExactlyOnceWith(
-      "Category not found.",
+      "This category no longer exists.",
+      { description: "Request id: req-1" },
     );
     expect(onError).toHaveBeenCalledExactlyOnceWith(error);
   });

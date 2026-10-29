@@ -1,5 +1,7 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
+  Problem,
+  ProblemType,
   CategorySpending,
   CategoryUsage,
   CreateCategoryRequest,
@@ -25,13 +27,13 @@ export const categoryHandlers = {
     );
   },
   getNotFound(): HttpHandler {
-    return http.get<CategoryParams>(`${base}/:id`, () =>
-      HttpResponse.json({ title: "Category not found" }, { status: 404 }),
+    return http.get<CategoryParams, never, Problem>(`${base}/:id`, () =>
+      HttpResponse.json({ type: "urn:findraco:problem:category-not-found", status: 404 }, { status: 404 }),
     );
   },
   getServerError(): HttpHandler {
-    return http.get<CategoryParams>(`${base}/:id`, () =>
-      HttpResponse.json({ title: "Internal server error" }, { status: 500 }),
+    return http.get<CategoryParams, never, Problem>(`${base}/:id`, () =>
+      HttpResponse.json({ type: "urn:findraco:problem:internal", status: 500 }, { status: 500 }),
     );
   },
   getNetworkError(): HttpHandler {
@@ -54,8 +56,10 @@ export const categoryHandlers = {
       Category
     >(base, () => HttpResponse.json(category, { status: 201 }));
   },
-  createRejected(message: string): HttpHandler {
-    return http.post<PlanParams>(base, () => HttpResponse.json({ message }, { status: 400 }));
+  createRejected(status: number, type: ProblemType): HttpHandler {
+    return http.post<PlanParams, CreateCategoryRequest["body"], Problem>(base, () =>
+      HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),
+    );
   },
   update(category: Category): HttpHandler {
     return http.put<
@@ -66,5 +70,11 @@ export const categoryHandlers = {
   },
   delete(): HttpHandler {
     return http.delete<CategoryParams>(`${base}/:id`, () => new HttpResponse(null, { status: 204 }));
+  },
+  /** The category changed since the dialog loaded: a 409 the dialog tells apart by `type`. */
+  deleteConflict(type: ProblemType): HttpHandler {
+    return http.delete<CategoryParams, never, Problem>(`${base}/:id`, () =>
+      HttpResponse.json({ type: `urn:findraco:problem:${type}`, status: 409, requestId: "req-delete" }, { status: 409 }),
+    );
   },
 };

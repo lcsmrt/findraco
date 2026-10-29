@@ -1,5 +1,7 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
+  Problem,
+  ProblemType,
   AcceptInvitationResponse,
   CreateInvitationRequest,
   Invitation,
@@ -17,9 +19,9 @@ export const invitationHandlers = {
       () => HttpResponse.json(invitation, { status: 201 }),
     );
   },
-  createRejected(message: string): HttpHandler {
-    return http.post<PlanParams>("*/plan/:planId/invitation", () =>
-      HttpResponse.json({ message }, { status: 400 }),
+  createRejected(status: number, type: ProblemType): HttpHandler {
+    return http.post<PlanParams, CreateInvitationRequest["body"], Problem>("*/plan/:planId/invitation", () =>
+      HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),
     );
   },
   revoke(): HttpHandler {

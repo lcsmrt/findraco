@@ -150,7 +150,7 @@ describe("CategoryFormSheet skeleton", () => {
     const requests = recordRequests();
     const onOpenChange = vi.fn();
     const onSuccess = vi.fn();
-    server.use(categoryHandlers.createRejected("Name already in use"));
+    server.use(categoryHandlers.createRejected(422, "category-parent-type-mismatch"));
     await renderLoadedSheet({ members: [lucas], onOpenChange, onSuccess });
 
     await user.type(screen.getByLabelText("Name"), "Groceries");
