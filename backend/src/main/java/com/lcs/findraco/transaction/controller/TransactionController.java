@@ -3,7 +3,6 @@ package com.lcs.findraco.transaction.controller;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.shared.web.PageResponse;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
-import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
@@ -18,7 +17,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,15 +37,14 @@ public class TransactionController {
     @Operation(summary = "Fetches a transaction by ID")
     @GetMapping("/{id}")
     public ResponseEntity<TransactionResponse> getTransaction(@PathVariable Long id, PlanContext ctx) {
-        return ResponseEntity.ok(TransactionResponse.from(transactionService.findById(id, ctx)));
+        return ResponseEntity.ok(transactionService.getById(id, ctx));
     }
 
     @Operation(summary = "Fetches all transactions for the plan")
     @GetMapping
     public ResponseEntity<PageResponse<TransactionResponse>> getAllTransactions(
             @ParameterObject @ModelAttribute @Valid TransactionFilter filter, PlanContext ctx) {
-        return ResponseEntity.ok(PageResponse.from(
-                transactionService.findAllByPlanPaged(filter, ctx).map(TransactionResponse::from)));
+        return ResponseEntity.ok(PageResponse.from(transactionService.findAllByPlanPaged(filter, ctx)));
     }
 
     @Operation(summary = "Creates a new transaction")
@@ -55,8 +52,7 @@ public class TransactionController {
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(
             @RequestBody @Valid CreateTransactionRequest dto, PlanContext ctx) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(TransactionResponse.from(transactionService.create(dto, ctx)));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.create(dto, ctx));
     }
 
     @Operation(summary = "Creates a series of recurring transactions")
@@ -64,15 +60,14 @@ public class TransactionController {
     @PostMapping("/series")
     public ResponseEntity<TransactionSeriesResponse> createSeries(
             @RequestBody @Valid CreateSeriesRequest dto, PlanContext ctx) {
-        List<Transaction> occurrences = transactionService.createSeries(dto, ctx);
-        return ResponseEntity.status(HttpStatus.CREATED).body(TransactionSeriesResponse.from(occurrences));
+        return ResponseEntity.status(HttpStatus.CREATED).body(transactionService.createSeries(dto, ctx));
     }
 
     @Operation(summary = "Updates a transaction")
     @PutMapping("/{id}")
     public ResponseEntity<TransactionResponse> updateTransaction(
             @PathVariable Long id, @RequestBody @Valid UpdateTransactionRequest dto, PlanContext ctx) {
-        return ResponseEntity.ok(TransactionResponse.from(transactionService.update(id, dto, ctx)));
+        return ResponseEntity.ok(transactionService.update(id, dto, ctx));
     }
 
     @Operation(summary = "Imports transactions from a Nubank CSV file")
@@ -81,9 +76,9 @@ public class TransactionController {
     @PostMapping("/import")
     public ResponseEntity<TransactionImportResponse> importCsv(
             @RequestParam("file") MultipartFile file, PlanContext ctx) {
-        int imported = transactionService.importFromNubankCsv(file, ctx);
-        HttpStatus status = imported > 0 ? HttpStatus.CREATED : HttpStatus.OK;
-        return ResponseEntity.status(status).body(new TransactionImportResponse(imported));
+        TransactionImportResponse result = transactionService.importFromNubankCsv(file, ctx);
+        HttpStatus status = result.imported() > 0 ? HttpStatus.CREATED : HttpStatus.OK;
+        return ResponseEntity.status(status).body(result);
     }
 
     @Operation(summary = "Deletes a transaction")

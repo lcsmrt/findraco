@@ -1,6 +1,5 @@
 package com.lcs.findraco.plan.controller;
 
-import com.lcs.findraco.plan.model.PlanInvitation;
 import com.lcs.findraco.plan.request.CreateInvitationRequest;
 import com.lcs.findraco.plan.response.AcceptInvitationResponse;
 import com.lcs.findraco.plan.response.InvitationPreviewResponse;
@@ -34,17 +33,13 @@ public class PlanInvitationController {
     @PostMapping(PlanRoutes.PLAN_INVITATION)
     public ResponseEntity<InvitationResponse> createInvitation(
             @RequestBody @Valid CreateInvitationRequest dto, PlanContext ctx) {
-        PlanInvitation invitation = invitationService.createInvite(dto, ctx);
-        return ResponseEntity.status(HttpStatus.CREATED).body(InvitationResponse.from(invitation));
+        return ResponseEntity.status(HttpStatus.CREATED).body(invitationService.createInvite(dto, ctx));
     }
 
     @Operation(summary = "Lists a plan's invitations (owner only)")
     @GetMapping(PlanRoutes.PLAN_INVITATION)
     public ResponseEntity<List<InvitationResponse>> listInvitations(PlanContext ctx) {
-        List<InvitationResponse> invitations = invitationService.listInvitations(ctx).stream()
-                .map(InvitationResponse::from)
-                .toList();
-        return ResponseEntity.ok(invitations);
+        return ResponseEntity.ok(invitationService.listInvitations(ctx));
     }
 
     @Operation(summary = "Revokes an invitation (owner only)")
@@ -59,7 +54,7 @@ public class PlanInvitationController {
     @SecurityRequirements
     @GetMapping(PlanRoutes.INVITATION + "/{token}")
     public ResponseEntity<InvitationPreviewResponse> previewInvitation(@PathVariable String token) {
-        return ResponseEntity.ok(InvitationPreviewResponse.from(invitationService.preview(token)));
+        return ResponseEntity.ok(invitationService.preview(token));
     }
 
     @Operation(summary = "Accepts an invitation by token for the authenticated user")
@@ -70,6 +65,6 @@ public class PlanInvitationController {
             @PathVariable String token, @CurrentUser AuthenticatedUser user) {
         PlanInvitationService.AcceptResult result = invitationService.accept(token, user.id());
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
-        return ResponseEntity.status(status).body(AcceptInvitationResponse.from(result.membership()));
+        return ResponseEntity.status(status).body(result.membership());
     }
 }

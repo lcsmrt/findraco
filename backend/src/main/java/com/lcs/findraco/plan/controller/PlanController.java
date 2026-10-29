@@ -1,6 +1,5 @@
 package com.lcs.findraco.plan.controller;
 
-import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.request.CreatePlanRequest;
 import com.lcs.findraco.plan.request.TransferOwnershipRequest;
 import com.lcs.findraco.plan.request.UpdateMemberRoleRequest;
@@ -35,40 +34,33 @@ public class PlanController {
     @PostMapping
     public ResponseEntity<PlanResponse> createPlan(
             @RequestBody @Valid CreatePlanRequest dto, @CurrentUser AuthenticatedUser user) {
-        PlanMembership membership = planService.createPlan(dto.name(), user.id());
-        return ResponseEntity.status(HttpStatus.CREATED).body(PlanResponse.from(membership));
+        return ResponseEntity.status(HttpStatus.CREATED).body(planService.createPlan(dto.name(), user.id()));
     }
 
     @Operation(summary = "Fetches all plans the authenticated user belongs to")
     @GetMapping
     public ResponseEntity<List<PlanResponse>> getPlans(@CurrentUser AuthenticatedUser user) {
-        List<PlanResponse> plans = planService.findMembershipsForUser(user.id()).stream()
-                .map(PlanResponse::from)
-                .toList();
-        return ResponseEntity.ok(plans);
+        return ResponseEntity.ok(planService.listPlans(user.id()));
     }
 
     @Operation(summary = "Fetches a plan the authenticated user belongs to")
     @GetMapping("/{id}")
     public ResponseEntity<PlanResponse> getPlan(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
-        return ResponseEntity.ok(PlanResponse.from(planService.getMembership(id, user.id())));
+        return ResponseEntity.ok(planService.getPlan(id, user.id()));
     }
 
     @Operation(summary = "Fetches the members of a plan the authenticated user belongs to")
     @GetMapping("/{id}/members")
     public ResponseEntity<List<PlanMemberResponse>> getMembers(
             @PathVariable Long id, @CurrentUser AuthenticatedUser user) {
-        List<PlanMemberResponse> members = planService.getMembers(id, user.id()).stream()
-                .map(PlanMemberResponse::from)
-                .toList();
-        return ResponseEntity.ok(members);
+        return ResponseEntity.ok(planService.getMembers(id, user.id()));
     }
 
     @Operation(summary = "Renames a plan (owner only)")
     @PutMapping("/{id}")
     public ResponseEntity<PlanResponse> renamePlan(
             @PathVariable Long id, @RequestBody @Valid UpdatePlanRequest dto, @CurrentUser AuthenticatedUser user) {
-        return ResponseEntity.ok(PlanResponse.from(planService.renamePlan(id, dto.name(), user.id())));
+        return ResponseEntity.ok(planService.renamePlan(id, dto.name(), user.id()));
     }
 
     @Operation(summary = "Deletes (soft-delete) a plan (owner only)")
@@ -105,8 +97,7 @@ public class PlanController {
             @PathVariable Long userId,
             @RequestBody @Valid UpdateMemberRoleRequest dto,
             @CurrentUser AuthenticatedUser user) {
-        return ResponseEntity.ok(
-                PlanMemberResponse.from(planService.changeMemberRole(id, userId, dto.role(), user.id())));
+        return ResponseEntity.ok(planService.changeMemberRole(id, userId, dto.role(), user.id()));
     }
 
     @Operation(summary = "Removes a member from a plan (owner only)")

@@ -65,6 +65,16 @@ class ArchitectureTest {
             .because("a controller delegates to a service, which owns the repositories");
 
     @ArchTest
+    static final ArchRule controllersNeverMapEntities = noClasses()
+            .that()
+            .areAnnotatedWith(RestController.class)
+            .should()
+            .dependOnClassesThat()
+            .areAnnotatedWith(Entity.class)
+            .because("the service builds the response inside its transaction; with open-in-view off an entity "
+                    + "reaching the controller fails on its first lazy association");
+
+    @ArchTest
     static final ArchRule constructorInjectionOnly = noFields()
             .should()
             .beAnnotatedWith(Autowired.class)

@@ -6,6 +6,7 @@ import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import com.lcs.findraco.user.request.CreateUserRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
+import com.lcs.findraco.user.response.UserResponse;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -27,7 +28,7 @@ public class UserService {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @Transactional
-    public User create(CreateUserRequest dto) {
+    public UserResponse create(CreateUserRequest dto) {
         Optional<User> existingUser = userRepository.findByEmail(dto.email());
         if (existingUser.isPresent()) {
             throw new UserExceptions.EmailAlreadyExistsException();
@@ -41,7 +42,7 @@ public class UserService {
 
         User savedUser = userRepository.save(user);
         planService.provisionDefaultPlan(savedUser);
-        return savedUser;
+        return UserResponse.from(savedUser);
     }
 
     @Transactional(readOnly = true)
@@ -59,23 +60,27 @@ public class UserService {
         return userRepository.findAllById(userIds);
     }
 
-    /** The authenticated caller, loaded in full: the token proves the account exists. */
     @Transactional(readOnly = true)
-    public User getById(long userId) {
+    public UserResponse getById(long userId) {
+        return UserResponse.from(load(userId));
+    }
+
+    /** The authenticated caller, loaded in full: the token proves the account exists. */
+    private User load(long userId) {
         return userRepository
                 .findById(userId)
                 .orElseThrow(() -> new IllegalStateException("Authenticated user " + userId + " no longer exists."));
     }
 
     @Transactional
-    public User update(UpdateUserRequest dto, long userId) {
-        User user = getById(userId);
+    public UserResponse update(UpdateUserRequest dto, long userId) {
+        User user = load(userId);
         user.setName(dto.name());
         user.setEmail(dto.email());
         String encryptedPassword = encoder.encode(dto.password());
         user.setPassword(encryptedPassword);
 
-        return userRepository.save(user);
+        return UserResponse.from(userRepository.save(user));
     }
 
     @Transactional

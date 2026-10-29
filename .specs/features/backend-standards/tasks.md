@@ -897,9 +897,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Suite green with OSIV off
-- [ ] No controller maps an entity
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Suite green with OSIV off
+- [x] No controller maps an entity
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

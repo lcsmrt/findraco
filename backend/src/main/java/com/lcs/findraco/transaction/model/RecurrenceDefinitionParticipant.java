@@ -16,14 +16,14 @@ public class RecurrenceDefinitionParticipant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "recurrence_definition_id",
             nullable = false,
             foreignKey = @ForeignKey(name = "fk_recdef_participants_definition"))
     private RecurrenceDefinition definition;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "member_user_id",
             nullable = false,

@@ -11,7 +11,7 @@ public class PlanInvitation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_plan_invitations_plan"))
     private Plan plan;
 
@@ -32,7 +32,7 @@ public class PlanInvitation {
     @Column(nullable = false)
     private InvitationStatus status;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "invited_by",
             nullable = false,

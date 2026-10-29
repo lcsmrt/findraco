@@ -16,14 +16,14 @@ public class TransactionParticipant {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "transaction_id",
             nullable = false,
             foreignKey = @ForeignKey(name = "fk_txn_participants_transaction"))
     private Transaction transaction;
 
-    @ManyToOne(optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(
             name = "member_user_id",
             nullable = false,

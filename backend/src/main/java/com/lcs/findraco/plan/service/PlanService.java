@@ -6,6 +6,8 @@ import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
+import com.lcs.findraco.plan.response.PlanMemberResponse;
+import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -33,8 +35,8 @@ public class PlanService {
     }
 
     @Transactional
-    public PlanMembership createPlan(String name, long ownerId) {
-        return createPlanInternal(name, entityManager.getReference(User.class, ownerId), false);
+    public PlanResponse createPlan(String name, long ownerId) {
+        return PlanResponse.from(createPlanInternal(name, entityManager.getReference(User.class, ownerId), false));
     }
 
     @Transactional
@@ -57,8 +59,10 @@ public class PlanService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlanMembership> findMembershipsForUser(long userId) {
-        return membershipRepository.findAllByUserId(userId);
+    public List<PlanResponse> listPlans(long userId) {
+        return membershipRepository.findAllByUserId(userId).stream()
+                .map(PlanResponse::from)
+                .toList();
     }
 
     /** The plan context of a request: the caller must be a member of a live plan, otherwise not-found. */
@@ -68,7 +72,11 @@ public class PlanService {
     }
 
     @Transactional(readOnly = true)
-    public PlanMembership getMembership(long planId, long userId) {
+    public PlanResponse getPlan(long planId, long userId) {
+        return PlanResponse.from(getMembership(planId, userId));
+    }
+
+    private PlanMembership getMembership(long planId, long userId) {
         Plan plan = planRepository.findById(planId).orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
 
         if (plan.getDeletedAt() != null) {
@@ -92,9 +100,11 @@ public class PlanService {
     }
 
     @Transactional(readOnly = true)
-    public List<PlanMembership> getMembers(long planId, long requesterId) {
+    public List<PlanMemberResponse> getMembers(long planId, long requesterId) {
         PlanMembership requesterMembership = getMembership(planId, requesterId);
-        return membershipRepository.findAllByPlan(requesterMembership.getPlan());
+        return membershipRepository.findAllByPlan(requesterMembership.getPlan()).stream()
+                .map(PlanMemberResponse::from)
+                .toList();
     }
 
     @Transactional(readOnly = true)
@@ -112,7 +122,7 @@ public class PlanService {
     }
 
     @Transactional
-    public PlanMembership changeMemberRole(long planId, long targetUserId, PlanRole newRole, long requesterId) {
+    public PlanMemberResponse changeMemberRole(long planId, long targetUserId, PlanRole newRole, long requesterId) {
         if (newRole == PlanRole.OWNER) {
             throw new PlanExceptions.OwnerRoleNeedsTransferException();
         }
@@ -130,11 +140,11 @@ public class PlanService {
         }
 
         targetMembership.setRole(newRole);
-        return membershipRepository.save(targetMembership);
+        return PlanMemberResponse.from(membershipRepository.save(targetMembership));
     }
 
     @Transactional
-    public PlanMembership renamePlan(long planId, String newName, long requesterId) {
+    public PlanResponse renamePlan(long planId, String newName, long requesterId) {
         PlanMembership requesterMembership = getMembership(planId, requesterId);
         planAuthorization.requireOwner(requesterMembership.getRole());
 
@@ -142,7 +152,7 @@ public class PlanService {
         plan.setName(newName);
         planRepository.save(plan);
 
-        return requesterMembership;
+        return PlanResponse.from(requesterMembership);
     }
 
     @Transactional

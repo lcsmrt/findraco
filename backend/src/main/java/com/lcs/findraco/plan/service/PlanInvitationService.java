@@ -9,6 +9,9 @@ import com.lcs.findraco.plan.repository.PlanInvitationRepository;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
 import com.lcs.findraco.plan.request.CreateInvitationRequest;
+import com.lcs.findraco.plan.response.AcceptInvitationResponse;
+import com.lcs.findraco.plan.response.InvitationPreviewResponse;
+import com.lcs.findraco.plan.response.InvitationResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDateTime;
@@ -41,7 +44,7 @@ public class PlanInvitationService {
 
     /** Only the plan owner may invite. Builds and persists a PENDING invitation. */
     @Transactional
-    public PlanInvitation createInvite(CreateInvitationRequest request, PlanContext ctx) {
+    public InvitationResponse createInvite(CreateInvitationRequest request, PlanContext ctx) {
         planAuthorization.requireOwner(ctx.role());
 
         InvitationType type = request.type();
@@ -55,17 +58,17 @@ public class PlanInvitationService {
         invitation.setInvitedBy(entityManager.getReference(User.class, ctx.userId()));
         invitation.setExpiresAt(type == InvitationType.LINK ? request.expiresAt() : null);
 
-        return invitationRepository.save(invitation);
+        return InvitationResponse.from(invitationRepository.save(invitation));
     }
 
     /** Reads an invitation by token for display before accepting. */
     @Transactional(readOnly = true)
-    public PlanInvitation preview(String token) {
-        return loadValidInvitation(token);
+    public InvitationPreviewResponse preview(String token) {
+        return InvitationPreviewResponse.from(loadValidInvitation(token));
     }
 
     /** Outcome of accepting an invitation: the membership, and whether it was newly created. */
-    public record AcceptResult(PlanMembership membership, boolean created) {}
+    public record AcceptResult(AcceptInvitationResponse membership, boolean created) {}
 
     /**
      * Accepts an invitation for the acting user. Idempotent: if the user is already a
@@ -90,7 +93,7 @@ public class PlanInvitationService {
                     .findByPlanAndUser(invitation.getPlan(), actor)
                     .orElseThrow(() -> new PlanExceptions.NotAMemberException(
                             invitation.getPlan().getId()));
-            return new AcceptResult(existing, false);
+            return new AcceptResult(AcceptInvitationResponse.from(existing), false);
         }
 
         PlanMembership membership = new PlanMembership();
@@ -103,14 +106,16 @@ public class PlanInvitationService {
             invitation.setStatus(InvitationStatus.ACCEPTED);
         }
 
-        return new AcceptResult(savedMembership, true);
+        return new AcceptResult(AcceptInvitationResponse.from(savedMembership), true);
     }
 
     /** Only the plan owner may list the active plan's invitations. */
     @Transactional(readOnly = true)
-    public List<PlanInvitation> listInvitations(PlanContext ctx) {
+    public List<InvitationResponse> listInvitations(PlanContext ctx) {
         planAuthorization.requireOwner(ctx.role());
-        return invitationRepository.findAllByPlan(planRepository.getReferenceById(ctx.planId()));
+        return invitationRepository.findAllByPlan(planRepository.getReferenceById(ctx.planId())).stream()
+                .map(InvitationResponse::from)
+                .toList();
     }
 
     /** Only the plan owner may revoke an invitation belonging to the active plan. */

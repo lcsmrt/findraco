@@ -29,6 +29,8 @@ import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
+import com.lcs.findraco.transaction.response.TransactionImportResponse;
+import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.service.UserService;
@@ -114,7 +116,11 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public Transaction findById(Long id, PlanContext ctx) {
+    public TransactionResponse getById(Long id, PlanContext ctx) {
+        return TransactionResponse.from(load(id, ctx));
+    }
+
+    private Transaction load(Long id, PlanContext ctx) {
         return transactionRepository
                 .findByIdAndPlan(id, plan(ctx))
                 .orElseThrow(() -> new TransactionExceptions.TransactionNotFoundException(id));
@@ -126,7 +132,7 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public Page<Transaction> findAllByPlanPaged(TransactionFilter filter, PlanContext ctx) {
+    public Page<TransactionResponse> findAllByPlanPaged(TransactionFilter filter, PlanContext ctx) {
         TransactionSortField sortBy = filter.sortBy();
         Sort.Direction direction = PageRequests.direction(filter.sortDirection());
 
@@ -158,11 +164,13 @@ public class TransactionService {
                         PageRequest.of(filter.page(), filter.size(), Sort.by(direction, sortBy.name()));
                 };
 
-        return transactionRepository.findAll(Specification.allOf(specs), pageable);
+        return transactionRepository
+                .findAll(Specification.allOf(specs), pageable)
+                .map(TransactionResponse::from);
     }
 
     @Transactional
-    public Transaction create(CreateTransactionRequest dto, PlanContext ctx) {
+    public TransactionResponse create(CreateTransactionRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
         dateUtils.checkIfStartDateIsBeforeEndDate(dto.startDate(), dto.endDate());
 
@@ -186,14 +194,14 @@ public class TransactionService {
         applyParticipants(transaction, dto.participants(), dto.splitMode(), dto.amount(), ctx);
         applyItems(transaction, dto.items(), ctx);
 
-        return transactionRepository.save(transaction);
+        return TransactionResponse.from(transactionRepository.save(transaction));
     }
 
     @Transactional
-    public Transaction update(Long id, UpdateTransactionRequest dto, PlanContext ctx) {
+    public TransactionResponse update(Long id, UpdateTransactionRequest dto, PlanContext ctx) {
         dateUtils.checkIfStartDateIsBeforeEndDate(dto.startDate(), dto.endDate());
 
-        Transaction existingTransaction = findById(id, ctx);
+        Transaction existingTransaction = load(id, ctx);
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(existingTransaction), ctx.userId());
 
         Category category = dto.categoryId() != null ? categoryService.findById(dto.categoryId(), ctx) : null;
@@ -213,7 +221,7 @@ public class TransactionService {
         applyParticipants(existingTransaction, dto.participants(), dto.splitMode(), dto.amount(), ctx);
         applyItems(existingTransaction, dto.items(), ctx);
 
-        return transactionRepository.save(existingTransaction);
+        return TransactionResponse.from(transactionRepository.save(existingTransaction));
     }
 
     private record ResolvedParticipants(SplitMode splitMode, List<ResolvedParticipant> shares) {}
@@ -342,13 +350,13 @@ public class TransactionService {
 
     @Transactional
     public void delete(Long id, PlanContext ctx) {
-        Transaction transaction = findById(id, ctx);
+        Transaction transaction = load(id, ctx);
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
         transactionRepository.delete(transaction);
     }
 
     @Transactional
-    public List<Transaction> createSeries(CreateSeriesRequest dto, PlanContext ctx) {
+    public TransactionSeriesResponse createSeries(CreateSeriesRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
         if (dto.mode() == RecurrenceMode.INSTALLMENT) {
@@ -424,7 +432,7 @@ public class TransactionService {
             occurrence.setRecurrenceDefinition(definition);
         }
 
-        return transactionRepository.saveAll(occurrences);
+        return TransactionSeriesResponse.from(transactionRepository.saveAll(occurrences));
     }
 
     @Transactional
@@ -681,7 +689,7 @@ public class TransactionService {
     }
 
     @Transactional
-    public int importFromNubankCsv(MultipartFile file, PlanContext ctx) {
+    public TransactionImportResponse importFromNubankCsv(MultipartFile file, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
         List<String> lines;
@@ -736,6 +744,6 @@ public class TransactionService {
         }
 
         transactionRepository.saveAll(transactions);
-        return transactions.size();
+        return new TransactionImportResponse(transactions.size());
     }
 }

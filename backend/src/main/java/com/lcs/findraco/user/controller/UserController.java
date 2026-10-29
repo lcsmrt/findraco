@@ -2,7 +2,6 @@ package com.lcs.findraco.user.controller;
 
 import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
-import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.request.CreateUserRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
 import com.lcs.findraco.user.response.UserResponse;
@@ -31,21 +30,19 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody @Valid CreateUserRequest dto) {
-        User createdUser = userService.create(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(createdUser));
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto));
     }
 
     @Operation(summary = "Returns the authenticated user's data")
     @GetMapping("/me")
     public ResponseEntity<UserResponse> getCurrentUser(@CurrentUser AuthenticatedUser user) {
-        return ResponseEntity.ok(UserResponse.from(userService.getById(user.id())));
+        return ResponseEntity.ok(userService.getById(user.id()));
     }
 
     @Operation(summary = "Updates the authenticated user")
     @PutMapping
     public ResponseEntity<UserResponse> updateUser(
             @RequestBody @Valid UpdateUserRequest dto, @CurrentUser AuthenticatedUser user) {
-        User updatedUser = userService.update(dto, user.id());
-        return ResponseEntity.ok(UserResponse.from(updatedUser));
+        return ResponseEntity.ok(userService.update(dto, user.id()));
     }
 }
