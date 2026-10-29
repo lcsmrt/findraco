@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
@@ -64,7 +64,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        return body.get("token").asText();
+        return body.get("token").asString();
     }
 
     @Test
@@ -80,7 +80,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     JsonNode profile = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(profile.get("email").asText()).isEqualTo(email);
+                    assertThat(profile.get("email").asString()).isEqualTo(email);
                 });
     }
 
@@ -98,7 +98,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
         JsonNode created = objectMapper.readTree(result.getResponse().getContentAsString());
-        assertThat(created.get("email").asText()).isEqualTo(email);
+        assertThat(created.get("email").asString()).isEqualTo(email);
         assertThat(created.has("token")).isFalse();
     }
 
@@ -163,8 +163,8 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
         JsonNode wrongPasswordBody = objectMapper.readTree(wrongPassword.getResponse().getContentAsString());
         JsonNode unknownEmailBody = objectMapper.readTree(unknownEmail.getResponse().getContentAsString());
-        assertThat(unknownEmailBody.get("message").asText())
-                .isEqualTo(wrongPasswordBody.get("message").asText());
+        assertThat(unknownEmailBody.get("message").asString())
+                .isEqualTo(wrongPasswordBody.get("message").asString());
     }
 
     @Test

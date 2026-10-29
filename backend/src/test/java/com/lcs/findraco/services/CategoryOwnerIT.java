@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
@@ -59,7 +59,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
                 .andExpect(status().isCreated()).andReturn());
 
         assertThat(created.get("ownerId").asLong()).isEqualTo(partner.getId());
-        assertThat(created.get("ownerName").asText()).isEqualTo(partner.getName());
+        assertThat(created.get("ownerName").asString()).isEqualTo(partner.getName());
         assertThat(created.get("ownerActive").asBoolean()).isTrue();
         FinancialTransactionCategory persisted = categoryRepository.findById(created.get("id").asLong()).orElseThrow();
         assertThat(persisted.getOwner().getId()).isEqualTo(partner.getId());
@@ -304,7 +304,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isCreated())
                 .andReturn();
-        return json(result).get("token").asText();
+        return json(result).get("token").asString();
     }
 
     private ResultActions removeMember(Plan plan, User asUser, User member) throws Exception {

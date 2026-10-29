@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
@@ -63,12 +63,12 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
 
         assertThat(persisted.get("items")).hasSize(1);
-        assertThat(persisted.get("items").get(0).get("description").asText()).isEqualTo("Item C");
+        assertThat(persisted.get("items").get(0).get("description").asString()).isEqualTo("Item C");
         assertThat(persisted.get("items").get(0).get("amount").decimalValue())
                 .isEqualByComparingTo("70.00");
 
         List<String> itemDescriptions = StreamSupport.stream(persisted.get("items").spliterator(), false)
-                .map(item -> item.get("description").asText())
+                .map(item -> item.get("description").asString())
                 .toList();
         assertThat(itemDescriptions).doesNotContain("Item A", "Item B");
     }

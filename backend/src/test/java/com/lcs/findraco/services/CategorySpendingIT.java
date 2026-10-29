@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
@@ -63,12 +63,12 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         JsonNode tree = readSpending(fetchSpending(plan, owner).andExpect(status().isOk()));
 
         assertThat(tree).hasSize(3);
-        assertThat(tree.get(0).get("name").asText()).isEqualTo("Food");
-        assertThat(tree.get(1).get("name").asText()).isEqualTo("Rent");
-        assertThat(tree.get(2).get("name").asText()).isEqualTo("Salary");
-        assertThat(tree.get(0).get("type").asText()).isEqualTo("DEBIT");
-        assertThat(tree.get(1).get("type").asText()).isEqualTo("DEBIT");
-        assertThat(tree.get(2).get("type").asText()).isEqualTo("CREDIT");
+        assertThat(tree.get(0).get("name").asString()).isEqualTo("Food");
+        assertThat(tree.get(1).get("name").asString()).isEqualTo("Rent");
+        assertThat(tree.get(2).get("name").asString()).isEqualTo("Salary");
+        assertThat(tree.get(0).get("type").asString()).isEqualTo("DEBIT");
+        assertThat(tree.get(1).get("type").asString()).isEqualTo("DEBIT");
+        assertThat(tree.get(2).get("type").asString()).isEqualTo("CREDIT");
 
         // Root: direct spend (150) + child (250); the out-of-period transaction is excluded.
         JsonNode food = tree.get(0);
@@ -108,7 +108,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         JsonNode salary = tree.get(2);
         assertThat(salary.get("spent").decimalValue()).isEqualByComparingTo("1000.00");
         assertThat(salary.get("children")).hasSize(1);
-        assertThat(salary.get("children").get(0).get("name").asText()).isEqualTo("Bonus");
+        assertThat(salary.get("children").get(0).get("name").asString()).isEqualTo("Bonus");
         assertThat(salary.get("children").get(0).get("spent").decimalValue()).isEqualByComparingTo("0");
     }
 
@@ -123,7 +123,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         JsonNode tree = readSpending(fetchSpending(plan, viewer).andExpect(status().isOk()));
 
         assertThat(tree).hasSize(3);
-        assertThat(tree.get(0).get("name").asText()).isEqualTo("Food");
+        assertThat(tree.get(0).get("name").asString()).isEqualTo("Food");
         assertThat(tree.get(0).get("spent").decimalValue()).isEqualByComparingTo("400.00");
     }
 
@@ -294,7 +294,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("100.00");
         assertThat(row.get("members")).hasSize(2);
         JsonNode mine = memberRow(row, owner);
-        assertThat(mine.get("name").asText()).isEqualTo(owner.getName());
+        assertThat(mine.get("name").asString()).isEqualTo(owner.getName());
         assertThat(mine.get("spent").decimalValue()).isEqualByComparingTo("60.00");
         assertThat(mine.get("limit").isNull()).isTrue();
         assertThat(mine.get("active").asBoolean()).isTrue();
@@ -383,14 +383,14 @@ class CategorySpendingIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isCreated())).get("token").asText();
+                .andExpect(status().isCreated())).get("token").asString();
         mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(member)))
                 .andExpect(status().isCreated());
     }
 
     private static JsonNode rowNamed(JsonNode tree, String name) {
         for (JsonNode row : tree) {
-            if (row.get("name").asText().equals(name)) {
+            if (row.get("name").asString().equals(name)) {
                 return row;
             }
         }

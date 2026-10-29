@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.models.User;
@@ -58,12 +58,12 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
         assertThat(created.get("count").asInt()).isEqualTo(expectedCount);
         JsonNode occurrences = created.get("occurrences");
         assertThat(occurrences).hasSize(expectedCount);
-        assertThat(occurrences.get(0).get("startDate").asText()).isEqualTo(start.toString());
-        assertThat(occurrences.get(expectedCount - 1).get("startDate").asText()).isEqualTo(expectedLast.toString());
+        assertThat(occurrences.get(0).get("startDate").asString()).isEqualTo(start.toString());
+        assertThat(occurrences.get(expectedCount - 1).get("startDate").asString()).isEqualTo(expectedLast.toString());
 
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         JsonNode definitionDto = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definitionDto.get("mode").asText()).isEqualTo("RECURRING");
+        assertThat(definitionDto.get("mode").asString()).isEqualTo("RECURRING");
         assertThat(definitionDto.get("endDate").isNull()).isTrue();
 
         RecurrenceDefinition definition = recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)
@@ -84,12 +84,12 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
         assertThat(created.get("count").asInt()).isEqualTo(4);
         JsonNode occurrences = created.get("occurrences");
         for (int i = 0; i < 4; i++) {
-            assertThat(occurrences.get(i).get("startDate").asText()).isEqualTo(start.plusMonths(i).toString());
+            assertThat(occurrences.get(i).get("startDate").asString()).isEqualTo(start.plusMonths(i).toString());
         }
 
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         JsonNode definitionDto = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definitionDto.get("endDate").asText()).isEqualTo(end.toString());
+        assertThat(definitionDto.get("endDate").asString()).isEqualTo(end.toString());
 
         RecurrenceDefinition definition = recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)
                 .orElseThrow();

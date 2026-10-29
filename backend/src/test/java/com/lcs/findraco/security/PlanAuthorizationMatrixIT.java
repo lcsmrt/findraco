@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
@@ -190,7 +190,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 .andReturn();
         JsonNode persisted = objectMapper.readTree(getResult.getResponse().getContentAsString());
         assertThat(persisted.get("amount").decimalValue()).isEqualByComparingTo("70.00");
-        assertThat(persisted.get("description").asText()).isEqualTo("Test transaction");
+        assertThat(persisted.get("description").asString()).isEqualTo("Test transaction");
     }
 
     @Test
@@ -251,7 +251,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     JsonNode plan = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(plan.get("name").asText()).isEqualTo(cast.plan().getName());
+                    assertThat(plan.get("name").asString()).isEqualTo(cast.plan().getName());
                 });
     }
 

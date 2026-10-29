@@ -1,0 +1,3019 @@
+{
+  "components": {
+    "schemas": {
+      "AcceptInvitationResponseDto": {
+        "properties": {
+          "planId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "AuthenticationResponseDto": {
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CategoryBreakdownDto": {
+        "properties": {
+          "categoryId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "categoryName": {
+            "type": "string"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "overLimit": {
+            "type": "boolean"
+          },
+          "parentId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "percentUsed": {
+            "type": "number"
+          },
+          "remaining": {
+            "type": "number"
+          },
+          "spent": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "CategorySpendingDto": {
+        "properties": {
+          "categoryId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/Member"
+            },
+            "type": "array"
+          },
+          "name": {
+            "type": "string"
+          },
+          "overLimit": {
+            "type": "boolean"
+          },
+          "ownerActive": {
+            "type": "boolean"
+          },
+          "ownerId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "parentId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "percentUsed": {
+            "type": "number"
+          },
+          "remaining": {
+            "type": "number"
+          },
+          "spent": {
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "CategoryUsageDto": {
+        "properties": {
+          "items": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "recurrenceDefinitions": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "transactions": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CreatedByDto": {
+        "properties": {
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DashboardSummaryResponseDto": {
+        "properties": {
+          "categoryBreakdown": {
+            "items": {
+              "$ref": "#/components/schemas/CategoryBreakdownDto"
+            },
+            "type": "array"
+          },
+          "monthlyTrend": {
+            "items": {
+              "$ref": "#/components/schemas/MonthlyTrendDto"
+            },
+            "type": "array"
+          },
+          "netBalance": {
+            "type": "number"
+          },
+          "personBreakdown": {
+            "items": {
+              "$ref": "#/components/schemas/PersonBreakdownDto"
+            },
+            "type": "array"
+          },
+          "totalExpenses": {
+            "type": "number"
+          },
+          "totalIncome": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "FinancialTransactionCategoryRequestDto": {
+        "properties": {
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "memberLimits": {
+            "items": {
+              "$ref": "#/components/schemas/MemberLimitDto"
+            },
+            "type": "array"
+          },
+          "ownerId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "parentId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "spendingLimit": {
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "description",
+          "type"
+        ],
+        "type": "object"
+      },
+      "FinancialTransactionCategoryResponseDto": {
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "effectiveLimit": {
+            "type": "number"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "memberLimits": {
+            "items": {
+              "$ref": "#/components/schemas/MemberLimit"
+            },
+            "type": "array"
+          },
+          "ownerActive": {
+            "type": "boolean"
+          },
+          "ownerId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "ownerName": {
+            "type": "string"
+          },
+          "parentId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "spendingLimit": {
+            "type": "number"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FinancialTransactionImportResponseDto": {
+        "properties": {
+          "imported": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "FinancialTransactionRequestDto": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "categoryId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "endDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemDto"
+            },
+            "type": "array"
+          },
+          "parcelsNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantDto"
+            },
+            "type": "array"
+          },
+          "splitMode": {
+            "enum": [
+              "EQUAL",
+              "EXACT",
+              "PERCENT"
+            ],
+            "type": "string"
+          },
+          "startDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "description",
+          "startDate",
+          "type"
+        ],
+        "type": "object"
+      },
+      "FinancialTransactionResponseDto": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "category": {
+            "$ref": "#/components/schemas/FinancialTransactionCategoryResponseDto"
+          },
+          "createdBy": {
+            "$ref": "#/components/schemas/CreatedByDto"
+          },
+          "description": {
+            "type": "string"
+          },
+          "endDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ItemDto"
+            },
+            "type": "array"
+          },
+          "parcelsNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantDto"
+            },
+            "type": "array"
+          },
+          "seriesId": {
+            "type": "string"
+          },
+          "splitMode": {
+            "enum": [
+              "EQUAL",
+              "EXACT",
+              "PERCENT"
+            ],
+            "type": "string"
+          },
+          "startDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "FinancialTransactionSeriesRequestDto": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "categoryId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "currentParcel": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "endDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "interval": {
+            "enum": [
+              "MONTHLY"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "INSTALLMENT",
+              "RECURRING"
+            ],
+            "type": "string"
+          },
+          "parcelsNumber": {
+            "format": "int32",
+            "maximum": 120,
+            "minimum": 2,
+            "type": "integer"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantDto"
+            },
+            "type": "array"
+          },
+          "splitMode": {
+            "enum": [
+              "EQUAL",
+              "EXACT",
+              "PERCENT"
+            ],
+            "type": "string"
+          },
+          "startDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "description",
+          "mode",
+          "startDate",
+          "type"
+        ],
+        "type": "object"
+      },
+      "FinancialTransactionSeriesResponseDto": {
+        "properties": {
+          "count": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "occurrences": {
+            "items": {
+              "$ref": "#/components/schemas/FinancialTransactionResponseDto"
+            },
+            "type": "array"
+          },
+          "seriesId": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ForgotPasswordRequestDto": {
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "type": "object"
+      },
+      "InvitationPreviewResponseDto": {
+        "properties": {
+          "invitedByName": {
+            "type": "string"
+          },
+          "planName": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "InvitationRequestDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "EMAIL",
+              "LINK"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "role",
+          "type"
+        ],
+        "type": "object"
+      },
+      "InvitationResponseDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "expiresAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "link": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PENDING",
+              "ACCEPTED",
+              "EXPIRED",
+              "REVOKED"
+            ],
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "EMAIL",
+              "LINK"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ItemDto": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "categoryId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "quantity": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "amount",
+          "description"
+        ],
+        "type": "object"
+      },
+      "LoginRequestDto": {
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object"
+      },
+      "Member": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "overLimit": {
+            "type": "boolean"
+          },
+          "percentUsed": {
+            "type": "number"
+          },
+          "remaining": {
+            "type": "number"
+          },
+          "spent": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "MemberLimit": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "amount": {
+            "type": "number"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "memberName": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "MemberLimitDto": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "amount",
+          "memberId"
+        ],
+        "type": "object"
+      },
+      "MonthlyTrendDto": {
+        "properties": {
+          "expenses": {
+            "type": "number"
+          },
+          "income": {
+            "type": "number"
+          },
+          "month": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "year": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PagedResponseDtoFinancialTransactionCategoryResponseDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/FinancialTransactionCategoryResponseDto"
+            },
+            "type": "array"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "page": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PagedResponseDtoFinancialTransactionResponseDto": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/FinancialTransactionResponseDto"
+            },
+            "type": "array"
+          },
+          "last": {
+            "type": "boolean"
+          },
+          "page": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "size": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "totalElements": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "totalPages": {
+            "format": "int32",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "ParticipantDto": {
+        "properties": {
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "shareAmount": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "memberId"
+        ],
+        "type": "object"
+      },
+      "ParticipantTemplateDto": {
+        "properties": {
+          "memberId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "shareAmount": {
+            "type": "number"
+          }
+        },
+        "type": "object"
+      },
+      "PasswordResetTokenValidationResponseDto": {
+        "properties": {
+          "valid": {
+            "type": "boolean"
+          }
+        },
+        "type": "object"
+      },
+      "PersonBreakdownDto": {
+        "properties": {
+          "expense": {
+            "type": "number"
+          },
+          "income": {
+            "type": "number"
+          },
+          "name": {
+            "type": "string"
+          },
+          "net": {
+            "type": "number"
+          },
+          "userId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "Plan": {
+        "properties": {
+          "createdBy": {
+            "$ref": "#/components/schemas/User"
+          },
+          "default": {
+            "type": "boolean"
+          },
+          "deletedAt": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "PlanContext": {
+        "properties": {
+          "plan": {
+            "$ref": "#/components/schemas/Plan"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/User"
+          }
+        },
+        "type": "object"
+      },
+      "PlanMemberResponseDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          },
+          "userId": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "PlanRequestDto": {
+        "properties": {
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object"
+      },
+      "PlanResponseDto": {
+        "properties": {
+          "default": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "myRole": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RecurrenceDefinitionResponseDto": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "categoryId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "description": {
+            "type": "string"
+          },
+          "endDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "firstParcel": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "interval": {
+            "enum": [
+              "MONTHLY"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "INSTALLMENT",
+              "RECURRING"
+            ],
+            "type": "string"
+          },
+          "parcelsNumber": {
+            "format": "int32",
+            "type": "integer"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantTemplateDto"
+            },
+            "type": "array"
+          },
+          "seriesId": {
+            "type": "string"
+          },
+          "splitMode": {
+            "enum": [
+              "EQUAL",
+              "EXACT",
+              "PERCENT"
+            ],
+            "type": "string"
+          },
+          "startDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "ResetPasswordRequestDto": {
+        "properties": {
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "token": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "password",
+          "token"
+        ],
+        "type": "object"
+      },
+      "SeriesEditRequestDto": {
+        "properties": {
+          "amount": {
+            "type": "number"
+          },
+          "categoryId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "currentParcel": {
+            "format": "int32",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "description": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "endDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "interval": {
+            "enum": [
+              "MONTHLY"
+            ],
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "INSTALLMENT",
+              "RECURRING"
+            ],
+            "type": "string"
+          },
+          "parcelsNumber": {
+            "format": "int32",
+            "maximum": 120,
+            "minimum": 2,
+            "type": "integer"
+          },
+          "participants": {
+            "items": {
+              "$ref": "#/components/schemas/ParticipantDto"
+            },
+            "type": "array"
+          },
+          "pivotOccurrenceId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "scope": {
+            "enum": [
+              "THIS_ONE",
+              "THIS_AND_FOLLOWING",
+              "ALL"
+            ],
+            "type": "string"
+          },
+          "splitMode": {
+            "enum": [
+              "EQUAL",
+              "EXACT",
+              "PERCENT"
+            ],
+            "type": "string"
+          },
+          "startDate": {
+            "format": "date",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "CREDIT",
+              "DEBIT"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "amount",
+          "description",
+          "mode",
+          "scope",
+          "startDate",
+          "type"
+        ],
+        "type": "object"
+      },
+      "TransferOwnershipRequestDto": {
+        "properties": {
+          "newOwnerUserId": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "previousOwnerRole": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "newOwnerUserId"
+        ],
+        "type": "object"
+      },
+      "UpdateMemberRoleRequestDto": {
+        "properties": {
+          "role": {
+            "enum": [
+              "OWNER",
+              "EDITOR",
+              "CONTRIBUTOR",
+              "VIEWER"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "type": "object"
+      },
+      "User": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "UserRequestDto": {
+        "properties": {
+          "email": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "name": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "password": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "name",
+          "password"
+        ],
+        "type": "object"
+      },
+      "UserResponseDto": {
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "bearerFormat": "JWT",
+        "name": "bearerAuth",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "contact": {
+      "email": "lucas.mrt.dev@gmail.com",
+      "name": "Lucas Martins"
+    },
+    "description": "API for personal finance management.",
+    "license": {
+      "name": "MIT License",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "title": "findraco API",
+    "version": "0.0.3-SNAPSHOT"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/findraco/auth/forgot-password": {
+      "post": {
+        "operationId": "forgotPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ForgotPasswordRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Emails a password reset link; responds the same whether or not the account exists",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/findraco/auth/login": {
+      "post": {
+        "operationId": "login",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Authenticates a user; returns an access token and sets the session cookie",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/findraco/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "findraco_session",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Signs out this device: revokes the cookie's session, if any, and clears the cookie",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/findraco/auth/refresh": {
+      "post": {
+        "operationId": "refresh",
+        "parameters": [
+          {
+            "in": "cookie",
+            "name": "findraco_session",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthenticationResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Renews the session from its cookie; returns a new access token and rotates the cookie",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/findraco/auth/reset-password": {
+      "post": {
+        "operationId": "resetPassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Sets a new password using a password reset link",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/findraco/auth/reset-password/validate": {
+      "get": {
+        "operationId": "validateResetToken",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasswordResetTokenValidationResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Checks whether a password reset link is still valid, without consuming it",
+        "tags": [
+          "Authentication"
+        ]
+      }
+    },
+    "/api/findraco/invitation/{token}": {
+      "get": {
+        "operationId": "previewInvitation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationPreviewResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Previews an invitation by token before accepting",
+        "tags": [
+          "Invitations"
+        ]
+      }
+    },
+    "/api/findraco/invitation/{token}/accept": {
+      "post": {
+        "operationId": "acceptInvitation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/AcceptInvitationResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Accepts an invitation by token for the authenticated user",
+        "tags": [
+          "Invitations"
+        ]
+      }
+    },
+    "/api/findraco/plan": {
+      "get": {
+        "operationId": "getPlans",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches all plans the authenticated user belongs to",
+        "tags": [
+          "Plans"
+        ]
+      },
+      "post": {
+        "operationId": "createPlan",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Creates a new plan owned by the authenticated user",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/api/findraco/plan/{id}": {
+      "delete": {
+        "operationId": "deletePlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Deletes (soft-delete) a plan (owner only)",
+        "tags": [
+          "Plans"
+        ]
+      },
+      "get": {
+        "operationId": "getPlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches a plan the authenticated user belongs to",
+        "tags": [
+          "Plans"
+        ]
+      },
+      "put": {
+        "operationId": "renamePlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Renames a plan (owner only)",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/api/findraco/plan/{id}/leave": {
+      "post": {
+        "operationId": "leavePlan",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Leaves a plan (non-owner only)",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/api/findraco/plan/{id}/members": {
+      "get": {
+        "operationId": "getMembers",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PlanMemberResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches the members of a plan the authenticated user belongs to",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/api/findraco/plan/{id}/members/{userId}": {
+      "delete": {
+        "operationId": "removeMember",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Removes a member from a plan (owner only)",
+        "tags": [
+          "Plans"
+        ]
+      },
+      "put": {
+        "operationId": "updateMemberRole",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "path",
+            "name": "userId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMemberRoleRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanMemberResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Changes the role of a plan member (owner only)",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/api/findraco/plan/{id}/transfer": {
+      "post": {
+        "operationId": "transferOwnership",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TransferOwnershipRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Transfers plan ownership to another member (owner only)",
+        "tags": [
+          "Plans"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/dashboard": {
+      "get": {
+        "operationId": "getSummary",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "memberId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/DashboardSummaryResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Returns the financial summary for the plan",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/dashboard/trend": {
+      "get": {
+        "operationId": "getTrend",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "memberId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/MonthlyTrendDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Returns income and expenses per month for the plan",
+        "tags": [
+          "Dashboard"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction": {
+      "get": {
+        "operationId": "getAllTransactions",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CREDIT",
+                "DEBIT"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "categoryId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "memberId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "startDateFrom",
+            "required": false,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "startDateTo",
+            "required": false,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "amountMin",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "amountMax",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortDirection",
+            "required": false,
+            "schema": {
+              "pattern": "asc|desc",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseDtoFinancialTransactionResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches all transactions for the plan",
+        "tags": [
+          "Financial Transactions"
+        ]
+      },
+      "post": {
+        "operationId": "createTransaction",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinancialTransactionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Creates a new transaction",
+        "tags": [
+          "Financial Transactions"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction-category": {
+      "get": {
+        "operationId": "getAllCategories",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "description",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "type",
+            "required": false,
+            "schema": {
+              "enum": [
+                "CREDIT",
+                "DEBIT"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "size",
+            "required": false,
+            "schema": {
+              "format": "int32",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortBy",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "sortDirection",
+            "required": false,
+            "schema": {
+              "pattern": "asc|desc",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PagedResponseDtoFinancialTransactionCategoryResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches all transaction categories for the plan",
+        "tags": [
+          "Financial Transaction Categories"
+        ]
+      },
+      "post": {
+        "operationId": "createCategory",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinancialTransactionCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionCategoryResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Creates a new transaction category for the plan",
+        "tags": [
+          "Financial Transaction Categories"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction-category/spending": {
+      "get": {
+        "operationId": "getSpending",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "startDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "endDate",
+            "required": true,
+            "schema": {
+              "format": "date",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CategorySpendingDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Returns every category of the plan as DEBIT and CREDIT trees with the period's spend and limit usage",
+        "tags": [
+          "Financial Transaction Categories"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction-category/{id}": {
+      "delete": {
+        "operationId": "deleteCategory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "reassignTo",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Deletes a transaction category, optionally moving its transactions, items and recurrences to another category",
+        "tags": [
+          "Financial Transaction Categories"
+        ]
+      },
+      "get": {
+        "operationId": "getCategory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionCategoryResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches a transaction category by ID",
+        "tags": [
+          "Financial Transaction Categories"
+        ]
+      },
+      "put": {
+        "operationId": "updateCategory",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinancialTransactionCategoryRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionCategoryResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Updates a transaction category for the plan",
+        "tags": [
+          "Financial Transaction Categories"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction-category/{id}/usage": {
+      "get": {
+        "operationId": "getCategoryUsage",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryUsageDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Counts the transactions, items and recurrence definitions that use a transaction category",
+        "tags": [
+          "Financial Transaction Categories"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction/import": {
+      "post": {
+        "operationId": "importCsv",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionImportResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Imports transactions from a Nubank CSV file",
+        "tags": [
+          "Financial Transactions"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction/series": {
+      "post": {
+        "operationId": "createSeries",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinancialTransactionSeriesRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionSeriesResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Creates a series of recurring transactions",
+        "tags": [
+          "Financial Transactions"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction/series/{seriesId}": {
+      "delete": {
+        "operationId": "deleteSeries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "seriesId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "scope",
+            "required": false,
+            "schema": {
+              "default": "ALL",
+              "enum": [
+                "THIS_ONE",
+                "THIS_AND_FOLLOWING",
+                "ALL"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "pivotOccurrenceId",
+            "required": false,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Deletes a series of recurring transactions (This one / This and following / All)",
+        "tags": [
+          "Financial Transactions"
+        ]
+      },
+      "get": {
+        "operationId": "getSeries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "seriesId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurrenceDefinitionResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches a series' recurrence definition (for edit-form prefill)",
+        "tags": [
+          "Financial Transactions"
+        ]
+      },
+      "put": {
+        "operationId": "editSeries",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "seriesId",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SeriesEditRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionSeriesResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Edits a series of recurring transactions (This one / This and following / All)",
+        "tags": [
+          "Financial Transactions"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/financial-transaction/{id}": {
+      "delete": {
+        "operationId": "deleteTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Deletes a transaction",
+        "tags": [
+          "Financial Transactions"
+        ]
+      },
+      "get": {
+        "operationId": "getTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Fetches a transaction by ID",
+        "tags": [
+          "Financial Transactions"
+        ]
+      },
+      "put": {
+        "operationId": "updateTransaction",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FinancialTransactionRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/FinancialTransactionResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Updates a transaction",
+        "tags": [
+          "Financial Transactions"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/invitation": {
+      "get": {
+        "operationId": "listInvitations",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/InvitationResponseDto"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Lists a plan's invitations (owner only)",
+        "tags": [
+          "Invitations"
+        ]
+      },
+      "post": {
+        "operationId": "createInvitation",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InvitationRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/InvitationResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Creates an invitation (email or link) for the plan; owner only",
+        "tags": [
+          "Invitations"
+        ]
+      }
+    },
+    "/api/findraco/plan/{planId}/invitation/{invitationId}": {
+      "delete": {
+        "operationId": "revokeInvitation",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "invitationId",
+            "required": true,
+            "schema": {
+              "format": "int64",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "ctx",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PlanContext"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        },
+        "summary": "Revokes an invitation (owner only)",
+        "tags": [
+          "Invitations"
+        ]
+      }
+    },
+    "/api/findraco/user": {
+      "post": {
+        "operationId": "createUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "security": [],
+        "summary": "Creates a new user",
+        "tags": [
+          "Users"
+        ]
+      },
+      "put": {
+        "operationId": "updateUser",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserRequestDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Updates the authenticated user",
+        "tags": [
+          "Users"
+        ]
+      }
+    },
+    "/api/findraco/user/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "responses": {
+          "200": {
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponseDto"
+                }
+              }
+            },
+            "description": "OK"
+          }
+        },
+        "summary": "Returns the authenticated user's data",
+        "tags": [
+          "Users"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Generated server url",
+      "url": "http://localhost"
+    }
+  ],
+  "tags": [
+    {
+      "description": "Login and token issuance.",
+      "name": "Authentication"
+    },
+    {
+      "description": "The account resource: register, read, and update the current user.",
+      "name": "Users"
+    },
+    {
+      "description": "Plans and their membership: create, rename, delete, members, roles, ownership.",
+      "name": "Plans"
+    },
+    {
+      "description": "Manage a plan's invitations (owner), or preview/accept one by token.",
+      "name": "Invitations"
+    },
+    {
+      "description": "Plan-scoped transactions, including recurring series and CSV import.",
+      "name": "Financial Transactions"
+    },
+    {
+      "description": "Plan-scoped transaction categories.",
+      "name": "Financial Transaction Categories"
+    },
+    {
+      "description": "Plan-scoped financial summary and breakdowns.",
+      "name": "Dashboard"
+    }
+  ]
+}

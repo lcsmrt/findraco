@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
@@ -67,28 +67,28 @@ class SeriesEditIT extends AbstractIntegrationTest {
                 "Laptop", "300.00", start, 6, null));
 
         assertThat(created.get("count").asInt()).isEqualTo(6);
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         assertThat(seriesId).isNotBlank();
 
         JsonNode occurrences = created.get("occurrences");
         assertThat(occurrences).hasSize(6);
         for (int i = 0; i < 6; i++) {
             JsonNode occ = occurrences.get(i);
-            assertThat(occ.get("description").asText()).isEqualTo("Laptop (" + (i + 1) + "/6)");
-            assertThat(occ.get("startDate").asText()).isEqualTo(start.plusMonths(i).toString());
+            assertThat(occ.get("description").asString()).isEqualTo("Laptop (" + (i + 1) + "/6)");
+            assertThat(occ.get("startDate").asString()).isEqualTo(start.plusMonths(i).toString());
             assertThat(occ.get("amount").decimalValue()).isEqualByComparingTo("300.00");
-            assertThat(occ.get("seriesId").asText()).isEqualTo(seriesId);
+            assertThat(occ.get("seriesId").asString()).isEqualTo(seriesId);
             assertThat(occ.get("parcelsNumber").asInt()).isEqualTo(6);
         }
 
         JsonNode firstPersisted = fetchOccurrence(plan, owner, occurrences.get(0).get("id").asLong());
         JsonNode lastPersisted = fetchOccurrence(plan, owner, occurrences.get(5).get("id").asLong());
-        assertThat(firstPersisted.get("description").asText()).isEqualTo("Laptop (1/6)");
-        assertThat(lastPersisted.get("description").asText()).isEqualTo("Laptop (6/6)");
+        assertThat(firstPersisted.get("description").asString()).isEqualTo("Laptop (1/6)");
+        assertThat(lastPersisted.get("description").asString()).isEqualTo("Laptop (6/6)");
 
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definition.get("mode").asText()).isEqualTo("INSTALLMENT");
-        assertThat(definition.get("description").asText()).isEqualTo("Laptop");
+        assertThat(definition.get("mode").asString()).isEqualTo("INSTALLMENT");
+        assertThat(definition.get("description").asString()).isEqualTo("Laptop");
         assertThat(definition.get("parcelsNumber").asInt()).isEqualTo(6);
         assertThat(definition.get("firstParcel").asInt()).isEqualTo(1);
     }
@@ -107,12 +107,12 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         assertThat(created.get("count").asInt()).isEqualTo(7);
         JsonNode occurrences = created.get("occurrences");
-        assertThat(occurrences.get(0).get("description").asText()).isEqualTo("Insurance (4/10)");
-        assertThat(occurrences.get(0).get("startDate").asText()).isEqualTo("2026-01-01");
-        assertThat(occurrences.get(6).get("description").asText()).isEqualTo("Insurance (10/10)");
-        assertThat(occurrences.get(6).get("startDate").asText()).isEqualTo("2026-07-01");
+        assertThat(occurrences.get(0).get("description").asString()).isEqualTo("Insurance (4/10)");
+        assertThat(occurrences.get(0).get("startDate").asString()).isEqualTo("2026-01-01");
+        assertThat(occurrences.get(6).get("description").asString()).isEqualTo("Insurance (10/10)");
+        assertThat(occurrences.get(6).get("startDate").asString()).isEqualTo("2026-07-01");
 
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definition.get("firstParcel").asInt()).isEqualTo(4);
         assertThat(definition.get("parcelsNumber").asInt()).isEqualTo(10);
@@ -131,15 +131,15 @@ class SeriesEditIT extends AbstractIntegrationTest {
         JsonNode occurrences = created.get("occurrences");
         for (int i = 0; i < 4; i++) {
             JsonNode occ = occurrences.get(i);
-            assertThat(occ.get("description").asText()).isEqualTo("Gym");
-            assertThat(occ.get("startDate").asText()).isEqualTo(start.plusMonths(i).toString());
+            assertThat(occ.get("description").asString()).isEqualTo("Gym");
+            assertThat(occ.get("startDate").asString()).isEqualTo(start.plusMonths(i).toString());
             assertThat(occ.get("parcelsNumber").isNull()).isTrue();
         }
 
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definition.get("mode").asText()).isEqualTo("RECURRING");
-        assertThat(definition.get("endDate").asText()).isEqualTo(end.toString());
+        assertThat(definition.get("mode").asString()).isEqualTo("RECURRING");
+        assertThat(definition.get("endDate").asString()).isEqualTo(end.toString());
     }
 
     @Test
@@ -149,7 +149,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate start = LocalDate.of(2026, 1, 1);
 
         JsonNode created = createSeries(plan, owner, installmentBody("Rent", "300.00", start, 6, null));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         JsonNode occurrences = created.get("occurrences");
         long parcel3Id = occurrences.get(2).get("id").asLong();
 
@@ -161,9 +161,9 @@ class SeriesEditIT extends AbstractIntegrationTest {
         assertThat(editResponse.get("occurrences").get(0).get("id").asLong()).isEqualTo(parcel3Id);
 
         JsonNode parcel3 = fetchOccurrence(plan, owner, parcel3Id);
-        assertThat(parcel3.get("description").asText()).isEqualTo("Fixed Rent (3/6)");
+        assertThat(parcel3.get("description").asString()).isEqualTo("Fixed Rent (3/6)");
         assertThat(parcel3.get("amount").decimalValue()).isEqualByComparingTo("999.00");
-        assertThat(parcel3.get("seriesId").asText()).isEqualTo(seriesId);
+        assertThat(parcel3.get("seriesId").asString()).isEqualTo(seriesId);
         assertThat(parcel3.get("parcelsNumber").asInt()).isEqualTo(6);
 
         for (int i = 0; i < 6; i++) {
@@ -172,12 +172,12 @@ class SeriesEditIT extends AbstractIntegrationTest {
             }
             long id = occurrences.get(i).get("id").asLong();
             JsonNode occ = fetchOccurrence(plan, owner, id);
-            assertThat(occ.get("description").asText()).isEqualTo("Rent (" + (i + 1) + "/6)");
+            assertThat(occ.get("description").asString()).isEqualTo("Rent (" + (i + 1) + "/6)");
             assertThat(occ.get("amount").decimalValue()).isEqualByComparingTo("300.00");
         }
 
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definition.get("description").asText()).isEqualTo("Rent");
+        assertThat(definition.get("description").asString()).isEqualTo("Rent");
         assertThat(definition.get("amount").decimalValue()).isEqualByComparingTo("300.00");
     }
 
@@ -188,7 +188,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate start = LocalDate.of(2026, 1, 1);
 
         JsonNode created = createSeries(plan, owner, installmentBody("Rent", "300.00", start, 6, null));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         JsonNode occurrences = created.get("occurrences");
         long parcel3Id = occurrences.get(2).get("id").asLong();
 
@@ -201,20 +201,20 @@ class SeriesEditIT extends AbstractIntegrationTest {
         for (int i = 0; i < 2; i++) {
             long id = occurrences.get(i).get("id").asLong();
             JsonNode occ = fetchOccurrence(plan, owner, id);
-            assertThat(occ.get("description").asText()).isEqualTo("Rent (" + (i + 1) + "/6)");
+            assertThat(occ.get("description").asString()).isEqualTo("Rent (" + (i + 1) + "/6)");
             assertThat(occ.get("amount").decimalValue()).isEqualByComparingTo("300.00");
         }
 
         for (int i = 2; i < 6; i++) {
             long id = occurrences.get(i).get("id").asLong();
             JsonNode occ = fetchOccurrence(plan, owner, id);
-            assertThat(occ.get("description").asText()).isEqualTo("New Rent (" + (i + 1) + "/6)");
+            assertThat(occ.get("description").asString()).isEqualTo("New Rent (" + (i + 1) + "/6)");
             assertThat(occ.get("amount").decimalValue()).isEqualByComparingTo("350.00");
         }
 
         // The definition's forward template is updated (used for any future regeneration).
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definition.get("description").asText()).isEqualTo("New Rent");
+        assertThat(definition.get("description").asString()).isEqualTo("New Rent");
         assertThat(definition.get("amount").decimalValue()).isEqualByComparingTo("350.00");
     }
 
@@ -230,7 +230,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         createBody.put("participants", List.of(
                 Map.of("memberId", owner.getId()), Map.of("memberId", member.getId())));
         JsonNode created = createSeries(plan, owner, createBody);
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         JsonNode occurrences = created.get("occurrences");
 
         Map<String, Object> editBody = editBody("All New Rent", "402.00", start, 6, "ALL", null);
@@ -243,7 +243,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         for (int i = 0; i < 6; i++) {
             long id = occurrences.get(i).get("id").asLong();
             JsonNode occ = fetchOccurrence(plan, owner, id);
-            assertThat(occ.get("description").asText()).isEqualTo("All New Rent (" + (i + 1) + "/6)");
+            assertThat(occ.get("description").asString()).isEqualTo("All New Rent (" + (i + 1) + "/6)");
             assertThat(occ.get("amount").decimalValue()).isEqualByComparingTo("402.00");
 
             BigDecimal sum = BigDecimal.ZERO;
@@ -262,7 +262,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate start = LocalDate.of(2026, 1, 1);
 
         JsonNode created = createSeries(plan, owner, installmentBody("Rent", "300.00", start, 6, null));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         long parcel1Id = created.get("occurrences").get(0).get("id").asLong();
 
         Map<String, Object> editBody = editBody("Rent", "300.00", start, 8, "THIS_ONE", parcel1Id);
@@ -279,7 +279,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate start = LocalDate.of(2026, 1, 1);
 
         JsonNode created = createSeries(plan, owner, installmentBody("Rent", "300.00", start, 6, null));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         long parcel3Id = created.get("occurrences").get(2).get("id").asLong();
 
         // Same guard, exercised from the other narrower scope (THIS_AND_FOLLOWING), confirming the
@@ -298,7 +298,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate start = LocalDate.of(2026, 1, 1);
 
         JsonNode created = createSeries(plan, owner, installmentBody("Rent", "300.00", start, 6, null));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
 
         Map<String, Object> editBody = editBody("Rent", "300.00", start, 9, "ALL", null);
         JsonNode editResponse = editSeries(plan, owner, seriesId, editBody, status().isOk());
@@ -306,7 +306,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         assertThat(editResponse.get("count").asInt()).isEqualTo(9);
         JsonNode occurrences = editResponse.get("occurrences");
         for (int i = 0; i < 9; i++) {
-            assertThat(occurrences.get(i).get("description").asText())
+            assertThat(occurrences.get(i).get("description").asString())
                     .isEqualTo("Rent (" + (i + 1) + "/9)");
             assertThat(occurrences.get(i).get("parcelsNumber").asInt()).isEqualTo(9);
         }
@@ -342,7 +342,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate originalEnd = LocalDate.of(2026, 3, 1);
 
         JsonNode created = createSeries(plan, owner, recurringBody("Gym", "50.00", start, originalEnd));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
 
         // Extending the end date under ALL scope so the regenerated target list would exceed the
         // 120 cap must be rejected, and (being @Transactional) must leave the definition untouched.
@@ -368,7 +368,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         assertThat(result.getResponse().getContentAsString()).contains("too many occurrences");
 
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definition.get("endDate").asText()).isEqualTo(originalEnd.toString());
+        assertThat(definition.get("endDate").asString()).isEqualTo(originalEnd.toString());
     }
 
     @Test
@@ -379,13 +379,13 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         // Open-ended (no endDate): materializes start..start+12mo, 13 occurrences.
         JsonNode created = createSeries(plan, owner, openEndedRecurringBody("Streaming", "20.00", start));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         assertThat(created.get("count").asInt()).isEqualTo(OPEN_ENDED_HORIZON_MONTHS + 1);
 
         LocalDate newEnd = start.plusMonths(3);
         List<Long> beyondNewEndIds = new ArrayList<>();
         for (JsonNode occ : created.get("occurrences")) {
-            if (LocalDate.parse(occ.get("startDate").asText()).isAfter(newEnd)) {
+            if (LocalDate.parse(occ.get("startDate").asString()).isAfter(newEnd)) {
                 beyondNewEndIds.add(occ.get("id").asLong());
             }
         }
@@ -411,7 +411,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         // (i.e. the dashboard's on-read top-up would not refill past the new bound either).
         topUpService.topUp(plan, LocalDate.now());
         JsonNode definitionAfterTopUp = fetchSeriesDefinition(plan, owner, seriesId);
-        assertThat(definitionAfterTopUp.get("endDate").asText()).isEqualTo(newEnd.toString());
+        assertThat(definitionAfterTopUp.get("endDate").asString()).isEqualTo(newEnd.toString());
         for (int i = 0; i <= 3; i++) {
             fetchOccurrence(plan, owner, created.get("occurrences").get(i).get("id").asLong());
         }
@@ -425,7 +425,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate originalEnd = start.plusMonths(2);
 
         JsonNode created = createSeries(plan, owner, recurringBody("Car loan", "400.00", start, originalEnd));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         assertThat(created.get("count").asInt()).isEqualTo(3);
 
         // Full-replace: omitting endDate on a RECURRING edit means "make it open-ended," not "leave
@@ -435,7 +435,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         assertThat(editResponse.get("count").asInt()).isEqualTo(OPEN_ENDED_HORIZON_MONTHS + 1);
         JsonNode occurrences = editResponse.get("occurrences");
-        assertThat(occurrences.get(occurrences.size() - 1).get("startDate").asText())
+        assertThat(occurrences.get(occurrences.size() - 1).get("startDate").asString())
                 .isEqualTo(start.plusMonths(OPEN_ENDED_HORIZON_MONTHS).toString());
 
         JsonNode definitionDto = fetchSeriesDefinition(plan, owner, seriesId);
@@ -466,7 +466,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate start = LocalDate.now();
 
         JsonNode created = createSeries(plan, owner, openEndedRecurringBody("Streaming", "20.00", start));
-        String seriesId = created.get("seriesId").asText();
+        String seriesId = created.get("seriesId").asString();
         assertThat(created.get("count").asInt()).isEqualTo(OPEN_ENDED_HORIZON_MONTHS + 1);
 
         mockMvc.perform(delete(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)

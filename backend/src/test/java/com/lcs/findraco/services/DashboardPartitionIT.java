@@ -6,8 +6,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
@@ -280,7 +280,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         JsonNode food = breakdown.get(0);
         assertThat(food.get("categoryId").asLong()).isEqualTo(foodId);
         assertThat(food.get("parentId").isNull()).isTrue();
-        assertThat(food.get("categoryName").asText()).isEqualTo("Food");
+        assertThat(food.get("categoryName").asString()).isEqualTo("Food");
         assertThat(food.get("spent").decimalValue()).isEqualByComparingTo("100.00");
         assertThat(food.get("children")).hasSize(1);
         JsonNode delivery = food.get("children").get(0);
@@ -427,7 +427,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
 
     private static BigDecimal categorySpent(JsonNode breakdown, String categoryName) {
         for (JsonNode category : breakdown) {
-            if (category.get("categoryName").asText().equals(categoryName)) {
+            if (category.get("categoryName").asString().equals(categoryName)) {
                 return category.get("spent").decimalValue();
             }
         }

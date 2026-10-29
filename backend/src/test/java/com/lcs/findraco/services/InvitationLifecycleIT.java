@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
 import com.lcs.findraco.models.User;
@@ -60,13 +60,13 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         MvcResult first = acceptAs(token, invitee).andExpect(status().isCreated()).andReturn();
         JsonNode firstBody = objectMapper.readTree(first.getResponse().getContentAsString());
         assertThat(firstBody.get("planId").asLong()).isEqualTo(plan.getId());
-        assertThat(firstBody.get("role").asText()).isEqualTo("EDITOR");
+        assertThat(firstBody.get("role").asString()).isEqualTo("EDITOR");
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(2);
 
         MvcResult second = acceptAs(token, invitee).andExpect(status().isOk()).andReturn();
         JsonNode secondBody = objectMapper.readTree(second.getResponse().getContentAsString());
         assertThat(secondBody.get("planId").asLong()).isEqualTo(plan.getId());
-        assertThat(secondBody.get("role").asText()).isEqualTo("EDITOR");
+        assertThat(secondBody.get("role").asString()).isEqualTo("EDITOR");
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(2);
     }
@@ -86,7 +86,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 .andExpect(status().isGone())
                 .andExpect(result -> {
                     JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(body.get("message").asText()).isEqualTo("This invitation has already been used.");
+                    assertThat(body.get("message").asString()).isEqualTo("This invitation has already been used.");
                 });
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(2);
@@ -105,7 +105,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 .andExpect(status().isGone())
                 .andExpect(result -> {
                     JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(body.get("message").asText()).isEqualTo("This invitation has expired.");
+                    assertThat(body.get("message").asString()).isEqualTo("This invitation has expired.");
                 });
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
@@ -124,7 +124,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
         JsonNode createdBody = objectMapper.readTree(created.getResponse().getContentAsString());
-        String token = createdBody.get("token").asText();
+        String token = createdBody.get("token").asString();
         long invitationId = createdBody.get("id").asLong();
 
         mockMvc.perform(delete(ApiRoutes.PLAN_INVITATION + "/{invitationId}", plan.getId(), invitationId)
@@ -135,7 +135,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 .andExpect(status().isGone())
                 .andExpect(result -> {
                     JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(body.get("message").asText()).isEqualTo("This invitation has been revoked.");
+                    assertThat(body.get("message").asString()).isEqualTo("This invitation has been revoked.");
                 });
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
@@ -151,7 +151,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 .andExpect(status().isCreated())
                 .andReturn();
         JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-        return body.get("token").asText();
+        return body.get("token").asString();
     }
 
     private Map<String, Object> invitationBody(PlanRole role, String type, String email, LocalDateTime expiresAt) {

@@ -6,7 +6,7 @@ Monorepo with two apps:
 
 | App | Stack | Path |
 | --- | ----- | ---- |
-| **Backend** | Java 17 · Spring Boot 3.5 · PostgreSQL · JWT | [`backend/`](./backend) |
+| **Backend** | Java 25 · Spring Boot 4.1 · PostgreSQL · JWT | [`backend/`](./backend) |
 | **Frontend** | React 19 · Vite 6 · TanStack Query · Tailwind v4 | [`frontend/`](./frontend) |
 
 ## Run it locally

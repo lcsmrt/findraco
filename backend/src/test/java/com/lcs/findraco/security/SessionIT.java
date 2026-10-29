@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
@@ -71,7 +71,7 @@ class SessionIT extends AbstractIntegrationTest {
                 .andReturn();
 
         String body = result.getResponse().getContentAsString();
-        assertThat(objectMapper.readTree(body).get("token").asText()).isNotBlank();
+        assertThat(objectMapper.readTree(body).get("token").asString()).isNotBlank();
 
         MockCookie cookie = sessionCookie(result);
         assertThat(cookie.getValue()).isNotBlank();
@@ -129,7 +129,7 @@ class SessionIT extends AbstractIntegrationTest {
 
         MvcResult result = refresh(oldCookie).andExpect(status().isOk()).andReturn();
 
-        String token = objectMapper.readTree(result.getResponse().getContentAsString()).get("token").asText();
+        String token = objectMapper.readTree(result.getResponse().getContentAsString()).get("token").asString();
         mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(user.getEmail()));

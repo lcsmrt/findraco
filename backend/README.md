@@ -4,7 +4,7 @@ Spring Boot REST API for personal finance management. Built as a learning projec
 
 ## Tech Stack
 
-- **Java 17** + **Spring Boot 3.5** — application framework
+- **Java 25** + **Spring Boot 4.1** — application framework
 - **Spring Security** + **JWT** (jjwt) — authentication and authorization
 - **Spring Data JPA** + **Hibernate** — data access layer
 - **PostgreSQL** — relational database
@@ -45,7 +45,7 @@ src/main/java/com/lcs/findraco/
 
 ### Prerequisites
 
-- **Java 17** (JDK)
+- **Java 25** (JDK)
 - A reachable **PostgreSQL** database. This project does **not** bundle a local database — point it at your own Postgres instance (e.g. a managed DB reached over an SSH tunnel). The `docker-compose.yml` here builds and runs the **API container** (host networking) for deployment; it does not start a database.
 
 ### Configure environment

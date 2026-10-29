@@ -6,12 +6,11 @@ Monorepo at `/home/lcs/dev/finsight` with two independent apps: `backend` (Sprin
 
 ## Core
 
-- Framework: Spring Boot 3.5.3 (backend) + React 19 (frontend)
-- Language: Java 17 (backend), TypeScript ~5.7 (frontend)
+- Framework: Spring Boot 4.1.2 (backend) + React 19 (frontend)
+- Language: Java 25 (backend), TypeScript ~5.7 (frontend)
 - Runtime: JVM 17 (backend), Node/Vite 6 (frontend)
 - Package manager: Maven (backend), npm (frontend)
 
-> **Discrepancy:** `backend/README.md` states Java 21, but `pom.xml` declares `<java.version>17</java.version>`. Java 17 is authoritative.
 
 ## Frontend
 
@@ -33,7 +32,7 @@ Monorepo at `/home/lcs/dev/finsight` with two independent apps: `backend` (Sprin
 - Authentication: Spring Security + JWT bearer tokens (`io.jsonwebtoken` jjwt 0.12.6 api/impl/jackson); user resolved by email from token via `@AuthenticationPrincipal`
 - Validation: Spring Validation (`spring-boot-starter-validation`)
 - API docs: springdoc-openapi 2.8.9 (Swagger UI at `/swagger-ui.html`)
-- Config loading: `me.paulschwarz:spring-dotenv` 4.0.0 (reads `.env`)
+- Config loading: `spring.config.import=optional:file:.env[.properties]` (reads `backend/.env` locally; production uses real environment variables)
 - Server port: 3000 (not the Spring default 8080)
 
 > **Discrepancy:** README claims Flyway migrations, but there is no Flyway/Liquibase dependency and no `db/migration` folder. Schema is created/updated by Hibernate `ddl-auto=update`.

@@ -5,8 +5,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
@@ -96,7 +96,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
                 .andExpect(status().isConflict())
                 .andReturn();
 
-        String message = objectMapper.readTree(result.getResponse().getContentAsString()).get("message").asText();
+        String message = objectMapper.readTree(result.getResponse().getContentAsString()).get("message").asString();
         assertThat(message).contains("2 transaction(s)", "1 item(s)", "1 recurrence definition(s)");
 
         assertThat(categoryRepository.findById(source.getId())).isPresent();
