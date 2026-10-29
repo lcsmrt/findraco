@@ -40,15 +40,15 @@ public class PlanContextArgumentResolver implements HandlerMethodArgumentResolve
             NativeWebRequest webRequest,
             WebDataBinderFactory binderFactory) {
 
-        @SuppressWarnings("unchecked")
-        Map<String, String> uriVariables = (Map<String, String>) webRequest.getAttribute(
+        Object uriVariables = webRequest.getAttribute(
                 HandlerMapping.URI_TEMPLATE_VARIABLES_ATTRIBUTE, RequestAttributes.SCOPE_REQUEST);
 
-        if (uriVariables == null || !uriVariables.containsKey("planId")) {
+        if (!(uriVariables instanceof Map<?, ?> variables)
+                || !(variables.get("planId") instanceof String planIdValue)) {
             throw new IllegalArgumentException("Missing required path variable {planId}.");
         }
 
-        Long planId = Long.parseLong(uriVariables.get("planId"));
+        Long planId = Long.parseLong(planIdValue);
         User user = resolveUser();
 
         PlanMembership membership = planService.getMembership(planId, user);

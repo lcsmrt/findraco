@@ -149,6 +149,45 @@
                 </executions>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>enforce-standards</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireJavaVersion>
+                                    <version>[25,26)</version>
+                                </requireJavaVersion>
+                                <bannedDependencies>
+                                    <excludes>
+                                        <exclude>org.projectlombok:*</exclude>
+                                        <exclude>org.mapstruct:*</exclude>
+                                    </excludes>
+                                    <message>Lombok and MapStruct are banned: write DTOs as records and map by hand.</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <parameters>true</parameters>
+                    <failOnWarning>true</failOnWarning>
+                    <compilerArgs>
+                        <!-- serial: nothing is Java-serialized (stateless JWT, no HTTP session, no RMI),
+                             so serialVersionUID on every exception would be noise. -->
+                        <arg>-Xlint:all,-serial</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
                 <version>3.10.4</version>
