@@ -18,9 +18,8 @@ import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.transaction.model.TransactionType;
-import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
-import com.lcs.findraco.transaction.repository.TransactionItemRepository;
-import com.lcs.findraco.transaction.repository.TransactionRepository;
+import com.lcs.findraco.transaction.service.CategoryReferenceCounts;
+import com.lcs.findraco.transaction.service.TransactionCategoryService;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -40,9 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final TransactionRepository transactionRepository;
-    private final TransactionItemRepository transactionItemRepository;
-    private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
+    private final TransactionCategoryService transactionCategoryService;
     private final CategoryMemberLimitRepository memberLimitRepository;
     private final PlanService planService;
     private final PlanAuthorization planAuthorization;
@@ -50,17 +47,13 @@ public class CategoryService {
 
     public CategoryService(
             CategoryRepository categoryRepository,
-            TransactionRepository transactionRepository,
-            TransactionItemRepository transactionItemRepository,
-            RecurrenceDefinitionRepository recurrenceDefinitionRepository,
+            TransactionCategoryService transactionCategoryService,
             CategoryMemberLimitRepository memberLimitRepository,
             PlanService planService,
             PlanAuthorization planAuthorization,
             EntityManager entityManager) {
         this.categoryRepository = categoryRepository;
-        this.transactionRepository = transactionRepository;
-        this.transactionItemRepository = transactionItemRepository;
-        this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
+        this.transactionCategoryService = transactionCategoryService;
         this.memberLimitRepository = memberLimitRepository;
         this.planService = planService;
         this.planAuthorization = planAuthorization;
@@ -85,10 +78,8 @@ public class CategoryService {
     }
 
     private CategoryUsageResponse usageOf(Category category) {
-        return new CategoryUsageResponse(
-                transactionRepository.countByCategory(category),
-                transactionItemRepository.countByCategory(category),
-                recurrenceDefinitionRepository.countByCategory(category));
+        CategoryReferenceCounts counts = transactionCategoryService.countReferences(category.getId());
+        return new CategoryUsageResponse(counts.transactions(), counts.items(), counts.recurrenceDefinitions());
     }
 
     @Transactional(readOnly = true)
@@ -311,9 +302,7 @@ public class CategoryService {
                     id, usage.transactions(), usage.items(), usage.recurrenceDefinitions());
         }
         if (usage.inUse()) {
-            transactionRepository.reassignCategory(category, target);
-            transactionItemRepository.reassignCategory(category, target);
-            recurrenceDefinitionRepository.reassignCategory(category, target);
+            transactionCategoryService.reassignCategory(category.getId(), target.getId());
         }
 
         categoryRepository.delete(category);

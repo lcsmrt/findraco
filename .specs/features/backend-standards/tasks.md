@@ -864,16 +864,24 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `CategoryDeleteIT` green
-- [ ] Adding `save` to the dashboard repository fails ArchUnit (checked, reverted)
-- [ ] `ArchitectureTest.CROSS_FEATURE_LAYERS` drops `repository`: no class depends on another feature's repository package, and the S2 read-only repository rule above covers repositories over another feature's entity (handed off by T18; the category usage counts move behind `TransactionService` too)
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] `CategoryDeleteIT` green
+- [x] Adding `save` to the dashboard repository fails ArchUnit (checked, reverted)
+- [x] `ArchitectureTest.CROSS_FEATURE_LAYERS` drops `repository`: no class depends on another feature's repository package, and the S2 read-only repository rule above covers repositories over another feature's entity (handed off by T18; the category usage counts move behind `TransactionService` too)
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
 **Commit**: `refactor(backend): category delete through the transaction owner`
 
 ---
+
+
+**Batch 5 deviations (T22–T28, unattended run)**
+
+- T22 status rule: 422 when the request must change (including a reference to a parent, target or member that does not fit), 409 when stored state must change first (subcategories, use, last plan/owner, taken e-mail, used/revoked/expired invitation, stale version). Invitations moved from 410 to 409; a missing required field of a `XxxFilter` is Bean Validation, so 422. The servlet error page (`ProblemErrorController`) is the "filter" producer; `/error` is public and the request id survives the error dispatch. Validation messages are pinned to English (`spring.web.locale=en`, fixed resolver).
+- T22 kept a transitional `IllegalArgumentException` → 400 mapping for one commit; T23 removed it (escaped ones now answer 500).
+- T25: `PlanContext` is hidden by the plan feature (`PlanWebConfig`, `SpringDocUtils.addRequestWrapperToIgnore`), since `shared` cannot reference it; the shared customizer only adds `planId`. A `@Nullable` response field is optional and also typed with `null` (the API writes nulls). Conditional 200/201 endpoints (CSV import, accept invitation) declare both with `@ApiResponse`. The snapshot also drops `info.version`.
+- T28: `TransactionCategoryService` (transaction feature) holds `countReferences`/`reassignCategory`, because `TransactionService` already depends on `CategoryService` (a constructor cycle). No `deleteByCategory`: a category in use is never deleted without a target, so nothing would call it.
 
 <!-- Phase 10 -->
 

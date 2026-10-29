@@ -13,6 +13,7 @@ import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
+import com.tngtech.archunit.core.domain.JavaParameterizedType;
 import com.tngtech.archunit.core.domain.properties.HasOwner;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
@@ -37,6 +38,10 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.ListCrudRepository;
+import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
@@ -74,11 +79,11 @@ class ArchitectureTest {
     private static final String ROOT = "com.lcs.findraco";
 
     /**
-     * The layers a feature may reach in another feature. The repository layer leaves the list when the
-     * report queries and the category delete stop using the transaction repository; the response layer
-     * then narrows to responses embedding another feature's response.
+     * The layers a feature may reach in another feature. A feature reads another's entities through a
+     * read-only repository of its own (see below); the response layer later narrows to responses embedding
+     * another feature's response.
      */
-    private static final Set<String> CROSS_FEATURE_LAYERS = Set.of("service", "model", "response", "repository");
+    private static final Set<String> CROSS_FEATURE_LAYERS = Set.of("service", "model", "response");
 
     private static final Pattern FEATURE_LAYER = Pattern.compile(
             Pattern.quote(ROOT) + "\\.(auth|user|plan|category|transaction|dashboard)\\.([a-z]+)(\\..*)?");
@@ -118,6 +123,15 @@ class ArchitectureTest {
                     .and(inSourceCode()))
             .because("a user error is a named DomainException with its own problem type; an escaped "
                     + "IllegalArgumentException answers 500");
+
+    @ArchTest
+    static final ArchRule repositoriesOverAnotherFeaturesEntityAreReadOnly = classes()
+            .that()
+            .areInterfaces()
+            .and()
+            .areAssignableTo(Repository.class)
+            .should(beReadOnlyWhenOverAnotherFeaturesEntity())
+            .because("another feature's entities are written only through their owner's service");
 
     @ArchTest
     static final ArchRule dtosAreRecords = classes()
@@ -198,6 +212,45 @@ class ArchitectureTest {
                 }
             }
         };
+    }
+
+    private static ArchCondition<JavaClass> beReadOnlyWhenOverAnotherFeaturesEntity() {
+        return new ArchCondition<>(
+                "extend Repository only and declare no write method when over another " + "feature's entity") {
+            @Override
+            public void check(JavaClass repository, ConditionEvents events) {
+                Optional<String> feature = featureOf(repository.getPackageName());
+                Optional<String> entityFeature =
+                        entityOf(repository).flatMap(entity -> featureOf(entity.getPackageName()));
+                if (feature.isEmpty() || entityFeature.isEmpty() || feature.equals(entityFeature)) {
+                    return;
+                }
+                if (WRITE_CAPABLE.stream().anyMatch(repository::isAssignableTo)) {
+                    events.add(SimpleConditionEvent.violated(
+                            repository, repository.getName() + " inherits write methods; extend Repository"));
+                }
+                repository.getMethods().stream()
+                        .filter(method -> method.isAnnotatedWith(Modifying.class)
+                                || WRITE_METHOD.matcher(method.getName()).matches())
+                        .forEach(method -> events.add(SimpleConditionEvent.violated(
+                                method, method.getFullName() + " writes another feature's entity")));
+            }
+        };
+    }
+
+    private static final List<Class<?>> WRITE_CAPABLE =
+            List.of(CrudRepository.class, ListCrudRepository.class, PagingAndSortingRepository.class);
+
+    private static final Pattern WRITE_METHOD = Pattern.compile("(save|delete|remove|insert|update).*");
+
+    /** The entity a repository is declared over: the first type argument of its Spring Data interface. */
+    private static Optional<JavaClass> entityOf(JavaClass repository) {
+        return repository.getInterfaces().stream()
+                .filter(type -> type instanceof JavaParameterizedType)
+                .map(JavaParameterizedType.class::cast)
+                .filter(type -> type.toErasure().isAssignableTo(Repository.class))
+                .map(type -> type.getActualTypeArguments().getFirst().toErasure())
+                .findFirst();
     }
 
     /** Leaves out what the compiler generates, such as {@code $deserializeLambda$} of a serializable lambda. */
