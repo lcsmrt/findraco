@@ -69,8 +69,11 @@ JWT_SECRET_KEY=generate_with__openssl_rand_-base64_64
 ### Run locally
 
 ```bash
-./mvnw spring-boot:run
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+The `local` profile (`application-local.properties`, also what `pnpm dev` uses) echoes SQL and, when
+SMTP is not configured, logs the password reset link. Every other profile logs neither.
 
 The API starts on **http://localhost:3000** (configurable via `SERVER_PORT`).
 

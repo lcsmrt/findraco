@@ -63,8 +63,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     }
                 }
             }
-        } catch (Exception exception) {
-            logger.warn("Could not authenticate via JWT", exception);
+        } catch (RuntimeException exception) {
+            // The type is enough to investigate; the message and stack can carry the token's e-mail.
+            logger.warn("Rejected a bearer token: " + exception.getClass().getSimpleName());
         }
 
         filterChain.doFilter(request, response);

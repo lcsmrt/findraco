@@ -704,8 +704,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `LogHygieneIT` asserts no password, token, e-mail or link in the log
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] `LogHygieneIT` asserts no password, token, e-mail or link in the log
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build

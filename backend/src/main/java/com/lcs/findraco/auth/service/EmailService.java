@@ -4,6 +4,7 @@ import com.lcs.findraco.auth.config.MailProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.core.env.Environment;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -16,10 +17,13 @@ public class EmailService {
 
     private final JavaMailSender mailSender;
     private final String from;
+    private final boolean local;
 
-    public EmailService(ObjectProvider<JavaMailSender> mailSender, MailProperties mailProperties) {
+    public EmailService(
+            ObjectProvider<JavaMailSender> mailSender, MailProperties mailProperties, Environment environment) {
         this.mailSender = mailSender.getIfAvailable();
         this.from = mailProperties.from();
+        this.local = environment.matchesProfiles("local");
     }
 
     /**
@@ -38,7 +42,12 @@ public class EmailService {
                 """.formatted(PasswordResetService.TOKEN_TTL.toMinutes(), resetUrl);
 
         if (mailSender == null) {
-            logger.info("SMTP is not configured; password reset email for {}:\n{}", to, text);
+            // A live reset link in a shared log is an account takeover; only a developer's own run prints it.
+            if (local) {
+                logger.info("SMTP is not configured; password reset link: {}", resetUrl);
+            } else {
+                logger.warn("SMTP is not configured; a password reset e-mail was not sent.");
+            }
             return;
         }
 
@@ -51,7 +60,10 @@ public class EmailService {
         try {
             mailSender.send(message);
         } catch (MailException exception) {
-            logger.error("Failed to send password reset email to {}", to, exception);
+            // The exception can name the recipient, so only its type is logged.
+            logger.error(
+                    "Failed to send a password reset e-mail: {}",
+                    exception.getClass().getSimpleName());
         }
     }
 }
