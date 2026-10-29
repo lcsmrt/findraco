@@ -2,11 +2,11 @@ package com.lcs.findraco;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.lcs.findraco.config.AppProperties;
-import com.lcs.findraco.config.CorsProperties;
-import com.lcs.findraco.config.JwtProperties;
-import com.lcs.findraco.config.MailProperties;
-import com.lcs.findraco.config.SessionProperties;
+import com.lcs.findraco.auth.config.CorsProperties;
+import com.lcs.findraco.auth.config.JwtProperties;
+import com.lcs.findraco.auth.config.MailProperties;
+import com.lcs.findraco.auth.config.SessionProperties;
+import com.lcs.findraco.shared.config.AppProperties;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;

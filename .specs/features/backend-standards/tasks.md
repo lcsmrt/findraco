@@ -502,9 +502,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `git log --follow` tracks every moved file
-- [ ] Suite green
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `git log --follow` tracks every moved file
+- [x] Suite green
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: quick

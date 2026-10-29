@@ -1,7 +1,7 @@
 package com.lcs.findraco.repositories;
 
 import com.lcs.findraco.models.Plan;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;

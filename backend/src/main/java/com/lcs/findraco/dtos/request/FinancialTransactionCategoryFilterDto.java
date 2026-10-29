@@ -1,6 +1,7 @@
 package com.lcs.findraco.dtos.request;
 
 import com.lcs.findraco.models.FinancialTransactionType;
+import com.lcs.findraco.shared.web.PaginatedFilterDto;
 
 public class FinancialTransactionCategoryFilterDto extends PaginatedFilterDto {
 

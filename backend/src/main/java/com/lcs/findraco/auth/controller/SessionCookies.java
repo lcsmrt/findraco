@@ -1,0 +1,43 @@
+package com.lcs.findraco.auth.controller;
+
+import com.lcs.findraco.auth.config.SessionProperties;
+import com.lcs.findraco.shared.web.ApiRoutes;
+import java.time.Duration;
+import org.springframework.http.ResponseCookie;
+import org.springframework.stereotype.Component;
+
+/**
+ * Builds the session cookie. It is {@code HttpOnly} (no page script can read it), {@code SameSite=Strict}
+ * and scoped to the auth endpoints, so it never rides along with a data request.
+ */
+@Component
+public class SessionCookies {
+
+    public static final String NAME = "findraco_session";
+
+    private final Duration ttl;
+    private final boolean secure;
+
+    public SessionCookies(SessionProperties properties) {
+        this.ttl = properties.ttl();
+        this.secure = properties.cookieSecure();
+    }
+
+    public ResponseCookie issue(String sessionToken) {
+        return build(sessionToken, ttl);
+    }
+
+    public ResponseCookie clear() {
+        return build("", Duration.ZERO);
+    }
+
+    private ResponseCookie build(String value, Duration maxAge) {
+        return ResponseCookie.from(NAME, value)
+                .httpOnly(true)
+                .secure(secure)
+                .sameSite("Strict")
+                .path(ApiRoutes.AUTH)
+                .maxAge(maxAge)
+                .build();
+    }
+}

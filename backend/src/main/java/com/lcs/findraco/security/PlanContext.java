@@ -2,7 +2,7 @@ package com.lcs.findraco.security;
 
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 
 /**
  * Immutable per-request holder for the active plan, the acting user and their role

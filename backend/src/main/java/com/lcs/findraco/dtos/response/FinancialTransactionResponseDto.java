@@ -5,7 +5,7 @@ import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.SplitMode;
 import com.lcs.findraco.models.TransactionItem;
 import com.lcs.findraco.models.TransactionParticipant;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;

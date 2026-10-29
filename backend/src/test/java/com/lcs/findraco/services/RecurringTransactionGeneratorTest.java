@@ -13,7 +13,7 @@ import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.models.RecurrenceInterval;
 import com.lcs.findraco.models.RecurrenceMode;
 import com.lcs.findraco.models.SplitMode;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Clock;

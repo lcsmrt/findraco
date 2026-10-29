@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.models.Plan;
-import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.user.model.User;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Comparator;

@@ -2,7 +2,7 @@ package com.lcs.findraco.dtos.response;
 
 import com.lcs.findraco.models.PlanMembership;
 import com.lcs.findraco.models.PlanRole;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 
 public class PlanMemberResponseDto {
     private final Long userId;

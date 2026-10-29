@@ -1,5 +1,6 @@
 package com.lcs.findraco.models;
 
+import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 

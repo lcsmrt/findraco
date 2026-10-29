@@ -7,10 +7,10 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
-import com.lcs.findraco.models.User;
 import com.lcs.findraco.repositories.PlanMembershipRepository;
+import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.utils.ApiRoutes;
+import com.lcs.findraco.user.model.User;
 import java.time.LocalDateTime;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -34,7 +34,7 @@ import tools.jackson.databind.ObjectMapper;
  *       410 GONE ("This invitation has already been used") rather than silently
  *       succeeding. This is a real behavioral asymmetry in the codebase, not a test artifact.
  *   <li>Expiry (LINK-only; EMAIL invites never carry an expiresAt) is enforced lazily against
- *       {@code expiresAt} and mapped by {@link com.lcs.findraco.exceptions.GlobalExceptionHandler}
+ *       {@code expiresAt} and mapped by {@link com.lcs.findraco.shared.error.GlobalExceptionHandler}
  *       to 410 GONE, matching the task's assumption.
  *   <li>Revoke is mapped to 410 GONE via {@code InvitationRevokedException} ("This
  *       invitation has been revoked."): a consumed/withdrawn invitation is gone, alongside

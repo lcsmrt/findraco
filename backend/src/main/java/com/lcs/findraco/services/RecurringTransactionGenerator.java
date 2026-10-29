@@ -7,7 +7,7 @@ import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.models.SplitMode;
 import com.lcs.findraco.models.TransactionParticipant;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;

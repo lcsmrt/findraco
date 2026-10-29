@@ -1,6 +1,7 @@
 package com.lcs.findraco.dtos.request;
 
 import com.lcs.findraco.models.FinancialTransactionType;
+import com.lcs.findraco.shared.web.PaginatedFilterDto;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 

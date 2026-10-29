@@ -1,8 +1,9 @@
 package com.lcs.findraco.security;
 
+import com.lcs.findraco.auth.service.CustomUserDetails;
 import com.lcs.findraco.models.PlanMembership;
-import com.lcs.findraco.models.User;
 import com.lcs.findraco.services.PlanService;
+import com.lcs.findraco.user.model.User;
 import java.util.Map;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;

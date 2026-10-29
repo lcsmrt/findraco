@@ -3,7 +3,7 @@ package com.lcs.findraco.dtos.response;
 import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;

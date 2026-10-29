@@ -2,7 +2,7 @@ package com.lcs.findraco.security;
 
 import com.lcs.findraco.exceptions.PlanExceptions;
 import com.lcs.findraco.models.PlanRole;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 import org.springframework.stereotype.Component;
 
 /**

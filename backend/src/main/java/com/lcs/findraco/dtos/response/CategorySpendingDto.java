@@ -2,7 +2,7 @@ package com.lcs.findraco.dtos.response;
 
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
-import com.lcs.findraco.models.User;
+import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;

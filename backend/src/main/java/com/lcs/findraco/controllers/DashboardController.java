@@ -5,7 +5,7 @@ import com.lcs.findraco.dtos.response.DashboardSummaryResponseDto;
 import com.lcs.findraco.dtos.response.MonthlyTrendDto;
 import com.lcs.findraco.security.PlanContext;
 import com.lcs.findraco.services.DashboardService;
-import com.lcs.findraco.utils.ApiRoutes;
+import com.lcs.findraco.shared.web.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
