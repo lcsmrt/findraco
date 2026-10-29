@@ -29,6 +29,8 @@ public class ItemShareAllocator {
     public record MemberFact(Long categoryId, Long memberId, BigDecimal amount) {}
 
     /**
+     * The facts one allocation produces.
+     *
      * @param removed B facts: item portions taken out of the transaction's category
      * @param added   I facts: item portions added to the item's category
      */
@@ -40,6 +42,8 @@ public class ItemShareAllocator {
             Long itemCategoryId, Long transactionCategoryId, long itemCents, List<Portion> participants) {}
 
     /**
+     * Allocates every categorized item to its participants.
+     *
      * @param rows one row per categorized item x participant:
      *             {@code [Long itemId, Long itemCategoryId, Long transactionCategoryId (nullable),
      *             BigDecimal itemAmount, Long memberId, BigDecimal shareAmount]}

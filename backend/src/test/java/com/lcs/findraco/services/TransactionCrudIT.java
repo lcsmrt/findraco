@@ -37,7 +37,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private static final LocalDate TODAY = LocalDate.now();
+    private final LocalDate today = LocalDate.now();
 
     @Test
     void putWithFewerItemsReplacesAllPreviousItemsLeavingNoLeftoverRows() throws Exception {
@@ -89,14 +89,14 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         User member = fixtures.aUser();
         fixtures.addMember(plan, member, PlanRole.EDITOR);
 
-        JsonNode created = createTransaction(plan, owner, splitRequestBody("100.00", owner, List.of(owner, member)));
+        JsonNode created = createTransaction(plan, owner, splitRequestBody("100.00", List.of(owner, member)));
         assertThat(created.get("participants")).hasSize(2);
         long transactionId = created.get("id").asLong();
 
         mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(splitRequestBody("100.00", owner, List.of(owner))))
+                        .content(splitRequestBody("100.00", List.of(owner))))
                 .andExpect(status().isOk());
 
         JsonNode persisted = fetchTransaction(plan, owner, transactionId);
@@ -222,7 +222,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                 "description",
                                 "Groceries",
                                 "startDate",
-                                TODAY.toString(),
+                                today.toString(),
                                 "splitMode",
                                 "EQUAL",
                                 "participants",
@@ -264,7 +264,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                 "description",
                                 "Groceries",
                                 "startDate",
-                                TODAY.toString(),
+                                today.toString(),
                                 "splitMode",
                                 "EQUAL",
                                 "participants",
@@ -318,7 +318,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 "description",
                 description,
                 "startDate",
-                TODAY.toString(),
+                today.toString(),
                 "splitMode",
                 "EQUAL",
                 "participants",
@@ -327,7 +327,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 items));
     }
 
-    private String splitRequestBody(String amount, User owner, List<User> participants) throws Exception {
+    private String splitRequestBody(String amount, List<User> participants) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
                 "type",
                 "DEBIT",
@@ -336,7 +336,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 "description",
                 "Split expense",
                 "startDate",
-                TODAY.toString(),
+                today.toString(),
                 "splitMode",
                 "EQUAL",
                 "participants",

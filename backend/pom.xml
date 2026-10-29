@@ -20,6 +20,7 @@
 
     <properties>
         <java.version>25</java.version>
+        <error-prone.version>2.51.0</error-prone.version>
     </properties>
 
     <dependencies>
@@ -184,7 +185,19 @@
                         <!-- serial: nothing is Java-serialized (stateless JWT, no HTTP session, no RMI),
                              so serialVersionUID on every exception would be noise. -->
                         <arg>-Xlint:all,-serial</arg>
+                        <arg>-XDcompilePolicy=simple</arg>
+                        <arg>--should-stop=ifError=FLOW</arg>
+                        <!-- JavaTimeDefaultTimeZone: the code still reads the machine zone; the UTC clock
+                             slice (BST-11) moves every now() onto the Clock and switches this check back on. -->
+                        <arg>-Xplugin:ErrorProne -Xep:JavaTimeDefaultTimeZone:OFF</arg>
                     </compilerArgs>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>com.google.errorprone</groupId>
+                            <artifactId>error_prone_core</artifactId>
+                            <version>${error-prone.version}</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

@@ -40,7 +40,7 @@ import tools.jackson.databind.ObjectMapper;
  */
 class CategorySpendingIT extends AbstractIntegrationTest {
 
-    private static final LocalDate TODAY = LocalDate.now();
+    private final LocalDate today = LocalDate.now();
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -146,7 +146,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
         mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/spending", plan.getId())
                         .with(testAuthHelper.asUser(owner))
-                        .param("startDate", TODAY.toString()))
+                        .param("startDate", today.toString()))
                 .andExpect(status().isBadRequest());
     }
 
@@ -327,7 +327,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         fixtures.aTransaction(plan, owner, new BigDecimal("1000.00"), FinancialTransactionType.CREDIT, salary);
         FinancialTransaction old =
                 fixtures.aTransaction(plan, owner, new BigDecimal("999.00"), FinancialTransactionType.DEBIT, food);
-        old.setStartDate(TODAY.minusMonths(2));
+        old.setStartDate(today.minusMonths(2));
         transactionRepository.save(old);
         return new Seed(food, delivery);
     }
@@ -364,7 +364,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         transaction.setType(FinancialTransactionType.DEBIT);
         transaction.setAmount(new BigDecimal(amount));
         transaction.setDescription("Split transaction");
-        transaction.setStartDate(TODAY);
+        transaction.setStartDate(today);
         shares.forEach((member, share) -> {
             TransactionParticipant participant = new TransactionParticipant();
             participant.setTransaction(transaction);
@@ -417,8 +417,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     private ResultActions fetchSpending(Plan plan, User asUser) throws Exception {
         return mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/spending", plan.getId())
                 .with(testAuthHelper.asUser(asUser))
-                .param("startDate", TODAY.minusDays(1).toString())
-                .param("endDate", TODAY.plusDays(1).toString()));
+                .param("startDate", today.minusDays(1).toString())
+                .param("endDate", today.plusDays(1).toString()));
     }
 
     private JsonNode readSpending(ResultActions actions) throws Exception {

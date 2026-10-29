@@ -13,6 +13,8 @@ import com.lcs.findraco.utils.ApiRoutes;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
@@ -236,12 +238,12 @@ class SessionIT extends AbstractIntegrationTest {
     @Test
     void logoutWithoutACookieAndWithAnExpiredAccessTokenStillSucceeds() throws Exception {
         User user = fixtures.aUser();
-        long issuedAt = System.currentTimeMillis() - 3_600_000;
+        Instant issuedAt = Instant.now().minusSeconds(3_600);
         String expiredAccessToken = Jwts.builder()
                 .subject(user.getEmail())
-                .issuedAt(new Date(issuedAt))
-                .expiration(new Date(issuedAt + 900_000))
-                .signWith(Keys.hmacShaKeyFor(Base64.getEncoder().encode(jwtSecretKey.getBytes())))
+                .issuedAt(Date.from(issuedAt))
+                .expiration(Date.from(issuedAt.plusSeconds(900)))
+                .signWith(Keys.hmacShaKeyFor(Base64.getEncoder().encode(jwtSecretKey.getBytes(StandardCharsets.UTF_8))))
                 .compact();
 
         MvcResult result = logout(null, expiredAccessToken)

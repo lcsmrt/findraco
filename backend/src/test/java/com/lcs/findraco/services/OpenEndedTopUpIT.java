@@ -16,10 +16,7 @@ import com.lcs.findraco.repositories.FinancialTransactionRepository;
 import com.lcs.findraco.repositories.RecurrenceDefinitionRepository;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import java.math.BigDecimal;
-import java.time.Clock;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,15 +33,14 @@ import org.springframework.beans.factory.annotation.Autowired;
  * the repositories (bypassing {@code createSeries}, owned by a sibling task) so this suite is
  * self-contained and exercises the top-up service and its locked due-query in isolation.
  *
- * <p>"Today" is always derived from an injected {@link Clock} (never the ambient
+ * <p>"Today" is a fixed date passed to the service (never the ambient
  * {@code LocalDate.now()}), so the rolling horizon is deterministic and the watermark math is
  * exact. All fixture dates use day-of-month 1 so the monthly stepping in the generator always
  * lands exactly on the horizon date, keeping the arithmetic in these assertions unambiguous.
  */
 class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
-    private static final Clock CLOCK = Clock.fixed(Instant.parse("2026-07-01T00:00:00Z"), ZoneOffset.UTC);
-    private static final LocalDate TODAY = LocalDate.now(CLOCK);
+    private static final LocalDate TODAY = LocalDate.of(2026, 7, 1);
     private static final LocalDate HORIZON_CAP = TODAY.plusMonths(12);
 
     @Autowired

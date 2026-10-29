@@ -2,7 +2,7 @@ target
 bin
 .git
 .idea
-.mvn
+.mvn/wrapper
 .env
 .env.*
 *.log

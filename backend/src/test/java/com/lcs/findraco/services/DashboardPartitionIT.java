@@ -59,7 +59,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     @Autowired
     private FinancialTransactionCategoryRepository financialTransactionCategoryRepository;
 
-    private static final LocalDate TODAY = LocalDate.now();
+    private final LocalDate today = LocalDate.now();
 
     @Test
     void itemizedTransactionAttributesItemsToOwnCategoryAndRemainderToParent() throws Exception {
@@ -80,7 +80,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                 "description",
                 "Grocery run",
                 "startDate",
-                TODAY.toString(),
+                today.toString(),
                 "categoryId",
                 groceriesId,
                 "items",
@@ -128,7 +128,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                 "description",
                 "Electric bill",
                 "startDate",
-                TODAY.toString(),
+                today.toString(),
                 "categoryId",
                 utilitiesId);
 
@@ -158,7 +158,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "description",
                         "Salary",
                         "startDate",
-                        TODAY.toString()));
+                        today.toString()));
         createTransaction(
                 planA,
                 ownerA,
@@ -170,7 +170,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "description",
                         "Rent",
                         "startDate",
-                        TODAY.toString()));
+                        today.toString()));
 
         User ownerB = fixtures.aUser();
         Plan planB = fixtures.aPlan(ownerB);
@@ -190,7 +190,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "description",
                         "Salary",
                         "startDate",
-                        TODAY.toString(),
+                        today.toString(),
                         "items",
                         List.of(Map.of(
                                 "description",
@@ -210,7 +210,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "description",
                         "Rent",
                         "startDate",
-                        TODAY.toString(),
+                        today.toString(),
                         "items",
                         List.of(Map.of(
                                 "description",
@@ -268,7 +268,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                 "description",
                 "Grocery run",
                 "startDate",
-                TODAY.toString(),
+                today.toString(),
                 "categoryId",
                 groceriesId,
                 "items",
@@ -288,7 +288,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                 .findByIdAndPlan(subscriptionsId, plan)
                 .orElseThrow();
 
-        LocalDate anchorMonth = TODAY.withDayOfMonth(1);
+        LocalDate anchorMonth = today.withDayOfMonth(1);
         LocalDate start = anchorMonth.minusMonths(6);
         LocalDate staleGeneratedThrough = anchorMonth.minusMonths(2);
         LocalDate expectedLastGenerated = anchorMonth.plusMonths(12);
@@ -301,7 +301,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
                 .isEmpty();
 
-        JsonNode dashboard = fetchDashboard(plan, owner, start, TODAY.plusMonths(13));
+        JsonNode dashboard = fetchDashboard(plan, owner, start, today.plusMonths(13));
 
         List<FinancialTransaction> occurrences =
                 financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
@@ -360,7 +360,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "description",
                         "Market",
                         "startDate",
-                        TODAY.toString(),
+                        today.toString(),
                         "categoryId",
                         foodId));
         createTransaction(
@@ -374,7 +374,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "description",
                         "Pizza",
                         "startDate",
-                        TODAY.toString(),
+                        today.toString(),
                         "categoryId",
                         deliveryId));
 
@@ -432,7 +432,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "description",
                         "Grocery run",
                         "startDate",
-                        TODAY.toString(),
+                        today.toString(),
                         "categoryId",
                         groceriesId,
                         "splitMode",
@@ -529,14 +529,14 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchDashboard(Plan plan, User asUser) throws Exception {
-        return fetchDashboard(plan, asUser, TODAY.minusDays(1), TODAY.plusDays(1));
+        return fetchDashboard(plan, asUser, today.minusDays(1), today.plusDays(1));
     }
 
     private JsonNode fetchDashboard(Plan plan, User asUser, Long memberId) throws Exception {
         MvcResult result = mockMvc.perform(get(ApiRoutes.DASHBOARD, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
-                        .param("startDate", TODAY.minusDays(1).toString())
-                        .param("endDate", TODAY.plusDays(1).toString())
+                        .param("startDate", today.minusDays(1).toString())
+                        .param("endDate", today.plusDays(1).toString())
                         .param("memberId", memberId.toString()))
                 .andExpect(status().isOk())
                 .andReturn();

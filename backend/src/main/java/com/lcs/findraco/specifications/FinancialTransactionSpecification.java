@@ -13,6 +13,7 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Locale;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -74,7 +75,7 @@ public class FinancialTransactionSpecification {
         if (term == null || term.isBlank()) {
             return (root, query, cb) -> null;
         }
-        String pattern = "%" + term.toLowerCase() + "%";
+        String pattern = "%" + term.toLowerCase(Locale.ROOT) + "%";
         return (root, query, cb) -> {
             Predicate descriptionMatch = cb.like(cb.lower(root.get("description")), pattern);
 

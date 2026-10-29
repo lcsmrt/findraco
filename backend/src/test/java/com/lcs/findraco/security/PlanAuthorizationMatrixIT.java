@@ -42,7 +42,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @Autowired
     private FinancialTransactionRepository financialTransactionRepository;
 
-    private static final LocalDate TODAY = LocalDate.now();
+    private final LocalDate today = LocalDate.now();
 
     private record PlanCast(Plan plan, User owner, User editor, User contributor, User viewer, User nonMember) {}
 
@@ -302,7 +302,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 "description",
                 description,
                 "startDate",
-                TODAY.toString()));
+                today.toString()));
     }
 
     private void assertUnchanged(Long transactionId, String expectedAmount) {

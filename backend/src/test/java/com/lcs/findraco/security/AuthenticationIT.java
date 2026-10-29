@@ -11,6 +11,8 @@ import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import java.util.Map;
@@ -221,11 +223,11 @@ class AuthenticationIT extends AbstractIntegrationTest {
     @Test
     void tokenSignedWithAnotherKeyIsRejectedWith401() throws Exception {
         User user = fixtures.aUser();
-        Date now = new Date();
+        Instant now = Instant.now();
         String forged = Jwts.builder()
                 .subject(user.getEmail())
-                .issuedAt(now)
-                .expiration(new Date(now.getTime() + 900_000))
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusSeconds(900)))
                 .signWith(signingKey("a-different-secret-key-that-is-long-enough-for-hmac-sha-512-signatures"))
                 .compact();
 
@@ -237,11 +239,11 @@ class AuthenticationIT extends AbstractIntegrationTest {
     @Test
     void expiredTokenIsRejectedWith401() throws Exception {
         User user = fixtures.aUser();
-        long issuedAt = System.currentTimeMillis() - 3_600_000;
+        Instant issuedAt = Instant.now().minusSeconds(3_600);
         String expired = Jwts.builder()
                 .subject(user.getEmail())
-                .issuedAt(new Date(issuedAt))
-                .expiration(new Date(issuedAt + 900_000))
+                .issuedAt(Date.from(issuedAt))
+                .expiration(Date.from(issuedAt.plusSeconds(900)))
                 .signWith(signingKey(jwtSecretKey))
                 .compact();
 
@@ -254,13 +256,13 @@ class AuthenticationIT extends AbstractIntegrationTest {
     void accessTokenFromLoginLivesFifteenMinutes() throws Exception {
         String token = registerAndLogin("ivan-" + System.nanoTime() + "@test.com");
 
-        JsonNode claims = objectMapper.readTree(Base64.getUrlDecoder().decode(token.split("\\.")[1]));
+        JsonNode claims = objectMapper.readTree(Base64.getUrlDecoder().decode(token.split("\\.", -1)[1]));
         assertThat(claims.get("exp").asLong() - claims.get("iat").asLong()).isEqualTo(900);
     }
 
     /** Same key derivation as JwtService, so only the secret (or the expiry) differs from a real token. */
     private static SecretKey signingKey(String secret) {
-        return Keys.hmacShaKeyFor(Base64.getEncoder().encode(secret.getBytes()));
+        return Keys.hmacShaKeyFor(Base64.getEncoder().encode(secret.getBytes(StandardCharsets.UTF_8)));
     }
 
     private Long fetchOwnPlanId(String token) throws Exception {
