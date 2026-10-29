@@ -3,7 +3,6 @@ package com.lcs.findraco.dtos.response;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.User;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -34,13 +33,21 @@ public class CategorySpendingDto {
      * @param ownerActive whether the owner (the parent's, for a child) is a current member of the plan;
      *                    null when the category has no owner. A former owner is shown as such (CAT-14).
      */
-    public CategorySpendingDto(FinancialTransactionCategory category, Boolean ownerActive, BigDecimal spent,
-                               BigDecimal limit, List<Member> members, List<CategorySpendingDto> children) {
+    public CategorySpendingDto(
+            FinancialTransactionCategory category,
+            Boolean ownerActive,
+            BigDecimal spent,
+            BigDecimal limit,
+            List<Member> members,
+            List<CategorySpendingDto> children) {
         this.categoryId = category.getId();
-        this.parentId = category.getParent() == null ? null : category.getParent().getId();
+        this.parentId =
+                category.getParent() == null ? null : category.getParent().getId();
         this.name = category.getDescription();
         this.type = category.getType();
-        User owner = category.getParent() == null ? category.getOwner() : category.getParent().getOwner();
+        User owner = category.getParent() == null
+                ? category.getOwner()
+                : category.getParent().getOwner();
         this.ownerId = owner == null ? null : owner.getId();
         this.ownerName = owner == null ? null : owner.getName();
         this.ownerActive = owner == null ? null : ownerActive;
@@ -80,14 +87,37 @@ public class CategorySpendingDto {
             this.active = active;
         }
 
-        public Long getMemberId() { return memberId; }
-        public String getName() { return name; }
-        public BigDecimal getSpent() { return spent; }
-        public BigDecimal getLimit() { return limit; }
-        public BigDecimal getRemaining() { return remaining; }
-        public BigDecimal getPercentUsed() { return percentUsed; }
-        public Boolean getOverLimit() { return overLimit; }
-        public boolean isActive() { return active; }
+        public Long getMemberId() {
+            return memberId;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public BigDecimal getSpent() {
+            return spent;
+        }
+
+        public BigDecimal getLimit() {
+            return limit;
+        }
+
+        public BigDecimal getRemaining() {
+            return remaining;
+        }
+
+        public BigDecimal getPercentUsed() {
+            return percentUsed;
+        }
+
+        public Boolean getOverLimit() {
+            return overLimit;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
     }
 
     private static BigDecimal remaining(BigDecimal spent, BigDecimal limit) {
@@ -107,18 +137,59 @@ public class CategorySpendingDto {
         return limit == null ? null : spent.compareTo(limit) > 0;
     }
 
-    public Long getCategoryId() { return categoryId; }
-    public Long getParentId() { return parentId; }
-    public String getName() { return name; }
-    public FinancialTransactionType getType() { return type; }
-    public Long getOwnerId() { return ownerId; }
-    public String getOwnerName() { return ownerName; }
-    public Boolean getOwnerActive() { return ownerActive; }
-    public BigDecimal getSpent() { return spent; }
-    public BigDecimal getLimit() { return limit; }
-    public BigDecimal getRemaining() { return remaining; }
-    public BigDecimal getPercentUsed() { return percentUsed; }
-    public Boolean getOverLimit() { return overLimit; }
-    public List<Member> getMembers() { return members; }
-    public List<CategorySpendingDto> getChildren() { return children; }
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public FinancialTransactionType getType() {
+        return type;
+    }
+
+    public Long getOwnerId() {
+        return ownerId;
+    }
+
+    public String getOwnerName() {
+        return ownerName;
+    }
+
+    public Boolean getOwnerActive() {
+        return ownerActive;
+    }
+
+    public BigDecimal getSpent() {
+        return spent;
+    }
+
+    public BigDecimal getLimit() {
+        return limit;
+    }
+
+    public BigDecimal getRemaining() {
+        return remaining;
+    }
+
+    public BigDecimal getPercentUsed() {
+        return percentUsed;
+    }
+
+    public Boolean getOverLimit() {
+        return overLimit;
+    }
+
+    public List<Member> getMembers() {
+        return members;
+    }
+
+    public List<CategorySpendingDto> getChildren() {
+        return children;
+    }
 }

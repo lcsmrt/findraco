@@ -3,16 +3,15 @@ package com.lcs.findraco.repositories;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.models.UserSession;
 import jakarta.persistence.LockModeType;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
 
 @Repository
 public interface UserSessionRepository extends JpaRepository<UserSession, Long> {

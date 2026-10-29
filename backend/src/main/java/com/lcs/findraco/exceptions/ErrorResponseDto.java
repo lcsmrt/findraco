@@ -19,7 +19,6 @@ public class ErrorResponseDto {
         this.fieldErrors = fieldErrors;
     }
 
-
     public String getMessage() {
         return message;
     }

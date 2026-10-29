@@ -9,11 +9,10 @@ import com.lcs.findraco.utils.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Dashboard")
 @RestController
@@ -29,16 +28,14 @@ public class DashboardController {
     @Operation(summary = "Returns the financial summary for the plan")
     @GetMapping
     public ResponseEntity<DashboardSummaryResponseDto> getSummary(
-            @ParameterObject @ModelAttribute @Valid DashboardFilterDto filter,
-            PlanContext ctx) {
+            @ParameterObject @ModelAttribute @Valid DashboardFilterDto filter, PlanContext ctx) {
         return ResponseEntity.ok(dashboardService.getSummary(filter, ctx));
     }
 
     @Operation(summary = "Returns income and expenses per month for the plan")
     @GetMapping("/trend")
     public ResponseEntity<List<MonthlyTrendDto>> getTrend(
-            @ParameterObject @ModelAttribute @Valid DashboardFilterDto filter,
-            PlanContext ctx) {
+            @ParameterObject @ModelAttribute @Valid DashboardFilterDto filter, PlanContext ctx) {
         return ResponseEntity.ok(dashboardService.getTrend(filter, ctx));
     }
 }

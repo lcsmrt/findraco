@@ -1,19 +1,20 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "financial_transactions", indexes = {
-        @Index(name = "idx_financial_transactions_start_date", columnList = "start_date"),
-        @Index(name = "idx_ft_plan_id", columnList = "plan_id"),
-        @Index(name = "idx_ft_plan_id_start_date", columnList = "plan_id, start_date"),
-        @Index(name = "idx_ft_plan_id_series_id", columnList = "plan_id, series_id"),
-})
+@Table(
+        name = "financial_transactions",
+        indexes = {
+            @Index(name = "idx_financial_transactions_start_date", columnList = "start_date"),
+            @Index(name = "idx_ft_plan_id", columnList = "plan_id"),
+            @Index(name = "idx_ft_plan_id_start_date", columnList = "plan_id, start_date"),
+            @Index(name = "idx_ft_plan_id_series_id", columnList = "plan_id, series_id"),
+        })
 public class FinancialTransaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -37,13 +38,16 @@ public class FinancialTransaction {
     private BigDecimal amount;
     private String description;
     private String externalId;
+
     @Column(name = "series_id")
     private String seriesId;
+
     private Integer parcelsNumber;
 
     @ManyToOne(optional = true)
     @JoinColumn(name = "recurrence_definition_id", foreignKey = @ForeignKey(name = "fk_ft_recurrence_definition"))
     private RecurrenceDefinition recurrenceDefinition;
+
     private LocalDate startDate;
     private LocalDate endDate;
 
@@ -57,8 +61,7 @@ public class FinancialTransaction {
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransactionItem> items = new ArrayList<>();
 
-    public FinancialTransaction() {
-    }
+    public FinancialTransaction() {}
 
     public Long getId() {
         return id;

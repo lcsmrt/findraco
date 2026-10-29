@@ -2,7 +2,6 @@ package com.lcs.findraco.dtos.request;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PositiveOrZero;
-
 import java.math.BigDecimal;
 
 /** One member's monthly limit inside a category (CAT-11). */

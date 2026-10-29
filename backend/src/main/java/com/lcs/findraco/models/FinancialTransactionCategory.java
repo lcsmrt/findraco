@@ -1,7 +1,6 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,16 +33,19 @@ public class FinancialTransactionCategory {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryMemberLimit> memberLimits = new ArrayList<>();
 
-    public FinancialTransactionCategory() {
-    }
+    public FinancialTransactionCategory() {}
 
     public Long getId() {
         return id;
     }
 
-    public Plan getPlan() { return plan; }
+    public Plan getPlan() {
+        return plan;
+    }
 
-    public void setPlan(Plan plan) { this.plan = plan; }
+    public void setPlan(Plan plan) {
+        this.plan = plan;
+    }
 
     public FinancialTransactionType getType() {
         return type;

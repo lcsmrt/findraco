@@ -15,9 +15,23 @@ public class PersonBreakdownDto {
         this.expense = expense;
     }
 
-    public Long getUserId() { return userId; }
-    public String getName() { return name; }
-    public BigDecimal getIncome() { return income; }
-    public BigDecimal getExpense() { return expense; }
-    public BigDecimal getNet() { return income.subtract(expense); }
+    public Long getUserId() {
+        return userId;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public BigDecimal getIncome() {
+        return income;
+    }
+
+    public BigDecimal getExpense() {
+        return expense;
+    }
+
+    public BigDecimal getNet() {
+        return income.subtract(expense);
+    }
 }

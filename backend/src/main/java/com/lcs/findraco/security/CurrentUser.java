@@ -1,12 +1,11 @@
 package com.lcs.findraco.security;
 
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 /**
  * Injects the authenticated {@link com.lcs.findraco.models.User} into a controller handler,
@@ -18,5 +17,4 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @AuthenticationPrincipal(expression = "user")
-public @interface CurrentUser {
-}
+public @interface CurrentUser {}

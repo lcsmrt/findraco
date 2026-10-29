@@ -68,7 +68,9 @@ class MigrationsIT extends AbstractIntegrationTest {
     @Test
     void everyMigrationOnDiskIsAppliedAndSuccessful() throws IOException {
         List<String> versionsOnDisk = migrationVersionsOnDisk();
-        assertThat(versionsOnDisk).as("sanity check: migration files must be discoverable on the classpath").isNotEmpty();
+        assertThat(versionsOnDisk)
+                .as("sanity check: migration files must be discoverable on the classpath")
+                .isNotEmpty();
 
         MigrationInfo[] applied = flyway.info().applied();
         List<String> appliedVersions = Arrays.stream(applied)
@@ -146,13 +148,17 @@ class MigrationsIT extends AbstractIntegrationTest {
         return jdbc.queryForObject(
                 "INSERT INTO financial_transaction_categories (plan_id, type, description, spending_limit) "
                         + "VALUES (?, 'DEBIT', ?, 400.00) RETURNING id",
-                Long.class, plan.getId(), description);
+                Long.class,
+                plan.getId(),
+                description);
     }
 
     private static void insertMemberLimit(JdbcTemplate jdbc, Long categoryId, Long memberId, String amount) {
         jdbc.update(
                 "INSERT INTO category_member_limits (category_id, member_user_id, amount) VALUES (?, ?, ?::numeric)",
-                categoryId, memberId, amount);
+                categoryId,
+                memberId,
+                amount);
     }
 
     private List<String> migrationVersionsOnDisk() throws IOException {

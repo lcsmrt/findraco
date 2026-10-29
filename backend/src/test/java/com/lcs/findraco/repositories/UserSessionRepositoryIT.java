@@ -101,7 +101,11 @@ class UserSessionRepositoryIT extends AbstractIntegrationTest {
         jdbc.update(
                 "INSERT INTO user_sessions (user_id, family_id, token_hash, expires_at, created_at) "
                         + "VALUES (?, ?, ?, ?, ?)",
-                user.getId(), familyId, tokenHash, Timestamp.valueOf(expiresAt), Timestamp.valueOf(NOW));
+                user.getId(),
+                familyId,
+                tokenHash,
+                Timestamp.valueOf(expiresAt),
+                Timestamp.valueOf(NOW));
     }
 
     private List<String> tokenHashes() {

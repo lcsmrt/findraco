@@ -6,16 +6,15 @@ import com.lcs.findraco.models.UserSession;
 import com.lcs.findraco.repositories.UserSessionRepository;
 import com.lcs.findraco.security.JwtService;
 import com.lcs.findraco.security.OpaqueTokens;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.Clock;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 /**
  * Session lifecycle: a sign-in opens a family (one device's chain of session tokens); every
@@ -38,8 +37,7 @@ public class SessionService {
             JwtService jwtService,
             Clock clock,
             @Value("${app.session.ttl}") Duration ttl,
-            @Value("${app.session.reuse-grace}") Duration reuseGrace
-    ) {
+            @Value("${app.session.reuse-grace}") Duration reuseGrace) {
         this.sessionRepository = sessionRepository;
         this.jwtService = jwtService;
         this.clock = clock;
@@ -47,8 +45,7 @@ public class SessionService {
         this.reuseGrace = reuseGrace;
     }
 
-    public record IssuedSession(String accessToken, String sessionToken) {
-    }
+    public record IssuedSession(String accessToken, String sessionToken) {}
 
     /** Starts a new session family for the user, dropping the user's expired session rows first. */
     @Transactional
@@ -71,7 +68,8 @@ public class SessionService {
             throw new AuthenticationExceptions.InvalidSessionException();
         }
         LocalDateTime now = LocalDateTime.now(clock);
-        UserSession presented = sessionRepository.findByTokenHashForUpdate(OpaqueTokens.hash(sessionToken))
+        UserSession presented = sessionRepository
+                .findByTokenHashForUpdate(OpaqueTokens.hash(sessionToken))
                 .orElseThrow(AuthenticationExceptions.InvalidSessionException::new);
 
         if (!presented.getExpiresAt().isAfter(now)) {
@@ -82,8 +80,10 @@ public class SessionService {
             presented.setReplacedAt(now);
         } else if (now.isAfter(presented.getReplacedAt().plus(reuseGrace))) {
             sessionRepository.deleteAllByFamilyId(presented.getFamilyId());
-            logger.warn("Session token replay detected; revoked family {} of user {}",
-                    presented.getFamilyId(), presented.getUser().getId());
+            logger.warn(
+                    "Session token replay detected; revoked family {} of user {}",
+                    presented.getFamilyId(),
+                    presented.getUser().getId());
             throw new AuthenticationExceptions.InvalidSessionException();
         }
 
@@ -96,7 +96,8 @@ public class SessionService {
         if (sessionToken == null || sessionToken.isBlank()) {
             return;
         }
-        sessionRepository.findByTokenHashForUpdate(OpaqueTokens.hash(sessionToken))
+        sessionRepository
+                .findByTokenHashForUpdate(OpaqueTokens.hash(sessionToken))
                 .ifPresent(session -> sessionRepository.deleteAllByFamilyId(session.getFamilyId()));
     }
 

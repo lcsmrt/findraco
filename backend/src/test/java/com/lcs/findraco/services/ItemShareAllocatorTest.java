@@ -1,13 +1,12 @@
 package com.lcs.findraco.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.lcs.findraco.services.ItemShareAllocator.Allocation;
 import com.lcs.findraco.services.ItemShareAllocator.MemberFact;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 /**
  * Spec P2 AC 5 / AD-008 / CAT-12: an item's amount is attributed to the transaction's participants in
@@ -29,12 +28,10 @@ class ItemShareAllocatorTest {
 
         Allocation allocation = allocator.allocate(rows);
 
-        assertThat(allocation.added()).containsExactly(
-                fact(ITEM_CATEGORY, 10L, "18.00"),
-                fact(ITEM_CATEGORY, 20L, "12.00"));
-        assertThat(allocation.removed()).containsExactly(
-                fact(PARENT_CATEGORY, 10L, "18.00"),
-                fact(PARENT_CATEGORY, 20L, "12.00"));
+        assertThat(allocation.added())
+                .containsExactly(fact(ITEM_CATEGORY, 10L, "18.00"), fact(ITEM_CATEGORY, 20L, "12.00"));
+        assertThat(allocation.removed())
+                .containsExactly(fact(PARENT_CATEGORY, 10L, "18.00"), fact(PARENT_CATEGORY, 20L, "12.00"));
     }
 
     @Test
@@ -48,10 +45,11 @@ class ItemShareAllocatorTest {
 
         Allocation allocation = allocator.allocate(rows);
 
-        assertThat(allocation.added()).containsExactly(
-                fact(ITEM_CATEGORY, 10L, "3.34"),
-                fact(ITEM_CATEGORY, 20L, "3.33"),
-                fact(ITEM_CATEGORY, 30L, "3.33"));
+        assertThat(allocation.added())
+                .containsExactly(
+                        fact(ITEM_CATEGORY, 10L, "3.34"),
+                        fact(ITEM_CATEGORY, 20L, "3.33"),
+                        fact(ITEM_CATEGORY, 30L, "3.33"));
         assertThat(sum(allocation.added())).isEqualByComparingTo("10.00");
         assertThat(sum(allocation.removed())).isEqualByComparingTo("10.00");
     }
@@ -66,15 +64,13 @@ class ItemShareAllocatorTest {
 
         Allocation allocation = allocator.allocate(rows);
 
-        assertThat(allocation.added()).containsExactly(
-                fact(ITEM_CATEGORY, 7L, "0.00"),
-                fact(ITEM_CATEGORY, 3L, "0.01"));
+        assertThat(allocation.added())
+                .containsExactly(fact(ITEM_CATEGORY, 7L, "0.00"), fact(ITEM_CATEGORY, 3L, "0.01"));
     }
 
     @Test
     void singleParticipantGetsTheWholeItem() {
-        List<Object[]> rows = List.<Object[]>of(
-                row(100L, ITEM_CATEGORY, PARENT_CATEGORY, "42.37", 10L, "150.00"));
+        List<Object[]> rows = List.<Object[]>of(row(100L, ITEM_CATEGORY, PARENT_CATEGORY, "42.37", 10L, "150.00"));
 
         Allocation allocation = allocator.allocate(rows);
 
@@ -92,17 +88,15 @@ class ItemShareAllocatorTest {
 
         Allocation allocation = allocator.allocate(rows);
 
-        assertThat(allocation.added()).containsExactly(
-                fact(ITEM_CATEGORY, 20L, "0.50"),
-                fact(ITEM_CATEGORY, 10L, "0.51"));
+        assertThat(allocation.added())
+                .containsExactly(fact(ITEM_CATEGORY, 20L, "0.50"), fact(ITEM_CATEGORY, 10L, "0.51"));
     }
 
     @Test
     void uncategorizedTransactionProducesOnlyItemCategoryFacts() {
         // AD-007: B removes item portions from the transaction's category; an uncategorized
         // transaction has nothing to remove from.
-        List<Object[]> rows = List.<Object[]>of(
-                row(100L, ITEM_CATEGORY, null, "25.00", 10L, "80.00"));
+        List<Object[]> rows = List.<Object[]>of(row(100L, ITEM_CATEGORY, null, "25.00", 10L, "80.00"));
 
         Allocation allocation = allocator.allocate(rows);
 
@@ -122,18 +116,30 @@ class ItemShareAllocatorTest {
 
         Allocation allocation = allocator.allocate(rows);
 
-        assertThat(allocation.added()).containsExactly(
-                fact(ITEM_CATEGORY, 10L, "18.00"),
-                fact(ITEM_CATEGORY, 20L, "12.00"),
-                fact(otherItemCategory, 10L, "3.00"),
-                fact(otherItemCategory, 20L, "2.00"));
+        assertThat(allocation.added())
+                .containsExactly(
+                        fact(ITEM_CATEGORY, 10L, "18.00"),
+                        fact(ITEM_CATEGORY, 20L, "12.00"),
+                        fact(otherItemCategory, 10L, "3.00"),
+                        fact(otherItemCategory, 20L, "2.00"));
         assertThat(sum(allocation.removed())).isEqualByComparingTo("35.00");
     }
 
-    private static Object[] row(Long itemId, Long itemCategoryId, Long transactionCategoryId,
-                                String itemAmount, Long memberId, String shareAmount) {
-        return new Object[]{itemId, itemCategoryId, transactionCategoryId,
-                new BigDecimal(itemAmount), memberId, new BigDecimal(shareAmount)};
+    private static Object[] row(
+            Long itemId,
+            Long itemCategoryId,
+            Long transactionCategoryId,
+            String itemAmount,
+            Long memberId,
+            String shareAmount) {
+        return new Object[] {
+            itemId,
+            itemCategoryId,
+            transactionCategoryId,
+            new BigDecimal(itemAmount),
+            memberId,
+            new BigDecimal(shareAmount)
+        };
     }
 
     private static MemberFact fact(Long categoryId, Long memberId, String amount) {

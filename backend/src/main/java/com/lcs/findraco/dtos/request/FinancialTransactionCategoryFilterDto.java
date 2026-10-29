@@ -11,9 +11,19 @@ public class FinancialTransactionCategoryFilterDto extends PaginatedFilterDto {
         super("description", "asc");
     }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public String getDescription() {
+        return description;
+    }
 
-    public FinancialTransactionType getType() { return type; }
-    public void setType(FinancialTransactionType type) { this.type = type; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public FinancialTransactionType getType() {
+        return type;
+    }
+
+    public void setType(FinancialTransactionType type) {
+        this.type = type;
+    }
 }

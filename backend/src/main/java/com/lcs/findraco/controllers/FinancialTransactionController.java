@@ -16,14 +16,13 @@ import com.lcs.findraco.services.FinancialTransactionService;
 import com.lcs.findraco.utils.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springdoc.core.annotations.ParameterObject;
 import jakarta.validation.Valid;
+import java.util.List;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @Tag(name = "Financial Transactions")
 @RestController
@@ -38,35 +37,30 @@ public class FinancialTransactionController {
 
     @Operation(summary = "Fetches a transaction by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<FinancialTransactionResponseDto> getTransaction(
-            @PathVariable Long id,
-            PlanContext ctx) {
+    public ResponseEntity<FinancialTransactionResponseDto> getTransaction(@PathVariable Long id, PlanContext ctx) {
         return ResponseEntity.ok(new FinancialTransactionResponseDto(financialTransactionService.findById(id, ctx)));
     }
 
     @Operation(summary = "Fetches all transactions for the plan")
     @GetMapping
     public ResponseEntity<PagedResponseDto<FinancialTransactionResponseDto>> getAllTransactions(
-            @ParameterObject @ModelAttribute @Valid FinancialTransactionFilterDto filter,
-            PlanContext ctx) {
+            @ParameterObject @ModelAttribute @Valid FinancialTransactionFilterDto filter, PlanContext ctx) {
         return ResponseEntity.ok(new PagedResponseDto<>(
-                financialTransactionService.findAllByPlanPaged(filter, ctx).map(FinancialTransactionResponseDto::new)
-        ));
+                financialTransactionService.findAllByPlanPaged(filter, ctx).map(FinancialTransactionResponseDto::new)));
     }
 
     @Operation(summary = "Creates a new transaction")
     @PostMapping
     public ResponseEntity<FinancialTransactionResponseDto> createTransaction(
-            @RequestBody @Valid FinancialTransactionRequestDto dto,
-            PlanContext ctx) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(new FinancialTransactionResponseDto(financialTransactionService.create(dto, ctx)));
+            @RequestBody @Valid FinancialTransactionRequestDto dto, PlanContext ctx) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new FinancialTransactionResponseDto(financialTransactionService.create(dto, ctx)));
     }
 
     @Operation(summary = "Creates a series of recurring transactions")
     @PostMapping("/series")
     public ResponseEntity<FinancialTransactionSeriesResponseDto> createSeries(
-            @RequestBody @Valid FinancialTransactionSeriesRequestDto dto,
-            PlanContext ctx) {
+            @RequestBody @Valid FinancialTransactionSeriesRequestDto dto, PlanContext ctx) {
         List<FinancialTransaction> occurrences = financialTransactionService.createSeries(dto, ctx);
         return ResponseEntity.status(HttpStatus.CREATED).body(new FinancialTransactionSeriesResponseDto(occurrences));
     }
@@ -74,17 +68,14 @@ public class FinancialTransactionController {
     @Operation(summary = "Updates a transaction")
     @PutMapping("/{id}")
     public ResponseEntity<FinancialTransactionResponseDto> updateTransaction(
-            @PathVariable Long id,
-            @RequestBody @Valid FinancialTransactionRequestDto dto,
-            PlanContext ctx) {
+            @PathVariable Long id, @RequestBody @Valid FinancialTransactionRequestDto dto, PlanContext ctx) {
         return ResponseEntity.ok(new FinancialTransactionResponseDto(financialTransactionService.update(id, dto, ctx)));
     }
 
     @Operation(summary = "Imports transactions from a Nubank CSV file")
     @PostMapping("/import")
     public ResponseEntity<FinancialTransactionImportResponseDto> importCsv(
-            @RequestParam("file") MultipartFile file,
-            PlanContext ctx) {
+            @RequestParam("file") MultipartFile file, PlanContext ctx) {
         int imported = financialTransactionService.importFromNubankCsv(file, ctx);
         HttpStatus status = imported > 0 ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(new FinancialTransactionImportResponseDto(imported));
@@ -92,9 +83,7 @@ public class FinancialTransactionController {
 
     @Operation(summary = "Deletes a transaction")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransaction(
-            @PathVariable Long id,
-            PlanContext ctx) {
+    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id, PlanContext ctx) {
         financialTransactionService.delete(id, ctx);
         return ResponseEntity.noContent().build();
     }
@@ -112,18 +101,14 @@ public class FinancialTransactionController {
 
     @Operation(summary = "Fetches a series' recurrence definition (for edit-form prefill)")
     @GetMapping("/series/{seriesId}")
-    public ResponseEntity<RecurrenceDefinitionResponseDto> getSeries(
-            @PathVariable String seriesId,
-            PlanContext ctx) {
+    public ResponseEntity<RecurrenceDefinitionResponseDto> getSeries(@PathVariable String seriesId, PlanContext ctx) {
         return ResponseEntity.ok(financialTransactionService.getSeriesDefinition(seriesId, ctx));
     }
 
     @Operation(summary = "Edits a series of recurring transactions (This one / This and following / All)")
     @PutMapping("/series/{seriesId}")
     public ResponseEntity<FinancialTransactionSeriesResponseDto> editSeries(
-            @PathVariable String seriesId,
-            @RequestBody @Valid SeriesEditRequestDto dto,
-            PlanContext ctx) {
+            @PathVariable String seriesId, @RequestBody @Valid SeriesEditRequestDto dto, PlanContext ctx) {
         return ResponseEntity.ok(financialTransactionService.editSeries(seriesId, dto, ctx));
     }
 }

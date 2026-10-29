@@ -71,13 +71,18 @@ public class Fixtures {
         return planMembershipRepository.save(membership);
     }
 
-    public FinancialTransaction aTransaction(Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type) {
+    public FinancialTransaction aTransaction(
+            Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type) {
         return aTransaction(plan, createdBy, amount, type, null);
     }
 
     /** A single-participant (createdBy at 100%) transaction dated today in the given category. */
-    public FinancialTransaction aTransaction(Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type,
-                                             FinancialTransactionCategory category) {
+    public FinancialTransaction aTransaction(
+            Plan plan,
+            User createdBy,
+            BigDecimal amount,
+            FinancialTransactionType type,
+            FinancialTransactionCategory category) {
         FinancialTransaction transaction = new FinancialTransaction();
         transaction.setCategory(category);
         transaction.setPlan(plan);
@@ -100,8 +105,8 @@ public class Fixtures {
         return aCategory(plan, type, description, null);
     }
 
-    public FinancialTransactionCategory aCategory(Plan plan, FinancialTransactionType type, String description,
-                                                  FinancialTransactionCategory parent) {
+    public FinancialTransactionCategory aCategory(
+            Plan plan, FinancialTransactionType type, String description, FinancialTransactionCategory parent) {
         FinancialTransactionCategory category = new FinancialTransactionCategory();
         category.setPlan(plan);
         category.setType(type);

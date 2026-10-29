@@ -6,7 +6,6 @@ import com.lcs.findraco.models.SplitMode;
 import com.lcs.findraco.models.TransactionItem;
 import com.lcs.findraco.models.TransactionParticipant;
 import com.lcs.findraco.models.User;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -38,16 +37,11 @@ public class FinancialTransactionResponseDto {
         this.parcelsNumber = transaction.getParcelsNumber();
         this.startDate = transaction.getStartDate();
         this.endDate = transaction.getEndDate();
-        this.createdBy = transaction.getCreatedBy() != null
-                ? new CreatedByDto(transaction.getCreatedBy())
-                : null;
+        this.createdBy = transaction.getCreatedBy() != null ? new CreatedByDto(transaction.getCreatedBy()) : null;
         this.splitMode = transaction.getSplitMode();
-        this.participants = transaction.getParticipants().stream()
-                .map(ParticipantDto::new)
-                .toList();
-        this.items = transaction.getItems().stream()
-                .map(ItemDto::new)
-                .toList();
+        this.participants =
+                transaction.getParticipants().stream().map(ParticipantDto::new).toList();
+        this.items = transaction.getItems().stream().map(ItemDto::new).toList();
     }
 
     public static class CreatedByDto {
@@ -104,9 +98,8 @@ public class FinancialTransactionResponseDto {
             this.description = item.getDescription();
             this.amount = item.getAmount();
             this.quantity = item.getQuantity();
-            this.category = item.getCategory() != null
-                    ? new FinancialTransactionCategoryResponseDto(item.getCategory())
-                    : null;
+            this.category =
+                    item.getCategory() != null ? new FinancialTransactionCategoryResponseDto(item.getCategory()) : null;
         }
 
         public Long getId() {

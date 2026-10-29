@@ -1,7 +1,6 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -30,8 +29,7 @@ public class UserSession {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
-    public UserSession() {
-    }
+    public UserSession() {}
 
     public Long getId() {
         return id;

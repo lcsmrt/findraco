@@ -33,8 +33,7 @@ public class AuthenticationController {
             AuthenticationService authenticationService,
             PasswordResetService passwordResetService,
             SessionService sessionService,
-            SessionCookies sessionCookies
-    ) {
+            SessionCookies sessionCookies) {
         this.authenticationService = authenticationService;
         this.passwordResetService = passwordResetService;
         this.sessionService = sessionService;
@@ -48,7 +47,9 @@ public class AuthenticationController {
         IssuedSession session = authenticationService.authenticate(dto);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, sessionCookies.issue(session.sessionToken()).toString())
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        sessionCookies.issue(session.sessionToken()).toString())
                 .body(new AuthenticationResponseDto(session.accessToken()));
     }
 
@@ -56,12 +57,13 @@ public class AuthenticationController {
     @SecurityRequirements
     @PostMapping("/refresh")
     public ResponseEntity<AuthenticationResponseDto> refresh(
-            @CookieValue(name = SessionCookies.NAME, required = false) String sessionToken
-    ) {
+            @CookieValue(name = SessionCookies.NAME, required = false) String sessionToken) {
         IssuedSession session = sessionService.rotate(sessionToken);
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, sessionCookies.issue(session.sessionToken()).toString())
+                .header(
+                        HttpHeaders.SET_COOKIE,
+                        sessionCookies.issue(session.sessionToken()).toString())
                 .body(new AuthenticationResponseDto(session.accessToken()));
     }
 

@@ -2,12 +2,11 @@ package com.lcs.findraco.repositories;
 
 import com.lcs.findraco.models.PasswordResetToken;
 import com.lcs.findraco.models.User;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
-
-import java.util.Optional;
 
 @Repository
 public interface PasswordResetTokenRepository extends JpaRepository<PasswordResetToken, Long> {

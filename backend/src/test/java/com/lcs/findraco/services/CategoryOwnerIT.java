@@ -7,8 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
@@ -30,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of owned categories (spec P3 "Owned categories", AC 1-4, 7, 8; CAT-14,
@@ -56,12 +56,14 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
 
         JsonNode created = json(create(plan, owner, body("Professional", null, partner.getId()))
-                .andExpect(status().isCreated()).andReturn());
+                .andExpect(status().isCreated())
+                .andReturn());
 
         assertThat(created.get("ownerId").asLong()).isEqualTo(partner.getId());
         assertThat(created.get("ownerName").asString()).isEqualTo(partner.getName());
         assertThat(created.get("ownerActive").asBoolean()).isTrue();
-        FinancialTransactionCategory persisted = categoryRepository.findById(created.get("id").asLong()).orElseThrow();
+        FinancialTransactionCategory persisted =
+                categoryRepository.findById(created.get("id").asLong()).orElseThrow();
         assertThat(persisted.getOwner().getId()).isEqualTo(partner.getId());
     }
 
@@ -70,19 +72,30 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
     void ownerSetsAndClearsTheOwnerOfAnExistingRoot() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory professional = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional");
+        FinancialTransactionCategory professional =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional");
 
         JsonNode owned = json(update(plan, owner, professional.getId(), body("Professional", null, owner.getId()))
-                .andExpect(status().isOk()).andReturn());
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(owned.get("ownerId").asLong()).isEqualTo(owner.getId());
-        assertThat(categoryRepository.findById(professional.getId()).orElseThrow().getOwner().getId())
+        assertThat(categoryRepository
+                        .findById(professional.getId())
+                        .orElseThrow()
+                        .getOwner()
+                        .getId())
                 .isEqualTo(owner.getId());
 
         JsonNode shared = json(update(plan, owner, professional.getId(), body("Professional", null, null))
-                .andExpect(status().isOk()).andReturn());
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(shared.get("ownerId").isNull()).isTrue();
         assertThat(shared.get("ownerActive").isNull()).isTrue();
-        assertThat(categoryRepository.findById(professional.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository
+                        .findById(professional.getId())
+                        .orElseThrow()
+                        .getOwner())
+                .isNull();
     }
 
     // AC 2
@@ -91,13 +104,16 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory professional = ownedCategory(plan, "Professional", owner);
-        FinancialTransactionCategory courses = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Courses", professional);
+        FinancialTransactionCategory courses =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Courses", professional);
 
-        JsonNode fetched = json(fetch(plan, owner, courses.getId()).andExpect(status().isOk()).andReturn());
+        JsonNode fetched = json(
+                fetch(plan, owner, courses.getId()).andExpect(status().isOk()).andReturn());
 
         assertThat(fetched.get("ownerId").asLong()).isEqualTo(owner.getId());
         assertThat(fetched.get("ownerActive").asBoolean()).isTrue();
-        assertThat(categoryRepository.findById(courses.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository.findById(courses.getId()).orElseThrow().getOwner())
+                .isNull();
     }
 
     // AC 3
@@ -106,15 +122,16 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        FinancialTransactionCategory delivery =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
 
-        create(plan, owner, body("Dining out", food.getId(), owner.getId()))
-                .andExpect(status().isBadRequest());
+        create(plan, owner, body("Dining out", food.getId(), owner.getId())).andExpect(status().isBadRequest());
         update(plan, owner, delivery.getId(), body("Delivery", food.getId(), owner.getId()))
                 .andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findAllByPlan(plan)).hasSize(2);
-        assertThat(categoryRepository.findById(delivery.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository.findById(delivery.getId()).orElseThrow().getOwner())
+                .isNull();
     }
 
     // AC 4
@@ -125,13 +142,12 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         User stranger = fixtures.aUser();
         FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
 
-        create(plan, owner, body("Professional", null, stranger.getId()))
-                .andExpect(status().isBadRequest());
-        update(plan, owner, rent.getId(), body("Rent", null, stranger.getId()))
-                .andExpect(status().isBadRequest());
+        create(plan, owner, body("Professional", null, stranger.getId())).andExpect(status().isBadRequest());
+        update(plan, owner, rent.getId(), body("Rent", null, stranger.getId())).andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findAllByPlan(plan)).hasSize(1);
-        assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner())
+                .isNull();
     }
 
     // AC 7: a removed owner is kept and shown as a former member.
@@ -145,10 +161,16 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
 
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
-        JsonNode fetched = json(fetch(plan, owner, professional.getId()).andExpect(status().isOk()).andReturn());
+        JsonNode fetched = json(fetch(plan, owner, professional.getId())
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(fetched.get("ownerId").asLong()).isEqualTo(partner.getId());
         assertThat(fetched.get("ownerActive").asBoolean()).isFalse();
-        assertThat(categoryRepository.findById(professional.getId()).orElseThrow().getOwner().getId())
+        assertThat(categoryRepository
+                        .findById(professional.getId())
+                        .orElseThrow()
+                        .getOwner()
+                        .getId())
                 .isEqualTo(partner.getId());
     }
 
@@ -163,18 +185,24 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
         JsonNode kept = json(update(plan, owner, professional.getId(), body("Professional", null, partner.getId()))
-                .andExpect(status().isOk()).andReturn());
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(kept.get("ownerId").asLong()).isEqualTo(partner.getId());
         assertThat(kept.get("ownerActive").asBoolean()).isFalse();
 
         JsonNode changed = json(update(plan, owner, professional.getId(), body("Professional", null, owner.getId()))
-                .andExpect(status().isOk()).andReturn());
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(changed.get("ownerId").asLong()).isEqualTo(owner.getId());
         assertThat(changed.get("ownerActive").asBoolean()).isTrue();
 
         update(plan, owner, professional.getId(), body("Professional", null, null))
                 .andExpect(status().isOk());
-        assertThat(categoryRepository.findById(professional.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository
+                        .findById(professional.getId())
+                        .orElseThrow()
+                        .getOwner())
+                .isNull();
     }
 
     // AC 7: once changed away, a former member cannot be set back as owner.
@@ -188,10 +216,10 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
-        update(plan, owner, rent.getId(), body("Rent", null, partner.getId()))
-                .andExpect(status().isBadRequest());
+        update(plan, owner, rent.getId(), body("Rent", null, partner.getId())).andExpect(status().isBadRequest());
 
-        assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner())
+                .isNull();
     }
 
     // AC 7: when the owner rejoins, the ownership applies again.
@@ -208,7 +236,9 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(partner)))
                 .andExpect(status().isCreated());
 
-        JsonNode fetched = json(fetch(plan, owner, professional.getId()).andExpect(status().isOk()).andReturn());
+        JsonNode fetched = json(fetch(plan, owner, professional.getId())
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(fetched.get("ownerId").asLong()).isEqualTo(partner.getId());
         assertThat(fetched.get("ownerActive").asBoolean()).isTrue();
     }
@@ -226,18 +256,21 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
 
         JsonNode categories = json(mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY, plan.getId())
                         .with(testAuthHelper.asUser(viewer)))
-                .andExpect(status().isOk()).andReturn());
-        List<JsonNode> listed = StreamSupport.stream(categories.get("content").spliterator(), false).toList();
+                .andExpect(status().isOk())
+                .andReturn());
+        List<JsonNode> listed = StreamSupport.stream(categories.get("content").spliterator(), false)
+                .toList();
         assertThat(listed).singleElement().satisfies(category -> {
             assertThat(category.get("id").asLong()).isEqualTo(professional.getId());
             assertThat(category.get("ownerId").asLong()).isEqualTo(owner.getId());
         });
 
-        JsonNode transactions = json(mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
-                        .with(testAuthHelper.asUser(viewer)))
-                .andExpect(status().isOk()).andReturn());
+        JsonNode transactions = json(mockMvc.perform(
+                        get(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId()).with(testAuthHelper.asUser(viewer)))
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(StreamSupport.stream(transactions.get("content").spliterator(), false)
-                .map(transaction -> transaction.get("id").asLong()))
+                        .map(transaction -> transaction.get("id").asLong()))
                 .containsExactly(course.getId());
     }
 
@@ -247,17 +280,18 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory groceries = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries", food);
+        FinancialTransactionCategory groceries =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries", food);
         CategoryMemberLimit entry = new CategoryMemberLimit();
         entry.setCategory(groceries);
         entry.setMember(owner);
         entry.setAmount(new BigDecimal("260.00"));
         memberLimitRepository.save(entry);
 
-        update(plan, owner, food.getId(), body("Food", null, owner.getId()))
-                .andExpect(status().isBadRequest());
+        update(plan, owner, food.getId(), body("Food", null, owner.getId())).andExpect(status().isBadRequest());
 
-        assertThat(categoryRepository.findById(food.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository.findById(food.getId()).orElseThrow().getOwner())
+                .isNull();
     }
 
     // CAT-04 / AD-004: only the OWNER manages categories, owners included.
@@ -269,10 +303,10 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         fixtures.addMember(plan, editor, PlanRole.EDITOR);
         FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
 
-        update(plan, editor, rent.getId(), body("Rent", null, editor.getId()))
-                .andExpect(status().isForbidden());
+        update(plan, editor, rent.getId(), body("Rent", null, editor.getId())).andExpect(status().isForbidden());
 
-        assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner()).isNull();
+        assertThat(categoryRepository.findById(rent.getId()).orElseThrow().getOwner())
+                .isNull();
     }
 
     private FinancialTransactionCategory ownedCategory(Plan plan, String name, User member) {

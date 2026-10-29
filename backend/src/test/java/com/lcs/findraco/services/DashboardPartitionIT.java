@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
@@ -34,6 +32,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of the AD-007 Partition Invariant: {@code spent[C] = A[C] - B[C] + I[C]},
@@ -66,19 +66,33 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        long groceriesId = createCategory(plan, owner, "DEBIT", "Groceries").get("id").asLong();
+        long groceriesId =
+                createCategory(plan, owner, "DEBIT", "Groceries").get("id").asLong();
         long foodId = createCategory(plan, owner, "DEBIT", "Food").get("id").asLong();
-        long cleaningId = createCategory(plan, owner, "DEBIT", "Cleaning").get("id").asLong();
+        long cleaningId =
+                createCategory(plan, owner, "DEBIT", "Cleaning").get("id").asLong();
 
         Map<String, Object> body = Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal("150.00"),
-                "description", "Grocery run",
-                "startDate", TODAY.toString(),
-                "categoryId", groceriesId,
-                "items", List.of(
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal("150.00"),
+                "description",
+                "Grocery run",
+                "startDate",
+                TODAY.toString(),
+                "categoryId",
+                groceriesId,
+                "items",
+                List.of(
                         Map.of("description", "Food shopping", "amount", new BigDecimal("90.00"), "categoryId", foodId),
-                        Map.of("description", "Cleaning supplies", "amount", new BigDecimal("40.00"), "categoryId", cleaningId),
+                        Map.of(
+                                "description",
+                                "Cleaning supplies",
+                                "amount",
+                                new BigDecimal("40.00"),
+                                "categoryId",
+                                cleaningId),
                         Map.of("description", "Misc", "amount", new BigDecimal("10.00"))));
 
         createTransaction(plan, owner, body);
@@ -103,14 +117,20 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        long utilitiesId = createCategory(plan, owner, "DEBIT", "Utilities").get("id").asLong();
+        long utilitiesId =
+                createCategory(plan, owner, "DEBIT", "Utilities").get("id").asLong();
 
         Map<String, Object> body = Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal("75.00"),
-                "description", "Electric bill",
-                "startDate", TODAY.toString(),
-                "categoryId", utilitiesId);
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal("75.00"),
+                "description",
+                "Electric bill",
+                "startDate",
+                TODAY.toString(),
+                "categoryId",
+                utilitiesId);
 
         createTransaction(plan, owner, body);
 
@@ -127,37 +147,78 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         User ownerA = fixtures.aUser();
         Plan planA = fixtures.aPlan(ownerA);
 
-        createTransaction(planA, ownerA, Map.of(
-                "type", "CREDIT",
-                "amount", new BigDecimal("500.00"),
-                "description", "Salary",
-                "startDate", TODAY.toString()));
-        createTransaction(planA, ownerA, Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal("200.00"),
-                "description", "Rent",
-                "startDate", TODAY.toString()));
+        createTransaction(
+                planA,
+                ownerA,
+                Map.of(
+                        "type",
+                        "CREDIT",
+                        "amount",
+                        new BigDecimal("500.00"),
+                        "description",
+                        "Salary",
+                        "startDate",
+                        TODAY.toString()));
+        createTransaction(
+                planA,
+                ownerA,
+                Map.of(
+                        "type",
+                        "DEBIT",
+                        "amount",
+                        new BigDecimal("200.00"),
+                        "description",
+                        "Rent",
+                        "startDate",
+                        TODAY.toString()));
 
         User ownerB = fixtures.aUser();
         Plan planB = fixtures.aPlan(ownerB);
 
-        long bonusId = createCategory(planB, ownerB, "CREDIT", "Bonus").get("id").asLong();
+        long bonusId =
+                createCategory(planB, ownerB, "CREDIT", "Bonus").get("id").asLong();
         long foodId = createCategory(planB, ownerB, "DEBIT", "Food").get("id").asLong();
 
-        createTransaction(planB, ownerB, Map.of(
-                "type", "CREDIT",
-                "amount", new BigDecimal("500.00"),
-                "description", "Salary",
-                "startDate", TODAY.toString(),
-                "items", List.of(
-                        Map.of("description", "Year-end bonus", "amount", new BigDecimal("100.00"), "categoryId", bonusId))));
-        createTransaction(planB, ownerB, Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal("200.00"),
-                "description", "Rent",
-                "startDate", TODAY.toString(),
-                "items", List.of(
-                        Map.of("description", "Groceries slice", "amount", new BigDecimal("50.00"), "categoryId", foodId))));
+        createTransaction(
+                planB,
+                ownerB,
+                Map.of(
+                        "type",
+                        "CREDIT",
+                        "amount",
+                        new BigDecimal("500.00"),
+                        "description",
+                        "Salary",
+                        "startDate",
+                        TODAY.toString(),
+                        "items",
+                        List.of(Map.of(
+                                "description",
+                                "Year-end bonus",
+                                "amount",
+                                new BigDecimal("100.00"),
+                                "categoryId",
+                                bonusId))));
+        createTransaction(
+                planB,
+                ownerB,
+                Map.of(
+                        "type",
+                        "DEBIT",
+                        "amount",
+                        new BigDecimal("200.00"),
+                        "description",
+                        "Rent",
+                        "startDate",
+                        TODAY.toString(),
+                        "items",
+                        List.of(Map.of(
+                                "description",
+                                "Groceries slice",
+                                "amount",
+                                new BigDecimal("50.00"),
+                                "categoryId",
+                                foodId))));
 
         JsonNode dashboardA = fetchDashboard(planA, ownerA);
         JsonNode dashboardB = fetchDashboard(planB, ownerB);
@@ -191,49 +252,67 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        long groceriesId = createCategory(plan, owner, "DEBIT", "Groceries").get("id").asLong();
+        long groceriesId =
+                createCategory(plan, owner, "DEBIT", "Groceries").get("id").asLong();
         long foodId = createCategory(plan, owner, "DEBIT", "Food").get("id").asLong();
-        long cleaningId = createCategory(plan, owner, "DEBIT", "Cleaning").get("id").asLong();
-        long subscriptionsId = createCategory(plan, owner, "DEBIT", "Subscriptions").get("id").asLong();
+        long cleaningId =
+                createCategory(plan, owner, "DEBIT", "Cleaning").get("id").asLong();
+        long subscriptionsId =
+                createCategory(plan, owner, "DEBIT", "Subscriptions").get("id").asLong();
 
         Map<String, Object> body = Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal("150.00"),
-                "description", "Grocery run",
-                "startDate", TODAY.toString(),
-                "categoryId", groceriesId,
-                "items", List.of(
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal("150.00"),
+                "description",
+                "Grocery run",
+                "startDate",
+                TODAY.toString(),
+                "categoryId",
+                groceriesId,
+                "items",
+                List.of(
                         Map.of("description", "Food shopping", "amount", new BigDecimal("90.00"), "categoryId", foodId),
-                        Map.of("description", "Cleaning supplies", "amount", new BigDecimal("40.00"), "categoryId", cleaningId),
+                        Map.of(
+                                "description",
+                                "Cleaning supplies",
+                                "amount",
+                                new BigDecimal("40.00"),
+                                "categoryId",
+                                cleaningId),
                         Map.of("description", "Misc", "amount", new BigDecimal("10.00"))));
         createTransaction(plan, owner, body);
 
         FinancialTransactionCategory subscriptionsCategory = financialTransactionCategoryRepository
-                .findByIdAndPlan(subscriptionsId, plan).orElseThrow();
+                .findByIdAndPlan(subscriptionsId, plan)
+                .orElseThrow();
 
         LocalDate anchorMonth = TODAY.withDayOfMonth(1);
         LocalDate start = anchorMonth.minusMonths(6);
         LocalDate staleGeneratedThrough = anchorMonth.minusMonths(2);
         LocalDate expectedLastGenerated = anchorMonth.plusMonths(12);
 
-        RecurrenceDefinition definition = anOpenEndedDefinition(
-                plan, owner, subscriptionsCategory, start, "Streaming", new BigDecimal("30.00"));
+        RecurrenceDefinition definition =
+                anOpenEndedDefinition(plan, owner, subscriptionsCategory, start, "Streaming", new BigDecimal("30.00"));
         definition.setGeneratedThrough(staleGeneratedThrough);
         recurrenceDefinitionRepository.save(definition);
 
-        assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId())).isEmpty();
+        assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
+                .isEmpty();
 
         JsonNode dashboard = fetchDashboard(plan, owner, start, TODAY.plusMonths(13));
 
-        List<FinancialTransaction> occurrences = financialTransactionRepository
-                .findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<FinancialTransaction> occurrences =
+                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         // Top-up only materializes forward from the (stale) watermark — it never backfills the
         // months between the series' start and that watermark, since those are assumed already
         // persisted from the original creation flow (not seeded here, so none exist beforehand).
         long expectedOccurrences = ChronoUnit.MONTHS.between(staleGeneratedThrough, expectedLastGenerated);
         assertThat(occurrences).hasSize((int) expectedOccurrences);
 
-        RecurrenceDefinition reloaded = recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         assertThat(reloaded.getGeneratedThrough()).isEqualTo(expectedLastGenerated);
 
         JsonNode breakdown = dashboard.get("categoryBreakdown");
@@ -246,7 +325,8 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                 .add(categorySpent(breakdown, "Cleaning"));
         assertThat(partitionedSum).isEqualByComparingTo("150.00");
 
-        BigDecimal expectedSubscriptionsSpent = new BigDecimal("30.00").multiply(BigDecimal.valueOf(expectedOccurrences));
+        BigDecimal expectedSubscriptionsSpent =
+                new BigDecimal("30.00").multiply(BigDecimal.valueOf(expectedOccurrences));
         assertThat(categorySpent(breakdown, "Subscriptions")).isEqualByComparingTo(expectedSubscriptionsSpent);
 
         BigDecimal expectedTotalExpenses = new BigDecimal("150.00").add(expectedSubscriptionsSpent);
@@ -264,15 +344,39 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
 
         long foodId = createCategory(plan, owner, "DEBIT", "Food").get("id").asLong();
-        long deliveryId = createCategory(plan, owner, Map.of(
-                "type", "DEBIT", "description", "Delivery", "parentId", foodId)).get("id").asLong();
+        long deliveryId = createCategory(
+                        plan, owner, Map.of("type", "DEBIT", "description", "Delivery", "parentId", foodId))
+                .get("id")
+                .asLong();
 
-        createTransaction(plan, owner, Map.of(
-                "type", "DEBIT", "amount", new BigDecimal("40.00"), "description", "Market",
-                "startDate", TODAY.toString(), "categoryId", foodId));
-        createTransaction(plan, owner, Map.of(
-                "type", "DEBIT", "amount", new BigDecimal("60.00"), "description", "Pizza",
-                "startDate", TODAY.toString(), "categoryId", deliveryId));
+        createTransaction(
+                plan,
+                owner,
+                Map.of(
+                        "type",
+                        "DEBIT",
+                        "amount",
+                        new BigDecimal("40.00"),
+                        "description",
+                        "Market",
+                        "startDate",
+                        TODAY.toString(),
+                        "categoryId",
+                        foodId));
+        createTransaction(
+                plan,
+                owner,
+                Map.of(
+                        "type",
+                        "DEBIT",
+                        "amount",
+                        new BigDecimal("60.00"),
+                        "description",
+                        "Pizza",
+                        "startDate",
+                        TODAY.toString(),
+                        "categoryId",
+                        deliveryId));
 
         JsonNode breakdown = fetchDashboard(plan, owner).get("categoryBreakdown");
 
@@ -312,21 +416,39 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
 
-        long groceriesId = createCategory(plan, owner, "DEBIT", "Groceries").get("id").asLong();
-        long cleaningId = createCategory(plan, owner, "DEBIT", "Cleaning").get("id").asLong();
+        long groceriesId =
+                createCategory(plan, owner, "DEBIT", "Groceries").get("id").asLong();
+        long cleaningId =
+                createCategory(plan, owner, "DEBIT", "Cleaning").get("id").asLong();
 
-        createTransaction(plan, owner, Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal("100.00"),
-                "description", "Grocery run",
-                "startDate", TODAY.toString(),
-                "categoryId", groceriesId,
-                "splitMode", "EXACT",
-                "participants", List.of(
-                        Map.of("memberId", owner.getId(), "shareAmount", new BigDecimal("60.00")),
-                        Map.of("memberId", partner.getId(), "shareAmount", new BigDecimal("40.00"))),
-                "items", List.of(
-                        Map.of("description", "Cleaning supplies", "amount", new BigDecimal("30.00"), "categoryId", cleaningId))));
+        createTransaction(
+                plan,
+                owner,
+                Map.of(
+                        "type",
+                        "DEBIT",
+                        "amount",
+                        new BigDecimal("100.00"),
+                        "description",
+                        "Grocery run",
+                        "startDate",
+                        TODAY.toString(),
+                        "categoryId",
+                        groceriesId,
+                        "splitMode",
+                        "EXACT",
+                        "participants",
+                        List.of(
+                                Map.of("memberId", owner.getId(), "shareAmount", new BigDecimal("60.00")),
+                                Map.of("memberId", partner.getId(), "shareAmount", new BigDecimal("40.00"))),
+                        "items",
+                        List.of(Map.of(
+                                "description",
+                                "Cleaning supplies",
+                                "amount",
+                                new BigDecimal("30.00"),
+                                "categoryId",
+                                cleaningId))));
 
         JsonNode partnerBreakdown = fetchDashboard(plan, owner, partner.getId()).get("categoryBreakdown");
         assertThat(categorySpent(partnerBreakdown, "Groceries")).isEqualByComparingTo("28.00");
@@ -341,8 +463,13 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         assertThat(categorySpent(unfiltered, "Cleaning")).isEqualByComparingTo("30.00");
     }
 
-    private RecurrenceDefinition anOpenEndedDefinition(Plan plan, User owner, FinancialTransactionCategory category,
-                                                         LocalDate start, String description, BigDecimal amount) {
+    private RecurrenceDefinition anOpenEndedDefinition(
+            Plan plan,
+            User owner,
+            FinancialTransactionCategory category,
+            LocalDate start,
+            String description,
+            BigDecimal amount) {
         RecurrenceDefinition definition = new RecurrenceDefinition();
         definition.setPlan(plan);
         definition.setCreatedBy(owner);
@@ -367,9 +494,12 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     }
 
     private JsonNode createCategory(Plan plan, User asUser, String type, String description) throws Exception {
-        return createCategory(plan, asUser, Map.of(
-                "type", type,
-                "description", description));
+        return createCategory(
+                plan,
+                asUser,
+                Map.of(
+                        "type", type,
+                        "description", description));
     }
 
     private JsonNode createCategory(Plan plan, User asUser, Map<String, Object> body) throws Exception {

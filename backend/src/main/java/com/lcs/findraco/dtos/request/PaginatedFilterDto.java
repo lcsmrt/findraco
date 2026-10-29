@@ -3,10 +3,9 @@ package com.lcs.findraco.dtos.request;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-
-import java.util.Set;
 
 public abstract class PaginatedFilterDto {
 
@@ -19,7 +18,10 @@ public abstract class PaginatedFilterDto {
 
     private String sortBy;
 
-    @Pattern(regexp = "asc|desc", flags = Pattern.Flag.CASE_INSENSITIVE, message = "Sort direction must be 'asc' or 'desc'.")
+    @Pattern(
+            regexp = "asc|desc",
+            flags = Pattern.Flag.CASE_INSENSITIVE,
+            message = "Sort direction must be 'asc' or 'desc'.")
     private String sortDirection;
 
     protected PaginatedFilterDto(String defaultSortBy, String defaultSortDirection) {
@@ -35,15 +37,35 @@ public abstract class PaginatedFilterDto {
         return PageRequest.of(page, size, sort);
     }
 
-    public int getPage() { return page; }
-    public void setPage(int page) { this.page = page; }
+    public int getPage() {
+        return page;
+    }
 
-    public int getSize() { return size; }
-    public void setSize(int size) { this.size = size; }
+    public void setPage(int page) {
+        this.page = page;
+    }
 
-    public String getSortBy() { return sortBy; }
-    public void setSortBy(String sortBy) { this.sortBy = sortBy; }
+    public int getSize() {
+        return size;
+    }
 
-    public String getSortDirection() { return sortDirection; }
-    public void setSortDirection(String sortDirection) { this.sortDirection = sortDirection; }
+    public void setSize(int size) {
+        this.size = size;
+    }
+
+    public String getSortBy() {
+        return sortBy;
+    }
+
+    public void setSortBy(String sortBy) {
+        this.sortBy = sortBy;
+    }
+
+    public String getSortDirection() {
+        return sortDirection;
+    }
+
+    public void setSortDirection(String sortDirection) {
+        this.sortDirection = sortDirection;
+    }
 }

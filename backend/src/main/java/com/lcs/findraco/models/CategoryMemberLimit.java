@@ -1,11 +1,15 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 
 @Entity
-@Table(name = "category_member_limits", uniqueConstraints = @UniqueConstraint(name = "uk_cml_category_member", columnNames = {"category_id", "member_user_id"}))
+@Table(
+        name = "category_member_limits",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_cml_category_member",
+                        columnNames = {"category_id", "member_user_id"}))
 public class CategoryMemberLimit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,8 +26,7 @@ public class CategoryMemberLimit {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    public CategoryMemberLimit() {
-    }
+    public CategoryMemberLimit() {}
 
     public Long getId() {
         return id;

@@ -2,12 +2,11 @@ package com.lcs.findraco.services;
 
 import com.lcs.findraco.exceptions.FinancialTransactionExceptions;
 import com.lcs.findraco.models.SplitMode;
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.List;
+import org.springframework.stereotype.Component;
 
 /**
  * Resolves a transaction's total amount into per-member shares for a given split mode.

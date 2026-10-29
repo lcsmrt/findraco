@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
@@ -23,6 +21,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Drives the real registration ({@code POST /user}) and login ({@code POST /auth/login})
@@ -75,11 +75,11 @@ class AuthenticationIT extends AbstractIntegrationTest {
         String token = login(email, "password123");
         assertThat(token).isNotBlank();
 
-        mockMvc.perform(get(ApiRoutes.USER + "/me")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
-                    JsonNode profile = objectMapper.readTree(result.getResponse().getContentAsString());
+                    JsonNode profile =
+                            objectMapper.readTree(result.getResponse().getContentAsString());
                     assertThat(profile.get("email").asString()).isEqualTo(email);
                 });
     }
@@ -128,9 +128,8 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
         mockMvc.perform(post(ApiRoutes.AUTH + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of(
-                                "email", email,
-                                "password", "not-the-right-password"))))
+                        .content(objectMapper.writeValueAsString(
+                                Map.of("email", email, "password", "not-the-right-password"))))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -143,8 +142,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
         mockMvc.perform(post(ApiRoutes.AUTH + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "email", "nobody-" + System.nanoTime() + "@test.com",
-                                "password", "password123"))))
+                                "email", "nobody-" + System.nanoTime() + "@test.com", "password", "password123"))))
                 .andExpect(status().isUnauthorized());
     }
 
@@ -161,8 +159,10 @@ class AuthenticationIT extends AbstractIntegrationTest {
         assertThat(unknownEmail.getResponse().getStatus())
                 .isEqualTo(wrongPassword.getResponse().getStatus());
 
-        JsonNode wrongPasswordBody = objectMapper.readTree(wrongPassword.getResponse().getContentAsString());
-        JsonNode unknownEmailBody = objectMapper.readTree(unknownEmail.getResponse().getContentAsString());
+        JsonNode wrongPasswordBody =
+                objectMapper.readTree(wrongPassword.getResponse().getContentAsString());
+        JsonNode unknownEmailBody =
+                objectMapper.readTree(unknownEmail.getResponse().getContentAsString());
         assertThat(unknownEmailBody.get("message").asString())
                 .isEqualTo(wrongPasswordBody.get("message").asString());
     }
@@ -174,8 +174,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
         // UserService.create() auto-provisions a default plan for every new user; the freshly
         // minted token must be able to see it via the real plans endpoint.
-        mockMvc.perform(get(ApiRoutes.PLAN)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(ApiRoutes.PLAN).header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     JsonNode plans = objectMapper.readTree(result.getResponse().getContentAsString());
@@ -195,12 +194,10 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
         // Non-member access must 404, never 403 — consistent with the two-layer plan
         // authorization model verified against real tokens in PlanAuthorizationMatrixIT.
-        mockMvc.perform(get(ApiRoutes.PLAN + "/{id}", planIdA)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenB))
+        mockMvc.perform(get(ApiRoutes.PLAN + "/{id}", planIdA).header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenB))
                 .andExpect(status().isNotFound());
 
-        mockMvc.perform(get(ApiRoutes.PLAN + "/{id}", planIdA)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenA))
+        mockMvc.perform(get(ApiRoutes.PLAN + "/{id}", planIdA).header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenA))
                 .andExpect(status().isOk());
     }
 
@@ -216,8 +213,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
     @Test
     void malformedTokenIsRejectedWith401() throws Exception {
-        mockMvc.perform(get(ApiRoutes.USER + "/me")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
+        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."));
     }
@@ -233,8 +229,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .signWith(signingKey("a-different-secret-key-that-is-long-enough-for-hmac-sha-512-signatures"))
                 .compact();
 
-        mockMvc.perform(get(ApiRoutes.USER + "/me")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + forged))
+        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + forged))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."));
     }
@@ -250,8 +245,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .signWith(signingKey(jwtSecretKey))
                 .compact();
 
-        mockMvc.perform(get(ApiRoutes.USER + "/me")
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + expired))
+        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + expired))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."));
     }
@@ -270,8 +264,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
     }
 
     private Long fetchOwnPlanId(String token) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.PLAN)
-                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        MvcResult result = mockMvc.perform(get(ApiRoutes.PLAN).header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andReturn();
         JsonNode plans = objectMapper.readTree(result.getResponse().getContentAsString());

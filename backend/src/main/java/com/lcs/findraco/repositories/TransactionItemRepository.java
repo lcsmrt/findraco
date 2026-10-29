@@ -15,6 +15,6 @@ public interface TransactionItemRepository extends JpaRepository<TransactionItem
 
     @Modifying(flushAutomatically = true)
     @Query("UPDATE TransactionItem it SET it.category = :target WHERE it.category = :source")
-    int reassignCategory(@Param("source") FinancialTransactionCategory source,
-                         @Param("target") FinancialTransactionCategory target);
+    int reassignCategory(
+            @Param("source") FinancialTransactionCategory source, @Param("target") FinancialTransactionCategory target);
 }

@@ -1,7 +1,6 @@
 package com.lcs.findraco.dtos.response;
 
 import com.lcs.findraco.models.FinancialTransaction;
-
 import java.util.List;
 
 public class FinancialTransactionSeriesResponseDto {
@@ -10,9 +9,8 @@ public class FinancialTransactionSeriesResponseDto {
     private final List<FinancialTransactionResponseDto> occurrences;
 
     public FinancialTransactionSeriesResponseDto(List<FinancialTransaction> transactions) {
-        this.occurrences = transactions.stream()
-                .map(FinancialTransactionResponseDto::new)
-                .toList();
+        this.occurrences =
+                transactions.stream().map(FinancialTransactionResponseDto::new).toList();
         this.count = transactions.isEmpty() ? 0 : transactions.size();
         this.seriesId = transactions.isEmpty() ? null : transactions.get(0).getSeriesId();
     }

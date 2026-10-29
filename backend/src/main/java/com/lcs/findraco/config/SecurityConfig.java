@@ -3,6 +3,7 @@ package com.lcs.findraco.config;
 import com.lcs.findraco.security.JsonAuthenticationEntryPoint;
 import com.lcs.findraco.security.JwtAuthenticationFilter;
 import com.lcs.findraco.utils.ApiRoutes;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -24,8 +25,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -37,8 +36,7 @@ public class SecurityConfig {
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             UserDetailsService userDetailsService,
-            JsonAuthenticationEntryPoint authenticationEntryPoint
-    ) {
+            JsonAuthenticationEntryPoint authenticationEntryPoint) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
@@ -47,12 +45,12 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
-        return http
-                .csrf(AbstractHttpConfigurer::disable)
+        return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request
-                        .requestMatchers(HttpMethod.POST, ApiRoutes.USER).permitAll()
-                        .requestMatchers(HttpMethod.GET, ApiRoutes.INVITATION + "/*").permitAll()
+                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, ApiRoutes.USER)
+                        .permitAll()
+                        .requestMatchers(HttpMethod.GET, ApiRoutes.INVITATION + "/*")
+                        .permitAll()
                         .requestMatchers(
                                 ApiRoutes.AUTH + "/login",
                                 ApiRoutes.AUTH + "/refresh",
@@ -60,9 +58,12 @@ public class SecurityConfig {
                                 ApiRoutes.AUTH + "/forgot-password",
                                 ApiRoutes.AUTH + "/reset-password",
                                 ApiRoutes.AUTH + "/reset-password/validate",
-                                "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**"
-                        ).permitAll()
-                        .anyRequest().authenticated())
+                                "/swagger-ui/**",
+                                "/swagger-ui.html",
+                                "/v3/api-docs/**")
+                        .permitAll()
+                        .anyRequest()
+                        .authenticated())
                 .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(authenticationEntryPoint))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

@@ -1,7 +1,6 @@
 package com.lcs.findraco.dtos.request;
 
 import com.lcs.findraco.models.FinancialTransactionType;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -20,27 +19,67 @@ public class FinancialTransactionFilterDto extends PaginatedFilterDto {
         super("startDate", "desc");
     }
 
-    public FinancialTransactionType getType() { return type; }
-    public void setType(FinancialTransactionType type) { this.type = type; }
+    public FinancialTransactionType getType() {
+        return type;
+    }
 
-    public Long getCategoryId() { return categoryId; }
-    public void setCategoryId(Long categoryId) { this.categoryId = categoryId; }
+    public void setType(FinancialTransactionType type) {
+        this.type = type;
+    }
 
-    public Long getMemberId() { return memberId; }
-    public void setMemberId(Long memberId) { this.memberId = memberId; }
+    public Long getCategoryId() {
+        return categoryId;
+    }
 
-    public String getDescription() { return description; }
-    public void setDescription(String description) { this.description = description; }
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
+    }
 
-    public LocalDate getStartDateFrom() { return startDateFrom; }
-    public void setStartDateFrom(LocalDate startDateFrom) { this.startDateFrom = startDateFrom; }
+    public Long getMemberId() {
+        return memberId;
+    }
 
-    public LocalDate getStartDateTo() { return startDateTo; }
-    public void setStartDateTo(LocalDate startDateTo) { this.startDateTo = startDateTo; }
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
+    }
 
-    public BigDecimal getAmountMin() { return amountMin; }
-    public void setAmountMin(BigDecimal amountMin) { this.amountMin = amountMin; }
+    public String getDescription() {
+        return description;
+    }
 
-    public BigDecimal getAmountMax() { return amountMax; }
-    public void setAmountMax(BigDecimal amountMax) { this.amountMax = amountMax; }
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDate getStartDateFrom() {
+        return startDateFrom;
+    }
+
+    public void setStartDateFrom(LocalDate startDateFrom) {
+        this.startDateFrom = startDateFrom;
+    }
+
+    public LocalDate getStartDateTo() {
+        return startDateTo;
+    }
+
+    public void setStartDateTo(LocalDate startDateTo) {
+        this.startDateTo = startDateTo;
+    }
+
+    public BigDecimal getAmountMin() {
+        return amountMin;
+    }
+
+    public void setAmountMin(BigDecimal amountMin) {
+        this.amountMin = amountMin;
+    }
+
+    public BigDecimal getAmountMax() {
+        return amountMax;
+    }
+
+    public void setAmountMax(BigDecimal amountMax) {
+        this.amountMax = amountMax;
+    }
 }

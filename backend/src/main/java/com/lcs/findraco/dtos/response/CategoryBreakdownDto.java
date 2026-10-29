@@ -28,16 +28,43 @@ public class CategoryBreakdownDto {
         this.remaining = spending.getRemaining();
         this.percentUsed = spending.getPercentUsed();
         this.overLimit = spending.getOverLimit();
-        this.children = spending.getChildren().stream().map(CategoryBreakdownDto::new).toList();
+        this.children =
+                spending.getChildren().stream().map(CategoryBreakdownDto::new).toList();
     }
 
-    public Long getCategoryId() { return categoryId; }
-    public Long getParentId() { return parentId; }
-    public String getCategoryName() { return categoryName; }
-    public BigDecimal getSpent() { return spent; }
-    public BigDecimal getLimit() { return limit; }
-    public BigDecimal getRemaining() { return remaining; }
-    public BigDecimal getPercentUsed() { return percentUsed; }
-    public Boolean getOverLimit() { return overLimit; }
-    public List<CategoryBreakdownDto> getChildren() { return children; }
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public Long getParentId() {
+        return parentId;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public BigDecimal getSpent() {
+        return spent;
+    }
+
+    public BigDecimal getLimit() {
+        return limit;
+    }
+
+    public BigDecimal getRemaining() {
+        return remaining;
+    }
+
+    public BigDecimal getPercentUsed() {
+        return percentUsed;
+    }
+
+    public Boolean getOverLimit() {
+        return overLimit;
+    }
+
+    public List<CategoryBreakdownDto> getChildren() {
+        return children;
+    }
 }

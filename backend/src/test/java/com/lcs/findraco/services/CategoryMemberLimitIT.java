@@ -7,8 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
@@ -29,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of per-member limits (spec P2 "Per-member limits", AC 1-3, 7-13; CAT-11,
@@ -55,13 +55,16 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
 
-        MvcResult result = create(plan, owner, body("DEBIT", "Groceries", null,
-                limits(owner.getId(), "260.00", partner.getId(), "140.00")))
+        MvcResult result = create(
+                        plan,
+                        owner,
+                        body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", partner.getId(), "140.00")))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         JsonNode created = json(result);
-        FinancialTransactionCategory category = categoryRepository.findById(created.get("id").asLong()).orElseThrow();
+        FinancialTransactionCategory category =
+                categoryRepository.findById(created.get("id").asLong()).orElseThrow();
         Map<Long, BigDecimal> stored = storedAmounts(category);
         assertThat(stored).hasSize(2);
         assertThat(stored.get(owner.getId())).isEqualByComparingTo("260.00");
@@ -82,15 +85,19 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
 
-        MvcResult result = create(plan, owner, body("DEBIT", "Groceries", null,
-                limits(owner.getId(), "260.00", partner.getId(), "140.00")))
+        MvcResult result = create(
+                        plan,
+                        owner,
+                        body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", partner.getId(), "140.00")))
                 .andExpect(status().isCreated())
                 .andReturn();
 
         JsonNode created = json(result);
         assertThat(created.get("effectiveLimit").decimalValue()).isEqualByComparingTo("400.00");
 
-        JsonNode fetched = json(fetch(plan, owner, created.get("id").asLong()).andExpect(status().isOk()).andReturn());
+        JsonNode fetched = json(fetch(plan, owner, created.get("id").asLong())
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(fetched.get("effectiveLimit").decimalValue()).isEqualByComparingTo("400.00");
     }
 
@@ -102,18 +109,24 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
 
-        Map<String, Object> body = body("DEBIT", "Groceries", "999.00",
-                limits(owner.getId(), "260.00", partner.getId(), "140.00"));
-        JsonNode created = json(create(plan, owner, body).andExpect(status().isCreated()).andReturn());
+        Map<String, Object> body =
+                body("DEBIT", "Groceries", "999.00", limits(owner.getId(), "260.00", partner.getId(), "140.00"));
+        JsonNode created =
+                json(create(plan, owner, body).andExpect(status().isCreated()).andReturn());
 
         assertThat(created.get("effectiveLimit").decimalValue()).isEqualByComparingTo("400.00");
         assertThat(created.get("spendingLimit").isNull()).isTrue();
-        assertThat(categoryRepository.findById(created.get("id").asLong()).orElseThrow().getSpendingLimit()).isNull();
+        assertThat(categoryRepository
+                        .findById(created.get("id").asLong())
+                        .orElseThrow()
+                        .getSpendingLimit())
+                .isNull();
 
         // Same on update while entries already exist and the request leaves them untouched.
         Map<String, Object> update = body("DEBIT", "Groceries", "500.00", null);
         JsonNode updated = json(update(plan, owner, created.get("id").asLong(), update)
-                .andExpect(status().isOk()).andReturn());
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(updated.get("effectiveLimit").decimalValue()).isEqualByComparingTo("400.00");
         assertThat(updated.get("spendingLimit").isNull()).isTrue();
     }
@@ -126,13 +139,15 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         FinancialTransactionCategory groceries = categoryWithLimits(plan, Map.of(owner, "260.00"));
 
         JsonNode cleared = json(update(plan, owner, groceries.getId(), body("DEBIT", "Groceries", null, List.of()))
-                .andExpect(status().isOk()).andReturn());
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(cleared.get("memberLimits")).isEmpty();
         assertThat(cleared.get("effectiveLimit").isNull()).isTrue();
         assertThat(memberLimitRepository.findAllByCategory(groceries)).isEmpty();
 
         JsonNode plain = json(update(plan, owner, groceries.getId(), body("DEBIT", "Groceries", "300.00", List.of()))
-                .andExpect(status().isOk()).andReturn());
+                .andExpect(status().isOk())
+                .andReturn());
         assertThat(plain.get("effectiveLimit").decimalValue()).isEqualByComparingTo("300.00");
     }
 
@@ -160,8 +175,10 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User stranger = fixtures.aUser();
 
-        create(plan, owner, body("DEBIT", "Groceries", null,
-                limits(owner.getId(), "260.00", stranger.getId(), "140.00")))
+        create(
+                        plan,
+                        owner,
+                        body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", stranger.getId(), "140.00")))
                 .andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findAllByPlan(plan)).isEmpty();
@@ -173,8 +190,7 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        create(plan, owner, body("DEBIT", "Groceries", null,
-                limits(owner.getId(), "260.00", owner.getId(), "140.00")))
+        create(plan, owner, body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", owner.getId(), "140.00")))
                 .andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findAllByPlan(plan)).isEmpty();
@@ -209,14 +225,14 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
     void perMemberLimitsOnAnOwnedCategoryAreRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory professional = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional");
+        FinancialTransactionCategory professional =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional");
         professional.setOwner(owner);
         categoryRepository.save(professional);
 
         Map<String, Object> ownedUpdate = body("DEBIT", "Professional", null, limits(owner.getId(), "100.00"));
         ownedUpdate.put("ownerId", owner.getId()); // PUT is a full replace: the owner is resent (CAT-15)
-        update(plan, owner, professional.getId(), ownedUpdate)
-                .andExpect(status().isBadRequest());
+        update(plan, owner, professional.getId(), ownedUpdate).andExpect(status().isBadRequest());
         create(plan, owner, body("DEBIT", "Courses", null, limits(owner.getId(), "100.00"), professional.getId()))
                 .andExpect(status().isBadRequest());
 
@@ -232,14 +248,18 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         User stranger = fixtures.aUser();
         FinancialTransactionCategory groceries = categoryWithLimits(plan, Map.of(owner, "260.00"));
 
-        update(plan, owner, groceries.getId(), body("DEBIT", "Renamed", null,
-                limits(owner.getId(), "300.00", stranger.getId(), "100.00")))
+        update(
+                        plan,
+                        owner,
+                        groceries.getId(),
+                        body("DEBIT", "Renamed", null, limits(owner.getId(), "300.00", stranger.getId(), "100.00")))
                 .andExpect(status().isBadRequest());
 
         Map<Long, BigDecimal> stored = storedAmounts(groceries);
         assertThat(stored).containsOnlyKeys(owner.getId());
         assertThat(stored.get(owner.getId())).isEqualByComparingTo("260.00");
-        assertThat(categoryRepository.findById(groceries.getId()).orElseThrow().getDescription()).isEqualTo("Groceries");
+        assertThat(categoryRepository.findById(groceries.getId()).orElseThrow().getDescription())
+                .isEqualTo("Groceries");
     }
 
     // AC 11
@@ -253,7 +273,8 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
 
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
-        JsonNode fetched = json(fetch(plan, owner, groceries.getId()).andExpect(status().isOk()).andReturn());
+        JsonNode fetched = json(
+                fetch(plan, owner, groceries.getId()).andExpect(status().isOk()).andReturn());
         assertThat(fetched.get("effectiveLimit").decimalValue()).isEqualByComparingTo("260.00");
         JsonNode partnerEntry = entryFor(fetched, partner.getId());
         assertThat(partnerEntry.get("active").asBoolean()).isFalse();
@@ -274,8 +295,11 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
 
         update(plan, owner, groceries.getId(), body("DEBIT", "Groceries", null, null))
                 .andExpect(status().isOk());
-        update(plan, owner, groceries.getId(), body("DEBIT", "Groceries", null,
-                limits(owner.getId(), "280.00", partner.getId(), "140.00")))
+        update(
+                        plan,
+                        owner,
+                        groceries.getId(),
+                        body("DEBIT", "Groceries", null, limits(owner.getId(), "280.00", partner.getId(), "140.00")))
                 .andExpect(status().isOk());
 
         Map<Long, BigDecimal> stored = storedAmounts(groceries);
@@ -293,8 +317,11 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         FinancialTransactionCategory groceries = categoryWithLimits(plan, Map.of(owner, "260.00", partner, "140.00"));
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
-        update(plan, owner, groceries.getId(), body("DEBIT", "Groceries", null,
-                limits(owner.getId(), "260.00", partner.getId(), "200.00")))
+        update(
+                        plan,
+                        owner,
+                        groceries.getId(),
+                        body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00", partner.getId(), "200.00")))
                 .andExpect(status().isBadRequest());
 
         assertThat(storedAmounts(groceries).get(partner.getId())).isEqualByComparingTo("140.00");
@@ -314,7 +341,8 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(partner)))
                 .andExpect(status().isCreated());
 
-        JsonNode fetched = json(fetch(plan, owner, groceries.getId()).andExpect(status().isOk()).andReturn());
+        JsonNode fetched = json(
+                fetch(plan, owner, groceries.getId()).andExpect(status().isOk()).andReturn());
         JsonNode partnerEntry = entryFor(fetched, partner.getId());
         assertThat(partnerEntry.get("active").asBoolean()).isTrue();
         assertThat(partnerEntry.get("amount").decimalValue()).isEqualByComparingTo("140.00");
@@ -331,9 +359,13 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         FinancialTransactionCategory groceries = categoryWithLimits(plan, Map.of(owner, "260.00", partner, "140.00"));
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
-        JsonNode updated = json(update(plan, owner, groceries.getId(), body("DEBIT", "Groceries", null,
-                limits(owner.getId(), "260.00")))
-                .andExpect(status().isOk()).andReturn());
+        JsonNode updated = json(update(
+                        plan,
+                        owner,
+                        groceries.getId(),
+                        body("DEBIT", "Groceries", null, limits(owner.getId(), "260.00")))
+                .andExpect(status().isOk())
+                .andReturn());
 
         assertThat(updated.get("memberLimits")).hasSize(1);
         assertThat(storedAmounts(groceries)).containsOnlyKeys(owner.getId());
@@ -368,7 +400,8 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
 
     private Map<Long, BigDecimal> storedAmounts(FinancialTransactionCategory category) {
         Map<Long, BigDecimal> amounts = new HashMap<>();
-        memberLimitRepository.findAllByCategory(category)
+        memberLimitRepository
+                .findAllByCategory(category)
                 .forEach(entry -> amounts.put(entry.getMember().getId(), entry.getAmount()));
         return amounts;
     }
@@ -393,13 +426,17 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         return entries;
     }
 
-    private static Map<String, Object> body(String type, String description, String spendingLimit,
-                                            List<Map<String, Object>> memberLimits) {
+    private static Map<String, Object> body(
+            String type, String description, String spendingLimit, List<Map<String, Object>> memberLimits) {
         return body(type, description, spendingLimit, memberLimits, null);
     }
 
-    private static Map<String, Object> body(String type, String description, String spendingLimit,
-                                            List<Map<String, Object>> memberLimits, Long parentId) {
+    private static Map<String, Object> body(
+            String type,
+            String description,
+            String spendingLimit,
+            List<Map<String, Object>> memberLimits,
+            Long parentId) {
         Map<String, Object> body = new HashMap<>();
         body.put("type", type);
         body.put("description", description);

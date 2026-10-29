@@ -1,16 +1,15 @@
 package com.lcs.findraco.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.lcs.findraco.exceptions.FinancialTransactionExceptions;
 import com.lcs.findraco.models.SplitMode;
 import com.lcs.findraco.services.SplitResolver.ParticipantInput;
 import com.lcs.findraco.services.SplitResolver.ResolvedShare;
-import org.junit.jupiter.api.Test;
-
 import java.math.BigDecimal;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 class SplitResolverTest {
 
@@ -18,27 +17,25 @@ class SplitResolverTest {
 
     @Test
     void equalSplitDividesEvenlyWhenAmountDividesCleanly() {
-        List<ParticipantInput> inputs = List.of(
-                new ParticipantInput(1L, null),
-                new ParticipantInput(2L, null));
+        List<ParticipantInput> inputs = List.of(new ParticipantInput(1L, null), new ParticipantInput(2L, null));
 
         List<ResolvedShare> shares = resolver.resolve(new BigDecimal("100.00"), SplitMode.EQUAL, inputs);
 
-        assertThat(shares).extracting(ResolvedShare::shareAmount)
+        assertThat(shares)
+                .extracting(ResolvedShare::shareAmount)
                 .containsExactly(new BigDecimal("50.00"), new BigDecimal("50.00"));
         assertThat(sum(shares)).isEqualByComparingTo("100.00");
     }
 
     @Test
     void equalSplitDistributesResidualCentDeterministicallyToFirstParticipants() {
-        List<ParticipantInput> inputs = List.of(
-                new ParticipantInput(1L, null),
-                new ParticipantInput(2L, null),
-                new ParticipantInput(3L, null));
+        List<ParticipantInput> inputs =
+                List.of(new ParticipantInput(1L, null), new ParticipantInput(2L, null), new ParticipantInput(3L, null));
 
         List<ResolvedShare> shares = resolver.resolve(new BigDecimal("100.00"), SplitMode.EQUAL, inputs);
 
-        assertThat(shares).extracting(ResolvedShare::shareAmount)
+        assertThat(shares)
+                .extracting(ResolvedShare::shareAmount)
                 .containsExactly(new BigDecimal("33.34"), new BigDecimal("33.33"), new BigDecimal("33.33"));
         assertThat(sum(shares)).isEqualByComparingTo("100.00");
     }
@@ -56,20 +53,19 @@ class SplitResolverTest {
     @Test
     void exactSplitUsesGivenSharesWhenTheySumToAmount() {
         List<ParticipantInput> inputs = List.of(
-                new ParticipantInput(1L, new BigDecimal("70.00")),
-                new ParticipantInput(2L, new BigDecimal("30.00")));
+                new ParticipantInput(1L, new BigDecimal("70.00")), new ParticipantInput(2L, new BigDecimal("30.00")));
 
         List<ResolvedShare> shares = resolver.resolve(new BigDecimal("100.00"), SplitMode.EXACT, inputs);
 
-        assertThat(shares).extracting(ResolvedShare::shareAmount)
+        assertThat(shares)
+                .extracting(ResolvedShare::shareAmount)
                 .containsExactly(new BigDecimal("70.00"), new BigDecimal("30.00"));
     }
 
     @Test
     void exactSplitRejectsSharesThatDoNotSumToAmount() {
         List<ParticipantInput> inputs = List.of(
-                new ParticipantInput(1L, new BigDecimal("70.00")),
-                new ParticipantInput(2L, new BigDecimal("20.00")));
+                new ParticipantInput(1L, new BigDecimal("70.00")), new ParticipantInput(2L, new BigDecimal("20.00")));
 
         assertThatThrownBy(() -> resolver.resolve(new BigDecimal("100.00"), SplitMode.EXACT, inputs))
                 .isInstanceOf(FinancialTransactionExceptions.ParticipantSharesMismatchException.class);

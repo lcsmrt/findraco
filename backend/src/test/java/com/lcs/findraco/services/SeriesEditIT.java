@@ -7,8 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
@@ -29,6 +27,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of the series-edit domain (SEDIT-01..12): installment k/N labeling and
@@ -63,8 +63,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         LocalDate start = LocalDate.of(2026, 1, 15);
 
-        JsonNode created = createSeries(plan, owner, installmentBody(
-                "Laptop", "300.00", start, 6, null));
+        JsonNode created = createSeries(plan, owner, installmentBody("Laptop", "300.00", start, 6, null));
 
         assertThat(created.get("count").asInt()).isEqualTo(6);
         String seriesId = created.get("seriesId").asString();
@@ -75,14 +74,17 @@ class SeriesEditIT extends AbstractIntegrationTest {
         for (int i = 0; i < 6; i++) {
             JsonNode occ = occurrences.get(i);
             assertThat(occ.get("description").asString()).isEqualTo("Laptop (" + (i + 1) + "/6)");
-            assertThat(occ.get("startDate").asString()).isEqualTo(start.plusMonths(i).toString());
+            assertThat(occ.get("startDate").asString())
+                    .isEqualTo(start.plusMonths(i).toString());
             assertThat(occ.get("amount").decimalValue()).isEqualByComparingTo("300.00");
             assertThat(occ.get("seriesId").asString()).isEqualTo(seriesId);
             assertThat(occ.get("parcelsNumber").asInt()).isEqualTo(6);
         }
 
-        JsonNode firstPersisted = fetchOccurrence(plan, owner, occurrences.get(0).get("id").asLong());
-        JsonNode lastPersisted = fetchOccurrence(plan, owner, occurrences.get(5).get("id").asLong());
+        JsonNode firstPersisted =
+                fetchOccurrence(plan, owner, occurrences.get(0).get("id").asLong());
+        JsonNode lastPersisted =
+                fetchOccurrence(plan, owner, occurrences.get(5).get("id").asLong());
         assertThat(firstPersisted.get("description").asString()).isEqualTo("Laptop (1/6)");
         assertThat(lastPersisted.get("description").asString()).isEqualTo("Laptop (6/6)");
 
@@ -102,8 +104,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         // An in-progress installment: total 10 parcels, but generation starts at parcel 4 (as if
         // parcels 1-3 predate the system). k/N must be position-anchored to the *total*, not the
         // count of generated rows.
-        JsonNode created = createSeries(plan, owner, installmentBody(
-                "Insurance", "120.00", start, 10, 4));
+        JsonNode created = createSeries(plan, owner, installmentBody("Insurance", "120.00", start, 10, 4));
 
         assertThat(created.get("count").asInt()).isEqualTo(7);
         JsonNode occurrences = created.get("occurrences");
@@ -132,7 +133,8 @@ class SeriesEditIT extends AbstractIntegrationTest {
         for (int i = 0; i < 4; i++) {
             JsonNode occ = occurrences.get(i);
             assertThat(occ.get("description").asString()).isEqualTo("Gym");
-            assertThat(occ.get("startDate").asString()).isEqualTo(start.plusMonths(i).toString());
+            assertThat(occ.get("startDate").asString())
+                    .isEqualTo(start.plusMonths(i).toString());
             assertThat(occ.get("parcelsNumber").isNull()).isTrue();
         }
 
@@ -153,8 +155,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         JsonNode occurrences = created.get("occurrences");
         long parcel3Id = occurrences.get(2).get("id").asLong();
 
-        Map<String, Object> editBody = editBody(
-                "Fixed Rent", "999.00", start, 6, "THIS_ONE", parcel3Id);
+        Map<String, Object> editBody = editBody("Fixed Rent", "999.00", start, 6, "THIS_ONE", parcel3Id);
         JsonNode editResponse = editSeries(plan, owner, seriesId, editBody, status().isOk());
 
         assertThat(editResponse.get("count").asInt()).isEqualTo(1);
@@ -192,8 +193,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         JsonNode occurrences = created.get("occurrences");
         long parcel3Id = occurrences.get(2).get("id").asLong();
 
-        Map<String, Object> editBody = editBody(
-                "New Rent", "350.00", start, 6, "THIS_AND_FOLLOWING", parcel3Id);
+        Map<String, Object> editBody = editBody("New Rent", "350.00", start, 6, "THIS_AND_FOLLOWING", parcel3Id);
         JsonNode editResponse = editSeries(plan, owner, seriesId, editBody, status().isOk());
 
         assertThat(editResponse.get("count").asInt()).isEqualTo(4);
@@ -227,15 +227,13 @@ class SeriesEditIT extends AbstractIntegrationTest {
         LocalDate start = LocalDate.of(2026, 1, 1);
 
         Map<String, Object> createBody = installmentBody("Rent", "300.00", start, 6, null);
-        createBody.put("participants", List.of(
-                Map.of("memberId", owner.getId()), Map.of("memberId", member.getId())));
+        createBody.put("participants", List.of(Map.of("memberId", owner.getId()), Map.of("memberId", member.getId())));
         JsonNode created = createSeries(plan, owner, createBody);
         String seriesId = created.get("seriesId").asString();
         JsonNode occurrences = created.get("occurrences");
 
         Map<String, Object> editBody = editBody("All New Rent", "402.00", start, 6, "ALL", null);
-        editBody.put("participants", List.of(
-                Map.of("memberId", owner.getId()), Map.of("memberId", member.getId())));
+        editBody.put("participants", List.of(Map.of("memberId", owner.getId()), Map.of("memberId", member.getId())));
         JsonNode editResponse = editSeries(plan, owner, seriesId, editBody, status().isOk());
 
         assertThat(editResponse.get("count").asInt()).isEqualTo(6);
@@ -306,8 +304,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         assertThat(editResponse.get("count").asInt()).isEqualTo(9);
         JsonNode occurrences = editResponse.get("occurrences");
         for (int i = 0; i < 9; i++) {
-            assertThat(occurrences.get(i).get("description").asString())
-                    .isEqualTo("Rent (" + (i + 1) + "/9)");
+            assertThat(occurrences.get(i).get("description").asString()).isEqualTo("Rent (" + (i + 1) + "/9)");
             assertThat(occurrences.get(i).get("parcelsNumber").asInt()).isEqualTo(9);
         }
 
@@ -321,8 +318,8 @@ class SeriesEditIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
 
         // 2020-01-01 .. 2030-01-01 inclusive is 121 monthly occurrences, one over the 120 cap.
-        Map<String, Object> body = recurringBody(
-                "Forever", "10.00", LocalDate.of(2020, 1, 1), LocalDate.of(2030, 1, 1));
+        Map<String, Object> body =
+                recurringBody("Forever", "10.00", LocalDate.of(2020, 1, 1), LocalDate.of(2030, 1, 1));
 
         MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION + "/series", plan.getId())
                         .with(testAuthHelper.asUser(owner))
@@ -358,10 +355,11 @@ class SeriesEditIT extends AbstractIntegrationTest {
         editBody.put("splitMode", "EQUAL");
         editBody.put("scope", "ALL");
 
-        MvcResult result = mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
-                        .with(testAuthHelper.asUser(owner))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(editBody)))
+        MvcResult result = mockMvc.perform(
+                        put(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                                .with(testAuthHelper.asUser(owner))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(editBody)))
                 .andExpect(status().isBadRequest())
                 .andReturn();
 
@@ -402,7 +400,8 @@ class SeriesEditIT extends AbstractIntegrationTest {
                     .andExpect(status().isNotFound());
         }
 
-        RecurrenceDefinition definition = recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)
+        RecurrenceDefinition definition = recurrenceDefinitionRepository
+                .findByPlanAndSeriesId(plan, seriesId)
                 .orElseThrow();
         assertThat(definition.getEndDate()).isEqualTo(newEnd);
         assertThat(definition.getGeneratedThrough()).isEqualTo(newEnd);
@@ -413,7 +412,8 @@ class SeriesEditIT extends AbstractIntegrationTest {
         JsonNode definitionAfterTopUp = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definitionAfterTopUp.get("endDate").asString()).isEqualTo(newEnd.toString());
         for (int i = 0; i <= 3; i++) {
-            fetchOccurrence(plan, owner, created.get("occurrences").get(i).get("id").asLong());
+            fetchOccurrence(
+                    plan, owner, created.get("occurrences").get(i).get("id").asLong());
         }
     }
 
@@ -441,7 +441,8 @@ class SeriesEditIT extends AbstractIntegrationTest {
         JsonNode definitionDto = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definitionDto.get("endDate").isNull()).isTrue();
 
-        RecurrenceDefinition definition = recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)
+        RecurrenceDefinition definition = recurrenceDefinitionRepository
+                .findByPlanAndSeriesId(plan, seriesId)
                 .orElseThrow();
         assertThat(definition.getEndDate()).isNull();
         assertThat(definition.getGeneratedThrough()).isEqualTo(start.plusMonths(OPEN_ENDED_HORIZON_MONTHS));
@@ -452,7 +453,8 @@ class SeriesEditIT extends AbstractIntegrationTest {
         List<FinancialTransaction> allOccurrences =
                 financialTransactionRepository.findAllByPlanAndSeriesId(plan, seriesId);
         assertThat(allOccurrences).hasSize(OPEN_ENDED_HORIZON_MONTHS + 1);
-        RecurrenceDefinition reloaded = recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)
+        RecurrenceDefinition reloaded = recurrenceDefinitionRepository
+                .findByPlanAndSeriesId(plan, seriesId)
                 .orElseThrow();
         assertThat(reloaded.getGeneratedThrough()).isEqualTo(start.plusMonths(OPEN_ENDED_HORIZON_MONTHS));
     }
@@ -475,13 +477,18 @@ class SeriesEditIT extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent());
 
         for (JsonNode occ : created.get("occurrences")) {
-            mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), occ.get("id").asLong())
+            mockMvc.perform(get(
+                                    ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                    plan.getId(),
+                                    occ.get("id").asLong())
                             .with(testAuthHelper.asUser(owner)))
                     .andExpect(status().isNotFound());
         }
 
-        assertThat(recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)).isEmpty();
-        assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, seriesId)).isEmpty();
+        assertThat(recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId))
+                .isEmpty();
+        assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, seriesId))
+                .isEmpty();
 
         mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                         .with(testAuthHelper.asUser(owner)))
@@ -552,7 +559,12 @@ class SeriesEditIT extends AbstractIntegrationTest {
     }
 
     private Map<String, Object> editBody(
-            String description, String amount, LocalDate start, int parcelsNumber, String scope, Long pivotOccurrenceId) {
+            String description,
+            String amount,
+            LocalDate start,
+            int parcelsNumber,
+            String scope,
+            Long pivotOccurrenceId) {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("type", "DEBIT");
         body.put("amount", new BigDecimal(amount));
@@ -579,12 +591,13 @@ class SeriesEditIT extends AbstractIntegrationTest {
     }
 
     private JsonNode editSeries(
-            Plan plan, User asUser, String seriesId, Map<String, Object> body,
-            ResultMatcher expectedStatus) throws Exception {
-        MvcResult result = mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
-                        .with(testAuthHelper.asUser(asUser))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
+            Plan plan, User asUser, String seriesId, Map<String, Object> body, ResultMatcher expectedStatus)
+            throws Exception {
+        MvcResult result = mockMvc.perform(
+                        put(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                                .with(testAuthHelper.asUser(asUser))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(body)))
                 .andExpect(expectedStatus)
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());
@@ -599,8 +612,9 @@ class SeriesEditIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchSeriesDefinition(Plan plan, User asUser, String seriesId) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
-                        .with(testAuthHelper.asUser(asUser)))
+        MvcResult result = mockMvc.perform(
+                        get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                                .with(testAuthHelper.asUser(asUser)))
                 .andExpect(status().isOk())
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());

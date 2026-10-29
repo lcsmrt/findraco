@@ -1,13 +1,12 @@
 package com.lcs.findraco.config;
 
+import java.util.Properties;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
-
-import java.util.Properties;
 
 /**
  * SMTP sender built from the {@code SMTP_*} env vars, so switching providers (Gmail app
@@ -26,8 +25,7 @@ public class MailConfig {
             @Value("${app.mail.smtp-host}") String host,
             @Value("${app.mail.smtp-port}") int port,
             @Value("${app.mail.smtp-username}") String username,
-            @Value("${app.mail.smtp-password}") String password
-    ) {
+            @Value("${app.mail.smtp-password}") String password) {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
         sender.setHost(host);
         sender.setPort(port);

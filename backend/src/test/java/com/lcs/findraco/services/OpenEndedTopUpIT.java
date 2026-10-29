@@ -76,17 +76,19 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> occurrences = financialTransactionRepository
-                .findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<FinancialTransaction> occurrences =
+                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
 
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
         assertThat(occurrences).hasSize((int) expectedTotal);
 
-        RecurrenceDefinition reloaded = recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         assertThat(reloaded.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
 
         assertThat(findByDate(occurrences, generatedThrough).getAmount()).isEqualByComparingTo("50.00");
-        assertThat(findByDate(occurrences, generatedThrough.plusMonths(1)).getAmount()).isEqualByComparingTo("75.00");
+        assertThat(findByDate(occurrences, generatedThrough.plusMonths(1)).getAmount())
+                .isEqualByComparingTo("75.00");
         assertThat(findByDate(occurrences, HORIZON_CAP).getAmount()).isEqualByComparingTo("75.00");
     }
 
@@ -96,17 +98,19 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         LocalDate start = TODAY.minusMonths(1);
 
-        RecurrenceDefinition definition = anOpenEndedDefinition(plan, owner, start, "Streaming", new BigDecimal("20.00"));
+        RecurrenceDefinition definition =
+                anOpenEndedDefinition(plan, owner, start, "Streaming", new BigDecimal("20.00"));
         definition.setGeneratedThrough(HORIZON_CAP);
         recurrenceDefinitionRepository.save(definition);
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> occurrences = financialTransactionRepository
-                .findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<FinancialTransaction> occurrences =
+                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(occurrences).isEmpty();
 
-        RecurrenceDefinition reloaded = recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         assertThat(reloaded.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
     }
 
@@ -116,20 +120,22 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         LocalDate start = TODAY.minusMonths(2);
 
-        RecurrenceDefinition definition = anOpenEndedDefinition(plan, owner, start, "Internet", new BigDecimal("100.00"));
+        RecurrenceDefinition definition =
+                anOpenEndedDefinition(plan, owner, start, "Internet", new BigDecimal("100.00"));
 
         topUpService.topUp(plan, TODAY);
-        List<FinancialTransaction> firstPass = financialTransactionRepository
-                .findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<FinancialTransaction> firstPass =
+                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
         assertThat(firstPass).hasSize((int) expectedTotal);
 
         topUpService.topUp(plan, TODAY);
-        List<FinancialTransaction> secondPass = financialTransactionRepository
-                .findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<FinancialTransaction> secondPass =
+                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(secondPass).hasSize((int) expectedTotal);
 
-        RecurrenceDefinition reloaded = recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         assertThat(reloaded.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
     }
 
@@ -139,7 +145,8 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         LocalDate start = TODAY.minusMonths(2);
 
-        RecurrenceDefinition definition = anOpenEndedDefinition(plan, owner, start, "Cloud storage", new BigDecimal("15.00"));
+        RecurrenceDefinition definition =
+                anOpenEndedDefinition(plan, owner, start, "Cloud storage", new BigDecimal("15.00"));
 
         topUpService.topUp(plan, TODAY);
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
@@ -149,17 +156,19 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         // Simulate the watermark drifting backward (e.g. a bug, or a race with a bounding edit that
         // was later rolled back) — top-up must reconcile against what's already persisted rather
         // than blindly regenerating from the stale watermark.
-        RecurrenceDefinition reloaded = recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         reloaded.setGeneratedThrough(start);
         recurrenceDefinitionRepository.save(reloaded);
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> afterSecondFire = financialTransactionRepository
-                .findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<FinancialTransaction> afterSecondFire =
+                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(afterSecondFire).hasSize((int) expectedTotal);
 
-        RecurrenceDefinition healed = recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        RecurrenceDefinition healed =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         assertThat(healed.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
     }
 
@@ -170,15 +179,17 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         LocalDate start = TODAY.minusMonths(3);
         LocalDate end = TODAY.plusMonths(2);
 
-        RecurrenceDefinition definition = aBoundedDefinition(plan, owner, start, end, "Car loan", new BigDecimal("400.00"));
+        RecurrenceDefinition definition =
+                aBoundedDefinition(plan, owner, start, end, "Car loan", new BigDecimal("400.00"));
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> occurrences = financialTransactionRepository
-                .findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<FinancialTransaction> occurrences =
+                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(occurrences).isEmpty();
 
-        RecurrenceDefinition reloaded = recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         assertThat(reloaded.getGeneratedThrough()).isNull();
         assertThat(reloaded.getEndDate()).isEqualTo(end);
     }

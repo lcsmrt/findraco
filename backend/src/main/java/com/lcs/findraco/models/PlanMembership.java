@@ -3,7 +3,12 @@ package com.lcs.findraco.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "plan_memberships", uniqueConstraints = @UniqueConstraint(name = "uk_plan_memberships_plan_user", columnNames = {"plan_id", "user_id"}))
+@Table(
+        name = "plan_memberships",
+        uniqueConstraints =
+                @UniqueConstraint(
+                        name = "uk_plan_memberships_plan_user",
+                        columnNames = {"plan_id", "user_id"}))
 public class PlanMembership {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,8 +26,7 @@ public class PlanMembership {
     @Column(nullable = false)
     private PlanRole role;
 
-    public PlanMembership() {
-    }
+    public PlanMembership() {}
 
     public Long getId() {
         return id;

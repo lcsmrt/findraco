@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
@@ -22,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of {@code GET .../dashboard/trend} (UX-05 AC 7): income and expenses per
@@ -55,7 +55,8 @@ class DashboardTrendIT extends AbstractIntegrationTest {
     void memberIdRestrictsTheTrendToThatMembersShares() throws Exception {
         Seed seed = seed();
 
-        JsonNode trend = read(fetch(trend(seed.plan(), seed.owner(), seed.partner().getId())).andExpect(status().isOk()));
+        JsonNode trend = read(
+                fetch(trend(seed.plan(), seed.owner(), seed.partner().getId())).andExpect(status().isOk()));
 
         assertThat(trend).hasSize(2);
         assertMonth(trend.get(0), 2026, 7, "0", "50.00");
@@ -80,8 +81,13 @@ class DashboardTrendIT extends AbstractIntegrationTest {
         fixtures.aPlan(outsider);
 
         int summaryStatus = fetch(withRange(get(ApiRoutes.DASHBOARD, seed.plan().getId()), outsider))
-                .andReturn().getResponse().getStatus();
-        int trendStatus = fetch(trend(seed.plan(), outsider, null)).andReturn().getResponse().getStatus();
+                .andReturn()
+                .getResponse()
+                .getStatus();
+        int trendStatus = fetch(trend(seed.plan(), outsider, null))
+                .andReturn()
+                .getResponse()
+                .getStatus();
 
         assertThat(summaryStatus).isEqualTo(404);
         assertThat(trendStatus).isEqualTo(summaryStatus);
@@ -108,21 +114,58 @@ class DashboardTrendIT extends AbstractIntegrationTest {
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
 
-        aTransaction(plan, owner, FinancialTransactionType.CREDIT, "1000.00", LocalDate.of(2026, 7, 5), Map.of(owner, "1000.00"));
-        aTransaction(plan, owner, FinancialTransactionType.DEBIT, "200.00", LocalDate.of(2026, 7, 31),
+        aTransaction(
+                plan,
+                owner,
+                FinancialTransactionType.CREDIT,
+                "1000.00",
+                LocalDate.of(2026, 7, 5),
+                Map.of(owner, "1000.00"));
+        aTransaction(
+                plan,
+                owner,
+                FinancialTransactionType.DEBIT,
+                "200.00",
+                LocalDate.of(2026, 7, 31),
                 Map.of(owner, "150.00", partner, "50.00"));
-        aTransaction(plan, owner, FinancialTransactionType.DEBIT, "100.00", LocalDate.of(2026, 8, 15),
+        aTransaction(
+                plan,
+                owner,
+                FinancialTransactionType.DEBIT,
+                "100.00",
+                LocalDate.of(2026, 8, 15),
                 Map.of(owner, "60.00", partner, "40.00"));
-        aTransaction(plan, owner, FinancialTransactionType.CREDIT, "500.00", LocalDate.of(2026, 9, 1), Map.of(owner, "500.00"));
-        aTransaction(plan, owner, FinancialTransactionType.DEBIT, "999.00", LocalDate.of(2026, 6, 30),
+        aTransaction(
+                plan,
+                owner,
+                FinancialTransactionType.CREDIT,
+                "500.00",
+                LocalDate.of(2026, 9, 1),
+                Map.of(owner, "500.00"));
+        aTransaction(
+                plan,
+                owner,
+                FinancialTransactionType.DEBIT,
+                "999.00",
+                LocalDate.of(2026, 6, 30),
                 Map.of(owner, "500.00", partner, "499.00"));
-        aTransaction(plan, owner, FinancialTransactionType.DEBIT, "777.00", LocalDate.of(2026, 10, 1),
+        aTransaction(
+                plan,
+                owner,
+                FinancialTransactionType.DEBIT,
+                "777.00",
+                LocalDate.of(2026, 10, 1),
                 Map.of(owner, "777.00"));
         return new Seed(plan, owner, partner);
     }
 
-    private void aTransaction(Plan plan, User createdBy, FinancialTransactionType type, String amount, LocalDate date,
-                              Map<User, String> shares) {
+    private void aTransaction(
+            Plan plan,
+            User createdBy,
+            FinancialTransactionType type,
+            String amount,
+            LocalDate date,
+            Map<User, String> shares) {
         FinancialTransaction transaction = new FinancialTransaction();
         transaction.setPlan(plan);
         transaction.setCreatedBy(createdBy);

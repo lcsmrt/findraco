@@ -17,8 +17,7 @@ public class DashboardSummaryResponseDto {
             BigDecimal netBalance,
             List<CategoryBreakdownDto> categoryBreakdown,
             List<MonthlyTrendDto> monthlyTrend,
-            List<PersonBreakdownDto> personBreakdown
-    ) {
+            List<PersonBreakdownDto> personBreakdown) {
         this.totalIncome = totalIncome;
         this.totalExpenses = totalExpenses;
         this.netBalance = netBalance;
@@ -27,10 +26,27 @@ public class DashboardSummaryResponseDto {
         this.personBreakdown = personBreakdown;
     }
 
-    public BigDecimal getTotalIncome() { return totalIncome; }
-    public BigDecimal getTotalExpenses() { return totalExpenses; }
-    public BigDecimal getNetBalance() { return netBalance; }
-    public List<CategoryBreakdownDto> getCategoryBreakdown() { return categoryBreakdown; }
-    public List<MonthlyTrendDto> getMonthlyTrend() { return monthlyTrend; }
-    public List<PersonBreakdownDto> getPersonBreakdown() { return personBreakdown; }
+    public BigDecimal getTotalIncome() {
+        return totalIncome;
+    }
+
+    public BigDecimal getTotalExpenses() {
+        return totalExpenses;
+    }
+
+    public BigDecimal getNetBalance() {
+        return netBalance;
+    }
+
+    public List<CategoryBreakdownDto> getCategoryBreakdown() {
+        return categoryBreakdown;
+    }
+
+    public List<MonthlyTrendDto> getMonthlyTrend() {
+        return monthlyTrend;
+    }
+
+    public List<PersonBreakdownDto> getPersonBreakdown() {
+        return personBreakdown;
+    }
 }

@@ -1,7 +1,6 @@
 package com.lcs.findraco.dtos.request;
 
 import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDate;
 
 public class DashboardFilterDto {
@@ -14,12 +13,27 @@ public class DashboardFilterDto {
 
     private Long memberId;
 
-    public LocalDate getStartDate() { return startDate; }
-    public void setStartDate(LocalDate startDate) { this.startDate = startDate; }
+    public LocalDate getStartDate() {
+        return startDate;
+    }
 
-    public LocalDate getEndDate() { return endDate; }
-    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
+    public void setStartDate(LocalDate startDate) {
+        this.startDate = startDate;
+    }
 
-    public Long getMemberId() { return memberId; }
-    public void setMemberId(Long memberId) { this.memberId = memberId; }
+    public LocalDate getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(LocalDate endDate) {
+        this.endDate = endDate;
+    }
+
+    public Long getMemberId() {
+        return memberId;
+    }
+
+    public void setMemberId(Long memberId) {
+        this.memberId = memberId;
+    }
 }

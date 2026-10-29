@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
@@ -19,6 +17,8 @@ import java.util.stream.StreamSupport;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of the transaction list's {@code categoryId} filter over the category
@@ -37,8 +37,11 @@ class TransactionCategoryFilterIT extends AbstractIntegrationTest {
 
         JsonNode page = list(plan, owner, seed.food().getId());
 
-        assertThat(ids(page)).containsExactlyInAnyOrder(
-                seed.inFood().getId(), seed.inDelivery().getId(), seed.inDiningOut().getId());
+        assertThat(ids(page))
+                .containsExactlyInAnyOrder(
+                        seed.inFood().getId(),
+                        seed.inDelivery().getId(),
+                        seed.inDiningOut().getId());
         assertThat(page.get("totalElements").asLong()).isEqualTo(3);
     }
 
@@ -54,19 +57,28 @@ class TransactionCategoryFilterIT extends AbstractIntegrationTest {
         assertThat(page.get("totalElements").asLong()).isEqualTo(1);
     }
 
-    private record Seed(FinancialTransactionCategory food, FinancialTransactionCategory delivery,
-                        FinancialTransaction inFood, FinancialTransaction inDelivery, FinancialTransaction inDiningOut) {}
+    private record Seed(
+            FinancialTransactionCategory food,
+            FinancialTransactionCategory delivery,
+            FinancialTransaction inFood,
+            FinancialTransaction inDelivery,
+            FinancialTransaction inDiningOut) {}
 
     /** Food > Delivery, Food > Dining out, plus an unrelated root (Rent) and an uncategorized transaction. */
     private Seed seed(Plan plan, User owner) {
         FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
-        FinancialTransactionCategory diningOut = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Dining out", food);
+        FinancialTransactionCategory delivery =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        FinancialTransactionCategory diningOut =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Dining out", food);
         FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
 
-        FinancialTransaction inFood = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, food);
-        FinancialTransaction inDelivery = fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, delivery);
-        FinancialTransaction inDiningOut = fixtures.aTransaction(plan, owner, new BigDecimal("30.00"), FinancialTransactionType.DEBIT, diningOut);
+        FinancialTransaction inFood =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, food);
+        FinancialTransaction inDelivery =
+                fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, delivery);
+        FinancialTransaction inDiningOut =
+                fixtures.aTransaction(plan, owner, new BigDecimal("30.00"), FinancialTransactionType.DEBIT, diningOut);
         fixtures.aTransaction(plan, owner, new BigDecimal("40.00"), FinancialTransactionType.DEBIT, rent);
         fixtures.aTransaction(plan, owner, new BigDecimal("50.00"), FinancialTransactionType.DEBIT);
         return new Seed(food, delivery, inFood, inDelivery, inDiningOut);

@@ -1,11 +1,10 @@
 package com.lcs.findraco.security;
 
 import com.lcs.findraco.utils.ApiRoutes;
+import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
-
-import java.time.Duration;
 
 /**
  * Builds the session cookie. It is {@code HttpOnly} (no page script can read it), {@code SameSite=Strict}
@@ -20,9 +19,7 @@ public class SessionCookies {
     private final boolean secure;
 
     public SessionCookies(
-            @Value("${app.session.ttl}") Duration ttl,
-            @Value("${app.session.cookie-secure}") boolean secure
-    ) {
+            @Value("${app.session.ttl}") Duration ttl, @Value("${app.session.cookie-secure}") boolean secure) {
         this.ttl = ttl;
         this.secure = secure;
     }

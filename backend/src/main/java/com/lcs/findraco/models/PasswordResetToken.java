@@ -1,7 +1,6 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -21,8 +20,7 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private LocalDateTime expiresAt;
 
-    public PasswordResetToken() {
-    }
+    public PasswordResetToken() {}
 
     public Long getId() {
         return id;

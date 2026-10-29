@@ -17,10 +17,7 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final String from;
 
-    public EmailService(
-            ObjectProvider<JavaMailSender> mailSender,
-            @Value("${app.mail.from}") String from
-    ) {
+    public EmailService(ObjectProvider<JavaMailSender> mailSender, @Value("${app.mail.from}") String from) {
         this.mailSender = mailSender.getIfAvailable();
         this.from = from;
     }

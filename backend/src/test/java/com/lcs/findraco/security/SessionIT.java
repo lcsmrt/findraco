@@ -7,7 +7,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.utils.ApiRoutes;
@@ -32,6 +31,7 @@ import org.springframework.mock.web.MockCookie;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Persistent sessions through the real auth endpoints (SESS-04, SESS-06 to SESS-10, SESS-12): the
@@ -66,9 +66,8 @@ class SessionIT extends AbstractIntegrationTest {
     void loginReturnsTheAccessTokenAndSetsTheSessionCookie() throws Exception {
         User user = fixtures.aUser();
 
-        MvcResult result = login(user.getEmail(), "password")
-                .andExpect(status().isOk())
-                .andReturn();
+        MvcResult result =
+                login(user.getEmail(), "password").andExpect(status().isOk()).andReturn();
 
         String body = result.getResponse().getContentAsString();
         assertThat(objectMapper.readTree(body).get("token").asString()).isNotBlank();
@@ -87,7 +86,8 @@ class SessionIT extends AbstractIntegrationTest {
     void loginStoresOnlyTheSha256OfTheCookieValue() throws Exception {
         User user = fixtures.aUser();
 
-        String cookieValue = sessionCookie(login(user.getEmail(), "password").andReturn()).getValue();
+        String cookieValue =
+                sessionCookie(login(user.getEmail(), "password").andReturn()).getValue();
 
         assertThat(tokenHashesOf(user))
                 .containsExactly(OpaqueTokens.hash(cookieValue))
@@ -98,12 +98,15 @@ class SessionIT extends AbstractIntegrationTest {
     void loginDeletesTheUsersExpiredSessionsAndKeepsOtherUsers() throws Exception {
         User user = fixtures.aUser();
         User other = fixtures.aUser();
-        String expiredOwn = OpaqueTokens.hash(sessionCookie(login(user.getEmail(), "password").andReturn()).getValue());
-        String expiredOther = OpaqueTokens.hash(sessionCookie(login(other.getEmail(), "password").andReturn()).getValue());
+        String expiredOwn = OpaqueTokens.hash(
+                sessionCookie(login(user.getEmail(), "password").andReturn()).getValue());
+        String expiredOther = OpaqueTokens.hash(
+                sessionCookie(login(other.getEmail(), "password").andReturn()).getValue());
         backdateExpiry(expiredOwn);
         backdateExpiry(expiredOther);
 
-        String fresh = OpaqueTokens.hash(sessionCookie(login(user.getEmail(), "password").andReturn()).getValue());
+        String fresh = OpaqueTokens.hash(
+                sessionCookie(login(user.getEmail(), "password").andReturn()).getValue());
 
         assertThat(tokenHashesOf(user)).containsExactly(fresh);
         assertThat(tokenHashesOf(other)).containsExactly(expiredOther);
@@ -116,7 +119,8 @@ class SessionIT extends AbstractIntegrationTest {
         login(user.getEmail(), "not-the-password")
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Invalid username or password."))
-                .andExpect(result -> assertThat(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE)).isEmpty());
+                .andExpect(result -> assertThat(result.getResponse().getHeaders(HttpHeaders.SET_COOKIE))
+                        .isEmpty());
         assertThat(tokenHashesOf(user)).isEmpty();
     }
 
@@ -129,7 +133,10 @@ class SessionIT extends AbstractIntegrationTest {
 
         MvcResult result = refresh(oldCookie).andExpect(status().isOk()).andReturn();
 
-        String token = objectMapper.readTree(result.getResponse().getContentAsString()).get("token").asString();
+        String token = objectMapper
+                .readTree(result.getResponse().getContentAsString())
+                .get("token")
+                .asString();
         mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(user.getEmail()));
@@ -144,7 +151,8 @@ class SessionIT extends AbstractIntegrationTest {
 
         LocalDateTime expiresAt = jdbc.queryForObject(
                 "SELECT expires_at FROM user_sessions WHERE token_hash = ?",
-                LocalDateTime.class, OpaqueTokens.hash(newCookie.getValue()));
+                LocalDateTime.class,
+                OpaqueTokens.hash(newCookie.getValue()));
         assertThat(expiresAt).isCloseTo(LocalDateTime.now().plusDays(30), within(1, ChronoUnit.MINUTES));
     }
 
@@ -178,10 +186,14 @@ class SessionIT extends AbstractIntegrationTest {
     void replacedCookieReusedAfterThirtyOneSecondsRevokesItsDeviceChainOnly() throws Exception {
         User user = fixtures.aUser();
         String original = loginCookie(user);
-        String successor = sessionCookie(refresh(original).andExpect(status().isOk()).andReturn()).getValue();
+        String successor = sessionCookie(
+                        refresh(original).andExpect(status().isOk()).andReturn())
+                .getValue();
         String otherDevice = loginCookie(user);
-        jdbc.update("UPDATE user_sessions SET replaced_at = ? WHERE token_hash = ?",
-                LocalDateTime.now().minusSeconds(31), OpaqueTokens.hash(original));
+        jdbc.update(
+                "UPDATE user_sessions SET replaced_at = ? WHERE token_hash = ?",
+                LocalDateTime.now().minusSeconds(31),
+                OpaqueTokens.hash(original));
 
         assertRejectedAndCleared(refresh(original));
         assertRejectedAndCleared(refresh(successor));
@@ -203,7 +215,8 @@ class SessionIT extends AbstractIntegrationTest {
     void logoutRevokesTheSessionAndClearsTheCookie() throws Exception {
         String cookie = loginCookie(fixtures.aUser());
 
-        MvcResult result = logout(cookie, null).andExpect(status().isNoContent()).andReturn();
+        MvcResult result =
+                logout(cookie, null).andExpect(status().isNoContent()).andReturn();
 
         assertCleared(result);
         assertRejectedAndCleared(refresh(cookie));
@@ -231,7 +244,9 @@ class SessionIT extends AbstractIntegrationTest {
                 .signWith(Keys.hmacShaKeyFor(Base64.getEncoder().encode(jwtSecretKey.getBytes())))
                 .compact();
 
-        MvcResult result = logout(null, expiredAccessToken).andExpect(status().isNoContent()).andReturn();
+        MvcResult result = logout(null, expiredAccessToken)
+                .andExpect(status().isNoContent())
+                .andReturn();
 
         assertCleared(result);
     }
@@ -264,13 +279,15 @@ class SessionIT extends AbstractIntegrationTest {
     }
 
     private String loginCookie(User user) throws Exception {
-        return sessionCookie(login(user.getEmail(), "password").andExpect(status().isOk()).andReturn()).getValue();
+        return sessionCookie(login(user.getEmail(), "password")
+                        .andExpect(status().isOk())
+                        .andReturn())
+                .getValue();
     }
 
     /** 401 "Authentication required." and a Set-Cookie that deletes the session cookie. */
     private static void assertRejectedAndCleared(ResultActions response) throws Exception {
-        MvcResult result = response
-                .andExpect(status().isUnauthorized())
+        MvcResult result = response.andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."))
                 .andReturn();
         assertCleared(result);
@@ -299,7 +316,9 @@ class SessionIT extends AbstractIntegrationTest {
     // Timestamps come from the JVM clock, like the app's: the columns have no time zone, so the
     // database's now() could be in another zone than the one SessionService compares against.
     private void backdateExpiry(String tokenHash) {
-        jdbc.update("UPDATE user_sessions SET expires_at = ? WHERE token_hash = ?",
-                LocalDateTime.now().minusMinutes(1), tokenHash);
+        jdbc.update(
+                "UPDATE user_sessions SET expires_at = ? WHERE token_hash = ?",
+                LocalDateTime.now().minusMinutes(1),
+                tokenHash);
     }
 }

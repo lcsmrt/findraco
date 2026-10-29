@@ -1,5 +1,8 @@
 package com.lcs.findraco.services;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
@@ -8,8 +11,6 @@ import com.lcs.findraco.models.RecurrenceMode;
 import com.lcs.findraco.models.SeriesEditScope;
 import com.lcs.findraco.models.SplitMode;
 import com.lcs.findraco.models.User;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -18,16 +19,13 @@ import java.time.LocalDate;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 class SeriesRegeneratorTest {
 
     // Fixed "today" so open-ended (null endDate) horizon assertions are deterministic regardless of
     // wall-clock time, mirroring RecurringTransactionGeneratorTest's FIXED_CLOCK.
-    private static final Clock FIXED_CLOCK =
-            Clock.fixed(Instant.parse("2026-07-24T00:00:00Z"), ZoneOffset.UTC);
+    private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-07-24T00:00:00Z"), ZoneOffset.UTC);
 
     private final SeriesRegenerator regenerator = new SeriesRegenerator(FIXED_CLOCK);
 
@@ -49,8 +47,8 @@ class SeriesRegeneratorTest {
         return u;
     }
 
-    private RecurrenceDefinition installmentDef(String description, BigDecimal amt, int firstParcel,
-                                                  int parcelsNumber, LocalDate startDate) {
+    private RecurrenceDefinition installmentDef(
+            String description, BigDecimal amt, int firstParcel, int parcelsNumber, LocalDate startDate) {
         RecurrenceDefinition def = new RecurrenceDefinition();
         def.setPlan(plan);
         def.setCreatedBy(user);
@@ -67,7 +65,8 @@ class SeriesRegeneratorTest {
         return def;
     }
 
-    private RecurrenceDefinition recurringDef(String description, BigDecimal amt, LocalDate startDate, LocalDate endDate) {
+    private RecurrenceDefinition recurringDef(
+            String description, BigDecimal amt, LocalDate startDate, LocalDate endDate) {
         RecurrenceDefinition def = new RecurrenceDefinition();
         def.setPlan(plan);
         def.setCreatedBy(user);
@@ -85,7 +84,8 @@ class SeriesRegeneratorTest {
 
     /** Builds existing installment occurrences 1..total for the given base description/amount/start, as the
      * create-time generator would have produced them. */
-    private List<FinancialTransaction> existingInstallments(String description, BigDecimal amt, int total, LocalDate startDate) {
+    private List<FinancialTransaction> existingInstallments(
+            String description, BigDecimal amt, int total, LocalDate startDate) {
         List<FinancialTransaction> occurrences = new ArrayList<>();
         for (int parcel = 1; parcel <= total; parcel++) {
             FinancialTransaction tx = new FinancialTransaction();
@@ -103,7 +103,8 @@ class SeriesRegeneratorTest {
         return occurrences;
     }
 
-    private List<FinancialTransaction> existingRecurring(String description, BigDecimal amt, LocalDate startDate, LocalDate endDate) {
+    private List<FinancialTransaction> existingRecurring(
+            String description, BigDecimal amt, LocalDate startDate, LocalDate endDate) {
         List<FinancialTransaction> occurrences = new ArrayList<>();
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusMonths(1)) {
             FinancialTransaction tx = new FinancialTransaction();
@@ -127,13 +128,14 @@ class SeriesRegeneratorTest {
         List<FinancialTransaction> existing = existingInstallments("Rent", amount, 6, start);
         LocalDate pivotDate = existing.get(2).getStartDate();
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, existing, shares, SeriesEditScope.THIS_AND_FOLLOWING, pivotDate);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.THIS_AND_FOLLOWING, pivotDate);
 
         assertThat(result.toCreate()).isEmpty();
         assertThat(result.toDelete()).isEmpty();
         assertThat(result.toUpdate()).hasSize(4);
-        assertThat(result.toUpdate()).extracting(FinancialTransaction::getDescription)
+        assertThat(result.toUpdate())
+                .extracting(FinancialTransaction::getDescription)
                 .containsExactly("New Rent (3/6)", "New Rent (4/6)", "New Rent (5/6)", "New Rent (6/6)");
         assertThat(result.toUpdate()).doesNotContain(existing.get(0), existing.get(1));
     }
@@ -144,8 +146,8 @@ class SeriesRegeneratorTest {
         RecurrenceDefinition def = installmentDef("New Rent", amount, 1, 6, start);
         List<FinancialTransaction> existing = existingInstallments("Rent", amount, 6, start);
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, existing, shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
 
         assertThat(result.toUpdate()).hasSize(6);
         assertThat(result.toCreate()).isEmpty();
@@ -160,17 +162,19 @@ class SeriesRegeneratorTest {
         List<FinancialTransaction> existingForAll = existingInstallments("Rent", amount, 6, start);
         List<FinancialTransaction> existingForFollowing = existingInstallments("Rent", amount, 6, start);
 
-        SeriesRegenerator.SeriesEditResult allResult = regenerator.reconcile(
-                def, existingForAll, shares, SeriesEditScope.ALL, null);
-        SeriesRegenerator.SeriesEditResult followingResult = regenerator.reconcile(
-                def, existingForFollowing, shares, SeriesEditScope.THIS_AND_FOLLOWING, start);
+        SeriesRegenerator.SeriesEditResult allResult =
+                regenerator.reconcile(def, existingForAll, shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult followingResult =
+                regenerator.reconcile(def, existingForFollowing, shares, SeriesEditScope.THIS_AND_FOLLOWING, start);
 
         assertThat(followingResult.toUpdate()).hasSize(allResult.toUpdate().size());
         assertThat(followingResult.toCreate()).isEmpty();
         assertThat(followingResult.toDelete()).isEmpty();
-        assertThat(followingResult.toUpdate()).extracting(FinancialTransaction::getDescription)
-                .containsExactlyInAnyOrderElementsOf(
-                        allResult.toUpdate().stream().map(FinancialTransaction::getDescription).toList());
+        assertThat(followingResult.toUpdate())
+                .extracting(FinancialTransaction::getDescription)
+                .containsExactlyInAnyOrderElementsOf(allResult.toUpdate().stream()
+                        .map(FinancialTransaction::getDescription)
+                        .toList());
     }
 
     @Test
@@ -179,18 +183,21 @@ class SeriesRegeneratorTest {
         RecurrenceDefinition def = installmentDef("Rent", amount, 1, 9, start);
         List<FinancialTransaction> existing = existingInstallments("Rent", amount, 6, start);
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, existing, shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
 
         assertThat(result.toDelete()).isEmpty();
         assertThat(result.toUpdate()).hasSize(6);
-        assertThat(result.toUpdate()).extracting(FinancialTransaction::getDescription)
+        assertThat(result.toUpdate())
+                .extracting(FinancialTransaction::getDescription)
                 .containsExactly("Rent (1/9)", "Rent (2/9)", "Rent (3/9)", "Rent (4/9)", "Rent (5/9)", "Rent (6/9)");
 
         assertThat(result.toCreate()).hasSize(3);
-        assertThat(result.toCreate()).extracting(FinancialTransaction::getDescription)
+        assertThat(result.toCreate())
+                .extracting(FinancialTransaction::getDescription)
                 .containsExactly("Rent (7/9)", "Rent (8/9)", "Rent (9/9)");
-        assertThat(result.toCreate()).extracting(FinancialTransaction::getStartDate)
+        assertThat(result.toCreate())
+                .extracting(FinancialTransaction::getStartDate)
                 .containsExactly(start.plusMonths(6), start.plusMonths(7), start.plusMonths(8));
         assertThat(result.toCreate()).allSatisfy(tx -> {
             assertThat(tx.getPlan()).isSameAs(plan);
@@ -208,12 +215,13 @@ class SeriesRegeneratorTest {
         RecurrenceDefinition def = installmentDef("Rent", amount, 1, 4, start);
         List<FinancialTransaction> existing = existingInstallments("Rent", amount, 6, start);
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, existing, shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
 
         assertThat(result.toCreate()).isEmpty();
         assertThat(result.toUpdate()).hasSize(4);
-        assertThat(result.toUpdate()).extracting(FinancialTransaction::getDescription)
+        assertThat(result.toUpdate())
+                .extracting(FinancialTransaction::getDescription)
                 .containsExactly("Rent (1/4)", "Rent (2/4)", "Rent (3/4)", "Rent (4/4)");
 
         assertThat(result.toDelete()).hasSize(2);
@@ -228,13 +236,14 @@ class SeriesRegeneratorTest {
         RecurrenceDefinition def = recurringDef("Gym", amount, start, newEnd);
         List<FinancialTransaction> existing = existingRecurring("Gym", amount, start, oldEnd);
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, existing, shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
 
         assertThat(result.toDelete()).isEmpty();
         assertThat(result.toUpdate()).hasSize(6);
         assertThat(result.toCreate()).hasSize(2);
-        assertThat(result.toCreate()).extracting(FinancialTransaction::getStartDate)
+        assertThat(result.toCreate())
+                .extracting(FinancialTransaction::getStartDate)
                 .containsExactly(LocalDate.of(2026, 7, 1), LocalDate.of(2026, 8, 1));
         assertThat(result.toCreate()).allSatisfy(tx -> {
             assertThat(tx.getDescription()).isEqualTo("Gym");
@@ -251,16 +260,18 @@ class SeriesRegeneratorTest {
         RecurrenceDefinition def = recurringDef("Gym", amount, start, newEnd);
         List<FinancialTransaction> existing = existingRecurring("Gym", amount, start, oldEnd);
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, existing, shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
 
         assertThat(result.toCreate()).isEmpty();
         assertThat(result.toUpdate()).hasSize(3);
-        assertThat(result.toUpdate()).extracting(FinancialTransaction::getStartDate)
+        assertThat(result.toUpdate())
+                .extracting(FinancialTransaction::getStartDate)
                 .containsExactly(LocalDate.of(2026, 1, 1), LocalDate.of(2026, 2, 1), LocalDate.of(2026, 3, 1));
 
         assertThat(result.toDelete()).hasSize(3);
-        assertThat(result.toDelete()).extracting(FinancialTransaction::getStartDate)
+        assertThat(result.toDelete())
+                .extracting(FinancialTransaction::getStartDate)
                 .containsExactly(LocalDate.of(2026, 4, 1), LocalDate.of(2026, 5, 1), LocalDate.of(2026, 6, 1));
     }
 
@@ -269,11 +280,12 @@ class SeriesRegeneratorTest {
         LocalDate start = LocalDate.of(2026, 1, 31);
         RecurrenceDefinition def = recurringDef("Rent", amount, start, LocalDate.of(2026, 3, 31));
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, List.of(), shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, List.of(), shares, SeriesEditScope.ALL, null);
 
-        assertThat(result.toCreate()).extracting(FinancialTransaction::getStartDate).containsExactly(
-                LocalDate.of(2026, 1, 31), LocalDate.of(2026, 2, 28), LocalDate.of(2026, 3, 31));
+        assertThat(result.toCreate())
+                .extracting(FinancialTransaction::getStartDate)
+                .containsExactly(LocalDate.of(2026, 1, 31), LocalDate.of(2026, 2, 28), LocalDate.of(2026, 3, 31));
     }
 
     @Test
@@ -290,12 +302,13 @@ class SeriesRegeneratorTest {
         RecurrenceDefinition def = recurringDef("Gym", amount, start, null);
         List<FinancialTransaction> existing = existingRecurring("Gym", amount, start, oldEnd);
 
-        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
-                def, existing, shares, SeriesEditScope.ALL, null);
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
 
         assertThat(result.toDelete()).isEmpty();
         assertThat(result.toUpdate()).hasSize(3);
-        assertThat(result.toCreate()).extracting(FinancialTransaction::getStartDate)
+        assertThat(result.toCreate())
+                .extracting(FinancialTransaction::getStartDate)
                 .contains(expectedLastGenerated)
                 .doesNotContain(expectedLastGenerated.plusMonths(1));
         assertThat(result.toCreate()).allSatisfy(tx -> {

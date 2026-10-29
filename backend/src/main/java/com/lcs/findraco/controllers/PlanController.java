@@ -13,11 +13,10 @@ import com.lcs.findraco.utils.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Plans")
 @RestController
@@ -33,8 +32,7 @@ public class PlanController {
     @Operation(summary = "Creates a new plan owned by the authenticated user")
     @PostMapping
     public ResponseEntity<PlanResponseDto> createPlan(
-            @RequestBody @Valid PlanRequestDto dto,
-            @CurrentUser User loggedUser) {
+            @RequestBody @Valid PlanRequestDto dto, @CurrentUser User loggedUser) {
         PlanMembership membership = planService.createPlan(dto.getName(), loggedUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(new PlanResponseDto(membership));
     }
@@ -50,17 +48,13 @@ public class PlanController {
 
     @Operation(summary = "Fetches a plan the authenticated user belongs to")
     @GetMapping("/{id}")
-    public ResponseEntity<PlanResponseDto> getPlan(
-            @PathVariable Long id,
-            @CurrentUser User loggedUser) {
+    public ResponseEntity<PlanResponseDto> getPlan(@PathVariable Long id, @CurrentUser User loggedUser) {
         return ResponseEntity.ok(new PlanResponseDto(planService.getMembership(id, loggedUser)));
     }
 
     @Operation(summary = "Fetches the members of a plan the authenticated user belongs to")
     @GetMapping("/{id}/members")
-    public ResponseEntity<List<PlanMemberResponseDto>> getMembers(
-            @PathVariable Long id,
-            @CurrentUser User loggedUser) {
+    public ResponseEntity<List<PlanMemberResponseDto>> getMembers(@PathVariable Long id, @CurrentUser User loggedUser) {
         List<PlanMemberResponseDto> members = planService.getMembers(id, loggedUser).stream()
                 .map(PlanMemberResponseDto::new)
                 .toList();
@@ -70,26 +64,20 @@ public class PlanController {
     @Operation(summary = "Renames a plan (owner only)")
     @PutMapping("/{id}")
     public ResponseEntity<PlanResponseDto> renamePlan(
-            @PathVariable Long id,
-            @RequestBody @Valid PlanRequestDto dto,
-            @CurrentUser User loggedUser) {
+            @PathVariable Long id, @RequestBody @Valid PlanRequestDto dto, @CurrentUser User loggedUser) {
         return ResponseEntity.ok(new PlanResponseDto(planService.renamePlan(id, dto.getName(), loggedUser)));
     }
 
     @Operation(summary = "Deletes (soft-delete) a plan (owner only)")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePlan(
-            @PathVariable Long id,
-            @CurrentUser User loggedUser) {
+    public ResponseEntity<Void> deletePlan(@PathVariable Long id, @CurrentUser User loggedUser) {
         planService.deletePlan(id, loggedUser);
         return ResponseEntity.noContent().build();
     }
 
     @Operation(summary = "Leaves a plan (non-owner only)")
     @PostMapping("/{id}/leave")
-    public ResponseEntity<Void> leavePlan(
-            @PathVariable Long id,
-            @CurrentUser User loggedUser) {
+    public ResponseEntity<Void> leavePlan(@PathVariable Long id, @CurrentUser User loggedUser) {
         planService.leavePlan(id, loggedUser);
         return ResponseEntity.noContent().build();
     }
@@ -97,9 +85,7 @@ public class PlanController {
     @Operation(summary = "Transfers plan ownership to another member (owner only)")
     @PostMapping("/{id}/transfer")
     public ResponseEntity<Void> transferOwnership(
-            @PathVariable Long id,
-            @RequestBody @Valid TransferOwnershipRequestDto dto,
-            @CurrentUser User loggedUser) {
+            @PathVariable Long id, @RequestBody @Valid TransferOwnershipRequestDto dto, @CurrentUser User loggedUser) {
         planService.transferOwnership(id, dto.getNewOwnerUserId(), dto.getPreviousOwnerRole(), loggedUser);
         return ResponseEntity.noContent().build();
     }
@@ -111,16 +97,14 @@ public class PlanController {
             @PathVariable Long userId,
             @RequestBody @Valid UpdateMemberRoleRequestDto dto,
             @CurrentUser User loggedUser) {
-        return ResponseEntity.ok(new PlanMemberResponseDto(
-                planService.changeMemberRole(id, userId, dto.getRole(), loggedUser)));
+        return ResponseEntity.ok(
+                new PlanMemberResponseDto(planService.changeMemberRole(id, userId, dto.getRole(), loggedUser)));
     }
 
     @Operation(summary = "Removes a member from a plan (owner only)")
     @DeleteMapping("/{id}/members/{userId}")
     public ResponseEntity<Void> removeMember(
-            @PathVariable Long id,
-            @PathVariable Long userId,
-            @CurrentUser User loggedUser) {
+            @PathVariable Long id, @PathVariable Long userId, @CurrentUser User loggedUser) {
         planService.removeMember(id, userId, loggedUser);
         return ResponseEntity.noContent().build();
     }

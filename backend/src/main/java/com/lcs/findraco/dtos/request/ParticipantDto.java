@@ -1,7 +1,6 @@
 package com.lcs.findraco.dtos.request;
 
 import jakarta.validation.constraints.NotNull;
-
 import java.math.BigDecimal;
 
 public class ParticipantDto {

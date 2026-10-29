@@ -15,8 +15,19 @@ public class MonthlyTrendDto {
         this.expenses = expenses;
     }
 
-    public int getYear() { return year; }
-    public int getMonth() { return month; }
-    public BigDecimal getIncome() { return income; }
-    public BigDecimal getExpenses() { return expenses; }
+    public int getYear() {
+        return year;
+    }
+
+    public int getMonth() {
+        return month;
+    }
+
+    public BigDecimal getIncome() {
+        return income;
+    }
+
+    public BigDecimal getExpenses() {
+        return expenses;
+    }
 }

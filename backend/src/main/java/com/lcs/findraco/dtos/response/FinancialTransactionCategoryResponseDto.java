@@ -4,7 +4,6 @@ import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.User;
-
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
@@ -31,7 +30,8 @@ public class FinancialTransactionCategoryResponseDto {
         this.type = category.getType();
         this.description = category.getDescription();
         this.spendingLimit = category.getSpendingLimit();
-        this.parentId = category.getParent() == null ? null : category.getParent().getId();
+        this.parentId =
+                category.getParent() == null ? null : category.getParent().getId();
         User owner = effectiveOwner(category);
         this.ownerId = owner == null ? null : owner.getId();
         this.ownerName = owner == null ? null : owner.getName();
@@ -52,23 +52,28 @@ public class FinancialTransactionCategoryResponseDto {
         this.type = category.getType();
         this.description = category.getDescription();
         this.spendingLimit = category.getSpendingLimit();
-        this.parentId = category.getParent() == null ? null : category.getParent().getId();
+        this.parentId =
+                category.getParent() == null ? null : category.getParent().getId();
         User owner = effectiveOwner(category);
         this.ownerId = owner == null ? null : owner.getId();
         this.ownerName = owner == null ? null : owner.getName();
         this.ownerActive = owner == null ? null : activeMemberIds.contains(owner.getId());
         this.memberLimits = category.getMemberLimits().stream()
-                .map(entry -> new MemberLimit(entry, activeMemberIds.contains(entry.getMember().getId())))
+                .map(entry -> new MemberLimit(
+                        entry, activeMemberIds.contains(entry.getMember().getId())))
                 .sorted(Comparator.comparing(MemberLimit::getMemberId))
                 .toList();
-        List<MemberLimit> active = memberLimits.stream().filter(MemberLimit::isActive).toList();
+        List<MemberLimit> active =
+                memberLimits.stream().filter(MemberLimit::isActive).toList();
         this.effectiveLimit = active.isEmpty()
                 ? category.getSpendingLimit()
                 : active.stream().map(MemberLimit::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     private static User effectiveOwner(FinancialTransactionCategory category) {
-        return category.getParent() == null ? category.getOwner() : category.getParent().getOwner();
+        return category.getParent() == null
+                ? category.getOwner()
+                : category.getParent().getOwner();
     }
 
     /** One member's monthly limit inside the category; {@code active=false} for a former member. */
@@ -85,10 +90,21 @@ public class FinancialTransactionCategoryResponseDto {
             this.active = active;
         }
 
-        public Long getMemberId() { return memberId; }
-        public String getMemberName() { return memberName; }
-        public BigDecimal getAmount() { return amount; }
-        public boolean isActive() { return active; }
+        public Long getMemberId() {
+            return memberId;
+        }
+
+        public String getMemberName() {
+            return memberName;
+        }
+
+        public BigDecimal getAmount() {
+            return amount;
+        }
+
+        public boolean isActive() {
+            return active;
+        }
     }
 
     public Long getId() {

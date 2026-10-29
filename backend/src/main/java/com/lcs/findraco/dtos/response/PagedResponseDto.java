@@ -1,8 +1,7 @@
 package com.lcs.findraco.dtos.response;
 
-import org.springframework.data.domain.Page;
-
 import java.util.List;
+import org.springframework.data.domain.Page;
 
 public class PagedResponseDto<T> {
     private final List<T> content;

@@ -11,7 +11,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -33,7 +32,8 @@ public class SeriesEditRequestDto {
     @NotNull(message = "Recurrence mode cannot be null.")
     private RecurrenceMode mode;
 
-    // For installments, the month of the current parcel (parcel {@code currentParcel}); for recurring, the first occurrence.
+    // For installments, the month of the current parcel (parcel {@code currentParcel}); for recurring, the first
+    // occurrence.
     @NotNull(message = "Start date cannot be null.")
     private LocalDate startDate;
 

@@ -15,8 +15,7 @@ public final class OpaqueTokens {
     private static final int TOKEN_BYTES = 32;
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    private OpaqueTokens() {
-    }
+    private OpaqueTokens() {}
 
     /** 32 random bytes, Base64url without padding (43 characters). */
     public static String generate() {

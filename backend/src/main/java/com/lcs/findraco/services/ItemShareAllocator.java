@@ -1,7 +1,5 @@
 package com.lcs.findraco.services;
 
-import org.springframework.stereotype.Component;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -9,6 +7,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.stereotype.Component;
 
 /**
  * Allocates each categorized line item's amount across its transaction's participants (AD-008).
@@ -37,7 +36,8 @@ public class ItemShareAllocator {
 
     private record Portion(Long memberId, long shareCents) {}
 
-    private record ItemRow(Long itemCategoryId, Long transactionCategoryId, long itemCents, List<Portion> participants) {}
+    private record ItemRow(
+            Long itemCategoryId, Long transactionCategoryId, long itemCents, List<Portion> participants) {}
 
     /**
      * @param rows one row per categorized item x participant:
@@ -52,8 +52,9 @@ public class ItemShareAllocator {
         Map<Long, ItemRow> items = new LinkedHashMap<>();
         for (Object[] row : rows) {
             Long itemId = (Long) row[0];
-            ItemRow item = items.computeIfAbsent(itemId, id -> new ItemRow(
-                    (Long) row[1], (Long) row[2], toCents((BigDecimal) row[3]), new ArrayList<>()));
+            ItemRow item = items.computeIfAbsent(
+                    itemId,
+                    id -> new ItemRow((Long) row[1], (Long) row[2], toCents((BigDecimal) row[3]), new ArrayList<>()));
             item.participants().add(new Portion((Long) row[4], toCents((BigDecimal) row[5])));
         }
 
@@ -91,7 +92,8 @@ public class ItemShareAllocator {
         for (int i = 0; i < participants.size(); i++) {
             order.add(i);
         }
-        order.sort(Comparator.<Integer>comparingLong(i -> remainders[i]).reversed()
+        order.sort(Comparator.<Integer>comparingLong(i -> remainders[i])
+                .reversed()
                 .thenComparing(i -> participants.get(i).memberId()));
         long leftover = itemCents - allocated;
         for (int k = 0; k < leftover; k++) {

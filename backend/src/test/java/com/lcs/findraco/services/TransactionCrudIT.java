@@ -6,9 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
 import com.lcs.findraco.models.User;
@@ -23,6 +20,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of the PUT full-replace contract described in the transaction update
@@ -45,10 +44,17 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        JsonNode created = createTransaction(plan, owner, requestBody(
-                "DEBIT", "100.00", "Groceries", owner,
-                List.of(Map.of("description", "Item A", "amount", new BigDecimal("40.00")),
-                        Map.of("description", "Item B", "amount", new BigDecimal("60.00")))));
+        JsonNode created = createTransaction(
+                plan,
+                owner,
+                requestBody(
+                        "DEBIT",
+                        "100.00",
+                        "Groceries",
+                        owner,
+                        List.of(
+                                Map.of("description", "Item A", "amount", new BigDecimal("40.00")),
+                                Map.of("description", "Item B", "amount", new BigDecimal("60.00")))));
         assertThat(created.get("items")).hasSize(2);
         long transactionId = created.get("id").asLong();
 
@@ -56,7 +62,10 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody(
-                                "DEBIT", "100.00", "Groceries", owner,
+                                "DEBIT",
+                                "100.00",
+                                "Groceries",
+                                owner,
                                 List.of(Map.of("description", "Item C", "amount", new BigDecimal("70.00"))))))
                 .andExpect(status().isOk());
 
@@ -64,10 +73,10 @@ class TransactionCrudIT extends AbstractIntegrationTest {
 
         assertThat(persisted.get("items")).hasSize(1);
         assertThat(persisted.get("items").get(0).get("description").asString()).isEqualTo("Item C");
-        assertThat(persisted.get("items").get(0).get("amount").decimalValue())
-                .isEqualByComparingTo("70.00");
+        assertThat(persisted.get("items").get(0).get("amount").decimalValue()).isEqualByComparingTo("70.00");
 
-        List<String> itemDescriptions = StreamSupport.stream(persisted.get("items").spliterator(), false)
+        List<String> itemDescriptions = StreamSupport.stream(
+                        persisted.get("items").spliterator(), false)
                 .map(item -> item.get("description").asString())
                 .toList();
         assertThat(itemDescriptions).doesNotContain("Item A", "Item B");
@@ -80,8 +89,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         User member = fixtures.aUser();
         fixtures.addMember(plan, member, PlanRole.EDITOR);
 
-        JsonNode created = createTransaction(plan, owner, splitRequestBody(
-                "100.00", owner, List.of(owner, member)));
+        JsonNode created = createTransaction(plan, owner, splitRequestBody("100.00", owner, List.of(owner, member)));
         assertThat(created.get("participants")).hasSize(2);
         long transactionId = created.get("id").asLong();
 
@@ -104,8 +112,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        JsonNode created = createTransaction(plan, owner, requestBody(
-                "DEBIT", "100.00", "Groceries", owner, List.of()));
+        JsonNode created =
+                createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
         // Single item worth more than the transaction's own amount: FinancialTransactionService
@@ -115,7 +123,10 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody(
-                                "DEBIT", "100.00", "Groceries", owner,
+                                "DEBIT",
+                                "100.00",
+                                "Groceries",
+                                owner,
                                 List.of(Map.of("description", "Too much", "amount", new BigDecimal("150.00"))))))
                 .andExpect(status().isBadRequest());
 
@@ -128,8 +139,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        JsonNode created = createTransaction(plan, owner, requestBody(
-                "DEBIT", "100.00", "Groceries", owner, List.of()));
+        JsonNode created =
+                createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
         // description carries @NotBlank on FinancialTransactionRequestDto: a blank value fails
@@ -146,8 +157,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        JsonNode created = createTransaction(plan, owner, requestBody(
-                "DEBIT", "100.00", "Groceries", owner, List.of()));
+        JsonNode created =
+                createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
         // ItemDto.amount carries @Positive: a negative item amount fails bean validation.
@@ -156,7 +167,10 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody(
-                                "DEBIT", "100.00", "Groceries", owner,
+                                "DEBIT",
+                                "100.00",
+                                "Groceries",
+                                owner,
                                 List.of(Map.of("description", "Refund-ish", "amount", new BigDecimal("-10.00"))))))
                 .andExpect(status().isBadRequest());
     }
@@ -166,8 +180,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        JsonNode created = createTransaction(plan, owner, requestBody(
-                "DEBIT", "100.00", "Groceries", owner, List.of()));
+        JsonNode created =
+                createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
         // FinancialTransactionRequestDto.amount carries @Positive: a negative (or zero) top-level
@@ -189,8 +203,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
 
         long creditCategoryId = createCategory(plan, owner, "CREDIT", "Salary");
 
-        JsonNode created = createTransaction(plan, owner, requestBody(
-                "DEBIT", "100.00", "Groceries", owner, List.of()));
+        JsonNode created =
+                createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
         // FinancialTransactionService.update throws IllegalArgumentException("Category does not
@@ -199,14 +213,22 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "type", "DEBIT",
-                                "categoryId", creditCategoryId,
-                                "amount", new BigDecimal("100.00"),
-                                "description", "Groceries",
-                                "startDate", TODAY.toString(),
-                                "splitMode", "EQUAL",
-                                "participants", new Object[] {Map.of("memberId", owner.getId())},
-                                "items", List.of()))))
+                                "type",
+                                "DEBIT",
+                                "categoryId",
+                                creditCategoryId,
+                                "amount",
+                                new BigDecimal("100.00"),
+                                "description",
+                                "Groceries",
+                                "startDate",
+                                TODAY.toString(),
+                                "splitMode",
+                                "EQUAL",
+                                "participants",
+                                new Object[] {Map.of("memberId", owner.getId())},
+                                "items",
+                                List.of()))))
                 .andExpect(status().isBadRequest());
     }
 
@@ -225,22 +247,30 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         Plan otherPlan = fixtures.aPlan(otherOwner);
         long foreignCategoryId = createCategory(otherPlan, otherOwner, "DEBIT", "Foreign category");
 
-        JsonNode created = createTransaction(plan, owner, requestBody(
-                "DEBIT", "100.00", "Groceries", owner, List.of()));
+        JsonNode created =
+                createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
         mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "type", "DEBIT",
-                                "categoryId", foreignCategoryId,
-                                "amount", new BigDecimal("100.00"),
-                                "description", "Groceries",
-                                "startDate", TODAY.toString(),
-                                "splitMode", "EQUAL",
-                                "participants", new Object[] {Map.of("memberId", owner.getId())},
-                                "items", List.of()))))
+                                "type",
+                                "DEBIT",
+                                "categoryId",
+                                foreignCategoryId,
+                                "amount",
+                                new BigDecimal("100.00"),
+                                "description",
+                                "Groceries",
+                                "startDate",
+                                TODAY.toString(),
+                                "splitMode",
+                                "EQUAL",
+                                "participants",
+                                new Object[] {Map.of("memberId", owner.getId())},
+                                "items",
+                                List.of()))))
                 .andExpect(status().isNotFound());
     }
 
@@ -271,32 +301,49 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                 "description", description))))
                 .andExpect(status().isCreated())
                 .andReturn();
-        return objectMapper.readTree(result.getResponse().getContentAsString()).get("id").asLong();
+        return objectMapper
+                .readTree(result.getResponse().getContentAsString())
+                .get("id")
+                .asLong();
     }
 
     private String requestBody(
             String type, String amount, String description, User soleParticipant, List<Map<String, Object>> items)
             throws Exception {
         return objectMapper.writeValueAsString(Map.of(
-                "type", type,
-                "amount", new BigDecimal(amount),
-                "description", description,
-                "startDate", TODAY.toString(),
-                "splitMode", "EQUAL",
-                "participants", new Object[] {Map.of("memberId", soleParticipant.getId())},
-                "items", items));
+                "type",
+                type,
+                "amount",
+                new BigDecimal(amount),
+                "description",
+                description,
+                "startDate",
+                TODAY.toString(),
+                "splitMode",
+                "EQUAL",
+                "participants",
+                new Object[] {Map.of("memberId", soleParticipant.getId())},
+                "items",
+                items));
     }
 
     private String splitRequestBody(String amount, User owner, List<User> participants) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal(amount),
-                "description", "Split expense",
-                "startDate", TODAY.toString(),
-                "splitMode", "EQUAL",
-                "participants", participants.stream()
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal(amount),
+                "description",
+                "Split expense",
+                "startDate",
+                TODAY.toString(),
+                "splitMode",
+                "EQUAL",
+                "participants",
+                participants.stream()
                         .map(user -> Map.of("memberId", user.getId()))
                         .toList(),
-                "items", List.of()));
+                "items",
+                List.of()));
     }
 }

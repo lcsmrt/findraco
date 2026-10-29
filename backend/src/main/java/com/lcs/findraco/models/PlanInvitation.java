@@ -1,7 +1,6 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -33,14 +32,16 @@ public class PlanInvitation {
     private InvitationStatus status;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "invited_by", nullable = false, foreignKey = @ForeignKey(name = "fk_plan_invitations_invited_by"))
+    @JoinColumn(
+            name = "invited_by",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_plan_invitations_invited_by"))
     private User invitedBy;
 
     @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
-    public PlanInvitation() {
-    }
+    public PlanInvitation() {}
 
     public Long getId() {
         return id;

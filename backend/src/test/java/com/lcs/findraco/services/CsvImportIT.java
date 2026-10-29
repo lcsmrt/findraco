@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.User;
@@ -19,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Proves that {@code POST /financial-transaction/import} (Nubank CSV import,
@@ -71,8 +71,8 @@ class CsvImportIT extends AbstractIntegrationTest {
                 .extracting(FinancialTransaction::getExternalId)
                 .containsExactlyInAnyOrder("nu-ext-1", "nu-ext-2", "nu-ext-3");
 
-        MvcResult listResult = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
-                        .with(testAuthHelper.asUser(owner)))
+        MvcResult listResult = mockMvc.perform(
+                        get(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId()).with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isOk())
                 .andReturn();
         JsonNode listBody = objectMapper.readTree(listResult.getResponse().getContentAsString());
@@ -99,8 +99,8 @@ class CsvImportIT extends AbstractIntegrationTest {
     }
 
     private JsonNode importCsv(Plan plan, User asUser, String csvContent) throws Exception {
-        MockMultipartFile file = new MockMultipartFile(
-                "file", "nubank.csv", "text/csv", csvContent.getBytes(StandardCharsets.UTF_8));
+        MockMultipartFile file =
+                new MockMultipartFile("file", "nubank.csv", "text/csv", csvContent.getBytes(StandardCharsets.UTF_8));
 
         MvcResult result = mockMvc.perform(multipart(ApiRoutes.FINANCIAL_TRANSACTION + "/import", plan.getId())
                         .file(file)

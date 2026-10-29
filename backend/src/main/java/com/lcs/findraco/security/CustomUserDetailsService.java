@@ -23,9 +23,9 @@ public class CustomUserDetailsService implements UserDetailsService {
         // BadCredentialsException — identical 401 to a wrong password. A custom exception would
         // instead be wrapped in InternalAuthenticationServiceException (HTTP 500) and, by responding
         // differently, would let a caller enumerate which emails are registered.
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException("User not found for email " + email + "."));
+        User user = userRepository
+                .findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found for email " + email + "."));
 
         return new CustomUserDetails(user);
     }

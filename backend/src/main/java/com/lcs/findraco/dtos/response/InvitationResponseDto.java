@@ -4,7 +4,6 @@ import com.lcs.findraco.models.InvitationStatus;
 import com.lcs.findraco.models.InvitationType;
 import com.lcs.findraco.models.PlanInvitation;
 import com.lcs.findraco.models.PlanRole;
-
 import java.time.LocalDateTime;
 
 public class InvitationResponseDto {
@@ -28,13 +27,11 @@ public class InvitationResponseDto {
         // PENDING/ACCEPTED/REVOKED); it is computed here so listings reflect reality
         // even for an expired invitation that was never previewed/accepted.
         this.status = invitation.getStatus() == InvitationStatus.PENDING
-                && expiresAt != null
-                && expiresAt.isBefore(LocalDateTime.now())
+                        && expiresAt != null
+                        && expiresAt.isBefore(LocalDateTime.now())
                 ? InvitationStatus.EXPIRED
                 : invitation.getStatus();
-        this.link = invitation.getType() == InvitationType.LINK
-                ? "/invitation/" + invitation.getToken()
-                : null;
+        this.link = invitation.getType() == InvitationType.LINK ? "/invitation/" + invitation.getToken() : null;
     }
 
     public Long getId() {

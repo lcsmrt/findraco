@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.PasswordResetToken;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.repositories.PasswordResetTokenRepository;
@@ -30,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Drives the password recovery flow through the real endpoints. {@link EmailService} is mocked
@@ -70,14 +70,18 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
     }
 
     private ResultActions refresh(String sessionCookie) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.AUTH + "/refresh").cookie(new Cookie(SessionCookies.NAME, sessionCookie)));
+        return mockMvc.perform(
+                post(ApiRoutes.AUTH + "/refresh").cookie(new Cookie(SessionCookies.NAME, sessionCookie)));
     }
 
     /** Signs in with the fixture password and returns the session cookie value. */
     private String sessionCookie(User user) throws Exception {
         return login(user.getEmail(), "password")
                 .andExpect(status().isOk())
-                .andReturn().getResponse().getCookie(SessionCookies.NAME).getValue();
+                .andReturn()
+                .getResponse()
+                .getCookie(SessionCookies.NAME)
+                .getValue();
     }
 
     /** Returns the tokens of every link emailed to {@code email}, oldest first. */
@@ -109,12 +113,15 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
 
         String known = forgotPassword(user.getEmail())
                 .andExpect(status().isNoContent())
-                .andReturn().getResponse().getContentAsString();
+                .andReturn()
+                .getResponse()
+                .getContentAsString();
         forgotPassword("nobody-" + System.nanoTime() + "@test.com")
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(known));
 
-        verify(emailService, never()).sendPasswordResetEmail(Mockito.argThat(to -> !to.equals(user.getEmail())), anyString());
+        verify(emailService, never())
+                .sendPasswordResetEmail(Mockito.argThat(to -> !to.equals(user.getEmail())), anyString());
         assertThat(tokenRepository.count()).isEqualTo(1);
     }
 
@@ -148,7 +155,8 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
         forgotPassword(user.getEmail());
         String token = emailedTokens(user.getEmail()).get(0);
 
-        PasswordResetToken stored = tokenRepository.findByTokenHash(OpaqueTokens.hash(token)).orElseThrow();
+        PasswordResetToken stored =
+                tokenRepository.findByTokenHash(OpaqueTokens.hash(token)).orElseThrow();
         stored.setExpiresAt(LocalDateTime.now().minusMinutes(1));
         tokenRepository.save(stored);
 
@@ -164,7 +172,8 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
 
         assertThat(tokenRepository.findAll())
                 .singleElement()
-                .satisfies(stored -> assertThat(stored.getTokenHash()).isNotEqualTo(token).hasSize(64));
+                .satisfies(stored ->
+                        assertThat(stored.getTokenHash()).isNotEqualTo(token).hasSize(64));
     }
 
     // SESS-11: a completed reset ends every session of that user, and only that user.

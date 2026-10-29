@@ -1,16 +1,17 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "recurrence_definitions", indexes = {
-        @Index(name = "idx_recdef_plan_id", columnList = "plan_id"),
-})
+@Table(
+        name = "recurrence_definitions",
+        indexes = {
+            @Index(name = "idx_recdef_plan_id", columnList = "plan_id"),
+        })
 public class RecurrenceDefinition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -70,8 +71,7 @@ public class RecurrenceDefinition {
     @OneToMany(mappedBy = "definition", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecurrenceDefinitionParticipant> participants = new ArrayList<>();
 
-    public RecurrenceDefinition() {
-    }
+    public RecurrenceDefinition() {}
 
     public Long getId() {
         return id;

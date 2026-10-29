@@ -11,11 +11,10 @@ import jakarta.persistence.criteria.Order;
 import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 
 public class FinancialTransactionSpecification {
 
@@ -163,9 +162,7 @@ public class FinancialTransactionSpecification {
             Expression<String> memberName = tp.get("member").get("name");
             Expression<BigDecimal> tpShare = tp.get("shareAmount");
             nameSub.select(cb.least(memberName));
-            nameSub.where(
-                    cb.equal(tp.get("transaction"), root),
-                    cb.equal(tpShare, maxShareSub));
+            nameSub.where(cb.equal(tp.get("transaction"), root), cb.equal(tpShare, maxShareSub));
 
             query.orderBy(direction.isAscending() ? cb.asc(nameSub) : cb.desc(nameSub));
             return null;

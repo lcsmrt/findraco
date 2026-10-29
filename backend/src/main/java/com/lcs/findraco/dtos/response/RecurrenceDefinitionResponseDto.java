@@ -6,7 +6,6 @@ import com.lcs.findraco.models.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.models.RecurrenceInterval;
 import com.lcs.findraco.models.RecurrenceMode;
 import com.lcs.findraco.models.SplitMode;
-
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -41,9 +40,8 @@ public class RecurrenceDefinitionResponseDto {
         this.startDate = def.getStartDate();
         this.endDate = def.getEndDate();
         this.splitMode = def.getSplitMode();
-        this.participants = def.getParticipants().stream()
-                .map(ParticipantTemplateDto::new)
-                .toList();
+        this.participants =
+                def.getParticipants().stream().map(ParticipantTemplateDto::new).toList();
     }
 
     public static class ParticipantTemplateDto {

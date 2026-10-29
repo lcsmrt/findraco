@@ -3,6 +3,7 @@ package com.lcs.findraco.security;
 import com.lcs.findraco.models.PlanMembership;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.services.PlanService;
+import java.util.Map;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -12,8 +13,6 @@ import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.method.support.ModelAndViewContainer;
 import org.springframework.web.servlet.HandlerMapping;
-
-import java.util.Map;
 
 /**
  * Resolves a {@link PlanContext} controller parameter from the {@code {planId}} path

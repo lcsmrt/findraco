@@ -37,17 +37,15 @@ class HarnessSmokeIT extends AbstractIntegrationTest {
     void authenticatedRequestSucceedsAndUnauthenticatedIsRejected() throws Exception {
         User user = fixtures.aUser();
 
-        mockMvc.perform(get(ApiRoutes.PLAN).with(testAuthHelper.asUser(user)))
-                .andExpect(status().is2xxSuccessful());
+        mockMvc.perform(get(ApiRoutes.PLAN).with(testAuthHelper.asUser(user))).andExpect(status().is2xxSuccessful());
 
-        mockMvc.perform(get(ApiRoutes.PLAN))
-                .andExpect(status().is4xxClientError());
+        mockMvc.perform(get(ApiRoutes.PLAN)).andExpect(status().is4xxClientError());
     }
 
     @Test
     void truncateAllIsolatesStateBetweenTests() {
-        long userCountBeforeAnyFixtureInThisTest = new JdbcTemplate(dataSource)
-                .queryForObject("SELECT COUNT(*) FROM users", Long.class);
+        long userCountBeforeAnyFixtureInThisTest =
+                new JdbcTemplate(dataSource).queryForObject("SELECT COUNT(*) FROM users", Long.class);
 
         assertThat(userCountBeforeAnyFixtureInThisTest)
                 .as("truncateAll must have cleared users left over from the previous test method")

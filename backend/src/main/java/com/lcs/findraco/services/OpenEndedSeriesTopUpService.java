@@ -5,15 +5,14 @@ import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.repositories.FinancialTransactionRepository;
 import com.lcs.findraco.repositories.RecurrenceDefinitionRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Lazy, on-read "rolling top-up" for open-ended (mode = RECURRING, endDate = null) series (D1/D2,
@@ -41,9 +40,10 @@ public class OpenEndedSeriesTopUpService {
     private final FinancialTransactionRepository financialTransactionRepository;
     private final RecurringTransactionGenerator recurringTransactionGenerator;
 
-    public OpenEndedSeriesTopUpService(RecurrenceDefinitionRepository recurrenceDefinitionRepository,
-                                        FinancialTransactionRepository financialTransactionRepository,
-                                        RecurringTransactionGenerator recurringTransactionGenerator) {
+    public OpenEndedSeriesTopUpService(
+            RecurrenceDefinitionRepository recurrenceDefinitionRepository,
+            FinancialTransactionRepository financialTransactionRepository,
+            RecurringTransactionGenerator recurringTransactionGenerator) {
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.financialTransactionRepository = financialTransactionRepository;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
@@ -68,18 +68,19 @@ public class OpenEndedSeriesTopUpService {
                 .map(participant -> new ResolvedParticipant(participant.getMember(), participant.getShareAmount()))
                 .toList();
 
-        List<FinancialTransaction> candidates = recurringTransactionGenerator.generateForwardWindow(
-                definition, afterExclusive, horizonCap, shares);
+        List<FinancialTransaction> candidates =
+                recurringTransactionGenerator.generateForwardWindow(definition, afterExclusive, horizonCap, shares);
 
         if (candidates.isEmpty()) {
             return;
         }
 
-        Set<LocalDate> existingDates = financialTransactionRepository
-                .findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId())
-                .stream()
-                .map(FinancialTransaction::getStartDate)
-                .collect(Collectors.toSet());
+        Set<LocalDate> existingDates =
+                financialTransactionRepository
+                        .findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId())
+                        .stream()
+                        .map(FinancialTransaction::getStartDate)
+                        .collect(Collectors.toSet());
 
         List<FinancialTransaction> toPersist = candidates.stream()
                 .filter(occurrence -> !existingDates.contains(occurrence.getStartDate()))

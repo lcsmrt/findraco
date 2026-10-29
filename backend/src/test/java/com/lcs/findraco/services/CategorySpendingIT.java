@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.CategoryMemberLimit;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
@@ -30,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of {@code GET .../financial-transaction-category/spending} (spec P1 "Categories
@@ -89,7 +89,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         // Child: own spend only, evaluated against its own limit → over limit.
         assertThat(food.get("children")).hasSize(1);
         JsonNode delivery = food.get("children").get(0);
-        assertThat(delivery.get("categoryId").asLong()).isEqualTo(seed.delivery().getId());
+        assertThat(delivery.get("categoryId").asLong())
+                .isEqualTo(seed.delivery().getId());
         assertThat(delivery.get("parentId").asLong()).isEqualTo(seed.food().getId());
         assertThat(delivery.get("spent").decimalValue()).isEqualByComparingTo("250.00");
         assertThat(delivery.get("limit").decimalValue()).isEqualByComparingTo("200.00");
@@ -220,7 +221,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(back.get("remaining").decimalValue()).isEqualByComparingTo("90.00");
     }
 
-    // P3 independent test (AC 5; CAT-16): an owned row counts the owner's share only; the other share is listed without a limit.
+    // P3 independent test (AC 5; CAT-16): an owned row counts the owner's share only; the other share is listed without
+    // a limit.
     @Test
     void ownedCategoryCountsTheOwnersShareOnly() throws Exception {
         User owner = fixtures.aUser();
@@ -254,8 +256,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory professional = owned(
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional"), partner);
+        FinancialTransactionCategory professional =
+                owned(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional"), partner);
         fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Courses", professional);
         aSplitTransaction(plan, partner, professional, "100.00", Map.of(partner, "70.00", owner, "30.00"));
 
@@ -275,7 +277,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
         rejoin(plan, owner, partner);
 
-        JsonNode rejoined = rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Professional");
+        JsonNode rejoined =
+                rowNamed(readSpending(fetchSpending(plan, owner).andExpect(status().isOk())), "Professional");
         assertThat(rejoined.get("ownerActive").asBoolean()).isTrue();
     }
 
@@ -311,9 +314,10 @@ class CategorySpendingIT extends AbstractIntegrationTest {
      * In period: 150 on Food, 250 on Delivery, 1000 on Salary. Out of period: 999 on Food.
      */
     private Seed seed(Plan plan, User owner) {
-        FinancialTransactionCategory food = withLimit(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food"), "400.00");
-        FinancialTransactionCategory delivery = withLimit(
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food), "200.00");
+        FinancialTransactionCategory food =
+                withLimit(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food"), "400.00");
+        FinancialTransactionCategory delivery =
+                withLimit(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food), "200.00");
         fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
         FinancialTransactionCategory salary = fixtures.aCategory(plan, FinancialTransactionType.CREDIT, "Salary");
         fixtures.aCategory(plan, FinancialTransactionType.CREDIT, "Bonus", salary);
@@ -321,7 +325,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         fixtures.aTransaction(plan, owner, new BigDecimal("150.00"), FinancialTransactionType.DEBIT, food);
         fixtures.aTransaction(plan, owner, new BigDecimal("250.00"), FinancialTransactionType.DEBIT, delivery);
         fixtures.aTransaction(plan, owner, new BigDecimal("1000.00"), FinancialTransactionType.CREDIT, salary);
-        FinancialTransaction old = fixtures.aTransaction(plan, owner, new BigDecimal("999.00"), FinancialTransactionType.DEBIT, food);
+        FinancialTransaction old =
+                fixtures.aTransaction(plan, owner, new BigDecimal("999.00"), FinancialTransactionType.DEBIT, food);
         old.setStartDate(TODAY.minusMonths(2));
         transactionRepository.save(old);
         return new Seed(food, delivery);
@@ -332,7 +337,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         return categoryRepository.save(category);
     }
 
-    private FinancialTransactionCategory withMemberLimits(FinancialTransactionCategory category, Map<User, String> amounts) {
+    private FinancialTransactionCategory withMemberLimits(
+            FinancialTransactionCategory category, Map<User, String> amounts) {
         amounts.forEach((member, amount) -> {
             CategoryMemberLimit entry = new CategoryMemberLimit();
             entry.setCategory(category);
@@ -349,8 +355,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     }
 
     /** A transaction dated today split across members by the given share amounts. */
-    private void aSplitTransaction(Plan plan, User createdBy, FinancialTransactionCategory category, String amount,
-                                   Map<User, String> shares) {
+    private void aSplitTransaction(
+            Plan plan, User createdBy, FinancialTransactionCategory category, String amount, Map<User, String> shares) {
         FinancialTransaction transaction = new FinancialTransaction();
         transaction.setCategory(category);
         transaction.setPlan(plan);
@@ -380,10 +386,12 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         body.put("role", PlanRole.EDITOR.name());
         body.put("type", "LINK");
         String token = readSpending(mockMvc.perform(post(ApiRoutes.PLAN_INVITATION, plan.getId())
-                        .with(testAuthHelper.asUser(owner))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isCreated())).get("token").asString();
+                                .with(testAuthHelper.asUser(owner))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(body)))
+                        .andExpect(status().isCreated()))
+                .get("token")
+                .asString();
         mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(member)))
                 .andExpect(status().isCreated());
     }

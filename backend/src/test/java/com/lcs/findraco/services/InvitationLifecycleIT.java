@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
 import com.lcs.findraco.models.User;
@@ -19,6 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Drives {@link com.lcs.findraco.controllers.PlanInvitationController} end-to-end through the
@@ -57,7 +57,8 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
 
         String token = createInvitation(plan, owner, PlanRole.EDITOR, "LINK", null, null);
 
-        MvcResult first = acceptAs(token, invitee).andExpect(status().isCreated()).andReturn();
+        MvcResult first =
+                acceptAs(token, invitee).andExpect(status().isCreated()).andReturn();
         JsonNode firstBody = objectMapper.readTree(first.getResponse().getContentAsString());
         assertThat(firstBody.get("planId").asLong()).isEqualTo(plan.getId());
         assertThat(firstBody.get("role").asString()).isEqualTo("EDITOR");
@@ -82,12 +83,10 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         acceptAs(token, invitee).andExpect(status().isCreated());
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(2);
 
-        acceptAs(token, invitee)
-                .andExpect(status().isGone())
-                .andExpect(result -> {
-                    JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(body.get("message").asString()).isEqualTo("This invitation has already been used.");
-                });
+        acceptAs(token, invitee).andExpect(status().isGone()).andExpect(result -> {
+            JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
+            assertThat(body.get("message").asString()).isEqualTo("This invitation has already been used.");
+        });
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(2);
     }
@@ -99,14 +98,17 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         User invitee = fixtures.aUser();
 
         String token = createInvitation(
-                plan, owner, PlanRole.CONTRIBUTOR, "LINK", null, LocalDateTime.now().minusDays(1));
+                plan,
+                owner,
+                PlanRole.CONTRIBUTOR,
+                "LINK",
+                null,
+                LocalDateTime.now().minusDays(1));
 
-        acceptAs(token, invitee)
-                .andExpect(status().isGone())
-                .andExpect(result -> {
-                    JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(body.get("message").asString()).isEqualTo("This invitation has expired.");
-                });
+        acceptAs(token, invitee).andExpect(status().isGone()).andExpect(result -> {
+            JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
+            assertThat(body.get("message").asString()).isEqualTo("This invitation has expired.");
+        });
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
     }
@@ -131,19 +133,16 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isNoContent());
 
-        acceptAs(token, invitee)
-                .andExpect(status().isGone())
-                .andExpect(result -> {
-                    JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(body.get("message").asString()).isEqualTo("This invitation has been revoked.");
-                });
+        acceptAs(token, invitee).andExpect(status().isGone()).andExpect(result -> {
+            JsonNode body = objectMapper.readTree(result.getResponse().getContentAsString());
+            assertThat(body.get("message").asString()).isEqualTo("This invitation has been revoked.");
+        });
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
     }
 
     private String createInvitation(
-            Plan plan, User owner, PlanRole role, String type, String email, LocalDateTime expiresAt)
-            throws Exception {
+            Plan plan, User owner, PlanRole role, String type, String email, LocalDateTime expiresAt) throws Exception {
         MvcResult result = mockMvc.perform(post(ApiRoutes.PLAN_INVITATION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -168,7 +167,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
     }
 
     private org.springframework.test.web.servlet.ResultActions acceptAs(String token, User actor) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token)
-                .with(testAuthHelper.asUser(actor)));
+        return mockMvc.perform(
+                post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(actor)));
     }
 }

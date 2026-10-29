@@ -5,8 +5,6 @@ import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.models.RecurrenceMode;
 import com.lcs.findraco.models.SeriesEditScope;
 import com.lcs.findraco.models.TransactionParticipant;
-import org.springframework.stereotype.Component;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -16,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.springframework.stereotype.Component;
 
 /**
  * Pure, dependency-free (besides a {@link Clock}) reconciliation of a series' occurrences against
@@ -49,28 +48,26 @@ public class SeriesRegenerator {
     public record SeriesEditResult(
             List<FinancialTransaction> toUpdate,
             List<FinancialTransaction> toCreate,
-            List<FinancialTransaction> toDelete
-    ) {
-    }
+            List<FinancialTransaction> toDelete) {}
 
     /** A single target slot computed from the (post-edit) recurrence definition template. */
-    private record TargetOccurrence(LocalDate date, String description, Integer parcelsNumber) {
-    }
+    private record TargetOccurrence(LocalDate date, String description, Integer parcelsNumber) {}
 
     public SeriesEditResult reconcile(
             RecurrenceDefinition def,
             List<FinancialTransaction> existing,
             List<ResolvedParticipant> shares,
             SeriesEditScope scope,
-            LocalDate pivotDate
-    ) {
+            LocalDate pivotDate) {
         List<TargetOccurrence> fullTargets = buildFullTargetList(def);
         ensureWithinCap(fullTargets.size());
 
         boolean filterByPivot = scope != SeriesEditScope.ALL;
 
         List<TargetOccurrence> inScopeTargets = filterByPivot
-                ? fullTargets.stream().filter(t -> !t.date().isBefore(pivotDate)).toList()
+                ? fullTargets.stream()
+                        .filter(t -> !t.date().isBefore(pivotDate))
+                        .toList()
                 : fullTargets;
 
         List<FinancialTransaction> inScopeExisting = existing.stream()
@@ -102,9 +99,7 @@ public class SeriesRegenerator {
     }
 
     private List<TargetOccurrence> buildFullTargetList(RecurrenceDefinition def) {
-        return def.getMode() == RecurrenceMode.INSTALLMENT
-                ? buildInstallmentTargets(def)
-                : buildRecurringTargets(def);
+        return def.getMode() == RecurrenceMode.INSTALLMENT ? buildInstallmentTargets(def) : buildRecurringTargets(def);
     }
 
     private List<TargetOccurrence> buildInstallmentTargets(RecurrenceDefinition def) {
@@ -134,8 +129,11 @@ public class SeriesRegenerator {
         return targets;
     }
 
-    private void stampOccurrence(FinancialTransaction tx, TargetOccurrence slot, RecurrenceDefinition def,
-                                  List<ResolvedParticipant> shares) {
+    private void stampOccurrence(
+            FinancialTransaction tx,
+            TargetOccurrence slot,
+            RecurrenceDefinition def,
+            List<ResolvedParticipant> shares) {
         tx.setAmount(def.getAmount());
         tx.setDescription(slot.description());
         tx.setCategory(def.getCategory());
@@ -155,7 +153,8 @@ public class SeriesRegenerator {
         Set<Long> keptMemberIds = new HashSet<>();
         for (ResolvedParticipant share : shares) {
             keptMemberIds.add(share.member().getId());
-            TransactionParticipant existing = existingByMemberId.get(share.member().getId());
+            TransactionParticipant existing =
+                    existingByMemberId.get(share.member().getId());
             if (existing != null) {
                 existing.setShareAmount(share.shareAmount());
             } else {
@@ -167,12 +166,13 @@ public class SeriesRegenerator {
             }
         }
 
-        tx.getParticipants().removeIf(
-                participant -> !keptMemberIds.contains(participant.getMember().getId()));
+        tx.getParticipants()
+                .removeIf(participant ->
+                        !keptMemberIds.contains(participant.getMember().getId()));
     }
 
-    private FinancialTransaction buildNewOccurrence(TargetOccurrence slot, RecurrenceDefinition def,
-                                                      List<ResolvedParticipant> shares) {
+    private FinancialTransaction buildNewOccurrence(
+            TargetOccurrence slot, RecurrenceDefinition def, List<ResolvedParticipant> shares) {
         FinancialTransaction tx = new FinancialTransaction();
         tx.setPlan(def.getPlan());
         tx.setCreatedBy(def.getCreatedBy());

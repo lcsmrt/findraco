@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.RecurrenceDefinition;
 import com.lcs.findraco.models.User;
@@ -21,6 +19,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of T5 (Recurrence Model v2, RMV2-04/05/07): a RECURRING series can be
@@ -59,14 +59,16 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
         JsonNode occurrences = created.get("occurrences");
         assertThat(occurrences).hasSize(expectedCount);
         assertThat(occurrences.get(0).get("startDate").asString()).isEqualTo(start.toString());
-        assertThat(occurrences.get(expectedCount - 1).get("startDate").asString()).isEqualTo(expectedLast.toString());
+        assertThat(occurrences.get(expectedCount - 1).get("startDate").asString())
+                .isEqualTo(expectedLast.toString());
 
         String seriesId = created.get("seriesId").asString();
         JsonNode definitionDto = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definitionDto.get("mode").asString()).isEqualTo("RECURRING");
         assertThat(definitionDto.get("endDate").isNull()).isTrue();
 
-        RecurrenceDefinition definition = recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)
+        RecurrenceDefinition definition = recurrenceDefinitionRepository
+                .findByPlanAndSeriesId(plan, seriesId)
                 .orElseThrow();
         assertThat(definition.getEndDate()).isNull();
         assertThat(definition.getGeneratedThrough()).isEqualTo(expectedLast);
@@ -84,14 +86,16 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
         assertThat(created.get("count").asInt()).isEqualTo(4);
         JsonNode occurrences = created.get("occurrences");
         for (int i = 0; i < 4; i++) {
-            assertThat(occurrences.get(i).get("startDate").asString()).isEqualTo(start.plusMonths(i).toString());
+            assertThat(occurrences.get(i).get("startDate").asString())
+                    .isEqualTo(start.plusMonths(i).toString());
         }
 
         String seriesId = created.get("seriesId").asString();
         JsonNode definitionDto = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definitionDto.get("endDate").asString()).isEqualTo(end.toString());
 
-        RecurrenceDefinition definition = recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId)
+        RecurrenceDefinition definition = recurrenceDefinitionRepository
+                .findByPlanAndSeriesId(plan, seriesId)
                 .orElseThrow();
         assertThat(definition.getGeneratedThrough()).isEqualTo(end);
     }
@@ -161,8 +165,9 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchSeriesDefinition(Plan plan, User asUser, String seriesId) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
-                        .with(testAuthHelper.asUser(asUser)))
+        MvcResult result = mockMvc.perform(
+                        get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                                .with(testAuthHelper.asUser(asUser)))
                 .andExpect(status().isOk())
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());

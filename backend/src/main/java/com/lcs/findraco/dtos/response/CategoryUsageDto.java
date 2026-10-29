@@ -15,9 +15,17 @@ public class CategoryUsageDto {
         this.recurrenceDefinitions = recurrenceDefinitions;
     }
 
-    public long getTransactions() { return transactions; }
-    public long getItems() { return items; }
-    public long getRecurrenceDefinitions() { return recurrenceDefinitions; }
+    public long getTransactions() {
+        return transactions;
+    }
+
+    public long getItems() {
+        return items;
+    }
+
+    public long getRecurrenceDefinitions() {
+        return recurrenceDefinitions;
+    }
 
     public boolean inUse() {
         return transactions + items + recurrenceDefinitions > 0;

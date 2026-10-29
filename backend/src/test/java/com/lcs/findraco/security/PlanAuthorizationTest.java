@@ -1,14 +1,13 @@
 package com.lcs.findraco.security;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import com.lcs.findraco.exceptions.PlanExceptions;
 import com.lcs.findraco.models.PlanRole;
 import com.lcs.findraco.models.User;
-import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Field;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 class PlanAuthorizationTest {
 
@@ -127,8 +126,7 @@ class PlanAuthorizationTest {
 
     @Test
     void ownerOnlyAllowedForOwner() {
-        assertThatCode(() -> authorization.requireOwner(PlanRole.OWNER))
-                .doesNotThrowAnyException();
+        assertThatCode(() -> authorization.requireOwner(PlanRole.OWNER)).doesNotThrowAnyException();
     }
 
     @Test

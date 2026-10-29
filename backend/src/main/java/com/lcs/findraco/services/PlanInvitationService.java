@@ -11,12 +11,11 @@ import com.lcs.findraco.repositories.PlanInvitationRepository;
 import com.lcs.findraco.repositories.PlanMembershipRepository;
 import com.lcs.findraco.security.PlanAuthorization;
 import com.lcs.findraco.security.PlanContext;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PlanInvitationService {
@@ -28,8 +27,7 @@ public class PlanInvitationService {
     public PlanInvitationService(
             PlanInvitationRepository invitationRepository,
             PlanMembershipRepository membershipRepository,
-            PlanAuthorization planAuthorization
-    ) {
+            PlanAuthorization planAuthorization) {
         this.invitationRepository = invitationRepository;
         this.membershipRepository = membershipRepository;
         this.planAuthorization = planAuthorization;
@@ -81,8 +79,10 @@ public class PlanInvitationService {
             if (invitation.getType() == InvitationType.EMAIL) {
                 invitation.setStatus(InvitationStatus.ACCEPTED);
             }
-            PlanMembership existing = membershipRepository.findByPlanAndUser(invitation.getPlan(), actor)
-                    .orElseThrow(() -> new PlanExceptions.NotAMemberException(invitation.getPlan().getId()));
+            PlanMembership existing = membershipRepository
+                    .findByPlanAndUser(invitation.getPlan(), actor)
+                    .orElseThrow(() -> new PlanExceptions.NotAMemberException(
+                            invitation.getPlan().getId()));
             return new AcceptResult(existing, false);
         }
 
@@ -111,7 +111,8 @@ public class PlanInvitationService {
     public void revoke(PlanContext ctx, Long invitationId) {
         planAuthorization.requireOwner(ctx.getRole());
 
-        PlanInvitation invitation = invitationRepository.findByIdAndPlan(invitationId, ctx.getPlan())
+        PlanInvitation invitation = invitationRepository
+                .findByIdAndPlan(invitationId, ctx.getPlan())
                 .orElseThrow(() -> new PlanExceptions.InvitationNotFoundException(String.valueOf(invitationId)));
 
         invitation.setStatus(InvitationStatus.REVOKED);
@@ -125,14 +126,14 @@ public class PlanInvitationService {
      * a schema migration out of scope here.
      */
     private PlanInvitation loadValidInvitation(String token) {
-        PlanInvitation invitation = invitationRepository.findByToken(token)
+        PlanInvitation invitation = invitationRepository
+                .findByToken(token)
                 .orElseThrow(() -> new PlanExceptions.InvitationNotFoundException(token));
 
         if (invitation.getStatus() == InvitationStatus.REVOKED) {
             throw new PlanExceptions.InvitationRevokedException();
         }
-        if (invitation.getType() == InvitationType.EMAIL
-                && invitation.getStatus() == InvitationStatus.ACCEPTED) {
+        if (invitation.getType() == InvitationType.EMAIL && invitation.getStatus() == InvitationStatus.ACCEPTED) {
             throw new PlanExceptions.InvitationAlreadyUsedException();
         }
         if (invitation.getExpiresAt() != null && invitation.getExpiresAt().isBefore(LocalDateTime.now())) {

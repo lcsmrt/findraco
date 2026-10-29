@@ -1,7 +1,6 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.math.BigDecimal;
 
 @Entity
@@ -28,8 +27,7 @@ public class TransactionItem {
     @Column(nullable = false)
     private Integer quantity = 1;
 
-    public TransactionItem() {
-    }
+    public TransactionItem() {}
 
     public Long getId() {
         return id;

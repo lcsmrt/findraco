@@ -6,14 +6,13 @@ import com.lcs.findraco.models.PasswordResetToken;
 import com.lcs.findraco.repositories.PasswordResetTokenRepository;
 import com.lcs.findraco.repositories.UserRepository;
 import com.lcs.findraco.security.OpaqueTokens;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PasswordResetService {
@@ -35,8 +34,7 @@ public class PasswordResetService {
             EmailService emailService,
             SessionService sessionService,
             Clock clock,
-            @Value("${app.url}") String appUrl
-    ) {
+            @Value("${app.url}") String appUrl) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.userService = userService;
@@ -76,8 +74,8 @@ public class PasswordResetService {
     /** Sets the new password, consumes the token (single use) and signs the user out everywhere. */
     @Transactional
     public void resetPassword(ResetPasswordRequestDto dto) {
-        PasswordResetToken resetToken = findValidToken(dto.getToken())
-                .orElseThrow(UserExceptions.InvalidPasswordResetTokenException::new);
+        PasswordResetToken resetToken =
+                findValidToken(dto.getToken()).orElseThrow(UserExceptions.InvalidPasswordResetTokenException::new);
 
         userService.changePassword(resetToken.getUser(), dto.getPassword());
         tokenRepository.deleteAllByUser(resetToken.getUser());
@@ -85,7 +83,8 @@ public class PasswordResetService {
     }
 
     private Optional<PasswordResetToken> findValidToken(String token) {
-        return tokenRepository.findByTokenHash(OpaqueTokens.hash(token))
+        return tokenRepository
+                .findByTokenHash(OpaqueTokens.hash(token))
                 .filter(resetToken -> resetToken.getExpiresAt().isAfter(LocalDateTime.now(clock)));
     }
 }

@@ -12,9 +12,6 @@ import com.lcs.findraco.repositories.UserRepository;
 import com.lcs.findraco.security.PlanContext;
 import com.lcs.findraco.services.ItemShareAllocator.Allocation;
 import com.lcs.findraco.services.ItemShareAllocator.MemberFact;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -24,6 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * The single source of category spend (AD-008): the Overview breakdown and the Categories tab both
@@ -42,14 +41,15 @@ public class CategorySpendingService {
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
     private final Clock clock;
 
-    public CategorySpendingService(FinancialTransactionRepository transactionRepository,
-                                   FinancialTransactionCategoryRepository categoryRepository,
-                                   PlanMembershipRepository planMembershipRepository,
-                                   UserRepository userRepository,
-                                   ItemShareAllocator itemShareAllocator,
-                                   CategorySpendingAssembler assembler,
-                                   OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
-                                   Clock clock) {
+    public CategorySpendingService(
+            FinancialTransactionRepository transactionRepository,
+            FinancialTransactionCategoryRepository categoryRepository,
+            PlanMembershipRepository planMembershipRepository,
+            UserRepository userRepository,
+            ItemShareAllocator itemShareAllocator,
+            CategorySpendingAssembler assembler,
+            OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
+            Clock clock) {
         this.transactionRepository = transactionRepository;
         this.categoryRepository = categoryRepository;
         this.planMembershipRepository = planMembershipRepository;
@@ -92,8 +92,14 @@ public class CategorySpendingService {
         Facts debit = facts(plan, FinancialTransactionType.DEBIT, startDate, endDate, memberId);
         List<FinancialTransactionCategory> categories = categoryRepository.findAllByPlanWithDetails(plan);
         Members members = members(plan, debit);
-        return assembler.assembleOverview(debit.rowsA(), debit.removed(), debit.added(), categories,
-                members.activeIds(), members.names(), memberId);
+        return assembler.assembleOverview(
+                debit.rowsA(),
+                debit.removed(),
+                debit.added(),
+                categories,
+                members.activeIds(),
+                members.names(),
+                memberId);
     }
 
     private record Members(Set<Long> activeIds, Map<Long, String> names) {}
@@ -126,7 +132,8 @@ public class CategorySpendingService {
 
     private record Facts(List<Object[]> rowsA, List<MemberFact> removed, List<MemberFact> added) {}
 
-    private Facts facts(Plan plan, FinancialTransactionType type, LocalDate startDate, LocalDate endDate, Long memberId) {
+    private Facts facts(
+            Plan plan, FinancialTransactionType type, LocalDate startDate, LocalDate endDate, Long memberId) {
         List<Object[]> rowsA = transactionRepository.findCategoryMemberFacts(plan, type, startDate, endDate, memberId);
         Allocation allocation = itemShareAllocator.allocate(
                 transactionRepository.findCategorizedItemParticipantRows(plan, type, startDate, endDate));
@@ -139,7 +146,9 @@ public class CategorySpendingService {
         if (memberId == null) {
             return facts;
         }
-        return facts.stream().filter(fact -> Objects.equals(fact.memberId(), memberId)).toList();
+        return facts.stream()
+                .filter(fact -> Objects.equals(fact.memberId(), memberId))
+                .toList();
     }
 
     private static <T> List<T> concat(List<T> first, List<T> second) {

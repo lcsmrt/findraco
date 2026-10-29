@@ -6,8 +6,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
@@ -24,6 +22,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Drives the real security filter chain + {@link PlanContextArgumentResolver} +
@@ -62,11 +62,14 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @Test
     void readAllowedForEveryRoleRegardlessOfRowOwnership() throws Exception {
         PlanCast cast = castPlan();
-        FinancialTransaction tx =
-                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("50.00"), FinancialTransactionType.DEBIT);
+        FinancialTransaction tx = fixtures.aTransaction(
+                cast.plan(), cast.owner(), new BigDecimal("50.00"), FinancialTransactionType.DEBIT);
 
         for (User member : List.of(cast.owner(), cast.editor(), cast.contributor(), cast.viewer())) {
-            mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), tx.getId())
+            mockMvc.perform(get(
+                                    ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                    cast.plan().getId(),
+                                    tx.getId())
                             .with(testAuthHelper.asUser(member)))
                     .andExpect(status().isOk());
         }
@@ -75,10 +78,13 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @Test
     void readDeniedForNonMemberAsNotFoundNotForbidden() throws Exception {
         PlanCast cast = castPlan();
-        FinancialTransaction tx =
-                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("50.00"), FinancialTransactionType.DEBIT);
+        FinancialTransaction tx = fixtures.aTransaction(
+                cast.plan(), cast.owner(), new BigDecimal("50.00"), FinancialTransactionType.DEBIT);
 
-        mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), tx.getId())
+        mockMvc.perform(get(
+                                ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                cast.plan().getId(),
+                                tx.getId())
                         .with(testAuthHelper.asUser(cast.nonMember())))
                 .andExpect(status().isNotFound());
     }
@@ -129,7 +135,10 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             FinancialTransaction own =
                     fixtures.aTransaction(cast.plan(), member, new BigDecimal("40.00"), FinancialTransactionType.DEBIT);
 
-            mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), own.getId())
+            mockMvc.perform(put(
+                                    ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                    cast.plan().getId(),
+                                    own.getId())
                             .with(testAuthHelper.asUser(member))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(transactionBody("41.00", "Updated by owner of the row")))
@@ -142,10 +151,13 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
         // A VIEWER never legitimately creates a row, but PlanAuthorization#requireCanModifyTransaction
         // checks the role gate before row-ownership, so even a row a viewer happens to own is denied.
         PlanCast cast = castPlan();
-        FinancialTransaction ownedByViewer =
-                fixtures.aTransaction(cast.plan(), cast.viewer(), new BigDecimal("40.00"), FinancialTransactionType.DEBIT);
+        FinancialTransaction ownedByViewer = fixtures.aTransaction(
+                cast.plan(), cast.viewer(), new BigDecimal("40.00"), FinancialTransactionType.DEBIT);
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), ownedByViewer.getId())
+        mockMvc.perform(put(
+                                ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                cast.plan().getId(),
+                                ownedByViewer.getId())
                         .with(testAuthHelper.asUser(cast.viewer()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionBody("999.00", "Should not persist")))
@@ -162,7 +174,10 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             FinancialTransaction ownedByContributor = fixtures.aTransaction(
                     cast.plan(), cast.contributor(), new BigDecimal("60.00"), FinancialTransactionType.DEBIT);
 
-            mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), ownedByContributor.getId())
+            mockMvc.perform(put(
+                                    ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                    cast.plan().getId(),
+                                    ownedByContributor.getId())
                             .with(testAuthHelper.asUser(member))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(transactionBody("61.00", "Edited by non-owner-of-the-row")))
@@ -173,10 +188,13 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @Test
     void editOthersDeniedForContributorAndFailsClosedWithNoPartialWrite() throws Exception {
         PlanCast cast = castPlan();
-        FinancialTransaction ownedByOwner =
-                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("70.00"), FinancialTransactionType.DEBIT);
+        FinancialTransaction ownedByOwner = fixtures.aTransaction(
+                cast.plan(), cast.owner(), new BigDecimal("70.00"), FinancialTransactionType.DEBIT);
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), ownedByOwner.getId())
+        mockMvc.perform(put(
+                                ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                cast.plan().getId(),
+                                ownedByOwner.getId())
                         .with(testAuthHelper.asUser(cast.contributor()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionBody("999.00", "Should not persist")))
@@ -184,7 +202,10 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
 
         assertUnchanged(ownedByOwner.getId(), "70.00");
 
-        MvcResult getResult = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), ownedByOwner.getId())
+        MvcResult getResult = mockMvc.perform(get(
+                                ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                cast.plan().getId(),
+                                ownedByOwner.getId())
                         .with(testAuthHelper.asUser(cast.owner())))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -196,10 +217,13 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @Test
     void editOthersDeniedForViewer() throws Exception {
         PlanCast cast = castPlan();
-        FinancialTransaction ownedByOwner =
-                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("70.00"), FinancialTransactionType.DEBIT);
+        FinancialTransaction ownedByOwner = fixtures.aTransaction(
+                cast.plan(), cast.owner(), new BigDecimal("70.00"), FinancialTransactionType.DEBIT);
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), ownedByOwner.getId())
+        mockMvc.perform(put(
+                                ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                cast.plan().getId(),
+                                ownedByOwner.getId())
                         .with(testAuthHelper.asUser(cast.viewer()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionBody("999.00", "Should not persist")))
@@ -211,10 +235,13 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @Test
     void editDeniedForNonMemberAsNotFound() throws Exception {
         PlanCast cast = castPlan();
-        FinancialTransaction tx =
-                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("70.00"), FinancialTransactionType.DEBIT);
+        FinancialTransaction tx = fixtures.aTransaction(
+                cast.plan(), cast.owner(), new BigDecimal("70.00"), FinancialTransactionType.DEBIT);
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", cast.plan().getId(), tx.getId())
+        mockMvc.perform(put(
+                                ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                cast.plan().getId(),
+                                tx.getId())
                         .with(testAuthHelper.asUser(cast.nonMember()))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(transactionBody("999.00", "Should not persist")))
@@ -246,12 +273,12 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                     .andExpect(status().isForbidden());
         }
 
-        mockMvc.perform(get(ApiRoutes.PLAN + "/{id}", cast.plan().getId())
-                        .with(testAuthHelper.asUser(cast.owner())))
+        mockMvc.perform(get(ApiRoutes.PLAN + "/{id}", cast.plan().getId()).with(testAuthHelper.asUser(cast.owner())))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     JsonNode plan = objectMapper.readTree(result.getResponse().getContentAsString());
-                    assertThat(plan.get("name").asString()).isEqualTo(cast.plan().getName());
+                    assertThat(plan.get("name").asString())
+                            .isEqualTo(cast.plan().getName());
                 });
     }
 
@@ -268,14 +295,19 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
 
     private String transactionBody(String amount, String description) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal(amount),
-                "description", description,
-                "startDate", TODAY.toString()));
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal(amount),
+                "description",
+                description,
+                "startDate",
+                TODAY.toString()));
     }
 
     private void assertUnchanged(Long transactionId, String expectedAmount) {
-        FinancialTransaction reloaded = financialTransactionRepository.findById(transactionId).orElseThrow();
+        FinancialTransaction reloaded =
+                financialTransactionRepository.findById(transactionId).orElseThrow();
         assertThat(reloaded.getAmount()).isEqualByComparingTo(expectedAmount);
         assertThat(reloaded.getDescription()).isEqualTo("Test transaction");
     }

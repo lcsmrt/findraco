@@ -4,7 +4,6 @@ import com.lcs.findraco.models.InvitationType;
 import com.lcs.findraco.models.PlanRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-
 import java.time.LocalDateTime;
 
 public class InvitationRequestDto {

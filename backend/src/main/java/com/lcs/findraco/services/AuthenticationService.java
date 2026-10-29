@@ -24,8 +24,7 @@ public class AuthenticationService {
     @Transactional
     public IssuedSession authenticate(LoginRequestDto dto) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword())
-        );
+                new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
 
         return sessionService.open(((CustomUserDetails) authentication.getPrincipal()).getUser());
     }

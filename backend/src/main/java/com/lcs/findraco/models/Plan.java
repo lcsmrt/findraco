@@ -1,7 +1,6 @@
 package com.lcs.findraco.models;
 
 import jakarta.persistence.*;
-
 import java.time.LocalDateTime;
 
 @Entity
@@ -24,8 +23,7 @@ public class Plan {
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    public Plan() {
-    }
+    public Plan() {}
 
     public Long getId() {
         return id;

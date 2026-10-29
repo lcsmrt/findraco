@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransaction;
 import com.lcs.findraco.models.FinancialTransactionCategory;
 import com.lcs.findraco.models.FinancialTransactionType;
@@ -30,6 +28,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of category delete with reassignment (spec P1 "Two-level subcategories"
@@ -70,7 +70,8 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        FinancialTransactionCategory delivery =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
         FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
 
         deleteCategory(plan, owner, food.getId(), null).andExpect(status().isConflict());
@@ -87,8 +88,10 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
         FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        FinancialTransaction direct1 = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
-        FinancialTransaction direct2 = fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, source);
+        FinancialTransaction direct1 =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        FinancialTransaction direct2 =
+                fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, source);
         FinancialTransaction withItem = transactionWithItem(plan, owner, other, source);
         RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
 
@@ -96,7 +99,10 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
                 .andExpect(status().isConflict())
                 .andReturn();
 
-        String message = objectMapper.readTree(result.getResponse().getContentAsString()).get("message").asString();
+        String message = objectMapper
+                .readTree(result.getResponse().getContentAsString())
+                .get("message")
+                .asString();
         assertThat(message).contains("2 transaction(s)", "1 item(s)", "1 recurrence definition(s)");
 
         assertThat(categoryRepository.findById(source.getId())).isPresent();
@@ -112,10 +118,12 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void reassignMovesTransactionsItemsAndRecurrenceDefinitionsThenDeletesWith204() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food - Delivery");
+        FinancialTransactionCategory source =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food - Delivery");
         FinancialTransactionCategory target = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery");
         FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        FinancialTransaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        FinancialTransaction direct =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
         FinancialTransaction withItem = transactionWithItem(plan, owner, other, source);
         RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
 
@@ -135,12 +143,14 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        FinancialTransaction direct =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
 
         deleteCategory(plan, owner, source.getId(), source.getId()).andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findById(source.getId())).isPresent();
-        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId())).isEqualTo(source.getId());
+        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId()))
+                .isEqualTo(source.getId());
     }
 
     // AC 16: target is one of its children
@@ -149,13 +159,16 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
-        FinancialTransaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, food);
+        FinancialTransactionCategory delivery =
+                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        FinancialTransaction direct =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, food);
 
         deleteCategory(plan, owner, food.getId(), delivery.getId()).andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findById(food.getId())).isPresent();
-        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId())).isEqualTo(food.getId());
+        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId()))
+                .isEqualTo(food.getId());
     }
 
     // AC 16: target of a different type
@@ -165,12 +178,14 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
         FinancialTransactionCategory salary = fixtures.aCategory(plan, FinancialTransactionType.CREDIT, "Salary");
-        FinancialTransaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        FinancialTransaction direct =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
 
         deleteCategory(plan, owner, source.getId(), salary.getId()).andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findById(source.getId())).isPresent();
-        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId())).isEqualTo(source.getId());
+        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId()))
+                .isEqualTo(source.getId());
     }
 
     // Target not in the plan → 404 (privacy rule).
@@ -181,13 +196,16 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         User otherOwner = fixtures.aUser();
         Plan otherPlan = fixtures.aPlan(otherOwner);
         FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransactionCategory foreign = fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        FinancialTransactionCategory foreign =
+                fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Groceries");
+        FinancialTransaction direct =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
 
         deleteCategory(plan, owner, source.getId(), foreign.getId()).andExpect(status().isNotFound());
 
         assertThat(categoryRepository.findById(source.getId())).isPresent();
-        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId())).isEqualTo(source.getId());
+        assertThat(transactionCategoryId(new JdbcTemplate(dataSource), direct.getId()))
+                .isEqualTo(source.getId());
     }
 
     /**
@@ -201,7 +219,8 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
         FinancialTransactionCategory target = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
         FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        FinancialTransaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        FinancialTransaction direct =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
         FinancialTransaction withItem = transactionWithItem(plan, owner, other, source);
         RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
 
@@ -269,7 +288,8 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User otherOwner = fixtures.aUser();
         Plan otherPlan = fixtures.aPlan(otherOwner);
-        FinancialTransactionCategory foreign = fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Groceries");
+        FinancialTransactionCategory foreign =
+                fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Groceries");
         fixtures.aTransaction(otherPlan, otherOwner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, foreign);
 
         fetchUsage(plan, owner, foreign.getId()).andExpect(status().isNotFound());
@@ -294,9 +314,11 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     }
 
     /** A R$ 50 transaction in {@code transactionCategory} with one R$ 20 item in {@code itemCategory}. */
-    private FinancialTransaction transactionWithItem(Plan plan, User owner,
-                                                     FinancialTransactionCategory transactionCategory,
-                                                     FinancialTransactionCategory itemCategory) {
+    private FinancialTransaction transactionWithItem(
+            Plan plan,
+            User owner,
+            FinancialTransactionCategory transactionCategory,
+            FinancialTransactionCategory itemCategory) {
         FinancialTransaction transaction = fixtures.aTransaction(
                 plan, owner, new BigDecimal("50.00"), FinancialTransactionType.DEBIT, transactionCategory);
         TransactionItem item = new TransactionItem();
@@ -324,14 +346,17 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     }
 
     private static Long transactionCategoryId(JdbcTemplate jdbc, Long transactionId) {
-        return jdbc.queryForObject("SELECT category_id FROM financial_transactions WHERE id = ?", Long.class, transactionId);
+        return jdbc.queryForObject(
+                "SELECT category_id FROM financial_transactions WHERE id = ?", Long.class, transactionId);
     }
 
     private static Long itemCategoryId(JdbcTemplate jdbc, Long transactionId) {
-        return jdbc.queryForObject("SELECT category_id FROM transaction_items WHERE transaction_id = ?", Long.class, transactionId);
+        return jdbc.queryForObject(
+                "SELECT category_id FROM transaction_items WHERE transaction_id = ?", Long.class, transactionId);
     }
 
     private static Long definitionCategoryId(JdbcTemplate jdbc, Long definitionId) {
-        return jdbc.queryForObject("SELECT category_id FROM recurrence_definitions WHERE id = ?", Long.class, definitionId);
+        return jdbc.queryForObject(
+                "SELECT category_id FROM recurrence_definitions WHERE id = ?", Long.class, definitionId);
     }
 }

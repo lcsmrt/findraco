@@ -12,6 +12,5 @@ public class ApiRoutes {
     public static final String FINANCIAL_TRANSACTION_CATEGORY = PLAN + "/{planId}/financial-transaction-category";
     public static final String DASHBOARD = PLAN + "/{planId}/dashboard";
 
-    private ApiRoutes() {
-    }
+    private ApiRoutes() {}
 }

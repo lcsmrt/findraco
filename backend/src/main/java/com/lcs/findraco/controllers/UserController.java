@@ -1,11 +1,11 @@
 package com.lcs.findraco.controllers;
 
-import com.lcs.findraco.utils.ApiRoutes;
 import com.lcs.findraco.dtos.request.UserRequestDto;
 import com.lcs.findraco.dtos.response.UserResponseDto;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.security.CurrentUser;
 import com.lcs.findraco.services.UserService;
+import com.lcs.findraco.utils.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,8 +42,7 @@ public class UserController {
     @Operation(summary = "Updates the authenticated user")
     @PutMapping
     public ResponseEntity<UserResponseDto> updateUser(
-            @RequestBody @Valid UserRequestDto dto,
-            @CurrentUser User loggedUser) {
+            @RequestBody @Valid UserRequestDto dto, @CurrentUser User loggedUser) {
         User updatedUser = userService.update(loggedUser, dto);
         return ResponseEntity.ok(new UserResponseDto(updatedUser));
     }

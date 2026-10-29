@@ -8,11 +8,10 @@ import com.lcs.findraco.models.User;
 import com.lcs.findraco.repositories.PlanMembershipRepository;
 import com.lcs.findraco.repositories.PlanRepository;
 import com.lcs.findraco.security.PlanAuthorization;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDateTime;
 import java.util.List;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class PlanService {
@@ -24,8 +23,7 @@ public class PlanService {
     public PlanService(
             PlanRepository planRepository,
             PlanMembershipRepository membershipRepository,
-            PlanAuthorization planAuthorization
-    ) {
+            PlanAuthorization planAuthorization) {
         this.planRepository = planRepository;
         this.membershipRepository = membershipRepository;
         this.planAuthorization = planAuthorization;
@@ -62,14 +60,14 @@ public class PlanService {
 
     @Transactional(readOnly = true)
     public PlanMembership getMembership(Long planId, User user) {
-        Plan plan = planRepository.findById(planId)
-                .orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
+        Plan plan = planRepository.findById(planId).orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
 
         if (plan.getDeletedAt() != null) {
             throw new PlanExceptions.PlanNotFoundException(planId);
         }
 
-        return membershipRepository.findByPlanAndUser(plan, user)
+        return membershipRepository
+                .findByPlanAndUser(plan, user)
                 .orElseThrow(() -> new PlanExceptions.NotAMemberException(planId));
     }
 
@@ -103,7 +101,8 @@ public class PlanService {
         planAuthorization.requireOwner(requesterMembership.getRole());
 
         Plan plan = requesterMembership.getPlan();
-        PlanMembership targetMembership = membershipRepository.findByPlanAndUser_Id(plan, targetUserId)
+        PlanMembership targetMembership = membershipRepository
+                .findByPlanAndUser_Id(plan, targetUserId)
                 .orElseThrow(() -> new PlanExceptions.MemberNotFoundException(planId, targetUserId));
 
         if (targetMembership.getRole() == PlanRole.OWNER) {
@@ -143,7 +142,8 @@ public class PlanService {
         planAuthorization.requireOwner(requesterMembership.getRole());
 
         Plan plan = requesterMembership.getPlan();
-        PlanMembership targetMembership = membershipRepository.findByPlanAndUser_Id(plan, targetUserId)
+        PlanMembership targetMembership = membershipRepository
+                .findByPlanAndUser_Id(plan, targetUserId)
                 .orElseThrow(() -> new PlanExceptions.MemberNotFoundException(planId, targetUserId));
 
         if (targetMembership.getRole() == PlanRole.OWNER) {
@@ -175,7 +175,8 @@ public class PlanService {
         planAuthorization.requireOwner(requesterMembership.getRole());
 
         Plan plan = requesterMembership.getPlan();
-        PlanMembership newOwnerMembership = membershipRepository.findByPlanAndUser_Id(plan, targetUserId)
+        PlanMembership newOwnerMembership = membershipRepository
+                .findByPlanAndUser_Id(plan, targetUserId)
                 .orElseThrow(() -> new PlanExceptions.MemberNotFoundException(planId, targetUserId));
 
         PlanRole demotedRole = previousOwnerRole != null ? previousOwnerRole : PlanRole.EDITOR;

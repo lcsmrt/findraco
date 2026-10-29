@@ -5,8 +5,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
 import com.lcs.findraco.models.FinancialTransactionType;
 import com.lcs.findraco.models.Plan;
 import com.lcs.findraco.models.PlanRole;
@@ -21,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 /**
  * Through-the-API proof of the SPLIT-01 invariant: a split transaction's persisted
@@ -61,15 +61,17 @@ class SplitInvariantIT extends AbstractIntegrationTest {
         assertThat(sumParticipantShares(created)).isEqualByComparingTo("100.00");
 
         long transactionId = created.get("id").asLong();
-        MvcResult getResult = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
-                        .with(testAuthHelper.asUser(owner)))
+        MvcResult getResult = mockMvc.perform(
+                        get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+                                .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isOk())
                 .andReturn();
 
         JsonNode persisted = objectMapper.readTree(getResult.getResponse().getContentAsString());
 
         BigDecimal sumFromPersistedFetch = sumParticipantShares(persisted);
-        assertThat(sumFromPersistedFetch).isEqualByComparingTo(persisted.get("amount").decimalValue());
+        assertThat(sumFromPersistedFetch)
+                .isEqualByComparingTo(persisted.get("amount").decimalValue());
         assertThat(sumFromPersistedFetch).isEqualByComparingTo("100.00");
     }
 
@@ -82,7 +84,8 @@ class SplitInvariantIT extends AbstractIntegrationTest {
 
         fixtures.aTransaction(plan, owner, new BigDecimal("100.00"), FinancialTransactionType.DEBIT);
 
-        BigDecimal totalExpensesAfterNonSplit = fetchDashboard(plan, owner, null).get("totalExpenses").decimalValue();
+        BigDecimal totalExpensesAfterNonSplit =
+                fetchDashboard(plan, owner, null).get("totalExpenses").decimalValue();
         assertThat(totalExpensesAfterNonSplit).isEqualByComparingTo("100.00");
 
         String requestBody = splitTransactionRequestBody("150.00", owner, member);
@@ -93,7 +96,8 @@ class SplitInvariantIT extends AbstractIntegrationTest {
                         .content(requestBody))
                 .andExpect(status().isCreated());
 
-        BigDecimal totalExpensesAfterSplitAdded = fetchDashboard(plan, owner, null).get("totalExpenses").decimalValue();
+        BigDecimal totalExpensesAfterSplitAdded =
+                fetchDashboard(plan, owner, null).get("totalExpenses").decimalValue();
 
         assertThat(totalExpensesAfterSplitAdded)
                 .isEqualByComparingTo(totalExpensesAfterNonSplit.add(new BigDecimal("150.00")));
@@ -115,9 +119,12 @@ class SplitInvariantIT extends AbstractIntegrationTest {
                         .content(requestBody))
                 .andExpect(status().isCreated());
 
-        BigDecimal unfilteredTotal = fetchDashboard(plan, owner, null).get("totalExpenses").decimalValue();
-        BigDecimal ownerOnlyTotal = fetchDashboard(plan, owner, owner.getId()).get("totalExpenses").decimalValue();
-        BigDecimal memberOnlyTotal = fetchDashboard(plan, owner, member.getId()).get("totalExpenses").decimalValue();
+        BigDecimal unfilteredTotal =
+                fetchDashboard(plan, owner, null).get("totalExpenses").decimalValue();
+        BigDecimal ownerOnlyTotal =
+                fetchDashboard(plan, owner, owner.getId()).get("totalExpenses").decimalValue();
+        BigDecimal memberOnlyTotal =
+                fetchDashboard(plan, owner, member.getId()).get("totalExpenses").decimalValue();
 
         assertThat(unfilteredTotal).isEqualByComparingTo("100.00");
         assertThat(ownerOnlyTotal).isEqualByComparingTo("50.00");
@@ -127,15 +134,18 @@ class SplitInvariantIT extends AbstractIntegrationTest {
 
     private String splitTransactionRequestBody(String amount, User owner, User member) throws Exception {
         return objectMapper.writeValueAsString(Map.of(
-                "type", "DEBIT",
-                "amount", new BigDecimal(amount),
-                "description", "Split expense",
-                "startDate", TODAY.toString(),
-                "splitMode", "EQUAL",
-                "participants", new Object[] {
-                        Map.of("memberId", owner.getId()),
-                        Map.of("memberId", member.getId())
-                }));
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal(amount),
+                "description",
+                "Split expense",
+                "startDate",
+                TODAY.toString(),
+                "splitMode",
+                "EQUAL",
+                "participants",
+                new Object[] {Map.of("memberId", owner.getId()), Map.of("memberId", member.getId())}));
     }
 
     private static BigDecimal sumParticipantShares(JsonNode transactionNode) {
@@ -155,9 +165,8 @@ class SplitInvariantIT extends AbstractIntegrationTest {
             requestBuilder = requestBuilder.param("memberId", memberIdFilter.toString());
         }
 
-        MvcResult result = mockMvc.perform(requestBuilder)
-                .andExpect(status().isOk())
-                .andReturn();
+        MvcResult result =
+                mockMvc.perform(requestBuilder).andExpect(status().isOk()).andReturn();
 
         return objectMapper.readTree(result.getResponse().getContentAsString());
     }

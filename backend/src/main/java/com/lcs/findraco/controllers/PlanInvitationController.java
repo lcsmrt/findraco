@@ -14,11 +14,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @Tag(name = "Invitations")
 @RestController
@@ -33,10 +32,9 @@ public class PlanInvitationController {
     @Operation(summary = "Creates an invitation (email or link) for the plan; owner only")
     @PostMapping(ApiRoutes.PLAN_INVITATION)
     public ResponseEntity<InvitationResponseDto> createInvitation(
-            @RequestBody @Valid InvitationRequestDto dto,
-            PlanContext ctx) {
-        PlanInvitation invitation = invitationService.createInvite(
-                ctx, dto.getRole(), dto.getType(), dto.getEmail(), dto.getExpiresAt());
+            @RequestBody @Valid InvitationRequestDto dto, PlanContext ctx) {
+        PlanInvitation invitation =
+                invitationService.createInvite(ctx, dto.getRole(), dto.getType(), dto.getEmail(), dto.getExpiresAt());
         return ResponseEntity.status(HttpStatus.CREATED).body(new InvitationResponseDto(invitation));
     }
 
@@ -66,8 +64,7 @@ public class PlanInvitationController {
     @Operation(summary = "Accepts an invitation by token for the authenticated user")
     @PostMapping(ApiRoutes.INVITATION + "/{token}/accept")
     public ResponseEntity<AcceptInvitationResponseDto> acceptInvitation(
-            @PathVariable String token,
-            @CurrentUser User actor) {
+            @PathVariable String token, @CurrentUser User actor) {
         PlanInvitationService.AcceptResult result = invitationService.accept(token, actor);
         HttpStatus status = result.created() ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(new AcceptInvitationResponseDto(result.membership()));
