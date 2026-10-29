@@ -3,6 +3,7 @@ package com.lcs.findraco.auth.config;
 import com.lcs.findraco.auth.controller.AuthRoutes;
 import com.lcs.findraco.shared.error.JsonAuthenticationEntryPoint;
 import com.lcs.findraco.shared.security.PublicEndpoints;
+import com.lcs.findraco.shared.web.RequestIdFilter;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -93,7 +94,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(corsProperties.allowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
+        config.setAllowedHeaders(List.of("Authorization", "Content-Type", RequestIdFilter.HEADER));
+        config.setExposedHeaders(List.of(RequestIdFilter.HEADER));
         config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource src = new UrlBasedCorsConfigurationSource();
