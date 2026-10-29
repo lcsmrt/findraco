@@ -963,9 +963,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests per rule
-- [ ] Edit and create answer the same `type` (IT)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Unit tests per rule
+- [x] Edit and create answer the same `type` (IT)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick

@@ -10,12 +10,12 @@ import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.ItemDraft;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
-import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.SeriesDraft;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
+import com.lcs.findraco.transaction.model.SeriesPattern;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
-import com.lcs.findraco.transaction.model.SplitResolver;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
@@ -48,12 +48,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.springframework.data.domain.Page;
@@ -69,10 +66,8 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryService categoryService;
-    private final DateUtils dateUtils;
     private final RecurringTransactionGenerator recurringTransactionGenerator;
     private final PlanAuthorization planAuthorization;
-    private final SplitResolver splitResolver = new SplitResolver();
     private final PlanService planService;
     private final UserService userService;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
@@ -82,7 +77,6 @@ public class TransactionService {
     public TransactionService(
             TransactionRepository transactionRepository,
             CategoryService categoryService,
-            DateUtils dateUtils,
             RecurringTransactionGenerator recurringTransactionGenerator,
             PlanAuthorization planAuthorization,
             PlanService planService,
@@ -92,7 +86,6 @@ public class TransactionService {
             EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
         this.categoryService = categoryService;
-        this.dateUtils = dateUtils;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
         this.planAuthorization = planAuthorization;
         this.planService = planService;
@@ -266,64 +259,27 @@ public class TransactionService {
     public TransactionSeriesResponse createSeries(CreateSeriesRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
-        if (dto.mode() == RecurrenceMode.INSTALLMENT) {
-            if (dto.parcelsNumber() == null) {
-                throw new TransactionExceptions.SeriesParcelsRequiredException();
-            }
-            if (dto.currentParcel() != null && (dto.currentParcel() < 1 || dto.currentParcel() > dto.parcelsNumber())) {
-                throw new TransactionExceptions.SeriesCurrentParcelOutOfRangeException();
-            }
-        } else if (dto.mode() == RecurrenceMode.RECURRING) {
-            if (dto.interval() == null) {
-                throw new TransactionExceptions.SeriesIntervalRequiredException();
-            }
-            // endDate is optional: null means open-ended (materialized on a rolling horizon, see
-            // RecurringTransactionGenerator.OPEN_ENDED_HORIZON_MONTHS / generatedThrough below).
-            dateUtils.checkIfStartDateIsBeforeEndDate(dto.startDate(), dto.endDate());
-        }
-
-        Category category = dto.categoryId() != null ? categoryService.findById(dto.categoryId(), ctx) : null;
-
-        if (category != null && category.getType() != dto.type()) {
-            throw new TransactionExceptions.CategoryTypeMismatchException();
-        }
-
         RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
-        List<Share> resolvedShares = splitResolver.split(dto.amount(), split.mode(), split.shares());
-
-        RecurrenceDefinition definition = new RecurrenceDefinition();
-        definition.setPlan(plan(ctx));
-        definition.setCreatedBy(user(ctx));
-        definition.setCategory(category);
-        definition.setSeriesId(UUID.randomUUID().toString());
-        definition.setType(dto.type());
-        definition.setAmount(dto.amount());
-        definition.setDescription(dto.description());
-        definition.setMode(dto.mode());
-        definition.setRecurrenceInterval(dto.interval());
-        definition.setParcelsNumber(dto.parcelsNumber());
-        definition.setFirstParcel(
-                dto.mode() == RecurrenceMode.INSTALLMENT
-                        ? (dto.currentParcel() != null ? dto.currentParcel() : 1)
-                        : null);
-        definition.setStartDate(dto.startDate());
-        definition.setEndDate(dto.endDate());
-        definition.setSplitMode(split.mode());
-
-        for (Share share : resolvedShares) {
-            RecurrenceDefinitionParticipant participant = new RecurrenceDefinitionParticipant();
-            participant.setDefinition(definition);
-            participant.setMember(share.member());
-            participant.setShareAmount(share.amount());
-            definition.getParticipants().add(participant);
-        }
-
-        recurrenceDefinitionRepository.save(definition);
+        RecurrenceDefinition definition =
+                recurrenceDefinitionRepository.save(RecurrenceDefinition.create(new SeriesDraft(
+                        plan(ctx),
+                        user(ctx),
+                        category(dto.categoryId(), ctx),
+                        dto.type(),
+                        dto.amount(),
+                        dto.description(),
+                        dto.mode(),
+                        dto.interval(),
+                        dto.parcelsNumber(),
+                        dto.currentParcel(),
+                        dto.startDate(),
+                        dto.endDate(),
+                        split.mode(),
+                        split.shares())));
 
         List<Transaction> occurrences = recurringTransactionGenerator.generate(dto, definition, split.shares());
         if (dto.mode() == RecurrenceMode.RECURRING && !occurrences.isEmpty()) {
-            definition.setGeneratedThrough(
-                    occurrences.get(occurrences.size() - 1).getStartDate());
+            definition.markGeneratedThrough(occurrences.getLast().getStartDate());
         }
 
         return TransactionSeriesResponse.from(transactionRepository.saveAll(occurrences));
@@ -387,16 +343,11 @@ public class TransactionService {
         // later regeneration won't recreate the deleted tail. THIS_ONE leaves a gap the exception-less
         // model can't represent, so the definition is untouched (matching edit THIS_ONE).
         if (scope == SeriesEditScope.THIS_AND_FOLLOWING && definition != null) {
-            if (definition.getMode() == RecurrenceMode.INSTALLMENT) {
-                int firstParcel = definition.getFirstParcel() != null ? definition.getFirstParcel() : 1;
-                definition.setParcelsNumber(firstParcel + remaining.size() - 1);
-            } else {
-                LocalDate newEndDate = remaining.stream()
-                        .map(Transaction::getStartDate)
-                        .max(LocalDate::compareTo)
-                        .orElse(definition.getEndDate());
-                definition.setEndDate(newEndDate);
-            }
+            LocalDate lastDate = remaining.stream()
+                    .map(Transaction::getStartDate)
+                    .max(LocalDate::compareTo)
+                    .orElseThrow();
+            definition.shortenTo(remaining.size(), lastDate);
             recurrenceDefinitionRepository.save(definition);
         }
     }
@@ -429,11 +380,7 @@ public class TransactionService {
 
         List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan(ctx), seriesId);
 
-        Category category = dto.categoryId() != null ? categoryService.findById(dto.categoryId(), ctx) : null;
-
-        if (category != null && category.getType() != dto.type()) {
-            throw new TransactionExceptions.CategoryTypeMismatchException();
-        }
+        Category category = category(dto.categoryId(), ctx);
 
         if (dto.parcelsNumber() != null
                 && !Objects.equals(dto.parcelsNumber(), definition.getParcelsNumber())
@@ -487,16 +434,14 @@ public class TransactionService {
             return TransactionSeriesResponse.from(List.of(pivot));
         }
 
-        definition.setAmount(dto.amount());
-        definition.setDescription(dto.description());
-        definition.setCategory(category);
-        definition.setSplitMode(split.mode());
-        definition.setParcelsNumber(dto.parcelsNumber());
-        // Full-replace (matches the transaction PUT contract): a null endDate here means "make this
-        // RECURRING series open-ended," not "leave the bound unchanged" (P3, RMV2-09).
-        definition.setEndDate(dto.endDate());
-
-        reconcileDefinitionParticipants(definition, splitResolver.split(dto.amount(), split.mode(), split.shares()));
+        definition.editPattern(new SeriesPattern(
+                category,
+                dto.amount(),
+                dto.description(),
+                dto.parcelsNumber(),
+                dto.endDate(),
+                split.mode(),
+                split.shares()));
 
         LocalDate pivotDate = dto.scope() == SeriesEditScope.ALL ? null : pivot.getStartDate();
 
@@ -522,40 +467,12 @@ public class TransactionService {
                             .map(Transaction::getStartDate)
                             .max(LocalDate::compareTo)
                             .orElse(definition.getGeneratedThrough());
-            definition.setGeneratedThrough(generatedThrough);
+            definition.markGeneratedThrough(generatedThrough);
         }
 
         recurrenceDefinitionRepository.save(definition);
 
         return TransactionSeriesResponse.from(combined);
-    }
-
-    private void reconcileDefinitionParticipants(RecurrenceDefinition definition, List<Share> shares) {
-        Map<Long, RecurrenceDefinitionParticipant> existingByMemberId = new LinkedHashMap<>();
-        for (RecurrenceDefinitionParticipant participant : definition.getParticipants()) {
-            existingByMemberId.put(participant.getMember().getId(), participant);
-        }
-
-        Set<Long> keptMemberIds = new HashSet<>();
-        for (Share share : shares) {
-            keptMemberIds.add(share.member().getId());
-            RecurrenceDefinitionParticipant existing =
-                    existingByMemberId.get(share.member().getId());
-            if (existing != null) {
-                existing.setShareAmount(share.amount());
-            } else {
-                RecurrenceDefinitionParticipant participant = new RecurrenceDefinitionParticipant();
-                participant.setDefinition(definition);
-                participant.setMember(share.member());
-                participant.setShareAmount(share.amount());
-                definition.getParticipants().add(participant);
-            }
-        }
-
-        definition
-                .getParticipants()
-                .removeIf(participant ->
-                        !keptMemberIds.contains(participant.getMember().getId()));
     }
 
     @Transactional

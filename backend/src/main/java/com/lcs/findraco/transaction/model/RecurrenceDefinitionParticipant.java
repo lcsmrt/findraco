@@ -33,7 +33,17 @@ public class RecurrenceDefinitionParticipant {
     @Column(name = "share_amount", nullable = false)
     private BigDecimal shareAmount;
 
-    public RecurrenceDefinitionParticipant() {}
+    protected RecurrenceDefinitionParticipant() {}
+
+    RecurrenceDefinitionParticipant(RecurrenceDefinition definition, User member, BigDecimal shareAmount) {
+        this.definition = definition;
+        this.member = member;
+        this.shareAmount = shareAmount;
+    }
+
+    void changeShare(BigDecimal shareAmount) {
+        this.shareAmount = shareAmount;
+    }
 
     public Long getId() {
         return id;
@@ -43,23 +53,11 @@ public class RecurrenceDefinitionParticipant {
         return definition;
     }
 
-    public void setDefinition(RecurrenceDefinition definition) {
-        this.definition = definition;
-    }
-
     public User getMember() {
         return member;
     }
 
-    public void setMember(User member) {
-        this.member = member;
-    }
-
     public BigDecimal getShareAmount() {
         return shareAmount;
-    }
-
-    public void setShareAmount(BigDecimal shareAmount) {
-        this.shareAmount = shareAmount;
     }
 }

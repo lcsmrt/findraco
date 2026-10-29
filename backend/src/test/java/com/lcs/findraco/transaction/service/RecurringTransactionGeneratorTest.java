@@ -10,6 +10,7 @@ import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.SeriesDraft;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
@@ -37,7 +38,6 @@ class RecurringTransactionGeneratorTest {
     private final Plan plan = new Plan();
     private final BigDecimal amount = new BigDecimal("300.00");
     private final List<Share> selfShares = List.of(new Share(user, amount));
-    private static final String SERIES_ID = "test-series";
 
     private static User userWithId(Long id) {
         User u = new User();
@@ -62,7 +62,8 @@ class RecurringTransactionGeneratorTest {
         when(dto.currentParcel()).thenReturn(null);
         when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 15));
 
-        List<Transaction> result = generator.generate(dto, series(dto), selfShares);
+        RecurrenceDefinition series = series(dto);
+        List<Transaction> result = generator.generate(dto, series, selfShares);
 
         assertThat(result).hasSize(12);
 
@@ -76,7 +77,7 @@ class RecurringTransactionGeneratorTest {
         assertThat(result).allSatisfy(tx -> {
             assertThat(tx.getAmount()).isEqualTo(amount);
             assertThat(tx.getParcelsNumber()).isEqualTo(12);
-            assertThat(tx.getSeriesId()).isEqualTo(SERIES_ID);
+            assertThat(tx.getSeriesId()).isEqualTo(series.getSeriesId());
             assertThat(tx.getCreatedBy()).isSameAs(user);
             assertThat(tx.getType()).isEqualTo(TransactionType.DEBIT);
         });
@@ -173,7 +174,8 @@ class RecurringTransactionGeneratorTest {
         when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 1));
         when(dto.endDate()).thenReturn(LocalDate.of(2026, 12, 1));
 
-        List<Transaction> result = generator.generate(dto, series(dto), selfShares);
+        RecurrenceDefinition series = series(dto);
+        List<Transaction> result = generator.generate(dto, series, selfShares);
 
         assertThat(result).hasSize(12);
         assertThat(result.get(0).getStartDate()).isEqualTo(LocalDate.of(2026, 1, 1));
@@ -183,7 +185,7 @@ class RecurringTransactionGeneratorTest {
             assertThat(tx.getDescription()).isEqualTo("Gym membership");
             assertThat(tx.getParcelsNumber()).isNull();
             assertThat(tx.getEndDate()).isNull();
-            assertThat(tx.getSeriesId()).isEqualTo(SERIES_ID);
+            assertThat(tx.getSeriesId()).isEqualTo(series.getSeriesId());
         });
     }
 
@@ -322,7 +324,8 @@ class RecurringTransactionGeneratorTest {
         when(dto.startDate()).thenReturn(LocalDate.of(2026, 7, 24));
         when(dto.endDate()).thenReturn(null);
 
-        List<Transaction> result = generator.generate(dto, series(dto), selfShares);
+        RecurrenceDefinition series = series(dto);
+        List<Transaction> result = generator.generate(dto, series, selfShares);
 
         // "today" is the fixed clock (2026-07-24); horizon = today + 12 months = 2027-07-24, inclusive.
         assertThat(result).hasSize(13);
@@ -331,7 +334,7 @@ class RecurringTransactionGeneratorTest {
         assertThat(result).allSatisfy(tx -> {
             assertThat(tx.getEndDate()).isNull();
             assertThat(tx.getParcelsNumber()).isNull();
-            assertThat(tx.getSeriesId()).isEqualTo(SERIES_ID);
+            assertThat(tx.getSeriesId()).isEqualTo(series.getSeriesId());
         });
     }
 
@@ -425,25 +428,28 @@ class RecurringTransactionGeneratorTest {
 
     /** The series the occurrences belong to, saved before generation as createSeries does. */
     private RecurrenceDefinition series(CreateSeriesRequest dto) {
-        RecurrenceDefinition def = openEndedDefinition(dto.startDate());
-        def.setType(dto.type());
-        return def;
+        return definition(dto.type(), dto.startDate());
     }
 
     private RecurrenceDefinition openEndedDefinition(LocalDate startDate) {
-        RecurrenceDefinition def = new RecurrenceDefinition();
-        def.setPlan(plan);
-        def.setCreatedBy(user);
-        def.setCategory(null);
-        def.setSeriesId(SERIES_ID);
-        def.setType(TransactionType.DEBIT);
-        def.setAmount(amount);
-        def.setDescription("Gym membership");
-        def.setMode(RecurrenceMode.RECURRING);
-        def.setRecurrenceInterval(RecurrenceInterval.MONTHLY);
-        def.setStartDate(startDate);
-        def.setEndDate(null);
-        def.setSplitMode(SplitMode.EQUAL);
-        return def;
+        return definition(TransactionType.DEBIT, startDate);
+    }
+
+    private RecurrenceDefinition definition(TransactionType type, LocalDate startDate) {
+        return RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                user,
+                null,
+                type,
+                amount,
+                "Gym membership",
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                startDate,
+                null,
+                SplitMode.EQUAL,
+                selfShares));
     }
 }

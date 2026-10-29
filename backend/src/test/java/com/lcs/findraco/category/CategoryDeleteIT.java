@@ -15,6 +15,9 @@ import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.transaction.model.ItemDraft;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.SeriesDraft;
+import com.lcs.findraco.transaction.model.Share;
+import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
@@ -23,7 +26,6 @@ import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -320,18 +322,21 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     }
 
     private RecurrenceDefinition recurrenceDefinition(Plan plan, User owner, Category category) {
-        RecurrenceDefinition definition = new RecurrenceDefinition();
-        definition.setPlan(plan);
-        definition.setCreatedBy(owner);
-        definition.setCategory(category);
-        definition.setSeriesId(UUID.randomUUID().toString());
-        definition.setType(TransactionType.DEBIT);
-        definition.setAmount(new BigDecimal("30.00"));
-        definition.setDescription("Installments");
-        definition.setMode(RecurrenceMode.INSTALLMENT);
-        definition.setParcelsNumber(3);
-        definition.setStartDate(LocalDate.now());
-        return recurrenceDefinitionRepository.save(definition);
+        return recurrenceDefinitionRepository.save(RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                owner,
+                category,
+                TransactionType.DEBIT,
+                new BigDecimal("30.00"),
+                "Installments",
+                RecurrenceMode.INSTALLMENT,
+                null,
+                3,
+                null,
+                LocalDate.now(),
+                null,
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null)))));
     }
 
     private static Long transactionCategoryId(JdbcTemplate jdbc, Long transactionId) {

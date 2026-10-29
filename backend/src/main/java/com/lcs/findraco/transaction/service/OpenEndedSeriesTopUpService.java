@@ -99,7 +99,7 @@ public class OpenEndedSeriesTopUpService {
                 .max(Comparator.naturalOrder())
                 .orElse(definition.getGeneratedThrough());
 
-        definition.setGeneratedThrough(lastGenerated);
+        definition.markGeneratedThrough(lastGenerated);
         recurrenceDefinitionRepository.save(definition);
     }
 }

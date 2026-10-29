@@ -14,6 +14,7 @@ import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
@@ -505,6 +506,53 @@ class SeriesEditIT extends AbstractIntegrationTest {
         mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                         .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void endBeforeStartAnswersTheSameTypeOnCreateAndOnEdit() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = LocalDate.of(2026, 1, 1);
+
+        mockMvc.perform(post(TransactionRoutes.TRANSACTION + "/series", plan.getId())
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                recurringBody("Gym", "50.00", start, start.minusMonths(1)))))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "period-start-after-end"));
+
+        JsonNode created = createSeries(plan, owner, recurringBody("Gym", "50.00", start, start.plusMonths(5)));
+        String seriesId = created.get("seriesId").asString();
+
+        editSeries(
+                plan,
+                owner,
+                seriesId,
+                recurringEditBody("Gym", "50.00", start, start.minusMonths(1), "ALL"),
+                problem(HttpStatus.UNPROCESSABLE_CONTENT, "period-start-after-end"));
+
+        JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
+        assertThat(definition.get("endDate").asString())
+                .isEqualTo(start.plusMonths(5).toString());
+    }
+
+    @Test
+    void editWithACategoryOfTheOtherTypeIsRejected() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        long salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary").getId();
+
+        JsonNode created = createSeries(plan, owner, recurringBody("Gym", "50.00", start, start.plusMonths(5)));
+        Map<String, Object> body = recurringEditBody("Gym", "50.00", start, start.plusMonths(5), "ALL");
+        body.put("categoryId", salary);
+
+        editSeries(
+                plan,
+                owner,
+                created.get("seriesId").asString(),
+                body,
+                problem(HttpStatus.UNPROCESSABLE_CONTENT, "transaction-category-type-mismatch"));
     }
 
     private Map<String, Object> installmentBody(

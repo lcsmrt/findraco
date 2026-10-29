@@ -5,9 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
-import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.SeriesDraft;
+import com.lcs.findraco.transaction.model.SeriesPattern;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
@@ -23,7 +24,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -64,13 +64,14 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         RecurrenceDefinition definition = anOpenEndedDefinition(plan, owner, start, "Gym", new BigDecimal("50.00"));
         seedOccurrences(definition, start, generatedThrough);
-        definition.setGeneratedThrough(generatedThrough);
+        definition.markGeneratedThrough(generatedThrough);
         recurrenceDefinitionRepository.save(definition);
 
         // Simulate the definition having been edited (scope ALL) after the last materialization,
         // before the rolling top-up runs: newly materialized months must reflect this, not the
         // stale amount the seeded occurrences were stamped with.
-        definition.setAmount(new BigDecimal("75.00"));
+        definition.editPattern(new SeriesPattern(
+                null, new BigDecimal("75.00"), "Gym", null, null, SplitMode.EQUAL, List.of(new Share(owner, null))));
         recurrenceDefinitionRepository.save(definition);
 
         topUpService.topUp(plan.getId(), TODAY);
@@ -98,7 +99,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         RecurrenceDefinition definition =
                 anOpenEndedDefinition(plan, owner, start, "Streaming", new BigDecimal("20.00"));
-        definition.setGeneratedThrough(HORIZON_CAP);
+        definition.markGeneratedThrough(HORIZON_CAP);
         recurrenceDefinitionRepository.save(definition);
 
         topUpService.topUp(plan.getId(), TODAY);
@@ -153,7 +154,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         // than blindly regenerating from the stale watermark.
         RecurrenceDefinition reloaded =
                 recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
-        reloaded.setGeneratedThrough(start);
+        reloaded.markGeneratedThrough(start);
         recurrenceDefinitionRepository.save(reloaded);
 
         topUpService.topUp(plan.getId(), TODAY);
@@ -200,27 +201,21 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
     private RecurrenceDefinition aDefinition(
             Plan plan, User owner, LocalDate start, LocalDate end, String description, BigDecimal amount) {
-        RecurrenceDefinition definition = new RecurrenceDefinition();
-        definition.setPlan(plan);
-        definition.setCreatedBy(owner);
-        definition.setCategory(null);
-        definition.setSeriesId(UUID.randomUUID().toString());
-        definition.setType(TransactionType.DEBIT);
-        definition.setAmount(amount);
-        definition.setDescription(description);
-        definition.setMode(RecurrenceMode.RECURRING);
-        definition.setRecurrenceInterval(RecurrenceInterval.MONTHLY);
-        definition.setStartDate(start);
-        definition.setEndDate(end);
-        definition.setSplitMode(SplitMode.EQUAL);
-
-        RecurrenceDefinitionParticipant participant = new RecurrenceDefinitionParticipant();
-        participant.setDefinition(definition);
-        participant.setMember(owner);
-        participant.setShareAmount(amount);
-        definition.getParticipants().add(participant);
-
-        return recurrenceDefinitionRepository.save(definition);
+        return recurrenceDefinitionRepository.save(RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                owner,
+                null,
+                TransactionType.DEBIT,
+                amount,
+                description,
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                start,
+                end,
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null)))));
     }
 
     private void seedOccurrences(RecurrenceDefinition definition, LocalDate from, LocalDate throughInclusive) {

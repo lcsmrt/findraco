@@ -6,7 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
+import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.SeriesDraft;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
@@ -37,7 +39,6 @@ class SeriesRegeneratorTest {
     private final User user = userWithId(1L);
     private final BigDecimal amount = new BigDecimal("300.00");
     private final List<Share> shares = List.of(new Share(user, amount));
-    private static final String SERIES_ID = "test-series";
 
     private static User userWithId(Long id) {
         User u = new User();
@@ -53,37 +54,40 @@ class SeriesRegeneratorTest {
 
     private RecurrenceDefinition installmentDef(
             String description, BigDecimal amt, int firstParcel, int parcelsNumber, LocalDate startDate) {
-        RecurrenceDefinition def = new RecurrenceDefinition();
-        def.setPlan(plan);
-        def.setCreatedBy(user);
-        def.setCategory(null);
-        def.setSeriesId(SERIES_ID);
-        def.setType(TransactionType.DEBIT);
-        def.setAmount(amt);
-        def.setDescription(description);
-        def.setMode(RecurrenceMode.INSTALLMENT);
-        def.setFirstParcel(firstParcel);
-        def.setParcelsNumber(parcelsNumber);
-        def.setStartDate(startDate);
-        def.setSplitMode(SplitMode.EQUAL);
-        return def;
+        return RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                user,
+                null,
+                TransactionType.DEBIT,
+                amt,
+                description,
+                RecurrenceMode.INSTALLMENT,
+                null,
+                parcelsNumber,
+                firstParcel,
+                startDate,
+                null,
+                SplitMode.EQUAL,
+                shares));
     }
 
     private RecurrenceDefinition recurringDef(
             String description, BigDecimal amt, LocalDate startDate, LocalDate endDate) {
-        RecurrenceDefinition def = new RecurrenceDefinition();
-        def.setPlan(plan);
-        def.setCreatedBy(user);
-        def.setCategory(null);
-        def.setSeriesId(SERIES_ID);
-        def.setType(TransactionType.DEBIT);
-        def.setAmount(amt);
-        def.setDescription(description);
-        def.setMode(RecurrenceMode.RECURRING);
-        def.setStartDate(startDate);
-        def.setEndDate(endDate);
-        def.setSplitMode(SplitMode.EQUAL);
-        return def;
+        return RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                user,
+                null,
+                TransactionType.DEBIT,
+                amt,
+                description,
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                startDate,
+                endDate,
+                SplitMode.EQUAL,
+                shares));
     }
 
     /** Builds existing installment occurrences 1..total for the given base description/amount/start, as the
@@ -201,7 +205,7 @@ class SeriesRegeneratorTest {
         assertThat(result.toCreate()).allSatisfy(tx -> {
             assertThat(tx.getPlan()).isSameAs(plan);
             assertThat(tx.getCreatedBy()).isSameAs(user);
-            assertThat(tx.getSeriesId()).isEqualTo(SERIES_ID);
+            assertThat(tx.getSeriesId()).isEqualTo(def.getSeriesId());
             assertThat(tx.getRecurrenceDefinition()).isSameAs(def);
             assertThat(tx.getParcelsNumber()).isEqualTo(9);
             assertThat(tx.getParticipants()).hasSize(1);

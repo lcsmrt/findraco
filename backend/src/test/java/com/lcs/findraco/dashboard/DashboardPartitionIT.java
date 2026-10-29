@@ -15,9 +15,10 @@ import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
-import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.SeriesDraft;
+import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionType;
@@ -29,7 +30,6 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -296,7 +296,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
 
         RecurrenceDefinition definition =
                 anOpenEndedDefinition(plan, owner, subscriptionsCategory, start, "Streaming", new BigDecimal("30.00"));
-        definition.setGeneratedThrough(staleGeneratedThrough);
+        definition.markGeneratedThrough(staleGeneratedThrough);
         recurrenceDefinitionRepository.save(definition);
 
         assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
@@ -465,27 +465,21 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
 
     private RecurrenceDefinition anOpenEndedDefinition(
             Plan plan, User owner, Category category, LocalDate start, String description, BigDecimal amount) {
-        RecurrenceDefinition definition = new RecurrenceDefinition();
-        definition.setPlan(plan);
-        definition.setCreatedBy(owner);
-        definition.setCategory(category);
-        definition.setSeriesId(UUID.randomUUID().toString());
-        definition.setType(TransactionType.DEBIT);
-        definition.setAmount(amount);
-        definition.setDescription(description);
-        definition.setMode(RecurrenceMode.RECURRING);
-        definition.setRecurrenceInterval(RecurrenceInterval.MONTHLY);
-        definition.setStartDate(start);
-        definition.setEndDate(null);
-        definition.setSplitMode(SplitMode.EQUAL);
-
-        RecurrenceDefinitionParticipant participant = new RecurrenceDefinitionParticipant();
-        participant.setDefinition(definition);
-        participant.setMember(owner);
-        participant.setShareAmount(amount);
-        definition.getParticipants().add(participant);
-
-        return recurrenceDefinitionRepository.save(definition);
+        return recurrenceDefinitionRepository.save(RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                owner,
+                category,
+                TransactionType.DEBIT,
+                amount,
+                description,
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                start,
+                null,
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null)))));
     }
 
     private JsonNode createCategory(Plan plan, User asUser, String type, String description) throws Exception {
