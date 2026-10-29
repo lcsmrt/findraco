@@ -2,7 +2,6 @@ package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
-import com.lcs.findraco.transaction.repository.TransactionItemRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
@@ -17,17 +16,14 @@ import org.springframework.transaction.annotation.Transactional;
 public class TransactionCategoryService {
 
     private final TransactionRepository transactionRepository;
-    private final TransactionItemRepository transactionItemRepository;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final EntityManager entityManager;
 
     public TransactionCategoryService(
             TransactionRepository transactionRepository,
-            TransactionItemRepository transactionItemRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
-        this.transactionItemRepository = transactionItemRepository;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.entityManager = entityManager;
     }
@@ -37,7 +33,7 @@ public class TransactionCategoryService {
         Category category = entityManager.getReference(Category.class, categoryId);
         return new CategoryReferenceCounts(
                 transactionRepository.countByCategory(category),
-                transactionItemRepository.countByCategory(category),
+                transactionRepository.countItemsByCategory(category),
                 recurrenceDefinitionRepository.countByCategory(category));
     }
 
@@ -47,7 +43,7 @@ public class TransactionCategoryService {
         Category from = entityManager.getReference(Category.class, fromCategoryId);
         Category to = entityManager.getReference(Category.class, toCategoryId);
         transactionRepository.reassignCategory(from, to);
-        transactionItemRepository.reassignCategory(from, to);
+        transactionRepository.reassignItemCategory(from, to);
         recurrenceDefinitionRepository.reassignCategory(from, to);
     }
 }

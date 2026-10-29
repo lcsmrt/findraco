@@ -1007,9 +1007,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: a CSV row and an HTTP request both reject a transaction without participants
-- [ ] Each new ArchUnit rule fails once (checked, reverted)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT: a CSV row and an HTTP request both reject a transaction without participants
+- [x] Each new ArchUnit rule fails once (checked, reverted)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

@@ -4,8 +4,16 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noMethods;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.model.CategoryMemberLimit;
+import com.lcs.findraco.transaction.model.RecurrenceDefinition;
+import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionItem;
+import com.lcs.findraco.transaction.model.TransactionParticipant;
 import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaCall;
@@ -143,6 +151,60 @@ class ArchitectureTest {
             .should(beReadOnlyWhenOverAnotherFeaturesEntity())
             .because("another feature's entities are written only through their owner's service");
 
+    /** Entities with rules of their own: created valid and changed only through intention-revealing methods. */
+    private static final Class<?>[] GUARDED_ENTITIES = {
+        Transaction.class,
+        TransactionParticipant.class,
+        TransactionItem.class,
+        RecurrenceDefinition.class,
+        RecurrenceDefinitionParticipant.class,
+        Category.class,
+        CategoryMemberLimit.class
+    };
+
+    /** The parts of an aggregate, written only through their root. */
+    private static final Set<String> AGGREGATE_CHILDREN = Set.of(
+            TransactionParticipant.class.getName(),
+            TransactionItem.class.getName(),
+            RecurrenceDefinitionParticipant.class.getName(),
+            CategoryMemberLimit.class.getName());
+
+    @ArchTest
+    static final ArchRule modelsTakeDomainValuesOnly = noClasses()
+            .that()
+            .resideInAPackage(ROOT + ".*.model")
+            .should()
+            .dependOnClassesThat()
+            .resideInAnyPackage(
+                    ROOT + ".*.service",
+                    ROOT + ".*.repository",
+                    ROOT + ".*.request",
+                    ROOT + ".*.response",
+                    ROOT + ".shared.security",
+                    "org.springframework.security..")
+            .because("an aggregate's rules hold on every entry path (HTTP, CSV, a future connector) only if it "
+                    + "takes domain values and reaches no use case");
+
+    @ArchTest
+    static final ArchRule guardedEntitiesHaveNoPublicSetters = noMethods()
+            .that()
+            .areDeclaredInClassesThat()
+            .belongToAnyOf(GUARDED_ENTITIES)
+            .and()
+            .arePublic()
+            .should()
+            .haveNameMatching("set[A-Z].*")
+            .because("a guarded entity changes through methods that keep its rules, never field by field");
+
+    @ArchTest
+    static final ArchRule aggregateChildrenHaveNoWriteRepository = classes()
+            .that()
+            .areInterfaces()
+            .and()
+            .areAssignableTo(Repository.class)
+            .should(beReadOnlyWhenOverAnAggregateChild())
+            .because("participants, items and member limits change only through their root");
+
     @ArchTest
     static final ArchRule dtosAreRecords = classes()
             .that()
@@ -235,17 +297,34 @@ class ArchitectureTest {
                 if (feature.isEmpty() || entityFeature.isEmpty() || feature.equals(entityFeature)) {
                     return;
                 }
-                if (WRITE_CAPABLE.stream().anyMatch(repository::isAssignableTo)) {
-                    events.add(SimpleConditionEvent.violated(
-                            repository, repository.getName() + " inherits write methods; extend Repository"));
-                }
-                repository.getMethods().stream()
-                        .filter(method -> method.isAnnotatedWith(Modifying.class)
-                                || WRITE_METHOD.matcher(method.getName()).matches())
-                        .forEach(method -> events.add(SimpleConditionEvent.violated(
-                                method, method.getFullName() + " writes another feature's entity")));
+                reportWrites(repository, "another feature's entity", events);
             }
         };
+    }
+
+    private static ArchCondition<JavaClass> beReadOnlyWhenOverAnAggregateChild() {
+        return new ArchCondition<>("extend Repository only and declare no write method when over an aggregate child") {
+            @Override
+            public void check(JavaClass repository, ConditionEvents events) {
+                if (entityOf(repository)
+                        .filter(entity -> AGGREGATE_CHILDREN.contains(entity.getName()))
+                        .isPresent()) {
+                    reportWrites(repository, "an aggregate child", events);
+                }
+            }
+        };
+    }
+
+    private static void reportWrites(JavaClass repository, String what, ConditionEvents events) {
+        if (WRITE_CAPABLE.stream().anyMatch(repository::isAssignableTo)) {
+            events.add(SimpleConditionEvent.violated(
+                    repository, repository.getName() + " inherits write methods; extend Repository"));
+        }
+        repository.getMethods().stream()
+                .filter(method -> method.isAnnotatedWith(Modifying.class)
+                        || WRITE_METHOD.matcher(method.getName()).matches())
+                .forEach(method ->
+                        events.add(SimpleConditionEvent.violated(method, method.getFullName() + " writes " + what)));
     }
 
     private static final List<Class<?>> WRITE_CAPABLE =

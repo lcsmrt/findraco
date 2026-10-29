@@ -53,6 +53,15 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     @Query("UPDATE Transaction ft SET ft.category = :target WHERE ft.category = :source")
     int reassignCategory(@Param("source") Category source, @Param("target") Category target);
 
+    // Items are part of their transaction, so the transaction's repository reads and moves them;
+    // they have no repository of their own.
+    @Query("SELECT COUNT(it) FROM TransactionItem it WHERE it.category = :category")
+    long countItemsByCategory(@Param("category") Category category);
+
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE TransactionItem it SET it.category = :target WHERE it.category = :source")
+    int reassignItemCategory(@Param("source") Category source, @Param("target") Category target);
+
     @Query("SELECT ft.externalId FROM Transaction ft WHERE ft.plan = :plan AND ft.externalId IN :externalIds")
     Set<String> findExistingExternalIds(@Param("plan") Plan plan, @Param("externalIds") Collection<String> externalIds);
 }
