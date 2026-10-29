@@ -31,6 +31,7 @@ public class PlanController {
     }
 
     @Operation(summary = "Creates a new plan owned by the authenticated user")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<PlanResponse> createPlan(
             @RequestBody @Valid CreatePlanRequest dto, @CurrentUser AuthenticatedUser user) {
@@ -71,6 +72,7 @@ public class PlanController {
     }
 
     @Operation(summary = "Deletes (soft-delete) a plan (owner only)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePlan(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
         planService.deletePlan(id, user.id());
@@ -78,6 +80,7 @@ public class PlanController {
     }
 
     @Operation(summary = "Leaves a plan (non-owner only)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/{id}/leave")
     public ResponseEntity<Void> leavePlan(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
         planService.leavePlan(id, user.id());
@@ -85,6 +88,7 @@ public class PlanController {
     }
 
     @Operation(summary = "Transfers plan ownership to another member (owner only)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/{id}/transfer")
     public ResponseEntity<Void> transferOwnership(
             @PathVariable Long id,
@@ -106,6 +110,7 @@ public class PlanController {
     }
 
     @Operation(summary = "Removes a member from a plan (owner only)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}/members/{userId}")
     public ResponseEntity<Void> removeMember(
             @PathVariable Long id, @PathVariable Long userId, @CurrentUser AuthenticatedUser user) {

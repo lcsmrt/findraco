@@ -62,6 +62,7 @@ public class CategoryController {
     }
 
     @Operation(summary = "Creates a new transaction category for the plan")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<CategoryResponse> createCategory(
             @RequestBody @Valid CreateCategoryRequest dto, PlanContext ctx) {
@@ -78,6 +79,7 @@ public class CategoryController {
     @Operation(
             summary =
                     "Deletes a transaction category, optionally moving its transactions, items and recurrences to another category")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteCategory(
             @PathVariable Long id, @RequestParam(required = false) Long reassignTo, PlanContext ctx) {

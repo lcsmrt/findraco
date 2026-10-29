@@ -1,11 +1,11 @@
 package com.lcs.findraco.category.request;
 
+import com.lcs.findraco.category.model.CategorySortField;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
-import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 
 /** Query parameters of the category list; absent paging parameters take their defaults. */
@@ -20,7 +20,7 @@ public record CategoryFilter(
         @Max(value = 100, message = "Page size must be at most 100.")
         Integer size,
 
-        String sortBy,
+        CategorySortField sortBy,
 
         @Pattern(
                 regexp = "asc|desc",
@@ -31,11 +31,11 @@ public record CategoryFilter(
     public CategoryFilter {
         page = page == null ? 0 : page;
         size = size == null ? 10 : size;
-        sortBy = sortBy == null ? "description" : sortBy;
+        sortBy = sortBy == null ? CategorySortField.description : sortBy;
         sortDirection = sortDirection == null ? "asc" : sortDirection;
     }
 
-    public PageRequest toPageable(Set<String> allowedSortFields) {
-        return PageRequests.of(page, size, sortBy, sortDirection, allowedSortFields);
+    public PageRequest toPageable() {
+        return PageRequests.of(page, size, sortBy.name(), sortDirection);
     }
 }

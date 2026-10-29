@@ -1,7 +1,6 @@
 package com.lcs.findraco.shared.web;
 
 import com.lcs.findraco.shared.error.MalformedRequestException;
-import java.util.Set;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 
@@ -10,11 +9,7 @@ public final class PageRequests {
 
     private PageRequests() {}
 
-    public static PageRequest of(
-            int page, int size, String sortBy, String sortDirection, Set<String> allowedSortFields) {
-        if (!allowedSortFields.contains(sortBy)) {
-            throw new MalformedRequestException("sortBy", "Invalid sort field: " + sortBy);
-        }
+    public static PageRequest of(int page, int size, String sortBy, String sortDirection) {
         Sort sort = Sort.by(direction(sortDirection), sortBy);
         return PageRequest.of(page, size, sort);
     }

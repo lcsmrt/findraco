@@ -1,6 +1,7 @@
 package com.lcs.findraco.category.response;
 
 import java.math.BigDecimal;
+import org.jspecify.annotations.Nullable;
 
 /**
  * One member's spend inside a category, against that member's own limit. A former member's entry
@@ -11,10 +12,10 @@ public record CategoryMemberSpendingResponse(
         Long memberId,
         String name,
         BigDecimal spent,
-        BigDecimal limit,
-        BigDecimal remaining,
-        BigDecimal percentUsed,
-        Boolean overLimit,
+        @Nullable BigDecimal limit,
+        @Nullable BigDecimal remaining,
+        @Nullable BigDecimal percentUsed,
+        @Nullable Boolean overLimit,
         boolean active) {
 
     public static CategoryMemberSpendingResponse of(

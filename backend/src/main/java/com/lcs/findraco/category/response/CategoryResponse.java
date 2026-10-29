@@ -7,18 +7,19 @@ import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import org.jspecify.annotations.Nullable;
 
 public record CategoryResponse(
         Long id,
         TransactionType type,
         String description,
-        BigDecimal spendingLimit,
-        Long parentId,
-        Long ownerId,
-        String ownerName,
-        Boolean ownerActive,
-        List<CategoryMemberLimitResponse> memberLimits,
-        BigDecimal effectiveLimit) {
+        @Nullable BigDecimal spendingLimit,
+        @Nullable Long parentId,
+        @Nullable Long ownerId,
+        @Nullable String ownerName,
+        @Nullable Boolean ownerActive,
+        @Nullable List<CategoryMemberLimitResponse> memberLimits,
+        @Nullable BigDecimal effectiveLimit) {
 
     /**
      * The category as embedded in other responses (transactions, items): no membership data, so

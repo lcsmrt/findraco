@@ -10,6 +10,7 @@ import com.lcs.findraco.plan.service.PlanInvitationService;
 import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -29,6 +30,7 @@ public class PlanInvitationController {
     }
 
     @Operation(summary = "Creates an invitation (email or link) for the plan; owner only")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping(PlanRoutes.PLAN_INVITATION)
     public ResponseEntity<InvitationResponse> createInvitation(
             @RequestBody @Valid CreateInvitationRequest dto, PlanContext ctx) {
@@ -46,6 +48,7 @@ public class PlanInvitationController {
     }
 
     @Operation(summary = "Revokes an invitation (owner only)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping(PlanRoutes.PLAN_INVITATION + "/{invitationId}")
     public ResponseEntity<Void> revokeInvitation(@PathVariable Long invitationId, PlanContext ctx) {
         invitationService.revoke(invitationId, ctx);
@@ -60,6 +63,8 @@ public class PlanInvitationController {
     }
 
     @Operation(summary = "Accepts an invitation by token for the authenticated user")
+    @ApiResponse(responseCode = "201", description = "Created")
+    @ApiResponse(responseCode = "200", description = "OK")
     @PostMapping(PlanRoutes.INVITATION + "/{token}/accept")
     public ResponseEntity<AcceptInvitationResponse> acceptInvitation(
             @PathVariable String token, @CurrentUser AuthenticatedUser user) {

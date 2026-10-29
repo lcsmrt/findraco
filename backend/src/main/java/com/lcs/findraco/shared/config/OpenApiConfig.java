@@ -1,5 +1,6 @@
 package com.lcs.findraco.shared.config;
 
+import io.swagger.v3.core.jackson.ModelResolver;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
@@ -16,6 +17,11 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     private static final String BEARER_SCHEME = "bearerAuth";
+
+    static {
+        // Every enum becomes a named schema, so generated clients get one type per enum.
+        ModelResolver.enumsAsRef = true;
+    }
 
     private final AppProperties appProperties;
 

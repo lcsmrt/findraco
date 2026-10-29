@@ -8,6 +8,7 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 public record RecurrenceDefinitionResponse(
         Long id,
@@ -15,13 +16,13 @@ public record RecurrenceDefinitionResponse(
         TransactionType type,
         BigDecimal amount,
         String description,
-        Long categoryId,
+        @Nullable Long categoryId,
         RecurrenceMode mode,
-        RecurrenceInterval interval,
-        Integer parcelsNumber,
-        Integer firstParcel,
+        @Nullable RecurrenceInterval interval,
+        @Nullable Integer parcelsNumber,
+        @Nullable Integer firstParcel,
         LocalDate startDate,
-        LocalDate endDate,
+        @Nullable LocalDate endDate,
         SplitMode splitMode,
         List<RecurrenceDefinitionParticipantResponse> participants) {
 

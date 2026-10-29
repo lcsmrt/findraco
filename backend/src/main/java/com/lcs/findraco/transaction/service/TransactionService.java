@@ -6,7 +6,6 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
-import com.lcs.findraco.shared.error.MalformedRequestException;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
@@ -17,6 +16,7 @@ import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionItem;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
@@ -120,11 +120,6 @@ public class TransactionService {
                 .orElseThrow(() -> new TransactionExceptions.TransactionNotFoundException(id));
     }
 
-    private static final String SORT_CATEGORY = "category";
-    private static final String SORT_ATTRIBUTED_TO = "attributedTo";
-    private static final Set<String> SORTABLE_FIELDS =
-            Set.of("startDate", "endDate", "amount", "description", SORT_CATEGORY, SORT_ATTRIBUTED_TO);
-
     @Transactional(readOnly = true)
     public List<Transaction> findAllByPlan(PlanContext ctx) {
         return transactionRepository.findAllByPlan(plan(ctx));
@@ -132,10 +127,7 @@ public class TransactionService {
 
     @Transactional(readOnly = true)
     public Page<Transaction> findAllByPlanPaged(TransactionFilter filter, PlanContext ctx) {
-        String sortBy = filter.sortBy();
-        if (!SORTABLE_FIELDS.contains(sortBy)) {
-            throw new MalformedRequestException("sortBy", "Invalid sort field: " + sortBy);
-        }
+        TransactionSortField sortBy = filter.sortBy();
         Sort.Direction direction = PageRequests.direction(filter.sortDirection());
 
         List<Specification<Transaction>> specs = new ArrayList<>(List.of(
@@ -152,16 +144,19 @@ public class TransactionService {
         // category / attributed-to are aggregate/association orderings the Specification owns; for those
         // the Pageable is left unsorted so the spec's ORDER BY is the only one applied. Simple property
         // sorts (startDate/endDate/amount/description) stay on the Pageable as before.
-        PageRequest pageable;
-        if (SORT_CATEGORY.equals(sortBy)) {
-            specs.add(TransactionSpecification.orderByCategoryName(direction));
-            pageable = PageRequest.of(filter.page(), filter.size());
-        } else if (SORT_ATTRIBUTED_TO.equals(sortBy)) {
-            specs.add(TransactionSpecification.orderByLargestShareParticipant(direction));
-            pageable = PageRequest.of(filter.page(), filter.size());
-        } else {
-            pageable = PageRequest.of(filter.page(), filter.size(), Sort.by(direction, sortBy));
-        }
+        PageRequest pageable =
+                switch (sortBy) {
+                    case category -> {
+                        specs.add(TransactionSpecification.orderByCategoryName(direction));
+                        yield PageRequest.of(filter.page(), filter.size());
+                    }
+                    case attributedTo -> {
+                        specs.add(TransactionSpecification.orderByLargestShareParticipant(direction));
+                        yield PageRequest.of(filter.page(), filter.size());
+                    }
+                    case startDate, endDate, amount, description ->
+                        PageRequest.of(filter.page(), filter.size(), Sort.by(direction, sortBy.name()));
+                };
 
         return transactionRepository.findAll(Specification.allOf(specs), pageable);
     }

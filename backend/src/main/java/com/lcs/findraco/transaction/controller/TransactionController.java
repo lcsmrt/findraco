@@ -15,6 +15,7 @@ import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
 import com.lcs.findraco.transaction.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -50,6 +51,7 @@ public class TransactionController {
     }
 
     @Operation(summary = "Creates a new transaction")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<TransactionResponse> createTransaction(
             @RequestBody @Valid CreateTransactionRequest dto, PlanContext ctx) {
@@ -58,6 +60,7 @@ public class TransactionController {
     }
 
     @Operation(summary = "Creates a series of recurring transactions")
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping("/series")
     public ResponseEntity<TransactionSeriesResponse> createSeries(
             @RequestBody @Valid CreateSeriesRequest dto, PlanContext ctx) {
@@ -73,6 +76,8 @@ public class TransactionController {
     }
 
     @Operation(summary = "Imports transactions from a Nubank CSV file")
+    @ApiResponse(responseCode = "201", description = "Created")
+    @ApiResponse(responseCode = "200", description = "OK")
     @PostMapping("/import")
     public ResponseEntity<TransactionImportResponse> importCsv(
             @RequestParam("file") MultipartFile file, PlanContext ctx) {
@@ -82,6 +87,7 @@ public class TransactionController {
     }
 
     @Operation(summary = "Deletes a transaction")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteTransaction(@PathVariable Long id, PlanContext ctx) {
         transactionService.delete(id, ctx);
@@ -89,6 +95,7 @@ public class TransactionController {
     }
 
     @Operation(summary = "Deletes a series of recurring transactions (This one / This and following / All)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/series/{seriesId}")
     public ResponseEntity<Void> deleteSeries(
             @PathVariable String seriesId,

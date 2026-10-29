@@ -96,8 +96,6 @@ public class CategoryService {
         return CategoryResponse.from(findById(id, ctx), activeMembers(plan(ctx)).keySet());
     }
 
-    private static final Set<String> SORTABLE_FIELDS = Set.of("description", "spendingLimit");
-
     @Transactional(readOnly = true)
     public List<Category> findAllByPlan(PlanContext ctx) {
         return categoryRepository.findAllByPlan(plan(ctx));
@@ -105,7 +103,7 @@ public class CategoryService {
 
     @Transactional(readOnly = true)
     public Page<CategoryResponse> findAllByPlanPaged(CategoryFilter filter, PlanContext ctx) {
-        PageRequest pageable = filter.toPageable(SORTABLE_FIELDS);
+        PageRequest pageable = filter.toPageable();
 
         Specification<Category> spec = Specification.allOf(
                 CategorySpecification.belongsToPlan(plan(ctx)),

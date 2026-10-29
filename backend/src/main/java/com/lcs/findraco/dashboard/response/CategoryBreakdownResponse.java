@@ -3,6 +3,7 @@ package com.lcs.findraco.dashboard.response;
 import com.lcs.findraco.category.response.CategorySpendingResponse;
 import java.math.BigDecimal;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * One row of the Overview category breakdown: a root category with rolled-up spend, its children
@@ -11,13 +12,13 @@ import java.util.List;
  */
 public record CategoryBreakdownResponse(
         Long categoryId,
-        Long parentId,
+        @Nullable Long parentId,
         String categoryName,
         BigDecimal spent,
-        BigDecimal limit,
-        BigDecimal remaining,
-        BigDecimal percentUsed,
-        Boolean overLimit,
+        @Nullable BigDecimal limit,
+        @Nullable BigDecimal remaining,
+        @Nullable BigDecimal percentUsed,
+        @Nullable Boolean overLimit,
         List<CategoryBreakdownResponse> children) {
 
     public static CategoryBreakdownResponse from(CategorySpendingResponse spending) {

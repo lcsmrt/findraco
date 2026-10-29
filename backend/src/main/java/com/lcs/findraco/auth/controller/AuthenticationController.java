@@ -14,6 +14,7 @@ import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -67,6 +68,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Signs out this device: revokes the cookie's session, if any, and clears the cookie")
     @SecurityRequirements
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/logout")
     public ResponseEntity<Void> logout(@CookieValue(name = SessionCookies.NAME, required = false) String sessionToken) {
         sessionService.revoke(sessionToken);
@@ -78,6 +80,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Emails a password reset link; responds the same whether or not the account exists")
     @SecurityRequirements
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequest dto) {
         passwordResetService.requestReset(dto.email());
@@ -96,6 +99,7 @@ public class AuthenticationController {
 
     @Operation(summary = "Sets a new password using a password reset link")
     @SecurityRequirements
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/reset-password")
     public ResponseEntity<Void> resetPassword(@RequestBody @Valid ResetPasswordRequest dto) {
         passwordResetService.resetPassword(dto);

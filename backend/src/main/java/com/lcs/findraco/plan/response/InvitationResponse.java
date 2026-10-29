@@ -5,16 +5,17 @@ import com.lcs.findraco.plan.model.InvitationType;
 import com.lcs.findraco.plan.model.PlanInvitation;
 import com.lcs.findraco.plan.model.PlanRole;
 import java.time.LocalDateTime;
+import org.jspecify.annotations.Nullable;
 
 public record InvitationResponse(
         Long id,
         String token,
         PlanRole role,
         InvitationType type,
-        String email,
+        @Nullable String email,
         InvitationStatus status,
-        String link,
-        LocalDateTime expiresAt) {
+        @Nullable String link,
+        @Nullable LocalDateTime expiresAt) {
 
     public static InvitationResponse from(PlanInvitation invitation) {
         LocalDateTime expiresAt = invitation.getExpiresAt();

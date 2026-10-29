@@ -5,6 +5,7 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * One category row of the spending tree (Categories tab and Overview breakdown): the period's spend,
@@ -13,17 +14,17 @@ import java.util.List;
  */
 public record CategorySpendingResponse(
         Long categoryId,
-        Long parentId,
+        @Nullable Long parentId,
         String name,
         TransactionType type,
-        Long ownerId,
-        String ownerName,
-        Boolean ownerActive,
+        @Nullable Long ownerId,
+        @Nullable String ownerName,
+        @Nullable Boolean ownerActive,
         BigDecimal spent,
-        BigDecimal limit,
-        BigDecimal remaining,
-        BigDecimal percentUsed,
-        Boolean overLimit,
+        @Nullable BigDecimal limit,
+        @Nullable BigDecimal remaining,
+        @Nullable BigDecimal percentUsed,
+        @Nullable Boolean overLimit,
         List<CategoryMemberSpendingResponse> members,
         List<CategorySpendingResponse> children) {
 

@@ -7,18 +7,19 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 public record TransactionResponse(
         Long id,
-        CategoryResponse category,
+        @Nullable CategoryResponse category,
         TransactionType type,
         BigDecimal amount,
         String description,
-        String seriesId,
-        Integer parcelsNumber,
+        @Nullable String seriesId,
+        @Nullable Integer parcelsNumber,
         LocalDate startDate,
-        LocalDate endDate,
-        TransactionCreatorResponse createdBy,
+        @Nullable LocalDate endDate,
+        @Nullable TransactionCreatorResponse createdBy,
         SplitMode splitMode,
         List<TransactionParticipantResponse> participants,
         List<TransactionItemResponse> items) {

@@ -28,6 +28,7 @@ public class UserController {
 
     @Operation(summary = "Creates a new user")
     @SecurityRequirements
+    @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ResponseEntity<UserResponse> createUser(@RequestBody @Valid CreateUserRequest dto) {
         User createdUser = userService.create(dto);

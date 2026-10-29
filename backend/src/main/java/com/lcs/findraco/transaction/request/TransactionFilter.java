@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.request;
 
+import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -25,7 +26,7 @@ public record TransactionFilter(
         @Max(value = 100, message = "Page size must be at most 100.")
         Integer size,
 
-        String sortBy,
+        TransactionSortField sortBy,
 
         @Pattern(
                 regexp = "asc|desc",
@@ -36,7 +37,7 @@ public record TransactionFilter(
     public TransactionFilter {
         page = page == null ? 0 : page;
         size = size == null ? 10 : size;
-        sortBy = sortBy == null ? "startDate" : sortBy;
+        sortBy = sortBy == null ? TransactionSortField.startDate : sortBy;
         sortDirection = sortDirection == null ? "desc" : sortDirection;
     }
 }
