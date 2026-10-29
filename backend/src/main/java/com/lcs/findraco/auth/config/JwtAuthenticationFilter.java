@@ -1,7 +1,9 @@
 package com.lcs.findraco.auth.config;
 
+import com.lcs.findraco.auth.service.CustomUserDetails;
 import com.lcs.findraco.auth.service.CustomUserDetailsService;
 import com.lcs.findraco.auth.service.JwtService;
+import com.lcs.findraco.shared.web.RequestLogFilter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,6 +56,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
                     SecurityContextHolder.getContext().setAuthentication(authToken);
+                    if (userDetails instanceof CustomUserDetails customUserDetails) {
+                        request.setAttribute(
+                                RequestLogFilter.USER_ID_ATTRIBUTE,
+                                customUserDetails.authenticatedUser().id());
+                    }
                 }
             }
         } catch (Exception exception) {

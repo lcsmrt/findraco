@@ -683,8 +683,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT with a captured appender: one line per request with the template, not the raw path
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT with a captured appender: one line per request with the template, not the raw path
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
