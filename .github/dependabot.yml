@@ -1,0 +1,27 @@
+# One weekly pull request per ecosystem, every update grouped.
+version: 2
+updates:
+  - package-ecosystem: maven
+    directory: /backend
+    schedule:
+      interval: weekly
+    groups:
+      maven:
+        patterns: ["*"]
+
+  # The pnpm workspace: root package.json and pnpm-lock.yaml cover backend/ and frontend/.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm:
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]

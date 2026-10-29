@@ -252,10 +252,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] With the SSH tunnel down, `./mvnw -B verify` boots every IT on the container
-- [ ] The guard refuses a database named `findraco` (one unit case in `AbstractIntegrationTest`'s own test or a dedicated `DisposableDatabaseGuardTest`)
-- [ ] Stopping Docker makes the IT run fail, not skip
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] With the SSH tunnel down, `./mvnw -B verify` boots every IT on the container (run with `backend/.env` moved aside: no datasource at all)
+- [x] The guard refuses a database named `findraco` (one unit case in `AbstractIntegrationTest`'s own test or a dedicated `DisposableDatabaseGuardTest`)
+- [x] Stopping Docker makes the IT run fail, not skip (unreachable daemon: 177 errors, 0 skipped)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -275,9 +275,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] The four classes pass
-- [ ] Each fix has the failing assertion that proved it
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] The four classes pass (green on the container with no production change; revocation broken once, `SessionIT` and `PasswordRecoveryIT` failed, reverted)
+- [x] Each fix has the failing assertion that proved it (no session fix needed; the suite exposed a series date drift, fixed in `1b9fba8` with three failing unit cases first)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -297,10 +297,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] The job command is `./mvnw -B verify`
-- [ ] `deploy` still `needs` the backend job
-- [ ] Verified on the first push of the branch (user pushes)
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] The job command is `./mvnw -B verify`
+- [x] `deploy` still `needs` the backend job
+- [ ] Verified on the first push of the branch (user pushes) — verified on first push (user)
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: build
@@ -322,10 +322,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `./mvnw -B verify` green with the same test count as before (no test weakened or deleted)
-- [ ] `/v3/api-docs` field names diffed before/after: identical
-- [ ] If `spring-dotenv` fails on Boot 4, its replacement from T54 moves here (noted in the commit)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `./mvnw -B verify` green with the same test count as before (no test weakened or deleted): 116 `*Test`, 177 `*IT` before and after
+- [x] `/v3/api-docs` field names diffed before/after: every baseline field kept; springdoc 3 adds the recursive `children` lists the wire JSON already had (`baseline-api-docs.json`)
+- [x] If `spring-dotenv` fails on Boot 4, its replacement from T54 moves here (noted in the commit): it failed, `spring.config.import` landed in T4
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -345,8 +345,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `docker build` twice with a source-only change reuses the dependency layer
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `docker build` twice with a source-only change reuses the dependency layer
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: quick
@@ -366,8 +366,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] File validates on GitHub after the push
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [ ] File validates on GitHub after the push — verified on first push (user)
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: build
