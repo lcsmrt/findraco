@@ -69,9 +69,8 @@
 
 ### Backend container
 
-**Location:** `backend/Dockerfile` — multi-stage build (`maven:3.9-eclipse-temurin-17` build stage → `eclipse-temurin:17-jre-alpine` runtime), packages the fat JAR with `mvn -DskipTests package`, `EXPOSE 3000`.
+**Location:** `backend/Dockerfile` — multi-stage build (`maven:3.9-eclipse-temurin-25` build stage → `eclipse-temurin:25-jre-alpine` runtime); `pom.xml` and `mvn dependency:go-offline` form their own layer before `src` is copied, then `mvn -DskipTests package` builds the fat JAR, `EXPOSE 3000`.
 **Orchestration:** `backend/docker-compose.yml` (`build: .`, `network_mode: host`, `restart: unless-stopped`), injecting `SPRING_DATASOURCE_*`, `JWT_SECRET_KEY`, `ALLOWED_ORIGINS` from the environment.
-**Note:** the Docker image builds on JDK 17, matching `pom.xml` (`java.version=17`) but not the README's stated Java 21. See `CONCERNS.md`.
 
 ## Not Present
 
