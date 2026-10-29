@@ -1,16 +1,16 @@
 package com.lcs.findraco.support;
 
-import com.lcs.findraco.models.FinancialTransaction;
-import com.lcs.findraco.models.FinancialTransactionCategory;
-import com.lcs.findraco.models.FinancialTransactionType;
-import com.lcs.findraco.models.Plan;
-import com.lcs.findraco.models.PlanMembership;
-import com.lcs.findraco.models.PlanRole;
-import com.lcs.findraco.models.TransactionParticipant;
-import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
-import com.lcs.findraco.repositories.FinancialTransactionRepository;
-import com.lcs.findraco.repositories.PlanMembershipRepository;
-import com.lcs.findraco.repositories.PlanRepository;
+import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.plan.model.PlanMembership;
+import com.lcs.findraco.plan.model.PlanRole;
+import com.lcs.findraco.plan.repository.PlanMembershipRepository;
+import com.lcs.findraco.plan.repository.PlanRepository;
+import com.lcs.findraco.transaction.model.FinancialTransaction;
+import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import java.math.BigDecimal;

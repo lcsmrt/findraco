@@ -1,6 +1,6 @@
 package com.lcs.findraco.user.service;
 
-import com.lcs.findraco.services.PlanService;
+import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.user.exception.UserExceptions;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;

@@ -1,7 +1,7 @@
 package com.lcs.findraco.shared.config;
 
-import com.lcs.findraco.security.PlanContextArgumentResolver;
-import com.lcs.findraco.services.PlanService;
+import com.lcs.findraco.plan.controller.PlanContextArgumentResolver;
+import com.lcs.findraco.plan.service.PlanService;
 import java.util.List;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;

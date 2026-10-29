@@ -258,10 +258,10 @@
                                 <rule>
                                     <element>CLASS</element>
                                     <includes>
-                                        <include>com.lcs.findraco.services.SplitResolver</include>
-                                        <include>com.lcs.findraco.services.CategorySpendingAssembler</include>
-                                        <include>com.lcs.findraco.services.ItemShareAllocator</include>
-                                        <include>com.lcs.findraco.security.PlanAuthorization</include>
+                                        <include>com.lcs.findraco.transaction.service.SplitResolver</include>
+                                        <include>com.lcs.findraco.category.service.CategorySpendingAssembler</include>
+                                        <include>com.lcs.findraco.transaction.service.ItemShareAllocator</include>
+                                        <include>com.lcs.findraco.plan.service.PlanAuthorization</include>
                                     </includes>
                                     <limits>
                                         <limit>

@@ -2,9 +2,9 @@ package com.lcs.findraco.shared.error;
 
 import com.lcs.findraco.auth.controller.SessionCookies;
 import com.lcs.findraco.auth.exception.AuthenticationExceptions;
-import com.lcs.findraco.exceptions.FinancialTransactionCategoryExceptions;
-import com.lcs.findraco.exceptions.FinancialTransactionExceptions;
-import com.lcs.findraco.exceptions.PlanExceptions;
+import com.lcs.findraco.category.exception.FinancialTransactionCategoryExceptions;
+import com.lcs.findraco.plan.exception.PlanExceptions;
+import com.lcs.findraco.transaction.exception.FinancialTransactionExceptions;
 import com.lcs.findraco.user.exception.UserExceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
