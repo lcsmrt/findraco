@@ -1,7 +1,6 @@
 package com.lcs.findraco.user.controller;
 
 import com.lcs.findraco.shared.security.CurrentUser;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.request.UserRequestDto;
 import com.lcs.findraco.user.response.UserResponseDto;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Users")
 @RestController
-@RequestMapping(ApiRoutes.USER)
+@RequestMapping(UserRoutes.USER)
 public class UserController {
 
     private final UserService userService;

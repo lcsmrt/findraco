@@ -6,21 +6,23 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SplitMode;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -54,10 +56,10 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     private RecurrenceDefinitionRepository recurrenceDefinitionRepository;
 
     @Autowired
-    private FinancialTransactionRepository financialTransactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
-    private FinancialTransactionCategoryRepository financialTransactionCategoryRepository;
+    private CategoryRepository categoryRepository;
 
     private final LocalDate today = LocalDate.now();
 
@@ -284,9 +286,8 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         Map.of("description", "Misc", "amount", new BigDecimal("10.00"))));
         createTransaction(plan, owner, body);
 
-        FinancialTransactionCategory subscriptionsCategory = financialTransactionCategoryRepository
-                .findByIdAndPlan(subscriptionsId, plan)
-                .orElseThrow();
+        Category subscriptionsCategory =
+                categoryRepository.findByIdAndPlan(subscriptionsId, plan).orElseThrow();
 
         LocalDate anchorMonth = today.withDayOfMonth(1);
         LocalDate start = anchorMonth.minusMonths(6);
@@ -298,13 +299,12 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         definition.setGeneratedThrough(staleGeneratedThrough);
         recurrenceDefinitionRepository.save(definition);
 
-        assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
+        assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
                 .isEmpty();
 
         JsonNode dashboard = fetchDashboard(plan, owner, start, today.plusMonths(13));
 
-        List<FinancialTransaction> occurrences =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         // Top-up only materializes forward from the (stale) watermark — it never backfills the
         // months between the series' start and that watermark, since those are assumed already
         // persisted from the original creation flow (not seeded here, so none exist beforehand).
@@ -392,7 +392,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         assertThat(delivery.get("parentId").asLong()).isEqualTo(foodId);
         assertThat(delivery.get("spent").decimalValue()).isEqualByComparingTo("60.00");
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}", plan.getId(), deliveryId)
+        mockMvc.perform(put(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), deliveryId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("type", "DEBIT", "description", "Delivery"))))
@@ -464,18 +464,13 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     }
 
     private RecurrenceDefinition anOpenEndedDefinition(
-            Plan plan,
-            User owner,
-            FinancialTransactionCategory category,
-            LocalDate start,
-            String description,
-            BigDecimal amount) {
+            Plan plan, User owner, Category category, LocalDate start, String description, BigDecimal amount) {
         RecurrenceDefinition definition = new RecurrenceDefinition();
         definition.setPlan(plan);
         definition.setCreatedBy(owner);
         definition.setCategory(category);
         definition.setSeriesId(UUID.randomUUID().toString());
-        definition.setType(FinancialTransactionType.DEBIT);
+        definition.setType(TransactionType.DEBIT);
         definition.setAmount(amount);
         definition.setDescription(description);
         definition.setMode(RecurrenceMode.RECURRING);
@@ -505,7 +500,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     private JsonNode createCategory(Plan plan, User asUser, Map<String, Object> body) throws Exception {
         String requestBody = objectMapper.writeValueAsString(body);
 
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY, plan.getId())
+        MvcResult result = mockMvc.perform(post(CategoryRoutes.CATEGORY, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -518,7 +513,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     private JsonNode createTransaction(Plan plan, User asUser, Map<String, Object> body) throws Exception {
         String requestBody = objectMapper.writeValueAsString(body);
 
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
+        MvcResult result = mockMvc.perform(post(TransactionRoutes.TRANSACTION, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -533,7 +528,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchDashboard(Plan plan, User asUser, Long memberId) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.DASHBOARD, plan.getId())
+        MvcResult result = mockMvc.perform(get(DashboardRoutes.DASHBOARD, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .param("startDate", today.minusDays(1).toString())
                         .param("endDate", today.plusDays(1).toString())
@@ -545,7 +540,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchDashboard(Plan plan, User asUser, LocalDate startDate, LocalDate endDate) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.DASHBOARD, plan.getId())
+        MvcResult result = mockMvc.perform(get(DashboardRoutes.DASHBOARD, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .param("startDate", startDate.toString())
                         .param("endDate", endDate.toString()))

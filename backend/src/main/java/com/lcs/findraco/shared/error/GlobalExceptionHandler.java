@@ -2,9 +2,9 @@ package com.lcs.findraco.shared.error;
 
 import com.lcs.findraco.auth.controller.SessionCookies;
 import com.lcs.findraco.auth.exception.AuthenticationExceptions;
-import com.lcs.findraco.category.exception.FinancialTransactionCategoryExceptions;
+import com.lcs.findraco.category.exception.CategoryExceptions;
 import com.lcs.findraco.plan.exception.PlanExceptions;
-import com.lcs.findraco.transaction.exception.FinancialTransactionExceptions;
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.user.exception.UserExceptions;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
@@ -61,37 +61,34 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 .body(errorResponse);
     }
 
-    @ExceptionHandler(FinancialTransactionExceptions.FinancialTransactionNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleFinancialTransactionNotFound(
-            FinancialTransactionExceptions.FinancialTransactionNotFoundException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(TransactionExceptions.TransactionNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleTransactionNotFound(
+            TransactionExceptions.TransactionNotFoundException exception, HttpServletRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler(FinancialTransactionExceptions.FinancialTransactionSeriesNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleFinancialTransactionSeriesNotFound(
-            FinancialTransactionExceptions.FinancialTransactionSeriesNotFoundException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(TransactionExceptions.TransactionSeriesNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleTransactionSeriesNotFound(
+            TransactionExceptions.TransactionSeriesNotFoundException exception, HttpServletRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
-    @ExceptionHandler(FinancialTransactionCategoryExceptions.FinancialTransactionCategoryNotFoundException.class)
-    public ResponseEntity<ErrorResponseDto> handleFinancialTransactionCategoryNotFound(
-            FinancialTransactionCategoryExceptions.FinancialTransactionCategoryNotFoundException exception,
-            HttpServletRequest request) {
+    @ExceptionHandler(CategoryExceptions.CategoryNotFoundException.class)
+    public ResponseEntity<ErrorResponseDto> handleCategoryNotFound(
+            CategoryExceptions.CategoryNotFoundException exception, HttpServletRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse);
     }
 
     @ExceptionHandler({
-        FinancialTransactionCategoryExceptions.CategoryParentIsChildException.class,
-        FinancialTransactionCategoryExceptions.CategoryParentIsItselfException.class,
-        FinancialTransactionCategoryExceptions.CategoryWithChildrenCannotHaveParentException.class,
-        FinancialTransactionCategoryExceptions.CategoryParentTypeMismatchException.class,
-        FinancialTransactionCategoryExceptions.CategoryWithChildrenTypeChangeException.class,
-        FinancialTransactionCategoryExceptions.CategoryInvalidReassignTargetException.class
+        CategoryExceptions.CategoryParentIsChildException.class,
+        CategoryExceptions.CategoryParentIsItselfException.class,
+        CategoryExceptions.CategoryWithChildrenCannotHaveParentException.class,
+        CategoryExceptions.CategoryParentTypeMismatchException.class,
+        CategoryExceptions.CategoryWithChildrenTypeChangeException.class,
+        CategoryExceptions.CategoryInvalidReassignTargetException.class
     })
     public ResponseEntity<ErrorResponseDto> handleCategoryHierarchyInvariant(
             RuntimeException exception, HttpServletRequest request) {
@@ -100,12 +97,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnCreditException.class,
-        FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnOwnedException.class,
-        FinancialTransactionCategoryExceptions.CategoryMemberLimitDuplicateMemberException.class,
-        FinancialTransactionCategoryExceptions.CategoryMemberLimitInactiveMemberException.class,
-        FinancialTransactionCategoryExceptions.CategoryOwnerOnChildException.class,
-        FinancialTransactionCategoryExceptions.CategoryOwnerInactiveMemberException.class
+        CategoryExceptions.CategoryMemberLimitsOnCreditException.class,
+        CategoryExceptions.CategoryMemberLimitsOnOwnedException.class,
+        CategoryExceptions.CategoryMemberLimitDuplicateMemberException.class,
+        CategoryExceptions.CategoryMemberLimitInactiveMemberException.class,
+        CategoryExceptions.CategoryOwnerOnChildException.class,
+        CategoryExceptions.CategoryOwnerInactiveMemberException.class
     })
     public ResponseEntity<ErrorResponseDto> handleCategoryMemberInvariant(
             RuntimeException exception, HttpServletRequest request) {
@@ -114,8 +111,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        FinancialTransactionCategoryExceptions.CategoryHasChildrenException.class,
-        FinancialTransactionCategoryExceptions.CategoryInUseException.class
+        CategoryExceptions.CategoryHasChildrenException.class,
+        CategoryExceptions.CategoryInUseException.class
     })
     public ResponseEntity<ErrorResponseDto> handleCategoryConflict(
             RuntimeException exception, HttpServletRequest request) {
@@ -176,12 +173,12 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     }
 
     @ExceptionHandler({
-        FinancialTransactionExceptions.CategoryTypeMismatchException.class,
-        FinancialTransactionExceptions.ItemCategoryTypeMismatchException.class,
-        FinancialTransactionExceptions.ItemsTotalExceedsAmountException.class,
-        FinancialTransactionExceptions.ParticipantSharesMismatchException.class
+        TransactionExceptions.CategoryTypeMismatchException.class,
+        TransactionExceptions.ItemCategoryTypeMismatchException.class,
+        TransactionExceptions.ItemsTotalExceedsAmountException.class,
+        TransactionExceptions.ParticipantSharesMismatchException.class
     })
-    public ResponseEntity<ErrorResponseDto> handleFinancialTransactionInvariant(
+    public ResponseEntity<ErrorResponseDto> handleTransactionInvariant(
             RuntimeException exception, HttpServletRequest request) {
         ErrorResponseDto errorResponse = new ErrorResponseDto(exception.getMessage(), request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse);

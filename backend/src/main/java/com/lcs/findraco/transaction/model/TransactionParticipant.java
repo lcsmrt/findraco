@@ -21,7 +21,7 @@ public class TransactionParticipant {
             name = "transaction_id",
             nullable = false,
             foreignKey = @ForeignKey(name = "fk_txn_participants_transaction"))
-    private FinancialTransaction transaction;
+    private Transaction transaction;
 
     @ManyToOne(optional = false)
     @JoinColumn(
@@ -39,11 +39,11 @@ public class TransactionParticipant {
         return id;
     }
 
-    public FinancialTransaction getTransaction() {
+    public Transaction getTransaction() {
         return transaction;
     }
 
-    public void setTransaction(FinancialTransaction transaction) {
+    public void setTransaction(Transaction transaction) {
         this.transaction = transaction;
     }
 

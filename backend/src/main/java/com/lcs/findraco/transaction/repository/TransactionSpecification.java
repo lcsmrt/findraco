@@ -1,9 +1,9 @@
 package com.lcs.findraco.transaction.repository;
 
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.JoinType;
@@ -17,13 +17,13 @@ import java.util.Locale;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
-public class FinancialTransactionSpecification {
+public class TransactionSpecification {
 
-    public static Specification<FinancialTransaction> belongsToPlan(Plan plan) {
+    public static Specification<Transaction> belongsToPlan(Plan plan) {
         return (root, query, cb) -> cb.equal(root.get("plan"), plan);
     }
 
-    public static Specification<FinancialTransaction> typeEquals(FinancialTransactionType type) {
+    public static Specification<Transaction> typeEquals(TransactionType type) {
         if (type == null) {
             return (root, query, cb) -> null;
         }
@@ -35,7 +35,7 @@ public class FinancialTransactionSpecification {
      * parent returns the parent's and its children's transactions. LEFT join: a category is never
      * duplicated (many-to-one), and the join does not interfere with the category-name ordering.
      */
-    public static Specification<FinancialTransaction> categoryInTree(Long categoryId) {
+    public static Specification<Transaction> categoryInTree(Long categoryId) {
         if (categoryId == null) {
             return (root, query, cb) -> null;
         }
@@ -51,7 +51,7 @@ public class FinancialTransactionSpecification {
      * Restrict to transactions where the given user is a participant. Implemented as an EXISTS
      * subquery (rather than a join) so it never multiplies rows and the paginated count stays correct.
      */
-    public static Specification<FinancialTransaction> hasParticipant(Long memberId) {
+    public static Specification<Transaction> hasParticipant(Long memberId) {
         if (memberId == null) {
             return (root, query, cb) -> null;
         }
@@ -71,7 +71,7 @@ public class FinancialTransactionSpecification {
      * (case-insensitive substring). The name match is an EXISTS subquery so a row matching on both
      * still appears exactly once — no join-induced duplicates.
      */
-    public static Specification<FinancialTransaction> matchesSearchTerm(String term) {
+    public static Specification<Transaction> matchesSearchTerm(String term) {
         if (term == null || term.isBlank()) {
             return (root, query, cb) -> null;
         }
@@ -90,28 +90,28 @@ public class FinancialTransactionSpecification {
         };
     }
 
-    public static Specification<FinancialTransaction> startDateFrom(LocalDate date) {
+    public static Specification<Transaction> startDateFrom(LocalDate date) {
         if (date == null) {
             return (root, query, cb) -> null;
         }
         return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("startDate"), date);
     }
 
-    public static Specification<FinancialTransaction> startDateTo(LocalDate date) {
+    public static Specification<Transaction> startDateTo(LocalDate date) {
         if (date == null) {
             return (root, query, cb) -> null;
         }
         return (root, query, cb) -> cb.lessThanOrEqualTo(root.get("startDate"), date);
     }
 
-    public static Specification<FinancialTransaction> amountMin(BigDecimal amount) {
+    public static Specification<Transaction> amountMin(BigDecimal amount) {
         if (amount == null) {
             return (root, query, cb) -> null;
         }
         return (root, query, cb) -> cb.greaterThanOrEqualTo(root.get("amount"), amount);
     }
 
-    public static Specification<FinancialTransaction> amountMax(BigDecimal amount) {
+    public static Specification<Transaction> amountMax(BigDecimal amount) {
         if (amount == null) {
             return (root, query, cb) -> null;
         }
@@ -123,7 +123,7 @@ public class FinancialTransactionSpecification {
      * uncategorized rows are kept, and a null-rank order key so they always sort last in both
      * directions. This spec owns the ordering — the caller passes an unsorted Pageable for this key.
      */
-    public static Specification<FinancialTransaction> orderByCategoryName(Sort.Direction direction) {
+    public static Specification<Transaction> orderByCategoryName(Sort.Direction direction) {
         return (root, query, cb) -> {
             if (isCountQuery(query.getResultType())) {
                 return null;
@@ -146,7 +146,7 @@ public class FinancialTransactionSpecification {
      * among participants whose share equals the transaction's maximum share. This spec owns the ordering —
      * the caller passes an unsorted Pageable for this key.
      */
-    public static Specification<FinancialTransaction> orderByLargestShareParticipant(Sort.Direction direction) {
+    public static Specification<Transaction> orderByLargestShareParticipant(Sort.Direction direction) {
         return (root, query, cb) -> {
             if (isCountQuery(query.getResultType())) {
                 return null;

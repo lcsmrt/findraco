@@ -1,6 +1,6 @@
 package com.lcs.findraco.transaction.repository;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import jakarta.persistence.LockModeType;
@@ -19,12 +19,11 @@ public interface RecurrenceDefinitionRepository extends JpaRepository<Recurrence
 
     Optional<RecurrenceDefinition> findByPlanAndSeriesId(Plan plan, String seriesId);
 
-    long countByCategory(FinancialTransactionCategory category);
+    long countByCategory(Category category);
 
     @Modifying(flushAutomatically = true)
     @Query("UPDATE RecurrenceDefinition rd SET rd.category = :target WHERE rd.category = :source")
-    int reassignCategory(
-            @Param("source") FinancialTransactionCategory source, @Param("target") FinancialTransactionCategory target);
+    int reassignCategory(@Param("source") Category source, @Param("target") Category target);
 
     // Rolling top-up due-set: open-ended (endDate IS NULL) RECURRING definitions whose materialized
     // watermark hasn't reached the rolling horizon yet. Bounded series (endDate NOT NULL) never

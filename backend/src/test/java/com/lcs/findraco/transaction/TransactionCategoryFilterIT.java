@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.util.List;
@@ -58,34 +58,27 @@ class TransactionCategoryFilterIT extends AbstractIntegrationTest {
     }
 
     private record Seed(
-            FinancialTransactionCategory food,
-            FinancialTransactionCategory delivery,
-            FinancialTransaction inFood,
-            FinancialTransaction inDelivery,
-            FinancialTransaction inDiningOut) {}
+            Category food, Category delivery, Transaction inFood, Transaction inDelivery, Transaction inDiningOut) {}
 
     /** Food > Delivery, Food > Dining out, plus an unrelated root (Rent) and an uncategorized transaction. */
     private Seed seed(Plan plan, User owner) {
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
-        FinancialTransactionCategory diningOut =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Dining out", food);
-        FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
+        Category diningOut = fixtures.aCategory(plan, TransactionType.DEBIT, "Dining out", food);
+        Category rent = fixtures.aCategory(plan, TransactionType.DEBIT, "Rent");
 
-        FinancialTransaction inFood =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, food);
-        FinancialTransaction inDelivery =
-                fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, delivery);
-        FinancialTransaction inDiningOut =
-                fixtures.aTransaction(plan, owner, new BigDecimal("30.00"), FinancialTransactionType.DEBIT, diningOut);
-        fixtures.aTransaction(plan, owner, new BigDecimal("40.00"), FinancialTransactionType.DEBIT, rent);
-        fixtures.aTransaction(plan, owner, new BigDecimal("50.00"), FinancialTransactionType.DEBIT);
+        Transaction inFood = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, food);
+        Transaction inDelivery =
+                fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), TransactionType.DEBIT, delivery);
+        Transaction inDiningOut =
+                fixtures.aTransaction(plan, owner, new BigDecimal("30.00"), TransactionType.DEBIT, diningOut);
+        fixtures.aTransaction(plan, owner, new BigDecimal("40.00"), TransactionType.DEBIT, rent);
+        fixtures.aTransaction(plan, owner, new BigDecimal("50.00"), TransactionType.DEBIT);
         return new Seed(food, delivery, inFood, inDelivery, inDiningOut);
     }
 
     private JsonNode list(Plan plan, User asUser, Long categoryId) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
+        MvcResult result = mockMvc.perform(get(TransactionRoutes.TRANSACTION, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .param("categoryId", categoryId.toString()))
                 .andExpect(status().isOk())

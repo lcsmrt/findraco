@@ -5,19 +5,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionItem;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,10 +42,10 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FinancialTransactionCategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
 
     @Autowired
-    private FinancialTransactionRepository transactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private RecurrenceDefinitionRepository recurrenceDefinitionRepository;
@@ -57,7 +57,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void unusedCategoryIsDeletedWith204() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory unused = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Unused");
+        Category unused = fixtures.aCategory(plan, TransactionType.DEBIT, "Unused");
 
         deleteCategory(plan, owner, unused.getId(), null).andExpect(status().isNoContent());
 
@@ -69,10 +69,9 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void parentWithChildrenIsRejectedWith409() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
-        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
+        Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
 
         deleteCategory(plan, owner, food.getId(), null).andExpect(status().isConflict());
         deleteCategory(plan, owner, food.getId(), other.getId()).andExpect(status().isConflict());
@@ -86,13 +85,13 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void categoryInUseWithoutTargetIsRejectedWith409ReportingCounts() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        FinancialTransaction direct1 =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
-        FinancialTransaction direct2 =
-                fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, source);
-        FinancialTransaction withItem = transactionWithItem(plan, owner, other, source);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
+        Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
+        Transaction direct1 =
+                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
+        Transaction direct2 =
+                fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), TransactionType.DEBIT, source);
+        Transaction withItem = transactionWithItem(plan, owner, other, source);
         RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
 
         MvcResult result = deleteCategory(plan, owner, source.getId(), null)
@@ -118,13 +117,11 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void reassignMovesTransactionsItemsAndRecurrenceDefinitionsThenDeletesWith204() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory source =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food - Delivery");
-        FinancialTransactionCategory target = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery");
-        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        FinancialTransaction direct =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
-        FinancialTransaction withItem = transactionWithItem(plan, owner, other, source);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Food - Delivery");
+        Category target = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery");
+        Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
+        Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
+        Transaction withItem = transactionWithItem(plan, owner, other, source);
         RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
 
         deleteCategory(plan, owner, source.getId(), target.getId()).andExpect(status().isNoContent());
@@ -142,9 +139,8 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void targetIsTheCategoryItselfIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransaction direct =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
+        Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
 
         deleteCategory(plan, owner, source.getId(), source.getId()).andExpect(status().isBadRequest());
 
@@ -158,11 +154,9 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void targetIsOneOfItsChildrenIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
-        FinancialTransaction direct =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, food);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
+        Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, food);
 
         deleteCategory(plan, owner, food.getId(), delivery.getId()).andExpect(status().isBadRequest());
 
@@ -176,10 +170,9 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void targetOfDifferentTypeIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransactionCategory salary = fixtures.aCategory(plan, FinancialTransactionType.CREDIT, "Salary");
-        FinancialTransaction direct =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
+        Category salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary");
+        Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
 
         deleteCategory(plan, owner, source.getId(), salary.getId()).andExpect(status().isBadRequest());
 
@@ -195,11 +188,9 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User otherOwner = fixtures.aUser();
         Plan otherPlan = fixtures.aPlan(otherOwner);
-        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransactionCategory foreign =
-                fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransaction direct =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
+        Category foreign = fixtures.aCategory(otherPlan, TransactionType.DEBIT, "Groceries");
+        Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
 
         deleteCategory(plan, owner, source.getId(), foreign.getId()).andExpect(status().isNotFound());
 
@@ -216,12 +207,11 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void failureMidwayLeavesEveryReferenceUnchanged() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransactionCategory target = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        FinancialTransaction direct =
-                fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
-        FinancialTransaction withItem = transactionWithItem(plan, owner, other, source);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
+        Category target = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
+        Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
+        Transaction withItem = transactionWithItem(plan, owner, other, source);
         RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
 
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
@@ -249,10 +239,10 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User viewer = fixtures.aUser();
         fixtures.addMember(plan, viewer, PlanRole.VIEWER);
-        FinancialTransactionCategory source = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries");
-        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, source);
-        fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), FinancialTransactionType.DEBIT, source);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
+        Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
+        fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
+        fixtures.aTransaction(plan, owner, new BigDecimal("20.00"), TransactionType.DEBIT, source);
         transactionWithItem(plan, owner, other, source);
         recurrenceDefinition(plan, owner, source);
         recurrenceDefinition(plan, owner, source);
@@ -270,9 +260,9 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     void usageOfAnUnusedCategoryIsZero() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory unused = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Unused");
-        FinancialTransactionCategory other = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Other");
-        fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, other);
+        Category unused = fixtures.aCategory(plan, TransactionType.DEBIT, "Unused");
+        Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
+        fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, other);
 
         JsonNode usage = readUsage(fetchUsage(plan, owner, unused.getId()).andExpect(status().isOk()));
 
@@ -288,16 +278,15 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User otherOwner = fixtures.aUser();
         Plan otherPlan = fixtures.aPlan(otherOwner);
-        FinancialTransactionCategory foreign =
-                fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Groceries");
-        fixtures.aTransaction(otherPlan, otherOwner, new BigDecimal("10.00"), FinancialTransactionType.DEBIT, foreign);
+        Category foreign = fixtures.aCategory(otherPlan, TransactionType.DEBIT, "Groceries");
+        fixtures.aTransaction(otherPlan, otherOwner, new BigDecimal("10.00"), TransactionType.DEBIT, foreign);
 
         fetchUsage(plan, owner, foreign.getId()).andExpect(status().isNotFound());
     }
 
     private ResultActions fetchUsage(Plan plan, User asUser, Long id) throws Exception {
-        return mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}/usage", plan.getId(), id)
-                .with(testAuthHelper.asUser(asUser)));
+        return mockMvc.perform(
+                get(CategoryRoutes.CATEGORY + "/{id}/usage", plan.getId(), id).with(testAuthHelper.asUser(asUser)));
     }
 
     private JsonNode readUsage(ResultActions result) throws Exception {
@@ -305,8 +294,8 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     }
 
     private ResultActions deleteCategory(Plan plan, User asUser, Long id, Long reassignTo) throws Exception {
-        var request = delete(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}", plan.getId(), id)
-                .with(testAuthHelper.asUser(asUser));
+        var request =
+                delete(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), id).with(testAuthHelper.asUser(asUser));
         if (reassignTo != null) {
             request.param("reassignTo", reassignTo.toString());
         }
@@ -314,13 +303,10 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     }
 
     /** A R$ 50 transaction in {@code transactionCategory} with one R$ 20 item in {@code itemCategory}. */
-    private FinancialTransaction transactionWithItem(
-            Plan plan,
-            User owner,
-            FinancialTransactionCategory transactionCategory,
-            FinancialTransactionCategory itemCategory) {
-        FinancialTransaction transaction = fixtures.aTransaction(
-                plan, owner, new BigDecimal("50.00"), FinancialTransactionType.DEBIT, transactionCategory);
+    private Transaction transactionWithItem(
+            Plan plan, User owner, Category transactionCategory, Category itemCategory) {
+        Transaction transaction =
+                fixtures.aTransaction(plan, owner, new BigDecimal("50.00"), TransactionType.DEBIT, transactionCategory);
         TransactionItem item = new TransactionItem();
         item.setTransaction(transaction);
         item.setDescription("Item");
@@ -330,13 +316,13 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         return transactionRepository.save(transaction);
     }
 
-    private RecurrenceDefinition recurrenceDefinition(Plan plan, User owner, FinancialTransactionCategory category) {
+    private RecurrenceDefinition recurrenceDefinition(Plan plan, User owner, Category category) {
         RecurrenceDefinition definition = new RecurrenceDefinition();
         definition.setPlan(plan);
         definition.setCreatedBy(owner);
         definition.setCategory(category);
         definition.setSeriesId(UUID.randomUUID().toString());
-        definition.setType(FinancialTransactionType.DEBIT);
+        definition.setType(TransactionType.DEBIT);
         definition.setAmount(new BigDecimal("30.00"));
         definition.setDescription("Installments");
         definition.setMode(RecurrenceMode.INSTALLMENT);

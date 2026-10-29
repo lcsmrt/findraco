@@ -8,7 +8,6 @@ import com.lcs.findraco.plan.response.InvitationResponseDto;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanInvitationService;
 import com.lcs.findraco.shared.security.CurrentUser;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.user.model.User;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
@@ -30,7 +29,7 @@ public class PlanInvitationController {
     }
 
     @Operation(summary = "Creates an invitation (email or link) for the plan; owner only")
-    @PostMapping(ApiRoutes.PLAN_INVITATION)
+    @PostMapping(PlanRoutes.PLAN_INVITATION)
     public ResponseEntity<InvitationResponseDto> createInvitation(
             @RequestBody @Valid InvitationRequestDto dto, PlanContext ctx) {
         PlanInvitation invitation =
@@ -39,7 +38,7 @@ public class PlanInvitationController {
     }
 
     @Operation(summary = "Lists a plan's invitations (owner only)")
-    @GetMapping(ApiRoutes.PLAN_INVITATION)
+    @GetMapping(PlanRoutes.PLAN_INVITATION)
     public ResponseEntity<List<InvitationResponseDto>> listInvitations(PlanContext ctx) {
         List<InvitationResponseDto> invitations = invitationService.listInvitations(ctx).stream()
                 .map(InvitationResponseDto::new)
@@ -48,7 +47,7 @@ public class PlanInvitationController {
     }
 
     @Operation(summary = "Revokes an invitation (owner only)")
-    @DeleteMapping(ApiRoutes.PLAN_INVITATION + "/{invitationId}")
+    @DeleteMapping(PlanRoutes.PLAN_INVITATION + "/{invitationId}")
     public ResponseEntity<Void> revokeInvitation(@PathVariable Long invitationId, PlanContext ctx) {
         invitationService.revoke(ctx, invitationId);
         return ResponseEntity.noContent().build();
@@ -56,13 +55,13 @@ public class PlanInvitationController {
 
     @Operation(summary = "Previews an invitation by token before accepting")
     @SecurityRequirements
-    @GetMapping(ApiRoutes.INVITATION + "/{token}")
+    @GetMapping(PlanRoutes.INVITATION + "/{token}")
     public ResponseEntity<InvitationPreviewResponseDto> previewInvitation(@PathVariable String token) {
         return ResponseEntity.ok(new InvitationPreviewResponseDto(invitationService.preview(token)));
     }
 
     @Operation(summary = "Accepts an invitation by token for the authenticated user")
-    @PostMapping(ApiRoutes.INVITATION + "/{token}/accept")
+    @PostMapping(PlanRoutes.INVITATION + "/{token}/accept")
     public ResponseEntity<AcceptInvitationResponseDto> acceptInvitation(
             @PathVariable String token, @CurrentUser User actor) {
         PlanInvitationService.AcceptResult result = invitationService.accept(token, actor);

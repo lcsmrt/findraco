@@ -1,14 +1,14 @@
 package com.lcs.findraco.category.request;
 
 import com.lcs.findraco.shared.web.PaginatedFilterDto;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 
-public class FinancialTransactionCategoryFilterDto extends PaginatedFilterDto {
+public class CategoryFilterDto extends PaginatedFilterDto {
 
     private String description;
-    private FinancialTransactionType type;
+    private TransactionType type;
 
-    public FinancialTransactionCategoryFilterDto() {
+    public CategoryFilterDto() {
         super("description", "asc");
     }
 
@@ -20,11 +20,11 @@ public class FinancialTransactionCategoryFilterDto extends PaginatedFilterDto {
         this.description = description;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 
-    public void setType(FinancialTransactionType type) {
+    public void setType(TransactionType type) {
         this.type = type;
     }
 }

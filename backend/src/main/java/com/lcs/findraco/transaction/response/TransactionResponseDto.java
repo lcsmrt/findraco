@@ -1,20 +1,20 @@
 package com.lcs.findraco.transaction.response;
 
-import com.lcs.findraco.category.response.FinancialTransactionCategoryResponseDto;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.category.response.CategoryResponseDto;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionItem;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public class FinancialTransactionResponseDto {
+public class TransactionResponseDto {
     private final Long id;
-    private final FinancialTransactionCategoryResponseDto category;
-    private final FinancialTransactionType type;
+    private final CategoryResponseDto category;
+    private final TransactionType type;
     private final BigDecimal amount;
     private final String description;
     private final String seriesId;
@@ -26,11 +26,9 @@ public class FinancialTransactionResponseDto {
     private final List<ParticipantDto> participants;
     private final List<ItemDto> items;
 
-    public FinancialTransactionResponseDto(FinancialTransaction transaction) {
+    public TransactionResponseDto(Transaction transaction) {
         this.id = transaction.getId();
-        this.category = transaction.getCategory() != null
-                ? new FinancialTransactionCategoryResponseDto(transaction.getCategory())
-                : null;
+        this.category = transaction.getCategory() != null ? new CategoryResponseDto(transaction.getCategory()) : null;
         this.type = transaction.getType();
         this.amount = transaction.getAmount();
         this.description = transaction.getDescription();
@@ -92,15 +90,14 @@ public class FinancialTransactionResponseDto {
         private final String description;
         private final BigDecimal amount;
         private final Integer quantity;
-        private final FinancialTransactionCategoryResponseDto category;
+        private final CategoryResponseDto category;
 
         public ItemDto(TransactionItem item) {
             this.id = item.getId();
             this.description = item.getDescription();
             this.amount = item.getAmount();
             this.quantity = item.getQuantity();
-            this.category =
-                    item.getCategory() != null ? new FinancialTransactionCategoryResponseDto(item.getCategory()) : null;
+            this.category = item.getCategory() != null ? new CategoryResponseDto(item.getCategory()) : null;
         }
 
         public Long getId() {
@@ -119,7 +116,7 @@ public class FinancialTransactionResponseDto {
             return quantity;
         }
 
-        public FinancialTransactionCategoryResponseDto getCategory() {
+        public CategoryResponseDto getCategory() {
             return category;
         }
     }
@@ -144,11 +141,11 @@ public class FinancialTransactionResponseDto {
         return id;
     }
 
-    public FinancialTransactionCategoryResponseDto getCategory() {
+    public CategoryResponseDto getCategory() {
         return category;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

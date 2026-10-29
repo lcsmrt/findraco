@@ -1,15 +1,14 @@
 package com.lcs.findraco.category.controller;
 
+import com.lcs.findraco.category.request.CategoryFilterDto;
+import com.lcs.findraco.category.request.CategoryRequestDto;
 import com.lcs.findraco.category.request.CategorySpendingFilterDto;
-import com.lcs.findraco.category.request.FinancialTransactionCategoryFilterDto;
-import com.lcs.findraco.category.request.FinancialTransactionCategoryRequestDto;
+import com.lcs.findraco.category.response.CategoryResponseDto;
 import com.lcs.findraco.category.response.CategorySpendingDto;
 import com.lcs.findraco.category.response.CategoryUsageDto;
-import com.lcs.findraco.category.response.FinancialTransactionCategoryResponseDto;
+import com.lcs.findraco.category.service.CategoryService;
 import com.lcs.findraco.category.service.CategorySpendingService;
-import com.lcs.findraco.category.service.FinancialTransactionCategoryService;
 import com.lcs.findraco.plan.service.PlanContext;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.shared.web.PagedResponseDto;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,16 +19,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@Tag(name = "Financial Transaction Categories")
+@Tag(name = "Categories")
 @RestController
-@RequestMapping(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY)
-public class FinancialTransactionCategoryController {
+@RequestMapping(CategoryRoutes.CATEGORY)
+public class CategoryController {
 
-    private final FinancialTransactionCategoryService categoryService;
+    private final CategoryService categoryService;
     private final CategorySpendingService categorySpendingService;
 
-    public FinancialTransactionCategoryController(
-            FinancialTransactionCategoryService categoryService, CategorySpendingService categorySpendingService) {
+    public CategoryController(CategoryService categoryService, CategorySpendingService categorySpendingService) {
         this.categoryService = categoryService;
         this.categorySpendingService = categorySpendingService;
     }
@@ -45,7 +43,7 @@ public class FinancialTransactionCategoryController {
 
     @Operation(summary = "Fetches a transaction category by ID")
     @GetMapping("/{id}")
-    public ResponseEntity<FinancialTransactionCategoryResponseDto> getCategory(@PathVariable Long id, PlanContext ctx) {
+    public ResponseEntity<CategoryResponseDto> getCategory(@PathVariable Long id, PlanContext ctx) {
         return ResponseEntity.ok(categoryService.getById(id, ctx));
     }
 
@@ -57,22 +55,22 @@ public class FinancialTransactionCategoryController {
 
     @Operation(summary = "Fetches all transaction categories for the plan")
     @GetMapping
-    public ResponseEntity<PagedResponseDto<FinancialTransactionCategoryResponseDto>> getAllCategories(
-            @ParameterObject @ModelAttribute @Valid FinancialTransactionCategoryFilterDto filter, PlanContext ctx) {
+    public ResponseEntity<PagedResponseDto<CategoryResponseDto>> getAllCategories(
+            @ParameterObject @ModelAttribute @Valid CategoryFilterDto filter, PlanContext ctx) {
         return ResponseEntity.ok(new PagedResponseDto<>(categoryService.findAllByPlanPaged(filter, ctx)));
     }
 
     @Operation(summary = "Creates a new transaction category for the plan")
     @PostMapping
-    public ResponseEntity<FinancialTransactionCategoryResponseDto> createCategory(
-            @RequestBody @Valid FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
+    public ResponseEntity<CategoryResponseDto> createCategory(
+            @RequestBody @Valid CategoryRequestDto dto, PlanContext ctx) {
         return ResponseEntity.status(HttpStatus.CREATED).body(categoryService.create(dto, ctx));
     }
 
     @Operation(summary = "Updates a transaction category for the plan")
     @PutMapping("/{id}")
-    public ResponseEntity<FinancialTransactionCategoryResponseDto> updateCategory(
-            @PathVariable Long id, @RequestBody @Valid FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
+    public ResponseEntity<CategoryResponseDto> updateCategory(
+            @PathVariable Long id, @RequestBody @Valid CategoryRequestDto dto, PlanContext ctx) {
         return ResponseEntity.ok(categoryService.update(id, dto, ctx));
     }
 

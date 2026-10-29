@@ -7,9 +7,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.auth.controller.AuthRoutes;
 import com.lcs.findraco.auth.service.OpaqueTokens;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.user.controller.UserRoutes;
 import com.lcs.findraco.user.model.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -140,7 +141,7 @@ class SessionIT extends AbstractIntegrationTest {
                 .readTree(result.getResponse().getContentAsString())
                 .get("token")
                 .asString();
-        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(user.getEmail()));
 
@@ -257,13 +258,13 @@ class SessionIT extends AbstractIntegrationTest {
     // --- helpers ------------------------------------------------------------------------------
 
     private ResultActions login(String email, String password) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.AUTH + "/login")
+        return mockMvc.perform(post(AuthRoutes.AUTH + "/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("email", email, "password", password))));
     }
 
     private ResultActions refresh(String cookieValue) throws Exception {
-        MockHttpServletRequestBuilder request = post(ApiRoutes.AUTH + "/refresh");
+        MockHttpServletRequestBuilder request = post(AuthRoutes.AUTH + "/refresh");
         if (cookieValue != null) {
             request.cookie(new Cookie(COOKIE, cookieValue));
         }
@@ -271,7 +272,7 @@ class SessionIT extends AbstractIntegrationTest {
     }
 
     private ResultActions logout(String cookieValue, String accessToken) throws Exception {
-        MockHttpServletRequestBuilder request = post(ApiRoutes.AUTH + "/logout");
+        MockHttpServletRequestBuilder request = post(AuthRoutes.AUTH + "/logout");
         if (cookieValue != null) {
             request.cookie(new Cookie(COOKIE, cookieValue));
         }

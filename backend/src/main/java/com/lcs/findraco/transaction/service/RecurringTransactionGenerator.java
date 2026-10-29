@@ -1,12 +1,12 @@
 package com.lcs.findraco.transaction.service;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
-import com.lcs.findraco.transaction.request.FinancialTransactionSeriesRequestDto;
+import com.lcs.findraco.transaction.request.TransactionSeriesRequestDto;
 import com.lcs.findraco.user.model.User;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -28,11 +28,11 @@ public class RecurringTransactionGenerator {
         this.clock = clock;
     }
 
-    public List<FinancialTransaction> generate(
-            FinancialTransactionSeriesRequestDto dto,
+    public List<Transaction> generate(
+            TransactionSeriesRequestDto dto,
             Plan plan,
             User createdBy,
-            FinancialTransactionCategory category,
+            Category category,
             String seriesId,
             SplitMode splitMode,
             List<ResolvedParticipant> participantShares) {
@@ -43,11 +43,11 @@ public class RecurringTransactionGenerator {
         };
     }
 
-    private List<FinancialTransaction> generateInstallments(
-            FinancialTransactionSeriesRequestDto dto,
+    private List<Transaction> generateInstallments(
+            TransactionSeriesRequestDto dto,
             Plan plan,
             User createdBy,
-            FinancialTransactionCategory category,
+            Category category,
             String seriesId,
             SplitMode splitMode,
             List<ResolvedParticipant> participantShares) {
@@ -55,9 +55,9 @@ public class RecurringTransactionGenerator {
         int first = dto.getCurrentParcel() != null ? dto.getCurrentParcel() : 1;
         ensureWithinCap(total - first + 1);
 
-        List<FinancialTransaction> occurrences = new ArrayList<>(total - first + 1);
+        List<Transaction> occurrences = new ArrayList<>(total - first + 1);
         for (int parcel = first; parcel <= total; parcel++) {
-            FinancialTransaction transaction = baseTransaction(
+            Transaction transaction = baseTransaction(
                     dto,
                     plan,
                     createdBy,
@@ -73,11 +73,11 @@ public class RecurringTransactionGenerator {
         return occurrences;
     }
 
-    private List<FinancialTransaction> generateRecurring(
-            FinancialTransactionSeriesRequestDto dto,
+    private List<Transaction> generateRecurring(
+            TransactionSeriesRequestDto dto,
             Plan plan,
             User createdBy,
-            FinancialTransactionCategory category,
+            Category category,
             String seriesId,
             SplitMode splitMode,
             List<ResolvedParticipant> participantShares) {
@@ -85,13 +85,13 @@ public class RecurringTransactionGenerator {
                 ? dto.getEndDate()
                 : LocalDate.now(clock).plusMonths(OPEN_ENDED_HORIZON_MONTHS);
 
-        List<FinancialTransaction> occurrences = new ArrayList<>();
+        List<Transaction> occurrences = new ArrayList<>();
         // Each date is counted from the start, so a day clamped in a short month does not carry over.
         for (int month = 0; !dto.getStartDate().plusMonths(month).isAfter(effectiveEnd); month++) {
             LocalDate date = dto.getStartDate().plusMonths(month);
             ensureWithinCap(occurrences.size() + 1);
 
-            FinancialTransaction transaction =
+            Transaction transaction =
                     baseTransaction(dto, plan, createdBy, category, seriesId, date, splitMode, participantShares);
             transaction.setDescription(dto.getDescription());
             transaction.setParcelsNumber(null);
@@ -106,12 +106,12 @@ public class RecurringTransactionGenerator {
      * months strictly after {@code afterExclusive} (the current {@code generatedThrough} watermark) up
      * through {@code throughInclusive} (the rolling horizon), honoring {@link #MAX_OCCURRENCES} per pass.
      */
-    public List<FinancialTransaction> generateForwardWindow(
+    public List<Transaction> generateForwardWindow(
             RecurrenceDefinition def,
             LocalDate afterExclusive,
             LocalDate throughInclusive,
             List<ResolvedParticipant> participantShares) {
-        List<FinancialTransaction> occurrences = new ArrayList<>();
+        List<Transaction> occurrences = new ArrayList<>();
         for (int month = 0; !def.getStartDate().plusMonths(month).isAfter(throughInclusive); month++) {
             LocalDate date = def.getStartDate().plusMonths(month);
             if (!date.isAfter(afterExclusive)) {
@@ -123,16 +123,16 @@ public class RecurringTransactionGenerator {
         return occurrences;
     }
 
-    private FinancialTransaction baseTransaction(
-            FinancialTransactionSeriesRequestDto dto,
+    private Transaction baseTransaction(
+            TransactionSeriesRequestDto dto,
             Plan plan,
             User createdBy,
-            FinancialTransactionCategory category,
+            Category category,
             String seriesId,
             LocalDate date,
             SplitMode splitMode,
             List<ResolvedParticipant> participantShares) {
-        FinancialTransaction transaction = new FinancialTransaction();
+        Transaction transaction = new Transaction();
         transaction.setPlan(plan);
         transaction.setCreatedBy(createdBy);
         transaction.setCategory(category);
@@ -152,9 +152,9 @@ public class RecurringTransactionGenerator {
         return transaction;
     }
 
-    private FinancialTransaction baseTransactionFromDefinition(
+    private Transaction baseTransactionFromDefinition(
             RecurrenceDefinition def, LocalDate date, List<ResolvedParticipant> participantShares) {
-        FinancialTransaction transaction = new FinancialTransaction();
+        Transaction transaction = new Transaction();
         transaction.setPlan(def.getPlan());
         transaction.setCreatedBy(def.getCreatedBy());
         transaction.setCategory(def.getCategory());

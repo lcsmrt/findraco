@@ -6,10 +6,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -30,7 +31,7 @@ import tools.jackson.databind.ObjectMapper;
  * child rows (participants/items) not present in the new request rather than merging them in.
  *
  * <p>Also exercises the validation guards that are actually implemented in
- * {@link com.lcs.findraco.transaction.service.FinancialTransactionService} and its DTOs.
+ * {@link com.lcs.findraco.transaction.service.TransactionService} and its DTOs.
  */
 class TransactionCrudIT extends AbstractIntegrationTest {
 
@@ -58,7 +59,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         assertThat(created.get("items")).hasSize(2);
         long transactionId = created.get("id").asLong();
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody(
@@ -93,7 +94,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         assertThat(created.get("participants")).hasSize(2);
         long transactionId = created.get("id").asLong();
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(splitRequestBody("100.00", List.of(owner))))
@@ -116,10 +117,10 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // Single item worth more than the transaction's own amount: FinancialTransactionService
-        // .applyItems throws FinancialTransactionExceptions.ItemsTotalExceedsAmountException,
+        // Single item worth more than the transaction's own amount: TransactionService
+        // .applyItems throws TransactionExceptions.ItemsTotalExceedsAmountException,
         // mapped to 400 by GlobalExceptionHandler.
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody(
@@ -143,9 +144,9 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // description carries @NotBlank on FinancialTransactionRequestDto: a blank value fails
+        // description carries @NotBlank on TransactionRequestDto: a blank value fails
         // bean validation before the service is even invoked (MethodArgumentNotValidException -> 400).
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("DEBIT", "100.00", "   ", owner, List.of())))
@@ -162,8 +163,8 @@ class TransactionCrudIT extends AbstractIntegrationTest {
         long transactionId = created.get("id").asLong();
 
         // ItemDto.amount carries @Positive: a negative item amount fails bean validation.
-        // (FinancialTransactionService.applyItems also redundantly re-checks this server-side.)
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        // (TransactionService.applyItems also redundantly re-checks this server-side.)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody(
@@ -184,9 +185,9 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // FinancialTransactionRequestDto.amount carries @Positive: a negative (or zero) top-level
+        // TransactionRequestDto.amount carries @Positive: a negative (or zero) top-level
         // amount fails bean validation before the service is invoked, same as ItemDto.amount.
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("DEBIT", "-50.00", "Groceries", owner, List.of())))
@@ -207,9 +208,9 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // FinancialTransactionService.update throws IllegalArgumentException("Category does not
+        // TransactionService.update throws IllegalArgumentException("Category does not
         // match the transaction type.") when category.type != dto.type -> 400.
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
@@ -234,9 +235,9 @@ class TransactionCrudIT extends AbstractIntegrationTest {
 
     @Test
     void putWithCategoryFromAnotherPlanIsRejectedAsNotFound() throws Exception {
-        // Real behavior: FinancialTransactionCategoryService.findById treats a category that
+        // Real behavior: CategoryService.findById treats a category that
         // belongs to a *different* plan the same as a category that doesn't exist at all, and
-        // throws FinancialTransactionCategoryNotFoundException, which GlobalExceptionHandler maps
+        // throws CategoryNotFoundException, which GlobalExceptionHandler maps
         // to 404 -- not 400. This follows the same "cross-plan reference looks like not-found,
         // never forbidden" convention documented in PlanAuthorizationMatrixIT/AuthenticationIT,
         // so it's asserted here as the real (and intentional) 404, not the 400 one might guess.
@@ -251,7 +252,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
@@ -275,7 +276,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
     }
 
     private JsonNode createTransaction(Plan plan, User asUser, String body) throws Exception {
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
+        MvcResult result = mockMvc.perform(post(TransactionRoutes.TRANSACTION, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -285,7 +286,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchTransaction(Plan plan, User asUser, long transactionId) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
+        MvcResult result = mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(asUser)))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -293,7 +294,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
     }
 
     private long createCategory(Plan plan, User asUser, String type, String description) throws Exception {
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY, plan.getId())
+        MvcResult result = mockMvc.perform(post(CategoryRoutes.CATEGORY, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(

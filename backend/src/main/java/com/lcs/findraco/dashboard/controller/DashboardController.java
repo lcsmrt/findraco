@@ -5,7 +5,6 @@ import com.lcs.findraco.dashboard.response.DashboardSummaryResponseDto;
 import com.lcs.findraco.dashboard.response.MonthlyTrendDto;
 import com.lcs.findraco.dashboard.service.DashboardService;
 import com.lcs.findraco.plan.service.PlanContext;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -16,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Dashboard")
 @RestController
-@RequestMapping(ApiRoutes.DASHBOARD)
+@RequestMapping(DashboardRoutes.DASHBOARD)
 public class DashboardController {
 
     private final DashboardService dashboardService;

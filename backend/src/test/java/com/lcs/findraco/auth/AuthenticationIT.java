@@ -6,8 +6,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.auth.controller.AuthRoutes;
 import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.user.controller.UserRoutes;
 import com.lcs.findraco.user.model.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -48,7 +50,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
     }
 
     private void register(String email) throws Exception {
-        mockMvc.perform(post(ApiRoutes.USER)
+        mockMvc.perform(post(UserRoutes.USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Test User",
@@ -58,7 +60,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
     }
 
     private String login(String email, String password) throws Exception {
-        MvcResult result = mockMvc.perform(post(ApiRoutes.AUTH + "/login")
+        MvcResult result = mockMvc.perform(post(AuthRoutes.AUTH + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "email", email,
@@ -77,7 +79,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
         String token = login(email, "password123");
         assertThat(token).isNotBlank();
 
-        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
+        mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + token))
                 .andExpect(status().isOk())
                 .andExpect(result -> {
                     JsonNode profile =
@@ -91,7 +93,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
         // POST /users is permitAll in SecurityConfig: registration itself must not require a
         // bearer token, and the response carries the new user, not a token (login mints that).
         String email = "bob-" + System.nanoTime() + "@test.com";
-        MvcResult result = mockMvc.perform(post(ApiRoutes.USER)
+        MvcResult result = mockMvc.perform(post(UserRoutes.USER)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Bob",
@@ -115,7 +117,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
     }
 
     private MvcResult attemptLogin(String email, String password) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.AUTH + "/login")
+        return mockMvc.perform(post(AuthRoutes.AUTH + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "email", email,
@@ -128,7 +130,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
         String email = "dave-" + System.nanoTime() + "@test.com";
         register(email);
 
-        mockMvc.perform(post(ApiRoutes.AUTH + "/login")
+        mockMvc.perform(post(AuthRoutes.AUTH + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(
                                 Map.of("email", email, "password", "not-the-right-password"))))
@@ -141,7 +143,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
         // CustomUserDetailsService throws Spring Security's own UsernameNotFoundException, which
         // DaoAuthenticationProvider's hideUserNotFoundExceptions converts to a BadCredentialsException,
         // mapped to 401 by GlobalExceptionHandler.
-        mockMvc.perform(post(ApiRoutes.AUTH + "/login")
+        mockMvc.perform(post(AuthRoutes.AUTH + "/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "email", "nobody-" + System.nanoTime() + "@test.com", "password", "password123"))))
@@ -215,7 +217,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
     @Test
     void malformedTokenIsRejectedWith401() throws Exception {
-        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
+        mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer not-a-jwt"))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."));
     }
@@ -231,7 +233,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .signWith(signingKey("a-different-secret-key-that-is-long-enough-for-hmac-sha-512-signatures"))
                 .compact();
 
-        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + forged))
+        mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + forged))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."));
     }
@@ -247,7 +249,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
                 .signWith(signingKey(jwtSecretKey))
                 .compact();
 
-        mockMvc.perform(get(ApiRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + expired))
+        mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + expired))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.message").value("Authentication required."));
     }

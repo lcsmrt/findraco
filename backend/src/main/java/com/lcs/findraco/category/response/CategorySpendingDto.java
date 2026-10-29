@@ -1,8 +1,8 @@
 package com.lcs.findraco.category.response;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.dashboard.response.CategoryBreakdownDto;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -18,7 +18,7 @@ public class CategorySpendingDto {
     private final Long categoryId;
     private final Long parentId;
     private final String name;
-    private final FinancialTransactionType type;
+    private final TransactionType type;
     private final Long ownerId;
     private final String ownerName;
     private final Boolean ownerActive;
@@ -35,7 +35,7 @@ public class CategorySpendingDto {
      *                    null when the category has no owner. A former owner is shown as such (CAT-14).
      */
     public CategorySpendingDto(
-            FinancialTransactionCategory category,
+            Category category,
             Boolean ownerActive,
             BigDecimal spent,
             BigDecimal limit,
@@ -150,7 +150,7 @@ public class CategorySpendingDto {
         return name;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

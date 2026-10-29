@@ -5,11 +5,12 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,7 +49,7 @@ class SplitInvariantIT extends AbstractIntegrationTest {
 
         String requestBody = splitTransactionRequestBody("100.00", owner, member);
 
-        MvcResult createResult = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
+        MvcResult createResult = mockMvc.perform(post(TransactionRoutes.TRANSACTION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -61,9 +62,8 @@ class SplitInvariantIT extends AbstractIntegrationTest {
         assertThat(sumParticipantShares(created)).isEqualByComparingTo("100.00");
 
         long transactionId = created.get("id").asLong();
-        MvcResult getResult = mockMvc.perform(
-                        get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), transactionId)
-                                .with(testAuthHelper.asUser(owner)))
+        MvcResult getResult = mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
+                        .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -82,7 +82,7 @@ class SplitInvariantIT extends AbstractIntegrationTest {
         User member = fixtures.aUser();
         fixtures.addMember(plan, member, PlanRole.EDITOR);
 
-        fixtures.aTransaction(plan, owner, new BigDecimal("100.00"), FinancialTransactionType.DEBIT);
+        fixtures.aTransaction(plan, owner, new BigDecimal("100.00"), TransactionType.DEBIT);
 
         BigDecimal totalExpensesAfterNonSplit =
                 fetchDashboard(plan, owner, null).get("totalExpenses").decimalValue();
@@ -90,7 +90,7 @@ class SplitInvariantIT extends AbstractIntegrationTest {
 
         String requestBody = splitTransactionRequestBody("150.00", owner, member);
 
-        mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
+        mockMvc.perform(post(TransactionRoutes.TRANSACTION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -113,7 +113,7 @@ class SplitInvariantIT extends AbstractIntegrationTest {
 
         String requestBody = splitTransactionRequestBody("100.00", owner, member);
 
-        mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId())
+        mockMvc.perform(post(TransactionRoutes.TRANSACTION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody))
@@ -157,7 +157,7 @@ class SplitInvariantIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchDashboard(Plan plan, User asUser, Long memberIdFilter) throws Exception {
-        MockHttpServletRequestBuilder requestBuilder = get(ApiRoutes.DASHBOARD, plan.getId())
+        MockHttpServletRequestBuilder requestBuilder = get(DashboardRoutes.DASHBOARD, plan.getId())
                 .with(testAuthHelper.asUser(asUser))
                 .param("startDate", today.minusDays(1).toString())
                 .param("endDate", today.plusDays(1).toString());

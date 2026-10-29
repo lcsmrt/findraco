@@ -1,6 +1,6 @@
 package com.lcs.findraco.transaction.service;
 
-import com.lcs.findraco.transaction.exception.FinancialTransactionExceptions;
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.SplitMode;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -50,7 +50,7 @@ public class SplitResolver {
                 .setScale(2, RoundingMode.HALF_UP);
 
         if (sum.compareTo(scaledAmount) != 0) {
-            throw new FinancialTransactionExceptions.ParticipantSharesMismatchException();
+            throw new TransactionExceptions.ParticipantSharesMismatchException();
         }
 
         List<ResolvedShare> shares = new ArrayList<>();

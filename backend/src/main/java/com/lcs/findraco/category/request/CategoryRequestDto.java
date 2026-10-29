@@ -1,16 +1,16 @@
 package com.lcs.findraco.category.request;
 
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class FinancialTransactionCategoryRequestDto {
+public class CategoryRequestDto {
 
     @NotNull(message = "Type cannot be null.")
-    private FinancialTransactionType type;
+    private TransactionType type;
 
     @NotBlank(message = "Description cannot be blank.")
     private String description;
@@ -29,7 +29,7 @@ public class FinancialTransactionCategoryRequestDto {
     @Valid
     private List<MemberLimitDto> memberLimits;
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

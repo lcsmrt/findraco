@@ -1,6 +1,6 @@
 package com.lcs.findraco.transaction.model;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
@@ -30,14 +30,14 @@ public class RecurrenceDefinition {
 
     @ManyToOne
     @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_recdef_category"))
-    private FinancialTransactionCategory category;
+    private Category category;
 
     @Column(name = "series_id", nullable = false, unique = true)
     private String seriesId;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private FinancialTransactionType type;
+    private TransactionType type;
 
     @Column(nullable = false)
     private BigDecimal amount;
@@ -96,11 +96,11 @@ public class RecurrenceDefinition {
         this.createdBy = createdBy;
     }
 
-    public FinancialTransactionCategory getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(FinancialTransactionCategory category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
@@ -112,11 +112,11 @@ public class RecurrenceDefinition {
         this.seriesId = seriesId;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 
-    public void setType(FinancialTransactionType type) {
+    public void setType(TransactionType type) {
         this.type = type;
     }
 

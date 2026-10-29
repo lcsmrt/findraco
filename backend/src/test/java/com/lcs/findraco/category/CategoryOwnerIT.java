@@ -7,16 +7,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
 import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.util.HashMap;
@@ -42,7 +45,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FinancialTransactionCategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
 
     @Autowired
     private CategoryMemberLimitRepository memberLimitRepository;
@@ -62,7 +65,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         assertThat(created.get("ownerId").asLong()).isEqualTo(partner.getId());
         assertThat(created.get("ownerName").asString()).isEqualTo(partner.getName());
         assertThat(created.get("ownerActive").asBoolean()).isTrue();
-        FinancialTransactionCategory persisted =
+        Category persisted =
                 categoryRepository.findById(created.get("id").asLong()).orElseThrow();
         assertThat(persisted.getOwner().getId()).isEqualTo(partner.getId());
     }
@@ -72,8 +75,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
     void ownerSetsAndClearsTheOwnerOfAnExistingRoot() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory professional =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional");
+        Category professional = fixtures.aCategory(plan, TransactionType.DEBIT, "Professional");
 
         JsonNode owned = json(update(plan, owner, professional.getId(), body("Professional", null, owner.getId()))
                 .andExpect(status().isOk())
@@ -103,9 +105,8 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
     void childReportsTheOwnerOfItsParent() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory professional = ownedCategory(plan, "Professional", owner);
-        FinancialTransactionCategory courses =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Courses", professional);
+        Category professional = ownedCategory(plan, "Professional", owner);
+        Category courses = fixtures.aCategory(plan, TransactionType.DEBIT, "Courses", professional);
 
         JsonNode fetched = json(
                 fetch(plan, owner, courses.getId()).andExpect(status().isOk()).andReturn());
@@ -121,9 +122,8 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
     void ownerSentForAChildIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
 
         create(plan, owner, body("Dining out", food.getId(), owner.getId())).andExpect(status().isBadRequest());
         update(plan, owner, delivery.getId(), body("Delivery", food.getId(), owner.getId()))
@@ -140,7 +140,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         User stranger = fixtures.aUser();
-        FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
+        Category rent = fixtures.aCategory(plan, TransactionType.DEBIT, "Rent");
 
         create(plan, owner, body("Professional", null, stranger.getId())).andExpect(status().isBadRequest());
         update(plan, owner, rent.getId(), body("Rent", null, stranger.getId())).andExpect(status().isBadRequest());
@@ -157,7 +157,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory professional = ownedCategory(plan, "Professional", partner);
+        Category professional = ownedCategory(plan, "Professional", partner);
 
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
@@ -181,7 +181,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory professional = ownedCategory(plan, "Professional", partner);
+        Category professional = ownedCategory(plan, "Professional", partner);
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
         JsonNode kept = json(update(plan, owner, professional.getId(), body("Professional", null, partner.getId()))
@@ -213,7 +213,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
         ownedCategory(plan, "Professional", partner);
-        FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
+        Category rent = fixtures.aCategory(plan, TransactionType.DEBIT, "Rent");
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
 
         update(plan, owner, rent.getId(), body("Rent", null, partner.getId())).andExpect(status().isBadRequest());
@@ -229,11 +229,11 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory professional = ownedCategory(plan, "Professional", partner);
+        Category professional = ownedCategory(plan, "Professional", partner);
 
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
         String token = createLinkInvitation(plan, owner);
-        mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(partner)))
+        mockMvc.perform(post(PlanRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(partner)))
                 .andExpect(status().isCreated());
 
         JsonNode fetched = json(fetch(plan, owner, professional.getId())
@@ -250,14 +250,14 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User viewer = fixtures.aUser();
         fixtures.addMember(plan, viewer, PlanRole.VIEWER);
-        FinancialTransactionCategory professional = ownedCategory(plan, "Professional", owner);
-        FinancialTransaction course = fixtures.aTransaction(
-                plan, owner, new BigDecimal("80.00"), FinancialTransactionType.DEBIT, professional);
+        Category professional = ownedCategory(plan, "Professional", owner);
+        Transaction course =
+                fixtures.aTransaction(plan, owner, new BigDecimal("80.00"), TransactionType.DEBIT, professional);
 
-        JsonNode categories = json(mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY, plan.getId())
-                        .with(testAuthHelper.asUser(viewer)))
-                .andExpect(status().isOk())
-                .andReturn());
+        JsonNode categories =
+                json(mockMvc.perform(get(CategoryRoutes.CATEGORY, plan.getId()).with(testAuthHelper.asUser(viewer)))
+                        .andExpect(status().isOk())
+                        .andReturn());
         List<JsonNode> listed = StreamSupport.stream(categories.get("content").spliterator(), false)
                 .toList();
         assertThat(listed).singleElement().satisfies(category -> {
@@ -265,10 +265,10 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
             assertThat(category.get("ownerId").asLong()).isEqualTo(owner.getId());
         });
 
-        JsonNode transactions = json(mockMvc.perform(
-                        get(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId()).with(testAuthHelper.asUser(viewer)))
-                .andExpect(status().isOk())
-                .andReturn());
+        JsonNode transactions = json(
+                mockMvc.perform(get(TransactionRoutes.TRANSACTION, plan.getId()).with(testAuthHelper.asUser(viewer)))
+                        .andExpect(status().isOk())
+                        .andReturn());
         assertThat(StreamSupport.stream(transactions.get("content").spliterator(), false)
                         .map(transaction -> transaction.get("id").asLong()))
                 .containsExactly(course.getId());
@@ -279,9 +279,8 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
     void ownerOnARootWhoseChildHasPerMemberLimitsIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory groceries =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries", food);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category groceries = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries", food);
         CategoryMemberLimit entry = new CategoryMemberLimit();
         entry.setCategory(groceries);
         entry.setMember(owner);
@@ -301,7 +300,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User editor = fixtures.aUser();
         fixtures.addMember(plan, editor, PlanRole.EDITOR);
-        FinancialTransactionCategory rent = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
+        Category rent = fixtures.aCategory(plan, TransactionType.DEBIT, "Rent");
 
         update(plan, editor, rent.getId(), body("Rent", null, editor.getId())).andExpect(status().isForbidden());
 
@@ -309,8 +308,8 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
                 .isNull();
     }
 
-    private FinancialTransactionCategory ownedCategory(Plan plan, String name, User member) {
-        FinancialTransactionCategory category = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, name);
+    private Category ownedCategory(Plan plan, String name, User member) {
+        Category category = fixtures.aCategory(plan, TransactionType.DEBIT, name);
         category.setOwner(member);
         return categoryRepository.save(category);
     }
@@ -332,7 +331,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Map<String, Object> body = new HashMap<>();
         body.put("role", PlanRole.EDITOR.name());
         body.put("type", "LINK");
-        MvcResult result = mockMvc.perform(post(ApiRoutes.PLAN_INVITATION, plan.getId())
+        MvcResult result = mockMvc.perform(post(PlanRoutes.PLAN_INVITATION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -347,19 +346,19 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
     }
 
     private ResultActions fetch(Plan plan, User asUser, Long id) throws Exception {
-        return mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}", plan.getId(), id)
-                .with(testAuthHelper.asUser(asUser)));
+        return mockMvc.perform(
+                get(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), id).with(testAuthHelper.asUser(asUser)));
     }
 
     private ResultActions create(Plan plan, User asUser, Map<String, Object> body) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY, plan.getId())
+        return mockMvc.perform(post(CategoryRoutes.CATEGORY, plan.getId())
                 .with(testAuthHelper.asUser(asUser))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)));
     }
 
     private ResultActions update(Plan plan, User asUser, Long id, Map<String, Object> body) throws Exception {
-        return mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}", plan.getId(), id)
+        return mockMvc.perform(put(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), id)
                 .with(testAuthHelper.asUser(asUser))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)));

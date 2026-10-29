@@ -1,7 +1,7 @@
 package com.lcs.findraco.transaction.request;
 
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -10,12 +10,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public class FinancialTransactionRequestDto {
+public class TransactionRequestDto {
 
     private Long categoryId;
 
     @NotNull(message = "Transaction type cannot be null.")
-    private FinancialTransactionType type;
+    private TransactionType type;
 
     @NotNull(message = "Amount cannot be null.")
     @Positive(message = "Amount must be positive.")
@@ -43,7 +43,7 @@ public class FinancialTransactionRequestDto {
         return categoryId;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

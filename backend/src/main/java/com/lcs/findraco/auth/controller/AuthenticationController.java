@@ -9,7 +9,6 @@ import com.lcs.findraco.auth.service.AuthenticationService;
 import com.lcs.findraco.auth.service.PasswordResetService;
 import com.lcs.findraco.auth.service.SessionService;
 import com.lcs.findraco.auth.service.SessionService.IssuedSession;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Authentication")
 @RestController
-@RequestMapping(ApiRoutes.AUTH)
+@RequestMapping(AuthRoutes.AUTH)
 public class AuthenticationController {
 
     private final AuthenticationService authenticationService;

@@ -1,11 +1,11 @@
 package com.lcs.findraco.transaction.response;
 
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 public class RecurrenceDefinitionResponseDto {
     private final Long id;
     private final String seriesId;
-    private final FinancialTransactionType type;
+    private final TransactionType type;
     private final BigDecimal amount;
     private final String description;
     private final Long categoryId;
@@ -70,7 +70,7 @@ public class RecurrenceDefinitionResponseDto {
         return seriesId;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

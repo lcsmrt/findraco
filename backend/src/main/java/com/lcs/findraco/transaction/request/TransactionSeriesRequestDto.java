@@ -1,9 +1,9 @@
 package com.lcs.findraco.transaction.request;
 
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -14,10 +14,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
-public class FinancialTransactionSeriesRequestDto {
+public class TransactionSeriesRequestDto {
 
     @NotNull(message = "Transaction type cannot be null.")
-    private FinancialTransactionType type;
+    private TransactionType type;
 
     @NotNull(message = "Amount cannot be null.")
     @Positive(message = "Amount must be positive.")
@@ -53,7 +53,7 @@ public class FinancialTransactionSeriesRequestDto {
     @Valid
     private List<ParticipantDto> participants;
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

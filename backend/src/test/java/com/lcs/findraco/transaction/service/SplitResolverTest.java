@@ -3,7 +3,7 @@ package com.lcs.findraco.transaction.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import com.lcs.findraco.transaction.exception.FinancialTransactionExceptions;
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.service.SplitResolver.ParticipantInput;
 import com.lcs.findraco.transaction.service.SplitResolver.ResolvedShare;
@@ -68,7 +68,7 @@ class SplitResolverTest {
                 new ParticipantInput(1L, new BigDecimal("70.00")), new ParticipantInput(2L, new BigDecimal("20.00")));
 
         assertThatThrownBy(() -> resolver.resolve(new BigDecimal("100.00"), SplitMode.EXACT, inputs))
-                .isInstanceOf(FinancialTransactionExceptions.ParticipantSharesMismatchException.class);
+                .isInstanceOf(TransactionExceptions.ParticipantSharesMismatchException.class);
     }
 
     @Test

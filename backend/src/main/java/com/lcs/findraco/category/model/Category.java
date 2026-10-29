@@ -1,7 +1,7 @@
 package com.lcs.findraco.category.model;
 
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
@@ -10,7 +10,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "financial_transaction_categories")
-public class FinancialTransactionCategory {
+public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -20,14 +20,14 @@ public class FinancialTransactionCategory {
     private Plan plan;
 
     @Enumerated(EnumType.STRING)
-    private FinancialTransactionType type;
+    private TransactionType type;
 
     private String description;
     private BigDecimal spendingLimit;
 
     @ManyToOne
     @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_ftc_parent"))
-    private FinancialTransactionCategory parent;
+    private Category parent;
 
     @ManyToOne
     @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_ftc_owner"))
@@ -36,7 +36,7 @@ public class FinancialTransactionCategory {
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CategoryMemberLimit> memberLimits = new ArrayList<>();
 
-    public FinancialTransactionCategory() {}
+    public Category() {}
 
     public Long getId() {
         return id;
@@ -50,11 +50,11 @@ public class FinancialTransactionCategory {
         this.plan = plan;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 
-    public void setType(FinancialTransactionType type) {
+    public void setType(TransactionType type) {
         this.type = type;
     }
 
@@ -74,11 +74,11 @@ public class FinancialTransactionCategory {
         this.spendingLimit = spendingLimit;
     }
 
-    public FinancialTransactionCategory getParent() {
+    public Category getParent() {
         return parent;
     }
 
-    public void setParent(FinancialTransactionCategory parent) {
+    public void setParent(Category parent) {
         this.parent = parent;
     }
 

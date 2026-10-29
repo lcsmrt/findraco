@@ -1,14 +1,14 @@
 package com.lcs.findraco.transaction.exception;
 
-public class FinancialTransactionExceptions {
-    public static class FinancialTransactionNotFoundException extends RuntimeException {
-        public FinancialTransactionNotFoundException(Long id) {
+public class TransactionExceptions {
+    public static class TransactionNotFoundException extends RuntimeException {
+        public TransactionNotFoundException(Long id) {
             super("Financial transaction not found for id " + id + ".");
         }
     }
 
-    public static class FinancialTransactionSeriesNotFoundException extends RuntimeException {
-        public FinancialTransactionSeriesNotFoundException(String seriesId) {
+    public static class TransactionSeriesNotFoundException extends RuntimeException {
+        public TransactionSeriesNotFoundException(String seriesId) {
             super("Financial transaction series not found for id " + seriesId + ".");
         }
     }

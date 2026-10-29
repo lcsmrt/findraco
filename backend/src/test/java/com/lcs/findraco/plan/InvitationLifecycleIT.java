@@ -5,10 +5,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
 import java.time.LocalDateTime;
@@ -119,7 +119,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User invitee = fixtures.aUser();
 
-        MvcResult created = mockMvc.perform(post(ApiRoutes.PLAN_INVITATION, plan.getId())
+        MvcResult created = mockMvc.perform(post(PlanRoutes.PLAN_INVITATION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invitationBody(PlanRole.EDITOR, "LINK", null, null))))
@@ -129,7 +129,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         String token = createdBody.get("token").asString();
         long invitationId = createdBody.get("id").asLong();
 
-        mockMvc.perform(delete(ApiRoutes.PLAN_INVITATION + "/{invitationId}", plan.getId(), invitationId)
+        mockMvc.perform(delete(PlanRoutes.PLAN_INVITATION + "/{invitationId}", plan.getId(), invitationId)
                         .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isNoContent());
 
@@ -143,7 +143,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
 
     private String createInvitation(
             Plan plan, User owner, PlanRole role, String type, String email, LocalDateTime expiresAt) throws Exception {
-        MvcResult result = mockMvc.perform(post(ApiRoutes.PLAN_INVITATION, plan.getId())
+        MvcResult result = mockMvc.perform(post(PlanRoutes.PLAN_INVITATION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(invitationBody(role, type, email, expiresAt))))
@@ -168,6 +168,6 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
 
     private org.springframework.test.web.servlet.ResultActions acceptAs(String token, User actor) throws Exception {
         return mockMvc.perform(
-                post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(actor)));
+                post(PlanRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(actor)));
     }
 }

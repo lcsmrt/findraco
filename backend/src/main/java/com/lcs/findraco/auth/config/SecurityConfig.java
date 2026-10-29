@@ -1,7 +1,9 @@
 package com.lcs.findraco.auth.config;
 
+import com.lcs.findraco.auth.controller.AuthRoutes;
+import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.shared.error.JsonAuthenticationEntryPoint;
-import com.lcs.findraco.shared.web.ApiRoutes;
+import com.lcs.findraco.user.controller.UserRoutes;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,17 +50,17 @@ public class SecurityConfig {
 
         return http.csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, ApiRoutes.USER)
+                .authorizeHttpRequests(request -> request.requestMatchers(HttpMethod.POST, UserRoutes.USER)
                         .permitAll()
-                        .requestMatchers(HttpMethod.GET, ApiRoutes.INVITATION + "/*")
+                        .requestMatchers(HttpMethod.GET, PlanRoutes.INVITATION + "/*")
                         .permitAll()
                         .requestMatchers(
-                                ApiRoutes.AUTH + "/login",
-                                ApiRoutes.AUTH + "/refresh",
-                                ApiRoutes.AUTH + "/logout",
-                                ApiRoutes.AUTH + "/forgot-password",
-                                ApiRoutes.AUTH + "/reset-password",
-                                ApiRoutes.AUTH + "/reset-password/validate",
+                                AuthRoutes.AUTH + "/login",
+                                AuthRoutes.AUTH + "/refresh",
+                                AuthRoutes.AUTH + "/logout",
+                                AuthRoutes.AUTH + "/forgot-password",
+                                AuthRoutes.AUTH + "/reset-password",
+                                AuthRoutes.AUTH + "/reset-password/validate",
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**")

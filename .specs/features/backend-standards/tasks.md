@@ -524,10 +524,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] No class named `FinancialTransaction*`
-- [ ] Old packages (`controllers`, `services`, `models`, …) gone
-- [ ] Suite green
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] No class named `FinancialTransaction*`
+- [x] Old packages (`controllers`, `services`, `models`, …) gone
+- [x] Suite green
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: quick

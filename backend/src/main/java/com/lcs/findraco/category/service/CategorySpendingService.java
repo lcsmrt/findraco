@@ -1,14 +1,14 @@
 package com.lcs.findraco.category.service;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.category.request.CategorySpendingFilterDto;
 import com.lcs.findraco.category.response.CategorySpendingDto;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanContext;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.ItemShareAllocator;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.Allocation;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
@@ -34,8 +34,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CategorySpendingService {
 
-    private final FinancialTransactionRepository transactionRepository;
-    private final FinancialTransactionCategoryRepository categoryRepository;
+    private final TransactionRepository transactionRepository;
+    private final CategoryRepository categoryRepository;
     private final PlanMembershipRepository planMembershipRepository;
     private final UserRepository userRepository;
     private final ItemShareAllocator itemShareAllocator;
@@ -44,8 +44,8 @@ public class CategorySpendingService {
     private final Clock clock;
 
     public CategorySpendingService(
-            FinancialTransactionRepository transactionRepository,
-            FinancialTransactionCategoryRepository categoryRepository,
+            TransactionRepository transactionRepository,
+            CategoryRepository categoryRepository,
             PlanMembershipRepository planMembershipRepository,
             UserRepository userRepository,
             ItemShareAllocator itemShareAllocator,
@@ -75,8 +75,8 @@ public class CategorySpendingService {
     /** Every category of the plan (DEBIT then CREDIT trees, zero spend included) for the period. */
     @Transactional(readOnly = true)
     public List<CategorySpendingDto> compute(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        Facts debit = facts(plan, FinancialTransactionType.DEBIT, startDate, endDate, memberId);
-        Facts credit = facts(plan, FinancialTransactionType.CREDIT, startDate, endDate, memberId);
+        Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
+        Facts credit = facts(plan, TransactionType.CREDIT, startDate, endDate, memberId);
         Members members = members(plan, debit, credit);
         return assembler.assemble(
                 concat(debit.rowsA(), credit.rowsA()),
@@ -91,8 +91,8 @@ public class CategorySpendingService {
     /** The Overview breakdown: DEBIT roots with rolled-up spend, children nested. */
     @Transactional(readOnly = true)
     public List<CategorySpendingDto> computeOverview(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        Facts debit = facts(plan, FinancialTransactionType.DEBIT, startDate, endDate, memberId);
-        List<FinancialTransactionCategory> categories = categoryRepository.findAllByPlanWithDetails(plan);
+        Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
+        List<Category> categories = categoryRepository.findAllByPlanWithDetails(plan);
         Members members = members(plan, debit);
         return assembler.assembleOverview(
                 debit.rowsA(),
@@ -134,8 +134,7 @@ public class CategorySpendingService {
 
     private record Facts(List<Object[]> rowsA, List<MemberFact> removed, List<MemberFact> added) {}
 
-    private Facts facts(
-            Plan plan, FinancialTransactionType type, LocalDate startDate, LocalDate endDate, Long memberId) {
+    private Facts facts(Plan plan, TransactionType type, LocalDate startDate, LocalDate endDate, Long memberId) {
         List<Object[]> rowsA = transactionRepository.findCategoryMemberFacts(plan, type, startDate, endDate, memberId);
         Allocation allocation = itemShareAllocator.allocate(
                 transactionRepository.findCategorizedItemParticipantRows(plan, type, startDate, endDate));

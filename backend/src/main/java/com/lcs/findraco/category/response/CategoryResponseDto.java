@@ -1,17 +1,17 @@
 package com.lcs.findraco.category.response;
 
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
-public class FinancialTransactionCategoryResponseDto {
+public class CategoryResponseDto {
     private final Long id;
-    private final FinancialTransactionType type;
+    private final TransactionType type;
     private final String description;
     private final BigDecimal spendingLimit;
     private final Long parentId;
@@ -25,7 +25,7 @@ public class FinancialTransactionCategoryResponseDto {
      * The category as embedded in other responses (transactions, items): no membership data, so
      * {@code ownerActive}, {@code memberLimits} and {@code effectiveLimit} are null.
      */
-    public FinancialTransactionCategoryResponseDto(FinancialTransactionCategory category) {
+    public CategoryResponseDto(Category category) {
         this.id = category.getId();
         this.type = category.getType();
         this.description = category.getDescription();
@@ -47,7 +47,7 @@ public class FinancialTransactionCategoryResponseDto {
      * there are none (CAT-11). A child shows its parent's owner (CAT-15); {@code ownerActive=false}
      * marks an owner who left the plan (CAT-14).
      */
-    public FinancialTransactionCategoryResponseDto(FinancialTransactionCategory category, Set<Long> activeMemberIds) {
+    public CategoryResponseDto(Category category, Set<Long> activeMemberIds) {
         this.id = category.getId();
         this.type = category.getType();
         this.description = category.getDescription();
@@ -70,7 +70,7 @@ public class FinancialTransactionCategoryResponseDto {
                 : active.stream().map(MemberLimit::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
-    private static User effectiveOwner(FinancialTransactionCategory category) {
+    private static User effectiveOwner(Category category) {
         return category.getParent() == null
                 ? category.getOwner()
                 : category.getParent().getOwner();
@@ -111,7 +111,7 @@ public class FinancialTransactionCategoryResponseDto {
         return id;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

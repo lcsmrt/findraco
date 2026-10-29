@@ -4,16 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
@@ -30,7 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * future months for open-ended (mode = RECURRING, endDate = null) series up to the rolling
  * 12-month horizon, idempotently, without ever touching bounded series.
  *
- * <p>Fixtures build {@link RecurrenceDefinition}/{@link FinancialTransaction} rows directly via
+ * <p>Fixtures build {@link RecurrenceDefinition}/{@link Transaction} rows directly via
  * the repositories (bypassing {@code createSeries}, owned by a sibling task) so this suite is
  * self-contained and exercises the top-up service and its locked due-query in isolation.
  *
@@ -48,7 +48,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
     private RecurrenceDefinitionRepository recurrenceDefinitionRepository;
 
     @Autowired
-    private FinancialTransactionRepository financialTransactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private OpenEndedSeriesTopUpService topUpService;
@@ -73,8 +73,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> occurrences =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
 
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
         assertThat(occurrences).hasSize((int) expectedTotal);
@@ -102,8 +101,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> occurrences =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(occurrences).isEmpty();
 
         RecurrenceDefinition reloaded =
@@ -121,14 +119,12 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
                 anOpenEndedDefinition(plan, owner, start, "Internet", new BigDecimal("100.00"));
 
         topUpService.topUp(plan, TODAY);
-        List<FinancialTransaction> firstPass =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<Transaction> firstPass = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
         assertThat(firstPass).hasSize((int) expectedTotal);
 
         topUpService.topUp(plan, TODAY);
-        List<FinancialTransaction> secondPass =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<Transaction> secondPass = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(secondPass).hasSize((int) expectedTotal);
 
         RecurrenceDefinition reloaded =
@@ -147,7 +143,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         topUpService.topUp(plan, TODAY);
         long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
-        assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
+        assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
                 .hasSize((int) expectedTotal);
 
         // Simulate the watermark drifting backward (e.g. a bug, or a race with a bounding edit that
@@ -160,8 +156,8 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> afterSecondFire =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<Transaction> afterSecondFire =
+                transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(afterSecondFire).hasSize((int) expectedTotal);
 
         RecurrenceDefinition healed =
@@ -181,8 +177,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
         topUpService.topUp(plan, TODAY);
 
-        List<FinancialTransaction> occurrences =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
         assertThat(occurrences).isEmpty();
 
         RecurrenceDefinition reloaded =
@@ -208,7 +203,7 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
         definition.setCreatedBy(owner);
         definition.setCategory(null);
         definition.setSeriesId(UUID.randomUUID().toString());
-        definition.setType(FinancialTransactionType.DEBIT);
+        definition.setType(TransactionType.DEBIT);
         definition.setAmount(amount);
         definition.setDescription(description);
         definition.setMode(RecurrenceMode.RECURRING);
@@ -227,9 +222,9 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
     }
 
     private void seedOccurrences(RecurrenceDefinition definition, LocalDate from, LocalDate throughInclusive) {
-        List<FinancialTransaction> occurrences = new ArrayList<>();
+        List<Transaction> occurrences = new ArrayList<>();
         for (LocalDate date = from; !date.isAfter(throughInclusive); date = date.plusMonths(1)) {
-            FinancialTransaction tx = new FinancialTransaction();
+            Transaction tx = new Transaction();
             tx.setPlan(definition.getPlan());
             tx.setCreatedBy(definition.getCreatedBy());
             tx.setCategory(definition.getCategory());
@@ -250,10 +245,10 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
 
             occurrences.add(tx);
         }
-        financialTransactionRepository.saveAll(occurrences);
+        transactionRepository.saveAll(occurrences);
     }
 
-    private FinancialTransaction findByDate(List<FinancialTransaction> occurrences, LocalDate date) {
+    private Transaction findByDate(List<Transaction> occurrences, LocalDate date) {
         return occurrences.stream()
                 .filter(occurrence -> occurrence.getStartDate().equals(date))
                 .findFirst()

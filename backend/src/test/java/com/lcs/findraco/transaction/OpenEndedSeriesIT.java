@@ -5,9 +5,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.user.model.User;
@@ -114,7 +115,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
         body.put("splitMode", "EQUAL");
         // parcelsNumber intentionally omitted
 
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION + "/series", plan.getId())
+        MvcResult result = mockMvc.perform(post(TransactionRoutes.TRANSACTION + "/series", plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -155,7 +156,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
     }
 
     private JsonNode createSeries(Plan plan, User asUser, Map<String, Object> body) throws Exception {
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION + "/series", plan.getId())
+        MvcResult result = mockMvc.perform(post(TransactionRoutes.TRANSACTION + "/series", plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -166,7 +167,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
 
     private JsonNode fetchSeriesDefinition(Plan plan, User asUser, String seriesId) throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                        get(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                                 .with(testAuthHelper.asUser(asUser)))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -174,7 +175,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchDashboard(Plan plan, User asUser, LocalDate startDate, LocalDate endDate) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.DASHBOARD, plan.getId())
+        MvcResult result = mockMvc.perform(get(DashboardRoutes.DASHBOARD, plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .param("startDate", startDate.toString())
                         .param("endDate", endDate.toString()))

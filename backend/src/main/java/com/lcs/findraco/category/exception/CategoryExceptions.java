@@ -1,8 +1,8 @@
 package com.lcs.findraco.category.exception;
 
-public class FinancialTransactionCategoryExceptions {
-    public static class FinancialTransactionCategoryNotFoundException extends RuntimeException {
-        public FinancialTransactionCategoryNotFoundException(Long id) {
+public class CategoryExceptions {
+    public static class CategoryNotFoundException extends RuntimeException {
+        public CategoryNotFoundException(Long id) {
             super("Financial transaction category not found for id " + id + ".");
         }
     }

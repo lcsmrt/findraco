@@ -1,13 +1,13 @@
 package com.lcs.findraco.transaction.request;
 
 import com.lcs.findraco.shared.web.PaginatedFilterDto;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-public class FinancialTransactionFilterDto extends PaginatedFilterDto {
+public class TransactionFilterDto extends PaginatedFilterDto {
 
-    private FinancialTransactionType type;
+    private TransactionType type;
     private Long categoryId;
     private Long memberId;
     private String description;
@@ -16,15 +16,15 @@ public class FinancialTransactionFilterDto extends PaginatedFilterDto {
     private BigDecimal amountMin;
     private BigDecimal amountMax;
 
-    public FinancialTransactionFilterDto() {
+    public TransactionFilterDto() {
         super("startDate", "desc");
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 
-    public void setType(FinancialTransactionType type) {
+    public void setType(TransactionType type) {
         this.type = type;
     }
 

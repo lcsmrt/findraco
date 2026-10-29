@@ -1,6 +1,6 @@
 package com.lcs.findraco.transaction.model;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
@@ -13,11 +13,11 @@ public class TransactionItem {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "transaction_id", nullable = false, foreignKey = @ForeignKey(name = "fk_txn_items_transaction"))
-    private FinancialTransaction transaction;
+    private Transaction transaction;
 
     @ManyToOne
     @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_txn_items_category"))
-    private FinancialTransactionCategory category;
+    private Category category;
 
     @Column(nullable = false)
     private String description;
@@ -34,19 +34,19 @@ public class TransactionItem {
         return id;
     }
 
-    public FinancialTransaction getTransaction() {
+    public Transaction getTransaction() {
         return transaction;
     }
 
-    public void setTransaction(FinancialTransaction transaction) {
+    public void setTransaction(Transaction transaction) {
         this.transaction = transaction;
     }
 
-    public FinancialTransactionCategory getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(FinancialTransactionCategory category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 

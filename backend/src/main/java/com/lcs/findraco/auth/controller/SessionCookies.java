@@ -1,7 +1,6 @@
 package com.lcs.findraco.auth.controller;
 
 import com.lcs.findraco.auth.config.SessionProperties;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import java.time.Duration;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
@@ -36,7 +35,7 @@ public class SessionCookies {
                 .httpOnly(true)
                 .secure(secure)
                 .sameSite("Strict")
-                .path(ApiRoutes.AUTH)
+                .path(AuthRoutes.AUTH)
                 .maxAge(maxAge)
                 .build();
     }

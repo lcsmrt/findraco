@@ -1,6 +1,6 @@
 package com.lcs.findraco.transaction.model;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
@@ -18,7 +18,7 @@ import java.util.List;
             @Index(name = "idx_ft_plan_id_start_date", columnList = "plan_id, start_date"),
             @Index(name = "idx_ft_plan_id_series_id", columnList = "plan_id, series_id"),
         })
-public class FinancialTransaction {
+public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,10 +33,10 @@ public class FinancialTransaction {
 
     @ManyToOne
     @JoinColumn(foreignKey = @ForeignKey(name = "fk_financial_transactions_financial_transaction_categories"))
-    private FinancialTransactionCategory category;
+    private Category category;
 
     @Enumerated(EnumType.STRING)
-    private FinancialTransactionType type;
+    private TransactionType type;
 
     private BigDecimal amount;
     private String description;
@@ -64,7 +64,7 @@ public class FinancialTransaction {
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TransactionItem> items = new ArrayList<>();
 
-    public FinancialTransaction() {}
+    public Transaction() {}
 
     public Long getId() {
         return id;
@@ -86,19 +86,19 @@ public class FinancialTransaction {
         this.createdBy = createdBy;
     }
 
-    public FinancialTransactionCategory getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(FinancialTransactionCategory category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 
-    public void setType(FinancialTransactionType type) {
+    public void setType(TransactionType type) {
         this.type = type;
     }
 

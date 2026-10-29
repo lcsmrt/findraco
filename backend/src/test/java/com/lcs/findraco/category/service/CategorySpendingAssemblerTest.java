@@ -2,10 +2,10 @@ package com.lcs.findraco.category.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
 import com.lcs.findraco.category.response.CategorySpendingDto;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
@@ -29,9 +29,9 @@ class CategorySpendingAssemblerTest {
 
     @Test
     void workedExampleSplitsGroceryTransactionAcrossItemCategories() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", "500", null);
-        FinancialTransactionCategory food = debit(2L, "Food", null, null);
-        FinancialTransactionCategory cleaning = debit(3L, "Cleaning", null, null);
+        Category groceries = debit(1L, "Groceries", "500", null);
+        Category food = debit(2L, "Food", null, null);
+        Category cleaning = debit(3L, "Cleaning", null, null);
         List<Object[]> rowsA = List.<Object[]>of(a(1L, MEMBER, "150"));
         List<MemberFact> removed = List.of(fact(1L, MEMBER, "130"));
         List<MemberFact> added = List.of(fact(2L, MEMBER, "90"), fact(3L, MEMBER, "40"));
@@ -48,7 +48,7 @@ class CategorySpendingAssemblerTest {
 
     @Test
     void nonItemizedTransactionSpendEqualsRawAmount() {
-        FinancialTransactionCategory utilities = debit(10L, "Utilities", null, null);
+        Category utilities = debit(10L, "Utilities", null, null);
         List<Object[]> rowsA = List.<Object[]>of(a(10L, MEMBER, "75"));
 
         List<CategorySpendingDto> result =
@@ -62,7 +62,7 @@ class CategorySpendingAssemblerTest {
 
     @Test
     void categoryPresentOnlyViaItemsStillAppearsWithItsItemSum() {
-        FinancialTransactionCategory subscriptions = debit(5L, "Subscriptions", "100", null);
+        Category subscriptions = debit(5L, "Subscriptions", "100", null);
         List<MemberFact> added = List.of(fact(5L, MEMBER, "25"));
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
@@ -77,9 +77,9 @@ class CategorySpendingAssemblerTest {
 
     @Test
     void fullyItemizedTransactionLeavesParentCategoryNetZero() {
-        FinancialTransactionCategory entertainment = debit(6L, "Entertainment", null, null);
-        FinancialTransactionCategory movies = debit(7L, "Movies", null, null);
-        FinancialTransactionCategory snacks = debit(8L, "Snacks", null, null);
+        Category entertainment = debit(6L, "Entertainment", null, null);
+        Category movies = debit(7L, "Movies", null, null);
+        Category snacks = debit(8L, "Snacks", null, null);
         List<Object[]> rowsA = List.<Object[]>of(a(6L, MEMBER, "200"));
         List<MemberFact> removed = List.of(fact(6L, MEMBER, "200"));
         List<MemberFact> added = List.of(fact(7L, MEMBER, "120"), fact(8L, MEMBER, "80"));
@@ -95,7 +95,7 @@ class CategorySpendingAssemblerTest {
 
     @Test
     void multipleItemRowsForSameCategoryAreSummedNotOverwritten() {
-        FinancialTransactionCategory fuel = debit(11L, "Fuel", null, null);
+        Category fuel = debit(11L, "Fuel", null, null);
         List<MemberFact> added = List.of(fact(11L, MEMBER, "30"), fact(11L, MEMBER, "45"));
 
         List<CategorySpendingDto> result =
@@ -107,9 +107,9 @@ class CategorySpendingAssemblerTest {
 
     @Test
     void zeroSpendCategoryWithLimitIsBackfilledWhenAbsentFromAllRows() {
-        FinancialTransactionCategory emergencyFund = debit(20L, "Emergency Fund", "1000", null);
-        FinancialTransactionCategory noLimit = debit(21L, "No Limit Category", null, null);
-        FinancialTransactionCategory income = category(22L, FinancialTransactionType.CREDIT, "Salary", "2000", null);
+        Category emergencyFund = debit(20L, "Emergency Fund", "1000", null);
+        Category noLimit = debit(21L, "No Limit Category", null, null);
+        Category income = category(22L, TransactionType.CREDIT, "Salary", "2000", null);
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
                 List.of(), List.of(), List.of(), List.of(emergencyFund, noLimit, income), NO_MEMBERS, NAMES, null);
@@ -126,9 +126,9 @@ class CategorySpendingAssemblerTest {
     /** P1 Sub AC 7 + 9: a parent's spend is its direct spend plus its children's, against the parent limit. */
     @Test
     void parentRollsUpItsDirectSpendAndAllChildrenAcrossMembers() {
-        FinancialTransactionCategory food = debit(1L, "Food", "400", null);
-        FinancialTransactionCategory delivery = debit(2L, "Delivery", "200", food);
-        FinancialTransactionCategory diningOut = debit(3L, "Dining out", null, food);
+        Category food = debit(1L, "Food", "400", null);
+        Category delivery = debit(2L, "Delivery", "200", food);
+        Category diningOut = debit(3L, "Dining out", null, food);
         List<Object[]> rowsA =
                 List.of(a(1L, MEMBER, "50"), a(2L, MEMBER, "60"), a(2L, OTHER_MEMBER, "40"), a(3L, OTHER_MEMBER, "30"));
 
@@ -155,8 +155,8 @@ class CategorySpendingAssemblerTest {
     /** P1 Sub AC 8 + 10: a child's spend is its own, and its limit is evaluated independently of the parent's. */
     @Test
     void childIsEvaluatedAloneAgainstItsOwnLimit() {
-        FinancialTransactionCategory food = debit(1L, "Food", "400", null);
-        FinancialTransactionCategory delivery = debit(2L, "Delivery", "200", food);
+        Category food = debit(1L, "Food", "400", null);
+        Category delivery = debit(2L, "Delivery", "200", food);
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "10"), a(2L, MEMBER, "250"));
 
         CategorySpendingDto foodRow = assembler
@@ -176,9 +176,9 @@ class CategorySpendingAssemblerTest {
     /** P1 Sub AC 7 with items (AD-007): item portions move spend between children of one parent. */
     @Test
     void itemPartitionAppliesPerLeafBeforeRollup() {
-        FinancialTransactionCategory food = debit(1L, "Food", null, null);
-        FinancialTransactionCategory groceries = debit(2L, "Groceries", null, food);
-        FinancialTransactionCategory cleaning = debit(3L, "Cleaning", null, null);
+        Category food = debit(1L, "Food", null, null);
+        Category groceries = debit(2L, "Groceries", null, food);
+        Category cleaning = debit(3L, "Cleaning", null, null);
         List<Object[]> rowsA = List.<Object[]>of(a(2L, MEMBER, "150"));
         List<MemberFact> removed = List.of(fact(2L, MEMBER, "40"));
         List<MemberFact> added = List.of(fact(3L, MEMBER, "40"));
@@ -194,8 +194,8 @@ class CategorySpendingAssemblerTest {
     /** Edge case: a parent without a limit shows no limit while its child is evaluated on its own. */
     @Test
     void parentWithoutLimitAndChildWithLimit() {
-        FinancialTransactionCategory shopping = debit(1L, "Shopping", null, null);
-        FinancialTransactionCategory home = debit(2L, "Home", "100", shopping);
+        Category shopping = debit(1L, "Shopping", null, null);
+        Category home = debit(2L, "Home", "100", shopping);
         List<Object[]> rowsA = List.<Object[]>of(a(2L, MEMBER, "80"));
 
         CategorySpendingDto shoppingRow = assembler
@@ -216,11 +216,11 @@ class CategorySpendingAssemblerTest {
     /** Edge case + CAT-01: every category is present with R$ 0 when it has no spend; DEBIT before CREDIT. */
     @Test
     void everyCategoryIsPresentWithZeroSpendGroupedByType() {
-        FinancialTransactionCategory salary = category(1L, FinancialTransactionType.CREDIT, "Salary", null, null);
-        FinancialTransactionCategory bonus = category(2L, FinancialTransactionType.CREDIT, "Bonus", null, salary);
-        FinancialTransactionCategory rent = debit(3L, "Rent", null, null);
-        FinancialTransactionCategory food = debit(4L, "food", null, null);
-        FinancialTransactionCategory delivery = debit(5L, "Delivery", null, food);
+        Category salary = category(1L, TransactionType.CREDIT, "Salary", null, null);
+        Category bonus = category(2L, TransactionType.CREDIT, "Bonus", null, salary);
+        Category rent = debit(3L, "Rent", null, null);
+        Category food = debit(4L, "food", null, null);
+        Category delivery = debit(5L, "Delivery", null, food);
 
         List<CategorySpendingDto> result = assembler.assemble(
                 List.of(), List.of(), List.of(), List.of(salary, bonus, rent, food, delivery), NO_MEMBERS, NAMES, null);
@@ -228,10 +228,7 @@ class CategorySpendingAssemblerTest {
         assertThat(result).extracting(CategorySpendingDto::getName).containsExactly("food", "Rent", "Salary");
         assertThat(result)
                 .extracting(CategorySpendingDto::getType)
-                .containsExactly(
-                        FinancialTransactionType.DEBIT,
-                        FinancialTransactionType.DEBIT,
-                        FinancialTransactionType.CREDIT);
+                .containsExactly(TransactionType.DEBIT, TransactionType.DEBIT, TransactionType.CREDIT);
         assertThat(result).allSatisfy(row -> assertThat(row.getSpent()).isEqualByComparingTo("0"));
         assertThat(result).allSatisfy(row -> {
             assertThat(row.getOwnerId()).isNull();
@@ -249,7 +246,7 @@ class CategorySpendingAssemblerTest {
     /** Edge case: a R$ 0 limit with R$ 0 spend is 0 percent used and not over limit. */
     @Test
     void zeroLimitWithZeroSpendIsNotOverLimit() {
-        FinancialTransactionCategory savings = debit(1L, "Savings", "0", null);
+        Category savings = debit(1L, "Savings", "0", null);
 
         CategorySpendingDto row = assembler
                 .assemble(List.of(), List.of(), List.of(), List.of(savings), NO_MEMBERS, NAMES, null)
@@ -264,11 +261,11 @@ class CategorySpendingAssemblerTest {
     /** P1 Sub AC 11: the Overview lists roots with rolled-up spend; only children with activity or a limit are nested. */
     @Test
     void overviewListsRootsWithRolledUpSpendAndTheirActiveChildren() {
-        FinancialTransactionCategory food = debit(1L, "Food", null, null);
-        FinancialTransactionCategory delivery = debit(2L, "Delivery", null, food);
-        FinancialTransactionCategory diningOut = debit(3L, "Dining out", null, food);
-        FinancialTransactionCategory snacks = debit(4L, "Snacks", "50", food);
-        FinancialTransactionCategory idle = debit(5L, "Idle", null, null);
+        Category food = debit(1L, "Food", null, null);
+        Category delivery = debit(2L, "Delivery", null, food);
+        Category diningOut = debit(3L, "Dining out", null, food);
+        Category snacks = debit(4L, "Snacks", "50", food);
+        Category idle = debit(5L, "Idle", null, null);
         List<Object[]> rowsA = List.of(a(2L, MEMBER, "30"), a(3L, MEMBER, "70"));
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
@@ -286,7 +283,7 @@ class CategorySpendingAssemblerTest {
     /** P2 AC 2 + Independent Test: 260 / 140 entries make a 400 limit; each member row carries its own amount. */
     @Test
     void categoryLimitIsTheSumOfActiveEntriesAndEachMemberGetsARow() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "260");
         limit(groceries, OTHER_MEMBER, "Livia", "140");
 
@@ -307,7 +304,7 @@ class CategorySpendingAssemblerTest {
     /** P2 AC 5 + 6 + Independent Test: a 50/50 R$ 100 transaction adds R$ 50 to each member, each against their own limit. */
     @Test
     void eachMembersSpendIsTheirShareAgainstTheirOwnLimit() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "260");
         limit(groceries, OTHER_MEMBER, "Livia", "40");
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "50"), a(1L, OTHER_MEMBER, "50"));
@@ -333,7 +330,7 @@ class CategorySpendingAssemblerTest {
     /** P2 AC 5 with items (AD-008): a member's spend is their A - B + I. */
     @Test
     void membersSpendFollowsTheItemPartition() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "100");
         List<Object[]> rowsA = List.<Object[]>of(a(1L, MEMBER, "60"));
         List<MemberFact> removed = List.of(fact(1L, MEMBER, "18"));
@@ -349,7 +346,7 @@ class CategorySpendingAssemblerTest {
     /** UX-04 AC 1 (supersedes "members without a per-member limit get no row"): listed with spend and no limit. */
     @Test
     void memberWithoutAnEntryCountsInTheTotalOnly() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "260");
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "100"), a(1L, OTHER_MEMBER, "30"));
 
@@ -371,7 +368,7 @@ class CategorySpendingAssemblerTest {
     /** P2 AC 11: a former member's entry is listed inactive, left out of the sum and not evaluated. */
     @Test
     void dormantEntryIsListedButExcludedFromTheSumAndEvaluation() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "260");
         limit(groceries, OTHER_MEMBER, "Livia", "140");
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "100"), a(1L, OTHER_MEMBER, "200"));
@@ -395,7 +392,7 @@ class CategorySpendingAssemblerTest {
     /** P2 AC 11: when every entry is dormant, the category falls back to its plain limit (none here). */
     @Test
     void onlyDormantEntriesLeaveThePlainLimit() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, OTHER_MEMBER, "Livia", "140");
 
         CategorySpendingDto row = assembler
@@ -409,10 +406,10 @@ class CategorySpendingAssemblerTest {
     /** Design "member filter": a row with an active entry for the filtered member shows that member's limit. */
     @Test
     void memberFilteredRowUsesTheMembersOwnLimit() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "260");
         limit(groceries, OTHER_MEMBER, "Livia", "140");
-        FinancialTransactionCategory rent = debit(2L, "Rent", "1000", null);
+        Category rent = debit(2L, "Rent", "1000", null);
         List<Object[]> rowsA = List.of(a(1L, OTHER_MEMBER, "70"), a(2L, OTHER_MEMBER, "500"));
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
@@ -427,7 +424,7 @@ class CategorySpendingAssemblerTest {
     /** Design "member filter": a dormant entry for the filtered member is not used as the row limit. */
     @Test
     void memberFilterIgnoresTheMembersDormantEntry() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "260");
         limit(groceries, OTHER_MEMBER, "Livia", "140");
 
@@ -441,8 +438,8 @@ class CategorySpendingAssemblerTest {
     /** P2 AC 6 on a parent (CAT-07): a member's row on a parent compares their rolled-up spend with their amount. */
     @Test
     void parentMemberRowsRollUpTheChildrensSpend() {
-        FinancialTransactionCategory food = debit(1L, "Food", null, null);
-        FinancialTransactionCategory delivery = debit(2L, "Delivery", null, food);
+        Category food = debit(1L, "Food", null, null);
+        Category delivery = debit(2L, "Delivery", null, food);
         limit(food, MEMBER, "Lucas", "200");
         limit(food, OTHER_MEMBER, "Livia", "100");
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "40"), a(2L, MEMBER, "60"), a(2L, OTHER_MEMBER, "30"));
@@ -469,7 +466,7 @@ class CategorySpendingAssemblerTest {
     /** CAT-08 with per-member limits: a category whose only limit is per member is listed in the Overview. */
     @Test
     void overviewListsACategoryWhoseOnlyLimitIsPerMember() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, MEMBER, "Lucas", "260");
 
         List<CategorySpendingDto> result = assembler.assembleOverview(
@@ -485,7 +482,7 @@ class CategorySpendingAssemblerTest {
     /** P3 AC 5: an owned category's spend is the owner's share, evaluated against its limit. */
     @Test
     void ownedCategoryCountsTheOwnersSpendOnly() {
-        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        Category professional = debit(1L, "Professional", "100", null);
         professional.setOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "120"), a(1L, OTHER_MEMBER, "30"));
 
@@ -506,7 +503,7 @@ class CategorySpendingAssemblerTest {
     /** UX-04 AC 1: every share in an owned category, owner's included, is listed without a limit; only the owner's counts. */
     @Test
     void nonOwnerSharesAreListedWithoutALimit() {
-        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        Category professional = debit(1L, "Professional", "100", null);
         professional.setOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "50"), a(1L, OTHER_MEMBER, "30"), a(1L, 300L, "0"));
 
@@ -537,9 +534,9 @@ class CategorySpendingAssemblerTest {
     /** P3 AC 2 + 5: children inherit the owner; each row and the rollup count the owner's spend only. */
     @Test
     void childrenOfAnOwnedRootCountTheOwnersSpendOnly() {
-        FinancialTransactionCategory professional = debit(1L, "Professional", null, null);
+        Category professional = debit(1L, "Professional", null, null);
         professional.setOwner(user(MEMBER, "Lucas"));
-        FinancialTransactionCategory courses = debit(2L, "Courses", "50", professional);
+        Category courses = debit(2L, "Courses", "50", professional);
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "10"), a(2L, MEMBER, "40"), a(2L, OTHER_MEMBER, "25"));
 
         CategorySpendingDto root = assembler
@@ -566,7 +563,7 @@ class CategorySpendingAssemblerTest {
     /** P3 AC 7: a former owner's ownership is dormant, but their historic spend still counts as the row's. */
     @Test
     void dormantOwnerStillAttributesTheirSpend() {
-        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        Category professional = debit(1L, "Professional", "100", null);
         professional.setOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "70"), a(1L, OTHER_MEMBER, "10"));
 
@@ -583,9 +580,9 @@ class CategorySpendingAssemblerTest {
     /** P3 AC 7: a former owner is reported inactive on the root and on the children that inherit the owner. */
     @Test
     void formerOwnerIsReportedInactiveOnTheRootAndItsChildren() {
-        FinancialTransactionCategory professional = debit(1L, "Professional", null, null);
+        Category professional = debit(1L, "Professional", null, null);
         professional.setOwner(user(MEMBER, "Lucas"));
-        FinancialTransactionCategory courses = debit(2L, "Courses", null, professional);
+        Category courses = debit(2L, "Courses", null, professional);
 
         CategorySpendingDto root = assembler
                 .assemble(
@@ -609,7 +606,7 @@ class CategorySpendingAssemblerTest {
     /** CAT-16 + AD-008: a former member's share in an owned category is listed as inactive. */
     @Test
     void formerMembersShareInAnOwnedCategoryIsListedInactive() {
-        FinancialTransactionCategory professional = debit(1L, "Professional", null, null);
+        Category professional = debit(1L, "Professional", null, null);
         professional.setOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "70"), a(1L, OTHER_MEMBER, "10"));
 
@@ -626,8 +623,8 @@ class CategorySpendingAssemblerTest {
     /** UX-04 AC 1: a category without limit entries lists every member with spend; Σ members == row spend (root and child). */
     @Test
     void plainCategoriesListEveryMemberWithSpendSummingToTheRow() {
-        FinancialTransactionCategory food = debit(1L, "Food", "500", null);
-        FinancialTransactionCategory delivery = debit(2L, "Delivery", null, food);
+        Category food = debit(1L, "Food", "500", null);
+        Category delivery = debit(2L, "Delivery", null, food);
         List<Object[]> rowsA =
                 List.of(a(1L, MEMBER, "40"), a(1L, OTHER_MEMBER, "15"), a(2L, MEMBER, "60"), a(2L, OTHER_MEMBER, "30"));
         List<MemberFact> removed = List.of(fact(2L, OTHER_MEMBER, "10"));
@@ -659,7 +656,7 @@ class CategorySpendingAssemblerTest {
     /** UX-04 AC 1: a member with a limit entry and no spend is listed with spent 0; a spend-only member has no limit. */
     @Test
     void memberWithAnEntryAndNoSpendIsListedWithZero() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", null, null);
+        Category groceries = debit(1L, "Groceries", null, null);
         limit(groceries, OTHER_MEMBER, "Livia", "140");
         List<Object[]> rowsA = List.<Object[]>of(a(1L, MEMBER, "90"));
 
@@ -681,7 +678,7 @@ class CategorySpendingAssemblerTest {
     /** UX-04 AC 1: a former member with spend and no limit entry is listed inactive on a plain row. */
     @Test
     void formerMembersSpendOnAPlainCategoryIsListedInactive() {
-        FinancialTransactionCategory groceries = debit(1L, "Groceries", "300", null);
+        Category groceries = debit(1L, "Groceries", "300", null);
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "90"), a(1L, OTHER_MEMBER, "40"));
 
         CategorySpendingDto row = assembler
@@ -697,7 +694,7 @@ class CategorySpendingAssemblerTest {
     /** UX-04 AC 1: an owned row lists the owner and the others with limit null; the row's spend stays the owner's. */
     @Test
     void ownedRowListsOwnerAndOthersWithoutLimits() {
-        FinancialTransactionCategory professional = debit(1L, "Professional", "100", null);
+        Category professional = debit(1L, "Professional", "100", null);
         professional.setOwner(user(OTHER_MEMBER, "Livia"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "20"), a(1L, OTHER_MEMBER, "70"));
 
@@ -727,7 +724,7 @@ class CategorySpendingAssemblerTest {
                 .orElseThrow(() -> new AssertionError("No member row for " + memberId));
     }
 
-    private static void limit(FinancialTransactionCategory category, Long memberId, String name, String amount) {
+    private static void limit(Category category, Long memberId, String name, String amount) {
         CategoryMemberLimit entry = new CategoryMemberLimit();
         entry.setCategory(category);
         entry.setMember(user(memberId, name));
@@ -749,14 +746,12 @@ class CategorySpendingAssemblerTest {
                 .orElseThrow(() -> new AssertionError("No category named " + name + " in result: " + result));
     }
 
-    private static FinancialTransactionCategory debit(
-            Long id, String name, String limit, FinancialTransactionCategory parent) {
-        return category(id, FinancialTransactionType.DEBIT, name, limit, parent);
+    private static Category debit(Long id, String name, String limit, Category parent) {
+        return category(id, TransactionType.DEBIT, name, limit, parent);
     }
 
-    private static FinancialTransactionCategory category(
-            Long id, FinancialTransactionType type, String name, String limit, FinancialTransactionCategory parent) {
-        FinancialTransactionCategory category = new FinancialTransactionCategory();
+    private static Category category(Long id, TransactionType type, String name, String limit, Category parent) {
+        Category category = new Category();
         ReflectionTestUtils.setField(category, "id", id);
         category.setType(type);
         category.setDescription(name);

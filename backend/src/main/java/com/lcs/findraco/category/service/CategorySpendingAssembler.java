@@ -1,9 +1,9 @@
 package com.lcs.findraco.category.service;
 
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
 import com.lcs.findraco.category.response.CategorySpendingDto;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.ItemShareAllocator;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
 import com.lcs.findraco.user.model.User;
@@ -63,7 +63,7 @@ public class CategorySpendingAssembler {
             List<Object[]> rowsA,
             List<MemberFact> removed,
             List<MemberFact> added,
-            List<FinancialTransactionCategory> categories,
+            List<Category> categories,
             Set<Long> activeMemberIds,
             Map<Long, String> memberNames,
             Long memberId) {
@@ -72,12 +72,8 @@ public class CategorySpendingAssembler {
         List<CategorySpendingDto> roots = buildTree(facts, limits, categories, category -> true, BY_NAME);
 
         List<CategorySpendingDto> result = new ArrayList<>();
-        roots.stream()
-                .filter(root -> root.getType() == FinancialTransactionType.DEBIT)
-                .forEach(result::add);
-        roots.stream()
-                .filter(root -> root.getType() != FinancialTransactionType.DEBIT)
-                .forEach(result::add);
+        roots.stream().filter(root -> root.getType() == TransactionType.DEBIT).forEach(result::add);
+        roots.stream().filter(root -> root.getType() != TransactionType.DEBIT).forEach(result::add);
         return result;
     }
 
@@ -90,16 +86,16 @@ public class CategorySpendingAssembler {
             List<Object[]> rowsA,
             List<MemberFact> removed,
             List<MemberFact> added,
-            List<FinancialTransactionCategory> categories,
+            List<Category> categories,
             Set<Long> activeMemberIds,
             Map<Long, String> memberNames,
             Long memberId) {
         Facts facts = Facts.of(rowsA, removed, added);
         Limits limits = new Limits(activeMemberIds, memberNames, memberId);
-        Predicate<FinancialTransactionCategory> listed =
+        Predicate<Category> listed =
                 category -> facts.hasActivity(category.getId()) || limits.effective(category) != null;
-        List<FinancialTransactionCategory> debit = categories.stream()
-                .filter(category -> category.getType() == FinancialTransactionType.DEBIT)
+        List<Category> debit = categories.stream()
+                .filter(category -> category.getType() == TransactionType.DEBIT)
                 .toList();
         return buildTree(facts, limits, debit, listed, BY_SPENT_DESC);
     }
@@ -107,16 +103,16 @@ public class CategorySpendingAssembler {
     private static List<CategorySpendingDto> buildTree(
             Facts facts,
             Limits limits,
-            List<FinancialTransactionCategory> categories,
-            Predicate<FinancialTransactionCategory> listed,
+            List<Category> categories,
+            Predicate<Category> listed,
             Comparator<CategorySpendingDto> order) {
         Set<Long> ids = new HashSet<>();
         categories.forEach(category -> ids.add(category.getId()));
 
-        Map<Long, List<FinancialTransactionCategory>> childrenByParent = new HashMap<>();
-        List<FinancialTransactionCategory> roots = new ArrayList<>();
-        for (FinancialTransactionCategory category : categories) {
-            FinancialTransactionCategory parent = category.getParent();
+        Map<Long, List<Category>> childrenByParent = new HashMap<>();
+        List<Category> roots = new ArrayList<>();
+        for (Category category : categories) {
+            Category parent = category.getParent();
             if (parent != null && ids.contains(parent.getId())) {
                 childrenByParent
                         .computeIfAbsent(parent.getId(), id -> new ArrayList<>())
@@ -127,10 +123,10 @@ public class CategorySpendingAssembler {
         }
 
         List<CategorySpendingDto> rootNodes = new ArrayList<>();
-        for (FinancialTransactionCategory root : roots) {
+        for (Category root : roots) {
             List<CategorySpendingDto> childNodes = new ArrayList<>();
             Map<Long, BigDecimal> rolledUp = new LinkedHashMap<>(facts.byMember(root.getId()));
-            for (FinancialTransactionCategory child : childrenByParent.getOrDefault(root.getId(), List.of())) {
+            for (Category child : childrenByParent.getOrDefault(root.getId(), List.of())) {
                 Map<Long, BigDecimal> childSpent = facts.byMember(child.getId());
                 childSpent.forEach((member, amount) -> rolledUp.merge(member, amount, BigDecimal::add));
                 if (listed.test(child)) {
@@ -148,10 +144,7 @@ public class CategorySpendingAssembler {
 
     /** One row from its spend per member (own for a child, rolled up for a root). */
     private static CategorySpendingDto node(
-            FinancialTransactionCategory category,
-            Map<Long, BigDecimal> spentByMember,
-            Limits limits,
-            List<CategorySpendingDto> children) {
+            Category category, Map<Long, BigDecimal> spentByMember, Limits limits, List<CategorySpendingDto> children) {
         User owner = category.getParent() == null
                 ? category.getOwner()
                 : category.getParent().getOwner();
@@ -195,7 +188,7 @@ public class CategorySpendingAssembler {
      * owner included, is listed without a limit, so nothing is hidden (UX-04 AC 1).
      */
     private static CategorySpendingDto ownedNode(
-            FinancialTransactionCategory category,
+            Category category,
             User owner,
             Map<Long, BigDecimal> spentByMember,
             Limits limits,
@@ -223,7 +216,7 @@ public class CategorySpendingAssembler {
         }
 
         /** Sum of the active per-member entries, or the plain limit when there are none (CAT-11). */
-        BigDecimal effective(FinancialTransactionCategory category) {
+        BigDecimal effective(Category category) {
             List<CategoryMemberLimit> active =
                     category.getMemberLimits().stream().filter(this::isActive).toList();
             if (active.isEmpty()) {
@@ -233,7 +226,7 @@ public class CategorySpendingAssembler {
         }
 
         /** The row's limit: the filtered member's own active entry when there is one, else the effective limit. */
-        BigDecimal forRow(FinancialTransactionCategory category) {
+        BigDecimal forRow(Category category) {
             if (memberId != null) {
                 for (CategoryMemberLimit entry : category.getMemberLimits()) {
                     if (entry.getMember().getId().equals(memberId) && isActive(entry)) {

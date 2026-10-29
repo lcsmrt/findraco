@@ -1,18 +1,18 @@
 package com.lcs.findraco.category.repository;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
 
-public class FinancialTransactionCategorySpecification {
+public class CategorySpecification {
 
-    public static Specification<FinancialTransactionCategory> belongsToPlan(Plan plan) {
+    public static Specification<Category> belongsToPlan(Plan plan) {
         return (root, query, cb) -> cb.equal(root.get("plan"), plan);
     }
 
-    public static Specification<FinancialTransactionCategory> descriptionContains(String description) {
+    public static Specification<Category> descriptionContains(String description) {
         if (description == null || description.isBlank()) {
             return (root, query, cb) -> null;
         }
@@ -20,7 +20,7 @@ public class FinancialTransactionCategorySpecification {
                 cb.like(cb.lower(root.get("description")), "%" + description.toLowerCase(Locale.ROOT) + "%");
     }
 
-    public static Specification<FinancialTransactionCategory> typeEquals(FinancialTransactionType type) {
+    public static Specification<Category> typeEquals(TransactionType type) {
         if (type == null) {
             return (root, query, cb) -> null;
         }

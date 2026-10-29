@@ -1,9 +1,9 @@
 package com.lcs.findraco.transaction.service;
 
-import com.lcs.findraco.transaction.model.FinancialTransaction;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -46,16 +46,14 @@ public class SeriesRegenerator {
     }
 
     public record SeriesEditResult(
-            List<FinancialTransaction> toUpdate,
-            List<FinancialTransaction> toCreate,
-            List<FinancialTransaction> toDelete) {}
+            List<Transaction> toUpdate, List<Transaction> toCreate, List<Transaction> toDelete) {}
 
     /** A single target slot computed from the (post-edit) recurrence definition template. */
     private record TargetOccurrence(LocalDate date, String description, Integer parcelsNumber) {}
 
     public SeriesEditResult reconcile(
             RecurrenceDefinition def,
-            List<FinancialTransaction> existing,
+            List<Transaction> existing,
             List<ResolvedParticipant> shares,
             SeriesEditScope scope,
             LocalDate pivotDate) {
@@ -70,19 +68,19 @@ public class SeriesRegenerator {
                         .toList()
                 : fullTargets;
 
-        List<FinancialTransaction> inScopeExisting = existing.stream()
+        List<Transaction> inScopeExisting = existing.stream()
                 .filter(tx -> !filterByPivot || !tx.getStartDate().isBefore(pivotDate))
-                .sorted(Comparator.comparing(FinancialTransaction::getStartDate))
+                .sorted(Comparator.comparing(Transaction::getStartDate))
                 .toList();
 
-        List<FinancialTransaction> toUpdate = new ArrayList<>();
-        List<FinancialTransaction> toCreate = new ArrayList<>();
-        List<FinancialTransaction> toDelete = new ArrayList<>();
+        List<Transaction> toUpdate = new ArrayList<>();
+        List<Transaction> toCreate = new ArrayList<>();
+        List<Transaction> toDelete = new ArrayList<>();
 
         int matched = Math.min(inScopeExisting.size(), inScopeTargets.size());
 
         for (int i = 0; i < matched; i++) {
-            FinancialTransaction tx = inScopeExisting.get(i);
+            Transaction tx = inScopeExisting.get(i);
             stampOccurrence(tx, inScopeTargets.get(i), def, shares);
             toUpdate.add(tx);
         }
@@ -130,10 +128,7 @@ public class SeriesRegenerator {
     }
 
     private void stampOccurrence(
-            FinancialTransaction tx,
-            TargetOccurrence slot,
-            RecurrenceDefinition def,
-            List<ResolvedParticipant> shares) {
+            Transaction tx, TargetOccurrence slot, RecurrenceDefinition def, List<ResolvedParticipant> shares) {
         tx.setAmount(def.getAmount());
         tx.setDescription(slot.description());
         tx.setCategory(def.getCategory());
@@ -144,7 +139,7 @@ public class SeriesRegenerator {
         reconcileParticipants(tx, shares);
     }
 
-    private void reconcileParticipants(FinancialTransaction tx, List<ResolvedParticipant> shares) {
+    private void reconcileParticipants(Transaction tx, List<ResolvedParticipant> shares) {
         Map<Long, TransactionParticipant> existingByMemberId = new HashMap<>();
         for (TransactionParticipant participant : tx.getParticipants()) {
             existingByMemberId.put(participant.getMember().getId(), participant);
@@ -171,9 +166,9 @@ public class SeriesRegenerator {
                         !keptMemberIds.contains(participant.getMember().getId()));
     }
 
-    private FinancialTransaction buildNewOccurrence(
+    private Transaction buildNewOccurrence(
             TargetOccurrence slot, RecurrenceDefinition def, List<ResolvedParticipant> shares) {
-        FinancialTransaction tx = new FinancialTransaction();
+        Transaction tx = new Transaction();
         tx.setPlan(def.getPlan());
         tx.setCreatedBy(def.getCreatedBy());
         tx.setSeriesId(def.getSeriesId());

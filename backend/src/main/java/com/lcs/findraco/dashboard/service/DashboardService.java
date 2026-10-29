@@ -8,8 +8,8 @@ import com.lcs.findraco.dashboard.response.MonthlyTrendDto;
 import com.lcs.findraco.dashboard.response.PersonBreakdownDto;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanContext;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -24,17 +24,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DashboardService {
 
-    private final FinancialTransactionRepository financialTransactionRepository;
+    private final TransactionRepository transactionRepository;
     private final CategorySpendingService categorySpendingService;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
     private final Clock clock;
 
     public DashboardService(
-            FinancialTransactionRepository financialTransactionRepository,
+            TransactionRepository transactionRepository,
             CategorySpendingService categorySpendingService,
             OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
             Clock clock) {
-        this.financialTransactionRepository = financialTransactionRepository;
+        this.transactionRepository = transactionRepository;
         this.categorySpendingService = categorySpendingService;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
         this.clock = clock;
@@ -49,11 +49,11 @@ public class DashboardService {
         LocalDate endDate = filter.getEndDate();
         Long memberId = filter.getMemberId();
 
-        BigDecimal totalIncome = financialTransactionRepository.sumByPlanAndTypeAndDateRange(
-                plan, FinancialTransactionType.CREDIT, startDate, endDate, memberId);
+        BigDecimal totalIncome = transactionRepository.sumByPlanAndTypeAndDateRange(
+                plan, TransactionType.CREDIT, startDate, endDate, memberId);
 
-        BigDecimal totalExpenses = financialTransactionRepository.sumByPlanAndTypeAndDateRange(
-                plan, FinancialTransactionType.DEBIT, startDate, endDate, memberId);
+        BigDecimal totalExpenses = transactionRepository.sumByPlanAndTypeAndDateRange(
+                plan, TransactionType.DEBIT, startDate, endDate, memberId);
 
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
 
@@ -83,18 +83,18 @@ public class DashboardService {
     private record MonthKey(int year, int month) {}
 
     private List<MonthlyTrendDto> buildMonthlyTrend(Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rows = financialTransactionRepository.findMonthlyTrend(plan, startDate, endDate, memberId);
+        List<Object[]> rows = transactionRepository.findMonthlyTrend(plan, startDate, endDate, memberId);
 
         Map<MonthKey, BigDecimal[]> amountsByMonth = new LinkedHashMap<>();
         for (Object[] row : rows) {
             int year = ((Number) row[0]).intValue();
             int month = ((Number) row[1]).intValue();
-            FinancialTransactionType type = (FinancialTransactionType) row[2];
+            TransactionType type = (TransactionType) row[2];
             BigDecimal amount = (BigDecimal) row[3];
 
             BigDecimal[] incomeAndExpenses = amountsByMonth.computeIfAbsent(
                     new MonthKey(year, month), k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO});
-            if (type == FinancialTransactionType.CREDIT) {
+            if (type == TransactionType.CREDIT) {
                 incomeAndExpenses[0] = amount;
             } else {
                 incomeAndExpenses[1] = amount;
@@ -111,20 +111,20 @@ public class DashboardService {
 
     private List<PersonBreakdownDto> buildPersonBreakdown(
             Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rows = financialTransactionRepository.findPersonBreakdown(plan, startDate, endDate, memberId);
+        List<Object[]> rows = transactionRepository.findPersonBreakdown(plan, startDate, endDate, memberId);
 
         Map<Long, String> namesByUserId = new LinkedHashMap<>();
         Map<Long, BigDecimal[]> amountsByUserId = new LinkedHashMap<>();
         for (Object[] row : rows) {
             Long userId = ((Number) row[0]).longValue();
             String name = (String) row[1];
-            FinancialTransactionType type = (FinancialTransactionType) row[2];
+            TransactionType type = (TransactionType) row[2];
             BigDecimal amount = (BigDecimal) row[3];
 
             namesByUserId.putIfAbsent(userId, name);
             BigDecimal[] incomeAndExpense =
                     amountsByUserId.computeIfAbsent(userId, k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO});
-            if (type == FinancialTransactionType.CREDIT) {
+            if (type == TransactionType.CREDIT) {
                 incomeAndExpense[0] = amount;
             } else {
                 incomeAndExpense[1] = amount;

@@ -1,10 +1,10 @@
 package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
@@ -37,15 +37,15 @@ public class OpenEndedSeriesTopUpService {
     private static final int HORIZON_MONTHS = 12;
 
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
-    private final FinancialTransactionRepository financialTransactionRepository;
+    private final TransactionRepository transactionRepository;
     private final RecurringTransactionGenerator recurringTransactionGenerator;
 
     public OpenEndedSeriesTopUpService(
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
-            FinancialTransactionRepository financialTransactionRepository,
+            TransactionRepository transactionRepository,
             RecurringTransactionGenerator recurringTransactionGenerator) {
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
-        this.financialTransactionRepository = financialTransactionRepository;
+        this.transactionRepository = transactionRepository;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
     }
 
@@ -68,7 +68,7 @@ public class OpenEndedSeriesTopUpService {
                 .map(participant -> new ResolvedParticipant(participant.getMember(), participant.getShareAmount()))
                 .toList();
 
-        List<FinancialTransaction> candidates =
+        List<Transaction> candidates =
                 recurringTransactionGenerator.generateForwardWindow(definition, afterExclusive, horizonCap, shares);
 
         if (candidates.isEmpty()) {
@@ -76,25 +76,23 @@ public class OpenEndedSeriesTopUpService {
         }
 
         Set<LocalDate> existingDates =
-                financialTransactionRepository
-                        .findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId())
-                        .stream()
-                        .map(FinancialTransaction::getStartDate)
+                transactionRepository.findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId()).stream()
+                        .map(Transaction::getStartDate)
                         .collect(Collectors.toSet());
 
-        List<FinancialTransaction> toPersist = candidates.stream()
+        List<Transaction> toPersist = candidates.stream()
                 .filter(occurrence -> !existingDates.contains(occurrence.getStartDate()))
                 .toList();
 
         if (!toPersist.isEmpty()) {
-            for (FinancialTransaction occurrence : toPersist) {
+            for (Transaction occurrence : toPersist) {
                 occurrence.setRecurrenceDefinition(definition);
             }
-            financialTransactionRepository.saveAll(toPersist);
+            transactionRepository.saveAll(toPersist);
         }
 
         LocalDate lastGenerated = candidates.stream()
-                .map(FinancialTransaction::getStartDate)
+                .map(Transaction::getStartDate)
                 .max(Comparator.naturalOrder())
                 .orElse(definition.getGeneratedThrough());
 

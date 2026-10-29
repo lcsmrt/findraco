@@ -1,16 +1,16 @@
 package com.lcs.findraco.support;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import java.math.BigDecimal;
@@ -35,10 +35,10 @@ public class Fixtures {
     private PlanMembershipRepository planMembershipRepository;
 
     @Autowired
-    private FinancialTransactionRepository financialTransactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
-    private FinancialTransactionCategoryRepository financialTransactionCategoryRepository;
+    private CategoryRepository categoryRepository;
 
     public User aUser() {
         return aUser("user-" + UUID.randomUUID() + "@test.com");
@@ -71,19 +71,14 @@ public class Fixtures {
         return planMembershipRepository.save(membership);
     }
 
-    public FinancialTransaction aTransaction(
-            Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type) {
+    public Transaction aTransaction(Plan plan, User createdBy, BigDecimal amount, TransactionType type) {
         return aTransaction(plan, createdBy, amount, type, null);
     }
 
     /** A single-participant (createdBy at 100%) transaction dated today in the given category. */
-    public FinancialTransaction aTransaction(
-            Plan plan,
-            User createdBy,
-            BigDecimal amount,
-            FinancialTransactionType type,
-            FinancialTransactionCategory category) {
-        FinancialTransaction transaction = new FinancialTransaction();
+    public Transaction aTransaction(
+            Plan plan, User createdBy, BigDecimal amount, TransactionType type, Category category) {
+        Transaction transaction = new Transaction();
         transaction.setCategory(category);
         transaction.setPlan(plan);
         transaction.setCreatedBy(createdBy);
@@ -98,20 +93,19 @@ public class Fixtures {
         participant.setShareAmount(amount);
         transaction.getParticipants().add(participant);
 
-        return financialTransactionRepository.save(transaction);
+        return transactionRepository.save(transaction);
     }
 
-    public FinancialTransactionCategory aCategory(Plan plan, FinancialTransactionType type, String description) {
+    public Category aCategory(Plan plan, TransactionType type, String description) {
         return aCategory(plan, type, description, null);
     }
 
-    public FinancialTransactionCategory aCategory(
-            Plan plan, FinancialTransactionType type, String description, FinancialTransactionCategory parent) {
-        FinancialTransactionCategory category = new FinancialTransactionCategory();
+    public Category aCategory(Plan plan, TransactionType type, String description, Category parent) {
+        Category category = new Category();
         category.setPlan(plan);
         category.setType(type);
         category.setDescription(description);
         category.setParent(parent);
-        return financialTransactionCategoryRepository.save(category);
+        return categoryRepository.save(category);
     }
 }

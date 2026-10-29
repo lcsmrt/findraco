@@ -1,25 +1,25 @@
 package com.lcs.findraco.category.service;
 
-import com.lcs.findraco.category.exception.FinancialTransactionCategoryExceptions;
+import com.lcs.findraco.category.exception.CategoryExceptions;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
 import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
-import com.lcs.findraco.category.repository.FinancialTransactionCategorySpecification;
-import com.lcs.findraco.category.request.FinancialTransactionCategoryFilterDto;
-import com.lcs.findraco.category.request.FinancialTransactionCategoryRequestDto;
+import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.category.repository.CategorySpecification;
+import com.lcs.findraco.category.request.CategoryFilterDto;
+import com.lcs.findraco.category.request.CategoryRequestDto;
 import com.lcs.findraco.category.request.MemberLimitDto;
+import com.lcs.findraco.category.response.CategoryResponseDto;
 import com.lcs.findraco.category.response.CategoryUsageDto;
-import com.lcs.findraco.category.response.FinancialTransactionCategoryResponseDto;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionItemRepository;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.util.HashSet;
 import java.util.List;
@@ -34,19 +34,19 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public class FinancialTransactionCategoryService {
+public class CategoryService {
 
-    private final FinancialTransactionCategoryRepository categoryRepository;
-    private final FinancialTransactionRepository transactionRepository;
+    private final CategoryRepository categoryRepository;
+    private final TransactionRepository transactionRepository;
     private final TransactionItemRepository transactionItemRepository;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final CategoryMemberLimitRepository memberLimitRepository;
     private final PlanMembershipRepository planMembershipRepository;
     private final PlanAuthorization planAuthorization;
 
-    public FinancialTransactionCategoryService(
-            FinancialTransactionCategoryRepository categoryRepository,
-            FinancialTransactionRepository transactionRepository,
+    public CategoryService(
+            CategoryRepository categoryRepository,
+            TransactionRepository transactionRepository,
             TransactionItemRepository transactionItemRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             CategoryMemberLimitRepository memberLimitRepository,
@@ -62,11 +62,10 @@ public class FinancialTransactionCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public FinancialTransactionCategory findById(Long id, PlanContext ctx) {
+    public Category findById(Long id, PlanContext ctx) {
         return categoryRepository
                 .findByIdAndPlan(id, ctx.getPlan())
-                .orElseThrow(() ->
-                        new FinancialTransactionCategoryExceptions.FinancialTransactionCategoryNotFoundException(id));
+                .orElseThrow(() -> new CategoryExceptions.CategoryNotFoundException(id));
     }
 
     /** Usage counts of a category of the plan (CAT-10, P1 Sub AC 18); not in the plan → 404. Any member may read it. */
@@ -75,7 +74,7 @@ public class FinancialTransactionCategoryService {
         return usageOf(findById(id, ctx));
     }
 
-    private CategoryUsageDto usageOf(FinancialTransactionCategory category) {
+    private CategoryUsageDto usageOf(Category category) {
         return new CategoryUsageDto(
                 transactionRepository.countByCategory(category),
                 transactionItemRepository.countByCategory(category),
@@ -83,39 +82,38 @@ public class FinancialTransactionCategoryService {
     }
 
     @Transactional(readOnly = true)
-    public FinancialTransactionCategoryResponseDto getById(Long id, PlanContext ctx) {
-        return new FinancialTransactionCategoryResponseDto(
+    public CategoryResponseDto getById(Long id, PlanContext ctx) {
+        return new CategoryResponseDto(
                 findById(id, ctx), activeMembers(ctx.getPlan()).keySet());
     }
 
     private static final Set<String> SORTABLE_FIELDS = Set.of("description", "spendingLimit");
 
     @Transactional(readOnly = true)
-    public List<FinancialTransactionCategory> findAllByPlan(PlanContext ctx) {
+    public List<Category> findAllByPlan(PlanContext ctx) {
         return categoryRepository.findAllByPlan(ctx.getPlan());
     }
 
     @Transactional(readOnly = true)
-    public Page<FinancialTransactionCategoryResponseDto> findAllByPlanPaged(
-            FinancialTransactionCategoryFilterDto filter, PlanContext ctx) {
+    public Page<CategoryResponseDto> findAllByPlanPaged(CategoryFilterDto filter, PlanContext ctx) {
         PageRequest pageable = filter.toPageable(SORTABLE_FIELDS);
 
-        Specification<FinancialTransactionCategory> spec = Specification.allOf(
-                FinancialTransactionCategorySpecification.belongsToPlan(ctx.getPlan()),
-                FinancialTransactionCategorySpecification.descriptionContains(filter.getDescription()),
-                FinancialTransactionCategorySpecification.typeEquals(filter.getType()));
+        Specification<Category> spec = Specification.allOf(
+                CategorySpecification.belongsToPlan(ctx.getPlan()),
+                CategorySpecification.descriptionContains(filter.getDescription()),
+                CategorySpecification.typeEquals(filter.getType()));
 
         Set<Long> activeMemberIds = activeMembers(ctx.getPlan()).keySet();
         return categoryRepository
                 .findAll(spec, pageable)
-                .map(category -> new FinancialTransactionCategoryResponseDto(category, activeMemberIds));
+                .map(category -> new CategoryResponseDto(category, activeMemberIds));
     }
 
     @Transactional
-    public FinancialTransactionCategoryResponseDto create(FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
+    public CategoryResponseDto create(CategoryRequestDto dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
-        FinancialTransactionCategory category = new FinancialTransactionCategory();
+        Category category = new Category();
 
         category.setPlan(ctx.getPlan());
         category.setType(dto.getType());
@@ -125,23 +123,22 @@ public class FinancialTransactionCategoryService {
         category.setOwner(resolveOwner(category, dto, activeMembers));
         applyLimits(category, dto, activeMembers);
 
-        return new FinancialTransactionCategoryResponseDto(categoryRepository.save(category), activeMembers.keySet());
+        return new CategoryResponseDto(categoryRepository.save(category), activeMembers.keySet());
     }
 
     @Transactional
-    public FinancialTransactionCategoryResponseDto update(
-            Long id, FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
+    public CategoryResponseDto update(Long id, CategoryRequestDto dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
-        FinancialTransactionCategory existingCategory = findById(id, ctx);
+        Category existingCategory = findById(id, ctx);
         boolean hasChildren = categoryRepository.existsByParent(existingCategory);
         if (hasChildren && dto.getType() != existingCategory.getType()) {
-            throw new FinancialTransactionCategoryExceptions.CategoryWithChildrenTypeChangeException();
+            throw new CategoryExceptions.CategoryWithChildrenTypeChangeException();
         }
 
-        FinancialTransactionCategory parent = resolveParent(existingCategory, dto, ctx);
+        Category parent = resolveParent(existingCategory, dto, ctx);
         if (parent != null && hasChildren) {
-            throw new FinancialTransactionCategoryExceptions.CategoryWithChildrenCannotHaveParentException();
+            throw new CategoryExceptions.CategoryWithChildrenCannotHaveParentException();
         }
 
         existingCategory.setType(dto.getType());
@@ -153,12 +150,11 @@ public class FinancialTransactionCategoryService {
                 && hasChildren
                 && memberLimitRepository.existsByCategory_Parent(existingCategory)) {
             // Children inherit the owner, and an owned category cannot have per-member limits.
-            throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnOwnedException();
+            throw new CategoryExceptions.CategoryMemberLimitsOnOwnedException();
         }
         applyLimits(existingCategory, dto, activeMembers);
 
-        return new FinancialTransactionCategoryResponseDto(
-                categoryRepository.save(existingCategory), activeMembers.keySet());
+        return new CategoryResponseDto(categoryRepository.save(existingCategory), activeMembers.keySet());
     }
 
     /**
@@ -166,16 +162,13 @@ public class FinancialTransactionCategoryService {
      * kept when sent back after they left the plan, so a former member's ownership stays dormant
      * until the OWNER clears or changes it (CAT-14). Parent must already be set.
      */
-    private User resolveOwner(
-            FinancialTransactionCategory category,
-            FinancialTransactionCategoryRequestDto dto,
-            Map<Long, User> activeMembers) {
+    private User resolveOwner(Category category, CategoryRequestDto dto, Map<Long, User> activeMembers) {
         Long ownerId = dto.getOwnerId();
         if (ownerId == null) {
             return null;
         }
         if (category.getParent() != null) {
-            throw new FinancialTransactionCategoryExceptions.CategoryOwnerOnChildException();
+            throw new CategoryExceptions.CategoryOwnerOnChildException();
         }
         User owner = activeMembers.get(ownerId);
         if (owner != null) {
@@ -185,7 +178,7 @@ public class FinancialTransactionCategoryService {
         if (stored != null && stored.getId().equals(ownerId)) {
             return stored;
         }
-        throw new FinancialTransactionCategoryExceptions.CategoryOwnerInactiveMemberException(ownerId);
+        throw new CategoryExceptions.CategoryOwnerInactiveMemberException(ownerId);
     }
 
     /** Active members of the plan by user id. A user without a membership row is a former member (CAT-14). */
@@ -200,23 +193,19 @@ public class FinancialTransactionCategoryService {
      * owner must already be set. While per-member entries exist the plain limit sent is ignored and
      * the stored one cleared, so the category limit is always the sum of the active entries.
      */
-    private void applyLimits(
-            FinancialTransactionCategory category,
-            FinancialTransactionCategoryRequestDto dto,
-            Map<Long, User> activeMembers) {
+    private void applyLimits(Category category, CategoryRequestDto dto, Map<Long, User> activeMembers) {
         if (dto.getMemberLimits() != null) {
             replaceMemberLimits(category, dto.getMemberLimits(), activeMembers);
         }
         if (category.getMemberLimits().isEmpty()) {
-            category.setSpendingLimit(
-                    category.getType() == FinancialTransactionType.CREDIT ? null : dto.getSpendingLimit());
+            category.setSpendingLimit(category.getType() == TransactionType.CREDIT ? null : dto.getSpendingLimit());
             return;
         }
-        if (category.getType() == FinancialTransactionType.CREDIT) {
-            throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnCreditException();
+        if (category.getType() == TransactionType.CREDIT) {
+            throw new CategoryExceptions.CategoryMemberLimitsOnCreditException();
         }
         if (effectiveOwner(category) != null) {
-            throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitsOnOwnedException();
+            throw new CategoryExceptions.CategoryMemberLimitsOnOwnedException();
         }
         category.setSpendingLimit(null);
     }
@@ -227,22 +216,20 @@ public class FinancialTransactionCategoryService {
      * member's stored entry is kept when sent back unchanged and deleted when omitted; it can never be
      * created or changed (CAT-13 AC 7, CAT-14).
      */
-    private void replaceMemberLimits(
-            FinancialTransactionCategory category, List<MemberLimitDto> requested, Map<Long, User> activeMembers) {
+    private void replaceMemberLimits(Category category, List<MemberLimitDto> requested, Map<Long, User> activeMembers) {
         Map<Long, CategoryMemberLimit> stored = category.getMemberLimits().stream()
                 .collect(Collectors.toMap(entry -> entry.getMember().getId(), Function.identity()));
         Set<Long> kept = new HashSet<>();
         for (MemberLimitDto request : requested) {
             Long memberId = request.getMemberId();
             if (!kept.add(memberId)) {
-                throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitDuplicateMemberException(memberId);
+                throw new CategoryExceptions.CategoryMemberLimitDuplicateMemberException(memberId);
             }
             CategoryMemberLimit existing = stored.get(memberId);
             User member = activeMembers.get(memberId);
             if (member == null) {
                 if (existing == null || existing.getAmount().compareTo(request.getAmount()) != 0) {
-                    throw new FinancialTransactionCategoryExceptions.CategoryMemberLimitInactiveMemberException(
-                            memberId);
+                    throw new CategoryExceptions.CategoryMemberLimitInactiveMemberException(memberId);
                 }
                 continue;
             }
@@ -261,7 +248,7 @@ public class FinancialTransactionCategoryService {
     }
 
     /** A child has its parent's owner (CAT-15 AC 2). */
-    private static User effectiveOwner(FinancialTransactionCategory category) {
+    private static User effectiveOwner(Category category) {
         return category.getParent() == null
                 ? category.getOwner()
                 : category.getParent().getOwner();
@@ -271,20 +258,19 @@ public class FinancialTransactionCategoryService {
      * Resolves and validates the requested parent (two-level hierarchy, CAT-06). Returns null when no
      * parent is requested. {@code self} is null on create.
      */
-    private FinancialTransactionCategory resolveParent(
-            FinancialTransactionCategory self, FinancialTransactionCategoryRequestDto dto, PlanContext ctx) {
+    private Category resolveParent(Category self, CategoryRequestDto dto, PlanContext ctx) {
         if (dto.getParentId() == null) {
             return null;
         }
-        FinancialTransactionCategory parent = findById(dto.getParentId(), ctx);
+        Category parent = findById(dto.getParentId(), ctx);
         if (self != null && parent.getId().equals(self.getId())) {
-            throw new FinancialTransactionCategoryExceptions.CategoryParentIsItselfException();
+            throw new CategoryExceptions.CategoryParentIsItselfException();
         }
         if (parent.getParent() != null) {
-            throw new FinancialTransactionCategoryExceptions.CategoryParentIsChildException(parent.getId());
+            throw new CategoryExceptions.CategoryParentIsChildException(parent.getId());
         }
         if (parent.getType() != dto.getType()) {
-            throw new FinancialTransactionCategoryExceptions.CategoryParentTypeMismatchException();
+            throw new CategoryExceptions.CategoryParentTypeMismatchException();
         }
         return parent;
     }
@@ -300,18 +286,17 @@ public class FinancialTransactionCategoryService {
     public void delete(Long id, Long reassignToId, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.getRole());
 
-        FinancialTransactionCategory category = findById(id, ctx);
-        FinancialTransactionCategory target =
-                reassignToId == null ? null : resolveReassignTarget(category, reassignToId, ctx);
+        Category category = findById(id, ctx);
+        Category target = reassignToId == null ? null : resolveReassignTarget(category, reassignToId, ctx);
 
         if (categoryRepository.existsByParent(category)) {
-            throw new FinancialTransactionCategoryExceptions.CategoryHasChildrenException(id);
+            throw new CategoryExceptions.CategoryHasChildrenException(id);
         }
 
         CategoryUsageDto usage = usageOf(category);
 
         if (usage.inUse() && target == null) {
-            throw new FinancialTransactionCategoryExceptions.CategoryInUseException(
+            throw new CategoryExceptions.CategoryInUseException(
                     id, usage.getTransactions(), usage.getItems(), usage.getRecurrenceDefinitions());
         }
         if (usage.inUse()) {
@@ -323,20 +308,18 @@ public class FinancialTransactionCategoryService {
         categoryRepository.delete(category);
     }
 
-    private FinancialTransactionCategory resolveReassignTarget(
-            FinancialTransactionCategory category, Long reassignToId, PlanContext ctx) {
-        FinancialTransactionCategory target = findById(reassignToId, ctx);
+    private Category resolveReassignTarget(Category category, Long reassignToId, PlanContext ctx) {
+        Category target = findById(reassignToId, ctx);
         if (target.getId().equals(category.getId())) {
-            throw new FinancialTransactionCategoryExceptions.CategoryInvalidReassignTargetException(
+            throw new CategoryExceptions.CategoryInvalidReassignTargetException(
                     "a category cannot be moved into itself.");
         }
         if (target.getParent() != null && target.getParent().getId().equals(category.getId())) {
-            throw new FinancialTransactionCategoryExceptions.CategoryInvalidReassignTargetException(
+            throw new CategoryExceptions.CategoryInvalidReassignTargetException(
                     "a category cannot be moved into one of its subcategories.");
         }
         if (target.getType() != category.getType()) {
-            throw new FinancialTransactionCategoryExceptions.CategoryInvalidReassignTargetException(
-                    "the target must have the same type.");
+            throw new CategoryExceptions.CategoryInvalidReassignTargetException("the target must have the same type.");
         }
         return target;
     }

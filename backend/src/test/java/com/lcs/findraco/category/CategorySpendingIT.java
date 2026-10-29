@@ -6,18 +6,20 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
 import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -46,10 +48,10 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FinancialTransactionCategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
 
     @Autowired
-    private FinancialTransactionRepository transactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private CategoryMemberLimitRepository memberLimitRepository;
@@ -144,7 +146,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/spending", plan.getId())
+        mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .param("startDate", today.toString()))
                 .andExpect(status().isBadRequest());
@@ -157,8 +159,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory groceries = withMemberLimits(
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries"),
+        Category groceries = withMemberLimits(
+                fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries"),
                 Map.of(owner, "260.00", partner, "140.00"));
         aSplitTransaction(plan, owner, groceries, "100.00", Map.of(owner, "50.00", partner, "50.00"));
 
@@ -192,8 +194,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory groceries = withMemberLimits(
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Groceries"),
+        Category groceries = withMemberLimits(
+                fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries"),
                 Map.of(owner, "260.00", partner, "140.00"));
         aSplitTransaction(plan, owner, groceries, "100.00", Map.of(owner, "50.00", partner, "50.00"));
 
@@ -229,8 +231,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory professional = owned(
-                withLimit(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional"), "100.00"), owner);
+        Category professional =
+                owned(withLimit(fixtures.aCategory(plan, TransactionType.DEBIT, "Professional"), "100.00"), owner);
         aSplitTransaction(plan, owner, professional, "100.00", Map.of(owner, "70.00", partner, "30.00"));
 
         JsonNode row = rowNamed(readSpending(fetchSpending(plan, partner).andExpect(status().isOk())), "Professional");
@@ -256,9 +258,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory professional =
-                owned(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Professional"), partner);
-        fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Courses", professional);
+        Category professional = owned(fixtures.aCategory(plan, TransactionType.DEBIT, "Professional"), partner);
+        fixtures.aCategory(plan, TransactionType.DEBIT, "Courses", professional);
         aSplitTransaction(plan, partner, professional, "100.00", Map.of(partner, "70.00", owner, "30.00"));
 
         removeMember(plan, owner, partner).andExpect(status().isNoContent());
@@ -289,7 +290,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
-        FinancialTransactionCategory market = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Market");
+        Category market = fixtures.aCategory(plan, TransactionType.DEBIT, "Market");
         aSplitTransaction(plan, owner, market, "100.00", Map.of(owner, "60.00", partner, "40.00"));
 
         JsonNode row = rowNamed(readSpending(fetchSpending(plan, partner).andExpect(status().isOk())), "Market");
@@ -307,38 +308,34 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(theirs.get("active").asBoolean()).isTrue();
     }
 
-    private record Seed(FinancialTransactionCategory food, FinancialTransactionCategory delivery) {}
+    private record Seed(Category food, Category delivery) {}
 
     /**
      * Food (limit 400) > Delivery (limit 200); Rent (no limit, no spend); Salary (CREDIT) > Bonus.
      * In period: 150 on Food, 250 on Delivery, 1000 on Salary. Out of period: 999 on Food.
      */
     private Seed seed(Plan plan, User owner) {
-        FinancialTransactionCategory food =
-                withLimit(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food"), "400.00");
-        FinancialTransactionCategory delivery =
-                withLimit(fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food), "200.00");
-        fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Rent");
-        FinancialTransactionCategory salary = fixtures.aCategory(plan, FinancialTransactionType.CREDIT, "Salary");
-        fixtures.aCategory(plan, FinancialTransactionType.CREDIT, "Bonus", salary);
+        Category food = withLimit(fixtures.aCategory(plan, TransactionType.DEBIT, "Food"), "400.00");
+        Category delivery = withLimit(fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food), "200.00");
+        fixtures.aCategory(plan, TransactionType.DEBIT, "Rent");
+        Category salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary");
+        fixtures.aCategory(plan, TransactionType.CREDIT, "Bonus", salary);
 
-        fixtures.aTransaction(plan, owner, new BigDecimal("150.00"), FinancialTransactionType.DEBIT, food);
-        fixtures.aTransaction(plan, owner, new BigDecimal("250.00"), FinancialTransactionType.DEBIT, delivery);
-        fixtures.aTransaction(plan, owner, new BigDecimal("1000.00"), FinancialTransactionType.CREDIT, salary);
-        FinancialTransaction old =
-                fixtures.aTransaction(plan, owner, new BigDecimal("999.00"), FinancialTransactionType.DEBIT, food);
+        fixtures.aTransaction(plan, owner, new BigDecimal("150.00"), TransactionType.DEBIT, food);
+        fixtures.aTransaction(plan, owner, new BigDecimal("250.00"), TransactionType.DEBIT, delivery);
+        fixtures.aTransaction(plan, owner, new BigDecimal("1000.00"), TransactionType.CREDIT, salary);
+        Transaction old = fixtures.aTransaction(plan, owner, new BigDecimal("999.00"), TransactionType.DEBIT, food);
         old.setStartDate(today.minusMonths(2));
         transactionRepository.save(old);
         return new Seed(food, delivery);
     }
 
-    private FinancialTransactionCategory withLimit(FinancialTransactionCategory category, String limit) {
+    private Category withLimit(Category category, String limit) {
         category.setSpendingLimit(new BigDecimal(limit));
         return categoryRepository.save(category);
     }
 
-    private FinancialTransactionCategory withMemberLimits(
-            FinancialTransactionCategory category, Map<User, String> amounts) {
+    private Category withMemberLimits(Category category, Map<User, String> amounts) {
         amounts.forEach((member, amount) -> {
             CategoryMemberLimit entry = new CategoryMemberLimit();
             entry.setCategory(category);
@@ -349,19 +346,19 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         return category;
     }
 
-    private FinancialTransactionCategory owned(FinancialTransactionCategory category, User owner) {
+    private Category owned(Category category, User owner) {
         category.setOwner(owner);
         return categoryRepository.save(category);
     }
 
     /** A transaction dated today split across members by the given share amounts. */
     private void aSplitTransaction(
-            Plan plan, User createdBy, FinancialTransactionCategory category, String amount, Map<User, String> shares) {
-        FinancialTransaction transaction = new FinancialTransaction();
+            Plan plan, User createdBy, Category category, String amount, Map<User, String> shares) {
+        Transaction transaction = new Transaction();
         transaction.setCategory(category);
         transaction.setPlan(plan);
         transaction.setCreatedBy(createdBy);
-        transaction.setType(FinancialTransactionType.DEBIT);
+        transaction.setType(TransactionType.DEBIT);
         transaction.setAmount(new BigDecimal(amount));
         transaction.setDescription("Split transaction");
         transaction.setStartDate(today);
@@ -385,14 +382,14 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         Map<String, Object> body = new HashMap<>();
         body.put("role", PlanRole.EDITOR.name());
         body.put("type", "LINK");
-        String token = readSpending(mockMvc.perform(post(ApiRoutes.PLAN_INVITATION, plan.getId())
+        String token = readSpending(mockMvc.perform(post(PlanRoutes.PLAN_INVITATION, plan.getId())
                                 .with(testAuthHelper.asUser(owner))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(body)))
                         .andExpect(status().isCreated()))
                 .get("token")
                 .asString();
-        mockMvc.perform(post(ApiRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(member)))
+        mockMvc.perform(post(PlanRoutes.INVITATION + "/{token}/accept", token).with(testAuthHelper.asUser(member)))
                 .andExpect(status().isCreated());
     }
 
@@ -415,7 +412,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     }
 
     private ResultActions fetchSpending(Plan plan, User asUser) throws Exception {
-        return mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/spending", plan.getId())
+        return mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
                 .with(testAuthHelper.asUser(asUser))
                 .param("startDate", today.minusDays(1).toString())
                 .param("endDate", today.plusDays(1).toString()));

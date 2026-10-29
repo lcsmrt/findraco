@@ -1,9 +1,9 @@
 package com.lcs.findraco.transaction.response;
 
-public class FinancialTransactionImportResponseDto {
+public class TransactionImportResponseDto {
     private final int imported;
 
-    public FinancialTransactionImportResponseDto(int imported) {
+    public TransactionImportResponseDto(int imported) {
         this.imported = imported;
     }
 

@@ -18,7 +18,7 @@ public class CategoryMemberLimit {
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name = "fk_cml_category"))
-    private FinancialTransactionCategory category;
+    private Category category;
 
     @ManyToOne(optional = false)
     @JoinColumn(name = "member_user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_cml_member"))
@@ -33,11 +33,11 @@ public class CategoryMemberLimit {
         return id;
     }
 
-    public FinancialTransactionCategory getCategory() {
+    public Category getCategory() {
         return category;
     }
 
-    public void setCategory(FinancialTransactionCategory category) {
+    public void setCategory(Category category) {
         this.category = category;
     }
 

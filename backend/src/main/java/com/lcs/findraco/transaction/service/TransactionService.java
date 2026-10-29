@@ -1,31 +1,31 @@
 package com.lcs.findraco.transaction.service;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
-import com.lcs.findraco.category.service.FinancialTransactionCategoryService;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.service.CategoryService;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
-import com.lcs.findraco.transaction.exception.FinancialTransactionExceptions;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionItem;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
-import com.lcs.findraco.transaction.repository.FinancialTransactionSpecification;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
-import com.lcs.findraco.transaction.request.FinancialTransactionFilterDto;
-import com.lcs.findraco.transaction.request.FinancialTransactionRequestDto;
-import com.lcs.findraco.transaction.request.FinancialTransactionSeriesRequestDto;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
+import com.lcs.findraco.transaction.repository.TransactionSpecification;
 import com.lcs.findraco.transaction.request.ItemDto;
 import com.lcs.findraco.transaction.request.ParticipantDto;
 import com.lcs.findraco.transaction.request.SeriesEditRequestDto;
-import com.lcs.findraco.transaction.response.FinancialTransactionSeriesResponseDto;
+import com.lcs.findraco.transaction.request.TransactionFilterDto;
+import com.lcs.findraco.transaction.request.TransactionRequestDto;
+import com.lcs.findraco.transaction.request.TransactionSeriesRequestDto;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponseDto;
+import com.lcs.findraco.transaction.response.TransactionSeriesResponseDto;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import java.io.BufferedReader;
@@ -55,10 +55,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
-public class FinancialTransactionService {
+public class TransactionService {
 
-    private final FinancialTransactionRepository financialTransactionRepository;
-    private final FinancialTransactionCategoryService financialTransactionCategoryService;
+    private final TransactionRepository transactionRepository;
+    private final CategoryService categoryService;
     private final DateUtils dateUtils;
     private final RecurringTransactionGenerator recurringTransactionGenerator;
     private final PlanAuthorization planAuthorization;
@@ -68,9 +68,9 @@ public class FinancialTransactionService {
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final SeriesRegenerator seriesRegenerator;
 
-    public FinancialTransactionService(
-            FinancialTransactionRepository financialTransactionRepository,
-            FinancialTransactionCategoryService financialTransactionCategoryService,
+    public TransactionService(
+            TransactionRepository transactionRepository,
+            CategoryService categoryService,
             DateUtils dateUtils,
             RecurringTransactionGenerator recurringTransactionGenerator,
             PlanAuthorization planAuthorization,
@@ -79,8 +79,8 @@ public class FinancialTransactionService {
             UserRepository userRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             SeriesRegenerator seriesRegenerator) {
-        this.financialTransactionRepository = financialTransactionRepository;
-        this.financialTransactionCategoryService = financialTransactionCategoryService;
+        this.transactionRepository = transactionRepository;
+        this.categoryService = categoryService;
         this.dateUtils = dateUtils;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
         this.planAuthorization = planAuthorization;
@@ -92,10 +92,10 @@ public class FinancialTransactionService {
     }
 
     @Transactional(readOnly = true)
-    public FinancialTransaction findById(Long id, PlanContext ctx) {
-        return financialTransactionRepository
+    public Transaction findById(Long id, PlanContext ctx) {
+        return transactionRepository
                 .findByIdAndPlan(id, ctx.getPlan())
-                .orElseThrow(() -> new FinancialTransactionExceptions.FinancialTransactionNotFoundException(id));
+                .orElseThrow(() -> new TransactionExceptions.TransactionNotFoundException(id));
     }
 
     private static final String SORT_CATEGORY = "category";
@@ -104,89 +104,85 @@ public class FinancialTransactionService {
             Set.of("startDate", "endDate", "amount", "description", SORT_CATEGORY, SORT_ATTRIBUTED_TO);
 
     @Transactional(readOnly = true)
-    public List<FinancialTransaction> findAllByPlan(PlanContext ctx) {
-        return financialTransactionRepository.findAllByPlan(ctx.getPlan());
+    public List<Transaction> findAllByPlan(PlanContext ctx) {
+        return transactionRepository.findAllByPlan(ctx.getPlan());
     }
 
     @Transactional(readOnly = true)
-    public Page<FinancialTransaction> findAllByPlanPaged(FinancialTransactionFilterDto filter, PlanContext ctx) {
+    public Page<Transaction> findAllByPlanPaged(TransactionFilterDto filter, PlanContext ctx) {
         String sortBy = filter.getSortBy();
         if (!SORTABLE_FIELDS.contains(sortBy)) {
             throw new IllegalArgumentException("Invalid sort field: " + sortBy);
         }
         Sort.Direction direction = Sort.Direction.fromString(filter.getSortDirection());
 
-        List<Specification<FinancialTransaction>> specs = new ArrayList<>(List.of(
-                FinancialTransactionSpecification.belongsToPlan(ctx.getPlan()),
-                FinancialTransactionSpecification.typeEquals(filter.getType()),
-                FinancialTransactionSpecification.categoryInTree(filter.getCategoryId()),
-                FinancialTransactionSpecification.hasParticipant(filter.getMemberId()),
-                FinancialTransactionSpecification.matchesSearchTerm(filter.getDescription()),
-                FinancialTransactionSpecification.startDateFrom(filter.getStartDateFrom()),
-                FinancialTransactionSpecification.startDateTo(filter.getStartDateTo()),
-                FinancialTransactionSpecification.amountMin(filter.getAmountMin()),
-                FinancialTransactionSpecification.amountMax(filter.getAmountMax())));
+        List<Specification<Transaction>> specs = new ArrayList<>(List.of(
+                TransactionSpecification.belongsToPlan(ctx.getPlan()),
+                TransactionSpecification.typeEquals(filter.getType()),
+                TransactionSpecification.categoryInTree(filter.getCategoryId()),
+                TransactionSpecification.hasParticipant(filter.getMemberId()),
+                TransactionSpecification.matchesSearchTerm(filter.getDescription()),
+                TransactionSpecification.startDateFrom(filter.getStartDateFrom()),
+                TransactionSpecification.startDateTo(filter.getStartDateTo()),
+                TransactionSpecification.amountMin(filter.getAmountMin()),
+                TransactionSpecification.amountMax(filter.getAmountMax())));
 
         // category / attributed-to are aggregate/association orderings the Specification owns; for those
         // the Pageable is left unsorted so the spec's ORDER BY is the only one applied. Simple property
         // sorts (startDate/endDate/amount/description) stay on the Pageable as before.
         PageRequest pageable;
         if (SORT_CATEGORY.equals(sortBy)) {
-            specs.add(FinancialTransactionSpecification.orderByCategoryName(direction));
+            specs.add(TransactionSpecification.orderByCategoryName(direction));
             pageable = PageRequest.of(filter.getPage(), filter.getSize());
         } else if (SORT_ATTRIBUTED_TO.equals(sortBy)) {
-            specs.add(FinancialTransactionSpecification.orderByLargestShareParticipant(direction));
+            specs.add(TransactionSpecification.orderByLargestShareParticipant(direction));
             pageable = PageRequest.of(filter.getPage(), filter.getSize());
         } else {
             pageable = PageRequest.of(filter.getPage(), filter.getSize(), Sort.by(direction, sortBy));
         }
 
-        return financialTransactionRepository.findAll(Specification.allOf(specs), pageable);
+        return transactionRepository.findAll(Specification.allOf(specs), pageable);
     }
 
     @Transactional
-    public FinancialTransaction create(FinancialTransactionRequestDto dto, PlanContext ctx) {
+    public Transaction create(TransactionRequestDto dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.getRole());
         dateUtils.checkIfStartDateIsBeforeEndDate(dto.getStartDate(), dto.getEndDate());
 
-        FinancialTransaction financialTransaction = new FinancialTransaction();
-        FinancialTransactionCategory category = dto.getCategoryId() != null
-                ? financialTransactionCategoryService.findById(dto.getCategoryId(), ctx)
-                : null;
+        Transaction transaction = new Transaction();
+        Category category = dto.getCategoryId() != null ? categoryService.findById(dto.getCategoryId(), ctx) : null;
 
         if (category != null && category.getType() != dto.getType()) {
-            throw new FinancialTransactionExceptions.CategoryTypeMismatchException();
+            throw new TransactionExceptions.CategoryTypeMismatchException();
         }
 
-        financialTransaction.setPlan(ctx.getPlan());
-        financialTransaction.setCreatedBy(ctx.getUser());
-        financialTransaction.setCategory(category);
-        financialTransaction.setType(dto.getType());
-        financialTransaction.setAmount(dto.getAmount());
-        financialTransaction.setDescription(dto.getDescription());
-        financialTransaction.setParcelsNumber(dto.getParcelsNumber());
-        financialTransaction.setStartDate(dto.getStartDate());
-        financialTransaction.setEndDate(dto.getEndDate());
+        transaction.setPlan(ctx.getPlan());
+        transaction.setCreatedBy(ctx.getUser());
+        transaction.setCategory(category);
+        transaction.setType(dto.getType());
+        transaction.setAmount(dto.getAmount());
+        transaction.setDescription(dto.getDescription());
+        transaction.setParcelsNumber(dto.getParcelsNumber());
+        transaction.setStartDate(dto.getStartDate());
+        transaction.setEndDate(dto.getEndDate());
 
-        applyParticipants(financialTransaction, dto.getParticipants(), dto.getSplitMode(), dto.getAmount(), ctx);
-        applyItems(financialTransaction, dto.getItems(), ctx);
+        applyParticipants(transaction, dto.getParticipants(), dto.getSplitMode(), dto.getAmount(), ctx);
+        applyItems(transaction, dto.getItems(), ctx);
 
-        return financialTransactionRepository.save(financialTransaction);
+        return transactionRepository.save(transaction);
     }
 
     @Transactional
-    public FinancialTransaction update(Long id, FinancialTransactionRequestDto dto, PlanContext ctx) {
+    public Transaction update(Long id, TransactionRequestDto dto, PlanContext ctx) {
         dateUtils.checkIfStartDateIsBeforeEndDate(dto.getStartDate(), dto.getEndDate());
 
-        FinancialTransaction existingTransaction = findById(id, ctx);
+        Transaction existingTransaction = findById(id, ctx);
         planAuthorization.requireCanModifyTransaction(ctx.getRole(), existingTransaction.getCreatedBy(), ctx.getUser());
 
-        FinancialTransactionCategory category = dto.getCategoryId() != null
-                ? financialTransactionCategoryService.findById(dto.getCategoryId(), ctx)
-                : null;
+        Category category = dto.getCategoryId() != null ? categoryService.findById(dto.getCategoryId(), ctx) : null;
 
         if (category != null && category.getType() != dto.getType()) {
-            throw new FinancialTransactionExceptions.CategoryTypeMismatchException();
+            throw new TransactionExceptions.CategoryTypeMismatchException();
         }
 
         existingTransaction.setCategory(category);
@@ -200,7 +196,7 @@ public class FinancialTransactionService {
         applyParticipants(existingTransaction, dto.getParticipants(), dto.getSplitMode(), dto.getAmount(), ctx);
         applyItems(existingTransaction, dto.getItems(), ctx);
 
-        return financialTransactionRepository.save(existingTransaction);
+        return transactionRepository.save(existingTransaction);
     }
 
     private record ResolvedParticipants(SplitMode splitMode, List<ResolvedParticipant> shares) {}
@@ -249,7 +245,7 @@ public class FinancialTransactionService {
     }
 
     private void applyParticipants(
-            FinancialTransaction transaction,
+            Transaction transaction,
             List<ParticipantDto> participantInputs,
             SplitMode requestedSplitMode,
             BigDecimal amount,
@@ -286,7 +282,7 @@ public class FinancialTransactionService {
                         !keptMemberIds.contains(participant.getMember().getId()));
     }
 
-    private void applyItems(FinancialTransaction transaction, List<ItemDto> itemInputs, PlanContext ctx) {
+    private void applyItems(Transaction transaction, List<ItemDto> itemInputs, PlanContext ctx) {
         if (itemInputs == null || itemInputs.isEmpty()) {
             transaction.getItems().clear();
             return;
@@ -302,12 +298,11 @@ public class FinancialTransactionService {
                 throw new IllegalArgumentException("Item amount must be positive.");
             }
 
-            FinancialTransactionCategory itemCategory = input.getCategoryId() != null
-                    ? financialTransactionCategoryService.findById(input.getCategoryId(), ctx)
-                    : null;
+            Category itemCategory =
+                    input.getCategoryId() != null ? categoryService.findById(input.getCategoryId(), ctx) : null;
 
             if (itemCategory != null && itemCategory.getType() != transaction.getType()) {
-                throw new FinancialTransactionExceptions.ItemCategoryTypeMismatchException();
+                throw new TransactionExceptions.ItemCategoryTypeMismatchException();
             }
 
             TransactionItem item = new TransactionItem();
@@ -322,7 +317,7 @@ public class FinancialTransactionService {
         }
 
         if (itemsTotal.compareTo(transaction.getAmount()) > 0) {
-            throw new FinancialTransactionExceptions.ItemsTotalExceedsAmountException();
+            throw new TransactionExceptions.ItemsTotalExceedsAmountException();
         }
 
         transaction.getItems().clear();
@@ -331,13 +326,13 @@ public class FinancialTransactionService {
 
     @Transactional
     public void delete(Long id, PlanContext ctx) {
-        FinancialTransaction transaction = findById(id, ctx);
+        Transaction transaction = findById(id, ctx);
         planAuthorization.requireCanModifyTransaction(ctx.getRole(), transaction.getCreatedBy(), ctx.getUser());
-        financialTransactionRepository.delete(transaction);
+        transactionRepository.delete(transaction);
     }
 
     @Transactional
-    public List<FinancialTransaction> createSeries(FinancialTransactionSeriesRequestDto dto, PlanContext ctx) {
+    public List<Transaction> createSeries(TransactionSeriesRequestDto dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.getRole());
 
         if (dto.getMode() == RecurrenceMode.INSTALLMENT) {
@@ -357,12 +352,10 @@ public class FinancialTransactionService {
             dateUtils.checkIfStartDateIsBeforeEndDate(dto.getStartDate(), dto.getEndDate());
         }
 
-        FinancialTransactionCategory category = dto.getCategoryId() != null
-                ? financialTransactionCategoryService.findById(dto.getCategoryId(), ctx)
-                : null;
+        Category category = dto.getCategoryId() != null ? categoryService.findById(dto.getCategoryId(), ctx) : null;
 
         if (category != null && category.getType() != dto.getType()) {
-            throw new FinancialTransactionExceptions.CategoryTypeMismatchException();
+            throw new TransactionExceptions.CategoryTypeMismatchException();
         }
 
         ResolvedParticipants resolvedParticipants =
@@ -370,7 +363,7 @@ public class FinancialTransactionService {
         requireAttributionAuthorizedIfNeeded(resolvedParticipants, ctx);
 
         String seriesId = UUID.randomUUID().toString();
-        List<FinancialTransaction> occurrences = recurringTransactionGenerator.generate(
+        List<Transaction> occurrences = recurringTransactionGenerator.generate(
                 dto,
                 ctx.getPlan(),
                 ctx.getUser(),
@@ -412,23 +405,22 @@ public class FinancialTransactionService {
 
         recurrenceDefinitionRepository.save(definition);
 
-        for (FinancialTransaction occurrence : occurrences) {
+        for (Transaction occurrence : occurrences) {
             occurrence.setRecurrenceDefinition(definition);
         }
 
-        return financialTransactionRepository.saveAll(occurrences);
+        return transactionRepository.saveAll(occurrences);
     }
 
     @Transactional
     public void deleteSeries(String seriesId, SeriesEditScope scope, Long pivotOccurrenceId, PlanContext ctx) {
-        List<FinancialTransaction> occurrences =
-                financialTransactionRepository.findAllByPlanAndSeriesId(ctx.getPlan(), seriesId);
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(ctx.getPlan(), seriesId);
 
         if (occurrences.isEmpty()) {
-            throw new FinancialTransactionExceptions.FinancialTransactionSeriesNotFoundException(seriesId);
+            throw new TransactionExceptions.TransactionSeriesNotFoundException(seriesId);
         }
 
-        FinancialTransaction pivot = null;
+        Transaction pivot = null;
         if (scope != SeriesEditScope.ALL) {
             pivot = occurrences.stream()
                     .filter(occurrence -> occurrence.getId().equals(pivotOccurrenceId))
@@ -436,7 +428,7 @@ public class FinancialTransactionService {
                     .orElseThrow(() -> new IllegalArgumentException("Pivot occurrence not found in this series."));
         }
 
-        List<FinancialTransaction> inScope;
+        List<Transaction> inScope;
         switch (scope) {
             case THIS_ONE -> inScope = List.of(pivot);
             case THIS_AND_FOLLOWING -> {
@@ -449,17 +441,17 @@ public class FinancialTransactionService {
             default -> throw new IllegalStateException("Unexpected series edit scope: " + scope);
         }
 
-        for (FinancialTransaction occurrence : inScope) {
+        for (Transaction occurrence : inScope) {
             planAuthorization.requireCanModifyTransaction(ctx.getRole(), occurrence.getCreatedBy(), ctx.getUser());
         }
 
-        financialTransactionRepository.deleteAll(inScope);
+        transactionRepository.deleteAll(inScope);
 
         Set<Long> deletedIds = new HashSet<>();
-        for (FinancialTransaction occurrence : inScope) {
+        for (Transaction occurrence : inScope) {
             deletedIds.add(occurrence.getId());
         }
-        List<FinancialTransaction> remaining = occurrences.stream()
+        List<Transaction> remaining = occurrences.stream()
                 .filter(occurrence -> !deletedIds.contains(occurrence.getId()))
                 .toList();
 
@@ -483,7 +475,7 @@ public class FinancialTransactionService {
                 definition.setParcelsNumber(firstParcel + remaining.size() - 1);
             } else {
                 LocalDate newEndDate = remaining.stream()
-                        .map(FinancialTransaction::getStartDate)
+                        .map(Transaction::getStartDate)
                         .max(LocalDate::compareTo)
                         .orElse(definition.getEndDate());
                 definition.setEndDate(newEndDate);
@@ -496,8 +488,7 @@ public class FinancialTransactionService {
     public RecurrenceDefinitionResponseDto getSeriesDefinition(String seriesId, PlanContext ctx) {
         RecurrenceDefinition definition = recurrenceDefinitionRepository
                 .findByPlanAndSeriesId(ctx.getPlan(), seriesId)
-                .orElseThrow(
-                        () -> new FinancialTransactionExceptions.FinancialTransactionSeriesNotFoundException(seriesId));
+                .orElseThrow(() -> new TransactionExceptions.TransactionSeriesNotFoundException(seriesId));
         return new RecurrenceDefinitionResponseDto(definition);
     }
 
@@ -512,24 +503,19 @@ public class FinancialTransactionService {
     }
 
     @Transactional
-    public FinancialTransactionSeriesResponseDto editSeries(
-            String seriesId, SeriesEditRequestDto dto, PlanContext ctx) {
+    public TransactionSeriesResponseDto editSeries(String seriesId, SeriesEditRequestDto dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.getRole());
 
         RecurrenceDefinition definition = recurrenceDefinitionRepository
                 .findByPlanAndSeriesId(ctx.getPlan(), seriesId)
-                .orElseThrow(
-                        () -> new FinancialTransactionExceptions.FinancialTransactionSeriesNotFoundException(seriesId));
+                .orElseThrow(() -> new TransactionExceptions.TransactionSeriesNotFoundException(seriesId));
 
-        List<FinancialTransaction> occurrences =
-                financialTransactionRepository.findAllByPlanAndSeriesId(ctx.getPlan(), seriesId);
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(ctx.getPlan(), seriesId);
 
-        FinancialTransactionCategory category = dto.getCategoryId() != null
-                ? financialTransactionCategoryService.findById(dto.getCategoryId(), ctx)
-                : null;
+        Category category = dto.getCategoryId() != null ? categoryService.findById(dto.getCategoryId(), ctx) : null;
 
         if (category != null && category.getType() != dto.getType()) {
-            throw new FinancialTransactionExceptions.CategoryTypeMismatchException();
+            throw new TransactionExceptions.CategoryTypeMismatchException();
         }
 
         if (dto.getParcelsNumber() != null
@@ -543,7 +529,7 @@ public class FinancialTransactionService {
                 resolveParticipants(dto.getParticipants(), dto.getSplitMode(), dto.getAmount(), ctx);
         requireAttributionAuthorizedIfNeeded(resolved, ctx);
 
-        FinancialTransaction pivot = null;
+        Transaction pivot = null;
         if (dto.getScope() != SeriesEditScope.ALL) {
             Long pivotOccurrenceId = dto.getPivotOccurrenceId();
             pivot = occurrences.stream()
@@ -552,7 +538,7 @@ public class FinancialTransactionService {
                     .orElseThrow(() -> new IllegalArgumentException("Pivot occurrence not found in this series."));
         }
 
-        List<FinancialTransaction> inScope;
+        List<Transaction> inScope;
         switch (dto.getScope()) {
             case THIS_ONE -> inScope = List.of(pivot);
             case THIS_AND_FOLLOWING -> {
@@ -565,7 +551,7 @@ public class FinancialTransactionService {
             default -> throw new IllegalStateException("Unexpected series edit scope: " + dto.getScope());
         }
 
-        for (FinancialTransaction occurrence : inScope) {
+        for (Transaction occurrence : inScope) {
             planAuthorization.requireCanModifyTransaction(ctx.getRole(), occurrence.getCreatedBy(), ctx.getUser());
         }
 
@@ -578,8 +564,8 @@ public class FinancialTransactionService {
 
             reconcileParticipants(pivot, resolved.shares());
 
-            financialTransactionRepository.save(pivot);
-            return new FinancialTransactionSeriesResponseDto(List.of(pivot));
+            transactionRepository.save(pivot);
+            return new TransactionSeriesResponseDto(List.of(pivot));
         }
 
         definition.setAmount(dto.getAmount());
@@ -598,11 +584,11 @@ public class FinancialTransactionService {
         SeriesRegenerator.SeriesEditResult result =
                 seriesRegenerator.reconcile(definition, occurrences, resolved.shares(), dto.getScope(), pivotDate);
 
-        financialTransactionRepository.saveAll(result.toUpdate());
-        financialTransactionRepository.saveAll(result.toCreate());
-        financialTransactionRepository.deleteAll(result.toDelete());
+        transactionRepository.saveAll(result.toUpdate());
+        transactionRepository.saveAll(result.toCreate());
+        transactionRepository.deleteAll(result.toDelete());
 
-        List<FinancialTransaction> combined = new ArrayList<>(result.toUpdate());
+        List<Transaction> combined = new ArrayList<>(result.toUpdate());
         combined.addAll(result.toCreate());
 
         // P3: keep generatedThrough in lockstep with the (possibly just toggled) endDate. Bounding
@@ -614,7 +600,7 @@ public class FinancialTransactionService {
             LocalDate generatedThrough = definition.getEndDate() != null
                     ? definition.getEndDate()
                     : combined.stream()
-                            .map(FinancialTransaction::getStartDate)
+                            .map(Transaction::getStartDate)
                             .max(LocalDate::compareTo)
                             .orElse(definition.getGeneratedThrough());
             definition.setGeneratedThrough(generatedThrough);
@@ -622,10 +608,10 @@ public class FinancialTransactionService {
 
         recurrenceDefinitionRepository.save(definition);
 
-        return new FinancialTransactionSeriesResponseDto(combined);
+        return new TransactionSeriesResponseDto(combined);
     }
 
-    private void reconcileParticipants(FinancialTransaction transaction, List<ResolvedParticipant> shares) {
+    private void reconcileParticipants(Transaction transaction, List<ResolvedParticipant> shares) {
         Map<Long, TransactionParticipant> existingByMemberId = new LinkedHashMap<>();
         for (TransactionParticipant participant : transaction.getParticipants()) {
             existingByMemberId.put(participant.getMember().getId(), participant);
@@ -695,7 +681,7 @@ public class FinancialTransactionService {
         }
 
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        List<FinancialTransaction> transactions = new ArrayList<>();
+        List<Transaction> transactions = new ArrayList<>();
 
         record ParsedRow(String externalId, LocalDate date, BigDecimal rawAmount, String description) {}
         List<ParsedRow> parsed = new ArrayList<>();
@@ -718,28 +704,25 @@ public class FinancialTransactionService {
             }
         }
 
-        Set<String> existingIds = financialTransactionRepository.findExistingExternalIds(
+        Set<String> existingIds = transactionRepository.findExistingExternalIds(
                 ctx.getPlan(), parsed.stream().map(ParsedRow::externalId).toList());
 
         for (ParsedRow row : parsed) {
             if (existingIds.contains(row.externalId())) continue;
 
-            FinancialTransaction t = new FinancialTransaction();
+            Transaction t = new Transaction();
             t.setPlan(ctx.getPlan());
             t.setCreatedBy(ctx.getUser());
             t.setExternalId(row.externalId());
             t.setStartDate(row.date());
             t.setAmount(row.rawAmount().abs());
-            t.setType(
-                    row.rawAmount().compareTo(BigDecimal.ZERO) >= 0
-                            ? FinancialTransactionType.CREDIT
-                            : FinancialTransactionType.DEBIT);
+            t.setType(row.rawAmount().compareTo(BigDecimal.ZERO) >= 0 ? TransactionType.CREDIT : TransactionType.DEBIT);
             t.setDescription(row.description());
 
             transactions.add(t);
         }
 
-        financialTransactionRepository.saveAll(transactions);
+        transactionRepository.saveAll(transactions);
         return transactions.size();
     }
 }

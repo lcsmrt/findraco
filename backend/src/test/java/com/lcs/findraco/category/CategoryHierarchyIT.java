@@ -5,13 +5,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.lcs.findraco.category.model.FinancialTransactionCategory;
-import com.lcs.findraco.category.repository.FinancialTransactionCategoryRepository;
+import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,14 +34,14 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FinancialTransactionCategoryRepository categoryRepository;
+    private CategoryRepository categoryRepository;
 
     // AC 1 (create)
     @Test
     void ownerCreatesCategoryWithParentAndItIsSavedAsChild() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
 
         MvcResult result = create(plan, owner, body("DEBIT", "Delivery", food.getId()))
                 .andExpect(status().isCreated())
@@ -49,7 +49,7 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
 
         JsonNode created = objectMapper.readTree(result.getResponse().getContentAsString());
         assertThat(created.get("parentId").asLong()).isEqualTo(food.getId());
-        FinancialTransactionCategory persisted =
+        Category persisted =
                 categoryRepository.findById(created.get("id").asLong()).orElseThrow();
         assertThat(persisted.getParent().getId()).isEqualTo(food.getId());
     }
@@ -59,9 +59,8 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     void ownerEditsRootCategoryGivingItParentAndItIsSavedAsChild() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food - Delivery");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Food - Delivery");
 
         MvcResult result = update(plan, owner, delivery.getId(), body("DEBIT", "Delivery", food.getId()))
                 .andExpect(status().isOk())
@@ -83,9 +82,8 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     void ownerClearsParentAndTheChildBecomesRoot() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
 
         MvcResult result = update(plan, owner, delivery.getId(), body("DEBIT", "Delivery", null))
                 .andExpect(status().isOk())
@@ -102,9 +100,8 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     void parentThatIsItselfAChildIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
 
         create(plan, owner, body("DEBIT", "Pizza", delivery.getId())).andExpect(status().isBadRequest());
 
@@ -116,10 +113,9 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     void categoryWithChildrenGivenAParentIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
-        FinancialTransactionCategory essentials =
-                fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Essentials");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
+        Category essentials = fixtures.aCategory(plan, TransactionType.DEBIT, "Essentials");
 
         update(plan, owner, food.getId(), body("DEBIT", "Food", essentials.getId()))
                 .andExpect(status().isBadRequest());
@@ -133,7 +129,7 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     void categoryGivenItselfAsParentIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
 
         update(plan, owner, food.getId(), body("DEBIT", "Food", food.getId())).andExpect(status().isBadRequest());
 
@@ -146,8 +142,8 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     void parentOfDifferentTypeIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory salary = fixtures.aCategory(plan, FinancialTransactionType.CREDIT, "Salary");
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
+        Category salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
 
         create(plan, owner, body("DEBIT", "Delivery", salary.getId())).andExpect(status().isBadRequest());
         update(plan, owner, food.getId(), body("DEBIT", "Food", salary.getId())).andExpect(status().isBadRequest());
@@ -164,9 +160,8 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User otherOwner = fixtures.aUser();
         Plan otherPlan = fixtures.aPlan(otherOwner);
-        FinancialTransactionCategory foreignFood =
-                fixtures.aCategory(otherPlan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery");
+        Category foreignFood = fixtures.aCategory(otherPlan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery");
 
         create(plan, owner, body("DEBIT", "Dining out", foreignFood.getId())).andExpect(status().isNotFound());
         update(plan, owner, delivery.getId(), body("DEBIT", "Delivery", foreignFood.getId()))
@@ -193,13 +188,13 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     void typeChangeOnCategoryWithChildrenIsRejectedWith400() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery", food);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery", food);
 
         update(plan, owner, food.getId(), body("CREDIT", "Food", null)).andExpect(status().isBadRequest());
 
         assertThat(categoryRepository.findById(food.getId()).orElseThrow().getType())
-                .isEqualTo(FinancialTransactionType.DEBIT);
+                .isEqualTo(TransactionType.DEBIT);
     }
 
     // CAT-04 / AD-004: only the OWNER manages categories, with or without a parent.
@@ -209,8 +204,8 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         User editor = fixtures.aUser();
         fixtures.addMember(plan, editor, PlanRole.EDITOR);
-        FinancialTransactionCategory food = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Food");
-        FinancialTransactionCategory delivery = fixtures.aCategory(plan, FinancialTransactionType.DEBIT, "Delivery");
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category delivery = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery");
 
         create(plan, editor, body("DEBIT", "Dining out", food.getId())).andExpect(status().isForbidden());
         update(plan, editor, delivery.getId(), body("DEBIT", "Delivery", food.getId()))
@@ -230,14 +225,14 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
     }
 
     private ResultActions create(Plan plan, User asUser, Map<String, Object> body) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY, plan.getId())
+        return mockMvc.perform(post(CategoryRoutes.CATEGORY, plan.getId())
                 .with(testAuthHelper.asUser(asUser))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)));
     }
 
     private ResultActions update(Plan plan, User asUser, Long id, Map<String, Object> body) throws Exception {
-        return mockMvc.perform(put(ApiRoutes.FINANCIAL_TRANSACTION_CATEGORY + "/{id}", plan.getId(), id)
+        return mockMvc.perform(put(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), id)
                 .with(testAuthHelper.asUser(asUser))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(body)));

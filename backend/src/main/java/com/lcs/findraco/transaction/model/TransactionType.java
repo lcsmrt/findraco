@@ -1,6 +1,6 @@
 package com.lcs.findraco.transaction.model;
 
-public enum FinancialTransactionType {
+public enum TransactionType {
     CREDIT,
     DEBIT
 }

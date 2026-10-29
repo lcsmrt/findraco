@@ -1,10 +1,10 @@
 package com.lcs.findraco.transaction.request;
 
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -18,7 +18,7 @@ import java.util.List;
 public class SeriesEditRequestDto {
 
     @NotNull(message = "Transaction type cannot be null.")
-    private FinancialTransactionType type;
+    private TransactionType type;
 
     @NotNull(message = "Amount cannot be null.")
     @Positive(message = "Amount must be positive.")
@@ -60,7 +60,7 @@ public class SeriesEditRequestDto {
     // Required (validated at the service layer) for THIS_ONE and THIS_AND_FOLLOWING scopes.
     private Long pivotOccurrenceId;
 
-    public FinancialTransactionType getType() {
+    public TransactionType getType() {
         return type;
     }
 

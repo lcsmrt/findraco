@@ -54,11 +54,9 @@ public class OpenApiConfig {
                                 .name("Invitations")
                                 .description("Manage a plan's invitations (owner), or preview/accept one by token."),
                         new Tag()
-                                .name("Financial Transactions")
+                                .name("Transactions")
                                 .description("Plan-scoped transactions, including recurring series and CSV import."),
-                        new Tag()
-                                .name("Financial Transaction Categories")
-                                .description("Plan-scoped transaction categories."),
+                        new Tag().name("Categories").description("Plan-scoped transaction categories."),
                         new Tag().name("Dashboard").description("Plan-scoped financial summary and breakdowns.")));
     }
 }

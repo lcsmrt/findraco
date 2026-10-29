@@ -6,10 +6,10 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.lcs.findraco.plan.model.Plan;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -22,10 +22,10 @@ import tools.jackson.databind.ObjectMapper;
 
 /**
  * Proves that {@code POST /financial-transaction/import} (Nubank CSV import,
- * {@link com.lcs.findraco.transaction.service.FinancialTransactionService#importFromNubankCsv}) dedups on
+ * {@link com.lcs.findraco.transaction.service.TransactionService#importFromNubankCsv}) dedups on
  * {@code externalId} (the CSV's third column): re-importing the exact same file a second time
  * must not create duplicate rows, since
- * {@link FinancialTransactionRepository#findExistingExternalIds} is consulted before each row is
+ * {@link TransactionRepository#findExistingExternalIds} is consulted before each row is
  * persisted.
  *
  * <p>CSV format expected by the parser (see {@code importFromNubankCsv}): a header line (skipped),
@@ -39,7 +39,7 @@ class CsvImportIT extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FinancialTransactionRepository financialTransactionRepository;
+    private TransactionRepository transactionRepository;
 
     private static final String CSV = """
             date,amount,id,description
@@ -56,23 +56,23 @@ class CsvImportIT extends AbstractIntegrationTest {
         JsonNode firstImport = importCsv(plan, owner, CSV);
         assertThat(firstImport.get("imported").asInt()).isEqualTo(3);
 
-        List<FinancialTransaction> afterFirstImport = financialTransactionRepository.findAllByPlan(plan);
+        List<Transaction> afterFirstImport = transactionRepository.findAllByPlan(plan);
         assertThat(afterFirstImport).hasSize(3);
         assertThat(afterFirstImport)
-                .extracting(FinancialTransaction::getExternalId)
+                .extracting(Transaction::getExternalId)
                 .containsExactlyInAnyOrder("nu-ext-1", "nu-ext-2", "nu-ext-3");
 
         JsonNode secondImport = importCsv(plan, owner, CSV);
         assertThat(secondImport.get("imported").asInt()).isEqualTo(0);
 
-        List<FinancialTransaction> afterSecondImport = financialTransactionRepository.findAllByPlan(plan);
+        List<Transaction> afterSecondImport = transactionRepository.findAllByPlan(plan);
         assertThat(afterSecondImport).hasSize(3);
         assertThat(afterSecondImport)
-                .extracting(FinancialTransaction::getExternalId)
+                .extracting(Transaction::getExternalId)
                 .containsExactlyInAnyOrder("nu-ext-1", "nu-ext-2", "nu-ext-3");
 
         MvcResult listResult = mockMvc.perform(
-                        get(ApiRoutes.FINANCIAL_TRANSACTION, plan.getId()).with(testAuthHelper.asUser(owner)))
+                        get(TransactionRoutes.TRANSACTION, plan.getId()).with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isOk())
                 .andReturn();
         JsonNode listBody = objectMapper.readTree(listResult.getResponse().getContentAsString());
@@ -91,10 +91,10 @@ class CsvImportIT extends AbstractIntegrationTest {
 
         assertThat(secondImport.get("imported").asInt()).isEqualTo(1);
 
-        List<FinancialTransaction> persisted = financialTransactionRepository.findAllByPlan(plan);
+        List<Transaction> persisted = transactionRepository.findAllByPlan(plan);
         assertThat(persisted).hasSize(4);
         assertThat(persisted)
-                .extracting(FinancialTransaction::getExternalId)
+                .extracting(Transaction::getExternalId)
                 .containsExactlyInAnyOrder("nu-ext-1", "nu-ext-2", "nu-ext-3", "nu-ext-4");
     }
 
@@ -102,7 +102,7 @@ class CsvImportIT extends AbstractIntegrationTest {
         MockMultipartFile file =
                 new MockMultipartFile("file", "nubank.csv", "text/csv", csvContent.getBytes(StandardCharsets.UTF_8));
 
-        MvcResult result = mockMvc.perform(multipart(ApiRoutes.FINANCIAL_TRANSACTION + "/import", plan.getId())
+        MvcResult result = mockMvc.perform(multipart(TransactionRoutes.TRANSACTION + "/import", plan.getId())
                         .file(file)
                         .with(testAuthHelper.asUser(asUser)))
                 .andReturn();

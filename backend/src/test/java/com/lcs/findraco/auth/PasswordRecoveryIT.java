@@ -11,12 +11,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.auth.controller.AuthRoutes;
 import com.lcs.findraco.auth.controller.SessionCookies;
 import com.lcs.findraco.auth.model.PasswordResetToken;
 import com.lcs.findraco.auth.repository.PasswordResetTokenRepository;
 import com.lcs.findraco.auth.service.EmailService;
 import com.lcs.findraco.auth.service.OpaqueTokens;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
 import jakarta.servlet.http.Cookie;
@@ -49,30 +49,30 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
     private EmailService emailService;
 
     private ResultActions forgotPassword(String email) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.AUTH + "/forgot-password")
+        return mockMvc.perform(post(AuthRoutes.AUTH + "/forgot-password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("email", email))));
     }
 
     private ResultActions resetPassword(String token, String password) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.AUTH + "/reset-password")
+        return mockMvc.perform(post(AuthRoutes.AUTH + "/reset-password")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("token", token, "password", password))));
     }
 
     private ResultActions validate(String token) throws Exception {
-        return mockMvc.perform(get(ApiRoutes.AUTH + "/reset-password/validate").param("token", token));
+        return mockMvc.perform(get(AuthRoutes.AUTH + "/reset-password/validate").param("token", token));
     }
 
     private ResultActions login(String email, String password) throws Exception {
-        return mockMvc.perform(post(ApiRoutes.AUTH + "/login")
+        return mockMvc.perform(post(AuthRoutes.AUTH + "/login")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(Map.of("email", email, "password", password))));
     }
 
     private ResultActions refresh(String sessionCookie) throws Exception {
         return mockMvc.perform(
-                post(ApiRoutes.AUTH + "/refresh").cookie(new Cookie(SessionCookies.NAME, sessionCookie)));
+                post(AuthRoutes.AUTH + "/refresh").cookie(new Cookie(SessionCookies.NAME, sessionCookie)));
     }
 
     /** Signs in with the fixture password and returns the session cookie value. */

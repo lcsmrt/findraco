@@ -4,14 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
-import com.lcs.findraco.transaction.model.FinancialTransactionType;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.TransactionType;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -37,7 +37,7 @@ class DashboardTrendIT extends AbstractIntegrationTest {
     private ObjectMapper objectMapper;
 
     @Autowired
-    private FinancialTransactionRepository transactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Test
     void returnsIncomeAndExpensesPerMonthOfTheRange() throws Exception {
@@ -80,7 +80,8 @@ class DashboardTrendIT extends AbstractIntegrationTest {
         User outsider = fixtures.aUser();
         fixtures.aPlan(outsider);
 
-        int summaryStatus = fetch(withRange(get(ApiRoutes.DASHBOARD, seed.plan().getId()), outsider))
+        int summaryStatus = fetch(
+                        withRange(get(DashboardRoutes.DASHBOARD, seed.plan().getId()), outsider))
                 .andReturn()
                 .getResponse()
                 .getStatus();
@@ -98,7 +99,7 @@ class DashboardTrendIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
-        fetch(get(ApiRoutes.DASHBOARD + "/trend", plan.getId()).with(testAuthHelper.asUser(owner)))
+        fetch(get(DashboardRoutes.DASHBOARD + "/trend", plan.getId()).with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isBadRequest());
     }
 
@@ -115,58 +116,36 @@ class DashboardTrendIT extends AbstractIntegrationTest {
         fixtures.addMember(plan, partner, PlanRole.EDITOR);
 
         aTransaction(
-                plan,
-                owner,
-                FinancialTransactionType.CREDIT,
-                "1000.00",
-                LocalDate.of(2026, 7, 5),
-                Map.of(owner, "1000.00"));
+                plan, owner, TransactionType.CREDIT, "1000.00", LocalDate.of(2026, 7, 5), Map.of(owner, "1000.00"));
         aTransaction(
                 plan,
                 owner,
-                FinancialTransactionType.DEBIT,
+                TransactionType.DEBIT,
                 "200.00",
                 LocalDate.of(2026, 7, 31),
                 Map.of(owner, "150.00", partner, "50.00"));
         aTransaction(
                 plan,
                 owner,
-                FinancialTransactionType.DEBIT,
+                TransactionType.DEBIT,
                 "100.00",
                 LocalDate.of(2026, 8, 15),
                 Map.of(owner, "60.00", partner, "40.00"));
+        aTransaction(plan, owner, TransactionType.CREDIT, "500.00", LocalDate.of(2026, 9, 1), Map.of(owner, "500.00"));
         aTransaction(
                 plan,
                 owner,
-                FinancialTransactionType.CREDIT,
-                "500.00",
-                LocalDate.of(2026, 9, 1),
-                Map.of(owner, "500.00"));
-        aTransaction(
-                plan,
-                owner,
-                FinancialTransactionType.DEBIT,
+                TransactionType.DEBIT,
                 "999.00",
                 LocalDate.of(2026, 6, 30),
                 Map.of(owner, "500.00", partner, "499.00"));
-        aTransaction(
-                plan,
-                owner,
-                FinancialTransactionType.DEBIT,
-                "777.00",
-                LocalDate.of(2026, 10, 1),
-                Map.of(owner, "777.00"));
+        aTransaction(plan, owner, TransactionType.DEBIT, "777.00", LocalDate.of(2026, 10, 1), Map.of(owner, "777.00"));
         return new Seed(plan, owner, partner);
     }
 
     private void aTransaction(
-            Plan plan,
-            User createdBy,
-            FinancialTransactionType type,
-            String amount,
-            LocalDate date,
-            Map<User, String> shares) {
-        FinancialTransaction transaction = new FinancialTransaction();
+            Plan plan, User createdBy, TransactionType type, String amount, LocalDate date, Map<User, String> shares) {
+        Transaction transaction = new Transaction();
         transaction.setPlan(plan);
         transaction.setCreatedBy(createdBy);
         transaction.setType(type);
@@ -191,7 +170,8 @@ class DashboardTrendIT extends AbstractIntegrationTest {
     }
 
     private MockHttpServletRequestBuilder trend(Plan plan, User asUser, Long memberId) {
-        MockHttpServletRequestBuilder request = withRange(get(ApiRoutes.DASHBOARD + "/trend", plan.getId()), asUser);
+        MockHttpServletRequestBuilder request =
+                withRange(get(DashboardRoutes.DASHBOARD + "/trend", plan.getId()), asUser);
         return memberId == null ? request : request.param("memberId", memberId.toString());
     }
 

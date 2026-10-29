@@ -9,12 +9,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.FinancialTransaction;
+import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
-import com.lcs.findraco.transaction.repository.FinancialTransactionRepository;
+import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
@@ -51,7 +51,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
     private RecurrenceDefinitionRepository recurrenceDefinitionRepository;
 
     @Autowired
-    private FinancialTransactionRepository financialTransactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
     private OpenEndedSeriesTopUpService topUpService;
@@ -322,7 +322,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         Map<String, Object> body =
                 recurringBody("Forever", "10.00", LocalDate.of(2020, 1, 1), LocalDate.of(2030, 1, 1));
 
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION + "/series", plan.getId())
+        MvcResult result = mockMvc.perform(post(TransactionRoutes.TRANSACTION + "/series", plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -357,7 +357,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         editBody.put("scope", "ALL");
 
         MvcResult result = mockMvc.perform(
-                        put(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                        put(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                                 .with(testAuthHelper.asUser(owner))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(editBody)))
@@ -396,7 +396,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         assertThat(editResponse.get("count").asInt()).isEqualTo(4);
 
         for (Long id : beyondNewEndIds) {
-            mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), id)
+            mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), id)
                             .with(testAuthHelper.asUser(owner)))
                     .andExpect(status().isNotFound());
         }
@@ -451,8 +451,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         // Already topped up to the horizon by the edit itself: firing top-up again must be a no-op
         // (idempotent), proving no duplicate occurrences and a stable watermark.
         topUpService.topUp(plan, LocalDate.now());
-        List<FinancialTransaction> allOccurrences =
-                financialTransactionRepository.findAllByPlanAndSeriesId(plan, seriesId);
+        List<Transaction> allOccurrences = transactionRepository.findAllByPlanAndSeriesId(plan, seriesId);
         assertThat(allOccurrences).hasSize(OPEN_ENDED_HORIZON_MONTHS + 1);
         RecurrenceDefinition reloaded = recurrenceDefinitionRepository
                 .findByPlanAndSeriesId(plan, seriesId)
@@ -472,14 +471,14 @@ class SeriesEditIT extends AbstractIntegrationTest {
         String seriesId = created.get("seriesId").asString();
         assertThat(created.get("count").asInt()).isEqualTo(OPEN_ENDED_HORIZON_MONTHS + 1);
 
-        mockMvc.perform(delete(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+        mockMvc.perform(delete(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                         .with(testAuthHelper.asUser(owner))
                         .param("scope", "ALL"))
                 .andExpect(status().isNoContent());
 
         for (JsonNode occ : created.get("occurrences")) {
             mockMvc.perform(get(
-                                    ApiRoutes.FINANCIAL_TRANSACTION + "/{id}",
+                                    TransactionRoutes.TRANSACTION + "/{id}",
                                     plan.getId(),
                                     occ.get("id").asLong())
                             .with(testAuthHelper.asUser(owner)))
@@ -488,10 +487,10 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         assertThat(recurrenceDefinitionRepository.findByPlanAndSeriesId(plan, seriesId))
                 .isEmpty();
-        assertThat(financialTransactionRepository.findAllByPlanAndSeriesId(plan, seriesId))
+        assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, seriesId))
                 .isEmpty();
 
-        mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+        mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                         .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isNotFound());
     }
@@ -582,7 +581,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
     }
 
     private JsonNode createSeries(Plan plan, User asUser, Map<String, Object> body) throws Exception {
-        MvcResult result = mockMvc.perform(post(ApiRoutes.FINANCIAL_TRANSACTION + "/series", plan.getId())
+        MvcResult result = mockMvc.perform(post(TransactionRoutes.TRANSACTION + "/series", plan.getId())
                         .with(testAuthHelper.asUser(asUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -595,7 +594,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
             Plan plan, User asUser, String seriesId, Map<String, Object> body, ResultMatcher expectedStatus)
             throws Exception {
         MvcResult result = mockMvc.perform(
-                        put(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                        put(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                                 .with(testAuthHelper.asUser(asUser))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(body)))
@@ -605,7 +604,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
     }
 
     private JsonNode fetchOccurrence(Plan plan, User asUser, long id) throws Exception {
-        MvcResult result = mockMvc.perform(get(ApiRoutes.FINANCIAL_TRANSACTION + "/{id}", plan.getId(), id)
+        MvcResult result = mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), id)
                         .with(testAuthHelper.asUser(asUser)))
                 .andExpect(status().isOk())
                 .andReturn();
@@ -614,7 +613,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
     private JsonNode fetchSeriesDefinition(Plan plan, User asUser, String seriesId) throws Exception {
         MvcResult result = mockMvc.perform(
-                        get(ApiRoutes.FINANCIAL_TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                        get(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                                 .with(testAuthHelper.asUser(asUser)))
                 .andExpect(status().isOk())
                 .andReturn();
