@@ -39,7 +39,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${jwt.secret-key}")
+    @Value("${app.jwt.secret-key}")
     private String jwtSecretKey;
 
     private String registerAndLogin(String email) throws Exception {

@@ -1,5 +1,6 @@
 package com.lcs.findraco.services;
 
+import com.lcs.findraco.config.SessionProperties;
 import com.lcs.findraco.exceptions.AuthenticationExceptions;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.models.UserSession;
@@ -12,7 +13,6 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,16 +33,12 @@ public class SessionService {
     private final Duration reuseGrace;
 
     public SessionService(
-            UserSessionRepository sessionRepository,
-            JwtService jwtService,
-            Clock clock,
-            @Value("${app.session.ttl}") Duration ttl,
-            @Value("${app.session.reuse-grace}") Duration reuseGrace) {
+            UserSessionRepository sessionRepository, JwtService jwtService, Clock clock, SessionProperties properties) {
         this.sessionRepository = sessionRepository;
         this.jwtService = jwtService;
         this.clock = clock;
-        this.ttl = ttl;
-        this.reuseGrace = reuseGrace;
+        this.ttl = properties.ttl();
+        this.reuseGrace = properties.reuseGrace();
     }
 
     public record IssuedSession(String accessToken, String sessionToken) {}

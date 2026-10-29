@@ -4,7 +4,6 @@ import com.lcs.findraco.security.JsonAuthenticationEntryPoint;
 import com.lcs.findraco.security.JwtAuthenticationFilter;
 import com.lcs.findraco.utils.ApiRoutes;
 import java.util.List;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -32,14 +31,17 @@ public class SecurityConfig {
     private final UserDetailsService userDetailsService;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JsonAuthenticationEntryPoint authenticationEntryPoint;
+    private final CorsProperties corsProperties;
 
     public SecurityConfig(
             JwtAuthenticationFilter jwtAuthenticationFilter,
             UserDetailsService userDetailsService,
-            JsonAuthenticationEntryPoint authenticationEntryPoint) {
+            JsonAuthenticationEntryPoint authenticationEntryPoint,
+            CorsProperties corsProperties) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthenticationFilter = jwtAuthenticationFilter;
         this.authenticationEntryPoint = authenticationEntryPoint;
+        this.corsProperties = corsProperties;
     }
 
     @Bean
@@ -83,13 +85,10 @@ public class SecurityConfig {
         return config.getAuthenticationManager();
     }
 
-    @Value("${ALLOWED_ORIGINS}")
-    private String allowedOrigins;
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(allowedOrigins.split(",")));
+        config.setAllowedOrigins(corsProperties.allowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

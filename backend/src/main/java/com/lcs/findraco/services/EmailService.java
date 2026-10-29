@@ -1,9 +1,9 @@
 package com.lcs.findraco.services;
 
+import com.lcs.findraco.config.MailProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -17,9 +17,9 @@ public class EmailService {
     private final JavaMailSender mailSender;
     private final String from;
 
-    public EmailService(ObjectProvider<JavaMailSender> mailSender, @Value("${app.mail.from}") String from) {
+    public EmailService(ObjectProvider<JavaMailSender> mailSender, MailProperties mailProperties) {
         this.mailSender = mailSender.getIfAvailable();
-        this.from = from;
+        this.from = mailProperties.from();
     }
 
     /**

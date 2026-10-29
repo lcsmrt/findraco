@@ -13,6 +13,7 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.read.ListAppender;
+import com.lcs.findraco.config.SessionProperties;
 import com.lcs.findraco.exceptions.AuthenticationExceptions;
 import com.lcs.findraco.models.User;
 import com.lcs.findraco.models.UserSession;
@@ -50,7 +51,10 @@ class SessionServiceTest {
     private final UserSessionRepository repository = mock(UserSessionRepository.class);
     private final JwtService jwtService = mock(JwtService.class);
     private final SessionService service = new SessionService(
-            repository, jwtService, Clock.fixed(NOW_INSTANT, ZoneOffset.UTC), THIRTY_DAYS, THIRTY_SECONDS);
+            repository,
+            jwtService,
+            Clock.fixed(NOW_INSTANT, ZoneOffset.UTC),
+            new SessionProperties(THIRTY_DAYS, THIRTY_SECONDS, true));
 
     private final Logger serviceLogger = (Logger) LoggerFactory.getLogger(SessionService.class);
     private final ListAppender<ILoggingEvent> logs = new ListAppender<>();

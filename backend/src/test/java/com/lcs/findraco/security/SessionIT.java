@@ -52,7 +52,7 @@ class SessionIT extends AbstractIntegrationTest {
     @Autowired
     private DataSource dataSource;
 
-    @Value("${jwt.secret-key}")
+    @Value("${app.jwt.secret-key}")
     private String jwtSecretKey;
 
     private JdbcTemplate jdbc;

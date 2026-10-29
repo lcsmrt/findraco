@@ -1,5 +1,6 @@
 package com.lcs.findraco.services;
 
+import com.lcs.findraco.config.AppProperties;
 import com.lcs.findraco.dtos.request.ResetPasswordRequestDto;
 import com.lcs.findraco.exceptions.UserExceptions;
 import com.lcs.findraco.models.PasswordResetToken;
@@ -10,7 +11,6 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,14 +34,14 @@ public class PasswordResetService {
             EmailService emailService,
             SessionService sessionService,
             Clock clock,
-            @Value("${app.url}") String appUrl) {
+            AppProperties appProperties) {
         this.userRepository = userRepository;
         this.tokenRepository = tokenRepository;
         this.userService = userService;
         this.emailService = emailService;
         this.sessionService = sessionService;
         this.clock = clock;
-        this.appUrl = appUrl;
+        this.appUrl = appProperties.url();
     }
 
     /**

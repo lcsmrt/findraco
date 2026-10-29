@@ -1,8 +1,8 @@
 package com.lcs.findraco.security;
 
+import com.lcs.findraco.config.SessionProperties;
 import com.lcs.findraco.utils.ApiRoutes;
 import java.time.Duration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Component;
 
@@ -18,10 +18,9 @@ public class SessionCookies {
     private final Duration ttl;
     private final boolean secure;
 
-    public SessionCookies(
-            @Value("${app.session.ttl}") Duration ttl, @Value("${app.session.cookie-secure}") boolean secure) {
-        this.ttl = ttl;
-        this.secure = secure;
+    public SessionCookies(SessionProperties properties) {
+        this.ttl = properties.ttl();
+        this.secure = properties.cookieSecure();
     }
 
     public ResponseCookie issue(String sessionToken) {

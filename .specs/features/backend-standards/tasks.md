@@ -479,10 +479,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `grep -r '@Value' backend/src/main` empty
-- [ ] An `ApplicationContextRunner` test: a missing or out-of-range value fails startup, one case per record
-- [ ] `.env` and Portainer env need no change
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `grep -r '@Value' backend/src/main` empty
+- [x] An `ApplicationContextRunner` test: a missing or out-of-range value fails startup, one case per record
+- [x] `.env` and Portainer env need no change
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick

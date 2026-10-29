@@ -1,43 +1,38 @@
 package com.lcs.findraco.security;
 
+import com.lcs.findraco.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JwtService {
 
-    @Value("${jwt.secret-key}")
-    private String secretKeyPlain;
+    private final SecretKey secretKey;
+    private final Duration expiration;
 
-    @Value("${jwt.expiration-ms}")
-    private int expirationMs;
-
-    private SecretKey secretKey;
-
-    @PostConstruct
-    protected void init() {
-        byte[] keyBytes = Base64.getEncoder().encode(secretKeyPlain.getBytes(StandardCharsets.UTF_8));
+    public JwtService(JwtProperties properties) {
+        byte[] keyBytes = Base64.getEncoder().encode(properties.secretKey().getBytes(StandardCharsets.UTF_8));
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+        this.expiration = properties.expiration();
     }
 
     public String generateToken(String email) {
         Instant now = Instant.now();
-        Instant expiration = now.plusMillis(expirationMs);
+        Instant expiresAt = now.plus(expiration);
 
         return Jwts.builder()
                 .subject(email)
                 .issuedAt(Date.from(now))
-                .expiration(Date.from(expiration))
+                .expiration(Date.from(expiresAt))
                 .signWith(secretKey)
                 .compact();
     }

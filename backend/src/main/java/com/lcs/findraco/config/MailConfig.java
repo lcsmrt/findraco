@@ -1,7 +1,6 @@
 package com.lcs.findraco.config;
 
 import java.util.Properties;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,22 +20,18 @@ public class MailConfig {
 
     @Bean
     @ConditionalOnExpression("!'${app.mail.smtp-host:}'.isBlank()")
-    public JavaMailSender javaMailSender(
-            @Value("${app.mail.smtp-host}") String host,
-            @Value("${app.mail.smtp-port}") int port,
-            @Value("${app.mail.smtp-username}") String username,
-            @Value("${app.mail.smtp-password}") String password) {
+    public JavaMailSender javaMailSender(MailProperties mail) {
         JavaMailSenderImpl sender = new JavaMailSenderImpl();
-        sender.setHost(host);
-        sender.setPort(port);
+        sender.setHost(mail.smtpHost());
+        sender.setPort(mail.smtpPort());
 
         Properties properties = sender.getJavaMailProperties();
-        if (!username.isBlank()) {
-            sender.setUsername(username);
-            sender.setPassword(password);
+        if (!mail.smtpUsername().isBlank()) {
+            sender.setUsername(mail.smtpUsername());
+            sender.setPassword(mail.smtpPassword());
             properties.put("mail.smtp.auth", "true");
         }
-        if (port == SMTPS_PORT) {
+        if (mail.smtpPort() == SMTPS_PORT) {
             properties.put("mail.smtp.ssl.enable", "true");
         } else {
             properties.put("mail.smtp.starttls.enable", "true");

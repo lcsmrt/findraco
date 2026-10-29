@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.repository.Repository;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
@@ -46,7 +47,9 @@ class ArchitectureTest {
             .beAnnotatedWith("jakarta.inject.Inject")
             .orShould()
             .beAnnotatedWith("jakarta.annotation.Resource")
-            .because("dependencies arrive through the constructor");
+            .orShould()
+            .beAnnotatedWith(Value.class)
+            .because("dependencies and configuration arrive through the constructor");
 
     /**
      * The warning-suppression annotation has source retention, so the bytecode ArchUnit reads never
