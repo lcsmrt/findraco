@@ -14,6 +14,7 @@ const PLAN_ID = 5;
 
 const groceries: Category = {
   id: 9,
+  version: 0,
   type: "DEBIT",
   description: "Groceries",
   parentId: null,

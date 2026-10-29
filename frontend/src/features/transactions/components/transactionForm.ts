@@ -39,6 +39,7 @@ export const transactionFormSchema = z
     category: z
       .object({
         id: z.number(),
+        version: z.number(),
         type: z.enum(["DEBIT", "CREDIT"]),
         description: z.string(),
         spendingLimit: z.number().nullish(),
@@ -70,6 +71,7 @@ export const transactionFormSchema = z
         category: z
           .object({
             id: z.number(),
+            version: z.number(),
             type: z.enum(["DEBIT", "CREDIT"]),
             description: z.string(),
             spendingLimit: z.number().nullish(),
@@ -414,6 +416,7 @@ export function toInlineSavePayload(
           shareAmount:
             transaction.splitMode === "EXACT" ? p.shareAmount : undefined,
         })),
+      version: transaction.version,
     },
   };
 }
@@ -484,6 +487,7 @@ export function toSeriesEditPayload(
     participants,
     scope,
     pivotOccurrenceId: transaction.id,
+    version: definition.version,
   };
 }
 

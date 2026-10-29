@@ -11,6 +11,7 @@ import {
 
 const food: TransactionFormValues["category"] = {
   id: 1,
+  version: 0,
   type: "DEBIT",
   description: "Food",
   spendingLimit: null,

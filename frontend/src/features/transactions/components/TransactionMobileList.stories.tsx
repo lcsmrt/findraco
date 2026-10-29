@@ -11,12 +11,13 @@ function transaction(
 ): Transaction {
   return {
     id,
+    version: 0,
     type: "DEBIT",
     amount: 100,
     description,
     startDate,
     endDate: startDate,
-    category: { id: 1, type: "DEBIT", description: "Food" },
+    category: { id: 1, version: 0, type: "DEBIT", description: "Food" },
     splitMode: "EQUAL",
     participants: [{ id: 1, name: "Lucas Martins", shareAmount: 100 }],
     items: [],
@@ -29,7 +30,7 @@ const week: Transaction[] = [
   transaction(2, "Salary", "2026-10-14", {
     type: "CREDIT",
     amount: 5000,
-    category: { id: 9, type: "CREDIT", description: "Income" },
+    category: { id: 9, version: 0, type: "CREDIT", description: "Income" },
   }),
   transaction(3, "Bus pass", "2026-10-12", {
     amount: 150,
@@ -86,7 +87,7 @@ export const ManyLongRows: Story = {
         `2026-10-${String(30 - Math.floor(index / 3)).padStart(2, "0")}`,
         {
           amount: 987654.32,
-          category: { id: 5, type: "DEBIT", description: "Household maintenance and repairs" },
+          category: { id: 5, version: 0, type: "DEBIT", description: "Household maintenance and repairs" },
           participants: [
             { id: 1, name: "Maximiliano Albuquerque", shareAmount: 1 },
             { id: 2, name: "Livia Souza", shareAmount: 1 },

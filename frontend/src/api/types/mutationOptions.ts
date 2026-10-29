@@ -31,4 +31,10 @@ export type MutationOptions<TData = unknown, TVariables = unknown> = {
    * Callback executed on error.
    */
   onError?: (error: Error) => void;
+
+  /**
+   * Callback executed when an edit is refused as stale (409 `stale-version`): someone changed the item
+   * since it was read. The copy is already shown and the data on screen reloaded; a form closes here.
+   */
+  onStale?: () => void;
 }

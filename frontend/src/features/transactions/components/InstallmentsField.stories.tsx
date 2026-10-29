@@ -11,6 +11,7 @@ import {
 
 const definition: RecurrenceDefinitionResponse = {
   id: 9,
+  version: 0,
   seriesId: "s-1",
   type: "DEBIT",
   amount: 150,

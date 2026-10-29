@@ -4,10 +4,10 @@ import { expect, fn, screen, waitFor } from "storybook/test";
 import { TransactionFilterPopoverView } from "./TransactionFilterPopoverView";
 
 const categories: Category[] = [
-  { id: 1, type: "DEBIT", description: "Food" },
-  { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1 },
-  { id: 2, type: "DEBIT", description: "Housing" },
-  { id: 3, type: "CREDIT", description: "Salary" },
+  { id: 1, version: 0, type: "DEBIT", description: "Food" },
+  { id: 11, version: 0, type: "DEBIT", description: "Restaurants", parentId: 1 },
+  { id: 2, version: 0, type: "DEBIT", description: "Housing" },
+  { id: 3, version: 0, type: "CREDIT", description: "Salary" },
 ];
 
 const members: PlanMember[] = [

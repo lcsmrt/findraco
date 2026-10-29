@@ -36,6 +36,7 @@ const path = "/api/findraco/plan/5/transaction";
 
 const transaction: Transaction = {
   id: 40,
+  version: 0,
   type: "DEBIT",
   amount: 120.5,
   description: "Groceries",
@@ -57,6 +58,7 @@ const series: TransactionSeriesResponse = { seriesId: "s1", count: 1, occurrence
 
 const definition: RecurrenceDefinitionResponse = {
   id: 3,
+  version: 0,
   seriesId: "s1",
   type: "DEBIT",
   amount: 50,
@@ -182,11 +184,11 @@ describe("transaction mutations", () => {
       plan: plan5,
       seed: seedLists,
     });
-    result.current.mutate({ params: { id: 40 }, body });
+    result.current.mutate({ params: { id: 40 }, body: { ...body, version: 3 } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map(sent)).toEqual([["PUT", `${path}/40`, {}]]);
-    expect(await requests[0].json()).toEqual(body);
+    expect(await requests[0].json()).toEqual({ ...body, version: 3 });
     expect(result.current.data).toEqual(transaction);
     expect(invalidated(queryClient)).toMatchObject(transactionData);
     expect(toast.success).toHaveBeenCalledWith("Transaction updated.");
@@ -262,7 +264,7 @@ describe("series mutations", () => {
     const onSuccess = vi.fn();
     const request: UpdateTransactionSeriesRequest = {
       params: { seriesId: "s1" },
-      body: { ...seriesBody, scope: "THIS_AND_FOLLOWING", pivotOccurrenceId: 40 },
+      body: { ...seriesBody, scope: "THIS_AND_FOLLOWING", pivotOccurrenceId: 40, version: 2 },
     };
 
     const { result, queryClient } = renderHookWithProviders(

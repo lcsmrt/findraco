@@ -66,6 +66,11 @@ export const transactionHandlers = {
       Transaction
     >(`${base}/:id`, () => HttpResponse.json(transaction));
   },
+  updateRejected(status: number, type: ProblemType): HttpHandler {
+    return http.put<TransactionParams, UpdateTransactionRequest["body"], Problem>(`${base}/:id`, () =>
+      HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),
+    );
+  },
   createRejected(status: number, type: ProblemType): HttpHandler {
     return http.post<PlanParams, CreateTransactionRequest["body"], Problem>(base, () =>
       HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),

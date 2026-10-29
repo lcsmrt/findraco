@@ -28,6 +28,7 @@ const members: PlanMember[] = [
 
 const food: Category = {
   id: 7,
+  version: 0,
   type: "DEBIT",
   description: "Food",
   parentId: null,

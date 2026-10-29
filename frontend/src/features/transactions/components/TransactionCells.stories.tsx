@@ -20,12 +20,13 @@ const members: PlanMember[] = [
 
 const groceries: Transaction = {
   id: 1,
+  version: 0,
   type: "DEBIT",
   amount: 320,
   description: "Groceries",
   startDate: "2026-10-14",
   endDate: "2026-10-14",
-  category: { id: 1, type: "DEBIT", description: "Food" },
+  category: { id: 1, version: 0, type: "DEBIT", description: "Food" },
   splitMode: "EQUAL",
   participants: [
     { id: 1, name: "Lucas Martins", shareAmount: 160 },
@@ -125,7 +126,7 @@ export const Income: Story = {
       type: "CREDIT",
       amount: 5000,
       description: "Salary",
-      category: { id: 9, type: "CREDIT", description: "Income" },
+      category: { id: 9, version: 0, type: "CREDIT", description: "Income" },
       participants: [{ id: 1, name: "Lucas Martins", shareAmount: 5000 }],
     },
   },
@@ -189,7 +190,7 @@ export const LongDescriptionLargeAmount: Story = {
       ...groceries,
       description: "Annual maintenance contract for the building's elevators and generators",
       amount: 987654321.99,
-      category: { id: 5, type: "DEBIT", description: "Household maintenance and repairs" },
+      category: { id: 5, version: 0, type: "DEBIT", description: "Household maintenance and repairs" },
       participants: [{ id: 3, name: "Maximiliano Albuquerque de Vasconcelos", shareAmount: 1 }],
     },
   },

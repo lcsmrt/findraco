@@ -7,7 +7,7 @@ function cat(
   description: string,
   parentId: number | null = null,
 ): Category {
-  return { id, description, type: "DEBIT", parentId };
+  return { id, version: 0, description, type: "DEBIT", parentId };
 }
 
 const food = cat(1, "Food");

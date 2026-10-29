@@ -18,7 +18,7 @@ const validValues: TransactionFormOutput = {
   type: "DEBIT",
   description: "Groceries",
   amount: 100,
-  category: { id: 1, type: "DEBIT", description: "Food", spendingLimit: null },
+  category: { id: 1, version: 0, type: "DEBIT", description: "Food", spendingLimit: null },
   date: new Date(2026, 6, 1),
   recurring: false,
   seriesEdit: false,
@@ -30,6 +30,7 @@ const validValues: TransactionFormOutput = {
 
 const baseTransaction: Transaction = {
   id: 42,
+  version: 0,
   type: "DEBIT",
   amount: 150.5,
   description: "Rent",
@@ -341,7 +342,7 @@ describe("toPayload — plain transaction", () => {
           {
             description: "Snacks",
             amount: 25,
-            category: { id: 5, type: "DEBIT", description: "Food" },
+            category: { id: 5, version: 0, type: "DEBIT", description: "Food" },
           },
         ],
       },
@@ -608,10 +609,11 @@ describe("participantsForMode — the participants an attribution mode starts wi
 describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
   const shared: Transaction = {
     id: 7,
+    version: 4,
     type: "CREDIT",
     amount: 300,
     description: "Dinner",
-    category: { id: 3, type: "CREDIT", description: "Food", spendingLimit: null },
+    category: { id: 3, version: 0, type: "CREDIT", description: "Food", spendingLimit: null },
     startDate: "2026-05-10T00:00:00.000Z",
     endDate: "2026-05-10T00:00:00.000Z",
     splitMode: "EQUAL",
@@ -632,6 +634,7 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       { memberId: 1, shareAmount: undefined },
       { memberId: 2, shareAmount: undefined },
     ],
+    version: 4,
   };
 
   it("sends the transaction as it is, keyed by its id, when no field changes", () => {
@@ -648,6 +651,10 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       splitMode: "PERCENT" as const,
     };
     expect(toInlineSavePayload(shared, change).body).toEqual({ ...unchanged, ...change });
+  });
+
+  it("sends back the version it was read at, so a concurrent change is refused (BST-06 AC 9)", () => {
+    expect(toInlineSavePayload(shared, { description: "Lunch" }).body.version).toBe(4);
   });
 
   it("sends no category for an uncategorised transaction", () => {

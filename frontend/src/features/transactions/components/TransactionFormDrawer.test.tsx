@@ -41,6 +41,7 @@ const livia: PlanMember = {
 
 const savedTransaction: Transaction = {
   id: 42,
+  version: 0,
   type: "DEBIT",
   amount: 150.5,
   description: "Rent",
@@ -300,6 +301,7 @@ describe("TransactionFormDrawer owned-category attribution", () => {
 
   const liviasGym: Category = {
     id: 9,
+    version: 0,
     type: "DEBIT",
     description: "Livia's gym",
     ownerId: livia.userId,
@@ -362,6 +364,7 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
   };
   const installments: RecurrenceDefinitionResponse = {
     id: 9,
+    version: 0,
     seriesId: "s-1",
     type: "DEBIT",
     amount: 150.5,

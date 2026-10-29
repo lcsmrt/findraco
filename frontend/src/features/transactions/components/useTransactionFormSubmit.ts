@@ -44,9 +44,10 @@ export function useTransactionFormSubmit({
   onDone,
 }: UseTransactionFormSubmitArgs) {
   const createTransaction = useCreateTransaction({ onSuccess: onDone });
-  const updateTransaction = useUpdateTransaction({ onSuccess: onDone });
+  // A stale edit closes the form: the data it was opened on has been reloaded.
+  const updateTransaction = useUpdateTransaction({ onSuccess: onDone, onStale: onDone });
   const createSeries = useCreateTransactionSeries({ onSuccess: onDone });
-  const updateSeries = useUpdateTransactionSeries({ onSuccess: onDone });
+  const updateSeries = useUpdateTransactionSeries({ onSuccess: onDone, onStale: onDone });
 
   async function editSeries(
     values: TransactionFormOutput,
@@ -87,7 +88,10 @@ export function useTransactionFormSubmit({
 
     const body = toPayload(values, showAttribution, currentUserId);
     if (mode === "edit" && transaction) {
-      updateTransaction.mutate({ params: { id: transaction.id }, body });
+      updateTransaction.mutate({
+        params: { id: transaction.id },
+        body: { ...body, version: transaction.version },
+      });
       return;
     }
     createTransaction.mutate({ body });

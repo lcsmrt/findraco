@@ -20,6 +20,8 @@ export type TransactionItem = {
 
 export type Transaction = {
   id: number;
+  /** Sent back on edit; an edit of a version that changed since answers 409 `stale-version`. */
+  version: number;
   category?: Category;
   type: TransactionType;
   amount: number;
@@ -85,7 +87,7 @@ export type CreateTransactionRequest = {
 
 export type UpdateTransactionRequest = {
   params: { id: number };
-  body: CreateTransactionRequest["body"];
+  body: CreateTransactionRequest["body"] & { version: number };
 };
 
 export type RecurrenceMode = "INSTALLMENT" | "RECURRING";
@@ -125,6 +127,8 @@ export type RecurrenceDefinitionParticipantTemplate = {
 
 export type RecurrenceDefinitionResponse = {
   id: number;
+  /** Sent back on a series edit, whatever its scope. */
+  version: number;
   seriesId: string;
   type: TransactionType;
   amount: number;
@@ -163,5 +167,6 @@ export type UpdateTransactionSeriesRequest = {
     participants?: ParticipantInput[];
     scope: SeriesEditScope;
     pivotOccurrenceId?: number;
+    version: number;
   };
 };

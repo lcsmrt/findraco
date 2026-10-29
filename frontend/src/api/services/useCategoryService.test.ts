@@ -31,7 +31,7 @@ function planContext(activePlanId: number | null): PlanContextValue {
 const plan5 = planContext(5);
 const categoriesPath = "/api/findraco/plan/5/category";
 
-const category: Category = { id: 12, type: "DEBIT", description: "Groceries" };
+const category: Category = { id: 12, version: 0, type: "DEBIT", description: "Groceries" };
 
 // Every category mutation refreshes these views.
 const categoryViewKeys = [
@@ -153,13 +153,13 @@ describe("useUpdateCategory", () => {
         },
       },
     );
-    result.current.mutate({ params: { id: 12 }, body: { description: "Food" } });
+    result.current.mutate({ params: { id: 12 }, body: { description: "Food", version: 3 } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map((request) => [request.method, new URL(request.url).pathname])).toEqual([
       ["PUT", `${categoriesPath}/12`],
     ]);
-    expect(await requests[0].json()).toEqual({ description: "Food" });
+    expect(await requests[0].json()).toEqual({ description: "Food", version: 3 });
     expect(
       invalidated(queryClient, [
         ...categoryViewKeys,

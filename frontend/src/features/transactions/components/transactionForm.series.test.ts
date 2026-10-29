@@ -29,6 +29,7 @@ const baseValues: TransactionFormOutput = {
 
 const installmentTransaction: Transaction = {
   id: 55,
+  version: 0,
   seriesId: "series-abc",
   type: "DEBIT",
   amount: 100,
@@ -42,6 +43,7 @@ const installmentTransaction: Transaction = {
 
 const installmentDefinition: RecurrenceDefinitionResponse = {
   id: 9,
+  version: 6,
   seriesId: "series-abc",
   type: "DEBIT",
   amount: 100,
@@ -56,6 +58,7 @@ const installmentDefinition: RecurrenceDefinitionResponse = {
 
 const recurringDefinition: RecurrenceDefinitionResponse = {
   id: 10,
+  version: 0,
   seriesId: "series-xyz",
   type: "CREDIT",
   amount: 200,
@@ -421,6 +424,7 @@ describe("toSeriesEditPayload", () => {
       participants: undefined,
       scope: "ALL",
       pivotOccurrenceId: 55,
+      version: 6,
     });
   });
 

@@ -46,6 +46,7 @@ const emptySummary: DashboardSummaryResponse = {
 
 const created: Transaction = {
   id: 42,
+  version: 0,
   type: "DEBIT",
   amount: 12.34,
   description: "Groceries",

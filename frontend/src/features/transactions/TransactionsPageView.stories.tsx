@@ -15,12 +15,13 @@ const members: PlanMember[] = [
 function transaction(id: number, overrides: Partial<Transaction> = {}): Transaction {
   return {
     id,
+    version: 0,
     type: "DEBIT",
     amount: 120 + id,
     description: `Groceries ${id}`,
     startDate: "2026-10-14",
     endDate: "2026-10-14",
-    category: { id: 1, type: "DEBIT", description: "Food" },
+    category: { id: 1, version: 0, type: "DEBIT", description: "Food" },
     splitMode: "EQUAL",
     participants: [
       { id: 1, name: "Lucas Martins", shareAmount: (120 + id) / 2 },

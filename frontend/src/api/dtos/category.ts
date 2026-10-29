@@ -9,6 +9,8 @@ export type CategoryMemberLimit = {
 
 export type Category = {
   id: number;
+  /** Sent back on edit; an edit of a version that changed since answers 409 `stale-version`. */
+  version: number;
   type: TransactionType;
   description: string;
   spendingLimit?: number | null;
@@ -48,7 +50,7 @@ export type CreateCategoryRequest = {
 
 export type UpdateCategoryRequest = {
   params: { id: number };
-  body: Partial<CreateCategoryRequest["body"]>;
+  body: Partial<CreateCategoryRequest["body"]> & { version: number };
 };
 
 export type DeleteCategoryRequest = {

@@ -10,6 +10,7 @@ function colorOf(memberId: number) {
 
 const food: Category = {
   id: 1,
+  version: 0,
   type: "DEBIT",
   description: "Food",
   spendingLimit: 2000,
@@ -17,6 +18,7 @@ const food: Category = {
 
 const hobbies: Category = {
   id: 2,
+  version: 0,
   type: "DEBIT",
   description: "Hobbies",
   ownerId: 2,
@@ -57,7 +59,7 @@ export const OwnerAndMemberLimits: Story = { args: { category: hobbies } };
 
 export const Child: Story = {
   args: {
-    category: { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },
+    category: { id: 11, version: 0, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },
     child: { isLast: false },
   },
 };
@@ -65,7 +67,7 @@ export const Child: Story = {
 export const LastChild: Story = {
   tags: ["!test"],
   args: {
-    category: { id: 12, type: "DEBIT", description: "Groceries", parentId: 1 },
+    category: { id: 12, version: 0, type: "DEBIT", description: "Groceries", parentId: 1 },
     child: { isLast: true },
   },
 };

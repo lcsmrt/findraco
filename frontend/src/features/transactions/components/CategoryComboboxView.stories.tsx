@@ -7,11 +7,11 @@ import { groupCategoryOptions } from "../utils/categoryOptions";
 import { CategoryComboboxView } from "./CategoryComboboxView";
 
 const categories: Category[] = [
-  { id: 1, type: "DEBIT", description: "Food" },
-  { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1 },
-  { id: 12, type: "DEBIT", description: "Groceries", parentId: 1 },
-  { id: 2, type: "DEBIT", description: "Housing" },
-  { id: 3, type: "DEBIT", description: "Transport" },
+  { id: 1, version: 0, type: "DEBIT", description: "Food" },
+  { id: 11, version: 0, type: "DEBIT", description: "Restaurants", parentId: 1 },
+  { id: 12, version: 0, type: "DEBIT", description: "Groceries", parentId: 1 },
+  { id: 2, version: 0, type: "DEBIT", description: "Housing" },
+  { id: 3, version: 0, type: "DEBIT", description: "Transport" },
 ];
 
 type DemoProps = {
@@ -116,11 +116,13 @@ export const ManyLongNames: Story = {
     defaultOpen: true,
     initialValue: {
       id: 900,
+      version: 0,
       type: "DEBIT",
       description: "Household maintenance, repairs and improvements for the shared apartment",
     },
     categories: Array.from({ length: 30 }, (_, index) => ({
       id: 100 + index,
+      version: 0,
       type: "DEBIT" as const,
       description: `Household maintenance, repairs and improvements ${index + 1}`,
     })),

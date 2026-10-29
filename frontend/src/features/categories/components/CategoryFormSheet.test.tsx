@@ -16,6 +16,7 @@ const lucas: PlanMember = { userId: 1, name: "Lucas", email: "lucas@example.com"
 
 const groceries: Category = {
   id: 9,
+  version: 0,
   type: "DEBIT",
   description: "Groceries",
   parentId: null,

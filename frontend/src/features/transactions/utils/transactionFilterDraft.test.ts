@@ -10,6 +10,7 @@ import {
 
 const groceries: Category = {
   id: 12,
+  version: 0,
   type: "DEBIT",
   description: "Groceries",
 };

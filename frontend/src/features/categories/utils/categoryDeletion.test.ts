@@ -17,6 +17,7 @@ function cat(
 ): Category {
   return {
     id,
+    version: 0,
     description,
     type: "DEBIT",
     parentId: null,

@@ -10,11 +10,12 @@ function colorOf(memberId: number) {
 }
 
 const categories: Category[] = [
-  { id: 1, type: "DEBIT", description: "Food", spendingLimit: 2000 },
-  { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },
-  { id: 12, type: "DEBIT", description: "Groceries", parentId: 1 },
+  { id: 1, version: 0, type: "DEBIT", description: "Food", spendingLimit: 2000 },
+  { id: 11, version: 0, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },
+  { id: 12, version: 0, type: "DEBIT", description: "Groceries", parentId: 1 },
   {
     id: 2,
+    version: 0,
     type: "DEBIT",
     description: "Hobbies",
     ownerId: 2,
@@ -26,7 +27,7 @@ const categories: Category[] = [
     ],
     effectiveLimit: 750,
   },
-  { id: 3, type: "CREDIT", description: "Salary" },
+  { id: 3, version: 0, type: "CREDIT", description: "Salary" },
 ];
 
 const meta = {
@@ -80,6 +81,7 @@ export const ManyLongCategories: Story = {
     sections: buildCategoryTree(
       Array.from({ length: 20 }, (_, index) => ({
         id: 100 + index,
+        version: 0,
         type: "DEBIT" as const,
         description: `Household maintenance, repairs and improvements ${index + 1}`,
         spendingLimit: 98765432.1,

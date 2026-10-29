@@ -34,6 +34,7 @@ const livia: PlanMember = { userId: 2, name: "Livia", email: "livia@example.com"
 
 const rent: Transaction = {
   id: 42,
+  version: 0,
   type: "DEBIT",
   amount: 150.5,
   description: "Rent",
@@ -45,7 +46,7 @@ const rent: Transaction = {
 };
 const gym: Transaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
 
-const groceries: Category = { id: 12, type: "DEBIT", description: "Groceries" };
+const groceries: Category = { id: 12, version: 0, type: "DEBIT", description: "Groceries" };
 
 function categoryPage(
   content: Category[],
@@ -259,6 +260,26 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     await waitFor(() =>
       expect(requests.some((r) => r.method === "DELETE" && new URL(r.url).pathname === `${API}/42`)).toBe(true),
     );
+  });
+});
+
+describe("TransactionsPage stale edit (BST-06 AC 11)", () => {
+  it("tells the user someone else changed the transaction, closes the drawer and reloads the list", async () => {
+    const { requests, user } = renderTab({ transactions: [{ ...rent, version: 7 }] });
+    const row = await tableRow("Rent");
+    server.use(transactionHandlers.updateRejected(409, "stale-version"));
+
+    await user.click(row.getByRole("button", { name: "Edit" }));
+    const drawer = await screen.findByRole("dialog", { name: "Edit Transaction" });
+    await user.click(within(drawer).getByRole("button", { name: "Save" }));
+
+    expect(
+      await screen.findByText("Someone else changed this in the meantime. Reload it and try again."),
+    ).toBeTruthy();
+    const put = requests.find((request) => request.method === "PUT");
+    expect(await put?.json()).toMatchObject({ version: 7 });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit Transaction" })).toBeNull());
+    await waitFor(() => expect(listQueries(requests)).toHaveLength(2));
   });
 });
 

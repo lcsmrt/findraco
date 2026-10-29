@@ -20,6 +20,7 @@ function cat(
 ): Category {
   return {
     id,
+    version: 0,
     description,
     type: "DEBIT",
     parentId: null,
@@ -168,6 +169,7 @@ describe("buildDefaultValues", () => {
   it("treats a category without parentId as a root", () => {
     const withoutParent: Category = {
       id: 1,
+      version: 0,
       type: "DEBIT",
       description: "Food",
     };
