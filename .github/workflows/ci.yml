@@ -175,10 +175,11 @@ jobs:
           java-version: "17"
           cache: maven
 
-      # Surefire only: *IT classes need the database and run in failsafe (verify).
+      # Every *Test (surefire), every *IT (failsafe, on a Testcontainers Postgres through the
+      # runner's Docker) and the JaCoCo gate. A failure here keeps deploy from running.
       - name: Test
         working-directory: backend
-        run: ./mvnw -B test
+        run: ./mvnw -B verify
 
   deploy:
     needs: [changes, frontend, backend]
