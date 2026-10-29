@@ -9,6 +9,8 @@ import com.lcs.findraco.user.model.User;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -20,6 +22,9 @@ class HarnessSmokeIT extends AbstractIntegrationTest {
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private ConfigurableEnvironment environment;
 
     @Test
     void bootsAgainstTheContainerWithTheFlywayChainApplied() {
@@ -50,5 +55,12 @@ class HarnessSmokeIT extends AbstractIntegrationTest {
         assertThat(userCountBeforeAnyFixtureInThisTest)
                 .as("truncateAll must have cleared users left over from the previous test method")
                 .isZero();
+    }
+
+    @Test
+    void neverReadsTheDevelopersDotEnv() {
+        assertThat(environment.getPropertySources().stream().map(PropertySource::getName))
+                .as("a test run must match CI, where backend/.env does not exist (and must never send real mail)")
+                .noneMatch(name -> name.contains(".env"));
     }
 }
