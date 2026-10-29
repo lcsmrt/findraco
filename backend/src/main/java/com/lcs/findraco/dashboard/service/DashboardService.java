@@ -1,6 +1,7 @@
 package com.lcs.findraco.dashboard.service;
 
 import com.lcs.findraco.category.service.CategorySpendingService;
+import com.lcs.findraco.dashboard.repository.DashboardReportRepository;
 import com.lcs.findraco.dashboard.request.DashboardFilter;
 import com.lcs.findraco.dashboard.response.CategoryBreakdownResponse;
 import com.lcs.findraco.dashboard.response.DashboardSummaryResponse;
@@ -9,7 +10,6 @@ import com.lcs.findraco.dashboard.response.PersonBreakdownResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.transaction.model.TransactionType;
-import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
@@ -25,19 +25,19 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class DashboardService {
 
-    private final TransactionRepository transactionRepository;
+    private final DashboardReportRepository reportRepository;
     private final CategorySpendingService categorySpendingService;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
     private final Clock clock;
     private final EntityManager entityManager;
 
     public DashboardService(
-            TransactionRepository transactionRepository,
+            DashboardReportRepository reportRepository,
             CategorySpendingService categorySpendingService,
             OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
             Clock clock,
             EntityManager entityManager) {
-        this.transactionRepository = transactionRepository;
+        this.reportRepository = reportRepository;
         this.categorySpendingService = categorySpendingService;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
         this.clock = clock;
@@ -53,10 +53,10 @@ public class DashboardService {
         LocalDate endDate = filter.endDate();
         Long memberId = filter.memberId();
 
-        BigDecimal totalIncome = transactionRepository.sumByPlanAndTypeAndDateRange(
+        BigDecimal totalIncome = reportRepository.sumByPlanAndTypeAndDateRange(
                 plan, TransactionType.CREDIT, startDate, endDate, memberId);
 
-        BigDecimal totalExpenses = transactionRepository.sumByPlanAndTypeAndDateRange(
+        BigDecimal totalExpenses = reportRepository.sumByPlanAndTypeAndDateRange(
                 plan, TransactionType.DEBIT, startDate, endDate, memberId);
 
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
@@ -88,7 +88,7 @@ public class DashboardService {
 
     private List<MonthlyTrendResponse> buildMonthlyTrend(
             Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rows = transactionRepository.findMonthlyTrend(plan, startDate, endDate, memberId);
+        List<Object[]> rows = reportRepository.findMonthlyTrend(plan, startDate, endDate, memberId);
 
         Map<MonthKey, BigDecimal[]> amountsByMonth = new LinkedHashMap<>();
         for (Object[] row : rows) {
@@ -116,7 +116,7 @@ public class DashboardService {
 
     private List<PersonBreakdownResponse> buildPersonBreakdown(
             Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rows = transactionRepository.findPersonBreakdown(plan, startDate, endDate, memberId);
+        List<Object[]> rows = reportRepository.findPersonBreakdown(plan, startDate, endDate, memberId);
 
         Map<Long, String> namesByUserId = new LinkedHashMap<>();
         Map<Long, BigDecimal[]> amountsByUserId = new LinkedHashMap<>();

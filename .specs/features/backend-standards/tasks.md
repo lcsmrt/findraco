@@ -843,8 +843,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Dashboard and category spending ITs green unchanged
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Dashboard and category spending ITs green unchanged
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

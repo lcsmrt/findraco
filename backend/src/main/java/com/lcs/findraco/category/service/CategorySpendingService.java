@@ -2,13 +2,13 @@ package com.lcs.findraco.category.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.category.repository.CategorySpendingRepository;
 import com.lcs.findraco.category.request.CategorySpendingFilter;
 import com.lcs.findraco.category.response.CategorySpendingResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.transaction.model.TransactionType;
-import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.service.ItemShareAllocator;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.Allocation;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
@@ -35,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class CategorySpendingService {
 
-    private final TransactionRepository transactionRepository;
+    private final CategorySpendingRepository spendingRepository;
     private final CategoryRepository categoryRepository;
     private final PlanService planService;
     private final UserService userService;
@@ -46,7 +46,7 @@ public class CategorySpendingService {
     private final EntityManager entityManager;
 
     public CategorySpendingService(
-            TransactionRepository transactionRepository,
+            CategorySpendingRepository spendingRepository,
             CategoryRepository categoryRepository,
             PlanService planService,
             UserService userService,
@@ -55,7 +55,7 @@ public class CategorySpendingService {
             OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
             Clock clock,
             EntityManager entityManager) {
-        this.transactionRepository = transactionRepository;
+        this.spendingRepository = spendingRepository;
         this.categoryRepository = categoryRepository;
         this.planService = planService;
         this.userService = userService;
@@ -142,9 +142,9 @@ public class CategorySpendingService {
     private record Facts(List<Object[]> rowsA, List<MemberFact> removed, List<MemberFact> added) {}
 
     private Facts facts(Plan plan, TransactionType type, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rowsA = transactionRepository.findCategoryMemberFacts(plan, type, startDate, endDate, memberId);
+        List<Object[]> rowsA = spendingRepository.findCategoryMemberFacts(plan, type, startDate, endDate, memberId);
         Allocation allocation = itemShareAllocator.allocate(
-                transactionRepository.findCategorizedItemParticipantRows(plan, type, startDate, endDate));
+                spendingRepository.findCategorizedItemParticipantRows(plan, type, startDate, endDate));
         // The member filter applies after allocation, so a member's item portion is the same with or
         // without the filter (closes the former plan-total item gap of the member-filtered dashboard).
         return new Facts(rowsA, forMember(allocation.removed(), memberId), forMember(allocation.added(), memberId));
