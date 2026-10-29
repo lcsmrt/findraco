@@ -389,10 +389,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] A misformatted file fails `verify` (checked, reverted)
-- [ ] A staged misformatted file blocks the commit (checked, reverted)
-- [ ] Format commit listed in `.git-blame-ignore-revs`
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] A misformatted file fails `verify` (checked, reverted)
+- [x] A staged misformatted file blocks the commit (checked, reverted)
+- [x] Format commit listed in `.git-blame-ignore-revs`
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: quick
@@ -412,9 +412,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Adding Lombok fails the build (checked, reverted)
-- [ ] Zero warnings; `grep -r @SuppressWarnings backend/src` empty
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Adding Lombok fails the build (checked, reverted)
+- [x] Zero warnings; `grep -r @SuppressWarnings backend/src` empty
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: quick
@@ -434,8 +434,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Either Error Prone runs on every compile with zero errors, or the deferral is recorded with the failing output
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Either Error Prone runs on every compile with zero errors, or the deferral is recorded with the failing output
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: quick
@@ -455,9 +455,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Injecting a repository into a controller fails the test (checked, reverted)
-- [ ] Green on current code
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Injecting a repository into a controller fails the test (checked, reverted)
+- [x] Green on current code
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: build
