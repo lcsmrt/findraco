@@ -547,9 +547,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `MigrationsIT` green
-- [ ] A test database pre-created with `transactions` makes V13 abort with its message
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `MigrationsIT` green
+- [x] A test database pre-created with `transactions` makes V13 abort with its message
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

@@ -217,12 +217,12 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         JdbcTemplate jdbc = new JdbcTemplate(dataSource);
         jdbc.execute("CREATE OR REPLACE FUNCTION test_fail_category_delete() RETURNS trigger AS $$ "
                 + "BEGIN RAISE EXCEPTION 'forced failure for CategoryDeleteIT'; END; $$ LANGUAGE plpgsql");
-        jdbc.execute("CREATE TRIGGER test_fail_category_delete BEFORE DELETE ON financial_transaction_categories "
+        jdbc.execute("CREATE TRIGGER test_fail_category_delete BEFORE DELETE ON categories "
                 + "FOR EACH ROW EXECUTE FUNCTION test_fail_category_delete()");
         try {
             deleteCategory(plan, owner, source.getId(), target.getId()).andExpect(status().isInternalServerError());
         } finally {
-            jdbc.execute("DROP TRIGGER IF EXISTS test_fail_category_delete ON financial_transaction_categories");
+            jdbc.execute("DROP TRIGGER IF EXISTS test_fail_category_delete ON categories");
             jdbc.execute("DROP FUNCTION IF EXISTS test_fail_category_delete()");
         }
 
@@ -332,8 +332,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
     }
 
     private static Long transactionCategoryId(JdbcTemplate jdbc, Long transactionId) {
-        return jdbc.queryForObject(
-                "SELECT category_id FROM financial_transactions WHERE id = ?", Long.class, transactionId);
+        return jdbc.queryForObject("SELECT category_id FROM transactions WHERE id = ?", Long.class, transactionId);
     }
 
     private static Long itemCategoryId(JdbcTemplate jdbc, Long transactionId) {

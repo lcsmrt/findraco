@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.sql.DataSource;
 import org.flywaydb.core.Flyway;
+import org.flywaydb.core.api.FlywayException;
 import org.flywaydb.core.api.MigrationInfo;
 import org.flywaydb.core.api.MigrationState;
 import org.junit.jupiter.api.Test;
@@ -25,6 +26,8 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
  * Proves the FULL Flyway chain (V1..latest) is applied on the test database and that
@@ -41,6 +44,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
  */
 class MigrationsIT extends AbstractIntegrationTest {
 
+    private static final String SCRATCH_DATABASE = "findraco_test_v13_scratch";
+
     private static final Pattern MIGRATION_FILE_PATTERN = Pattern.compile("V(\\d+(?:_\\d+)*)__.*\\.sql");
 
     @Autowired
@@ -51,6 +56,9 @@ class MigrationsIT extends AbstractIntegrationTest {
 
     @Autowired
     private DataSource dataSource;
+
+    @Autowired
+    private PostgreSQLContainer postgres;
 
     @Test
     void contextLoadsUnderDdlAutoValidateWithNoEntitySchemaDrift() {
@@ -103,8 +111,8 @@ class MigrationsIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(fixtures.aUser());
         Long categoryId = insertLegacyCategory(jdbc, plan, "Groceries");
 
-        Map<String, Object> row = jdbc.queryForMap(
-                "SELECT parent_id, owner_user_id FROM financial_transaction_categories WHERE id = ?", categoryId);
+        Map<String, Object> row =
+                jdbc.queryForMap("SELECT parent_id, owner_user_id FROM categories WHERE id = ?", categoryId);
         assertThat(row.get("parent_id")).isNull();
         assertThat(row.get("owner_user_id")).isNull();
 
@@ -144,9 +152,92 @@ class MigrationsIT extends AbstractIntegrationTest {
         assertThat(stored).isEqualTo(1);
     }
 
+    /** V13: both renamed tables carry only names under the pk_/uk_/fk_/idx_/ck_ convention. */
+    @Test
+    void transactionsAndCategoriesCarryTheConventionalConstraintAndIndexNames() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+
+        assertThat(namesOf(jdbc, "SELECT conname FROM pg_constraint WHERE conrelid = 'public.transactions'::regclass"))
+                .containsExactlyInAnyOrder(
+                        "pk_transactions",
+                        "ck_transactions_type",
+                        "fk_transactions_plans",
+                        "fk_transactions_created_by",
+                        "fk_transactions_categories",
+                        "fk_transactions_recurrence_definitions");
+        assertThat(namesOf(jdbc, "SELECT conname FROM pg_constraint WHERE conrelid = 'public.categories'::regclass"))
+                .containsExactlyInAnyOrder(
+                        "pk_categories",
+                        "ck_categories_type",
+                        "fk_categories_plans",
+                        "fk_categories_parent",
+                        "fk_categories_owner_user");
+        assertThat(namesOf(jdbc, "SELECT indexname FROM pg_indexes WHERE tablename = 'transactions'"))
+                .containsExactlyInAnyOrder(
+                        "pk_transactions",
+                        "idx_transactions_start_date",
+                        "idx_transactions_plan_id",
+                        "idx_transactions_plan_id_start_date",
+                        "idx_transactions_plan_id_series_id",
+                        "idx_transactions_recurrence_definition_id");
+        assertThat(namesOf(jdbc, "SELECT indexname FROM pg_indexes WHERE tablename = 'categories'"))
+                .containsExactlyInAnyOrder("pk_categories", "idx_categories_parent_id");
+        assertThat(namesOf(
+                        jdbc,
+                        "SELECT sequencename FROM pg_sequences WHERE sequencename IN "
+                                + "('transactions_id_seq', 'categories_id_seq')"))
+                .containsExactlyInAnyOrder("transactions_id_seq", "categories_id_seq");
+    }
+
+    @Test
+    void renameMigrationAbortsWhenTransactionsAlreadyExists() {
+        assertThatThrownBy(() -> migrateScratchDatabaseAfter("CREATE TABLE public.transactions (id bigint)"))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V13 precondition failed: transactions or categories already exists");
+    }
+
+    @Test
+    void renameMigrationAbortsWhenTheOldTablesAreMissing() {
+        assertThatThrownBy(() ->
+                        migrateScratchDatabaseAfter("ALTER TABLE public.financial_transactions RENAME TO ledger_rows"))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining(
+                        "V13 precondition failed: financial_transactions and financial_transaction_categories must exist");
+    }
+
+    /**
+     * Builds a scratch database up to V12, applies {@code tamper}, then runs the rest of the chain.
+     * The scratch database lives in the same container and is dropped afterwards.
+     */
+    private void migrateScratchDatabaseAfter(String tamper) {
+        JdbcTemplate admin = new JdbcTemplate(dataSource);
+        admin.execute("DROP DATABASE IF EXISTS " + SCRATCH_DATABASE);
+        admin.execute("CREATE DATABASE " + SCRATCH_DATABASE);
+        String url = postgres.getJdbcUrl().replace("/" + postgres.getDatabaseName(), "/" + SCRATCH_DATABASE);
+        try {
+            Flyway.configure()
+                    .dataSource(url, postgres.getUsername(), postgres.getPassword())
+                    .target("12")
+                    .load()
+                    .migrate();
+            new JdbcTemplate(new DriverManagerDataSource(url, postgres.getUsername(), postgres.getPassword()))
+                    .execute(tamper);
+            Flyway.configure()
+                    .dataSource(url, postgres.getUsername(), postgres.getPassword())
+                    .load()
+                    .migrate();
+        } finally {
+            admin.execute("DROP DATABASE IF EXISTS " + SCRATCH_DATABASE + " WITH (FORCE)");
+        }
+    }
+
+    private static List<String> namesOf(JdbcTemplate jdbc, String sql) {
+        return jdbc.queryForList(sql, String.class);
+    }
+
     private static Long insertLegacyCategory(JdbcTemplate jdbc, Plan plan, String description) {
         return jdbc.queryForObject(
-                "INSERT INTO financial_transaction_categories (plan_id, type, description, spending_limit) "
+                "INSERT INTO categories (plan_id, type, description, spending_limit) "
                         + "VALUES (?, 'DEBIT', ?, 400.00) RETURNING id",
                 Long.class,
                 plan.getId(),

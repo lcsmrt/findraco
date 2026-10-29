@@ -11,12 +11,12 @@ import java.util.List;
 
 @Entity
 @Table(
-        name = "financial_transactions",
+        name = "transactions",
         indexes = {
-            @Index(name = "idx_financial_transactions_start_date", columnList = "start_date"),
-            @Index(name = "idx_ft_plan_id", columnList = "plan_id"),
-            @Index(name = "idx_ft_plan_id_start_date", columnList = "plan_id, start_date"),
-            @Index(name = "idx_ft_plan_id_series_id", columnList = "plan_id, series_id"),
+            @Index(name = "idx_transactions_start_date", columnList = "start_date"),
+            @Index(name = "idx_transactions_plan_id", columnList = "plan_id"),
+            @Index(name = "idx_transactions_plan_id_start_date", columnList = "plan_id, start_date"),
+            @Index(name = "idx_transactions_plan_id_series_id", columnList = "plan_id, series_id"),
         })
 public class Transaction {
     @Id
@@ -24,15 +24,15 @@ public class Transaction {
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_ft_plan"))
+    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_transactions_plans"))
     private Plan plan;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "created_by", nullable = false, foreignKey = @ForeignKey(name = "fk_ft_created_by"))
+    @JoinColumn(name = "created_by", nullable = false, foreignKey = @ForeignKey(name = "fk_transactions_created_by"))
     private User createdBy;
 
     @ManyToOne
-    @JoinColumn(foreignKey = @ForeignKey(name = "fk_financial_transactions_financial_transaction_categories"))
+    @JoinColumn(foreignKey = @ForeignKey(name = "fk_transactions_categories"))
     private Category category;
 
     @Enumerated(EnumType.STRING)
@@ -48,7 +48,9 @@ public class Transaction {
     private Integer parcelsNumber;
 
     @ManyToOne(optional = true)
-    @JoinColumn(name = "recurrence_definition_id", foreignKey = @ForeignKey(name = "fk_ft_recurrence_definition"))
+    @JoinColumn(
+            name = "recurrence_definition_id",
+            foreignKey = @ForeignKey(name = "fk_transactions_recurrence_definitions"))
     private RecurrenceDefinition recurrenceDefinition;
 
     private LocalDate startDate;

@@ -9,14 +9,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "financial_transaction_categories")
+@Table(name = "categories")
 public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(optional = false)
-    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_ftc_plan"))
+    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_categories_plans"))
     private Plan plan;
 
     @Enumerated(EnumType.STRING)
@@ -26,11 +26,11 @@ public class Category {
     private BigDecimal spendingLimit;
 
     @ManyToOne
-    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_ftc_parent"))
+    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_categories_parent"))
     private Category parent;
 
     @ManyToOne
-    @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_ftc_owner"))
+    @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_categories_owner_user"))
     private User owner;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
