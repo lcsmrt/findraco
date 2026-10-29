@@ -76,7 +76,9 @@ public class RecurringTransactionGenerator {
                 : LocalDate.now(clock).plusMonths(OPEN_ENDED_HORIZON_MONTHS);
 
         List<FinancialTransaction> occurrences = new ArrayList<>();
-        for (LocalDate date = dto.getStartDate(); !date.isAfter(effectiveEnd); date = date.plusMonths(1)) {
+        // Each date is counted from the start, so a day clamped in a short month does not carry over.
+        for (int month = 0; !dto.getStartDate().plusMonths(month).isAfter(effectiveEnd); month++) {
+            LocalDate date = dto.getStartDate().plusMonths(month);
             ensureWithinCap(occurrences.size() + 1);
 
             FinancialTransaction transaction = baseTransaction(dto, plan, createdBy, category, seriesId, date, splitMode, participantShares);
@@ -98,7 +100,8 @@ public class RecurringTransactionGenerator {
                                                              LocalDate throughInclusive,
                                                              List<ResolvedParticipant> participantShares) {
         List<FinancialTransaction> occurrences = new ArrayList<>();
-        for (LocalDate date = def.getStartDate(); !date.isAfter(throughInclusive); date = date.plusMonths(1)) {
+        for (int month = 0; !def.getStartDate().plusMonths(month).isAfter(throughInclusive); month++) {
+            LocalDate date = def.getStartDate().plusMonths(month);
             if (!date.isAfter(afterExclusive)) {
                 continue;
             }

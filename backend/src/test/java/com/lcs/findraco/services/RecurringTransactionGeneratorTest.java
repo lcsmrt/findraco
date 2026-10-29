@@ -206,6 +206,24 @@ class RecurringTransactionGeneratorTest {
     }
 
     @Test
+    void recurringSeriesKeepsTheStartDayAfterAShortMonth() {
+        FinancialTransactionSeriesRequestDto dto = mock(FinancialTransactionSeriesRequestDto.class);
+        when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
+        when(dto.getType()).thenReturn(FinancialTransactionType.DEBIT);
+        when(dto.getAmount()).thenReturn(amount);
+        when(dto.getDescription()).thenReturn("Rent");
+        when(dto.getInterval()).thenReturn(RecurrenceInterval.MONTHLY);
+        when(dto.getStartDate()).thenReturn(LocalDate.of(2026, 1, 31));
+        when(dto.getEndDate()).thenReturn(LocalDate.of(2026, 4, 30));
+
+        List<FinancialTransaction> result = generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares);
+
+        assertThat(result).extracting(FinancialTransaction::getStartDate).containsExactly(
+                LocalDate.of(2026, 1, 31), LocalDate.of(2026, 2, 28),
+                LocalDate.of(2026, 3, 31), LocalDate.of(2026, 4, 30));
+    }
+
+    @Test
     void recurringSeriesExceedingCapThrows() {
         FinancialTransactionSeriesRequestDto dto = mock(FinancialTransactionSeriesRequestDto.class);
         when(dto.getMode()).thenReturn(RecurrenceMode.RECURRING);
@@ -348,6 +366,17 @@ class RecurringTransactionGeneratorTest {
             assertThat(tx.getEndDate()).isNull();
             assertThat(tx.getDescription()).isEqualTo(def.getDescription());
         });
+    }
+
+    @Test
+    void forwardWindowKeepsTheStartDayAfterAShortMonth() {
+        RecurrenceDefinition def = openEndedDefinition(LocalDate.of(2026, 1, 31));
+
+        List<FinancialTransaction> result = generator.generateForwardWindow(
+                def, LocalDate.of(2026, 1, 31), LocalDate.of(2026, 3, 31), selfShares);
+
+        assertThat(result).extracting(FinancialTransaction::getStartDate).containsExactly(
+                LocalDate.of(2026, 2, 28), LocalDate.of(2026, 3, 31));
     }
 
     @Test

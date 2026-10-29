@@ -127,8 +127,9 @@ public class SeriesRegenerator {
                 : LocalDate.now(clock).plusMonths(OPEN_ENDED_HORIZON_MONTHS);
 
         List<TargetOccurrence> targets = new ArrayList<>();
-        for (LocalDate date = def.getStartDate(); !date.isAfter(effectiveEnd); date = date.plusMonths(1)) {
-            targets.add(new TargetOccurrence(date, def.getDescription(), null));
+        // Each date is counted from the start, so a day clamped in a short month does not carry over.
+        for (int month = 0; !def.getStartDate().plusMonths(month).isAfter(effectiveEnd); month++) {
+            targets.add(new TargetOccurrence(def.getStartDate().plusMonths(month), def.getDescription(), null));
         }
         return targets;
     }

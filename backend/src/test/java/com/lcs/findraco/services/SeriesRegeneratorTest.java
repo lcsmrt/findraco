@@ -265,6 +265,18 @@ class SeriesRegeneratorTest {
     }
 
     @Test
+    void recurringTargetsKeepTheStartDayAfterAShortMonth() {
+        LocalDate start = LocalDate.of(2026, 1, 31);
+        RecurrenceDefinition def = recurringDef("Rent", amount, start, LocalDate.of(2026, 3, 31));
+
+        SeriesRegenerator.SeriesEditResult result = regenerator.reconcile(
+                def, List.of(), shares, SeriesEditScope.ALL, null);
+
+        assertThat(result.toCreate()).extracting(FinancialTransaction::getStartDate).containsExactly(
+                LocalDate.of(2026, 1, 31), LocalDate.of(2026, 2, 28), LocalDate.of(2026, 3, 31));
+    }
+
+    @Test
     void recurringNullEndDateUnderAllExtendsToRollingHorizon() {
         // P3 re-open: a null endDate on a RECURRING definition means open-ended, so the target list
         // must fall back to the rolling 12-month horizon (from the injected FIXED_CLOCK's "today")
