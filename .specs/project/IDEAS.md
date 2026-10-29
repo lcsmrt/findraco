@@ -49,6 +49,7 @@ Move from "Nubank CSV only" to a universal, low-maintenance import layer.
 - **Smart classification & renaming rules**
   - User-defined rules (description pattern → category + rename + split).
   - ML classifier trained on the user's own history, not a generic model.
+  - User wish (2026-10-28): once an imported transaction is classified, the next ones with the same origin are classified automatically; optional merchant/establishment field, normalised from the bank text. Groundwork laid in backend-standards S19 (`StatementParser` registry, immutable `sourceText`).
 
 - **Deduplication engine**
   - Fuzzy matching on amount + date + card/account within a sliding window.
