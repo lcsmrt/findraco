@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
@@ -323,7 +324,7 @@ class SeriesRegeneratorTest {
         List<Transaction> existing = existingInstallments("Rent", amount, 6, start);
 
         assertThatThrownBy(() -> regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(TransactionExceptions.SeriesTooManyOccurrencesException.class)
                 .hasMessageContaining("too many occurrences");
     }
 }

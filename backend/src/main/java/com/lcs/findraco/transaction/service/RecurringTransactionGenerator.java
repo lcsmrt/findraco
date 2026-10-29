@@ -2,6 +2,7 @@ package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
@@ -178,8 +179,7 @@ public class RecurringTransactionGenerator {
 
     private void ensureWithinCap(int count) {
         if (count > MAX_OCCURRENCES) {
-            throw new IllegalArgumentException(
-                    "Series would generate too many occurrences (max " + MAX_OCCURRENCES + ").");
+            throw new TransactionExceptions.SeriesTooManyOccurrencesException(MAX_OCCURRENCES);
         }
     }
 }

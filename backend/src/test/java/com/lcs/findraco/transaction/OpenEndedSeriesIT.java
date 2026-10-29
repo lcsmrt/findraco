@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -18,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
@@ -119,7 +121,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isBadRequest())
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-parcels-required"))
                 .andReturn();
 
         assertThat(result.getResponse().getContentAsString()).contains("Parcels number is required");

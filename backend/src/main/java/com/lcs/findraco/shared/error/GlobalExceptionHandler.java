@@ -57,13 +57,6 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
                 "The resource was changed by another request. Reload it and try again.");
     }
 
-    // SPEC_DEVIATION: an IllegalArgumentException still answers 400 until the next change names each one.
-    // Reason: about 20 user errors are still thrown that way; mapping them to 500 first would break them.
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ProblemDetail> handleIllegalArgument(IllegalArgumentException exception) {
-        return problem(HttpStatus.BAD_REQUEST, ProblemType.MALFORMED_REQUEST, exception.getMessage());
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ProblemDetail> handleUnexpected(Exception exception) {
         log.error("Unexpected error", exception);

@@ -6,6 +6,8 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
+import com.lcs.findraco.shared.error.MalformedRequestException;
+import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
@@ -132,9 +134,9 @@ public class TransactionService {
     public Page<Transaction> findAllByPlanPaged(TransactionFilter filter, PlanContext ctx) {
         String sortBy = filter.sortBy();
         if (!SORTABLE_FIELDS.contains(sortBy)) {
-            throw new IllegalArgumentException("Invalid sort field: " + sortBy);
+            throw new MalformedRequestException("sortBy", "Invalid sort field: " + sortBy);
         }
-        Sort.Direction direction = Sort.Direction.fromString(filter.sortDirection());
+        Sort.Direction direction = PageRequests.direction(filter.sortDirection());
 
         List<Specification<Transaction>> specs = new ArrayList<>(List.of(
                 TransactionSpecification.belongsToPlan(plan(ctx)),
@@ -235,12 +237,12 @@ public class TransactionService {
         List<SplitResolver.ParticipantInput> resolverInputs = new ArrayList<>();
         for (TransactionParticipantRequest input : participantInputs) {
             if (!seenMemberIds.add(input.memberId())) {
-                throw new IllegalArgumentException("Duplicate participant in transaction.");
+                throw new TransactionExceptions.DuplicateParticipantException();
             }
             User member = userService
                     .findById(input.memberId())
                     .filter(u -> planService.isMember(ctx.planId(), u.getId()))
-                    .orElseThrow(() -> new IllegalArgumentException("Participant is not a member of the plan."));
+                    .orElseThrow(TransactionExceptions.ParticipantNotMemberException::new);
             membersById.put(member.getId(), member);
             resolverInputs.add(new SplitResolver.ParticipantInput(member.getId(), input.shareAmount()));
         }
@@ -311,10 +313,10 @@ public class TransactionService {
         BigDecimal itemsTotal = BigDecimal.ZERO;
         for (TransactionItemRequest input : itemInputs) {
             if (input.description() == null || input.description().isBlank()) {
-                throw new IllegalArgumentException("Item description cannot be blank.");
+                throw new TransactionExceptions.InvalidItemException("Item description cannot be blank.");
             }
             if (input.amount() == null || input.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new IllegalArgumentException("Item amount must be positive.");
+                throw new TransactionExceptions.InvalidItemException("Item amount must be positive.");
             }
 
             Category itemCategory =
@@ -356,14 +358,14 @@ public class TransactionService {
 
         if (dto.mode() == RecurrenceMode.INSTALLMENT) {
             if (dto.parcelsNumber() == null) {
-                throw new IllegalArgumentException("Parcels number is required for installment series.");
+                throw new TransactionExceptions.SeriesParcelsRequiredException();
             }
             if (dto.currentParcel() != null && (dto.currentParcel() < 1 || dto.currentParcel() > dto.parcelsNumber())) {
-                throw new IllegalArgumentException("Current parcel must be between 1 and the total number of parcels.");
+                throw new TransactionExceptions.SeriesCurrentParcelOutOfRangeException();
             }
         } else if (dto.mode() == RecurrenceMode.RECURRING) {
             if (dto.interval() == null) {
-                throw new IllegalArgumentException("Interval is required for recurring series.");
+                throw new TransactionExceptions.SeriesIntervalRequiredException();
             }
             // endDate is optional: null means open-ended (materialized on a rolling horizon, see
             // RecurringTransactionGenerator.OPEN_ENDED_HORIZON_MONTHS / generatedThrough below).
@@ -443,7 +445,7 @@ public class TransactionService {
             pivot = occurrences.stream()
                     .filter(occurrence -> occurrence.getId().equals(pivotOccurrenceId))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Pivot occurrence not found in this series."));
+                    .orElseThrow(TransactionExceptions.SeriesPivotNotFoundException::new);
         }
 
         List<Transaction> inScope;
@@ -539,8 +541,7 @@ public class TransactionService {
         if (dto.parcelsNumber() != null
                 && !Objects.equals(dto.parcelsNumber(), definition.getParcelsNumber())
                 && dto.scope() != SeriesEditScope.ALL) {
-            throw new IllegalArgumentException(
-                    "Changing the number of parcels is only allowed when editing the whole series.");
+            throw new TransactionExceptions.SeriesParcelsChangeNeedsAllException();
         }
 
         ResolvedParticipants resolved = resolveParticipants(dto.participants(), dto.splitMode(), dto.amount(), ctx);
@@ -552,7 +553,7 @@ public class TransactionService {
             pivot = occurrences.stream()
                     .filter(occurrence -> occurrence.getId().equals(pivotOccurrenceId))
                     .findFirst()
-                    .orElseThrow(() -> new IllegalArgumentException("Pivot occurrence not found in this series."));
+                    .orElseThrow(TransactionExceptions.SeriesPivotNotFoundException::new);
         }
 
         List<Transaction> inScope;
@@ -717,7 +718,7 @@ public class TransactionService {
                         new BigDecimal(parts[1].trim()),
                         parts[3].trim()));
             } catch (DateTimeParseException | NumberFormatException e) {
-                throw new IllegalArgumentException("Line " + (i + 1) + " of the CSV is invalid: " + e.getMessage());
+                throw new TransactionExceptions.ImportLineInvalidException(i + 1);
             }
         }
 

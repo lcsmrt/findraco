@@ -210,8 +210,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 createTransaction(plan, owner, requestBody("DEBIT", "100.00", "Groceries", owner, List.of()));
         long transactionId = created.get("id").asLong();
 
-        // TransactionService.update throws IllegalArgumentException("Category does not
-        // match the transaction type.") when category.type != dto.type -> 400.
+        // A category of the other type breaks a rule of the request itself: 422, never a 500.
         mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)

@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.service;
 
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
@@ -9,7 +10,7 @@ public class DateUtils {
         if (endDate == null) return;
 
         if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("Start date cannot be after end date.");
+            throw new TransactionExceptions.PeriodStartAfterEndException();
         }
     }
 }

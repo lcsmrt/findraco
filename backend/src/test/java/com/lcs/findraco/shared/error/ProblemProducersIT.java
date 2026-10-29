@@ -16,6 +16,7 @@ import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.support.CapturedLogs;
 import com.lcs.findraco.user.model.User;
 import jakarta.servlet.RequestDispatcher;
+import java.lang.reflect.Method;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.MDC;
@@ -27,6 +28,7 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.method.annotation.ExceptionHandlerMethodResolver;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -129,6 +131,15 @@ class ProblemProducersIT extends AbstractIntegrationTest {
                     .anySatisfy(event ->
                             assertThat(event.getThrowableProxy().getMessage()).isEqualTo("bad input from user 42"));
         }
+    }
+
+    @Test
+    void anEscapedIllegalArgumentExceptionIsHandledAsUnexpected() {
+        Method handler = new ExceptionHandlerMethodResolver(GlobalExceptionHandler.class)
+                .resolveMethodByThrowable(new IllegalArgumentException("bad input"));
+
+        assertThat(handler).isNotNull();
+        assertThat(handler.getName()).isEqualTo("handleUnexpected");
     }
 
     @Test

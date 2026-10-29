@@ -76,8 +76,8 @@ class SplitResolverTest {
         List<ParticipantInput> inputs = List.of(new ParticipantInput(1L, null));
 
         assertThatThrownBy(() -> resolver.resolve(new BigDecimal("100.00"), SplitMode.PERCENT, inputs))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("PERCENT not yet supported");
+                .isInstanceOf(TransactionExceptions.SplitModeNotSupportedException.class)
+                .hasMessageContaining("PERCENT");
     }
 
     private static BigDecimal sum(List<ResolvedShare> shares) {

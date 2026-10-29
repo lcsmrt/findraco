@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.service;
 
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
@@ -181,8 +182,7 @@ public class SeriesRegenerator {
 
     private void ensureWithinCap(int count) {
         if (count > MAX_OCCURRENCES) {
-            throw new IllegalArgumentException(
-                    "Series would generate too many occurrences (max " + MAX_OCCURRENCES + ").");
+            throw new TransactionExceptions.SeriesTooManyOccurrencesException(MAX_OCCURRENCES);
         }
     }
 }

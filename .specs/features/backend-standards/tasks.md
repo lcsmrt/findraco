@@ -751,10 +751,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `grep -rn 'new IllegalArgumentException' backend/src/main` empty
-- [ ] ArchUnit rule fails on a planted throw (checked, reverted)
-- [ ] Existing ITs updated to assert `type` and the semantic status
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `grep -rn 'new IllegalArgumentException' backend/src/main` empty
+- [x] ArchUnit rule fails on a planted throw (checked, reverted)
+- [x] Existing ITs updated to assert `type` and the semantic status
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

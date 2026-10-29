@@ -3,6 +3,7 @@ package com.lcs.findraco.plan.controller;
 import com.lcs.findraco.auth.service.CustomUserDetails;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
+import com.lcs.findraco.shared.error.MalformedRequestException;
 import java.util.Map;
 import org.springframework.core.MethodParameter;
 import org.springframework.security.core.Authentication;
@@ -45,10 +46,18 @@ public class PlanContextArgumentResolver implements HandlerMethodArgumentResolve
 
         if (!(uriVariables instanceof Map<?, ?> variables)
                 || !(variables.get("planId") instanceof String planIdValue)) {
-            throw new IllegalArgumentException("Missing required path variable {planId}.");
+            throw new IllegalStateException("A PlanContext parameter needs a {planId} path variable.");
         }
 
-        return planService.resolveContext(Long.parseLong(planIdValue), resolveUserId());
+        return planService.resolveContext(planId(planIdValue), resolveUserId());
+    }
+
+    private static long planId(String value) {
+        try {
+            return Long.parseLong(value);
+        } catch (NumberFormatException exception) {
+            throw new MalformedRequestException("planId", "The plan id must be a number.");
+        }
     }
 
     private long resolveUserId() {

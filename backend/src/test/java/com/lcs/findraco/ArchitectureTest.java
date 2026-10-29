@@ -6,10 +6,14 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.tngtech.archunit.base.DescribedPredicate;
 import com.tngtech.archunit.core.domain.Dependency;
+import com.tngtech.archunit.core.domain.JavaCall;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
 import com.tngtech.archunit.core.domain.JavaMethod;
+import com.tngtech.archunit.core.domain.JavaModifier;
+import com.tngtech.archunit.core.domain.properties.HasOwner;
 import com.tngtech.archunit.core.importer.ImportOption;
 import com.tngtech.archunit.junit.AnalyzeClasses;
 import com.tngtech.archunit.junit.ArchTest;
@@ -107,6 +111,15 @@ class ArchitectureTest {
             .because("every feature builds on shared, so shared cannot know any of them");
 
     @ArchTest
+    static final ArchRule noIllegalArgumentAsUserError = noClasses()
+            .should()
+            .callConstructorWhere(JavaCall.Predicates.target(HasOwner.Predicates.With.owner(
+                            JavaClass.Predicates.assignableTo(IllegalArgumentException.class)))
+                    .and(inSourceCode()))
+            .because("a user error is a named DomainException with its own problem type; an escaped "
+                    + "IllegalArgumentException answers 500");
+
+    @ArchTest
     static final ArchRule dtosAreRecords = classes()
             .that()
             .resideInAnyPackage(ROOT + ".*.request", ROOT + ".*.response")
@@ -185,6 +198,12 @@ class ArchitectureTest {
                 }
             }
         };
+    }
+
+    /** Leaves out what the compiler generates, such as {@code $deserializeLambda$} of a serializable lambda. */
+    private static DescribedPredicate<JavaCall<?>> inSourceCode() {
+        return DescribedPredicate.describe(
+                "in source code", call -> !call.getOrigin().getModifiers().contains(JavaModifier.SYNTHETIC));
     }
 
     private static Optional<String> featureOf(String packageName) {

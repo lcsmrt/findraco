@@ -58,6 +58,26 @@ public class PlanExceptions {
         }
     }
 
+    public static class OwnerRoleNeedsTransferException extends DomainException {
+        public OwnerRoleNeedsTransferException() {
+            super(
+                    ProblemType.OWNER_ROLE_NEEDS_TRANSFER,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "role",
+                    "Use transferOwnership to make another member the owner.");
+        }
+    }
+
+    public static class OwnershipTransferToSelfException extends DomainException {
+        public OwnershipTransferToSelfException() {
+            super(
+                    ProblemType.OWNERSHIP_TRANSFER_TO_SELF,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "newOwnerUserId",
+                    "You cannot transfer ownership to yourself.");
+        }
+    }
+
     /** The detail never echoes the token: it is a secret. */
     public static class InvitationNotFoundException extends DomainException {
         public InvitationNotFoundException() {

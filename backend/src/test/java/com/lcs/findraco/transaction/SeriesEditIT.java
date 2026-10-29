@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultMatcher;
@@ -265,7 +267,12 @@ class SeriesEditIT extends AbstractIntegrationTest {
         long parcel1Id = created.get("occurrences").get(0).get("id").asLong();
 
         Map<String, Object> editBody = editBody("Rent", "300.00", start, 8, "THIS_ONE", parcel1Id);
-        editSeries(plan, owner, seriesId, editBody, status().isBadRequest());
+        editSeries(
+                plan,
+                owner,
+                seriesId,
+                editBody,
+                problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-parcels-change-needs-all"));
 
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definition.get("parcelsNumber").asInt()).isEqualTo(6);
@@ -284,7 +291,12 @@ class SeriesEditIT extends AbstractIntegrationTest {
         // Same guard, exercised from the other narrower scope (THIS_AND_FOLLOWING), confirming the
         // D10 condition is "scope != ALL", not just "scope == THIS_ONE".
         Map<String, Object> editBody = editBody("Rent", "300.00", start, 9, "THIS_AND_FOLLOWING", parcel3Id);
-        editSeries(plan, owner, seriesId, editBody, status().isBadRequest());
+        editSeries(
+                plan,
+                owner,
+                seriesId,
+                editBody,
+                problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-parcels-change-needs-all"));
 
         JsonNode definition = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definition.get("parcelsNumber").asInt()).isEqualTo(6);
@@ -326,7 +338,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
-                .andExpect(status().isBadRequest())
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-too-many-occurrences"))
                 .andReturn();
 
         assertThat(result.getResponse().getContentAsString()).contains("too many occurrences");
@@ -361,7 +373,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
                                 .with(testAuthHelper.asUser(owner))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(objectMapper.writeValueAsString(editBody)))
-                .andExpect(status().isBadRequest())
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-too-many-occurrences"))
                 .andReturn();
 
         assertThat(result.getResponse().getContentAsString()).contains("too many occurrences");

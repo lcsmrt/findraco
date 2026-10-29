@@ -114,7 +114,7 @@ public class PlanService {
     @Transactional
     public PlanMembership changeMemberRole(long planId, long targetUserId, PlanRole newRole, long requesterId) {
         if (newRole == PlanRole.OWNER) {
-            throw new IllegalArgumentException("Use transferOwnership to make another member the owner.");
+            throw new PlanExceptions.OwnerRoleNeedsTransferException();
         }
 
         PlanMembership requesterMembership = getMembership(planId, requesterId);
@@ -188,7 +188,7 @@ public class PlanService {
     @Transactional
     public void transferOwnership(long planId, long targetUserId, PlanRole previousOwnerRole, long requesterId) {
         if (targetUserId == requesterId) {
-            throw new IllegalArgumentException("You cannot transfer ownership to yourself.");
+            throw new PlanExceptions.OwnershipTransferToSelfException();
         }
 
         PlanMembership requesterMembership = getMembership(planId, requesterId);

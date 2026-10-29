@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
@@ -151,7 +152,7 @@ class RecurringTransactionGeneratorTest {
         when(dto.startDate()).thenReturn(LocalDate.of(2026, 1, 15));
 
         assertThatThrownBy(() -> generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(TransactionExceptions.SeriesTooManyOccurrencesException.class)
                 .hasMessageContaining("too many occurrences");
 
         when(dto.parcelsNumber()).thenReturn(200);
@@ -235,7 +236,7 @@ class RecurringTransactionGeneratorTest {
         when(dto.endDate()).thenReturn(LocalDate.of(2050, 1, 1));
 
         assertThatThrownBy(() -> generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(TransactionExceptions.SeriesTooManyOccurrencesException.class)
                 .hasMessageContaining("too many occurrences");
     }
 
@@ -347,7 +348,7 @@ class RecurringTransactionGeneratorTest {
 
         // Span from 2005-01-01 to horizon (2027-07-24, fixed clock + 12mo) is ~270 months, well past 120.
         assertThatThrownBy(() -> generator.generate(dto, plan, user, null, SERIES_ID, SplitMode.EQUAL, selfShares))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(TransactionExceptions.SeriesTooManyOccurrencesException.class)
                 .hasMessageContaining("too many occurrences");
     }
 
@@ -418,7 +419,7 @@ class RecurringTransactionGeneratorTest {
 
         assertThatThrownBy(() -> generator.generateForwardWindow(
                         def, LocalDate.of(2000, 1, 1), LocalDate.of(2020, 1, 1), selfShares))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(TransactionExceptions.SeriesTooManyOccurrencesException.class)
                 .hasMessageContaining("too many occurrences");
     }
 

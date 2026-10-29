@@ -31,6 +31,8 @@ public enum ProblemType {
     NOT_TRANSACTION_CREATOR("not-transaction-creator"),
     LAST_PLAN("last-plan"),
     LAST_OWNER("last-owner"),
+    OWNER_ROLE_NEEDS_TRANSFER("owner-role-needs-transfer"),
+    OWNERSHIP_TRANSFER_TO_SELF("ownership-transfer-to-self"),
     INVITATION_NOT_FOUND("invitation-not-found"),
     INVITATION_EMAIL_MISMATCH("invitation-email-mismatch"),
     INVITATION_REVOKED("invitation-revoked"),
@@ -60,7 +62,19 @@ public enum ProblemType {
     TRANSACTION_CATEGORY_TYPE_MISMATCH("transaction-category-type-mismatch"),
     ITEM_CATEGORY_TYPE_MISMATCH("item-category-type-mismatch"),
     ITEMS_EXCEED_AMOUNT("items-exceed-amount"),
-    PARTICIPANT_SHARES_MISMATCH("participant-shares-mismatch");
+    PARTICIPANT_SHARES_MISMATCH("participant-shares-mismatch"),
+    PARTICIPANT_DUPLICATE("participant-duplicate"),
+    PARTICIPANT_NOT_MEMBER("participant-not-member"),
+    SPLIT_MODE_NOT_SUPPORTED("split-mode-not-supported"),
+    ITEM_INVALID("item-invalid"),
+    PERIOD_START_AFTER_END("period-start-after-end"),
+    SERIES_PARCELS_REQUIRED("series-parcels-required"),
+    SERIES_CURRENT_PARCEL_OUT_OF_RANGE("series-current-parcel-out-of-range"),
+    SERIES_INTERVAL_REQUIRED("series-interval-required"),
+    SERIES_PIVOT_NOT_FOUND("series-pivot-not-found"),
+    SERIES_PARCELS_CHANGE_NEEDS_ALL("series-parcels-change-needs-all"),
+    SERIES_TOO_MANY_OCCURRENCES("series-too-many-occurrences"),
+    IMPORT_LINE_INVALID("import-line-invalid");
 
     private static final String PREFIX = "urn:findraco:problem:";
 
