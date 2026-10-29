@@ -942,8 +942,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests per rule (no Spring)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Unit tests per rule (no Spring)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick

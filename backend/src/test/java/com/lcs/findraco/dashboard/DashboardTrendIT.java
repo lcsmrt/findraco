@@ -9,13 +9,15 @@ import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.Share;
+import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
-import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +39,6 @@ class DashboardTrendIT extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    @Autowired
-    private TransactionRepository transactionRepository;
 
     @Test
     void returnsIncomeAndExpensesPerMonthOfTheRange() throws Exception {
@@ -147,21 +146,13 @@ class DashboardTrendIT extends AbstractIntegrationTest {
 
     private void aTransaction(
             Plan plan, User createdBy, TransactionType type, String amount, LocalDate date, Map<User, String> shares) {
-        Transaction transaction = new Transaction();
-        transaction.setPlan(plan);
-        transaction.setCreatedBy(createdBy);
-        transaction.setType(type);
-        transaction.setAmount(new BigDecimal(amount));
-        transaction.setDescription("Trend transaction");
-        transaction.setStartDate(date);
-        shares.forEach((member, share) -> {
-            TransactionParticipant participant = new TransactionParticipant();
-            participant.setTransaction(transaction);
-            participant.setMember(member);
-            participant.setShareAmount(new BigDecimal(share));
-            transaction.getParticipants().add(participant);
-        });
-        transactionRepository.save(transaction);
+        List<Share> participants = shares.entrySet().stream()
+                .map(entry -> new Share(entry.getKey(), new BigDecimal(entry.getValue())))
+                .toList();
+        TransactionDetails details =
+                new TransactionDetails(null, type, new BigDecimal(amount), "Trend transaction", date, null, null);
+        fixtures.aTransaction(
+                new TransactionDraft(plan, createdBy, details, SplitMode.EXACT, participants, List.of(), null, null));
     }
 
     private static void assertMonth(JsonNode entry, int year, int month, String income, String expenses) {

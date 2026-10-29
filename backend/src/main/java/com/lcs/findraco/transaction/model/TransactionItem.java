@@ -28,7 +28,15 @@ public class TransactionItem {
     @Column(nullable = false)
     private Integer quantity = 1;
 
-    public TransactionItem() {}
+    protected TransactionItem() {}
+
+    TransactionItem(Transaction transaction, ItemDraft draft) {
+        this.transaction = transaction;
+        this.category = draft.category();
+        this.description = draft.description();
+        this.amount = draft.amount();
+        this.quantity = draft.quantity() != null ? draft.quantity() : 1;
+    }
 
     public Long getId() {
         return id;
@@ -38,39 +46,19 @@ public class TransactionItem {
         return transaction;
     }
 
-    public void setTransaction(Transaction transaction) {
-        this.transaction = transaction;
-    }
-
     public Category getCategory() {
         return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public BigDecimal getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
-    }
-
     public Integer getQuantity() {
         return quantity;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
     }
 }

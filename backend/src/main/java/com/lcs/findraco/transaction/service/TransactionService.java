@@ -8,14 +8,17 @@ import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
+import com.lcs.findraco.transaction.model.ItemDraft;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
+import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.SplitResolver;
 import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionItem;
-import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
@@ -69,7 +72,7 @@ public class TransactionService {
     private final DateUtils dateUtils;
     private final RecurringTransactionGenerator recurringTransactionGenerator;
     private final PlanAuthorization planAuthorization;
-    private final SplitResolver splitResolver;
+    private final SplitResolver splitResolver = new SplitResolver();
     private final PlanService planService;
     private final UserService userService;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
@@ -82,7 +85,6 @@ public class TransactionService {
             DateUtils dateUtils,
             RecurringTransactionGenerator recurringTransactionGenerator,
             PlanAuthorization planAuthorization,
-            SplitResolver splitResolver,
             PlanService planService,
             UserService userService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
@@ -93,7 +95,6 @@ public class TransactionService {
         this.dateUtils = dateUtils;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
         this.planAuthorization = planAuthorization;
-        this.splitResolver = splitResolver;
         this.planService = planService;
         this.userService = userService;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
@@ -175,180 +176,83 @@ public class TransactionService {
     @Transactional
     public TransactionResponse create(CreateTransactionRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
-        dateUtils.checkIfStartDateIsBeforeEndDate(dto.startDate(), dto.endDate());
 
-        Transaction transaction = new Transaction();
-        Category category = dto.categoryId() != null ? categoryService.findById(dto.categoryId(), ctx) : null;
-
-        if (category != null && category.getType() != dto.type()) {
-            throw new TransactionExceptions.CategoryTypeMismatchException();
-        }
-
-        transaction.setPlan(plan(ctx));
-        transaction.setCreatedBy(user(ctx));
-        transaction.setCategory(category);
-        transaction.setType(dto.type());
-        transaction.setAmount(dto.amount());
-        transaction.setDescription(dto.description());
-        transaction.setParcelsNumber(dto.parcelsNumber());
-        transaction.setStartDate(dto.startDate());
-        transaction.setEndDate(dto.endDate());
-
-        applyParticipants(transaction, dto.participants(), dto.splitMode(), dto.amount(), ctx);
-        applyItems(transaction, dto.items(), ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
+        TransactionDetails details = new TransactionDetails(
+                category(dto.categoryId(), ctx),
+                dto.type(),
+                dto.amount(),
+                dto.description(),
+                dto.startDate(),
+                dto.endDate(),
+                dto.parcelsNumber());
+        Transaction transaction = Transaction.create(new TransactionDraft(
+                plan(ctx), user(ctx), details, split.mode(), split.shares(), items(dto.items(), ctx), null, null));
 
         return TransactionResponse.from(transactionRepository.save(transaction));
     }
 
     @Transactional
     public TransactionResponse update(Long id, UpdateTransactionRequest dto, PlanContext ctx) {
-        dateUtils.checkIfStartDateIsBeforeEndDate(dto.startDate(), dto.endDate());
+        Transaction transaction = load(id, ctx);
+        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
 
-        Transaction existingTransaction = load(id, ctx);
-        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(existingTransaction), ctx.userId());
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
+        TransactionDetails details = new TransactionDetails(
+                category(dto.categoryId(), ctx),
+                dto.type(),
+                dto.amount(),
+                dto.description(),
+                dto.startDate(),
+                dto.endDate(),
+                dto.parcelsNumber());
+        transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
 
-        Category category = dto.categoryId() != null ? categoryService.findById(dto.categoryId(), ctx) : null;
-
-        if (category != null && category.getType() != dto.type()) {
-            throw new TransactionExceptions.CategoryTypeMismatchException();
-        }
-
-        existingTransaction.setCategory(category);
-        existingTransaction.setType(dto.type());
-        existingTransaction.setAmount(dto.amount());
-        existingTransaction.setDescription(dto.description());
-        existingTransaction.setParcelsNumber(dto.parcelsNumber());
-        existingTransaction.setStartDate(dto.startDate());
-        existingTransaction.setEndDate(dto.endDate());
-
-        applyParticipants(existingTransaction, dto.participants(), dto.splitMode(), dto.amount(), ctx);
-        applyItems(existingTransaction, dto.items(), ctx);
-
-        return TransactionResponse.from(transactionRepository.save(existingTransaction));
+        return TransactionResponse.from(transactionRepository.save(transaction));
     }
 
-    private record ResolvedParticipants(SplitMode splitMode, List<ResolvedParticipant> shares) {}
+    private Category category(Long categoryId, PlanContext ctx) {
+        return categoryId != null ? categoryService.findById(categoryId, ctx) : null;
+    }
 
-    private ResolvedParticipants resolveParticipants(
-            List<TransactionParticipantRequest> participantInputs,
-            SplitMode requestedSplitMode,
-            BigDecimal amount,
-            PlanContext ctx) {
-        if (participantInputs == null || participantInputs.isEmpty()) {
-            return new ResolvedParticipants(SplitMode.EQUAL, List.of(new ResolvedParticipant(user(ctx), amount)));
+    /** The split a request asks for, with its members loaded; the aggregate computes and checks the shares. */
+    private record RequestedSplit(SplitMode mode, List<Share> shares) {}
+
+    /**
+     * Without participants the creator takes the whole amount. An empty list is kept as sent, so the
+     * aggregate refuses it like any other split without a participant.
+     */
+    private RequestedSplit requestedSplit(
+            List<TransactionParticipantRequest> participantInputs, SplitMode requestedSplitMode, PlanContext ctx) {
+        if (participantInputs == null) {
+            return new RequestedSplit(SplitMode.EQUAL, List.of(new Share(user(ctx), null)));
         }
 
-        Set<Long> seenMemberIds = new HashSet<>();
-        Map<Long, User> membersById = new LinkedHashMap<>();
-        List<SplitResolver.ParticipantInput> resolverInputs = new ArrayList<>();
+        List<Share> shares = new ArrayList<>();
         for (TransactionParticipantRequest input : participantInputs) {
-            if (!seenMemberIds.add(input.memberId())) {
-                throw new TransactionExceptions.DuplicateParticipantException();
-            }
             User member = userService
                     .findById(input.memberId())
                     .filter(u -> planService.isMember(ctx.planId(), u.getId()))
                     .orElseThrow(TransactionExceptions.ParticipantNotMemberException::new);
-            membersById.put(member.getId(), member);
-            resolverInputs.add(new SplitResolver.ParticipantInput(member.getId(), input.shareAmount()));
+            shares.add(new Share(member, input.shareAmount()));
         }
 
-        SplitMode splitMode = requestedSplitMode != null ? requestedSplitMode : SplitMode.EQUAL;
-        List<SplitResolver.ResolvedShare> resolvedShares = splitResolver.resolve(amount, splitMode, resolverInputs);
-
-        List<ResolvedParticipant> shares = resolvedShares.stream()
-                .map(share -> new ResolvedParticipant(membersById.get(share.memberId()), share.shareAmount()))
-                .toList();
-
-        return new ResolvedParticipants(splitMode, shares);
-    }
-
-    private void requireAttributionAuthorizedIfNeeded(ResolvedParticipants resolved, PlanContext ctx) {
-        boolean isSelfOnly = resolved.shares().size() == 1
-                && resolved.shares().get(0).member().getId().equals(ctx.userId());
-        if (!isSelfOnly) {
+        boolean selfOnly = shares.size() == 1 && shares.get(0).member().getId().equals(ctx.userId());
+        if (!shares.isEmpty() && !selfOnly) {
             planAuthorization.requireCanAttributeToOthers(ctx.role());
         }
+
+        return new RequestedSplit(requestedSplitMode != null ? requestedSplitMode : SplitMode.EQUAL, shares);
     }
 
-    private void applyParticipants(
-            Transaction transaction,
-            List<TransactionParticipantRequest> participantInputs,
-            SplitMode requestedSplitMode,
-            BigDecimal amount,
-            PlanContext ctx) {
-        ResolvedParticipants resolved = resolveParticipants(participantInputs, requestedSplitMode, amount, ctx);
-        requireAttributionAuthorizedIfNeeded(resolved, ctx);
-
-        transaction.setSplitMode(resolved.splitMode());
-
-        Map<Long, TransactionParticipant> existingByMemberId = new LinkedHashMap<>();
-        for (TransactionParticipant participant : transaction.getParticipants()) {
-            existingByMemberId.put(participant.getMember().getId(), participant);
+    private List<ItemDraft> items(List<TransactionItemRequest> itemInputs, PlanContext ctx) {
+        if (itemInputs == null) {
+            return List.of();
         }
-
-        Set<Long> keptMemberIds = new HashSet<>();
-        for (ResolvedParticipant share : resolved.shares()) {
-            keptMemberIds.add(share.member().getId());
-            TransactionParticipant existing =
-                    existingByMemberId.get(share.member().getId());
-            if (existing != null) {
-                existing.setShareAmount(share.shareAmount());
-            } else {
-                TransactionParticipant participant = new TransactionParticipant();
-                participant.setTransaction(transaction);
-                participant.setMember(share.member());
-                participant.setShareAmount(share.shareAmount());
-                transaction.getParticipants().add(participant);
-            }
-        }
-
-        transaction
-                .getParticipants()
-                .removeIf(participant ->
-                        !keptMemberIds.contains(participant.getMember().getId()));
-    }
-
-    private void applyItems(Transaction transaction, List<TransactionItemRequest> itemInputs, PlanContext ctx) {
-        if (itemInputs == null || itemInputs.isEmpty()) {
-            transaction.getItems().clear();
-            return;
-        }
-
-        List<TransactionItem> resolvedItems = new ArrayList<>();
-        BigDecimal itemsTotal = BigDecimal.ZERO;
-        for (TransactionItemRequest input : itemInputs) {
-            if (input.description() == null || input.description().isBlank()) {
-                throw new TransactionExceptions.InvalidItemException("Item description cannot be blank.");
-            }
-            if (input.amount() == null || input.amount().compareTo(BigDecimal.ZERO) <= 0) {
-                throw new TransactionExceptions.InvalidItemException("Item amount must be positive.");
-            }
-
-            Category itemCategory =
-                    input.categoryId() != null ? categoryService.findById(input.categoryId(), ctx) : null;
-
-            if (itemCategory != null && itemCategory.getType() != transaction.getType()) {
-                throw new TransactionExceptions.ItemCategoryTypeMismatchException();
-            }
-
-            TransactionItem item = new TransactionItem();
-            item.setTransaction(transaction);
-            item.setDescription(input.description());
-            item.setAmount(input.amount());
-            item.setCategory(itemCategory);
-            item.setQuantity(input.quantity() != null ? input.quantity() : 1);
-
-            resolvedItems.add(item);
-            itemsTotal = itemsTotal.add(input.amount());
-        }
-
-        if (itemsTotal.compareTo(transaction.getAmount()) > 0) {
-            throw new TransactionExceptions.ItemsTotalExceedsAmountException();
-        }
-
-        transaction.getItems().clear();
-        transaction.getItems().addAll(resolvedItems);
+        return itemInputs.stream()
+                .map(input -> new ItemDraft(
+                        input.description(), input.amount(), input.quantity(), category(input.categoryId(), ctx)))
+                .toList();
     }
 
     @Transactional
@@ -384,25 +288,14 @@ public class TransactionService {
             throw new TransactionExceptions.CategoryTypeMismatchException();
         }
 
-        ResolvedParticipants resolvedParticipants =
-                resolveParticipants(dto.participants(), dto.splitMode(), dto.amount(), ctx);
-        requireAttributionAuthorizedIfNeeded(resolvedParticipants, ctx);
-
-        String seriesId = UUID.randomUUID().toString();
-        List<Transaction> occurrences = recurringTransactionGenerator.generate(
-                dto,
-                plan(ctx),
-                user(ctx),
-                category,
-                seriesId,
-                resolvedParticipants.splitMode(),
-                resolvedParticipants.shares());
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
+        List<Share> resolvedShares = splitResolver.split(dto.amount(), split.mode(), split.shares());
 
         RecurrenceDefinition definition = new RecurrenceDefinition();
         definition.setPlan(plan(ctx));
         definition.setCreatedBy(user(ctx));
         definition.setCategory(category);
-        definition.setSeriesId(seriesId);
+        definition.setSeriesId(UUID.randomUUID().toString());
         definition.setType(dto.type());
         definition.setAmount(dto.amount());
         definition.setDescription(dto.description());
@@ -415,24 +308,22 @@ public class TransactionService {
                         : null);
         definition.setStartDate(dto.startDate());
         definition.setEndDate(dto.endDate());
-        definition.setSplitMode(resolvedParticipants.splitMode());
-        if (dto.mode() == RecurrenceMode.RECURRING && !occurrences.isEmpty()) {
-            definition.setGeneratedThrough(
-                    occurrences.get(occurrences.size() - 1).getStartDate());
-        }
+        definition.setSplitMode(split.mode());
 
-        for (ResolvedParticipant share : resolvedParticipants.shares()) {
+        for (Share share : resolvedShares) {
             RecurrenceDefinitionParticipant participant = new RecurrenceDefinitionParticipant();
             participant.setDefinition(definition);
             participant.setMember(share.member());
-            participant.setShareAmount(share.shareAmount());
+            participant.setShareAmount(share.amount());
             definition.getParticipants().add(participant);
         }
 
         recurrenceDefinitionRepository.save(definition);
 
-        for (Transaction occurrence : occurrences) {
-            occurrence.setRecurrenceDefinition(definition);
+        List<Transaction> occurrences = recurringTransactionGenerator.generate(dto, definition, split.shares());
+        if (dto.mode() == RecurrenceMode.RECURRING && !occurrences.isEmpty()) {
+            definition.setGeneratedThrough(
+                    occurrences.get(occurrences.size() - 1).getStartDate());
         }
 
         return TransactionSeriesResponse.from(transactionRepository.saveAll(occurrences));
@@ -550,8 +441,7 @@ public class TransactionService {
             throw new TransactionExceptions.SeriesParcelsChangeNeedsAllException();
         }
 
-        ResolvedParticipants resolved = resolveParticipants(dto.participants(), dto.splitMode(), dto.amount(), ctx);
-        requireAttributionAuthorizedIfNeeded(resolved, ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
 
         Transaction pivot = null;
         if (dto.scope() != SeriesEditScope.ALL) {
@@ -581,12 +471,17 @@ public class TransactionService {
 
         if (dto.scope() == SeriesEditScope.THIS_ONE) {
             String suffix = extractInstallmentSuffix(pivot.getDescription());
-            pivot.setDescription(suffix != null ? dto.description() + " " + suffix : dto.description());
-            pivot.setAmount(dto.amount());
-            pivot.setCategory(category);
-            pivot.setSplitMode(resolved.splitMode());
-
-            reconcileParticipants(pivot, resolved.shares());
+            pivot.edit(
+                    new TransactionDetails(
+                            category,
+                            pivot.getType(),
+                            dto.amount(),
+                            suffix != null ? dto.description() + " " + suffix : dto.description(),
+                            pivot.getStartDate(),
+                            pivot.getEndDate(),
+                            pivot.getParcelsNumber()),
+                    split.mode(),
+                    split.shares());
 
             transactionRepository.save(pivot);
             return TransactionSeriesResponse.from(List.of(pivot));
@@ -595,18 +490,18 @@ public class TransactionService {
         definition.setAmount(dto.amount());
         definition.setDescription(dto.description());
         definition.setCategory(category);
-        definition.setSplitMode(resolved.splitMode());
+        definition.setSplitMode(split.mode());
         definition.setParcelsNumber(dto.parcelsNumber());
         // Full-replace (matches the transaction PUT contract): a null endDate here means "make this
         // RECURRING series open-ended," not "leave the bound unchanged" (P3, RMV2-09).
         definition.setEndDate(dto.endDate());
 
-        reconcileDefinitionParticipants(definition, resolved.shares());
+        reconcileDefinitionParticipants(definition, splitResolver.split(dto.amount(), split.mode(), split.shares()));
 
         LocalDate pivotDate = dto.scope() == SeriesEditScope.ALL ? null : pivot.getStartDate();
 
         SeriesRegenerator.SeriesEditResult result =
-                seriesRegenerator.reconcile(definition, occurrences, resolved.shares(), dto.scope(), pivotDate);
+                seriesRegenerator.reconcile(definition, occurrences, split.shares(), dto.scope(), pivotDate);
 
         transactionRepository.saveAll(result.toUpdate());
         transactionRepository.saveAll(result.toCreate());
@@ -635,52 +530,24 @@ public class TransactionService {
         return TransactionSeriesResponse.from(combined);
     }
 
-    private void reconcileParticipants(Transaction transaction, List<ResolvedParticipant> shares) {
-        Map<Long, TransactionParticipant> existingByMemberId = new LinkedHashMap<>();
-        for (TransactionParticipant participant : transaction.getParticipants()) {
-            existingByMemberId.put(participant.getMember().getId(), participant);
-        }
-
-        Set<Long> keptMemberIds = new HashSet<>();
-        for (ResolvedParticipant share : shares) {
-            keptMemberIds.add(share.member().getId());
-            TransactionParticipant existing =
-                    existingByMemberId.get(share.member().getId());
-            if (existing != null) {
-                existing.setShareAmount(share.shareAmount());
-            } else {
-                TransactionParticipant participant = new TransactionParticipant();
-                participant.setTransaction(transaction);
-                participant.setMember(share.member());
-                participant.setShareAmount(share.shareAmount());
-                transaction.getParticipants().add(participant);
-            }
-        }
-
-        transaction
-                .getParticipants()
-                .removeIf(participant ->
-                        !keptMemberIds.contains(participant.getMember().getId()));
-    }
-
-    private void reconcileDefinitionParticipants(RecurrenceDefinition definition, List<ResolvedParticipant> shares) {
+    private void reconcileDefinitionParticipants(RecurrenceDefinition definition, List<Share> shares) {
         Map<Long, RecurrenceDefinitionParticipant> existingByMemberId = new LinkedHashMap<>();
         for (RecurrenceDefinitionParticipant participant : definition.getParticipants()) {
             existingByMemberId.put(participant.getMember().getId(), participant);
         }
 
         Set<Long> keptMemberIds = new HashSet<>();
-        for (ResolvedParticipant share : shares) {
+        for (Share share : shares) {
             keptMemberIds.add(share.member().getId());
             RecurrenceDefinitionParticipant existing =
                     existingByMemberId.get(share.member().getId());
             if (existing != null) {
-                existing.setShareAmount(share.shareAmount());
+                existing.setShareAmount(share.amount());
             } else {
                 RecurrenceDefinitionParticipant participant = new RecurrenceDefinitionParticipant();
                 participant.setDefinition(definition);
                 participant.setMember(share.member());
-                participant.setShareAmount(share.shareAmount());
+                participant.setShareAmount(share.amount());
                 definition.getParticipants().add(participant);
             }
         }
@@ -734,14 +601,20 @@ public class TransactionService {
         for (ParsedRow row : parsed) {
             if (existingIds.contains(row.externalId())) continue;
 
-            Transaction t = new Transaction();
-            t.setPlan(plan(ctx));
-            t.setCreatedBy(user(ctx));
-            t.setExternalId(row.externalId());
-            t.setStartDate(row.date());
-            t.setAmount(row.rawAmount().abs());
-            t.setType(row.rawAmount().compareTo(BigDecimal.ZERO) >= 0 ? TransactionType.CREDIT : TransactionType.DEBIT);
-            t.setDescription(row.description());
+            TransactionType type =
+                    row.rawAmount().compareTo(BigDecimal.ZERO) >= 0 ? TransactionType.CREDIT : TransactionType.DEBIT;
+            TransactionDetails details = new TransactionDetails(
+                    null, type, row.rawAmount().abs(), row.description(), row.date(), null, null);
+            // The importer pays for every row, as a form without participants would.
+            Transaction t = Transaction.create(new TransactionDraft(
+                    plan(ctx),
+                    user(ctx),
+                    details,
+                    SplitMode.EQUAL,
+                    List.of(new Share(user(ctx), null)),
+                    List.of(),
+                    row.externalId(),
+                    null));
 
             transactions.add(t);
         }

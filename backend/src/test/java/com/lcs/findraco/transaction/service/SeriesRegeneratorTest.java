@@ -8,8 +8,11 @@ import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
+import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.lang.reflect.Field;
@@ -33,7 +36,7 @@ class SeriesRegeneratorTest {
     private final Plan plan = new Plan();
     private final User user = userWithId(1L);
     private final BigDecimal amount = new BigDecimal("300.00");
-    private final List<ResolvedParticipant> shares = List.of(new ResolvedParticipant(user, amount));
+    private final List<Share> shares = List.of(new Share(user, amount));
     private static final String SERIES_ID = "test-series";
 
     private static User userWithId(Long id) {
@@ -87,18 +90,14 @@ class SeriesRegeneratorTest {
      * create-time generator would have produced them. */
     private List<Transaction> existingInstallments(String description, BigDecimal amt, int total, LocalDate startDate) {
         List<Transaction> occurrences = new ArrayList<>();
+        RecurrenceDefinition stored = installmentDef(description, amt, 1, total, startDate);
         for (int parcel = 1; parcel <= total; parcel++) {
-            Transaction tx = new Transaction();
-            tx.setPlan(plan);
-            tx.setCreatedBy(user);
-            tx.setSeriesId(SERIES_ID);
-            tx.setType(TransactionType.DEBIT);
-            tx.setAmount(amt);
-            tx.setDescription(description + " (" + parcel + "/" + total + ")");
-            tx.setStartDate(startDate.plusMonths(parcel - 1));
-            tx.setSplitMode(SplitMode.EQUAL);
-            tx.setParcelsNumber(total);
-            occurrences.add(tx);
+            occurrences.add(occurrence(
+                    stored,
+                    amt,
+                    description + " (" + parcel + "/" + total + ")",
+                    startDate.plusMonths(parcel - 1),
+                    total));
         }
         return occurrences;
     }
@@ -106,19 +105,19 @@ class SeriesRegeneratorTest {
     private List<Transaction> existingRecurring(
             String description, BigDecimal amt, LocalDate startDate, LocalDate endDate) {
         List<Transaction> occurrences = new ArrayList<>();
+        RecurrenceDefinition stored = recurringDef(description, amt, startDate, endDate);
         for (LocalDate date = startDate; !date.isAfter(endDate); date = date.plusMonths(1)) {
-            Transaction tx = new Transaction();
-            tx.setPlan(plan);
-            tx.setCreatedBy(user);
-            tx.setSeriesId(SERIES_ID);
-            tx.setType(TransactionType.DEBIT);
-            tx.setAmount(amt);
-            tx.setDescription(description);
-            tx.setStartDate(date);
-            tx.setSplitMode(SplitMode.EQUAL);
-            occurrences.add(tx);
+            occurrences.add(occurrence(stored, amt, description, date, null));
         }
         return occurrences;
+    }
+
+    private Transaction occurrence(
+            RecurrenceDefinition stored, BigDecimal amt, String description, LocalDate date, Integer parcelsNumber) {
+        TransactionDetails details =
+                new TransactionDetails(null, TransactionType.DEBIT, amt, description, date, null, parcelsNumber);
+        return Transaction.create(
+                new TransactionDraft(plan, user, details, SplitMode.EQUAL, shares, List.of(), null, stored));
     }
 
     @Test

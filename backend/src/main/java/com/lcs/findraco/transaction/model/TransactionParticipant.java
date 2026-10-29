@@ -33,7 +33,17 @@ public class TransactionParticipant {
     @Column(name = "share_amount", nullable = false)
     private BigDecimal shareAmount;
 
-    public TransactionParticipant() {}
+    protected TransactionParticipant() {}
+
+    TransactionParticipant(Transaction transaction, User member, BigDecimal shareAmount) {
+        this.transaction = transaction;
+        this.member = member;
+        this.shareAmount = shareAmount;
+    }
+
+    void changeShare(BigDecimal shareAmount) {
+        this.shareAmount = shareAmount;
+    }
 
     public Long getId() {
         return id;
@@ -43,23 +53,11 @@ public class TransactionParticipant {
         return transaction;
     }
 
-    public void setTransaction(Transaction transaction) {
-        this.transaction = transaction;
-    }
-
     public User getMember() {
         return member;
     }
 
-    public void setMember(User member) {
-        this.member = member;
-    }
-
     public BigDecimal getShareAmount() {
         return shareAmount;
-    }
-
-    public void setShareAmount(BigDecimal shareAmount) {
-        this.shareAmount = shareAmount;
     }
 }

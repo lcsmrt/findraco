@@ -1,14 +1,13 @@
 package com.lcs.findraco.transaction.service;
 
-import com.lcs.findraco.category.model.Category;
-import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
-import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
-import com.lcs.findraco.user.model.User;
+import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,73 +28,44 @@ public class RecurringTransactionGenerator {
         this.clock = clock;
     }
 
-    public List<Transaction> generate(
-            CreateSeriesRequest dto,
-            Plan plan,
-            User createdBy,
-            Category category,
-            String seriesId,
-            SplitMode splitMode,
-            List<ResolvedParticipant> participantShares) {
+    /** The occurrences of a new series, unsaved; {@code definition} carries the plan, creator, category and split. */
+    public List<Transaction> generate(CreateSeriesRequest dto, RecurrenceDefinition definition, List<Share> shares) {
         return switch (dto.mode()) {
-            case INSTALLMENT ->
-                generateInstallments(dto, plan, createdBy, category, seriesId, splitMode, participantShares);
-            case RECURRING -> generateRecurring(dto, plan, createdBy, category, seriesId, splitMode, participantShares);
+            case INSTALLMENT -> generateInstallments(dto, definition, shares);
+            case RECURRING -> generateRecurring(dto, definition, shares);
         };
     }
 
     private List<Transaction> generateInstallments(
-            CreateSeriesRequest dto,
-            Plan plan,
-            User createdBy,
-            Category category,
-            String seriesId,
-            SplitMode splitMode,
-            List<ResolvedParticipant> participantShares) {
+            CreateSeriesRequest dto, RecurrenceDefinition definition, List<Share> shares) {
         int total = dto.parcelsNumber();
         int first = dto.currentParcel() != null ? dto.currentParcel() : 1;
         ensureWithinCap(total - first + 1);
 
         List<Transaction> occurrences = new ArrayList<>(total - first + 1);
         for (int parcel = first; parcel <= total; parcel++) {
-            Transaction transaction = baseTransaction(
-                    dto,
-                    plan,
-                    createdBy,
-                    category,
-                    seriesId,
+            occurrences.add(occurrence(
+                    definition,
+                    dto.amount(),
+                    dto.description() + " (" + parcel + "/" + total + ")",
                     dto.startDate().plusMonths(parcel - first),
-                    splitMode,
-                    participantShares);
-            transaction.setDescription(dto.description() + " (" + parcel + "/" + total + ")");
-            transaction.setParcelsNumber(total);
-            occurrences.add(transaction);
+                    total,
+                    shares));
         }
         return occurrences;
     }
 
     private List<Transaction> generateRecurring(
-            CreateSeriesRequest dto,
-            Plan plan,
-            User createdBy,
-            Category category,
-            String seriesId,
-            SplitMode splitMode,
-            List<ResolvedParticipant> participantShares) {
+            CreateSeriesRequest dto, RecurrenceDefinition definition, List<Share> shares) {
         LocalDate effectiveEnd =
                 dto.endDate() != null ? dto.endDate() : LocalDate.now(clock).plusMonths(OPEN_ENDED_HORIZON_MONTHS);
 
         List<Transaction> occurrences = new ArrayList<>();
         // Each date is counted from the start, so a day clamped in a short month does not carry over.
         for (int month = 0; !dto.startDate().plusMonths(month).isAfter(effectiveEnd); month++) {
-            LocalDate date = dto.startDate().plusMonths(month);
             ensureWithinCap(occurrences.size() + 1);
-
-            Transaction transaction =
-                    baseTransaction(dto, plan, createdBy, category, seriesId, date, splitMode, participantShares);
-            transaction.setDescription(dto.description());
-            transaction.setParcelsNumber(null);
-            occurrences.add(transaction);
+            occurrences.add(occurrence(
+                    definition, dto.amount(), dto.description(), dto.startDate().plusMonths(month), null, shares));
         }
         return occurrences;
     }
@@ -107,10 +77,7 @@ public class RecurringTransactionGenerator {
      * through {@code throughInclusive} (the rolling horizon), honoring {@link #MAX_OCCURRENCES} per pass.
      */
     public List<Transaction> generateForwardWindow(
-            RecurrenceDefinition def,
-            LocalDate afterExclusive,
-            LocalDate throughInclusive,
-            List<ResolvedParticipant> participantShares) {
+            RecurrenceDefinition def, LocalDate afterExclusive, LocalDate throughInclusive, List<Share> shares) {
         List<Transaction> occurrences = new ArrayList<>();
         for (int month = 0; !def.getStartDate().plusMonths(month).isAfter(throughInclusive); month++) {
             LocalDate date = def.getStartDate().plusMonths(month);
@@ -118,63 +85,29 @@ public class RecurringTransactionGenerator {
                 continue;
             }
             ensureWithinCap(occurrences.size() + 1);
-            occurrences.add(baseTransactionFromDefinition(def, date, participantShares));
+            occurrences.add(occurrence(def, def.getAmount(), def.getDescription(), date, null, shares));
         }
         return occurrences;
     }
 
-    private Transaction baseTransaction(
-            CreateSeriesRequest dto,
-            Plan plan,
-            User createdBy,
-            Category category,
-            String seriesId,
+    private static Transaction occurrence(
+            RecurrenceDefinition definition,
+            BigDecimal amount,
+            String description,
             LocalDate date,
-            SplitMode splitMode,
-            List<ResolvedParticipant> participantShares) {
-        Transaction transaction = new Transaction();
-        transaction.setPlan(plan);
-        transaction.setCreatedBy(createdBy);
-        transaction.setCategory(category);
-        transaction.setType(dto.type());
-        transaction.setAmount(dto.amount());
-        transaction.setStartDate(date);
-        transaction.setEndDate(null);
-        transaction.setSeriesId(seriesId);
-        transaction.setSplitMode(splitMode);
-        for (ResolvedParticipant share : participantShares) {
-            TransactionParticipant participant = new TransactionParticipant();
-            participant.setTransaction(transaction);
-            participant.setMember(share.member());
-            participant.setShareAmount(share.shareAmount());
-            transaction.getParticipants().add(participant);
-        }
-        return transaction;
-    }
-
-    private Transaction baseTransactionFromDefinition(
-            RecurrenceDefinition def, LocalDate date, List<ResolvedParticipant> participantShares) {
-        Transaction transaction = new Transaction();
-        transaction.setPlan(def.getPlan());
-        transaction.setCreatedBy(def.getCreatedBy());
-        transaction.setCategory(def.getCategory());
-        transaction.setType(def.getType());
-        transaction.setAmount(def.getAmount());
-        transaction.setDescription(def.getDescription());
-        transaction.setStartDate(date);
-        transaction.setEndDate(null);
-        transaction.setSeriesId(def.getSeriesId());
-        transaction.setSplitMode(def.getSplitMode());
-        transaction.setParcelsNumber(null);
-        transaction.setRecurrenceDefinition(def);
-        for (ResolvedParticipant share : participantShares) {
-            TransactionParticipant participant = new TransactionParticipant();
-            participant.setTransaction(transaction);
-            participant.setMember(share.member());
-            participant.setShareAmount(share.shareAmount());
-            transaction.getParticipants().add(participant);
-        }
-        return transaction;
+            Integer parcelsNumber,
+            List<Share> shares) {
+        TransactionDetails details = new TransactionDetails(
+                definition.getCategory(), definition.getType(), amount, description, date, null, parcelsNumber);
+        return Transaction.create(new TransactionDraft(
+                definition.getPlan(),
+                definition.getCreatedBy(),
+                details,
+                definition.getSplitMode(),
+                shares,
+                List.of(),
+                null,
+                definition));
     }
 
     private void ensureWithinCap(int count) {

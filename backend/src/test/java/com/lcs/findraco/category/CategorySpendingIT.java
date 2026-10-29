@@ -17,14 +17,16 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.Share;
+import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
-import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,9 +53,6 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
-    private TransactionRepository transactionRepository;
 
     @Autowired
     private CategoryMemberLimitRepository memberLimitRepository;
@@ -326,9 +325,16 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         fixtures.aTransaction(plan, owner, new BigDecimal("150.00"), TransactionType.DEBIT, food);
         fixtures.aTransaction(plan, owner, new BigDecimal("250.00"), TransactionType.DEBIT, delivery);
         fixtures.aTransaction(plan, owner, new BigDecimal("1000.00"), TransactionType.CREDIT, salary);
-        Transaction old = fixtures.aTransaction(plan, owner, new BigDecimal("999.00"), TransactionType.DEBIT, food);
-        old.setStartDate(today.minusMonths(2));
-        transactionRepository.save(old);
+        TransactionDetails old = new TransactionDetails(
+                food,
+                TransactionType.DEBIT,
+                new BigDecimal("999.00"),
+                "Test transaction",
+                today.minusMonths(2),
+                null,
+                null);
+        fixtures.aTransaction(new TransactionDraft(
+                plan, owner, old, SplitMode.EQUAL, List.of(new Share(owner, null)), List.of(), null, null));
         return new Seed(food, delivery);
     }
 
@@ -356,22 +362,13 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     /** A transaction dated today split across members by the given share amounts. */
     private void aSplitTransaction(
             Plan plan, User createdBy, Category category, String amount, Map<User, String> shares) {
-        Transaction transaction = new Transaction();
-        transaction.setCategory(category);
-        transaction.setPlan(plan);
-        transaction.setCreatedBy(createdBy);
-        transaction.setType(TransactionType.DEBIT);
-        transaction.setAmount(new BigDecimal(amount));
-        transaction.setDescription("Split transaction");
-        transaction.setStartDate(today);
-        shares.forEach((member, share) -> {
-            TransactionParticipant participant = new TransactionParticipant();
-            participant.setTransaction(transaction);
-            participant.setMember(member);
-            participant.setShareAmount(new BigDecimal(share));
-            transaction.getParticipants().add(participant);
-        });
-        transactionRepository.save(transaction);
+        List<Share> participants = shares.entrySet().stream()
+                .map(entry -> new Share(entry.getKey(), new BigDecimal(entry.getValue())))
+                .toList();
+        TransactionDetails details = new TransactionDetails(
+                category, TransactionType.DEBIT, new BigDecimal(amount), "Split transaction", today, null, null);
+        fixtures.aTransaction(
+                new TransactionDraft(plan, createdBy, details, SplitMode.EXACT, participants, List.of(), null, null));
     }
 
     private ResultActions removeMember(Plan plan, User asUser, User member) throws Exception {

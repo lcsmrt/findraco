@@ -55,6 +55,8 @@ const PROBLEM_COPY: Record<ProblemType, string> = {
   "participant-shares-mismatch": "The shares must add up to the transaction amount.",
   "participant-duplicate": "A person is listed twice in the split.",
   "participant-not-member": "The split names someone who is not a member of the plan.",
+  "participants-required": "Choose at least one person for this transaction.",
+  "exact-share-invalid": "Give every person in the split an amount of zero or more.",
   "split-mode-not-supported": "This way of splitting is not supported.",
   "item-invalid": "Every item needs a description and an amount greater than zero.",
   "period-start-after-end": "The start date must not be after the end date.",

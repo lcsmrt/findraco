@@ -7,14 +7,18 @@ import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
+import com.lcs.findraco.transaction.model.Share;
+import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
@@ -78,22 +82,14 @@ public class Fixtures {
     /** A single-participant (createdBy at 100%) transaction dated today in the given category. */
     public Transaction aTransaction(
             Plan plan, User createdBy, BigDecimal amount, TransactionType type, Category category) {
-        Transaction transaction = new Transaction();
-        transaction.setCategory(category);
-        transaction.setPlan(plan);
-        transaction.setCreatedBy(createdBy);
-        transaction.setType(type);
-        transaction.setAmount(amount);
-        transaction.setDescription("Test transaction");
-        transaction.setStartDate(LocalDate.now());
+        TransactionDetails details =
+                new TransactionDetails(category, type, amount, "Test transaction", LocalDate.now(), null, null);
+        return aTransaction(new TransactionDraft(
+                plan, createdBy, details, SplitMode.EQUAL, List.of(new Share(createdBy, null)), List.of(), null, null));
+    }
 
-        TransactionParticipant participant = new TransactionParticipant();
-        participant.setTransaction(transaction);
-        participant.setMember(createdBy);
-        participant.setShareAmount(amount);
-        transaction.getParticipants().add(participant);
-
-        return transactionRepository.save(transaction);
+    public Transaction aTransaction(TransactionDraft draft) {
+        return transactionRepository.save(Transaction.create(draft));
     }
 
     public Category aCategory(Plan plan, TransactionType type, String description) {

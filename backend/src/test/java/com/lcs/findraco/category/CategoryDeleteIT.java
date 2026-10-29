@@ -12,16 +12,17 @@ import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.transaction.model.ItemDraft;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionItem;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
@@ -314,12 +315,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
             Plan plan, User owner, Category transactionCategory, Category itemCategory) {
         Transaction transaction =
                 fixtures.aTransaction(plan, owner, new BigDecimal("50.00"), TransactionType.DEBIT, transactionCategory);
-        TransactionItem item = new TransactionItem();
-        item.setTransaction(transaction);
-        item.setDescription("Item");
-        item.setAmount(new BigDecimal("20.00"));
-        item.setCategory(itemCategory);
-        transaction.getItems().add(item);
+        transaction.replaceItems(List.of(new ItemDraft("Item", new BigDecimal("20.00"), null, itemCategory)));
         return transactionRepository.save(transaction);
     }
 

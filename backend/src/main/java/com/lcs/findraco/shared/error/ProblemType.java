@@ -65,6 +65,8 @@ public enum ProblemType {
     PARTICIPANT_SHARES_MISMATCH("participant-shares-mismatch"),
     PARTICIPANT_DUPLICATE("participant-duplicate"),
     PARTICIPANT_NOT_MEMBER("participant-not-member"),
+    PARTICIPANTS_REQUIRED("participants-required"),
+    EXACT_SHARE_INVALID("exact-share-invalid"),
     SPLIT_MODE_NOT_SUPPORTED("split-mode-not-supported"),
     ITEM_INVALID("item-invalid"),
     PERIOD_START_AFTER_END("period-start-after-end"),

@@ -1,19 +1,40 @@
-package com.lcs.findraco.transaction.service;
+package com.lcs.findraco.transaction.model;
 
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
-import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import org.springframework.stereotype.Component;
+import java.util.Map;
 
 /**
  * Resolves a transaction's total amount into per-member shares for a given split mode.
  * Pure logic, no dependencies. The sum of the resolved shares always equals the amount exactly.
  */
-@Component
 public class SplitResolver {
+
+    /**
+     * The split of {@code amount} among the members of {@code shares}, each with its exact share. A split
+     * needs at least one participant, each member at most once.
+     */
+    public List<Share> split(BigDecimal amount, SplitMode mode, List<Share> shares) {
+        if (shares.isEmpty()) {
+            throw new TransactionExceptions.ParticipantsRequiredException();
+        }
+        Map<Long, User> membersById = new LinkedHashMap<>();
+        List<ParticipantInput> inputs = new ArrayList<>();
+        for (Share share : shares) {
+            if (membersById.putIfAbsent(share.member().getId(), share.member()) != null) {
+                throw new TransactionExceptions.DuplicateParticipantException();
+            }
+            inputs.add(new ParticipantInput(share.member().getId(), share.amount()));
+        }
+        return resolve(amount, mode, inputs).stream()
+                .map(resolved -> new Share(membersById.get(resolved.memberId()), resolved.shareAmount()))
+                .toList();
+    }
 
     public record ParticipantInput(Long memberId, BigDecimal shareAmount) {}
 
@@ -43,6 +64,11 @@ public class SplitResolver {
     }
 
     private List<ResolvedShare> resolveExact(BigDecimal amount, List<ParticipantInput> inputs) {
+        for (ParticipantInput input : inputs) {
+            if (input.shareAmount() == null || input.shareAmount().signum() < 0) {
+                throw new TransactionExceptions.ExactShareInvalidException();
+            }
+        }
         BigDecimal scaledAmount = amount.setScale(2, RoundingMode.HALF_UP);
         BigDecimal sum = inputs.stream()
                 .map(ParticipantInput::shareAmount)

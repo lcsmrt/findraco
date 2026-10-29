@@ -77,6 +77,26 @@ public class TransactionExceptions {
         }
     }
 
+    public static class ParticipantsRequiredException extends DomainException {
+        public ParticipantsRequiredException() {
+            super(
+                    ProblemType.PARTICIPANTS_REQUIRED,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "participants",
+                    "A transaction needs at least one participant.");
+        }
+    }
+
+    public static class ExactShareInvalidException extends DomainException {
+        public ExactShareInvalidException() {
+            super(
+                    ProblemType.EXACT_SHARE_INVALID,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "participants",
+                    "Every participant of an EXACT split needs a share of zero or more.");
+        }
+    }
+
     public static class SplitModeNotSupportedException extends DomainException {
         public SplitModeNotSupportedException(String mode) {
             super(

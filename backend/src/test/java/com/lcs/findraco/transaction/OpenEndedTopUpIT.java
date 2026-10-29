@@ -8,9 +8,11 @@ import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
@@ -224,24 +226,23 @@ class OpenEndedTopUpIT extends AbstractIntegrationTest {
     private void seedOccurrences(RecurrenceDefinition definition, LocalDate from, LocalDate throughInclusive) {
         List<Transaction> occurrences = new ArrayList<>();
         for (LocalDate date = from; !date.isAfter(throughInclusive); date = date.plusMonths(1)) {
-            Transaction tx = new Transaction();
-            tx.setPlan(definition.getPlan());
-            tx.setCreatedBy(definition.getCreatedBy());
-            tx.setCategory(definition.getCategory());
-            tx.setType(definition.getType());
-            tx.setAmount(definition.getAmount());
-            tx.setDescription(definition.getDescription());
-            tx.setStartDate(date);
-            tx.setEndDate(null);
-            tx.setSeriesId(definition.getSeriesId());
-            tx.setSplitMode(definition.getSplitMode());
-            tx.setRecurrenceDefinition(definition);
-
-            TransactionParticipant participant = new TransactionParticipant();
-            participant.setTransaction(tx);
-            participant.setMember(definition.getCreatedBy());
-            participant.setShareAmount(definition.getAmount());
-            tx.getParticipants().add(participant);
+            TransactionDetails details = new TransactionDetails(
+                    definition.getCategory(),
+                    definition.getType(),
+                    definition.getAmount(),
+                    definition.getDescription(),
+                    date,
+                    null,
+                    null);
+            Transaction tx = Transaction.create(new TransactionDraft(
+                    definition.getPlan(),
+                    definition.getCreatedBy(),
+                    details,
+                    definition.getSplitMode(),
+                    List.of(new Share(definition.getCreatedBy(), definition.getAmount())),
+                    List.of(),
+                    null,
+                    definition));
 
             occurrences.add(tx);
         }

@@ -52,6 +52,8 @@ export type ProblemType =
   | "participant-shares-mismatch"
   | "participant-duplicate"
   | "participant-not-member"
+  | "participants-required"
+  | "exact-share-invalid"
   | "split-mode-not-supported"
   | "item-invalid"
   | "period-start-after-end"

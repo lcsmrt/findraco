@@ -4,17 +4,15 @@ import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
+import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.Transaction;
-import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.springframework.stereotype.Component;
 
 /**
@@ -55,7 +53,7 @@ public class SeriesRegenerator {
     public SeriesEditResult reconcile(
             RecurrenceDefinition def,
             List<Transaction> existing,
-            List<ResolvedParticipant> shares,
+            List<Share> shares,
             SeriesEditScope scope,
             LocalDate pivotDate) {
         List<TargetOccurrence> fullTargets = buildFullTargetList(def);
@@ -128,56 +126,31 @@ public class SeriesRegenerator {
         return targets;
     }
 
-    private void stampOccurrence(
-            Transaction tx, TargetOccurrence slot, RecurrenceDefinition def, List<ResolvedParticipant> shares) {
-        tx.setAmount(def.getAmount());
-        tx.setDescription(slot.description());
-        tx.setCategory(def.getCategory());
-        tx.setStartDate(slot.date());
-        tx.setSplitMode(def.getSplitMode());
-        tx.setParcelsNumber(slot.parcelsNumber());
-
-        reconcileParticipants(tx, shares);
+    private void stampOccurrence(Transaction tx, TargetOccurrence slot, RecurrenceDefinition def, List<Share> shares) {
+        tx.edit(
+                new TransactionDetails(
+                        def.getCategory(),
+                        tx.getType(),
+                        def.getAmount(),
+                        slot.description(),
+                        slot.date(),
+                        tx.getEndDate(),
+                        slot.parcelsNumber()),
+                def.getSplitMode(),
+                shares);
     }
 
-    private void reconcileParticipants(Transaction tx, List<ResolvedParticipant> shares) {
-        Map<Long, TransactionParticipant> existingByMemberId = new HashMap<>();
-        for (TransactionParticipant participant : tx.getParticipants()) {
-            existingByMemberId.put(participant.getMember().getId(), participant);
-        }
-
-        Set<Long> keptMemberIds = new HashSet<>();
-        for (ResolvedParticipant share : shares) {
-            keptMemberIds.add(share.member().getId());
-            TransactionParticipant existing =
-                    existingByMemberId.get(share.member().getId());
-            if (existing != null) {
-                existing.setShareAmount(share.shareAmount());
-            } else {
-                TransactionParticipant participant = new TransactionParticipant();
-                participant.setTransaction(tx);
-                participant.setMember(share.member());
-                participant.setShareAmount(share.shareAmount());
-                tx.getParticipants().add(participant);
-            }
-        }
-
-        tx.getParticipants()
-                .removeIf(participant ->
-                        !keptMemberIds.contains(participant.getMember().getId()));
-    }
-
-    private Transaction buildNewOccurrence(
-            TargetOccurrence slot, RecurrenceDefinition def, List<ResolvedParticipant> shares) {
-        Transaction tx = new Transaction();
-        tx.setPlan(def.getPlan());
-        tx.setCreatedBy(def.getCreatedBy());
-        tx.setSeriesId(def.getSeriesId());
-        tx.setRecurrenceDefinition(def);
-        tx.setType(def.getType());
-        tx.setEndDate(null);
-        stampOccurrence(tx, slot, def, shares);
-        return tx;
+    private Transaction buildNewOccurrence(TargetOccurrence slot, RecurrenceDefinition def, List<Share> shares) {
+        TransactionDetails details = new TransactionDetails(
+                def.getCategory(),
+                def.getType(),
+                def.getAmount(),
+                slot.description(),
+                slot.date(),
+                null,
+                slot.parcelsNumber());
+        return Transaction.create(new TransactionDraft(
+                def.getPlan(), def.getCreatedBy(), details, def.getSplitMode(), shares, List.of(), null, def));
     }
 
     private void ensureWithinCap(int count) {

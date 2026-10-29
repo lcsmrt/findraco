@@ -1,12 +1,11 @@
-package com.lcs.findraco.transaction.service;
+package com.lcs.findraco.transaction.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
-import com.lcs.findraco.transaction.model.SplitMode;
-import com.lcs.findraco.transaction.service.SplitResolver.ParticipantInput;
-import com.lcs.findraco.transaction.service.SplitResolver.ResolvedShare;
+import com.lcs.findraco.transaction.model.SplitResolver.ParticipantInput;
+import com.lcs.findraco.transaction.model.SplitResolver.ResolvedShare;
 import java.math.BigDecimal;
 import java.util.List;
 import org.junit.jupiter.api.Test;
