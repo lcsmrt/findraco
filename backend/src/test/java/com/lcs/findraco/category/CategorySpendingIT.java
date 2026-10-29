@@ -9,8 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.category.model.Category;
-import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
+import com.lcs.findraco.category.model.MemberLimit;
 import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
@@ -53,9 +52,6 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
-    private CategoryMemberLimitRepository memberLimitRepository;
 
     @Test
     void returnsDebitThenCreditTreesWithNestedChildrenAndLimitUsagePerRow() throws Exception {
@@ -339,23 +335,23 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     }
 
     private Category withLimit(Category category, String limit) {
-        category.setSpendingLimit(new BigDecimal(limit));
+        category.changeLimits(new BigDecimal(limit), null);
         return categoryRepository.save(category);
     }
 
     private Category withMemberLimits(Category category, Map<User, String> amounts) {
-        amounts.forEach((member, amount) -> {
-            CategoryMemberLimit entry = new CategoryMemberLimit();
-            entry.setCategory(category);
-            entry.setMember(member);
-            entry.setAmount(new BigDecimal(amount));
-            memberLimitRepository.save(entry);
-        });
-        return category;
+        category.changeLimits(null, memberLimits(amounts));
+        return categoryRepository.save(category);
+    }
+
+    private static List<MemberLimit> memberLimits(Map<User, String> amounts) {
+        return amounts.entrySet().stream()
+                .map(entry -> new MemberLimit(entry.getKey(), new BigDecimal(entry.getValue())))
+                .toList();
     }
 
     private Category owned(Category category, User owner) {
-        category.setOwner(owner);
+        category.assignOwner(owner);
         return categoryRepository.save(category);
     }
 

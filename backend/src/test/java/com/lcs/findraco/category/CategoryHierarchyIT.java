@@ -14,6 +14,7 @@ import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -202,6 +203,24 @@ class CategoryHierarchyIT extends AbstractIntegrationTest {
 
         assertThat(categoryRepository.findById(food.getId()).orElseThrow().getType())
                 .isEqualTo(TransactionType.DEBIT);
+    }
+
+    @Test
+    void typeChangeOfACategoryInUseIsRejectedWith409() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Category unused = fixtures.aCategory(plan, TransactionType.DEBIT, "Unused");
+        fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, food);
+
+        update(plan, owner, food.getId(), body("CREDIT", "Food", null))
+                .andExpect(problem(HttpStatus.CONFLICT, "category-type-change-in-use"));
+        update(plan, owner, unused.getId(), body("CREDIT", "Unused", null)).andExpect(status().isOk());
+
+        assertThat(categoryRepository.findById(food.getId()).orElseThrow().getType())
+                .isEqualTo(TransactionType.DEBIT);
+        assertThat(categoryRepository.findById(unused.getId()).orElseThrow().getType())
+                .isEqualTo(TransactionType.CREDIT);
     }
 
     // CAT-04 / AD-004: only the OWNER manages categories, with or without a parent.

@@ -27,7 +27,17 @@ public class CategoryMemberLimit {
     @Column(nullable = false)
     private BigDecimal amount;
 
-    public CategoryMemberLimit() {}
+    protected CategoryMemberLimit() {}
+
+    CategoryMemberLimit(Category category, User member, BigDecimal amount) {
+        this.category = category;
+        this.member = member;
+        this.amount = amount;
+    }
+
+    void changeAmount(BigDecimal amount) {
+        this.amount = amount;
+    }
 
     public Long getId() {
         return id;
@@ -37,23 +47,11 @@ public class CategoryMemberLimit {
         return category;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
     public User getMember() {
         return member;
     }
 
-    public void setMember(User member) {
-        this.member = member;
-    }
-
     public BigDecimal getAmount() {
         return amount;
-    }
-
-    public void setAmount(BigDecimal amount) {
-        this.amount = amount;
     }
 }

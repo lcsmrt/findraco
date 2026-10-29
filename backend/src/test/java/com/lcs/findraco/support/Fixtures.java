@@ -97,11 +97,6 @@ public class Fixtures {
     }
 
     public Category aCategory(Plan plan, TransactionType type, String description, Category parent) {
-        Category category = new Category();
-        category.setPlan(plan);
-        category.setType(type);
-        category.setDescription(description);
-        category.setParent(parent);
-        return categoryRepository.save(category);
+        return categoryRepository.save(Category.create(plan, type, description, parent));
     }
 }

@@ -3,13 +3,14 @@ package com.lcs.findraco.category.service;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lcs.findraco.category.model.Category;
-import com.lcs.findraco.category.model.CategoryMemberLimit;
+import com.lcs.findraco.category.model.MemberLimit;
 import com.lcs.findraco.category.response.CategoryMemberSpendingResponse;
 import com.lcs.findraco.category.response.CategorySpendingResponse;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -484,7 +485,7 @@ class CategorySpendingAssemblerTest {
     @Test
     void ownedCategoryCountsTheOwnersSpendOnly() {
         Category professional = debit(1L, "Professional", "100", null);
-        professional.setOwner(user(MEMBER, "Lucas"));
+        professional.assignOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "120"), a(1L, OTHER_MEMBER, "30"));
 
         CategorySpendingResponse row = assembler
@@ -505,7 +506,7 @@ class CategorySpendingAssemblerTest {
     @Test
     void nonOwnerSharesAreListedWithoutALimit() {
         Category professional = debit(1L, "Professional", "100", null);
-        professional.setOwner(user(MEMBER, "Lucas"));
+        professional.assignOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "50"), a(1L, OTHER_MEMBER, "30"), a(1L, 300L, "0"));
 
         CategorySpendingResponse row = assembler
@@ -536,7 +537,7 @@ class CategorySpendingAssemblerTest {
     @Test
     void childrenOfAnOwnedRootCountTheOwnersSpendOnly() {
         Category professional = debit(1L, "Professional", null, null);
-        professional.setOwner(user(MEMBER, "Lucas"));
+        professional.assignOwner(user(MEMBER, "Lucas"));
         Category courses = debit(2L, "Courses", "50", professional);
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "10"), a(2L, MEMBER, "40"), a(2L, OTHER_MEMBER, "25"));
 
@@ -565,7 +566,7 @@ class CategorySpendingAssemblerTest {
     @Test
     void dormantOwnerStillAttributesTheirSpend() {
         Category professional = debit(1L, "Professional", "100", null);
-        professional.setOwner(user(MEMBER, "Lucas"));
+        professional.assignOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "70"), a(1L, OTHER_MEMBER, "10"));
 
         CategorySpendingResponse row = assembler
@@ -582,7 +583,7 @@ class CategorySpendingAssemblerTest {
     @Test
     void formerOwnerIsReportedInactiveOnTheRootAndItsChildren() {
         Category professional = debit(1L, "Professional", null, null);
-        professional.setOwner(user(MEMBER, "Lucas"));
+        professional.assignOwner(user(MEMBER, "Lucas"));
         Category courses = debit(2L, "Courses", null, professional);
 
         CategorySpendingResponse root = assembler
@@ -608,7 +609,7 @@ class CategorySpendingAssemblerTest {
     @Test
     void formerMembersShareInAnOwnedCategoryIsListedInactive() {
         Category professional = debit(1L, "Professional", null, null);
-        professional.setOwner(user(MEMBER, "Lucas"));
+        professional.assignOwner(user(MEMBER, "Lucas"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "70"), a(1L, OTHER_MEMBER, "10"));
 
         CategorySpendingResponse row = assembler
@@ -696,7 +697,7 @@ class CategorySpendingAssemblerTest {
     @Test
     void ownedRowListsOwnerAndOthersWithoutLimits() {
         Category professional = debit(1L, "Professional", "100", null);
-        professional.setOwner(user(OTHER_MEMBER, "Livia"));
+        professional.assignOwner(user(OTHER_MEMBER, "Livia"));
         List<Object[]> rowsA = List.of(a(1L, MEMBER, "20"), a(1L, OTHER_MEMBER, "70"));
 
         CategorySpendingResponse row = assembler
@@ -726,11 +727,10 @@ class CategorySpendingAssemblerTest {
     }
 
     private static void limit(Category category, Long memberId, String name, String amount) {
-        CategoryMemberLimit entry = new CategoryMemberLimit();
-        entry.setCategory(category);
-        entry.setMember(user(memberId, name));
-        entry.setAmount(new BigDecimal(amount));
-        category.getMemberLimits().add(entry);
+        List<MemberLimit> limits = new ArrayList<>();
+        category.getMemberLimits().forEach(entry -> limits.add(new MemberLimit(entry.getMember(), entry.getAmount())));
+        limits.add(new MemberLimit(user(memberId, name), new BigDecimal(amount)));
+        category.changeLimits(category.getSpendingLimit(), limits);
     }
 
     private static User user(Long id, String name) {
@@ -752,12 +752,9 @@ class CategorySpendingAssemblerTest {
     }
 
     private static Category category(Long id, TransactionType type, String name, String limit, Category parent) {
-        Category category = new Category();
+        Category category = Category.create(null, type, name, parent);
         ReflectionTestUtils.setField(category, "id", id);
-        category.setType(type);
-        category.setDescription(name);
-        category.setSpendingLimit(limit == null ? null : new BigDecimal(limit));
-        category.setParent(parent);
+        category.changeLimits(limit == null ? null : new BigDecimal(limit), null);
         return category;
     }
 

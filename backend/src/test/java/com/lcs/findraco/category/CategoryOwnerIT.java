@@ -10,8 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.category.model.Category;
-import com.lcs.findraco.category.model.CategoryMemberLimit;
-import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
+import com.lcs.findraco.category.model.MemberLimit;
 import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
@@ -48,9 +47,6 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
-
-    @Autowired
-    private CategoryMemberLimitRepository memberLimitRepository;
 
     // AC 1
     @Test
@@ -287,11 +283,8 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
         Plan plan = fixtures.aPlan(owner);
         Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
         Category groceries = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries", food);
-        CategoryMemberLimit entry = new CategoryMemberLimit();
-        entry.setCategory(groceries);
-        entry.setMember(owner);
-        entry.setAmount(new BigDecimal("260.00"));
-        memberLimitRepository.save(entry);
+        groceries.changeLimits(null, List.of(new MemberLimit(owner, new BigDecimal("260.00"))));
+        categoryRepository.save(groceries);
 
         update(plan, owner, food.getId(), body("Food", null, owner.getId()))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "category-member-limits-on-owned"));
@@ -317,7 +310,7 @@ class CategoryOwnerIT extends AbstractIntegrationTest {
 
     private Category ownedCategory(Plan plan, String name, User member) {
         Category category = fixtures.aCategory(plan, TransactionType.DEBIT, name);
-        category.setOwner(member);
+        category.assignOwner(member);
         return categoryRepository.save(category);
     }
 

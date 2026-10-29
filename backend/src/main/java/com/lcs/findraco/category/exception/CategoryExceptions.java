@@ -65,6 +65,16 @@ public class CategoryExceptions {
         }
     }
 
+    public static class CategoryTypeChangeInUseException extends DomainException {
+        public CategoryTypeChangeInUseException(Long id) {
+            super(
+                    ProblemType.CATEGORY_TYPE_CHANGE_IN_USE,
+                    HttpStatus.CONFLICT,
+                    "type",
+                    "Category " + id + " is used by transactions, items or series, so its type cannot change.");
+        }
+    }
+
     public static class CategoryHasChildrenException extends DomainException {
         public CategoryHasChildrenException(Long id) {
             super(

@@ -226,9 +226,7 @@ class TransactionTest {
     }
 
     private static Category category(TransactionType type) {
-        Category category = new Category();
-        category.setType(type);
-        return category;
+        return Category.create(new Plan(), type, "Category", null);
     }
 
     private static User userWithId(long id) {

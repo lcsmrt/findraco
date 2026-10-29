@@ -48,6 +48,7 @@ public enum ProblemType {
     CATEGORY_SUBCATEGORIES_BLOCK_TYPE_CHANGE("category-subcategories-block-type-change"),
     CATEGORY_HAS_SUBCATEGORIES("category-has-subcategories"),
     CATEGORY_IN_USE("category-in-use"),
+    CATEGORY_TYPE_CHANGE_IN_USE("category-type-change-in-use"),
     CATEGORY_INVALID_REASSIGN_TARGET("category-invalid-reassign-target"),
     CATEGORY_MEMBER_LIMITS_ON_INCOME("category-member-limits-on-income"),
     CATEGORY_MEMBER_LIMITS_ON_OWNED("category-member-limits-on-owned"),

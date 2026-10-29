@@ -985,9 +985,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests per rule
-- [ ] IT: type change while used answers 409
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Unit tests per rule
+- [x] IT: type change while used answers 409
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick

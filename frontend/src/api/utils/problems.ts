@@ -40,6 +40,8 @@ const PROBLEM_COPY: Record<ProblemType, string> = {
   "category-has-subcategories":
     "This category now has subcategories. Move or delete them before deleting it.",
   "category-in-use": "This category is now in use. Choose a category to receive its transactions.",
+  "category-type-change-in-use":
+    "This category is in use, so its type can't change. Move its transactions to another category first.",
   "category-invalid-reassign-target": "Choose another category of the same type to receive them.",
   "category-member-limits-on-income": "Income categories cannot have per-member limits.",
   "category-member-limits-on-owned": "A category that belongs to one member cannot have per-member limits.",

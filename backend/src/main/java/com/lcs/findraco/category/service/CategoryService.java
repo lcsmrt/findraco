@@ -3,6 +3,7 @@ package com.lcs.findraco.category.service;
 import com.lcs.findraco.category.exception.CategoryExceptions;
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
+import com.lcs.findraco.category.model.MemberLimit;
 import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
 import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.category.repository.CategorySpecification;
@@ -17,13 +18,11 @@ import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
-import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.CategoryReferenceCounts;
 import com.lcs.findraco.transaction.service.TransactionCategoryService;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
-import java.math.BigDecimal;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -113,15 +112,10 @@ public class CategoryService {
     public CategoryResponse create(CreateCategoryRequest dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.role());
 
-        Category category = new Category();
-
-        category.setPlan(plan(ctx));
-        category.setType(dto.type());
-        category.setDescription(dto.description());
-        category.setParent(resolveParent(null, dto.parentId(), dto.type(), ctx));
+        Category category = Category.create(plan(ctx), dto.type(), dto.description(), parent(dto.parentId(), ctx));
         Map<Long, User> activeMembers = activeMembers(plan(ctx));
-        category.setOwner(resolveOwner(category, dto.ownerId(), activeMembers));
-        applyLimits(category, dto.spendingLimit(), dto.memberLimits(), activeMembers);
+        category.assignOwner(resolveOwner(category, dto.ownerId(), activeMembers));
+        category.changeLimits(dto.spendingLimit(), memberLimits(category, dto.memberLimits(), activeMembers));
 
         return CategoryResponse.from(categoryRepository.save(category), activeMembers.keySet());
     }
@@ -130,44 +124,40 @@ public class CategoryService {
     public CategoryResponse update(Long id, UpdateCategoryRequest dto, PlanContext ctx) {
         planAuthorization.requireCanManageCategories(ctx.role());
 
-        Category existingCategory = findById(id, ctx);
-        boolean hasChildren = categoryRepository.existsByParent(existingCategory);
-        if (hasChildren && dto.type() != existingCategory.getType()) {
-            throw new CategoryExceptions.CategoryWithChildrenTypeChangeException();
+        Category category = findById(id, ctx);
+        boolean hasChildren = categoryRepository.existsByParent(category);
+        if (dto.type() != category.getType()) {
+            if (hasChildren) {
+                throw new CategoryExceptions.CategoryWithChildrenTypeChangeException();
+            }
+            category.changeType(dto.type(), usageOf(category).inUse());
         }
 
-        Category parent = resolveParent(existingCategory, dto.parentId(), dto.type(), ctx);
-        if (parent != null && hasChildren) {
+        category.moveUnder(parent(dto.parentId(), ctx));
+        if (category.getParent() != null && hasChildren) {
             throw new CategoryExceptions.CategoryWithChildrenCannotHaveParentException();
         }
 
-        existingCategory.setType(dto.type());
-        existingCategory.setDescription(dto.description());
-        existingCategory.setParent(parent);
+        category.rename(dto.description());
         Map<Long, User> activeMembers = activeMembers(plan(ctx));
-        existingCategory.setOwner(resolveOwner(existingCategory, dto.ownerId(), activeMembers));
-        if (existingCategory.getOwner() != null
-                && hasChildren
-                && memberLimitRepository.existsByCategory_Parent(existingCategory)) {
+        category.assignOwner(resolveOwner(category, dto.ownerId(), activeMembers));
+        if (category.getOwner() != null && hasChildren && memberLimitRepository.existsByCategory_Parent(category)) {
             // Children inherit the owner, and an owned category cannot have per-member limits.
             throw new CategoryExceptions.CategoryMemberLimitsOnOwnedException();
         }
-        applyLimits(existingCategory, dto.spendingLimit(), dto.memberLimits(), activeMembers);
+        category.changeLimits(dto.spendingLimit(), memberLimits(category, dto.memberLimits(), activeMembers));
 
-        return CategoryResponse.from(categoryRepository.save(existingCategory), activeMembers.keySet());
+        return CategoryResponse.from(categoryRepository.save(category), activeMembers.keySet());
     }
 
     /**
-     * Resolves the requested owner (CAT-15): roots only, and an active member. The stored owner is
-     * kept when sent back after they left the plan, so a former member's ownership stays dormant
-     * until the OWNER clears or changes it (CAT-14). Parent must already be set.
+     * Resolves the requested owner (CAT-15): an active member. The stored owner is kept when sent back
+     * after they left the plan, so a former member's ownership stays dormant until the OWNER clears or
+     * changes it (CAT-14).
      */
     private User resolveOwner(Category category, Long ownerId, Map<Long, User> activeMembers) {
         if (ownerId == null) {
             return null;
-        }
-        if (category.getParent() != null) {
-            throw new CategoryExceptions.CategoryOwnerOnChildException();
         }
         User owner = activeMembers.get(ownerId);
         if (owner != null) {
@@ -176,6 +166,9 @@ public class CategoryService {
         User stored = category.getOwner();
         if (stored != null && stored.getId().equals(ownerId)) {
             return stored;
+        }
+        if (category.getParent() != null) {
+            throw new CategoryExceptions.CategoryOwnerOnChildException();
         }
         throw new CategoryExceptions.CategoryOwnerInactiveMemberException(ownerId);
     }
@@ -188,95 +181,34 @@ public class CategoryService {
     }
 
     /**
-     * Applies the plain limit and the per-member limits (CAT-11, CAT-13, CAT-14). Type, parent and
-     * owner must already be set. While per-member entries exist the plain limit sent is ignored and
-     * the stored one cleared, so the category limit is always the sum of the active entries.
+     * The per-member limits requested, or null to keep the stored ones. A former member's stored entry is
+     * kept when sent back unchanged and deleted when omitted; it can never be created or changed (CAT-13
+     * AC 7, CAT-14).
      */
-    private void applyLimits(
-            Category category,
-            BigDecimal spendingLimit,
-            List<CategoryMemberLimitRequest> memberLimits,
-            Map<Long, User> activeMembers) {
-        if (memberLimits != null) {
-            replaceMemberLimits(category, memberLimits, activeMembers);
-        }
-        if (category.getMemberLimits().isEmpty()) {
-            category.setSpendingLimit(category.getType() == TransactionType.CREDIT ? null : spendingLimit);
-            return;
-        }
-        if (category.getType() == TransactionType.CREDIT) {
-            throw new CategoryExceptions.CategoryMemberLimitsOnCreditException();
-        }
-        if (effectiveOwner(category) != null) {
-            throw new CategoryExceptions.CategoryMemberLimitsOnOwnedException();
-        }
-        category.setSpendingLimit(null);
-    }
-
-    /**
-     * Replaces the per-member entries as a set. Entries are updated in place (never deleted and
-     * re-inserted) so the unique (category, member) constraint holds within one flush. A former
-     * member's stored entry is kept when sent back unchanged and deleted when omitted; it can never be
-     * created or changed (CAT-13 AC 7, CAT-14).
-     */
-    private void replaceMemberLimits(
+    private List<MemberLimit> memberLimits(
             Category category, List<CategoryMemberLimitRequest> requested, Map<Long, User> activeMembers) {
-        Map<Long, CategoryMemberLimit> stored = category.getMemberLimits().stream()
-                .collect(Collectors.toMap(entry -> entry.getMember().getId(), Function.identity()));
-        Set<Long> kept = new HashSet<>();
-        for (CategoryMemberLimitRequest request : requested) {
-            Long memberId = request.memberId();
-            if (!kept.add(memberId)) {
-                throw new CategoryExceptions.CategoryMemberLimitDuplicateMemberException(memberId);
-            }
-            CategoryMemberLimit existing = stored.get(memberId);
-            User member = activeMembers.get(memberId);
-            if (member == null) {
-                if (existing == null || existing.getAmount().compareTo(request.amount()) != 0) {
-                    throw new CategoryExceptions.CategoryMemberLimitInactiveMemberException(memberId);
-                }
-                continue;
-            }
-            if (existing != null) {
-                existing.setAmount(request.amount());
-                continue;
-            }
-            CategoryMemberLimit entry = new CategoryMemberLimit();
-            entry.setCategory(category);
-            entry.setMember(member);
-            entry.setAmount(request.amount());
-            category.getMemberLimits().add(entry);
-        }
-        category.getMemberLimits()
-                .removeIf(entry -> !kept.contains(entry.getMember().getId()));
-    }
-
-    /** A child has its parent's owner (CAT-15 AC 2). */
-    private static User effectiveOwner(Category category) {
-        return category.getParent() == null
-                ? category.getOwner()
-                : category.getParent().getOwner();
-    }
-
-    /**
-     * Resolves and validates the requested parent (two-level hierarchy, CAT-06). Returns null when no
-     * parent is requested. {@code self} is null on create.
-     */
-    private Category resolveParent(Category self, Long parentId, TransactionType type, PlanContext ctx) {
-        if (parentId == null) {
+        if (requested == null) {
             return null;
         }
-        Category parent = findById(parentId, ctx);
-        if (self != null && parent.getId().equals(self.getId())) {
-            throw new CategoryExceptions.CategoryParentIsItselfException();
+        Map<Long, CategoryMemberLimit> stored = category.getMemberLimits().stream()
+                .collect(Collectors.toMap(entry -> entry.getMember().getId(), Function.identity()));
+        List<MemberLimit> limits = new ArrayList<>();
+        for (CategoryMemberLimitRequest request : requested) {
+            User member = activeMembers.get(request.memberId());
+            if (member == null) {
+                CategoryMemberLimit existing = stored.get(request.memberId());
+                if (existing == null || existing.getAmount().compareTo(request.amount()) != 0) {
+                    throw new CategoryExceptions.CategoryMemberLimitInactiveMemberException(request.memberId());
+                }
+                member = existing.getMember();
+            }
+            limits.add(new MemberLimit(member, request.amount()));
         }
-        if (parent.getParent() != null) {
-            throw new CategoryExceptions.CategoryParentIsChildException(parent.getId());
-        }
-        if (parent.getType() != type) {
-            throw new CategoryExceptions.CategoryParentTypeMismatchException();
-        }
-        return parent;
+        return limits;
+    }
+
+    private Category parent(Long parentId, PlanContext ctx) {
+        return parentId == null ? null : findById(parentId, ctx);
     }
 
     /**

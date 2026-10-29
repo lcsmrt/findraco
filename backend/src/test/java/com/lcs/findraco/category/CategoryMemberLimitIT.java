@@ -10,7 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.category.model.Category;
-import com.lcs.findraco.category.model.CategoryMemberLimit;
+import com.lcs.findraco.category.model.MemberLimit;
 import com.lcs.findraco.category.repository.CategoryMemberLimitRepository;
 import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.plan.controller.PlanRoutes;
@@ -230,8 +230,8 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         Category professional = fixtures.aCategory(plan, TransactionType.DEBIT, "Professional");
-        professional.setOwner(owner);
-        categoryRepository.save(professional);
+        professional.assignOwner(owner);
+        professional = categoryRepository.save(professional);
 
         Map<String, Object> ownedUpdate = body("DEBIT", "Professional", null, limits(owner.getId(), "100.00"));
         ownedUpdate.put("ownerId", owner.getId()); // PUT is a full replace: the owner is resent (CAT-15)
@@ -392,14 +392,12 @@ class CategoryMemberLimitIT extends AbstractIntegrationTest {
 
     private Category categoryWithLimits(Plan plan, Map<User, String> amounts) {
         Category category = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
-        amounts.forEach((member, amount) -> {
-            CategoryMemberLimit entry = new CategoryMemberLimit();
-            entry.setCategory(category);
-            entry.setMember(member);
-            entry.setAmount(new BigDecimal(amount));
-            memberLimitRepository.save(entry);
-        });
-        return category;
+        category.changeLimits(
+                null,
+                amounts.entrySet().stream()
+                        .map(entry -> new MemberLimit(entry.getKey(), new BigDecimal(entry.getValue())))
+                        .toList());
+        return categoryRepository.save(category);
     }
 
     private Map<Long, BigDecimal> storedAmounts(Category category) {

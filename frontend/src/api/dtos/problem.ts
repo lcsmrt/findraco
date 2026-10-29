@@ -37,6 +37,7 @@ export type ProblemType =
   | "category-subcategories-block-type-change"
   | "category-has-subcategories"
   | "category-in-use"
+  | "category-type-change-in-use"
   | "category-invalid-reassign-target"
   | "category-member-limits-on-income"
   | "category-member-limits-on-owned"
