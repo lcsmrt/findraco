@@ -2,6 +2,8 @@ package com.lcs.findraco.user.service;
 
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.error.MalformedRequestException;
+import com.lcs.findraco.shared.ratelimit.RateLimit;
+import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.lcs.findraco.user.exception.UserExceptions;
 import com.lcs.findraco.user.model.TimeZoneMode;
 import com.lcs.findraco.user.model.User;
@@ -22,16 +24,20 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PlanService planService;
+    private final RateLimiter rateLimiter;
 
-    public UserService(UserRepository userRepository, PlanService planService) {
+    public UserService(UserRepository userRepository, PlanService planService, RateLimiter rateLimiter) {
         this.userRepository = userRepository;
         this.planService = planService;
+        this.rateLimiter = rateLimiter;
     }
 
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @Transactional
-    public UserResponse create(CreateUserRequest dto) {
+    public UserResponse create(CreateUserRequest dto, String ip) {
+        rateLimiter.consume(RateLimit.REGISTER_IP, ip);
+
         Optional<User> existingUser = userRepository.findByEmail(dto.email());
         if (existingUser.isPresent()) {
             throw new UserExceptions.EmailAlreadyExistsException();

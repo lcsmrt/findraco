@@ -9,6 +9,7 @@ import com.lcs.findraco.auth.service.AuthenticationService;
 import com.lcs.findraco.auth.service.PasswordResetService;
 import com.lcs.findraco.auth.service.SessionService;
 import com.lcs.findraco.auth.service.SessionService.IssuedSession;
+import com.lcs.findraco.shared.web.ClientIp;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -42,8 +43,8 @@ public class AuthenticationController {
     @Operation(summary = "Authenticates a user; returns an access token and sets the session cookie")
     @SecurityRequirements
     @PostMapping("/login")
-    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid LoginRequest dto) {
-        IssuedSession session = authenticationService.authenticate(dto);
+    public ResponseEntity<AuthenticationResponse> login(@RequestBody @Valid LoginRequest dto, @ClientIp String ip) {
+        IssuedSession session = authenticationService.authenticate(dto, ip);
 
         return ResponseEntity.ok()
                 .header(
@@ -82,8 +83,8 @@ public class AuthenticationController {
     @SecurityRequirements
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequest dto) {
-        passwordResetService.requestReset(dto.email());
+    public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequest dto, @ClientIp String ip) {
+        passwordResetService.requestReset(dto.email(), ip);
 
         return ResponseEntity.noContent().build();
     }

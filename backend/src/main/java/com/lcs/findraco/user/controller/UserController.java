@@ -2,6 +2,7 @@ package com.lcs.findraco.user.controller;
 
 import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
+import com.lcs.findraco.shared.web.ClientIp;
 import com.lcs.findraco.user.request.CreateUserRequest;
 import com.lcs.findraco.user.request.UpdateTimeZoneRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
@@ -30,8 +31,8 @@ public class UserController {
     @SecurityRequirements
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@RequestBody @Valid CreateUserRequest dto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto));
+    public ResponseEntity<UserResponse> createUser(@RequestBody @Valid CreateUserRequest dto, @ClientIp String ip) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto, ip));
     }
 
     @Operation(summary = "Returns the authenticated user's data")

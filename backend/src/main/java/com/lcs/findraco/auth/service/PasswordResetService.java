@@ -5,6 +5,8 @@ import com.lcs.findraco.auth.model.PasswordResetToken;
 import com.lcs.findraco.auth.repository.PasswordResetTokenRepository;
 import com.lcs.findraco.auth.request.ResetPasswordRequest;
 import com.lcs.findraco.shared.config.AppProperties;
+import com.lcs.findraco.shared.ratelimit.RateLimit;
+import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.lcs.findraco.user.service.UserService;
 import java.time.Clock;
 import java.time.Duration;
@@ -22,6 +24,7 @@ public class PasswordResetService {
     private final EmailService emailService;
     private final SessionService sessionService;
     private final Clock clock;
+    private final RateLimiter rateLimiter;
     private final String appUrl;
 
     public PasswordResetService(
@@ -30,22 +33,26 @@ public class PasswordResetService {
             EmailService emailService,
             SessionService sessionService,
             Clock clock,
+            RateLimiter rateLimiter,
             AppProperties appProperties) {
         this.tokenRepository = tokenRepository;
         this.userService = userService;
         this.emailService = emailService;
         this.sessionService = sessionService;
         this.clock = clock;
+        this.rateLimiter = rateLimiter;
         this.appUrl = appProperties.url();
     }
 
     /**
      * Issues a reset link for the account, if one exists. Unknown emails are a silent no-op so
      * the response never reveals whether an account exists. Older links of the account stop
-     * working: only the latest one is valid.
+     * working: only the latest one is valid. Limited per e-mail (no inbox bombing) and per client address.
      */
     @Transactional
-    public void requestReset(String email) {
+    public void requestReset(String email, String ip) {
+        rateLimiter.consume(RateLimit.FORGOT_IP, ip);
+        rateLimiter.consume(RateLimit.FORGOT_EMAIL, email);
         userService.findByEmail(email).ifPresent(user -> {
             tokenRepository.deleteAllByUser(user);
 

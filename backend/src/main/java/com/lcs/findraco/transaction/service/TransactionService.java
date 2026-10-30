@@ -7,6 +7,8 @@ import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.error.StaleVersionException;
+import com.lcs.findraco.shared.ratelimit.RateLimit;
+import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.ItemDraft;
@@ -80,6 +82,7 @@ public class TransactionService {
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final SeriesRegenerator seriesRegenerator;
     private final EntityManager entityManager;
+    private final RateLimiter rateLimiter;
 
     public TransactionService(
             TransactionRepository transactionRepository,
@@ -90,7 +93,8 @@ public class TransactionService {
             UserService userService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             SeriesRegenerator seriesRegenerator,
-            EntityManager entityManager) {
+            EntityManager entityManager,
+            RateLimiter rateLimiter) {
         this.transactionRepository = transactionRepository;
         this.categoryService = categoryService;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
@@ -100,6 +104,7 @@ public class TransactionService {
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.seriesRegenerator = seriesRegenerator;
         this.entityManager = entityManager;
+        this.rateLimiter = rateLimiter;
     }
 
     private Plan plan(PlanContext ctx) {
@@ -509,6 +514,7 @@ public class TransactionService {
 
     @Transactional
     public TransactionImportResponse importFromNubankCsv(MultipartFile file, PlanContext ctx) {
+        rateLimiter.consume(RateLimit.IMPORT_USER, String.valueOf(ctx.userId()));
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
         List<String> lines;
