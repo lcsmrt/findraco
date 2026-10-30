@@ -8,8 +8,8 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PlanNameDialog } from "./PlanNameDialog";
 
-const home: Plan = { id: 7, name: "Home", isDefault: false, myRole: "OWNER" };
-const homeResponse: Plan = { id: 7, name: "Household", isDefault: false, myRole: "OWNER" };
+const home: Plan = { id: 7, name: "Home", isDefault: false, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
+const homeResponse: Plan = { id: 7, name: "Household", isDefault: false, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
 
 async function sentBody(requests: Request[], method: string) {
   await waitFor(() => expect(requests.some((request) => request.method === method)).toBe(true));

@@ -12,7 +12,7 @@ import { expect, screen, waitFor } from "storybook/test";
 import { CategoryFormSheetProvider } from "./CategoryFormSheetProvider";
 
 const PLAN_ID = 1;
-const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER" };
+const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
 const planValue: PlanContextValue = {
   activePlanId: PLAN_ID,
   setActivePlanId: () => {},

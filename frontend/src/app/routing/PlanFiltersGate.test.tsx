@@ -54,6 +54,7 @@ function TestPlanContext({ children }: { children: ReactNode }) {
       name: `Plan ${plan.id}`,
       isDefault: false,
       myRole: "OWNER" as const,
+      permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true },
     })),
     setActivePlanId: (planId: number) => setPlanState({ activePlanId: planId }),
   };

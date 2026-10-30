@@ -15,6 +15,7 @@ const members: PlanMember[] = [
 function transaction(id: number, overrides: Partial<Transaction> = {}): Transaction {
   return {
     id,
+    permissions: { edit: true, delete: true },
     version: 0,
     type: "DEBIT",
     amount: 120 + id,

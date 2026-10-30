@@ -34,6 +34,7 @@ const livia: PlanMember = { userId: 2, name: "Livia", email: "livia@example.com"
 
 const rent: Transaction = {
   id: 42,
+  permissions: { edit: true, delete: true },
   version: 0,
   type: "DEBIT",
   amount: 150.5,
@@ -71,7 +72,7 @@ function authValue(): AuthContextValue {
 }
 
 function planValue(): PlanContextValue {
-  const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER" };
+  const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
   return {
     activePlanId: PLAN_ID,
     setActivePlanId: vi.fn(),
@@ -260,6 +261,31 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     await waitFor(() =>
       expect(requests.some((r) => r.method === "DELETE" && new URL(r.url).pathname === `${API}/42`)).toBe(true),
     );
+  });
+});
+
+describe("TransactionsPage row permissions (BST-10 AC 10, 11)", () => {
+  // A contributor's view: the server marks their own row editable and another member's row not.
+  const dinnerByLivia: Transaction = {
+    ...rent,
+    id: 60,
+    description: "Dinner",
+    createdBy: { id: livia.userId, name: livia.name },
+    permissions: { edit: false, delete: false },
+  };
+
+  it("offers no edit or delete on another member's row, only on the rows the server allows", async () => {
+    const { user } = renderTab({ transactions: [rent, dinnerByLivia] });
+    const others = await tableRow("Dinner");
+    const own = await tableRow("Rent");
+
+    expect(others.queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(others.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(own.getByRole("button", { name: "Edit" })).toBeTruthy();
+    expect(own.getByRole("button", { name: "Delete" })).toBeTruthy();
+
+    await user.click(others.getByText("Dinner"));
+    expect(others.queryByRole("textbox", { name: "Description" })).toBeNull();
   });
 });
 

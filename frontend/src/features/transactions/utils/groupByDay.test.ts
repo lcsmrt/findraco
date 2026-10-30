@@ -5,6 +5,7 @@ import { groupByDay } from "./groupByDay";
 function tx(id: number, startDate: string): Transaction {
   return {
     id,
+    permissions: { edit: true, delete: true },
     version: 0,
     type: "DEBIT",
     amount: 10,

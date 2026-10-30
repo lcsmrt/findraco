@@ -30,6 +30,7 @@ const validValues: TransactionFormOutput = {
 
 const baseTransaction: Transaction = {
   id: 42,
+  permissions: { edit: true, delete: true },
   version: 0,
   type: "DEBIT",
   amount: 150.5,
@@ -609,6 +610,7 @@ describe("participantsForMode — the participants an attribution mode starts wi
 describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
   const shared: Transaction = {
     id: 7,
+    permissions: { edit: true, delete: true },
     version: 4,
     type: "CREDIT",
     amount: 300,

@@ -14,7 +14,7 @@ type TransactionMobileRowProps = {
   onEdit: (transaction: Transaction) => void;
 };
 
-/** Description, category and people on the left, signed amount on the right; tap edits. */
+/** Description, category and people on the left, signed amount on the right; tap edits when allowed. */
 function TransactionMobileRow({
   transaction,
   onEdit,
@@ -24,6 +24,7 @@ function TransactionMobileRow({
   return (
     <button
       type="button"
+      disabled={!transaction.permissions.edit}
       onClick={() => onEdit(transaction)}
       className="active:bg-muted/60 flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
     >

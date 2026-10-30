@@ -1197,9 +1197,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Flow test: a contributor sees no edit or delete on another member's row
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Flow test: a contributor sees no edit or delete on another member's row
+- [x] Frontend beta bumped
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build

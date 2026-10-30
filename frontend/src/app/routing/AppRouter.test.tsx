@@ -28,7 +28,7 @@ import { AppRouter } from "./AppRouter";
 
 const PLAN_ID = 5;
 const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "EDITOR" };
-const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "EDITOR" };
+const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } };
 
 const emptySummary: DashboardSummaryResponse = {
   totalIncome: 0,

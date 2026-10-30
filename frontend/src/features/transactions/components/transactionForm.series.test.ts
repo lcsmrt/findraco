@@ -29,6 +29,7 @@ const baseValues: TransactionFormOutput = {
 
 const installmentTransaction: Transaction = {
   id: 55,
+  permissions: { edit: true, delete: true },
   version: 0,
   seriesId: "series-abc",
   type: "DEBIT",

@@ -37,6 +37,13 @@ export type Transaction = {
   splitMode: SplitMode;
   participants: ParticipantShare[];
   items: TransactionItem[];
+  /** What the current member may do with this row, as the server decides it. */
+  permissions: TransactionPermissions;
+};
+
+export type TransactionPermissions = {
+  edit: boolean;
+  delete: boolean;
 };
 
 export type ParticipantInput = {

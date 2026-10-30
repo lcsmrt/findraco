@@ -36,6 +36,7 @@ const path = "/api/findraco/plan/5/transaction";
 
 const transaction: Transaction = {
   id: 40,
+  permissions: { edit: true, delete: true },
   version: 0,
   type: "DEBIT",
   amount: 120.5,

@@ -139,7 +139,7 @@ export function TransactionFormDrawer({
         transaction &&
         (onDuplicate || onDelete) && (
           <>
-            {onDelete && (
+            {onDelete && transaction.permissions.delete && (
               <Button
                 variant="outline"
                 type="button"

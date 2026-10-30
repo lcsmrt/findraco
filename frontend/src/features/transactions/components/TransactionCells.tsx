@@ -54,6 +54,10 @@ function EditableDescriptionCell({
     setEditing(false);
   }
 
+  if (!transaction.permissions.edit) {
+    return <span>{transaction.description}</span>;
+  }
+
   if (!editing) {
     return (
       <span
@@ -97,6 +101,10 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
       onSave(transaction, { amount: draft });
     }
     setEditing(false);
+  }
+
+  if (!transaction.permissions.edit) {
+    return <Amount value={amount} type={type} />;
   }
 
   if (!editing) {
@@ -146,16 +154,22 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
     if (!open) setEditing(false);
   }
 
+  const display = category ? (
+    <Badge variant="outline">{category.description}</Badge>
+  ) : (
+    <Text variant="caption" className="text-muted-foreground/50">
+      —
+    </Text>
+  );
+
+  if (!transaction.permissions.edit) {
+    return display;
+  }
+
   if (!editing) {
     return (
       <div className="cursor-pointer" onClick={() => setEditing(true)}>
-        {category ? (
-          <Badge variant="outline">{category.description}</Badge>
-        ) : (
-          <Text variant="caption" className="text-muted-foreground/50">
-            —
-          </Text>
-        )}
+        {display}
       </div>
     );
   }
@@ -187,6 +201,10 @@ export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
       }
     }
     setEditing(false);
+  }
+
+  if (!transaction.permissions.edit) {
+    return <span>{displayDate}</span>;
   }
 
   if (!editing) {
@@ -355,7 +373,7 @@ export function ParticipantsCell({
   canEdit,
   onSave,
 }: ParticipantsCellProps) {
-  if (!canEdit) {
+  if (!canEdit || !transaction.permissions.edit) {
     return <ParticipantsSummary participants={transaction.participants} />;
   }
   return (
@@ -394,27 +412,31 @@ export function ActionsCell({
       >
         <CopyIcon className="h-4 w-4" />
       </Button>
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
-        aria-label="Edit"
-        onClick={() => onEdit(transaction)}
-      >
-        <PencilIcon className="h-4 w-4" />
-      </Button>
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
-        aria-label="Delete"
-        disabled={isDeleting}
-        onClick={() => onDelete(transaction)}
-      >
-        <Trash2Icon className="h-4 w-4" />
-      </Button>
+      {transaction.permissions.edit && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
+          aria-label="Edit"
+          onClick={() => onEdit(transaction)}
+        >
+          <PencilIcon className="h-4 w-4" />
+        </Button>
+      )}
+      {transaction.permissions.delete && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
+          aria-label="Delete"
+          disabled={isDeleting}
+          onClick={() => onDelete(transaction)}
+        >
+          <Trash2Icon className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }

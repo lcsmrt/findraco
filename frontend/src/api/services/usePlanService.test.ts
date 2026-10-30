@@ -28,7 +28,15 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const plan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "OWNER" };
+const plan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
+
+const trip: Plan = {
+  id: 6,
+  name: "Trip",
+  isDefault: false,
+  myRole: "VIEWER",
+  permissions: { createTransactions: false, attributeToOthers: false, manageCategories: false, managePlan: false },
+};
 
 function sent(requests: Request[]) {
   return requests.map((request) => [request.method, new URL(request.url).pathname]);
@@ -36,9 +44,7 @@ function sent(requests: Request[]) {
 
 describe("plan queries read the plan as the API sends it", () => {
   it("useGetPlans GETs /plan and returns the plans", async () => {
-    server.use(
-      planHandlers.list([plan, { id: 6, name: "Trip", isDefault: false, myRole: "VIEWER" }]),
-    );
+    server.use(planHandlers.list([plan, trip]));
     const requests = recordRequests();
 
     const { result } = renderHookWithProviders(() => useGetPlans());
@@ -47,7 +53,7 @@ describe("plan queries read the plan as the API sends it", () => {
     expect(sent(requests)).toEqual([["GET", "/api/findraco/plan"]]);
     expect(result.current.data).toEqual([
       plan,
-      { id: 6, name: "Trip", isDefault: false, myRole: "VIEWER" },
+      trip,
     ]);
   });
 
@@ -98,7 +104,7 @@ describe("useCreatePlan", () => {
 
 describe("useRenamePlan", () => {
   it(`PUTs to a plan-scoped URL, invalidates the plans query and shows "Plan renamed." on success (NAV-05 AC 1, 2)`, async () => {
-    server.use(planHandlers.rename({ id: 5, name: "New name", isDefault: false, myRole: "OWNER" }));
+    server.use(planHandlers.rename({ ...plan, name: "New name", isDefault: false }));
     const requests = recordRequests();
 
     const { result, queryClient } = renderHookWithProviders(() => useRenamePlan(), {
@@ -113,7 +119,7 @@ describe("useRenamePlan", () => {
 
     expect(sent(requests)).toEqual([["PUT", "/api/findraco/plan/5"]]);
     expect(await requests[0].json()).toEqual({ name: "New name" });
-    expect(result.current.data).toEqual({ id: 5, name: "New name", isDefault: false, myRole: "OWNER" });
+    expect(result.current.data).toEqual({ ...plan, name: "New name", isDefault: false });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["plans"] });
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });

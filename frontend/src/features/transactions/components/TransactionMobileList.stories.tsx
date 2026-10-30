@@ -11,6 +11,7 @@ function transaction(
 ): Transaction {
   return {
     id,
+    permissions: { edit: true, delete: true },
     version: 0,
     type: "DEBIT",
     amount: 100,

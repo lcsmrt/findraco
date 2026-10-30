@@ -41,6 +41,7 @@ const livia: PlanMember = {
 
 const savedTransaction: Transaction = {
   id: 42,
+  permissions: { edit: true, delete: true },
   version: 0,
   type: "DEBIT",
   amount: 150.5,
@@ -70,6 +71,7 @@ function planValue(): PlanContextValue {
     name: "Home",
     isDefault: true,
     myRole: "OWNER",
+    permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true },
   };
   return {
     activePlanId: PLAN_ID,

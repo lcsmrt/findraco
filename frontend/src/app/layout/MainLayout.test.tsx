@@ -32,8 +32,8 @@ import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "EDITOR" };
-const editorPlan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "EDITOR" };
-const viewerPlan: Plan = { id: 6, name: "Parents", isDefault: false, myRole: "VIEWER" };
+const editorPlan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } };
+const viewerPlan: Plan = { id: 6, name: "Parents", isDefault: false, myRole: "VIEWER", permissions: { createTransactions: false, attributeToOthers: false, manageCategories: false, managePlan: false } };
 
 const emptySummary: DashboardSummaryResponse = {
   totalIncome: 0,
@@ -44,6 +44,7 @@ const emptySummary: DashboardSummaryResponse = {
 
 const created: Transaction = {
   id: 42,
+  permissions: { edit: true, delete: true },
   version: 0,
   type: "DEBIT",
   amount: 12.34,

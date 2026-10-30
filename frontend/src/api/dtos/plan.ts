@@ -8,6 +8,15 @@ export type Plan = {
   name: string;
   isDefault: boolean;
   myRole: PlanRole;
+  /** What the current member may do in the plan, as the server decides it. */
+  permissions: PlanCapabilities;
+};
+
+export type PlanCapabilities = {
+  createTransactions: boolean;
+  attributeToOthers: boolean;
+  manageCategories: boolean;
+  managePlan: boolean;
 };
 
 export type PlanMember = {

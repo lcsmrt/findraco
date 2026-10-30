@@ -20,6 +20,7 @@ const members: PlanMember[] = [
 
 const groceries: Transaction = {
   id: 1,
+  permissions: { edit: true, delete: true },
   version: 0,
   type: "DEBIT",
   amount: 320,
@@ -180,6 +181,21 @@ export const EditParticipants: Story = {
     await userEvent.click(canvas.getByRole("button", { name: /2 people/ }));
     await expect(await screen.findByRole("dialog", { name: "Participants" })).toBeVisible();
     await expect(screen.getAllByRole("checkbox")).toHaveLength(3);
+  },
+};
+
+// Another member's row seen by a contributor: the server allows neither edit nor delete.
+export const ReadOnly: Story = {
+  args: {
+    transaction: { ...groceries, permissions: { edit: false, delete: false } },
+    canEditParticipants: true,
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await expect(canvas.queryByRole("button", { name: "Edit" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Delete" })).toBeNull();
+    await userEvent.click(canvas.getByText("Groceries"));
+    await expect(canvas.queryByRole("textbox", { name: "Description" })).toBeNull();
+    await expect(args.onSave).not.toHaveBeenCalled();
   },
 };
 

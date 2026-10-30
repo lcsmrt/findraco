@@ -1,4 +1,4 @@
-import type { Plan, PlanRole } from "@/api/dtos";
+import type { Plan, PlanCapabilities } from "@/api/dtos";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { describe, expect, it, vi } from "vitest";
@@ -14,8 +14,9 @@ function planValue(overrides: Partial<PlanContextValue>): PlanContextValue {
   };
 }
 
-function planWithRole(myRole: PlanRole): Plan {
-  return { id: 5, name: "Home", isDefault: true, myRole };
+/** A plan whose role says one thing and whose flags another: the hook must read the flags. */
+function planWith(permissions: PlanCapabilities): Plan {
+  return { id: 5, name: "Home", isDefault: true, myRole: "OWNER", permissions };
 }
 
 function permissionsWith(plan: PlanContextValue) {
@@ -29,28 +30,21 @@ const NONE: PlanPermissions = {
   canManagePlan: false,
 };
 
-// Expected values follow backend/src/main/java/com/lcs/findraco/security/PlanAuthorization.java:
-// requireCanCreateTransaction (all but VIEWER), requireCanAttributeToOthers (OWNER, EDITOR),
-// requireCanManageCategories (OWNER) and requireOwner (OWNER).
-const MATRIX: [PlanRole, PlanPermissions][] = [
-  [
-    "OWNER",
-    { canCreateTransactions: true, canAttributeToOthers: true, canManageCategories: true, canManagePlan: true },
-  ],
-  [
-    "EDITOR",
-    { canCreateTransactions: true, canAttributeToOthers: true, canManageCategories: false, canManagePlan: false },
-  ],
-  [
-    "CONTRIBUTOR",
-    { canCreateTransactions: true, canAttributeToOthers: false, canManageCategories: false, canManagePlan: false },
-  ],
-  ["VIEWER", NONE],
-];
-
 describe("usePlanPermissions", () => {
-  it.each(MATRIX)("gives %s the capabilities PlanAuthorization allows (STD-06 AC 11)", (role, expected) => {
-    expect(permissionsWith(planValue({ activePlan: planWithRole(role) }))).toEqual(expected);
+  it("reads each capability from the flags the server sent with the active plan, computing none", () => {
+    const plan = planWith({
+      createTransactions: true,
+      attributeToOthers: false,
+      manageCategories: true,
+      managePlan: false,
+    });
+
+    expect(permissionsWith(planValue({ activePlan: plan }))).toEqual({
+      canCreateTransactions: true,
+      canAttributeToOthers: false,
+      canManageCategories: true,
+      canManagePlan: false,
+    });
   });
 
   it("reports every capability as false while the plans load (STD-06 AC 12)", () => {
