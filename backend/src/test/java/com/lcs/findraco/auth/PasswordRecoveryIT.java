@@ -21,7 +21,6 @@ import com.lcs.findraco.auth.service.OpaqueTokens;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
 import jakarta.servlet.http.Cookie;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -162,7 +161,7 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
 
         PasswordResetToken stored =
                 tokenRepository.findByTokenHash(OpaqueTokens.hash(token)).orElseThrow();
-        stored.setExpiresAt(LocalDateTime.now().minusMinutes(1));
+        stored.setExpiresAt(fixtures.now().minusSeconds(60));
         tokenRepository.save(stored);
 
         validate(token).andExpect(jsonPath("$.valid").value(false));

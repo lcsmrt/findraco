@@ -5,6 +5,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Base64;
@@ -18,15 +19,17 @@ public class JwtService {
 
     private final SecretKey secretKey;
     private final Duration expiration;
+    private final Clock clock;
 
-    public JwtService(JwtProperties properties) {
+    public JwtService(JwtProperties properties, Clock clock) {
+        this.clock = clock;
         byte[] keyBytes = Base64.getEncoder().encode(properties.secretKey().getBytes(StandardCharsets.UTF_8));
         this.secretKey = Keys.hmacShaKeyFor(keyBytes);
         this.expiration = properties.expiration();
     }
 
     public String generateToken(String email) {
-        Instant now = Instant.now();
+        Instant now = clock.instant();
         Instant expiresAt = now.plus(expiration);
 
         return Jwts.builder()
@@ -53,7 +56,7 @@ public class JwtService {
     public boolean isTokenExpired(String token) {
         try {
             Instant expiration = extractClaims(token).getExpiration().toInstant();
-            return expiration.isBefore(Instant.now());
+            return expiration.isBefore(clock.instant());
         } catch (Exception exception) {
             return true;
         }

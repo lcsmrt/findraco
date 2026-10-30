@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "users")
 public class User {
+    public static final String DEFAULT_TIME_ZONE = "America/Sao_Paulo";
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -12,6 +14,10 @@ public class User {
     private String name;
     private String email;
     private String password;
+    private String timeZone = DEFAULT_TIME_ZONE;
+
+    @Enumerated(EnumType.STRING)
+    private TimeZoneMode timeZoneMode = TimeZoneMode.AUTOMATIC;
 
     public User() {}
 
@@ -41,5 +47,23 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getTimeZone() {
+        return timeZone;
+    }
+
+    public TimeZoneMode getTimeZoneMode() {
+        return timeZoneMode;
+    }
+
+    public void useDeviceTimeZone(String zone) {
+        this.timeZone = zone;
+        this.timeZoneMode = TimeZoneMode.AUTOMATIC;
+    }
+
+    public void pinTimeZone(String zone) {
+        this.timeZone = zone;
+        this.timeZoneMode = TimeZoneMode.PINNED;
     }
 }

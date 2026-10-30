@@ -4,7 +4,7 @@ import com.lcs.findraco.plan.model.InvitationStatus;
 import com.lcs.findraco.plan.model.InvitationType;
 import com.lcs.findraco.plan.model.PlanInvitation;
 import com.lcs.findraco.plan.model.PlanRole;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import org.jspecify.annotations.Nullable;
 
 public record InvitationResponse(
@@ -15,18 +15,17 @@ public record InvitationResponse(
         @Nullable String email,
         InvitationStatus status,
         @Nullable String link,
-        @Nullable LocalDateTime expiresAt) {
+        @Nullable Instant expiresAt) {
 
-    public static InvitationResponse from(PlanInvitation invitation) {
-        LocalDateTime expiresAt = invitation.getExpiresAt();
+    public static InvitationResponse from(PlanInvitation invitation, Instant now) {
+        Instant expiresAt = invitation.getExpiresAt();
         // Expiry is never persisted as a status (the DB check constraint only allows
         // PENDING/ACCEPTED/REVOKED); it is computed here so listings reflect reality
         // even for an expired invitation that was never previewed/accepted.
-        InvitationStatus status = invitation.getStatus() == InvitationStatus.PENDING
-                        && expiresAt != null
-                        && expiresAt.isBefore(LocalDateTime.now())
-                ? InvitationStatus.EXPIRED
-                : invitation.getStatus();
+        InvitationStatus status =
+                invitation.getStatus() == InvitationStatus.PENDING && expiresAt != null && expiresAt.isBefore(now)
+                        ? InvitationStatus.EXPIRED
+                        : invitation.getStatus();
         String link = invitation.getType() == InvitationType.LINK ? "/invitation/" + invitation.getToken() : null;
         return new InvitationResponse(
                 invitation.getId(),

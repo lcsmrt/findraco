@@ -37,11 +37,14 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Clock;
+import java.time.ZoneId;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -290,6 +293,13 @@ class ArchitectureTest {
     }
 
     @ArchTest
+    static final ArchRule timeComesFromTheInjectedClockInUtc = noClasses()
+            .should()
+            .callMethodWhere(machineClockCall().and(inSourceCode()))
+            .because("instants are UTC and read from the injected Clock: now() without a Clock, "
+                    + "ZoneId.systemDefault() and Clock.systemDefaultZone() depend on the machine zone");
+
+    @ArchTest
     static final ArchRule controllersReceiveNoEntities = methods()
             .that()
             .areDeclaredInClassesThat()
@@ -377,6 +387,22 @@ class ArchitectureTest {
                 .filter(type -> type.toErasure().isAssignableTo(Repository.class))
                 .map(type -> type.getActualTypeArguments().getFirst().toErasure())
                 .findFirst();
+    }
+
+    /** A {@code java.time} {@code now} that does not take a {@link Clock}, or a call that reads the machine zone. */
+    private static DescribedPredicate<JavaCall<?>> machineClockCall() {
+        return DescribedPredicate.describe("reads the machine clock or zone", call -> {
+            String owner = call.getTargetOwner().getName();
+            String name = call.getTarget().getName();
+            List<String> parameters = call.getTarget().getRawParameterTypes().stream()
+                    .map(JavaClass::getName)
+                    .toList();
+            boolean javaTime = owner.startsWith("java.time.");
+            return (javaTime && name.equals("now") && !parameters.equals(List.of(Clock.class.getName())))
+                    || (owner.equals(ZoneId.class.getName()) && name.equals("systemDefault"))
+                    || (owner.equals(Clock.class.getName()) && name.equals("systemDefaultZone"))
+                    || (owner.equals(TimeZone.class.getName()) && name.equals("getDefault"));
+        });
     }
 
     /** Leaves out what the compiler generates, such as {@code $deserializeLambda$} of a serializable lambda. */

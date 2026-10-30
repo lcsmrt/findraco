@@ -52,7 +52,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
     void openEndedRecurringSeriesMaterializesTwelveMonthHorizonAndSetsGeneratedThrough() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        LocalDate start = LocalDate.now();
+        LocalDate start = today();
         LocalDate expectedLast = start.plusMonths(OPEN_ENDED_HORIZON_MONTHS);
         int expectedCount = OPEN_ENDED_HORIZON_MONTHS + 1; // start..start+12mo inclusive, monthly
 
@@ -113,7 +113,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
         body.put("amount", new BigDecimal("300.00"));
         body.put("description", "Laptop");
         body.put("mode", "INSTALLMENT");
-        body.put("startDate", LocalDate.now().toString());
+        body.put("startDate", today().toString());
         body.put("splitMode", "EQUAL");
         // parcelsNumber intentionally omitted
 
@@ -131,7 +131,7 @@ class OpenEndedSeriesIT extends AbstractIntegrationTest {
     void openEndedSeriesFutureOccurrencesAppearInDashboardLookAhead() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        LocalDate start = LocalDate.now();
+        LocalDate start = today();
         LocalDate sixMonthsOut = start.plusMonths(6);
 
         createSeries(plan, owner, recurringBody("Streaming", "20.00", start, null));

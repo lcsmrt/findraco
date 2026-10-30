@@ -2,7 +2,7 @@ package com.lcs.findraco.plan.model;
 
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "plans")
@@ -22,7 +22,7 @@ public class Plan {
     private boolean isDefault;
 
     @Column(name = "deleted_at")
-    private LocalDateTime deletedAt;
+    private Instant deletedAt;
 
     public Plan() {}
 
@@ -54,11 +54,11 @@ public class Plan {
         this.isDefault = isDefault;
     }
 
-    public LocalDateTime getDeletedAt() {
+    public Instant getDeletedAt() {
         return deletedAt;
     }
 
-    public void setDeletedAt(LocalDateTime deletedAt) {
+    public void setDeletedAt(Instant deletedAt) {
         this.deletedAt = deletedAt;
     }
 }

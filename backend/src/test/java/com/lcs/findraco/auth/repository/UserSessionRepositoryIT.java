@@ -6,7 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
@@ -24,7 +25,7 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 class UserSessionRepositoryIT extends AbstractIntegrationTest {
 
-    private static final LocalDateTime NOW = LocalDateTime.of(2026, 10, 16, 12, 0, 0);
+    private static final Instant NOW = Instant.parse("2026-10-16T12:00:00Z");
 
     @Autowired
     private UserSessionRepository userSessionRepository;
@@ -47,9 +48,9 @@ class UserSessionRepositoryIT extends AbstractIntegrationTest {
     @Test
     void duplicateTokenHashIsRejectedByTheDatabase() {
         User user = fixtures.aUser();
-        insertSession(user, UUID.randomUUID(), "hash-a", NOW.plusDays(30));
+        insertSession(user, UUID.randomUUID(), "hash-a", NOW.plus(Duration.ofDays(30)));
 
-        assertThatThrownBy(() -> insertSession(user, UUID.randomUUID(), "hash-a", NOW.plusDays(30)))
+        assertThatThrownBy(() -> insertSession(user, UUID.randomUUID(), "hash-a", NOW.plus(Duration.ofDays(30))))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("uk_user_sessions_token_hash");
     }
@@ -58,8 +59,8 @@ class UserSessionRepositoryIT extends AbstractIntegrationTest {
     void deletingAUserCascadesToTheirSessions() {
         User deleted = fixtures.aUser();
         User kept = fixtures.aUser();
-        insertSession(deleted, UUID.randomUUID(), "hash-deleted", NOW.plusDays(30));
-        insertSession(kept, UUID.randomUUID(), "hash-kept", NOW.plusDays(30));
+        insertSession(deleted, UUID.randomUUID(), "hash-deleted", NOW.plus(Duration.ofDays(30)));
+        insertSession(kept, UUID.randomUUID(), "hash-kept", NOW.plus(Duration.ofDays(30)));
 
         jdbc.update("DELETE FROM users WHERE id = ?", deleted.getId());
 
@@ -74,7 +75,7 @@ class UserSessionRepositoryIT extends AbstractIntegrationTest {
         insertSession(user, family, "user-expired", NOW.minusSeconds(1));
         insertSession(user, family, "user-expires-now", NOW);
         insertSession(user, family, "user-active", NOW.plusSeconds(1));
-        insertSession(other, UUID.randomUUID(), "other-expired", NOW.minusDays(1));
+        insertSession(other, UUID.randomUUID(), "other-expired", NOW.minus(Duration.ofDays(1)));
 
         transaction.executeWithoutResult(status -> userSessionRepository.deleteExpiredByUser(user, NOW));
 
@@ -87,25 +88,25 @@ class UserSessionRepositoryIT extends AbstractIntegrationTest {
         User other = fixtures.aUser();
         UUID revokedFamily = UUID.randomUUID();
         UUID keptFamily = UUID.randomUUID();
-        insertSession(user, revokedFamily, "revoked-1", NOW.plusDays(30));
-        insertSession(user, revokedFamily, "revoked-2", NOW.plusDays(30));
-        insertSession(user, keptFamily, "kept-same-user", NOW.plusDays(30));
-        insertSession(other, UUID.randomUUID(), "kept-other-user", NOW.plusDays(30));
+        insertSession(user, revokedFamily, "revoked-1", NOW.plus(Duration.ofDays(30)));
+        insertSession(user, revokedFamily, "revoked-2", NOW.plus(Duration.ofDays(30)));
+        insertSession(user, keptFamily, "kept-same-user", NOW.plus(Duration.ofDays(30)));
+        insertSession(other, UUID.randomUUID(), "kept-other-user", NOW.plus(Duration.ofDays(30)));
 
         transaction.executeWithoutResult(status -> userSessionRepository.deleteAllByFamilyId(revokedFamily));
 
         assertThat(tokenHashes()).containsExactlyInAnyOrder("kept-same-user", "kept-other-user");
     }
 
-    private void insertSession(User user, UUID familyId, String tokenHash, LocalDateTime expiresAt) {
+    private void insertSession(User user, UUID familyId, String tokenHash, Instant expiresAt) {
         jdbc.update(
                 "INSERT INTO user_sessions (user_id, family_id, token_hash, expires_at, created_at) "
                         + "VALUES (?, ?, ?, ?, ?)",
                 user.getId(),
                 familyId,
                 tokenHash,
-                Timestamp.valueOf(expiresAt),
-                Timestamp.valueOf(NOW));
+                Timestamp.from(expiresAt),
+                Timestamp.from(NOW));
     }
 
     private List<String> tokenHashes() {

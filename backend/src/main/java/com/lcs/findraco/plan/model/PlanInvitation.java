@@ -2,7 +2,7 @@ package com.lcs.findraco.plan.model;
 
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "plan_invitations")
@@ -40,7 +40,7 @@ public class PlanInvitation {
     private User invitedBy;
 
     @Column(name = "expires_at")
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     public PlanInvitation() {}
 
@@ -104,11 +104,11 @@ public class PlanInvitation {
         this.invitedBy = invitedBy;
     }
 
-    public LocalDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(LocalDateTime expiresAt) {
+    public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
 }

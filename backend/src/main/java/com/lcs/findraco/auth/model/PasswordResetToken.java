@@ -2,7 +2,7 @@ package com.lcs.findraco.auth.model;
 
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Entity
 @Table(name = "password_reset_tokens")
@@ -19,7 +19,7 @@ public class PasswordResetToken {
     private String tokenHash;
 
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
     public PasswordResetToken() {}
 
@@ -43,11 +43,11 @@ public class PasswordResetToken {
         this.tokenHash = tokenHash;
     }
 
-    public LocalDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(LocalDateTime expiresAt) {
+    public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
 }

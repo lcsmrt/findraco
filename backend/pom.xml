@@ -193,9 +193,7 @@
                         <arg>-Xlint:all,-serial</arg>
                         <arg>-XDcompilePolicy=simple</arg>
                         <arg>--should-stop=ifError=FLOW</arg>
-                        <!-- JavaTimeDefaultTimeZone: the code still reads the machine zone; the UTC clock
-                             slice (BST-11) moves every now() onto the Clock and switches this check back on. -->
-                        <arg>-Xplugin:ErrorProne -Xep:JavaTimeDefaultTimeZone:OFF</arg>
+                        <arg>-Xplugin:ErrorProne</arg>
                     </compilerArgs>
                     <annotationProcessorPaths>
                         <path>

@@ -5,7 +5,7 @@ import com.lcs.findraco.plan.model.InvitationType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public record CreateInvitationRequest(
         @NotNull(message = "Role cannot be null.") InvitationRole role,
@@ -14,4 +14,4 @@ public record CreateInvitationRequest(
         @Email(message = "Email must be valid.") @Size(max = 255, message = "Email cannot exceed 255 characters.")
         String email,
 
-        LocalDateTime expiresAt) {}
+        Instant expiresAt) {}

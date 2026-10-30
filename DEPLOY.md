@@ -14,6 +14,10 @@ Portainer/VPS steps in addition to the normal `git push` → GitHub Actions rede
 
 ## Manual VPS steps
 
+- [ ] Before deploying the time slice (V14, instants to `timestamptz`): confirm the API container
+  runs in UTC with `docker exec findraco-api date`. The migration reads the old `timestamp` values
+  as UTC; a container in another zone would shift every stored session, reset token and invitation
+  expiry by that offset. If the zone is not UTC, stop and change the migration's `AT TIME ZONE`.
 - [ ] Rename the Portainer stack to `findraco`. The GitHub Actions workflow only triggers a
   redeploy of the existing stack ID; the stack name itself is managed in Portainer.
 - [ ] Update the Portainer stack comment/URL reference (the workflow error message mentions

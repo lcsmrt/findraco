@@ -7,10 +7,13 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
 import java.io.IOException;
+import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -189,6 +192,60 @@ class MigrationsIT extends AbstractIntegrationTest {
                 .containsExactlyInAnyOrder("transactions_id_seq", "categories_id_seq");
     }
 
+    /** V14: every instant column is timestamptz, and the old UTC wall-clock values keep their instant. */
+    @Test
+    void instantColumnsAreTimestamptz() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+
+        assertThat(namesOf(
+                        jdbc,
+                        "SELECT table_name || '.' || column_name FROM information_schema.columns "
+                                + "WHERE table_schema = 'public' AND table_name <> 'flyway_schema_history' "
+                                + "AND data_type = 'timestamp without time zone'"))
+                .isEmpty();
+        assertThat(namesOf(
+                        jdbc,
+                        "SELECT table_name || '.' || column_name FROM information_schema.columns "
+                                + "WHERE table_schema = 'public' AND data_type = 'timestamp with time zone'"))
+                .containsExactlyInAnyOrder(
+                        "password_reset_tokens.expires_at",
+                        "user_sessions.expires_at",
+                        "user_sessions.replaced_at",
+                        "user_sessions.created_at",
+                        "plans.deleted_at",
+                        "plan_invitations.expires_at");
+    }
+
+    @Test
+    void timestampsAreReadAsUtcAndExistingUsersGetTheDefaultZone() {
+        migrateScratchDatabase(
+                "13",
+                "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
+                        + "INSERT INTO password_reset_tokens (user_id, token_hash, expires_at) "
+                        + "VALUES (1, 'h', '2026-01-01 12:00:00')",
+                scratch -> {
+                    OffsetDateTime expiresAt = scratch.queryForObject(
+                            "SELECT expires_at FROM password_reset_tokens", OffsetDateTime.class);
+                    assertThat(expiresAt).isNotNull();
+                    assertThat(expiresAt.toInstant()).isEqualTo(Instant.parse("2026-01-01T12:00:00Z"));
+                    Map<String, Object> user = scratch.queryForMap("SELECT time_zone, time_zone_mode FROM users");
+                    assertThat(user)
+                            .containsEntry("time_zone", "America/Sao_Paulo")
+                            .containsEntry("time_zone_mode", "AUTOMATIC");
+                });
+    }
+
+    @Test
+    void timeZoneModeOutsideTheEnumIsRejectedByTheDatabase() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User user = fixtures.aUser();
+
+        assertThatThrownBy(
+                        () -> jdbc.update("UPDATE users SET time_zone_mode = 'SOMETIMES' WHERE id = ?", user.getId()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_users_time_zone_mode");
+    }
+
     @Test
     void renameMigrationAbortsWhenTransactionsAlreadyExists() {
         assertThatThrownBy(() -> migrateScratchDatabaseAfter("CREATE TABLE public.transactions (id bigint)"))
@@ -210,6 +267,14 @@ class MigrationsIT extends AbstractIntegrationTest {
      * The scratch database lives in the same container and is dropped afterwards.
      */
     private void migrateScratchDatabaseAfter(String tamper) {
+        migrateScratchDatabase("12", tamper, jdbc -> {});
+    }
+
+    /**
+     * Builds a scratch database up to {@code target}, applies {@code tamper}, runs the rest of the chain and
+     * hands the migrated database to {@code verify}. The scratch database is dropped afterwards.
+     */
+    private void migrateScratchDatabase(String target, String tamper, Consumer<JdbcTemplate> verify) {
         JdbcTemplate admin = new JdbcTemplate(dataSource);
         admin.execute("DROP DATABASE IF EXISTS " + SCRATCH_DATABASE);
         admin.execute("CREATE DATABASE " + SCRATCH_DATABASE);
@@ -217,15 +282,17 @@ class MigrationsIT extends AbstractIntegrationTest {
         try {
             Flyway.configure()
                     .dataSource(url, postgres.getUsername(), postgres.getPassword())
-                    .target("12")
+                    .target(target)
                     .load()
                     .migrate();
-            new JdbcTemplate(new DriverManagerDataSource(url, postgres.getUsername(), postgres.getPassword()))
-                    .execute(tamper);
+            JdbcTemplate scratch =
+                    new JdbcTemplate(new DriverManagerDataSource(url, postgres.getUsername(), postgres.getPassword()));
+            scratch.execute(tamper);
             Flyway.configure()
                     .dataSource(url, postgres.getUsername(), postgres.getPassword())
                     .load()
                     .migrate();
+            verify.accept(scratch);
         } finally {
             admin.execute("DROP DATABASE IF EXISTS " + SCRATCH_DATABASE + " WITH (FORCE)");
         }

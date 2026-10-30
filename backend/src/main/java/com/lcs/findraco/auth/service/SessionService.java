@@ -7,7 +7,7 @@ import com.lcs.findraco.auth.repository.UserSessionRepository;
 import com.lcs.findraco.user.model.User;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +44,7 @@ public class SessionService {
     /** Starts a new session family for the user, dropping the user's expired session rows first. */
     @Transactional
     public IssuedSession open(User user) {
-        LocalDateTime now = LocalDateTime.now(clock);
+        Instant now = clock.instant();
         sessionRepository.deleteExpiredByUser(user, now);
 
         return issue(user, UUID.randomUUID(), now);
@@ -61,7 +61,7 @@ public class SessionService {
         if (sessionToken == null || sessionToken.isBlank()) {
             throw new AuthenticationExceptions.InvalidSessionException();
         }
-        LocalDateTime now = LocalDateTime.now(clock);
+        Instant now = clock.instant();
         UserSession presented = sessionRepository
                 .findByTokenHashForUpdate(OpaqueTokens.hash(sessionToken))
                 .orElseThrow(AuthenticationExceptions.InvalidSessionException::new);
@@ -101,7 +101,7 @@ public class SessionService {
         sessionRepository.deleteAllByUser(user);
     }
 
-    private IssuedSession issue(User user, UUID familyId, LocalDateTime now) {
+    private IssuedSession issue(User user, UUID familyId, Instant now) {
         String sessionToken = OpaqueTokens.generate();
 
         UserSession session = new UserSession();

@@ -2,7 +2,7 @@ package com.lcs.findraco.auth.model;
 
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.UUID;
 
 @Entity
@@ -23,12 +23,12 @@ public class UserSession {
     private String tokenHash;
 
     @Column(nullable = false)
-    private LocalDateTime expiresAt;
+    private Instant expiresAt;
 
-    private LocalDateTime replacedAt;
+    private Instant replacedAt;
 
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private Instant createdAt;
 
     public UserSession() {}
 
@@ -60,27 +60,27 @@ public class UserSession {
         this.tokenHash = tokenHash;
     }
 
-    public LocalDateTime getExpiresAt() {
+    public Instant getExpiresAt() {
         return expiresAt;
     }
 
-    public void setExpiresAt(LocalDateTime expiresAt) {
+    public void setExpiresAt(Instant expiresAt) {
         this.expiresAt = expiresAt;
     }
 
-    public LocalDateTime getReplacedAt() {
+    public Instant getReplacedAt() {
         return replacedAt;
     }
 
-    public void setReplacedAt(LocalDateTime replacedAt) {
+    public void setReplacedAt(Instant replacedAt) {
         this.replacedAt = replacedAt;
     }
 
-    public LocalDateTime getCreatedAt() {
+    public Instant getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDateTime createdAt) {
+    public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
     }
 }

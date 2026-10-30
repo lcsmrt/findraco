@@ -15,7 +15,6 @@ import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,8 +41,6 @@ class TransactionCrudIT extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    private final LocalDate today = LocalDate.now();
 
     @Test
     void putWithFewerItemsReplacesAllPreviousItemsLeavingNoLeftoverRows() throws Exception {
@@ -278,7 +275,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                         "description",
                                         "Groceries",
                                         "startDate",
-                                        today.toString(),
+                                        today().toString(),
                                         "splitMode",
                                         "EQUAL",
                                         "participants",
@@ -322,7 +319,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                                         "description",
                                         "Groceries",
                                         "startDate",
-                                        today.toString(),
+                                        today().toString(),
                                         "splitMode",
                                         "EQUAL",
                                         "participants",
@@ -385,7 +382,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 "description",
                 description,
                 "startDate",
-                today.toString(),
+                today().toString(),
                 "splitMode",
                 "EQUAL",
                 "participants",
@@ -403,7 +400,7 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 "description",
                 "Split expense",
                 "startDate",
-                today.toString(),
+                today().toString(),
                 "splitMode",
                 "EQUAL",
                 "participants",

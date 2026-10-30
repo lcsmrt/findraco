@@ -408,7 +408,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
     void editingOpenEndedSeriesToSetEndDateBoundsItAndStopsTopUp() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        LocalDate start = LocalDate.now();
+        LocalDate start = today();
 
         // Open-ended (no endDate): materializes start..start+12mo, 13 occurrences.
         JsonNode created = createSeries(plan, owner, openEndedRecurringBody("Streaming", "20.00", start));
@@ -443,7 +443,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         // Bounded series are excluded entirely by the top-up due-query: firing it must not add rows
         // (i.e. the dashboard's on-read top-up would not refill past the new bound either).
-        topUpService.topUp(plan.getId(), LocalDate.now());
+        topUpService.topUp(plan.getId(), today());
         JsonNode definitionAfterTopUp = fetchSeriesDefinition(plan, owner, seriesId);
         assertThat(definitionAfterTopUp.get("endDate").asString()).isEqualTo(newEnd.toString());
         for (int i = 0; i <= 3; i++) {
@@ -456,7 +456,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
     void clearingEndDateOnBoundedRecurringSeriesReopensItAndExtendsToHorizon() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        LocalDate start = LocalDate.now();
+        LocalDate start = today();
         LocalDate originalEnd = start.plusMonths(2);
 
         JsonNode created = createSeries(plan, owner, recurringBody("Car loan", "400.00", start, originalEnd));
@@ -484,7 +484,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
 
         // Already topped up to the horizon by the edit itself: firing top-up again must be a no-op
         // (idempotent), proving no duplicate occurrences and a stable watermark.
-        topUpService.topUp(plan.getId(), LocalDate.now());
+        topUpService.topUp(plan.getId(), today());
         List<Transaction> allOccurrences = transactionRepository.findAllByPlanAndSeriesId(plan, seriesId);
         assertThat(allOccurrences).hasSize(OPEN_ENDED_HORIZON_MONTHS + 1);
         RecurrenceDefinition reloaded = recurrenceDefinitionRepository
@@ -499,7 +499,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         // so an open-ended series is deleted exactly like a bounded one — regression coverage only.
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        LocalDate start = LocalDate.now();
+        LocalDate start = today();
 
         JsonNode created = createSeries(plan, owner, openEndedRecurringBody("Streaming", "20.00", start));
         String seriesId = created.get("seriesId").asString();

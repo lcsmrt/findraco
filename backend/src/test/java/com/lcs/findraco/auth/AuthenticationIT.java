@@ -227,7 +227,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
     @Test
     void tokenSignedWithAnotherKeyIsRejectedWith401() throws Exception {
         User user = fixtures.aUser();
-        Instant now = Instant.now();
+        Instant now = fixtures.now();
         String forged = Jwts.builder()
                 .subject(user.getEmail())
                 .issuedAt(Date.from(now))
@@ -243,7 +243,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
     @Test
     void expiredTokenIsRejectedWith401() throws Exception {
         User user = fixtures.aUser();
-        Instant issuedAt = Instant.now().minusSeconds(3_600);
+        Instant issuedAt = fixtures.now().minusSeconds(3_600);
         String expired = Jwts.builder()
                 .subject(user.getEmail())
                 .issuedAt(Date.from(issuedAt))

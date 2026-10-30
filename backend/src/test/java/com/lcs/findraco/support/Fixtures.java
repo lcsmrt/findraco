@@ -17,6 +17,8 @@ import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -47,6 +49,19 @@ public class Fixtures {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private Clock clock;
+
+    /** The application clock's current instant. */
+    public Instant now() {
+        return clock.instant();
+    }
+
+    /** Today on the application clock (UTC), the date the server uses. */
+    public LocalDate today() {
+        return LocalDate.now(clock);
+    }
 
     /** The stored version of a transaction, which an edit sends back; 0 when there is no such row. */
     public long transactionVersion(long id) {
@@ -108,7 +123,7 @@ public class Fixtures {
     public Transaction aTransaction(
             Plan plan, User createdBy, BigDecimal amount, TransactionType type, Category category) {
         TransactionDetails details =
-                new TransactionDetails(category, type, amount, "Test transaction", LocalDate.now(), null, null);
+                new TransactionDetails(category, type, amount, "Test transaction", today(), null, null);
         return aTransaction(new TransactionDraft(
                 plan, createdBy, details, SplitMode.EQUAL, List.of(new Share(createdBy, null)), List.of(), null, null));
     }

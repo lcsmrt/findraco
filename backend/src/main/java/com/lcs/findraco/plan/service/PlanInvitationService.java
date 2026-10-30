@@ -14,7 +14,7 @@ import com.lcs.findraco.plan.response.InvitationPreviewResponse;
 import com.lcs.findraco.plan.response.InvitationResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
-import java.time.LocalDateTime;
+import java.time.Clock;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
@@ -28,18 +28,21 @@ public class PlanInvitationService {
     private final PlanRepository planRepository;
     private final PlanAuthorization planAuthorization;
     private final EntityManager entityManager;
+    private final Clock clock;
 
     public PlanInvitationService(
             PlanInvitationRepository invitationRepository,
             PlanMembershipRepository membershipRepository,
             PlanRepository planRepository,
             PlanAuthorization planAuthorization,
-            EntityManager entityManager) {
+            EntityManager entityManager,
+            Clock clock) {
         this.invitationRepository = invitationRepository;
         this.membershipRepository = membershipRepository;
         this.planRepository = planRepository;
         this.planAuthorization = planAuthorization;
         this.entityManager = entityManager;
+        this.clock = clock;
     }
 
     /** Only the plan owner may invite. Builds and persists a PENDING invitation. */
@@ -58,7 +61,7 @@ public class PlanInvitationService {
         invitation.setInvitedBy(entityManager.getReference(User.class, ctx.userId()));
         invitation.setExpiresAt(type == InvitationType.LINK ? request.expiresAt() : null);
 
-        return InvitationResponse.from(invitationRepository.save(invitation));
+        return InvitationResponse.from(invitationRepository.save(invitation), clock.instant());
     }
 
     /** Reads an invitation by token for display before accepting. */
@@ -114,7 +117,7 @@ public class PlanInvitationService {
     public List<InvitationResponse> listInvitations(PlanContext ctx) {
         planAuthorization.requireCanManagePlan(ctx.role());
         return invitationRepository.findAllByPlan(planRepository.getReferenceById(ctx.planId())).stream()
-                .map(InvitationResponse::from)
+                .map(invitation -> InvitationResponse.from(invitation, clock.instant()))
                 .toList();
     }
 
@@ -147,7 +150,7 @@ public class PlanInvitationService {
         if (invitation.getType() == InvitationType.EMAIL && invitation.getStatus() == InvitationStatus.ACCEPTED) {
             throw new PlanExceptions.InvitationAlreadyUsedException();
         }
-        if (invitation.getExpiresAt() != null && invitation.getExpiresAt().isBefore(LocalDateTime.now())) {
+        if (invitation.getExpiresAt() != null && invitation.getExpiresAt().isBefore(clock.instant())) {
             throw new PlanExceptions.InvitationExpiredException();
         }
 

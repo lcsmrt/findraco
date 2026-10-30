@@ -1,6 +1,7 @@
 package com.lcs.findraco.support;
 
 import java.sql.Connection;
+import java.time.LocalDate;
 import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +29,10 @@ public abstract class AbstractIntegrationTest {
 
     @Autowired
     protected Fixtures fixtures;
+
+    protected LocalDate today() {
+        return fixtures.today();
+    }
 
     @Autowired
     private DataSource dataSource;

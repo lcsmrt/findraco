@@ -16,8 +16,10 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
+import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Base64;
 import java.util.Date;
@@ -153,11 +155,12 @@ class SessionIT extends AbstractIntegrationTest {
         assertThat(newCookie.getPath()).isEqualTo(COOKIE_PATH);
         assertThat(newCookie.getMaxAge()).isEqualTo(THIRTY_DAYS_IN_SECONDS);
 
-        LocalDateTime expiresAt = jdbc.queryForObject(
-                "SELECT expires_at FROM user_sessions WHERE token_hash = ?",
-                LocalDateTime.class,
-                OpaqueTokens.hash(newCookie.getValue()));
-        assertThat(expiresAt).isCloseTo(LocalDateTime.now().plusDays(30), within(1, ChronoUnit.MINUTES));
+        Instant expiresAt = jdbc.queryForObject(
+                        "SELECT expires_at FROM user_sessions WHERE token_hash = ?",
+                        OffsetDateTime.class,
+                        OpaqueTokens.hash(newCookie.getValue()))
+                .toInstant();
+        assertThat(expiresAt).isCloseTo(fixtures.now().plus(Duration.ofDays(30)), within(1, ChronoUnit.MINUTES));
     }
 
     @Test
@@ -196,7 +199,7 @@ class SessionIT extends AbstractIntegrationTest {
         String otherDevice = loginCookie(user);
         jdbc.update(
                 "UPDATE user_sessions SET replaced_at = ? WHERE token_hash = ?",
-                LocalDateTime.now().minusSeconds(31),
+                Timestamp.from(fixtures.now().minusSeconds(31)),
                 OpaqueTokens.hash(original));
 
         assertRejectedAndCleared(refresh(original));
@@ -240,7 +243,7 @@ class SessionIT extends AbstractIntegrationTest {
     @Test
     void logoutWithoutACookieAndWithAnExpiredAccessTokenStillSucceeds() throws Exception {
         User user = fixtures.aUser();
-        Instant issuedAt = Instant.now().minusSeconds(3_600);
+        Instant issuedAt = fixtures.now().minusSeconds(3_600);
         String expiredAccessToken = Jwts.builder()
                 .subject(user.getEmail())
                 .issuedAt(Date.from(issuedAt))
@@ -317,12 +320,11 @@ class SessionIT extends AbstractIntegrationTest {
         return jdbc.queryForList("SELECT token_hash FROM user_sessions WHERE user_id = ?", String.class, user.getId());
     }
 
-    // Timestamps come from the JVM clock, like the app's: the columns have no time zone, so the
-    // database's now() could be in another zone than the one SessionService compares against.
+    // Timestamps come from the application clock, like the app's.
     private void backdateExpiry(String tokenHash) {
         jdbc.update(
                 "UPDATE user_sessions SET expires_at = ? WHERE token_hash = ?",
-                LocalDateTime.now().minusMinutes(1),
+                Timestamp.from(fixtures.now().minusSeconds(60)),
                 tokenHash);
     }
 }

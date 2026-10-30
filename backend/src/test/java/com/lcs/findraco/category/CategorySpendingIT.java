@@ -23,7 +23,6 @@ import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +43,6 @@ import tools.jackson.databind.ObjectMapper;
  * former members end to end, so the service's active-member wiring is exercised for real.
  */
 class CategorySpendingIT extends AbstractIntegrationTest {
-
-    private final LocalDate today = LocalDate.now();
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -145,7 +142,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
 
         mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
                         .with(testAuthHelper.asUser(owner))
-                        .param("startDate", today.toString()))
+                        .param("startDate", today().toString()))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
     }
 
@@ -326,7 +323,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
                 TransactionType.DEBIT,
                 new BigDecimal("999.00"),
                 "Test transaction",
-                today.minusMonths(2),
+                today().minusMonths(2),
                 null,
                 null);
         fixtures.aTransaction(new TransactionDraft(
@@ -355,14 +352,14 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         return categoryRepository.save(category);
     }
 
-    /** A transaction dated today split across members by the given share amounts. */
+    /** A transaction dated today() split across members by the given share amounts. */
     private void aSplitTransaction(
             Plan plan, User createdBy, Category category, String amount, Map<User, String> shares) {
         List<Share> participants = shares.entrySet().stream()
                 .map(entry -> new Share(entry.getKey(), new BigDecimal(entry.getValue())))
                 .toList();
         TransactionDetails details = new TransactionDetails(
-                category, TransactionType.DEBIT, new BigDecimal(amount), "Split transaction", today, null, null);
+                category, TransactionType.DEBIT, new BigDecimal(amount), "Split transaction", today(), null, null);
         fixtures.aTransaction(
                 new TransactionDraft(plan, createdBy, details, SplitMode.EXACT, participants, List.of(), null, null));
     }
@@ -409,8 +406,8 @@ class CategorySpendingIT extends AbstractIntegrationTest {
     private ResultActions fetchSpending(Plan plan, User asUser) throws Exception {
         return mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
                 .with(testAuthHelper.asUser(asUser))
-                .param("startDate", today.minusDays(1).toString())
-                .param("endDate", today.plusDays(1).toString()));
+                .param("startDate", today().minusDays(1).toString())
+                .param("endDate", today().plusDays(1).toString()));
     }
 
     private JsonNode readSpending(ResultActions actions) throws Exception {

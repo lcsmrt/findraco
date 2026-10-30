@@ -12,7 +12,7 @@ import com.lcs.findraco.plan.response.PlanPermissionsResponse;
 import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
-import java.time.LocalDateTime;
+import java.time.Clock;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,16 +24,19 @@ public class PlanService {
     private final PlanMembershipRepository membershipRepository;
     private final PlanAuthorization planAuthorization;
     private final EntityManager entityManager;
+    private final Clock clock;
 
     public PlanService(
             PlanRepository planRepository,
             PlanMembershipRepository membershipRepository,
             PlanAuthorization planAuthorization,
-            EntityManager entityManager) {
+            EntityManager entityManager,
+            Clock clock) {
         this.planRepository = planRepository;
         this.membershipRepository = membershipRepository;
         this.planAuthorization = planAuthorization;
         this.entityManager = entityManager;
+        this.clock = clock;
     }
 
     @Transactional
@@ -176,7 +179,7 @@ public class PlanService {
         requireNotLastPlan(requesterId);
 
         Plan plan = requesterMembership.getPlan();
-        plan.setDeletedAt(LocalDateTime.now());
+        plan.setDeletedAt(clock.instant());
         planRepository.save(plan);
     }
 

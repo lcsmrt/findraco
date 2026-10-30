@@ -12,7 +12,8 @@ import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -97,12 +98,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         User invitee = fixtures.aUser();
 
         String token = createInvitation(
-                plan,
-                owner,
-                PlanRole.CONTRIBUTOR,
-                "LINK",
-                null,
-                LocalDateTime.now().minusDays(1));
+                plan, owner, PlanRole.CONTRIBUTOR, "LINK", null, fixtures.now().minus(Duration.ofDays(1)));
 
         acceptAs(token, invitee).andExpect(problem(HttpStatus.CONFLICT, "invitation-expired"));
 
@@ -134,8 +130,8 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
     }
 
-    private String createInvitation(
-            Plan plan, User owner, PlanRole role, String type, String email, LocalDateTime expiresAt) throws Exception {
+    private String createInvitation(Plan plan, User owner, PlanRole role, String type, String email, Instant expiresAt)
+            throws Exception {
         MvcResult result = mockMvc.perform(post(PlanRoutes.PLAN_INVITATION, plan.getId())
                         .with(testAuthHelper.asUser(owner))
                         .contentType(MediaType.APPLICATION_JSON)
@@ -146,7 +142,7 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
         return body.get("token").asString();
     }
 
-    private Map<String, Object> invitationBody(PlanRole role, String type, String email, LocalDateTime expiresAt) {
+    private Map<String, Object> invitationBody(PlanRole role, String type, String email, Instant expiresAt) {
         java.util.HashMap<String, Object> body = new java.util.HashMap<>();
         body.put("role", role.name());
         body.put("type", type);

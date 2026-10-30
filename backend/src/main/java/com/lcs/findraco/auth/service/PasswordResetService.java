@@ -8,7 +8,6 @@ import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.user.service.UserService;
 import java.time.Clock;
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,7 +53,7 @@ public class PasswordResetService {
             PasswordResetToken resetToken = new PasswordResetToken();
             resetToken.setUser(user);
             resetToken.setTokenHash(OpaqueTokens.hash(token));
-            resetToken.setExpiresAt(LocalDateTime.now(clock).plus(TOKEN_TTL));
+            resetToken.setExpiresAt(clock.instant().plus(TOKEN_TTL));
             tokenRepository.save(resetToken);
 
             emailService.sendPasswordResetEmail(user.getEmail(), appUrl + "/reset-password?token=" + token);
@@ -81,6 +80,6 @@ public class PasswordResetService {
     private Optional<PasswordResetToken> findValidToken(String token) {
         return tokenRepository
                 .findByTokenHash(OpaqueTokens.hash(token))
-                .filter(resetToken -> resetToken.getExpiresAt().isAfter(LocalDateTime.now(clock)));
+                .filter(resetToken -> resetToken.getExpiresAt().isAfter(clock.instant()));
     }
 }

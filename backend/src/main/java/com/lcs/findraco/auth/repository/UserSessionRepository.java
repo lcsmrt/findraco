@@ -3,7 +3,7 @@ package com.lcs.findraco.auth.repository;
 import com.lcs.findraco.auth.model.UserSession;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.LockModeType;
-import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,5 +32,5 @@ public interface UserSessionRepository extends JpaRepository<UserSession, Long> 
 
     @Modifying
     @Query("DELETE FROM UserSession s WHERE s.user = :user AND s.expiresAt <= :now")
-    void deleteExpiredByUser(@Param("user") User user, @Param("now") LocalDateTime now);
+    void deleteExpiredByUser(@Param("user") User user, @Param("now") Instant now);
 }

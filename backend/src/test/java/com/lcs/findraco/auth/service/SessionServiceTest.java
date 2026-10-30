@@ -22,7 +22,6 @@ import com.lcs.findraco.user.model.User;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +40,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class SessionServiceTest {
 
     private static final Instant NOW_INSTANT = Instant.parse("2026-10-16T12:00:00Z");
-    private static final LocalDateTime NOW = LocalDateTime.ofInstant(NOW_INSTANT, ZoneOffset.UTC);
+    private static final Instant NOW = NOW_INSTANT;
     private static final Duration THIRTY_DAYS = Duration.ofDays(30);
     private static final Duration THIRTY_SECONDS = Duration.ofSeconds(30);
     private static final String ACCESS_TOKEN = "access-jwt";
@@ -95,7 +94,7 @@ class SessionServiceTest {
         assertThat(row.getTokenHash())
                 .isEqualTo(OpaqueTokens.hash(first.sessionToken()))
                 .isNotEqualTo(first.sessionToken());
-        assertThat(row.getExpiresAt()).isEqualTo(NOW.plusDays(30));
+        assertThat(row.getExpiresAt()).isEqualTo(NOW.plus(Duration.ofDays(30)));
         assertThat(row.getCreatedAt()).isEqualTo(NOW);
         assertThat(row.getReplacedAt()).isNull();
         assertThat(row.getFamilyId()).isNotNull();
@@ -153,7 +152,7 @@ class SessionServiceTest {
         UserSession successor = savedSessions(1).get(0);
         assertThat(successor.getFamilyId()).isEqualTo(family);
         assertThat(successor.getUser()).isSameAs(user);
-        assertThat(successor.getExpiresAt()).isEqualTo(NOW.plusDays(30));
+        assertThat(successor.getExpiresAt()).isEqualTo(NOW.plus(Duration.ofDays(30)));
         assertThat(successor.getReplacedAt()).isNull();
         assertThat(successor.getTokenHash()).isEqualTo(OpaqueTokens.hash(issued.sessionToken()));
         assertThat(issued.sessionToken()).isNotEqualTo("current");
@@ -165,13 +164,13 @@ class SessionServiceTest {
     @Test
     void rotateTokenReplacedExactlyThirtySecondsAgoIssuesAnotherSuccessorWithoutRevoking() {
         UUID family = UUID.randomUUID();
-        UserSession replaced = storedSession("replaced", family, NOW.plusDays(29), NOW.minusSeconds(30));
+        UserSession replaced = storedSession("replaced", family, NOW.plus(Duration.ofDays(29)), NOW.minusSeconds(30));
 
         IssuedSession issued = service.rotate("replaced");
 
         UserSession successor = savedSessions(1).get(0);
         assertThat(successor.getFamilyId()).isEqualTo(family);
-        assertThat(successor.getExpiresAt()).isEqualTo(NOW.plusDays(30));
+        assertThat(successor.getExpiresAt()).isEqualTo(NOW.plus(Duration.ofDays(30)));
         assertThat(successor.getTokenHash()).isEqualTo(OpaqueTokens.hash(issued.sessionToken()));
         assertThat(replaced.getReplacedAt()).isEqualTo(NOW.minusSeconds(30));
         verify(repository, never()).deleteAllByFamilyId(any());
@@ -182,7 +181,7 @@ class SessionServiceTest {
     @Test
     void rotateTokenReplacedThirtyOneSecondsAgoRevokesTheFamilyLogsAWarningAndIsInvalid() {
         UUID family = UUID.randomUUID();
-        storedSession("replayed", family, NOW.plusDays(29), NOW.minusSeconds(31));
+        storedSession("replayed", family, NOW.plus(Duration.ofDays(29)), NOW.minusSeconds(31));
 
         assertThatThrownBy(() -> service.rotate("replayed"))
                 .isInstanceOf(AuthenticationExceptions.InvalidSessionException.class);
@@ -200,7 +199,7 @@ class SessionServiceTest {
     @Test
     void revokeDeletesTheTokensFamily() {
         UUID family = UUID.randomUUID();
-        storedSession("device", family, NOW.plusDays(30), null);
+        storedSession("device", family, NOW.plus(Duration.ofDays(30)), null);
 
         service.revoke("device");
 
@@ -232,14 +231,14 @@ class SessionServiceTest {
         verify(repository).deleteAllByUser(user);
     }
 
-    private UserSession storedSession(String rawToken, UUID family, LocalDateTime expiresAt, LocalDateTime replacedAt) {
+    private UserSession storedSession(String rawToken, UUID family, Instant expiresAt, Instant replacedAt) {
         UserSession session = new UserSession();
         session.setUser(user);
         session.setFamilyId(family);
         session.setTokenHash(OpaqueTokens.hash(rawToken));
         session.setExpiresAt(expiresAt);
         session.setReplacedAt(replacedAt);
-        session.setCreatedAt(NOW.minusDays(1));
+        session.setCreatedAt(NOW.minus(Duration.ofDays(1)));
         when(repository.findByTokenHashForUpdate(OpaqueTokens.hash(rawToken))).thenReturn(Optional.of(session));
         return session;
     }

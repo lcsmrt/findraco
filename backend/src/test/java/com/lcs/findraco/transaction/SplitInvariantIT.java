@@ -13,7 +13,6 @@ import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +36,6 @@ class SplitInvariantIT extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    private final LocalDate today = LocalDate.now();
 
     @Test
     void splitTransactionParticipationsSumToAmount() throws Exception {
@@ -141,7 +138,7 @@ class SplitInvariantIT extends AbstractIntegrationTest {
                 "description",
                 "Split expense",
                 "startDate",
-                today.toString(),
+                today().toString(),
                 "splitMode",
                 "EQUAL",
                 "participants",
@@ -159,8 +156,8 @@ class SplitInvariantIT extends AbstractIntegrationTest {
     private JsonNode fetchDashboard(Plan plan, User asUser, Long memberIdFilter) throws Exception {
         MockHttpServletRequestBuilder requestBuilder = get(DashboardRoutes.DASHBOARD, plan.getId())
                 .with(testAuthHelper.asUser(asUser))
-                .param("startDate", today.minusDays(1).toString())
-                .param("endDate", today.plusDays(1).toString());
+                .param("startDate", today().minusDays(1).toString())
+                .param("endDate", today().plusDays(1).toString());
         if (memberIdFilter != null) {
             requestBuilder = requestBuilder.param("memberId", memberIdFilter.toString());
         }

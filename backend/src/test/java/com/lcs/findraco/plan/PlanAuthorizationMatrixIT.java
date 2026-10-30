@@ -20,7 +20,6 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -48,8 +47,6 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
 
     @Autowired
     private TransactionRepository transactionRepository;
-
-    private final LocalDate today = LocalDate.now();
 
     private record PlanCast(Plan plan, User owner, User editor, User contributor, User viewer, User nonMember) {}
 
@@ -446,7 +443,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 "description",
                 "For a partner",
                 "startDate",
-                today.toString(),
+                today().toString(),
                 "participants",
                 List.of(Map.of("memberId", attributedTo.getId()))));
     }
@@ -461,7 +458,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 "description",
                 description,
                 "startDate",
-                today.toString(),
+                today().toString(),
                 "items",
                 List.of(),
                 "version",
@@ -477,7 +474,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 "description",
                 description,
                 "startDate",
-                today.toString()));
+                today().toString()));
     }
 
     private void assertUnchanged(Long transactionId, String expectedAmount) {

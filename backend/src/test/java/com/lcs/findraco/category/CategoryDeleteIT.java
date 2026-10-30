@@ -24,7 +24,6 @@ import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
@@ -364,7 +363,7 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
                 null,
                 3,
                 null,
-                LocalDate.now(),
+                today(),
                 null,
                 SplitMode.EQUAL,
                 List.of(new Share(owner, null)))));
