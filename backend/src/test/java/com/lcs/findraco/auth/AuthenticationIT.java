@@ -1,5 +1,6 @@
 package com.lcs.findraco.auth;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
@@ -90,6 +92,17 @@ class AuthenticationIT extends AbstractIntegrationTest {
                             objectMapper.readTree(result.getResponse().getContentAsString());
                     assertThat(profile.get("email").asString()).isEqualTo(email);
                 });
+    }
+
+    @Test
+    void registeringATakenEmailAnswers409() throws Exception {
+        register("taken@test.com");
+
+        mockMvc.perform(post(UserRoutes.USER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                Map.of("name", "Other", "email", "taken@test.com", "password", "password123"))))
+                .andExpect(problem(HttpStatus.CONFLICT, "email-taken"));
     }
 
     @Test
