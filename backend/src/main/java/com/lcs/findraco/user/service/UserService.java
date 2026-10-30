@@ -15,7 +15,7 @@ import com.lcs.findraco.user.response.UserResponse;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,14 +25,15 @@ public class UserService {
     private final UserRepository userRepository;
     private final PlanService planService;
     private final RateLimiter rateLimiter;
+    private final PasswordEncoder encoder;
 
-    public UserService(UserRepository userRepository, PlanService planService, RateLimiter rateLimiter) {
+    public UserService(
+            UserRepository userRepository, PlanService planService, RateLimiter rateLimiter, PasswordEncoder encoder) {
         this.userRepository = userRepository;
         this.planService = planService;
         this.rateLimiter = rateLimiter;
+        this.encoder = encoder;
     }
-
-    private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
 
     @Transactional
     public UserResponse create(CreateUserRequest dto, String ip) {
@@ -96,6 +97,14 @@ public class UserService {
     public void changePassword(User user, String rawPassword) {
         user.setPassword(encoder.encode(rawPassword));
         userRepository.save(user);
+    }
+
+    /** Stores a hash the encoder already produced (the re-hash of an older hash after a successful login). */
+    @Transactional
+    public User replacePasswordHash(long userId, String encodedPassword) {
+        User user = load(userId);
+        user.setPassword(encodedPassword);
+        return userRepository.save(user);
     }
 
     /**

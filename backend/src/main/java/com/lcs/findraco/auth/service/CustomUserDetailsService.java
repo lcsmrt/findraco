@@ -3,12 +3,13 @@ package com.lcs.findraco.auth.service;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.service.UserService;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsPasswordService;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 @Service
-public class CustomUserDetailsService implements UserDetailsService {
+public class CustomUserDetailsService implements UserDetailsService, UserDetailsPasswordService {
 
     private final UserService userService;
 
@@ -26,5 +27,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userService.findByEmail(email).orElseThrow(() -> new UsernameNotFoundException("User not found."));
 
         return new CustomUserDetails(user);
+    }
+
+    /** Called by the authentication provider after a login whose stored hash is older than the current encoder. */
+    @Override
+    public UserDetails updatePassword(UserDetails user, String newPassword) {
+        long userId = ((CustomUserDetails) user).authenticatedUser().id();
+
+        return new CustomUserDetails(userService.replacePasswordHash(userId, newPassword));
     }
 }
