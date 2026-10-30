@@ -670,6 +670,24 @@
         "required" : [ "email", "name", "role", "userId" ],
         "type" : "object"
       },
+      "PlanPermissionsResponse" : {
+        "properties" : {
+          "attributeToOthers" : {
+            "type" : "boolean"
+          },
+          "createTransactions" : {
+            "type" : "boolean"
+          },
+          "manageCategories" : {
+            "type" : "boolean"
+          },
+          "managePlan" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "attributeToOthers", "createTransactions", "manageCategories", "managePlan" ],
+        "type" : "object"
+      },
       "PlanResponse" : {
         "properties" : {
           "id" : {
@@ -684,9 +702,12 @@
           },
           "name" : {
             "type" : "string"
+          },
+          "permissions" : {
+            "$ref" : "#/components/schemas/PlanPermissionsResponse"
           }
         },
-        "required" : [ "id", "isDefault", "myRole", "name" ],
+        "required" : [ "id", "isDefault", "myRole", "name", "permissions" ],
         "type" : "object"
       },
       "PlanRole" : {
@@ -951,6 +972,18 @@
         "required" : [ "id", "name", "shareAmount" ],
         "type" : "object"
       },
+      "TransactionPermissionsResponse" : {
+        "properties" : {
+          "delete" : {
+            "type" : "boolean"
+          },
+          "edit" : {
+            "type" : "boolean"
+          }
+        },
+        "required" : [ "delete", "edit" ],
+        "type" : "object"
+      },
       "TransactionResponse" : {
         "properties" : {
           "amount" : {
@@ -997,6 +1030,9 @@
             },
             "type" : "array"
           },
+          "permissions" : {
+            "$ref" : "#/components/schemas/TransactionPermissionsResponse"
+          },
           "seriesId" : {
             "type" : [ "string", "null" ]
           },
@@ -1015,7 +1051,7 @@
             "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "id", "items", "participants", "splitMode", "startDate", "type", "version" ],
+        "required" : [ "amount", "description", "id", "items", "participants", "permissions", "splitMode", "startDate", "type", "version" ],
         "type" : "object"
       },
       "TransactionSeriesResponse" : {

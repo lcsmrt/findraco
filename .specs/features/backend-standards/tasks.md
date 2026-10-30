@@ -1175,9 +1175,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Matrix green for owner, editor, contributor, viewer, non-member
-- [ ] Snapshot regenerated
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Matrix green for owner, editor, contributor, viewer, non-member
+- [x] Snapshot regenerated
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

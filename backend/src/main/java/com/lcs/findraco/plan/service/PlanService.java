@@ -8,6 +8,7 @@ import com.lcs.findraco.plan.model.TransferredOwnerRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
 import com.lcs.findraco.plan.response.PlanMemberResponse;
+import com.lcs.findraco.plan.response.PlanPermissionsResponse;
 import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
@@ -37,7 +38,7 @@ public class PlanService {
 
     @Transactional
     public PlanResponse createPlan(String name, long ownerId) {
-        return PlanResponse.from(createPlanInternal(name, entityManager.getReference(User.class, ownerId), false));
+        return response(createPlanInternal(name, entityManager.getReference(User.class, ownerId), false));
     }
 
     @Transactional
@@ -62,7 +63,7 @@ public class PlanService {
     @Transactional(readOnly = true)
     public List<PlanResponse> listPlans(long userId) {
         return membershipRepository.findAllByUserId(userId).stream()
-                .map(PlanResponse::from)
+                .map(this::response)
                 .toList();
     }
 
@@ -74,7 +75,19 @@ public class PlanService {
 
     @Transactional(readOnly = true)
     public PlanResponse getPlan(long planId, long userId) {
-        return PlanResponse.from(getMembership(planId, userId));
+        return response(getMembership(planId, userId));
+    }
+
+    /** The plan as its member sees it, with what the member's role allows. */
+    private PlanResponse response(PlanMembership membership) {
+        PlanRole role = membership.getRole();
+        return PlanResponse.from(
+                membership,
+                new PlanPermissionsResponse(
+                        planAuthorization.canCreateTransactions(role),
+                        planAuthorization.canAttributeToOthers(role),
+                        planAuthorization.canManageCategories(role),
+                        planAuthorization.canManagePlan(role)));
     }
 
     private PlanMembership getMembership(long planId, long userId) {
@@ -153,7 +166,7 @@ public class PlanService {
         plan.setName(newName);
         planRepository.save(plan);
 
-        return PlanResponse.from(requesterMembership);
+        return response(requesterMembership);
     }
 
     @Transactional

@@ -34,6 +34,7 @@ import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
 import com.lcs.findraco.transaction.response.TransactionImportResponse;
+import com.lcs.findraco.transaction.response.TransactionPermissionsResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
 import com.lcs.findraco.user.model.User;
@@ -111,9 +112,19 @@ public class TransactionService {
                 : transaction.getCreatedBy().getId();
     }
 
+    private TransactionResponse response(Transaction transaction, PlanContext ctx) {
+        return TransactionResponse.from(transaction, permissions(transaction, ctx));
+    }
+
+    /** Edit and delete follow the same rule: the caller's role and, for a contributor, who created the row. */
+    private TransactionPermissionsResponse permissions(Transaction transaction, PlanContext ctx) {
+        boolean modify = planAuthorization.canModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
+        return new TransactionPermissionsResponse(modify, modify);
+    }
+
     @Transactional(readOnly = true)
     public TransactionResponse getById(Long id, PlanContext ctx) {
-        return TransactionResponse.from(load(id, ctx));
+        return response(load(id, ctx), ctx);
     }
 
     private Transaction load(Long id, PlanContext ctx) {
@@ -165,7 +176,7 @@ public class TransactionService {
             transactionRepository.fetchParticipants(page.getContent());
             transactionRepository.fetchItems(page.getContent());
         }
-        return page.map(TransactionResponse::from);
+        return page.map(transaction -> response(transaction, ctx));
     }
 
     @Transactional
@@ -184,7 +195,7 @@ public class TransactionService {
         Transaction transaction = Transaction.create(new TransactionDraft(
                 plan(ctx), user(ctx), details, split.mode(), split.shares(), items(dto.items(), ctx), null, null));
 
-        return TransactionResponse.from(transactionRepository.save(transaction));
+        return response(transactionRepository.save(transaction), ctx);
     }
 
     @Transactional
@@ -204,7 +215,7 @@ public class TransactionService {
                 dto.parcelsNumber());
         transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
 
-        return TransactionResponse.from(transactionRepository.saveAndFlush(transaction));
+        return response(transactionRepository.saveAndFlush(transaction), ctx);
     }
 
     /**
@@ -295,7 +306,8 @@ public class TransactionService {
             definition.markGeneratedThrough(occurrences.getLast().getStartDate());
         }
 
-        return TransactionSeriesResponse.from(transactionRepository.saveAll(occurrences));
+        return TransactionSeriesResponse.from(
+                transactionRepository.saveAll(occurrences), transaction -> permissions(transaction, ctx));
     }
 
     @Transactional
@@ -446,7 +458,7 @@ public class TransactionService {
                     split.shares());
 
             transactionRepository.saveAndFlush(pivot);
-            return TransactionSeriesResponse.from(List.of(pivot));
+            return TransactionSeriesResponse.from(List.of(pivot), transaction -> permissions(transaction, ctx));
         }
 
         definition.editPattern(new SeriesPattern(
@@ -487,7 +499,7 @@ public class TransactionService {
 
         recurrenceDefinitionRepository.saveAndFlush(definition);
 
-        return TransactionSeriesResponse.from(combined);
+        return TransactionSeriesResponse.from(combined, transaction -> permissions(transaction, ctx));
     }
 
     @Transactional

@@ -23,9 +23,10 @@ public record TransactionResponse(
         @Nullable TransactionCreatorResponse createdBy,
         SplitMode splitMode,
         List<TransactionParticipantResponse> participants,
-        List<TransactionItemResponse> items) {
+        List<TransactionItemResponse> items,
+        TransactionPermissionsResponse permissions) {
 
-    public static TransactionResponse from(Transaction transaction) {
+    public static TransactionResponse from(Transaction transaction, TransactionPermissionsResponse permissions) {
         return new TransactionResponse(
                 transaction.getId(),
                 transaction.getVersion(),
@@ -44,6 +45,7 @@ public record TransactionResponse(
                         .toList(),
                 transaction.getItems().stream()
                         .map(TransactionItemResponse::from)
-                        .toList());
+                        .toList(),
+                permissions);
     }
 }

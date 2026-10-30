@@ -1,11 +1,13 @@
 package com.lcs.findraco.plan;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.plan.controller.PlanContextArgumentResolver;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
@@ -25,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -35,7 +38,8 @@ import tools.jackson.databind.ObjectMapper;
  * CONTRIBUTOR / VIEWER / non-member, for the five representative actions read, create,
  * edit-own, edit-others and manage-plan. Per AD-004: everyone on a plan can read everything,
  * a CONTRIBUTOR may only edit their own rows, only the OWNER manages the plan, and a
- * non-member must see 404 (not 403) so plan existence never leaks.
+ * non-member must see 404 (not 403) so plan existence never leaks. The permission flags in the plan and
+ * transaction responses agree with the endpoints: false if and only if the call is refused.
  */
 class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
 
@@ -277,6 +281,174 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("name", "Should not persist"))))
                 .andExpect(status().isNotFound());
+    }
+
+    // ---- Flags agree with the guards: for every role and action, false if and only if the call is refused ----
+
+    @Test
+    void planFlagsAgreeWithThePlanWideEndpointsForEveryRole() throws Exception {
+        PlanCast cast = castPlan();
+
+        for (User member : List.of(cast.editor(), cast.contributor(), cast.viewer(), cast.owner(), cast.nonMember())) {
+            JsonNode permissions = planPermissions(cast, member);
+
+            assertAgree(
+                    member,
+                    "createTransactions",
+                    permissions,
+                    mockMvc.perform(
+                            post(TransactionRoutes.TRANSACTION, cast.plan().getId())
+                                    .with(testAuthHelper.asUser(member))
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .content(transactionBody("30.00", "Groceries"))));
+            assertAgree(
+                    member,
+                    "attributeToOthers",
+                    permissions,
+                    mockMvc.perform(post(
+                                    TransactionRoutes.TRANSACTION, cast.plan().getId())
+                            .with(testAuthHelper.asUser(member))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(attributedBody(cast.editor().equals(member) ? cast.owner() : cast.editor()))));
+            assertAgree(
+                    member,
+                    "manageCategories",
+                    permissions,
+                    mockMvc.perform(post(CategoryRoutes.CATEGORY, cast.plan().getId())
+                            .with(testAuthHelper.asUser(member))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(
+                                    Map.of("type", "DEBIT", "description", "Food " + member.getId())))));
+            // Renaming last: the owner's rename succeeds without changing anyone's role.
+            assertAgree(
+                    member,
+                    "managePlan",
+                    permissions,
+                    mockMvc.perform(put(ApiRoutes.PLAN + "/{id}", cast.plan().getId())
+                            .with(testAuthHelper.asUser(member))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(Map.of("name", "Renamed")))));
+        }
+    }
+
+    @Test
+    void transactionFlagsAgreeWithEditAndDeleteForEveryRoleAndRow() throws Exception {
+        PlanCast cast = castPlan();
+
+        for (User member : List.of(cast.owner(), cast.editor(), cast.contributor(), cast.viewer())) {
+            User other = member.equals(cast.owner()) ? cast.editor() : cast.owner();
+            for (User rowCreator : List.of(member, other)) {
+                Transaction row =
+                        fixtures.aTransaction(cast.plan(), rowCreator, new BigDecimal("40.00"), TransactionType.DEBIT);
+                JsonNode permissions = read(mockMvc.perform(get(
+                                                TransactionRoutes.TRANSACTION + "/{id}",
+                                                cast.plan().getId(),
+                                                row.getId())
+                                        .with(testAuthHelper.asUser(member)))
+                                .andExpect(status().isOk()))
+                        .get("permissions");
+
+                assertAgree(
+                        member,
+                        "edit",
+                        permissions,
+                        mockMvc.perform(put(
+                                        TransactionRoutes.TRANSACTION + "/{id}",
+                                        cast.plan().getId(),
+                                        row.getId())
+                                .with(testAuthHelper.asUser(member))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(transactionEditBody("41.00", "Edited"))));
+                assertAgree(
+                        member,
+                        "delete",
+                        permissions,
+                        mockMvc.perform(delete(
+                                        TransactionRoutes.TRANSACTION + "/{id}",
+                                        cast.plan().getId(),
+                                        row.getId())
+                                .with(testAuthHelper.asUser(member))));
+            }
+        }
+
+        Transaction row =
+                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("40.00"), TransactionType.DEBIT);
+        mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", cast.plan().getId(), row.getId())
+                        .with(testAuthHelper.asUser(cast.nonMember())))
+                .andExpect(status().isNotFound());
+        mockMvc.perform(delete(
+                                TransactionRoutes.TRANSACTION + "/{id}",
+                                cast.plan().getId(),
+                                row.getId())
+                        .with(testAuthHelper.asUser(cast.nonMember())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void planFlagsFollowTheRole() throws Exception {
+        PlanCast cast = castPlan();
+
+        JsonNode owner = read(mockMvc.perform(
+                        get(ApiRoutes.PLAN + "/{id}", cast.plan().getId()).with(testAuthHelper.asUser(cast.owner())))
+                .andExpect(status().isOk()));
+        assertThat(owner.get("isDefault").isBoolean()).isTrue();
+        assertThat(owner.get("permissions").properties())
+                .extracting(Map.Entry::getKey)
+                .containsExactlyInAnyOrder("createTransactions", "attributeToOthers", "manageCategories", "managePlan");
+
+        assertThat(flags(planPermissions(cast, cast.owner()))).containsExactly(true, true, true, true);
+        assertThat(flags(planPermissions(cast, cast.editor()))).containsExactly(true, true, false, false);
+        assertThat(flags(planPermissions(cast, cast.contributor()))).containsExactly(true, false, false, false);
+        assertThat(flags(planPermissions(cast, cast.viewer()))).containsExactly(false, false, false, false);
+    }
+
+    private static List<Boolean> flags(JsonNode permissions) {
+        return List.of(
+                permissions.get("createTransactions").asBoolean(),
+                permissions.get("attributeToOthers").asBoolean(),
+                permissions.get("manageCategories").asBoolean(),
+                permissions.get("managePlan").asBoolean());
+    }
+
+    /** A member's flags from the plan they read; a non-member reads nothing (404), so every flag is false. */
+    private JsonNode planPermissions(PlanCast cast, User member) throws Exception {
+        MvcResult result = mockMvc.perform(
+                        get(ApiRoutes.PLAN + "/{id}", cast.plan().getId()).with(testAuthHelper.asUser(member)))
+                .andReturn();
+        if (result.getResponse().getStatus() == 404) {
+            return objectMapper.readTree("{}");
+        }
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("permissions");
+    }
+
+    /** The flag is true exactly when the endpoint accepts the call (2xx); a refusal is 403, or 404 off the plan. */
+    private static void assertAgree(User member, String flag, JsonNode permissions, ResultActions call) {
+        int status = call.andReturn().getResponse().getStatus();
+        boolean allowed = permissions.has(flag) && permissions.get(flag).asBoolean();
+        assertThat(status >= 200 && status < 300)
+                .as("user %d, %s: flag %s, status %d", member.getId(), flag, allowed, status)
+                .isEqualTo(allowed);
+        if (!allowed) {
+            assertThat(status).as("user %d, %s refused", member.getId(), flag).isIn(403, 404);
+        }
+    }
+
+    private JsonNode read(ResultActions call) throws Exception {
+        return objectMapper.readTree(call.andReturn().getResponse().getContentAsString());
+    }
+
+    private String attributedBody(User attributedTo) throws Exception {
+        return objectMapper.writeValueAsString(Map.of(
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal("30.00"),
+                "description",
+                "For a partner",
+                "startDate",
+                today.toString(),
+                "participants",
+                List.of(Map.of("memberId", attributedTo.getId()))));
     }
 
     /** An edit of a transaction the test has just created, so at its first version. */
