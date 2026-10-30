@@ -74,6 +74,11 @@ public class RecurrenceDefinition {
     @Column(name = "generated_through")
     private LocalDate generatedThrough;
 
+    @ElementCollection
+    @CollectionTable(name = "recurrence_exceptions", joinColumns = @JoinColumn(name = "definition_id"))
+    @Column(name = "exception_date")
+    private Set<LocalDate> exceptions = new HashSet<>();
+
     @OneToMany(mappedBy = "definition", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RecurrenceDefinitionParticipant> participants = new ArrayList<>();
 
@@ -154,6 +159,11 @@ public class RecurrenceDefinition {
         } else {
             endDate = lastDate;
         }
+    }
+
+    /** Skips one date for good: neither generation nor a later edit produces an occurrence on it. */
+    public void except(LocalDate date) {
+        exceptions.add(date);
     }
 
     private static void requireParcels(Integer parcelsNumber) {
@@ -249,6 +259,10 @@ public class RecurrenceDefinition {
 
     public LocalDate getGeneratedThrough() {
         return generatedThrough;
+    }
+
+    public Set<LocalDate> getExceptions() {
+        return Collections.unmodifiableSet(exceptions);
     }
 
     public List<RecurrenceDefinitionParticipant> getParticipants() {

@@ -12,7 +12,9 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /**
@@ -61,36 +63,37 @@ public class SeriesRegenerator {
 
         boolean filterByPivot = scope != SeriesEditScope.ALL;
 
-        List<TargetOccurrence> inScopeTargets = filterByPivot
-                ? fullTargets.stream()
-                        .filter(t -> !t.date().isBefore(pivotDate))
-                        .toList()
-                : fullTargets;
-
-        List<Transaction> inScopeExisting = existing.stream()
-                .filter(tx -> !filterByPivot || !tx.getStartDate().isBefore(pivotDate))
-                .sorted(Comparator.comparing(Transaction::getStartDate))
+        List<TargetOccurrence> inScopeTargets = fullTargets.stream()
+                .filter(t -> !filterByPivot || !t.date().isBefore(pivotDate))
+                .filter(t -> !def.getExceptions().contains(t.date()))
                 .toList();
 
+        // Occurrences are matched to their slot by date, never by position: a date the member deleted
+        // stays a gap instead of being refilled by the next occurrence shifting into it.
+        Map<LocalDate, Transaction> existingByDate = new LinkedHashMap<>();
         List<Transaction> toUpdate = new ArrayList<>();
         List<Transaction> toCreate = new ArrayList<>();
         List<Transaction> toDelete = new ArrayList<>();
 
-        int matched = Math.min(inScopeExisting.size(), inScopeTargets.size());
+        existing.stream()
+                .filter(tx -> !filterByPivot || !tx.getStartDate().isBefore(pivotDate))
+                .sorted(Comparator.comparing(Transaction::getStartDate))
+                .forEach(tx -> {
+                    if (existingByDate.putIfAbsent(tx.getStartDate(), tx) != null) {
+                        toDelete.add(tx);
+                    }
+                });
 
-        for (int i = 0; i < matched; i++) {
-            Transaction tx = inScopeExisting.get(i);
-            stampOccurrence(tx, inScopeTargets.get(i), def, shares);
-            toUpdate.add(tx);
+        for (TargetOccurrence target : inScopeTargets) {
+            Transaction tx = existingByDate.remove(target.date());
+            if (tx != null) {
+                stampOccurrence(tx, target, def, shares);
+                toUpdate.add(tx);
+            } else {
+                toCreate.add(buildNewOccurrence(target, def, shares));
+            }
         }
-
-        for (int i = matched; i < inScopeTargets.size(); i++) {
-            toCreate.add(buildNewOccurrence(inScopeTargets.get(i), def, shares));
-        }
-
-        for (int i = matched; i < inScopeExisting.size(); i++) {
-            toDelete.add(inScopeExisting.get(i));
-        }
+        toDelete.addAll(existingByDate.values());
 
         return new SeriesEditResult(toUpdate, toCreate, toDelete);
     }

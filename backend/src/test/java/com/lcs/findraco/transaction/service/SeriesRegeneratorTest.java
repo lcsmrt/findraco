@@ -321,6 +321,44 @@ class SeriesRegeneratorTest {
     }
 
     @Test
+    void editAfterADeletedOccurrenceKeepsItGone() {
+        LocalDate start = LocalDate.of(2026, 1, 15);
+        LocalDate end = LocalDate.of(2026, 5, 15);
+        RecurrenceDefinition def = recurringDef("Gym", amount, start, end);
+        def.except(LocalDate.of(2026, 3, 15));
+        List<Transaction> existing = new ArrayList<>(existingRecurring("Gym", amount, start, end));
+        existing.removeIf(tx -> tx.getStartDate().equals(LocalDate.of(2026, 3, 15)));
+
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
+
+        assertThat(result.toCreate()).isEmpty();
+        assertThat(result.toDelete()).isEmpty();
+        assertThat(result.toUpdate())
+                .extracting(Transaction::getStartDate)
+                .containsExactly(
+                        LocalDate.of(2026, 1, 15),
+                        LocalDate.of(2026, 2, 15),
+                        LocalDate.of(2026, 4, 15),
+                        LocalDate.of(2026, 5, 15));
+    }
+
+    @Test
+    void shorteningTheSeriesDeletesTheRowsPastTheNewEndByDate() {
+        LocalDate start = LocalDate.of(2026, 1, 15);
+        RecurrenceDefinition def = recurringDef("Gym", amount, start, LocalDate.of(2026, 3, 15));
+        List<Transaction> existing = existingRecurring("Gym", amount, start, LocalDate.of(2026, 5, 15));
+
+        SeriesRegenerator.SeriesEditResult result =
+                regenerator.reconcile(def, existing, shares, SeriesEditScope.ALL, null);
+
+        assertThat(result.toUpdate()).hasSize(3);
+        assertThat(result.toDelete())
+                .extracting(Transaction::getStartDate)
+                .containsExactly(LocalDate.of(2026, 4, 15), LocalDate.of(2026, 5, 15));
+    }
+
+    @Test
     void targetCountExceedingCapThrows() {
         LocalDate start = LocalDate.of(2026, 1, 1);
         RecurrenceDefinition def = installmentDef("Rent", amount, 1, 200, start);

@@ -74,14 +74,14 @@ public class RecurringTransactionGenerator {
      * Definition-driven forward-window generator used by rolling top-up (open-ended RECURRING series):
      * given an already-persisted {@link RecurrenceDefinition}, generates the unsaved occurrences for the
      * months strictly after {@code afterExclusive} (the current {@code generatedThrough} watermark) up
-     * through {@code throughInclusive} (the rolling horizon), honoring {@link #MAX_OCCURRENCES} per pass.
+     * through {@code throughInclusive} (the rolling horizon), skipping the series' excepted dates and honoring {@link #MAX_OCCURRENCES} per pass.
      */
     public List<Transaction> generateForwardWindow(
             RecurrenceDefinition def, LocalDate afterExclusive, LocalDate throughInclusive, List<Share> shares) {
         List<Transaction> occurrences = new ArrayList<>();
         for (int month = 0; !def.getStartDate().plusMonths(month).isAfter(throughInclusive); month++) {
             LocalDate date = def.getStartDate().plusMonths(month);
-            if (!date.isAfter(afterExclusive)) {
+            if (!date.isAfter(afterExclusive) || def.getExceptions().contains(date)) {
                 continue;
             }
             ensureWithinCap(occurrences.size() + 1);

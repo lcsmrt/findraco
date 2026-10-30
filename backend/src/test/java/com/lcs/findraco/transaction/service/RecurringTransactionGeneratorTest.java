@@ -382,6 +382,19 @@ class RecurringTransactionGeneratorTest {
     }
 
     @Test
+    void forwardWindowNeverProducesAnExceptedDate() {
+        RecurrenceDefinition def = openEndedDefinition(LocalDate.of(2026, 1, 1));
+        def.except(LocalDate.of(2026, 8, 1));
+
+        List<Transaction> result =
+                generator.generateForwardWindow(def, LocalDate.of(2026, 6, 1), LocalDate.of(2026, 10, 1), selfShares);
+
+        assertThat(result)
+                .extracting(Transaction::getStartDate)
+                .containsExactly(LocalDate.of(2026, 7, 1), LocalDate.of(2026, 9, 1), LocalDate.of(2026, 10, 1));
+    }
+
+    @Test
     void forwardWindowKeepsTheStartDayAfterAShortMonth() {
         RecurrenceDefinition def = openEndedDefinition(LocalDate.of(2026, 1, 31));
 

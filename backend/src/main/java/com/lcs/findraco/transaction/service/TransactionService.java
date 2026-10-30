@@ -339,6 +339,9 @@ public class TransactionService {
             planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(occurrence), ctx.userId());
         }
 
+        if (scope == SeriesEditScope.THIS_ONE && definition != null) {
+            definition.except(pivot.getStartDate());
+        }
         transactionRepository.deleteAll(inScope);
 
         Set<Long> deletedIds = new HashSet<>();
@@ -357,8 +360,8 @@ public class TransactionService {
         }
 
         // THIS_AND_FOLLOWING left earlier occurrences behind: shrink the definition's range so a
-        // later regeneration won't recreate the deleted tail. THIS_ONE leaves a gap the exception-less
-        // model can't represent, so the definition is untouched (matching edit THIS_ONE).
+        // later regeneration won't recreate the deleted tail. THIS_ONE recorded its date as an exception
+        // above, so the gap stays.
         if (scope == SeriesEditScope.THIS_AND_FOLLOWING && definition != null) {
             LocalDate lastDate = remaining.stream()
                     .map(Transaction::getStartDate)

@@ -530,6 +530,35 @@ class SeriesEditIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void anOccurrenceDeletedOnPurposeStaysGoneAfterTheSeriesIsEdited() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = LocalDate.of(2026, 1, 15);
+        LocalDate end = LocalDate.of(2026, 5, 15);
+
+        JsonNode created = createSeries(plan, owner, recurringBody("Gym", "50.00", start, end));
+        String seriesId = created.get("seriesId").asString();
+        long march = created.get("occurrences").get(2).get("id").asLong();
+
+        mockMvc.perform(delete(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                        .with(testAuthHelper.asUser(owner))
+                        .param("scope", "THIS_ONE")
+                        .param("pivotOccurrenceId", String.valueOf(march)))
+                .andExpect(status().isNoContent());
+
+        JsonNode edited = editSeries(
+                plan, owner, seriesId, recurringEditBody("Gym 2", "60.00", start, end, "ALL"), status().isOk());
+
+        assertThat(edited.get("occurrences"))
+                .extracting(occurrence -> occurrence.get("startDate").asString())
+                .containsExactly("2026-01-15", "2026-02-15", "2026-04-15", "2026-05-15");
+        assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, seriesId))
+                .extracting(Transaction::getStartDate)
+                .doesNotContain(LocalDate.of(2026, 3, 15))
+                .hasSize(4);
+    }
+
+    @Test
     void endBeforeStartAnswersTheSameTypeOnCreateAndOnEdit() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
