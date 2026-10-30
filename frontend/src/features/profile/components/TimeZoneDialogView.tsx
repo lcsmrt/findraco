@@ -110,7 +110,7 @@ export function TimeZoneDialogView({
                   aria-invalid={field["aria-invalid"]}
                   className="w-full"
                 >
-                  <SelectValue placeholder="Pick a time zone" />
+                  <SelectValue placeholder="Select a zone" />
                 </SelectTrigger>
                 <SelectContent>
                   {zones.map((zone) => (
