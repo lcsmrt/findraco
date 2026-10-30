@@ -19,6 +19,13 @@ public interface RecurrenceDefinitionRepository extends JpaRepository<Recurrence
 
     Optional<RecurrenceDefinition> findByPlanAndSeriesId(Plan plan, String seriesId);
 
+    // The same row lock as the top-up below, so a series edit or delete and a top-up of the same
+    // definition run one after the other, and the later one sees what the earlier one committed.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT rd FROM RecurrenceDefinition rd WHERE rd.plan = :plan AND rd.seriesId = :seriesId")
+    Optional<RecurrenceDefinition> findByPlanAndSeriesIdForUpdate(
+            @Param("plan") Plan plan, @Param("seriesId") String seriesId);
+
     long countByCategory(Category category);
 
     @Modifying(flushAutomatically = true)

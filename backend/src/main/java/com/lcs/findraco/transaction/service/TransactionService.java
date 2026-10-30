@@ -56,6 +56,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -73,6 +74,9 @@ public class TransactionService {
     private final PlanAuthorization planAuthorization;
     private final PlanService planService;
     private final UserService userService;
+    /** Keeps the import lock keys apart from any other advisory lock keyed by a plan id. */
+    private static final long IMPORT_LOCK_NAMESPACE = 1L << 40;
+
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final SeriesRegenerator seriesRegenerator;
     private final EntityManager entityManager;
@@ -312,6 +316,11 @@ public class TransactionService {
 
     @Transactional
     public void deleteSeries(String seriesId, SeriesEditScope scope, Long pivotOccurrenceId, PlanContext ctx) {
+        // Lock the definition before reading the occurrences, as the top-up does, so a concurrent top-up
+        // cannot add occurrences to a series that is being deleted. A series with no definition has no lock.
+        RecurrenceDefinition definition = recurrenceDefinitionRepository
+                .findByPlanAndSeriesIdForUpdate(plan(ctx), seriesId)
+                .orElse(null);
         List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan(ctx), seriesId);
 
         if (occurrences.isEmpty()) {
@@ -352,10 +361,6 @@ public class TransactionService {
         List<Transaction> remaining = occurrences.stream()
                 .filter(occurrence -> !deletedIds.contains(occurrence.getId()))
                 .toList();
-
-        RecurrenceDefinition definition = recurrenceDefinitionRepository
-                .findByPlanAndSeriesId(plan(ctx), seriesId)
-                .orElse(null);
 
         if (remaining.isEmpty()) {
             if (definition != null) {
@@ -400,7 +405,7 @@ public class TransactionService {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
         RecurrenceDefinition definition = recurrenceDefinitionRepository
-                .findByPlanAndSeriesId(plan(ctx), seriesId)
+                .findByPlanAndSeriesIdForUpdate(plan(ctx), seriesId)
                 .orElseThrow(() -> new TransactionExceptions.TransactionSeriesNotFoundException(seriesId));
         claimVersion(definition, definition.getVersion(), dto.version());
         CreateSeriesRequest series = dto.series();
@@ -515,10 +520,17 @@ public class TransactionService {
             throw new RuntimeException("Failed to read the CSV file.", e);
         }
 
+        // Imports of one plan run one after the other: the second sees the rows the first committed and
+        // skips them, so a file imported twice at once still stores each row once.
+        entityManager
+                .createNativeQuery("SELECT 1 FROM (SELECT pg_advisory_xact_lock(?1)) AS locked")
+                .setParameter(1, IMPORT_LOCK_NAMESPACE + ctx.planId())
+                .getSingleResult();
+
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         List<Transaction> transactions = new ArrayList<>();
 
-        record ParsedRow(String sourceRef, LocalDate date, BigDecimal rawAmount, String description) {}
+        record ParsedRow(@Nullable String sourceRef, LocalDate date, BigDecimal rawAmount, String description) {}
         List<ParsedRow> parsed = new ArrayList<>();
 
         for (int i = 1; i < lines.size(); i++) {
@@ -529,21 +541,35 @@ public class TransactionService {
             if (parts.length < 4) continue;
 
             try {
-                parsed.add(new ParsedRow(
-                        parts[2].trim(),
+                // A blank reference means the bank gave none: the row cannot be told apart, so it is always new.
+                ParsedRow row = new ParsedRow(
+                        parts[2].isBlank() ? null : parts[2].trim(),
                         LocalDate.parse(parts[0].trim(), formatter),
                         new BigDecimal(parts[1].trim()),
-                        parts[3].trim()));
+                        parts[3].trim());
+                if (row.rawAmount().signum() == 0) {
+                    throw new TransactionExceptions.ImportLineInvalidException(i + 1);
+                }
+                parsed.add(row);
             } catch (DateTimeParseException | NumberFormatException e) {
                 throw new TransactionExceptions.ImportLineInvalidException(i + 1);
             }
         }
 
         Set<String> existingIds = transactionRepository.findExistingSourceRefs(
-                plan(ctx), parsed.stream().map(ParsedRow::sourceRef).toList());
+                plan(ctx),
+                parsed.stream()
+                        .map(ParsedRow::sourceRef)
+                        .filter(Objects::nonNull)
+                        .toList());
 
+        Set<String> seenInFile = new HashSet<>();
         for (ParsedRow row : parsed) {
-            if (existingIds.contains(row.sourceRef())) continue;
+            // A reference already stored, or repeated earlier in this file, is the same bank row.
+            if (row.sourceRef() != null
+                    && (existingIds.contains(row.sourceRef()) || !seenInFile.add(row.sourceRef()))) {
+                continue;
+            }
 
             TransactionType type =
                     row.rawAmount().compareTo(BigDecimal.ZERO) >= 0 ? TransactionType.CREDIT : TransactionType.DEBIT;
