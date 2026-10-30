@@ -10,7 +10,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 
 **Spec**: `.specs/features/backend-standards/spec.md`
 **Design**: `.specs/features/backend-standards/design.md` (approved 2026-10-29)
-**Status**: In Progress — approved by the user up front for an unattended run (2026-10-29); the user reviews the result afterwards instead of approving each step
+**Status**: Done — Verifier PASS (lean, risk-scoped, 2026-10-30, `validation.md`); 8 non-blocking gaps and the VPS steps pending the user
 
 **Execution notes**
 

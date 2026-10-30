@@ -519,27 +519,27 @@ The backend audit (`.specs/codebase/backend-quality-audit.md`, 2026-10-20) found
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| BST-01 | P1 Disposable test database and CI gate (AC 1–6) — S7, H13 | Tasks | Pending |
-| BST-02 | P1 Supported platform (AC 1–5) — S23 | Tasks | Pending |
-| BST-03 | P1 Mechanical enforcement (AC 1–9) — S12 | Tasks | Pending |
-| BST-04 | P1 Structure by feature (AC 1–15) — S1, S10, S18, S24 item 4 | Tasks | Pending |
-| BST-05 | P2 Cross-feature access (AC 1–3) — S2 | Tasks | Pending |
-| BST-06 | P2 Aggregates and optimistic locking (AC 1–11) — S3, S6, H1, H3, H5, H7 | Tasks | Pending |
-| BST-07 | P2 Persistence boundary (AC 1–5) — S4 | Tasks | Pending |
-| BST-08 | P2 Error contract (AC 1–13) — S5, S15 | Tasks | Pending |
-| BST-09 | P2 OpenAPI as the contract (AC 1–7) — S16 | Tasks | Pending |
-| BST-10 | P2 Contract shape and permissions (AC 1–11) — S13, S17, H11 | Tasks | Pending |
-| BST-11 | P2 Time (AC 1–7) — S11 | Tasks | Pending |
-| BST-12 | P2 Migrations and database guarantees (AC 1–8) — S9, H12 | Tasks | Pending |
-| BST-13 | P2 Request tracing and logging (AC 1–5) — S14 | Tasks | Pending |
-| BST-14 | P2 Rate limits and network exposure (AC 1–4) — S20 | Tasks | Pending |
-| BST-15 | P2 Authentication hardening (AC 1–11) — S21 | Tasks | Pending |
-| BST-16 | P2 CSV import (AC 1–9) — S19 | Tasks | Pending |
-| BST-17 | P2 Category usage from the server (AC 1–5) — S22 | Tasks | Pending |
-| BST-18 | P2 Series correctness (AC 1–10) — S25, S26, H8, H10, H14 | Tasks | Pending |
-| BST-19 | P2 Plans keep their invariants (AC 1–7) — S27, H6, H9, H15 | Tasks | Pending |
-| BST-20 | P3 Test coverage under the table (AC 1–6) — S8, T2–T4 | Tasks | Pending |
-| BST-21 | P3 Written standards, docs and cleanup (AC 1–4) — S24 items 1–3 | Tasks | Pending |
+| BST-01 | P1 Disposable test database and CI gate (AC 1–6) — S7, H13 | Execute | Done |
+| BST-02 | P1 Supported platform (AC 1–5) — S23 | Execute | Done |
+| BST-03 | P1 Mechanical enforcement (AC 1–9) — S12 | Execute | Done |
+| BST-04 | P1 Structure by feature (AC 1–15) — S1, S10, S18, S24 item 4 | Execute | Done |
+| BST-05 | P2 Cross-feature access (AC 1–3) — S2 | Execute | Done |
+| BST-06 | P2 Aggregates and optimistic locking (AC 1–11) — S3, S6, H1, H3, H5, H7 | Execute | Done |
+| BST-07 | P2 Persistence boundary (AC 1–5) — S4 | Execute | Done |
+| BST-08 | P2 Error contract (AC 1–13) — S5, S15 | Execute | Done |
+| BST-09 | P2 OpenAPI as the contract (AC 1–7) — S16 | Execute | Done |
+| BST-10 | P2 Contract shape and permissions (AC 1–11) — S13, S17, H11 | Execute | Done |
+| BST-11 | P2 Time (AC 1–7) — S11 | Execute | Done |
+| BST-12 | P2 Migrations and database guarantees (AC 1–8) — S9, H12 | Execute | Done |
+| BST-13 | P2 Request tracing and logging (AC 1–5) — S14 | Execute | Done |
+| BST-14 | P2 Rate limits and network exposure (AC 1–4) — S20 | Execute | Done |
+| BST-15 | P2 Authentication hardening (AC 1–11) — S21 | Execute | Done |
+| BST-16 | P2 CSV import (AC 1–9) — S19 | Execute | Done |
+| BST-17 | P2 Category usage from the server (AC 1–5) — S22 | Execute | Done |
+| BST-18 | P2 Series correctness (AC 1–10) — S25, S26, H8, H10, H14 | Execute | Done |
+| BST-19 | P2 Plans keep their invariants (AC 1–7) — S27, H6, H9, H15 | Execute | Done |
+| BST-20 | P3 Test coverage under the table (AC 1–6) — S8, T2–T4 | Execute | Done |
+| BST-21 | P3 Written standards, docs and cleanup (AC 1–4) — S24 items 1–3 | Execute | Done |
 
 **ID format:** `BST-NN`; each ID is one slice covering the AC range in its row. Slice order follows the IDs unless Design refines it (Assumptions).
 
