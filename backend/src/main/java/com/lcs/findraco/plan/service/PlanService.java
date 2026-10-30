@@ -129,7 +129,7 @@ public class PlanService {
         }
 
         PlanMembership requesterMembership = getMembership(planId, requesterId);
-        planAuthorization.requireOwner(requesterMembership.getRole());
+        planAuthorization.requireCanManagePlan(requesterMembership.getRole());
 
         Plan plan = requesterMembership.getPlan();
         PlanMembership targetMembership = membershipRepository
@@ -147,7 +147,7 @@ public class PlanService {
     @Transactional
     public PlanResponse renamePlan(long planId, String newName, long requesterId) {
         PlanMembership requesterMembership = getMembership(planId, requesterId);
-        planAuthorization.requireOwner(requesterMembership.getRole());
+        planAuthorization.requireCanManagePlan(requesterMembership.getRole());
 
         Plan plan = requesterMembership.getPlan();
         plan.setName(newName);
@@ -159,7 +159,7 @@ public class PlanService {
     @Transactional
     public void deletePlan(long planId, long requesterId) {
         PlanMembership requesterMembership = getMembership(planId, requesterId);
-        planAuthorization.requireOwner(requesterMembership.getRole());
+        planAuthorization.requireCanManagePlan(requesterMembership.getRole());
         requireNotLastPlan(requesterId);
 
         Plan plan = requesterMembership.getPlan();
@@ -170,7 +170,7 @@ public class PlanService {
     @Transactional
     public void removeMember(long planId, long targetUserId, long requesterId) {
         PlanMembership requesterMembership = getMembership(planId, requesterId);
-        planAuthorization.requireOwner(requesterMembership.getRole());
+        planAuthorization.requireCanManagePlan(requesterMembership.getRole());
 
         Plan plan = requesterMembership.getPlan();
         PlanMembership targetMembership = membershipRepository
@@ -204,7 +204,7 @@ public class PlanService {
         }
 
         PlanMembership requesterMembership = getMembership(planId, requesterId);
-        planAuthorization.requireOwner(requesterMembership.getRole());
+        planAuthorization.requireCanManagePlan(requesterMembership.getRole());
 
         Plan plan = requesterMembership.getPlan();
         PlanMembership newOwnerMembership = membershipRepository

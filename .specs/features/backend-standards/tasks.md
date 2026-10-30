@@ -1154,8 +1154,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit test per rule and role
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Unit test per rule and role
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick

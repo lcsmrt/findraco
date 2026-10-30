@@ -1,11 +1,14 @@
 package com.lcs.findraco.plan.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.plan.exception.PlanExceptions;
 import com.lcs.findraco.plan.model.PlanRole;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class PlanAuthorizationTest {
 
@@ -112,24 +115,24 @@ class PlanAuthorizationTest {
 
     @Test
     void ownerOnlyAllowedForOwner() {
-        assertThatCode(() -> authorization.requireOwner(PlanRole.OWNER)).doesNotThrowAnyException();
+        assertThatCode(() -> authorization.requireCanManagePlan(PlanRole.OWNER)).doesNotThrowAnyException();
     }
 
     @Test
     void ownerOnlyDeniedForEditor() {
-        assertThatThrownBy(() -> authorization.requireOwner(PlanRole.EDITOR))
+        assertThatThrownBy(() -> authorization.requireCanManagePlan(PlanRole.EDITOR))
                 .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
     }
 
     @Test
     void ownerOnlyDeniedForContributor() {
-        assertThatThrownBy(() -> authorization.requireOwner(PlanRole.CONTRIBUTOR))
+        assertThatThrownBy(() -> authorization.requireCanManagePlan(PlanRole.CONTRIBUTOR))
                 .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
     }
 
     @Test
     void ownerOnlyDeniedForViewer() {
-        assertThatThrownBy(() -> authorization.requireOwner(PlanRole.VIEWER))
+        assertThatThrownBy(() -> authorization.requireCanManagePlan(PlanRole.VIEWER))
                 .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
     }
 
@@ -155,5 +158,42 @@ class PlanAuthorizationTest {
     void attributeToOthersDeniedForViewer() {
         assertThatThrownBy(() -> authorization.requireCanAttributeToOthers(PlanRole.VIEWER))
                 .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
+    }
+
+    // ---- Queries: the answer for each rule and role, which the guards above throw on when false ----
+
+    @ParameterizedTest(name = "{0}: create {1}, attribute {2}, categories {3}, plan {4}")
+    @CsvSource({
+        "OWNER,       true,  true,  true,  true",
+        "EDITOR,      true,  true,  false, false",
+        "CONTRIBUTOR, true,  false, false, false",
+        "VIEWER,      false, false, false, false"
+    })
+    void planWideQueriesPerRole(
+            PlanRole role, boolean create, boolean attribute, boolean categories, boolean managePlan) {
+        assertThat(authorization.canCreateTransactions(role)).isEqualTo(create);
+        assertThat(authorization.canAttributeToOthers(role)).isEqualTo(attribute);
+        assertThat(authorization.canManageCategories(role)).isEqualTo(categories);
+        assertThat(authorization.canManagePlan(role)).isEqualTo(managePlan);
+    }
+
+    @ParameterizedTest(name = "{0}: own row {1}, another member's row {2}")
+    @CsvSource({
+        "OWNER,       true,  true",
+        "EDITOR,      true,  true",
+        "CONTRIBUTOR, true,  false",
+        "VIEWER,      false, false"
+    })
+    void modifyQueryPerRoleAndRowOwner(PlanRole role, boolean ownRow, boolean othersRow) {
+        assertThat(authorization.canModifyTransaction(role, ALICE, ALICE)).isEqualTo(ownRow);
+        assertThat(authorization.canModifyTransaction(role, BOB, ALICE)).isEqualTo(othersRow);
+    }
+
+    @Test
+    void aContributorCannotModifyARowWithoutACreator() {
+        assertThat(authorization.canModifyTransaction(PlanRole.CONTRIBUTOR, null, ALICE))
+                .isFalse();
+        assertThatThrownBy(() -> authorization.requireCanModifyTransaction(PlanRole.CONTRIBUTOR, null, ALICE))
+                .isInstanceOf(PlanExceptions.CannotModifyOthersTransactionException.class);
     }
 }

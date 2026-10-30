@@ -45,7 +45,7 @@ public class PlanInvitationService {
     /** Only the plan owner may invite. Builds and persists a PENDING invitation. */
     @Transactional
     public InvitationResponse createInvite(CreateInvitationRequest request, PlanContext ctx) {
-        planAuthorization.requireOwner(ctx.role());
+        planAuthorization.requireCanManagePlan(ctx.role());
 
         InvitationType type = request.type();
         PlanInvitation invitation = new PlanInvitation();
@@ -112,7 +112,7 @@ public class PlanInvitationService {
     /** Only the plan owner may list the active plan's invitations. */
     @Transactional(readOnly = true)
     public List<InvitationResponse> listInvitations(PlanContext ctx) {
-        planAuthorization.requireOwner(ctx.role());
+        planAuthorization.requireCanManagePlan(ctx.role());
         return invitationRepository.findAllByPlan(planRepository.getReferenceById(ctx.planId())).stream()
                 .map(InvitationResponse::from)
                 .toList();
@@ -121,7 +121,7 @@ public class PlanInvitationService {
     /** Only the plan owner may revoke an invitation belonging to the active plan. */
     @Transactional
     public void revoke(long invitationId, PlanContext ctx) {
-        planAuthorization.requireOwner(ctx.role());
+        planAuthorization.requireCanManagePlan(ctx.role());
 
         PlanInvitation invitation = invitationRepository
                 .findByIdAndPlan(invitationId, planRepository.getReferenceById(ctx.planId()))
