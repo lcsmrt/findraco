@@ -21,6 +21,7 @@
     <properties>
         <java.version>25</java.version>
         <error-prone.version>2.51.0</error-prone.version>
+        <jjwt.version>0.12.6</jjwt.version>
     </properties>
 
     <dependencies>
@@ -34,7 +35,7 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
 
-        <!-- Segurança -->
+        <!-- Security -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
@@ -51,18 +52,18 @@
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-api</artifactId>
-            <version>0.12.6</version>
+            <version>${jjwt.version}</version>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-impl</artifactId>
-            <version>0.12.6</version>
+            <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt-jackson</artifactId>
-            <version>0.12.6</version>
+            <version>${jjwt.version}</version>
             <scope>runtime</scope>
         </dependency>
 
@@ -83,7 +84,7 @@
             <artifactId>caffeine</artifactId>
         </dependency>
 
-        <!-- Validações -->
+        <!-- Validation -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
@@ -95,14 +96,14 @@
             <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
 
-        <!-- Banco de dados -->
+        <!-- Database -->
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Migrations (versão gerenciada pelo Spring Boot BOM) -->
+        <!-- Migrations (version managed by the Spring Boot BOM) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-flyway</artifactId>
@@ -120,7 +121,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Testes -->
+        <!-- Tests -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -148,7 +149,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!-- Documentação -->
+        <!-- Documentation -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
@@ -280,7 +281,7 @@
                                 <rule>
                                     <element>CLASS</element>
                                     <includes>
-                                        <include>com.lcs.findraco.transaction.service.SplitResolver</include>
+                                        <include>com.lcs.findraco.transaction.model.SplitResolver</include>
                                         <include>com.lcs.findraco.category.service.CategorySpendingAssembler</include>
                                         <include>com.lcs.findraco.transaction.service.ItemShareAllocator</include>
                                         <include>com.lcs.findraco.plan.service.PlanAuthorization</include>

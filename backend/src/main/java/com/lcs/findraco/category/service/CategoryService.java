@@ -89,11 +89,6 @@ public class CategoryService {
     }
 
     @Transactional(readOnly = true)
-    public List<Category> findAllByPlan(PlanContext ctx) {
-        return categoryRepository.findAllByPlan(plan(ctx));
-    }
-
-    @Transactional(readOnly = true)
     public Page<CategoryResponse> findAllByPlanPaged(CategoryFilter filter, PlanContext ctx) {
         PageRequest pageable = filter.toPageable();
 

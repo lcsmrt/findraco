@@ -35,3 +35,6 @@ build/
 ### Environment variables ###
 .env
 .env.production
+
+# Stray IDE build output
+/bin/

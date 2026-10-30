@@ -133,11 +133,6 @@ public class TransactionService {
     }
 
     @Transactional(readOnly = true)
-    public List<Transaction> findAllByPlan(PlanContext ctx) {
-        return transactionRepository.findAllByPlan(plan(ctx));
-    }
-
-    @Transactional(readOnly = true)
     public Page<TransactionResponse> findAllByPlanPaged(TransactionFilter filter, PlanContext ctx) {
         TransactionSortField sortBy = filter.sortBy();
         Sort.Direction direction = PageRequests.direction(filter.sortDirection());
