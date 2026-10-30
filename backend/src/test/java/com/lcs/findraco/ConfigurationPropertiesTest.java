@@ -7,6 +7,7 @@ import com.lcs.findraco.auth.config.JwtProperties;
 import com.lcs.findraco.auth.config.MailProperties;
 import com.lcs.findraco.auth.config.SessionProperties;
 import com.lcs.findraco.shared.config.AppProperties;
+import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
@@ -32,6 +33,20 @@ class ConfigurationPropertiesTest {
             "app.mail.smtp-port", "587",
             "app.mail.from", "no-reply@findraco.local");
 
+    private static final Map<String, String> VALID_RATE_LIMITS = Map.ofEntries(
+            Map.entry("app.rate-limit.login-ip.capacity", "20"),
+            Map.entry("app.rate-limit.login-ip.period", "PT1M"),
+            Map.entry("app.rate-limit.login-email.capacity", "5"),
+            Map.entry("app.rate-limit.login-email.period", "PT1M"),
+            Map.entry("app.rate-limit.forgot-email.capacity", "3"),
+            Map.entry("app.rate-limit.forgot-email.period", "PT1H"),
+            Map.entry("app.rate-limit.forgot-ip.capacity", "10"),
+            Map.entry("app.rate-limit.forgot-ip.period", "PT1H"),
+            Map.entry("app.rate-limit.register-ip.capacity", "5"),
+            Map.entry("app.rate-limit.register-ip.period", "PT1H"),
+            Map.entry("app.rate-limit.import-user.capacity", "10"),
+            Map.entry("app.rate-limit.import-user.period", "PT1H"));
+
     private static final Map<String, String> VALID_MAIL_STRINGS =
             Map.of("app.mail.smtp-host", "", "app.mail.smtp-username", "", "app.mail.smtp-password", "");
 
@@ -41,7 +56,8 @@ class ConfigurationPropertiesTest {
         JwtProperties.class,
         SessionProperties.class,
         MailProperties.class,
-        CorsProperties.class
+        CorsProperties.class,
+        RateLimitProperties.class
     })
     static class AllProperties {}
 
@@ -88,6 +104,17 @@ class ConfigurationPropertiesTest {
         assertStartupFailsOn(Map.of("app.url", ""), "app", "url");
     }
 
+    @Test
+    void zeroRateLimitCapacityFailsStartup() {
+        assertStartupFailsOn(Map.of("app.rate-limit.login-ip.capacity", "0"), "app.rate-limit", "loginIp.capacity");
+    }
+
+    @Test
+    void missingRateLimitRuleFailsStartup() {
+        runWithout("app.rate-limit.import-user.capacity", "app.rate-limit.import-user.period")
+                .run(context -> assertThat(context).hasFailed());
+    }
+
     private static void assertStartupFailsOn(Map<String, String> overrides, String prefix, String field) {
         runWith(overrides).run(context -> {
             assertThat(context).hasFailed();
@@ -103,9 +130,24 @@ class ConfigurationPropertiesTest {
         });
     }
 
+    private static ApplicationContextRunner runWithout(String... keys) {
+        Map<String, String> properties = new TreeMap<>(VALID);
+        properties.putAll(VALID_MAIL_STRINGS);
+        properties.putAll(VALID_RATE_LIMITS);
+        for (String key : keys) {
+            properties.remove(key);
+        }
+        return new ApplicationContextRunner()
+                .withUserConfiguration(AllProperties.class)
+                .withPropertyValues(properties.entrySet().stream()
+                        .map(entry -> entry.getKey() + "=" + entry.getValue())
+                        .toArray(String[]::new));
+    }
+
     private static ApplicationContextRunner runWith(Map<String, String> overrides) {
         Map<String, String> properties = new TreeMap<>(VALID);
         properties.putAll(VALID_MAIL_STRINGS);
+        properties.putAll(VALID_RATE_LIMITS);
         properties.putAll(overrides);
         String[] pairs = properties.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue())

@@ -1,5 +1,6 @@
 package com.lcs.findraco.shared.error;
 
+import com.lcs.findraco.shared.ratelimit.RateLimitedException;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -39,6 +40,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DomainException.class)
     public ResponseEntity<ProblemDetail> handleDomain(DomainException exception) {
         return ResponseEntity.status(exception.status()).body(Problems.of(exception));
+    }
+
+    @ExceptionHandler(RateLimitedException.class)
+    public ResponseEntity<ProblemDetail> handleRateLimited(RateLimitedException exception) {
+        return ResponseEntity.status(exception.status())
+                .header(HttpHeaders.RETRY_AFTER, String.valueOf(exception.retryAfterSeconds()))
+                .body(Problems.of(exception));
     }
 
     /** Login only: the answer never says whether the e-mail or the password was wrong. */
