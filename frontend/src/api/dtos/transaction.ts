@@ -2,7 +2,7 @@ import { Category } from ".";
 
 export type TransactionType = "CREDIT" | "DEBIT";
 
-export type SplitMode = "EQUAL" | "EXACT" | "PERCENT";
+export type SplitMode = "EQUAL" | "EXACT";
 
 export type ParticipantShare = {
   id: number;

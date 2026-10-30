@@ -99,16 +99,6 @@ public class TransactionExceptions {
         }
     }
 
-    public static class SplitModeNotSupportedException extends DomainException {
-        public SplitModeNotSupportedException(String mode) {
-            super(
-                    ProblemType.SPLIT_MODE_NOT_SUPPORTED,
-                    HttpStatus.UNPROCESSABLE_CONTENT,
-                    "splitMode",
-                    "Split mode " + mode + " is not supported.");
-        }
-    }
-
     public static class InvalidItemException extends DomainException {
         public InvalidItemException(String detail) {
             super(ProblemType.ITEM_INVALID, HttpStatus.UNPROCESSABLE_CONTENT, "items", detail);

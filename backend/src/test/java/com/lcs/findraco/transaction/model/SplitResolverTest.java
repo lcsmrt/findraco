@@ -70,15 +70,6 @@ class SplitResolverTest {
                 .isInstanceOf(TransactionExceptions.ParticipantSharesMismatchException.class);
     }
 
-    @Test
-    void percentModeIsRejected() {
-        List<ParticipantInput> inputs = List.of(new ParticipantInput(1L, null));
-
-        assertThatThrownBy(() -> resolver.resolve(new BigDecimal("100.00"), SplitMode.PERCENT, inputs))
-                .isInstanceOf(TransactionExceptions.SplitModeNotSupportedException.class)
-                .hasMessageContaining("PERCENT");
-    }
-
     private static BigDecimal sum(List<ResolvedShare> shares) {
         return shares.stream().map(ResolvedShare::shareAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
     }

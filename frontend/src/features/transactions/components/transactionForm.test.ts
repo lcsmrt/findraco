@@ -684,7 +684,7 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       categoryId: 9,
       startDate: "2026-06-01",
       participants: [{ memberId: 2 }],
-      splitMode: "PERCENT" as const,
+      splitMode: "EXACT" as const,
     };
     expect(toInlineSavePayload(shared, change).body).toEqual({ ...unchanged, ...change });
   });

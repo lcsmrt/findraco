@@ -371,6 +371,19 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 .asLong();
     }
 
+    @Test
+    void aSplitModeTheApiDoesNotOfferIsRejectedAtTheBoundary() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        String percent = splitRequestBody("100.00", List.of(owner)).replace("\"EQUAL\"", "\"PERCENT\"");
+
+        mockMvc.perform(post(TransactionRoutes.TRANSACTION, plan.getId())
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(percent))
+                .andExpect(problem(HttpStatus.BAD_REQUEST, "malformed-request"));
+    }
+
     private String requestBody(
             String type, String amount, String description, User soleParticipant, List<Map<String, Object>> items)
             throws Exception {

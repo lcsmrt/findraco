@@ -44,7 +44,6 @@ public class SplitResolver {
         return switch (mode) {
             case EQUAL -> resolveEqual(amount, inputs);
             case EXACT -> resolveExact(amount, inputs);
-            case PERCENT -> throw new TransactionExceptions.SplitModeNotSupportedException(mode.name());
         };
     }
 

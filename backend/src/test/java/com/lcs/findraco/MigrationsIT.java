@@ -386,6 +386,37 @@ class MigrationsIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void droppingPercentAbortsWhileAStoredRowUsesIt() {
+        String seeded = "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
+                + "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);"
+                + "INSERT INTO transactions (id, plan_id, created_by, amount, description, type, start_date, split_mode) "
+                + "VALUES (1, 1, 1, 5.00, 'T', 'DEBIT', '2026-01-01', '%s');";
+
+        assertThatThrownBy(() -> migrateScratchDatabase("18", seeded.formatted("PERCENT"), jdbc -> {}))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V19 precondition failed: 1 rows use the PERCENT split mode");
+        migrateScratchDatabase(
+                "18",
+                seeded.formatted("EXACT"),
+                scratch -> assertThat(scratch.queryForObject("SELECT split_mode FROM transactions", String.class))
+                        .isEqualTo("EXACT"));
+    }
+
+    @Test
+    void thePercentSplitModeIsRejectedByTheDatabase() {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        assertThatThrownBy(() -> new JdbcTemplate(dataSource)
+                        .update(
+                                "INSERT INTO transactions (plan_id, created_by, amount, description, type, start_date, split_mode) "
+                                        + "VALUES (?, ?, 5.00, 'T', 'DEBIT', '2026-01-01', 'PERCENT')",
+                                plan.getId(),
+                                owner.getId()))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
     void renameMigrationAbortsWhenTransactionsAlreadyExists() {
         assertThatThrownBy(() -> migrateScratchDatabaseAfter("CREATE TABLE public.transactions (id bigint)"))
                 .isInstanceOf(FlywayException.class)
