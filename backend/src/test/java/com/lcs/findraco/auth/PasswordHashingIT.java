@@ -1,7 +1,9 @@
 package com.lcs.findraco.auth;
 
+import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.lcs.findraco.auth.controller.AuthRoutes;
@@ -12,6 +14,7 @@ import com.lcs.findraco.user.repository.UserRepository;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import tools.jackson.databind.ObjectMapper;
@@ -72,5 +75,42 @@ class PasswordHashingIT extends AbstractIntegrationTest {
         assertThat(userRepository.findByEmail(email).orElseThrow().getPassword())
                 .startsWith(ARGON2ID);
         login(email, "password123").andExpect(status().isOk());
+    }
+
+    // BST-15 AC 1-4: the policy answers 422 with the code of the rule, and login normalises like sign-up.
+
+    private ResultActions register(String email, String password) throws Exception {
+        return mockMvc.perform(post(UserRoutes.USER)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(
+                        Map.of("name", "New User", "email", email, "password", password))));
+    }
+
+    @Test
+    void aTooShortPasswordIsRefusedWithItsCode() throws Exception {
+        register("short-" + System.nanoTime() + "@test.com", "1234567")
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
+                .andExpect(jsonPath("$.errors[?(@.field == 'password')].code").value("PasswordLength"));
+    }
+
+    @Test
+    void aPasswordWithAnInvisibleCharacterIsRefusedWithItsCode() throws Exception {
+        register(
+                        "zero-width-" + System.nanoTime() + "@test.com",
+                        "pass" + new String(Character.toChars(0x200B)) + "word1")
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
+                .andExpect(jsonPath("$.errors[?(@.field == 'password')].code").value("PasswordCharacters"));
+    }
+
+    @Test
+    void anAccentTypedAsTwoCodePointsSignsInWithTheSingleCodePointSpelling() throws Exception {
+        String email = "accent-" + System.nanoTime() + "@test.com";
+        String decomposed =
+                "senha-ac" + new String(Character.toChars('c')) + new String(Character.toChars(0x327)) + "ao";
+        String composed = "senha-ac" + new String(Character.toChars(0xE7)) + "ao";
+        register(email, decomposed).andExpect(status().isCreated());
+
+        login(email, composed).andExpect(status().isOk());
+        login(email, decomposed).andExpect(status().isOk());
     }
 }

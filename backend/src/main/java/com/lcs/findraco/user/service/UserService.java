@@ -4,6 +4,7 @@ import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.error.MalformedRequestException;
 import com.lcs.findraco.shared.ratelimit.RateLimit;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
+import com.lcs.findraco.shared.security.PasswordNormalizer;
 import com.lcs.findraco.user.exception.UserExceptions;
 import com.lcs.findraco.user.model.TimeZoneMode;
 import com.lcs.findraco.user.model.User;
@@ -47,8 +48,7 @@ public class UserService {
         User user = new User();
         user.setName(dto.name());
         user.setEmail(dto.email());
-        String encryptedPassword = encoder.encode(dto.password());
-        user.setPassword(encryptedPassword);
+        user.setPassword(encoder.encode(PasswordNormalizer.normalize(dto.password())));
 
         User savedUser = userRepository.save(user);
         planService.provisionDefaultPlan(savedUser);
@@ -87,15 +87,14 @@ public class UserService {
         User user = load(userId);
         user.setName(dto.name());
         user.setEmail(dto.email());
-        String encryptedPassword = encoder.encode(dto.password());
-        user.setPassword(encryptedPassword);
+        user.setPassword(encoder.encode(PasswordNormalizer.normalize(dto.password())));
 
         return UserResponse.from(userRepository.save(user));
     }
 
     @Transactional
     public void changePassword(User user, String rawPassword) {
-        user.setPassword(encoder.encode(rawPassword));
+        user.setPassword(encoder.encode(PasswordNormalizer.normalize(rawPassword)));
         userRepository.save(user);
     }
 

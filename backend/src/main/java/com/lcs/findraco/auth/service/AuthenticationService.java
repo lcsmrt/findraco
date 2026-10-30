@@ -4,6 +4,7 @@ import com.lcs.findraco.auth.request.LoginRequest;
 import com.lcs.findraco.auth.service.SessionService.IssuedSession;
 import com.lcs.findraco.shared.ratelimit.RateLimit;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
+import com.lcs.findraco.shared.security.PasswordNormalizer;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -34,7 +35,7 @@ public class AuthenticationService {
         rateLimiter.consume(RateLimit.LOGIN_EMAIL, dto.email());
 
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(dto.email(), dto.password()));
+                new UsernamePasswordAuthenticationToken(dto.email(), PasswordNormalizer.normalize(dto.password())));
 
         return sessionService.open(((CustomUserDetails) authentication.getPrincipal()).getUser());
     }

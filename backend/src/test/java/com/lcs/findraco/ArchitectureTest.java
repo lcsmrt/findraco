@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
+import com.lcs.findraco.shared.security.ValidPassword;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.Transaction;
@@ -264,7 +265,10 @@ class ArchitectureTest {
                             || type.isAssignableTo(Map.class)))
             .should()
             .beAnnotatedWith(Size.class)
-            .because("an unbounded input reaches the database or a loop; strings stop at their column length");
+            .orShould()
+            .beAnnotatedWith(ValidPassword.class)
+            .because("an unbounded input reaches the database or a loop; strings stop at their column length"
+                    + " (a password's bound is its policy)");
 
     @ArchTest
     static final ArchRule dtosKeepTheirComponentNames = noClasses()

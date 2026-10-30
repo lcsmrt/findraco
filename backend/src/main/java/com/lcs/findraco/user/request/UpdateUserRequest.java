@@ -1,5 +1,6 @@
 package com.lcs.findraco.user.request;
 
+import com.lcs.findraco.shared.security.ValidPassword;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -14,6 +15,5 @@ public record UpdateUserRequest(
         @Size(max = 255, message = "User email cannot exceed 255 characters.")
         String email,
 
-        @NotBlank(message = "User password cannot be blank.")
-        @Size(max = 128, message = "User password cannot exceed 128 characters.")
+        @NotBlank(message = "User password cannot be blank.") @ValidPassword
         String password) {}

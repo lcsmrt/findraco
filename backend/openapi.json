@@ -406,8 +406,7 @@
             "type" : "string"
           },
           "password" : {
-            "maxLength" : 128,
-            "minLength" : 0,
+            "minLength" : 1,
             "type" : "string"
           }
         },
@@ -530,7 +529,7 @@
             "type" : "string"
           },
           "password" : {
-            "maxLength" : 128,
+            "maxLength" : 1024,
             "minLength" : 0,
             "type" : "string"
           }
@@ -848,8 +847,7 @@
       "ResetPasswordRequest" : {
         "properties" : {
           "password" : {
-            "maxLength" : 128,
-            "minLength" : 0,
+            "minLength" : 1,
             "type" : "string"
           },
           "token" : {
@@ -1267,8 +1265,7 @@
             "type" : "string"
           },
           "password" : {
-            "maxLength" : 128,
-            "minLength" : 0,
+            "minLength" : 1,
             "type" : "string"
           }
         },
