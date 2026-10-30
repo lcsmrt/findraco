@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
@@ -31,7 +32,8 @@ class RecurringTransactionGeneratorTest {
     // Fixed "today" so open-ended horizon assertions are deterministic regardless of wall-clock time.
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-07-24T00:00:00Z"), ZoneOffset.UTC);
 
-    private final RecurringTransactionGenerator generator = new RecurringTransactionGenerator(FIXED_CLOCK);
+    private final RecurringTransactionGenerator generator =
+            new RecurringTransactionGenerator(FIXED_CLOCK, new SeriesProperties(12, "-"));
 
     private final User user = userWithId(1L);
     private final User other = userWithId(2L);

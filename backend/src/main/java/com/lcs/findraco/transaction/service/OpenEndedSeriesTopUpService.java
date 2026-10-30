@@ -1,6 +1,7 @@
 package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.Transaction;
@@ -8,64 +9,64 @@ import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Lazy, on-read "rolling top-up" for open-ended (mode = RECURRING, endDate = null) series (D1/D2,
- * see {@code .specs/features/recurrence-model-v2/design.md}). Each due definition is materialized
- * from its {@code generatedThrough} watermark up through the rolling horizon ({@code today + 12mo}),
- * reflecting the definition's *current* amount/category/split — consistent with a series-edit
- * scope ALL.
+ * Generates the missing occurrences of a plan's open-ended (mode = RECURRING, endDate = null) series
+ * up to a date, each from its {@code generatedThrough} mark, with the definition's current amount,
+ * category and split, and advances the plan's {@code seriesGeneratedUntil} mark. The daily
+ * {@link SeriesTopUpJob} and {@link SeriesHorizon} (a read that goes past the mark) call it; a read
+ * inside the mark never does.
  *
- * <p>Bounded series ({@code endDate} set) are excluded entirely by the due-query and are never
- * touched by this service.
- *
- * <p><b>Idempotency</b>: the due-query locks each candidate definition row
- * ({@code PESSIMISTIC_WRITE}), so a concurrent top-up serializes and observes the already-advanced
- * watermark. As a second line of defense (e.g. the watermark being reset backward), generated
- * candidates are also filtered against the series' already-persisted occurrence dates before
- * saving, so no duplicate row is ever written regardless of how top-up is re-triggered.
+ * <p>Bounded series are never touched. Each due definition is row-locked ({@code PESSIMISTIC_WRITE}),
+ * so two callers serialize and the later one finds the mark already advanced. Candidates are also
+ * filtered against the series' persisted occurrence dates, so a mark reset backward cannot duplicate a row.
  */
 @Service
 public class OpenEndedSeriesTopUpService {
 
-    /** Rolling look-ahead horizon (in months), mirrors {@code RecurringTransactionGenerator}'s D2 horizon. */
-    private static final int HORIZON_MONTHS = 12;
-
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final TransactionRepository transactionRepository;
     private final RecurringTransactionGenerator recurringTransactionGenerator;
+    private final SeriesProperties properties;
     private final EntityManager entityManager;
 
     public OpenEndedSeriesTopUpService(
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             TransactionRepository transactionRepository,
             RecurringTransactionGenerator recurringTransactionGenerator,
+            SeriesProperties properties,
             EntityManager entityManager) {
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.transactionRepository = transactionRepository;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
+        this.properties = properties;
         this.entityManager = entityManager;
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    /** Tops the plan's open-ended series up to the horizon of {@code today}. */
+    @Transactional
     public void topUp(long planId, LocalDate today) {
-        Plan plan = entityManager.getReference(Plan.class, planId);
-        LocalDate horizonCap = today.plusMonths(HORIZON_MONTHS);
-
-        List<RecurrenceDefinition> due = recurrenceDefinitionRepository.findOpenEndedDue(plan, horizonCap);
-        for (RecurrenceDefinition definition : due) {
-            topUpOne(definition, horizonCap);
-        }
+        extendTo(planId, properties.horizonFrom(today));
     }
 
-    private void topUpOne(RecurrenceDefinition definition, LocalDate horizonCap) {
+    /** Tops the plan's open-ended series up through {@code through}, however far past the horizon. */
+    @Transactional
+    public void extendTo(long planId, LocalDate through) {
+        Plan plan = entityManager.getReference(Plan.class, planId);
+
+        List<RecurrenceDefinition> due = recurrenceDefinitionRepository.findOpenEndedDue(plan, through);
+        for (RecurrenceDefinition definition : due) {
+            topUpOne(definition, through);
+        }
+        plan.advanceSeriesGeneratedUntil(through);
+    }
+
+    private void topUpOne(RecurrenceDefinition definition, LocalDate through) {
         LocalDate afterExclusive = definition.getGeneratedThrough() != null
                 ? definition.getGeneratedThrough()
                 : definition.getStartDate().minusMonths(1);
@@ -75,31 +76,27 @@ public class OpenEndedSeriesTopUpService {
                 .toList();
 
         List<Transaction> candidates =
-                recurringTransactionGenerator.generateForwardWindow(definition, afterExclusive, horizonCap, shares);
+                recurringTransactionGenerator.generateForwardWindow(definition, afterExclusive, through, shares);
 
-        if (candidates.isEmpty()) {
-            return;
+        if (!candidates.isEmpty()) {
+            Set<LocalDate> existingDates =
+                    transactionRepository
+                            .findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId())
+                            .stream()
+                            .map(Transaction::getStartDate)
+                            .collect(Collectors.toSet());
+
+            List<Transaction> toPersist = candidates.stream()
+                    .filter(occurrence -> !existingDates.contains(occurrence.getStartDate()))
+                    .toList();
+            if (!toPersist.isEmpty()) {
+                transactionRepository.saveAll(toPersist);
+            }
         }
 
-        Set<LocalDate> existingDates =
-                transactionRepository.findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId()).stream()
-                        .map(Transaction::getStartDate)
-                        .collect(Collectors.toSet());
-
-        List<Transaction> toPersist = candidates.stream()
-                .filter(occurrence -> !existingDates.contains(occurrence.getStartDate()))
-                .toList();
-
-        if (!toPersist.isEmpty()) {
-            transactionRepository.saveAll(toPersist);
-        }
-
-        LocalDate lastGenerated = candidates.stream()
-                .map(Transaction::getStartDate)
-                .max(Comparator.naturalOrder())
-                .orElse(definition.getGeneratedThrough());
-
-        definition.markGeneratedThrough(lastGenerated);
+        // The mark moves to the requested date even when no occurrence fell in the window, so the
+        // series is not due again until the horizon moves.
+        definition.markGeneratedThrough(through);
         recurrenceDefinitionRepository.save(definition);
     }
 }

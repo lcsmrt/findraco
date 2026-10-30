@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.service;
 
+import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
@@ -32,18 +33,12 @@ public class SeriesRegenerator {
 
     private static final int MAX_OCCURRENCES = 120;
 
-    /**
-     * Rolling look-ahead horizon (in months) applied when a RECURRING definition's {@code endDate}
-     * is {@code null} (open-ended series, P3 re-opened via {@code editSeries}). Mirrors {@code
-     * RecurringTransactionGenerator.OPEN_ENDED_HORIZON_MONTHS} / {@code
-     * OpenEndedSeriesTopUpService.HORIZON_MONTHS}.
-     */
-    private static final int OPEN_ENDED_HORIZON_MONTHS = 12;
-
     private final Clock clock;
+    private final SeriesProperties series;
 
-    public SeriesRegenerator(Clock clock) {
+    public SeriesRegenerator(Clock clock, SeriesProperties series) {
         this.clock = clock;
+        this.series = series;
     }
 
     public record SeriesEditResult(
@@ -117,9 +112,7 @@ public class SeriesRegenerator {
     private List<TargetOccurrence> buildRecurringTargets(RecurrenceDefinition def) {
         // A null endDate means the (re-)opened series is open-ended (P3, full-replace semantics):
         // regenerate out to the rolling horizon, exactly as create-time generation would.
-        LocalDate effectiveEnd = def.getEndDate() != null
-                ? def.getEndDate()
-                : LocalDate.now(clock).plusMonths(OPEN_ENDED_HORIZON_MONTHS);
+        LocalDate effectiveEnd = def.getEndDate() != null ? def.getEndDate() : series.horizonFrom(LocalDate.now(clock));
 
         List<TargetOccurrence> targets = new ArrayList<>();
         // Each date is counted from the start, so a day clamped in a short month does not carry over.

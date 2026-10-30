@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceInterval;
@@ -33,7 +34,7 @@ class SeriesRegeneratorTest {
     // wall-clock time, mirroring RecurringTransactionGeneratorTest's FIXED_CLOCK.
     private static final Clock FIXED_CLOCK = Clock.fixed(Instant.parse("2026-07-24T00:00:00Z"), ZoneOffset.UTC);
 
-    private final SeriesRegenerator regenerator = new SeriesRegenerator(FIXED_CLOCK);
+    private final SeriesRegenerator regenerator = new SeriesRegenerator(FIXED_CLOCK, new SeriesProperties(12, "-"));
 
     private final Plan plan = new Plan();
     private final User user = userWithId(1L);

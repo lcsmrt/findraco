@@ -13,6 +13,7 @@ import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
+import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,6 +104,18 @@ public class PlanService {
         return membershipRepository
                 .findByPlanAndUser_Id(plan, userId)
                 .orElseThrow(() -> new PlanExceptions.NotAMemberException(planId));
+    }
+
+    /** Ids of the active plans whose open-ended series are generated only before {@code through}. */
+    @Transactional(readOnly = true)
+    public List<Long> findPlanIdsGeneratedBefore(LocalDate through) {
+        return planRepository.findIdsGeneratedBefore(through);
+    }
+
+    /** The date the plan's open-ended series are generated through, or null before the first top-up. */
+    @Transactional(readOnly = true)
+    public LocalDate seriesGeneratedUntil(long planId) {
+        return planRepository.findSeriesGeneratedUntil(planId).orElse(null);
     }
 
     /** Every membership of the plan, for features that read the plan's members (no requester check). */

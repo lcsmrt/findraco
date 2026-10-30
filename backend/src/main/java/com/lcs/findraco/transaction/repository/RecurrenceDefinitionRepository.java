@@ -32,11 +32,10 @@ public interface RecurrenceDefinitionRepository extends JpaRepository<Recurrence
     @Query("UPDATE VERSIONED RecurrenceDefinition rd SET rd.category = :target WHERE rd.category = :source")
     int reassignCategory(@Param("source") Category source, @Param("target") Category target);
 
-    // Rolling top-up due-set: open-ended (endDate IS NULL) RECURRING definitions whose materialized
-    // watermark hasn't reached the rolling horizon yet. Bounded series (endDate NOT NULL) never
-    // match, so they are never touched. Locked PESSIMISTIC_WRITE so a concurrent top-up serializes
-    // on each definition row and observes the already-advanced watermark (idempotency, see
-    // OpenEndedSeriesTopUpService).
+    // Top-up due-set: open-ended RECURRING definitions whose mark has not reached the requested date.
+    // The mark moves to that date whether or not an occurrence fell in the window, so a definition is
+    // not due again until the horizon moves. Bounded series never match. Locked PESSIMISTIC_WRITE so a
+    // concurrent top-up serializes on each definition and finds the mark already advanced.
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT rd FROM RecurrenceDefinition rd " + "WHERE rd.plan = :plan "
             + "AND rd.mode = com.lcs.findraco.transaction.model.RecurrenceMode.RECURRING "

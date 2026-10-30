@@ -8,6 +8,7 @@ import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.error.StaleVersionException;
 import com.lcs.findraco.shared.web.PageRequests;
+import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.ItemDraft;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
@@ -39,6 +40,7 @@ import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -66,6 +68,8 @@ public class TransactionService {
 
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final SeriesRegenerator seriesRegenerator;
+    private final SeriesProperties seriesProperties;
+    private final Clock clock;
     private final EntityManager entityManager;
 
     public TransactionService(
@@ -77,6 +81,8 @@ public class TransactionService {
             UserService userService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             SeriesRegenerator seriesRegenerator,
+            SeriesProperties seriesProperties,
+            Clock clock,
             EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
         this.categoryService = categoryService;
@@ -86,6 +92,8 @@ public class TransactionService {
         this.userService = userService;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.seriesRegenerator = seriesRegenerator;
+        this.seriesProperties = seriesProperties;
+        this.clock = clock;
         this.entityManager = entityManager;
     }
 
@@ -296,9 +304,20 @@ public class TransactionService {
         if (dto.mode() == RecurrenceMode.RECURRING && !occurrences.isEmpty()) {
             definition.markGeneratedThrough(occurrences.getLast().getStartDate());
         }
+        if (definition.getMode() == RecurrenceMode.RECURRING && definition.getEndDate() == null) {
+            coverOpenEndedSeries(definition);
+        }
 
         return TransactionSeriesResponse.from(
                 transactionRepository.saveAll(occurrences), transaction -> permissions(transaction, ctx));
+    }
+
+    /**
+     * A series just generated to the horizon joins the plan, so the plan's mark cannot claim more than
+     * the horizon: a read past it extends the new series too.
+     */
+    private void coverOpenEndedSeries(RecurrenceDefinition definition) {
+        definition.getPlan().lowerSeriesGeneratedUntil(seriesProperties.horizonFrom(LocalDate.now(clock)));
     }
 
     @Transactional
@@ -492,6 +511,9 @@ public class TransactionService {
             definition.markGeneratedThrough(generatedThrough);
         }
 
+        if (definition.getMode() == RecurrenceMode.RECURRING && definition.getEndDate() == null) {
+            coverOpenEndedSeries(definition);
+        }
         recurrenceDefinitionRepository.saveAndFlush(definition);
 
         return TransactionSeriesResponse.from(combined, transaction -> permissions(transaction, ctx));

@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.service;
 
+import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.Share;
@@ -19,13 +20,12 @@ public class RecurringTransactionGenerator {
 
     private static final int MAX_OCCURRENCES = 120;
 
-    /** Rolling look-ahead horizon (in months) applied to open-ended (null endDate) RECURRING series. */
-    private static final int OPEN_ENDED_HORIZON_MONTHS = 12;
-
     private final Clock clock;
+    private final SeriesProperties series;
 
-    public RecurringTransactionGenerator(Clock clock) {
+    public RecurringTransactionGenerator(Clock clock, SeriesProperties series) {
         this.clock = clock;
+        this.series = series;
     }
 
     /** The occurrences of a new series, unsaved; {@code definition} carries the plan, creator, category and split. */
@@ -57,8 +57,7 @@ public class RecurringTransactionGenerator {
 
     private List<Transaction> generateRecurring(
             CreateSeriesRequest dto, RecurrenceDefinition definition, List<Share> shares) {
-        LocalDate effectiveEnd =
-                dto.endDate() != null ? dto.endDate() : LocalDate.now(clock).plusMonths(OPEN_ENDED_HORIZON_MONTHS);
+        LocalDate effectiveEnd = dto.endDate() != null ? dto.endDate() : series.horizonFrom(LocalDate.now(clock));
 
         List<Transaction> occurrences = new ArrayList<>();
         // Each date is counted from the start, so a day clamped in a short month does not carry over.

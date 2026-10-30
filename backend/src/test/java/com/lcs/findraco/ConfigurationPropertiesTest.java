@@ -10,6 +10,7 @@ import com.lcs.findraco.auth.config.SessionProperties;
 import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
 import com.lcs.findraco.transaction.config.ImportProperties;
+import com.lcs.findraco.transaction.config.SeriesProperties;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
@@ -40,6 +41,8 @@ class ConfigurationPropertiesTest {
             "app.mail.from", "no-reply@findraco.local");
 
     private static final Map<String, String> VALID_RATE_LIMITS = Map.ofEntries(
+            Map.entry("app.series.horizon-months", "12"),
+            Map.entry("app.series.top-up-cron", "0 30 3 * * *"),
             Map.entry("app.import.max-bytes", "1048576"),
             Map.entry("app.import.max-rows", "5000"),
             Map.entry("app.import.max-errors", "50"),
@@ -71,7 +74,8 @@ class ConfigurationPropertiesTest {
         CorsProperties.class,
         MailExecutorProperties.class,
         RateLimitProperties.class,
-        ImportProperties.class
+        ImportProperties.class,
+        SeriesProperties.class
     })
     static class AllProperties {}
 
@@ -139,6 +143,16 @@ class ConfigurationPropertiesTest {
     @Test
     void missingAppUrlFailsStartup() {
         assertStartupFailsOn(Map.of("app.url", ""), "app", "url");
+    }
+
+    @Test
+    void zeroSeriesHorizonFailsStartup() {
+        assertStartupFailsOn(Map.of("app.series.horizon-months", "0"), "app.series", "horizonMonths");
+    }
+
+    @Test
+    void blankSeriesCronFailsStartup() {
+        assertStartupFailsOn(Map.of("app.series.top-up-cron", ""), "app.series", "topUpCron");
     }
 
     @Test
