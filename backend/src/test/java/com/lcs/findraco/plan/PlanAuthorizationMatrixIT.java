@@ -3,12 +3,16 @@ package com.lcs.findraco.plan;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.controller.PlanContextArgumentResolver;
+import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.service.PlanAuthorization;
@@ -20,13 +24,30 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import java.util.function.Function;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.web.method.HandlerMethod;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
@@ -48,7 +69,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @Autowired
     private TransactionRepository transactionRepository;
 
-    private record PlanCast(Plan plan, User owner, User editor, User contributor, User viewer, User nonMember) {}
+    record PlanCast(Plan plan, User owner, User editor, User contributor, User viewer, User nonMember) {}
 
     private PlanCast castPlan() {
         User owner = fixtures.aUser();
@@ -278,6 +299,468 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("name", "Should not persist"))))
                 .andExpect(status().isNotFound());
+    }
+
+    // ---- The matrix: every plan-scoped endpoint against every role ----
+
+    enum Who {
+        OWNER,
+        EDITOR,
+        CONTRIBUTOR,
+        VIEWER,
+        NON_MEMBER
+    }
+
+    /** Everything one call of the matrix needs: the cast, who calls, and one of each thing a route can address. */
+    record Scene(
+            PlanCast cast,
+            User caller,
+            User target,
+            Transaction row,
+            Category category,
+            String seriesId,
+            long seriesVersion,
+            long invitationId) {}
+
+    /** A route and the status each role gets; a non-member always gets 404 (the plan does not exist for them). */
+    record Row(String key, Function<Scene, RequestBuilder> call, int owner, int editor, int contributor, int viewer) {
+
+        int expected(Who who) {
+            return switch (who) {
+                case OWNER -> owner;
+                case EDITOR -> editor;
+                case CONTRIBUTOR -> contributor;
+                case VIEWER -> viewer;
+                case NON_MEMBER -> 404;
+            };
+        }
+    }
+
+    private static final LocalDate TODAY = LocalDate.of(2026, 7, 15);
+    private static final String PLAN_ID = ApiRoutes.PLAN + "/{id}";
+    private static final String TX = TransactionRoutes.TRANSACTION;
+    private static final String CAT = CategoryRoutes.CATEGORY;
+
+    /**
+     * The routes that answer the same to every caller whatever their role on a plan: public, or about the caller
+     * themselves, or addressed by a token. A new route lands here or in {@link #rows()}, never nowhere.
+     */
+    private static final Set<String> NOT_ROLE_SCOPED = Set.of(
+            "POST " + ApiRoutes.PLAN,
+            "GET " + ApiRoutes.PLAN,
+            "GET " + PlanRoutes.INVITATION + "/{token}",
+            "POST " + PlanRoutes.INVITATION + "/{token}/accept",
+            "POST /api/findraco/auth/login",
+            "POST /api/findraco/auth/refresh",
+            "POST /api/findraco/auth/logout",
+            "POST /api/findraco/auth/forgot-password",
+            "GET /api/findraco/auth/reset-password/validate",
+            "POST /api/findraco/auth/reset-password",
+            "POST /api/findraco/user",
+            "GET /api/findraco/user/me",
+            "PUT /api/findraco/user",
+            "PATCH /api/findraco/user/me/time-zone");
+
+    private static List<Row> rows() {
+        return List.of(
+                new Row("GET " + PLAN_ID, s -> get(PLAN_ID, s.cast().plan().getId()), 200, 200, 200, 200),
+                new Row(
+                        "GET " + PLAN_ID + "/members",
+                        s -> get(PLAN_ID + "/members", s.cast().plan().getId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
+                        "PUT " + PLAN_ID,
+                        s -> put(PLAN_ID, s.cast().plan().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":\"Renamed\"}"),
+                        200,
+                        403,
+                        403,
+                        403),
+                // The owner of a plan holds a second plan, so the deletion is not the last-plan refusal.
+                new Row(
+                        "DELETE " + PLAN_ID,
+                        s -> delete(PLAN_ID, s.cast().plan().getId()),
+                        204,
+                        403,
+                        403,
+                        403),
+                // The owner cannot leave (409 last-owner); a member with another plan can.
+                new Row(
+                        "POST " + PLAN_ID + "/leave",
+                        s -> post(PLAN_ID + "/leave", s.cast().plan().getId()),
+                        409,
+                        204,
+                        204,
+                        204),
+                new Row(
+                        "POST " + PLAN_ID + "/transfer",
+                        s -> post(PLAN_ID + "/transfer", s.cast().plan().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"newOwnerUserId\":" + s.target().getId() + "}"),
+                        204,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "PUT " + PLAN_ID + "/members/{userId}",
+                        s -> put(
+                                        PLAN_ID + "/members/{userId}",
+                                        s.cast().plan().getId(),
+                                        s.target().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"role\":\"VIEWER\"}"),
+                        200,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "DELETE " + PLAN_ID + "/members/{userId}",
+                        s -> delete(
+                                PLAN_ID + "/members/{userId}",
+                                s.cast().plan().getId(),
+                                s.target().getId()),
+                        204,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "POST " + PlanRoutes.PLAN_INVITATION,
+                        s -> post(PlanRoutes.PLAN_INVITATION, s.cast().plan().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"role\":\"EDITOR\",\"type\":\"LINK\"}"),
+                        201,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "GET " + PlanRoutes.PLAN_INVITATION,
+                        s -> get(PlanRoutes.PLAN_INVITATION, s.cast().plan().getId()),
+                        200,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "DELETE " + PlanRoutes.PLAN_INVITATION + "/{invitationId}",
+                        s -> delete(
+                                PlanRoutes.PLAN_INVITATION + "/{invitationId}",
+                                s.cast().plan().getId(),
+                                s.invitationId()),
+                        204,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "GET " + TX + "/{id}",
+                        s -> get(TX + "/{id}", s.cast().plan().getId(), s.row().getId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row("GET " + TX, s -> get(TX, s.cast().plan().getId()), 200, 200, 200, 200),
+                new Row(
+                        "POST " + TX,
+                        s -> post(TX, s.cast().plan().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(transactionJson()),
+                        201,
+                        201,
+                        201,
+                        403),
+                new Row(
+                        "POST " + TX + "/series",
+                        s -> post(TX + "/series", s.cast().plan().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json(installment())),
+                        201,
+                        201,
+                        201,
+                        403),
+                // The row belongs to the owner: a contributor edits and deletes only their own.
+                new Row(
+                        "PUT " + TX + "/{id}",
+                        s -> put(TX + "/{id}", s.cast().plan().getId(), s.row().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(editJson()),
+                        200,
+                        200,
+                        403,
+                        403),
+                new Row(
+                        "POST " + TX + "/import",
+                        s -> multipart(TX + "/import", s.cast().plan().getId())
+                                .file(new MockMultipartFile(
+                                        "file",
+                                        "bank.csv",
+                                        "text/csv",
+                                        "date,amount,id,description\n15/07/2026,-50.00,ref-1,Coffee\n"
+                                                .getBytes(StandardCharsets.UTF_8))),
+                        201,
+                        201,
+                        201,
+                        403),
+                new Row(
+                        "DELETE " + TX + "/{id}",
+                        s -> delete(
+                                TX + "/{id}", s.cast().plan().getId(), s.row().getId()),
+                        204,
+                        204,
+                        403,
+                        403),
+                new Row(
+                        "DELETE " + TX + "/series/{seriesId}",
+                        s -> delete(TX + "/series/{seriesId}", s.cast().plan().getId(), s.seriesId())
+                                .param("scope", "ALL"),
+                        204,
+                        204,
+                        403,
+                        403),
+                new Row(
+                        "GET " + TX + "/series/{seriesId}",
+                        s -> get(TX + "/series/{seriesId}", s.cast().plan().getId(), s.seriesId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
+                        "PUT " + TX + "/series/{seriesId}",
+                        s -> put(TX + "/series/{seriesId}", s.cast().plan().getId(), s.seriesId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json(editSeriesBody(s))),
+                        200,
+                        200,
+                        403,
+                        403),
+                new Row(
+                        "GET " + CAT + "/spending",
+                        s -> get(CAT + "/spending", s.cast().plan().getId())
+                                .param("startDate", "2026-01-01")
+                                .param("endDate", "2026-12-31"),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
+                        "GET " + CAT + "/{id}",
+                        s -> get(
+                                CAT + "/{id}",
+                                s.cast().plan().getId(),
+                                s.category().getId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
+                        "GET " + CAT + "/{id}/usage",
+                        s -> get(
+                                CAT + "/{id}/usage",
+                                s.cast().plan().getId(),
+                                s.category().getId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row("GET " + CAT, s -> get(CAT, s.cast().plan().getId()), 200, 200, 200, 200),
+                new Row(
+                        "POST " + CAT,
+                        s -> post(CAT, s.cast().plan().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"type\":\"DEBIT\",\"description\":\"New category\"}"),
+                        201,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "PUT " + CAT + "/{id}",
+                        s -> put(
+                                        CAT + "/{id}",
+                                        s.cast().plan().getId(),
+                                        s.category().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"type\":\"DEBIT\",\"description\":\"Renamed\",\"version\":0}"),
+                        200,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "DELETE " + CAT + "/{id}",
+                        s -> delete(
+                                CAT + "/{id}",
+                                s.cast().plan().getId(),
+                                s.category().getId()),
+                        204,
+                        403,
+                        403,
+                        403),
+                new Row(
+                        "GET " + DashboardRoutes.DASHBOARD,
+                        s -> get(DashboardRoutes.DASHBOARD, s.cast().plan().getId())
+                                .param("startDate", "2026-01-01")
+                                .param("endDate", "2026-12-31"),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
+                        "GET " + DashboardRoutes.DASHBOARD + "/trend",
+                        s -> get(
+                                        DashboardRoutes.DASHBOARD + "/trend",
+                                        s.cast().plan().getId())
+                                .param("startDate", "2026-01-01")
+                                .param("endDate", "2026-12-31"),
+                        200,
+                        200,
+                        200,
+                        200));
+    }
+
+    static Stream<Arguments> everyRouteForEveryRole() {
+        return rows().stream()
+                .flatMap(row ->
+                        Stream.of(Who.values()).map(who -> Arguments.argumentSet(row.key() + " as " + who, row, who)));
+    }
+
+    @ParameterizedTest
+    @MethodSource("everyRouteForEveryRole")
+    void eachRouteAnswersEachRoleAsTheMatrixSays(Row row, Who who) throws Exception {
+        Scene scene = scene(who);
+
+        RequestBuilder call = row.call().apply(scene);
+        RequestBuilder signedIn =
+                context -> testAuthHelper.asUser(scene.caller()).postProcessRequest(call.buildRequest(context));
+        int status = mockMvc.perform(signedIn).andReturn().getResponse().getStatus();
+
+        assertThat(status).as("%s as %s", row.key(), who).isEqualTo(row.expected(who));
+    }
+
+    @Autowired
+    @Qualifier("requestMappingHandlerMapping")
+    private RequestMappingHandlerMapping handlerMapping;
+
+    @Test
+    void everyEndpointOfTheApplicationHasAMatrixRowOrIsListedAsNotRoleScoped() {
+        Set<String> endpoints = new TreeSet<>();
+        for (var entry : handlerMapping.getHandlerMethods().entrySet()) {
+            HandlerMethod handler = entry.getValue();
+            if (!handler.getBeanType().getPackageName().startsWith("com.lcs.findraco")
+                    || handler.getBeanType().getSimpleName().equals("ProblemErrorController")) {
+                continue;
+            }
+            RequestMappingInfo info = entry.getKey();
+            for (String pattern : info.getPathPatternsCondition().getPatternValues()) {
+                for (HttpMethod method : info.getMethodsCondition().getMethods().stream()
+                        .map(m -> HttpMethod.valueOf(m.name()))
+                        .toList()) {
+                    endpoints.add(method + " " + pattern);
+                }
+            }
+        }
+        Set<String> covered = new TreeSet<>(NOT_ROLE_SCOPED);
+        rows().forEach(row -> covered.add(row.key()));
+
+        assertThat(endpoints).as("an endpoint without a matrix row").isSubsetOf(covered);
+        assertThat(covered).as("a matrix row for a route that no longer exists").isSubsetOf(endpoints);
+    }
+
+    private Scene scene(Who who) throws Exception {
+        PlanCast cast = castPlan();
+        User target = fixtures.aUser();
+        fixtures.addMember(cast.plan(), target, PlanRole.EDITOR);
+        for (User member : List.of(cast.owner(), cast.editor(), cast.contributor(), cast.viewer())) {
+            fixtures.aPlan(member);
+        }
+        Transaction row =
+                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("50.00"), TransactionType.DEBIT);
+        Category category = fixtures.aCategory(cast.plan(), TransactionType.DEBIT, "Matrix");
+
+        String seriesId = objectMapper
+                .readTree(mockMvc.perform(post(TX + "/series", cast.plan().getId())
+                                .with(testAuthHelper.asUser(cast.owner()))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json(installment())))
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString())
+                .get("seriesId")
+                .asString();
+        long invitationId = objectMapper
+                .readTree(mockMvc.perform(
+                                post(PlanRoutes.PLAN_INVITATION, cast.plan().getId())
+                                        .with(testAuthHelper.asUser(cast.owner()))
+                                        .contentType(MediaType.APPLICATION_JSON)
+                                        .content("{\"role\":\"VIEWER\",\"type\":\"LINK\"}"))
+                        .andExpect(status().isCreated())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString())
+                .get("id")
+                .asLong();
+
+        User caller =
+                switch (who) {
+                    case OWNER -> cast.owner();
+                    case EDITOR -> cast.editor();
+                    case CONTRIBUTOR -> cast.contributor();
+                    case VIEWER -> cast.viewer();
+                    case NON_MEMBER -> cast.nonMember();
+                };
+        return new Scene(cast, caller, target, row, category, seriesId, fixtures.seriesVersion(seriesId), invitationId);
+    }
+
+    private static Map<String, Object> editSeriesBody(Scene scene) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("scope", "ALL");
+        body.put("series", installment());
+        body.put("version", scene.seriesVersion());
+        return body;
+    }
+
+    private static Map<String, Object> installment() {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("type", "DEBIT");
+        body.put("amount", new BigDecimal("100.00"));
+        body.put("description", "Laptop");
+        body.put("mode", "INSTALLMENT");
+        body.put("startDate", TODAY.toString());
+        body.put("parcelsNumber", 2);
+        body.put("splitMode", "EQUAL");
+        return body;
+    }
+
+    private static String json(Object value) {
+        return new ObjectMapper().writeValueAsString(value);
+    }
+
+    private static String transactionJson() {
+        return json(Map.of(
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal("30.00"),
+                "description",
+                "Groceries",
+                "startDate",
+                TODAY.toString()));
+    }
+
+    private static String editJson() {
+        return json(Map.of(
+                "type",
+                "DEBIT",
+                "amount",
+                new BigDecimal("41.00"),
+                "description",
+                "Edited",
+                "startDate",
+                TODAY.toString(),
+                "items",
+                List.of(),
+                "version",
+                0));
     }
 
     // ---- Flags agree with the guards: for every role and action, false if and only if the call is refused ----

@@ -493,6 +493,34 @@ class ArchitectureTest {
                 .isEmpty();
     }
 
+    /**
+     * Tests do not mock our own classes (repositories, services): outcomes are checked against the real thing, and
+     * an external boundary gets a hand-written fake (a fixed clock, the in-memory mail sender). The one switch that
+     * makes that mechanical is that no test source uses Mockito at all.
+     */
+    @Test
+    void noTestUsesMockito() throws IOException {
+        List<Path> offenders;
+        try (Stream<Path> files = Files.walk(Path.of("src/test"))) {
+            offenders = files.filter(path -> path.toString().endsWith(".java"))
+                    .filter(path -> !path.endsWith("ArchitectureTest.java"))
+                    .filter(ArchitectureTest::usesMockito)
+                    .toList();
+        }
+
+        assertThat(offenders)
+                .as("write a fake for an external boundary; never mock our own classes")
+                .isEmpty();
+    }
+
+    private static boolean usesMockito(Path source) {
+        try {
+            return Files.readString(source, StandardCharsets.UTF_8).contains("org." + "mockito");
+        } catch (IOException exception) {
+            throw new IllegalStateException("Cannot read " + source, exception);
+        }
+    }
+
     private static boolean suppressesWarnings(Path source) {
         try {
             return Files.readString(source, StandardCharsets.UTF_8).contains("@" + "SuppressWarnings");

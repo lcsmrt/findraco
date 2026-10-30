@@ -2,10 +2,7 @@ package com.lcs.findraco.auth;
 
 import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
+import static org.awaitility.Awaitility.await;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -16,28 +13,29 @@ import com.lcs.findraco.auth.controller.AuthRoutes;
 import com.lcs.findraco.auth.controller.SessionCookies;
 import com.lcs.findraco.auth.model.PasswordResetToken;
 import com.lcs.findraco.auth.repository.PasswordResetTokenRepository;
-import com.lcs.findraco.auth.service.EmailService;
 import com.lcs.findraco.auth.service.OpaqueTokens;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.support.InMemoryMailConfig;
+import com.lcs.findraco.support.RecordingMailSender;
 import com.lcs.findraco.user.model.User;
 import jakarta.servlet.http.Cookie;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.ResultActions;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Drives the password recovery flow through the real endpoints. {@link EmailService} is mocked
- * only to capture the emailed link — the raw token never touches the database, so the link is
- * the one place a test can read it from.
+ * Drives the password recovery flow through the real endpoints. The in-memory mail sender captures the emailed
+ * link: the raw token never touches the database, so the link is the one place a test can read it from.
  */
+@Import(InMemoryMailConfig.class)
 class PasswordRecoveryIT extends AbstractIntegrationTest {
 
     @Autowired
@@ -46,8 +44,13 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
     @Autowired
     private PasswordResetTokenRepository tokenRepository;
 
-    @MockitoBean
-    private EmailService emailService;
+    @Autowired
+    private RecordingMailSender mailSender;
+
+    @BeforeEach
+    void emptyMailbox() {
+        mailSender.reset();
+    }
 
     private ResultActions forgotPassword(String email) throws Exception {
         return mockMvc.perform(post(AuthRoutes.AUTH + "/forgot-password")
@@ -86,13 +89,9 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
                 .getValue();
     }
 
-    /** Returns the tokens of every link emailed to {@code email}, oldest first. */
+    /** Returns the tokens of every link emailed to {@code email}, waiting for the first one. */
     private List<String> emailedTokens(String email) {
-        ArgumentCaptor<String> url = ArgumentCaptor.forClass(String.class);
-        verify(emailService, Mockito.atLeastOnce()).sendPasswordResetEmail(eq(email), url.capture());
-        return url.getAllValues().stream()
-                .map(link -> link.substring(link.indexOf("token=") + "token=".length()))
-                .toList();
+        return mailSender.resetTokensSentTo(email, 1);
     }
 
     @Test
@@ -122,8 +121,12 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent())
                 .andExpect(content().string(known));
 
-        verify(emailService, never())
-                .sendPasswordResetEmail(Mockito.argThat(to -> !to.equals(user.getEmail())), anyString());
+        emailedTokens(user.getEmail());
+        await().during(Duration.ofMillis(300))
+                .atMost(Duration.ofSeconds(5))
+                .untilAsserted(() -> assertThat(mailSender.sent)
+                        .singleElement()
+                        .satisfies(message -> assertThat(message.getTo()).containsExactly(user.getEmail())));
         assertThat(tokenRepository.count()).isEqualTo(1);
     }
 
@@ -144,12 +147,17 @@ class PasswordRecoveryIT extends AbstractIntegrationTest {
     void newRequestInvalidatesPreviousLinks() throws Exception {
         User user = fixtures.aUser();
         forgotPassword(user.getEmail());
+        String first = emailedTokens(user.getEmail()).get(0);
         forgotPassword(user.getEmail());
-        List<String> tokens = emailedTokens(user.getEmail());
+        List<String> tokens = mailSender.resetTokensSentTo(user.getEmail(), 2);
+        String second = tokens.stream()
+                .filter(token -> !token.equals(first))
+                .findFirst()
+                .orElseThrow();
 
-        validate(tokens.get(0)).andExpect(jsonPath("$.valid").value(false));
-        validate(tokens.get(1)).andExpect(jsonPath("$.valid").value(true));
-        resetPassword(tokens.get(0), "new-password")
+        validate(first).andExpect(jsonPath("$.valid").value(false));
+        validate(second).andExpect(jsonPath("$.valid").value(true));
+        resetPassword(first, "new-password")
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "reset-token-invalid"));
     }
 

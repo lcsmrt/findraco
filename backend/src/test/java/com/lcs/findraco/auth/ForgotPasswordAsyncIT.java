@@ -7,22 +7,17 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.lcs.findraco.auth.controller.AuthRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.support.InMemoryMailConfig;
+import com.lcs.findraco.support.RecordingMailSender;
 import com.lcs.findraco.user.model.User;
 import java.time.Duration;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.ObjectMapper;
 
@@ -31,51 +26,18 @@ import tools.jackson.databind.ObjectMapper;
  * afterwards, on the mail executor. The fake sender holds every send until the test lets it go, which a
  * synchronous send would turn into a hang.
  */
-@Import(ForgotPasswordAsyncIT.InMemoryMail.class)
+@Import(InMemoryMailConfig.class)
 class ForgotPasswordAsyncIT extends AbstractIntegrationTest {
-
-    /** Records what would have been sent, from which thread, and holds each send until released. */
-    static final class RecordingSender extends JavaMailSenderImpl {
-
-        final List<SimpleMailMessage> sent = new CopyOnWriteArrayList<>();
-        final List<String> threads = new CopyOnWriteArrayList<>();
-        volatile CountDownLatch release = new CountDownLatch(0);
-
-        @Override
-        public void send(SimpleMailMessage message) {
-            try {
-                release.await();
-            } catch (InterruptedException exception) {
-                Thread.currentThread().interrupt();
-            }
-            threads.add(Thread.currentThread().getName());
-            sent.add(message);
-        }
-    }
-
-    @TestConfiguration(proxyBeanMethods = false)
-    static class InMemoryMail {
-
-        @Bean
-        RecordingSender mailSender() {
-            return new RecordingSender();
-        }
-    }
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
-    private JavaMailSender mailSender;
-
-    private RecordingSender sender;
+    private RecordingMailSender sender;
 
     @BeforeEach
     void resetSender() {
-        sender = (RecordingSender) mailSender;
-        sender.sent.clear();
-        sender.threads.clear();
-        sender.release = new CountDownLatch(0);
+        sender.reset();
     }
 
     private MvcResult forgotPassword(String email) throws Exception {

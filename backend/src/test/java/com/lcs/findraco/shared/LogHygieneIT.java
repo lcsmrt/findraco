@@ -1,16 +1,16 @@
 package com.lcs.findraco.shared;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.lcs.findraco.auth.controller.AuthRoutes;
 import com.lcs.findraco.auth.controller.SessionCookies;
-import com.lcs.findraco.auth.service.EmailService;
+import com.lcs.findraco.auth.model.PasswordResetToken;
+import com.lcs.findraco.auth.repository.PasswordResetTokenRepository;
 import com.lcs.findraco.auth.service.JwtService;
+import com.lcs.findraco.auth.service.OpaqueTokens;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.support.CapturedLogs;
 import com.lcs.findraco.user.controller.UserRoutes;
@@ -19,18 +19,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import tools.jackson.databind.ObjectMapper;
 
 /**
  * Runs registration, sign-in and password recovery through the real endpoints, with the real e-mail
- * service (spied only to read the link it was given), and checks nothing secret or personal reached
+ * service, and checks nothing secret or personal reached
  * any logger. SMTP is off, as on a server without mail, and the test profile is not {@code local}, so
  * the reset link must not be logged either.
  */
@@ -49,8 +47,8 @@ class LogHygieneIT extends AbstractIntegrationTest {
     @Autowired
     private JwtService jwtService;
 
-    @MockitoSpyBean
-    private EmailService emailService;
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository;
 
     private MockHttpServletResponse postJson(String path, Map<String, String> body) throws Exception {
         return mockMvc.perform(post(path)
@@ -98,10 +96,12 @@ class LogHygieneIT extends AbstractIntegrationTest {
 
             postJson(AuthRoutes.AUTH + "/forgot-password", Map.of("email", EMAIL));
             postJson(AuthRoutes.AUTH + "/forgot-password", Map.of("email", UNKNOWN_EMAIL));
-            ArgumentCaptor<String> link = ArgumentCaptor.forClass(String.class);
-            verify(emailService).sendPasswordResetEmail(eq(EMAIL), link.capture());
-            String resetToken = link.getValue().substring(link.getValue().indexOf("token=") + "token=".length());
-            secrets.add(link.getValue());
+            // The raw reset token only ever travels by e-mail, and SMTP is off here; the stored row is re-keyed to a
+            // token this test knows, so the rest of the flow runs with a secret it can look for in the logs.
+            String resetToken = OpaqueTokens.generate();
+            PasswordResetToken stored = tokenRepository.findAll().getFirst();
+            stored.setTokenHash(OpaqueTokens.hash(resetToken));
+            tokenRepository.save(stored);
             secrets.add(resetToken);
 
             mockMvc.perform(get(AuthRoutes.AUTH + "/reset-password/validate").param("token", resetToken))
