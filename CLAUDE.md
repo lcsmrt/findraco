@@ -19,32 +19,47 @@ Personal-finance app: Spring Boot API (`backend`) + React/TS SPA (`frontend`).
 
 ## Backend (`backend`)
 
+Spring Boot 4 / Java 25. Essentials only: each skill holds the full rules, their reasons and what checks
+each one (ArchUnit rule, test, build tool, or review). Read the matching skill before writing backend code.
+
 - Package by feature: `com.lcs.findraco.<auth|user|plan|category|transaction|dashboard>.<layer>`, layers
   `controller`, `service`, `repository`, `model`, `request`, `response`, `exception`, `config` (plus
   `transaction.importer`); cross-cutting code in `shared.<config|error|openapi|security|web|ratelimit>`.
-  Another feature is reached through its `service` or `model` only, and its `response` only from a
-  response that embeds it; never its controllers, requests, exceptions or configuration (ArchUnit).
-- Layered: **controller → service → repository**. Controller resolves identity, delegates one call,
-  wraps in a response record — no business logic.
-- Status: `201` create, `204` delete, `200` read/update (`HttpStatus.CREATED`, not raw `201`).
+  Another feature is reached through its `service` or `model` only; writes to its tables go through its
+  service; a read-only repository over its entity serves aggregate reads. → `/backend-structure`
+- Layered: **controller → service → repository**. The controller resolves identity, delegates one call
+  and returns the response; the service runs the rules in its transaction and returns the response
+  record (`XxxResponse.from(entity)`); open-in-view is off. → `/backend-endpoint`
 - Identity: values, never entities. `PlanContext(planId, userId, role)` for plan-scoped endpoints (its
-  resolver checks membership, 404 otherwise), `@CurrentUser AuthenticatedUser` otherwise; services take
-  ids and reload what they need in their own transaction. No controller parameter is a JPA entity
-  (ArchUnit). Parameter order: target ids, then the request, identity last. `@Valid` on every body.
-- Services: `@Transactional` (`readOnly` for reads). Ownership mismatch → **not-found (privacy)**, not
-  403. Roles via `PlanAuthorization`. Throw typed `XxxExceptions`.
+  resolver checks membership, 404 otherwise), `@CurrentUser AuthenticatedUser` otherwise. Roles through
+  `PlanAuthorization` (`canX` queries behind `requireX` guards; responses carry the flags). Outside the
+  caller's scope is 404, never 403. → `/backend-endpoint`
 - DTOs (**no Lombok, no MapStruct**) are records, one public type per file, nothing nested:
-  `CreateXxxRequest`/`UpdateXxxRequest` (or `XxxFilter` for query parameters) with Bean Validation in
-  `request/`; `XxxResponse`/`XxxSummaryResponse` in `response/`, built by `static from(entity)`. Simple
-  names are unique across features (ArchUnit).
-- Exceptions: nested in `XxxExceptions`, one per semantic, each mapped in `GlobalExceptionHandler` with an
-  explicit status. Error bodies use RFC 7807 `ProblemDetail` (own `type` URIs, field errors under an
-  `errors` extension). _ProblemDetail migration pending — decided in `.specs/features/backend-standards/context.md` S15._
-- Constructor injection only (no field `@Autowired`). Routes as constants in the feature's
-  `controller/XxxRoutes` (`ApiRoutes` holds `BASE` and `PLAN`); a route open without authentication is a
-  `PublicEndpoints` bean declared by its feature. All user-data queries plan-scoped.
-- Tests: unit `*Test` / integration `*IT` — see `.specs/codebase/TESTING.md`.
-- Skills: `/backend-endpoint`, `/backend-exceptions`.
+  `CreateXxxRequest` / `UpdateXxxRequest` / `XxxFilter`, `XxxResponse` / `XxxSummaryResponse`; every input
+  bounded; edit requests carry the `version` of a guarded entity. → `/backend-endpoint`
+- A rule the object alone decides lives in the entity (guarded aggregates: one creation method, no public
+  setters); a rule that needs a repository, the user, the clock or another feature lives in the service.
+  → `/backend-structure`
+- Errors: one `application/problem+json` format, `type` = `urn:findraco:problem:<slug>` from `ProblemType`;
+  a rule is a `DomainException` nested in the feature's `XxxExceptions`; statuses are semantic (400
+  unreadable, 422 invalid, 409 clashes with state, 404 scope). A new slug needs its frontend copy in
+  `problems.ts`. → `/backend-exceptions`
+- Routes live in the feature's `controller/XxxRoutes` (`ApiRoutes` holds `BASE` and `PLAN`); a public route
+  is a `PublicEndpoints` bean of its feature. The API contract is the committed `backend/openapi.json`:
+  regenerate it in the same commit as any contract change
+  (`./mvnw verify -Dit.test=OpenApiSnapshotIT -Dopenapi.update=true`). → `/backend-endpoint`
+- Persistence: migrations in `db/migration` are the only source of the schema (named constraints, indexed
+  foreign keys, an applied one is never edited); entities carry no schema annotations; configuration is
+  `app.*` `@ConfigurationProperties` records, no `@Value`; time comes from the injected UTC `Clock`.
+  → `/backend-structure`
+- Tests: a closed table decides them (entity rules and pure logic → unit `*Test`; a rule or guard → `*IT`
+  asserting status and problem `type`; every endpoint × role in the role matrix); ITs run on a Testcontainers
+  Postgres; no Mockito, fakes at external boundaries. → `/backend-testing`
+- Build: `./mvnw verify` runs Spotless (palantir-java-format; `./mvnw spotless:apply`), `-Xlint:all` with
+  `failOnWarning`, Error Prone, maven-enforcer and `ArchitectureTest`. No `@SuppressWarnings`; a wrong check
+  is changed once, in `pom.xml`. Needs JDK 25 (`JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8`) and Docker; setup in
+  `.specs/codebase/TESTING.md`.
+- Skills: `/backend-endpoint`, `/backend-exceptions`, `/backend-testing`, `/backend-structure`.
 
 ---
 

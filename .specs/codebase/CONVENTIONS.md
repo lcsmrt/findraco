@@ -12,15 +12,15 @@ Some frontend conventions below are still being rolled out by the frontend-stand
 - Pages: `PascalCasePage.tsx` (`PlansPage.tsx`, `LoginPage.tsx`)
 - Hooks: `useXxx.ts` (`usePlanPermissions.ts`, `useDebounce.ts`)
 - Providers: `XxxProvider.tsx` + `useXxx.ts` (`PlanProvider.tsx` + `usePlanContext.ts`)
-- Service hooks: `useXxxService.ts` (`useFinancialTransactionService.ts`), with `xxx.handlers.ts` beside them (`dashboard.handlers.ts`)
+- Service hooks: `useXxxService.ts` (`useTransactionService.ts`), with `xxx.handlers.ts` beside them (`dashboard.handlers.ts`)
 - Modules: `camelCase.ts` (`buildPagedQuery.ts`, `spendingRows.ts`, `transactionForm.ts`, `buttonVariants.ts`)
 - Tests and stories: siblings of their subject (`spendingRows.test.ts`, `Button.stories.tsx`)
 
-**Frontend types:** `type` aliases only, never `interface`. Props `<ComponentName>Props`. Request types `CreateXxxRequest` / `UpdateXxxRequest` (holding `params` and/or `body`); `XxxResponse` is the API wire shape when it differs from the entity. Form types: `XxxFormValues` (field values while editing) and `XxxFormOutput` (validated values). Entity types plain PascalCase (`FinancialTransaction`).
+**Frontend types:** `type` aliases only, never `interface`. Props `<ComponentName>Props`. Request types `CreateXxxRequest` / `UpdateXxxRequest` (holding `params` and/or `body`); `XxxResponse` is the API wire shape when it differs from the entity. Form types: `XxxFormValues` (field values while editing) and `XxxFormOutput` (validated values). Entity types plain PascalCase (`Transaction`).
 
-**Backend files/classes:** PascalCase classes suffixed by role — `XxxController`, `XxxService`, `XxxRepository`. Entities in `models/` are unsuffixed (`FinancialTransaction`, `User`); enums too (`FinancialTransactionType`). DTOs suffixed `Dto` in `dtos/request` (`FinancialTransactionRequestDto`, `FinancialTransactionFilterDto`) and `dtos/response` (`FinancialTransactionResponseDto`).
+**Backend files/classes:** PascalCase classes suffixed by role: `XxxController`, `XxxService`, `XxxRepository`, `XxxSpecification`, `XxxExceptions`, `XxxRoutes`, `XxxProperties`. Entities in `model/` are unsuffixed (`Transaction`, `User`), as are enums (`TransactionType`). DTOs are records without a `Dto` suffix: `CreateXxxRequest` / `UpdateXxxRequest` / `XxxFilter` in `request/`, `XxxResponse` / `XxxSummaryResponse` in `response/`. The full naming, package and ArchUnit rules are in the `backend-structure` and `backend-endpoint` skills.
 
-**Backend methods/fields:** camelCase (`findAllByUserPaged`, `financialTransactionRepository`). Route constants UPPER_SNAKE in `utils/ApiRoutes.java` (`FINANCIAL_TRANSACTION`), all built from a `BASE` constant.
+**Backend methods/fields:** camelCase (`findAllByPlanPaged`, `transactionRepository`). Route constants UPPER_SNAKE in the feature's `controller/XxxRoutes` (`TransactionRoutes.TRANSACTION`), built from `ApiRoutes.PLAN`.
 
 ## Function Style and Exports (Frontend)
 
@@ -43,7 +43,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 Components never call `findracoApi` directly — always through a service hook in `src/api/services/`. Service hooks split each operation into a raw async function (HTTP only) plus an exported `useGetXxx` / `useCreateXxx` hook wrapping it; plan-scoped hooks put the active plan in the URL and the query key.
 
-**Backend imports:** grouped project imports then framework/`jakarta` imports. Dependencies injected via constructor (no field `@Autowired`, no Lombok). Layer boundary is strict: controller resolves the logged-in `User`, delegates to service, wraps the result in a response DTO.
+**Backend imports:** sorted and formatted by Spotless (palantir-java-format). Dependencies injected via constructor (no field `@Autowired`, no Lombok). Layer boundary is strict and checked by `ArchitectureTest`: the controller resolves identity (`PlanContext` or `AuthenticatedUser`), delegates one call to the service and returns the response it built.
 
 ## Styling, Tokens and Typography (Frontend)
 
@@ -57,13 +57,13 @@ Components never call `findracoApi` directly — always through a service hook i
 
 **Frontend:** Strict TypeScript. No `any`, no forced `as T`. No bypass of any kind: `eslint-disable` comments are ignored (`linterOptions.noInlineConfig`), and `@ts-ignore` / `@ts-expect-error` / `@ts-nocheck` are lint errors (`@typescript-eslint/ban-ts-comment`); a wrong rule changes for the whole codebase. Multi-mode overlays are modeled as discriminated unions declared at module scope. Role-dependent UI reads `usePlanPermissions()` capabilities, never `myRole`.
 
-**Backend:** Plain Java — no Lombok, no MapStruct. Entities are mutable POJOs with hand-written getters/setters; response DTOs are immutable (`final` fields set in a constructor taking the entity, e.g. `new FinancialTransactionResponseDto(transaction)`). Mapping entity ↔ DTO is done manually. Bean Validation annotations (`@NotNull`, `@NotBlank`) on request DTOs, enforced by `@Valid` at the controller.
+**Backend:** Plain Java, no Lombok or MapStruct (maven-enforcer). Requests and responses are records; a response is built by `static from(entity)` inside the service transaction. Guarded entities have a single creation method and no public setters. Bean Validation annotations on request records, enforced by `@Valid` at the controller, with every string and list bounded by `@Size`.
 
 ## Error Handling
 
-**Backend:** Centralized in `exceptions/GlobalExceptionHandler` (`@ControllerAdvice extends ResponseEntityExceptionHandler`). Validation failures → `ErrorResponseDto` with per-field `FieldErrorDto` list (400); `BadCredentialsException` → 401. Domain errors thrown as nested typed exceptions (e.g. `FinancialTransactionExceptions.FinancialTransactionNotFoundException`). Services enforce ownership by throwing not-found when a record's user id differs from the logged-in user. `@Transactional` on service methods (`readOnly = true` for reads).
+**Backend:** One `application/problem+json` format built by `shared.error.Problems`. A rule is a `DomainException` nested in the feature's `XxxExceptions` with its own `ProblemType` slug and a semantic status (400 unreadable, 422 invalid, 409 clashes with state, 404 outside scope); `GlobalExceptionHandler` answers it, so a new rule needs no handler. The frontend maps the slug to copy in `api/utils/problems.ts`. Ownership and scope mismatches answer 404. `@Transactional` on service methods (`readOnly = true` for reads). See the `backend-exceptions` skill.
 
-**Frontend:** Mutation success/error toasts handled centrally by `buildMutationOptions` inside service hooks; per-call overrides (`showSuccessToast`, `onSuccess`) supported. List-affecting mutations call `queryClient.invalidateQueries({ queryKey: ["financialTransactions"] })` in `onSuccess`. Conditional queries use `enabled`, not `useEffect`.
+**Frontend:** Mutation success/error toasts handled centrally by `buildMutationOptions` inside service hooks; per-call overrides (`showSuccessToast`, `onSuccess`) supported. List-affecting mutations call `queryClient.invalidateQueries({ queryKey: ["transactions"] })` in `onSuccess`. Conditional queries use `enabled`, not `useEffect`.
 
 ## Forms (Frontend)
 

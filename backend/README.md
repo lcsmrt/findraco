@@ -11,7 +11,7 @@ Spring Boot REST API for personal finance management. Built as a learning projec
 - **SpringDoc / OpenAPI 3** — API documentation (Swagger UI)
 - **Docker** — containerized deployment
 
-> **Schema management:** there is no migration tool yet — the schema is created/updated by Hibernate `spring.jpa.hibernate.ddl-auto=update` at startup. New columns (e.g. `series_id`) are added automatically on boot. Adopting Flyway/Liquibase is tracked in the roadmap (`../.specs/project/ROADMAP.md`, milestone M3).
+> **Schema management:** Flyway migrations in `src/main/resources/db/migration` are the only source of the schema; Hibernate only validates it (`ddl-auto=validate`).
 
 ## Features
 
@@ -27,26 +27,21 @@ Spring Boot REST API for personal finance management. Built as a learning projec
 
 ```
 src/main/java/com/lcs/findraco/
-  config/           Spring and OpenAPI configuration
-  controllers/      REST controllers
-  dtos/
-    request/        Request DTOs with validation annotations
-    response/       Response DTOs
-  exceptions/       Domain exceptions and global exception handler
-  models/           JPA entities + enums
-  repositories/     Spring Data repositories with JPA Specifications
-  security/         JWT filter, UserDetails service
-  services/         Business logic (incl. RecurringTransactionGenerator)
-  specifications/   JPA Specifications for dynamic filtering
-  utils/            Shared utilities (date validation, API route constants)
+  auth/ user/ plan/       One package per feature, each with layer sub-packages
+  category/ transaction/  (controller, service, repository, model, request, response,
+  dashboard/              exception, config)
+  shared/                 Cross-cutting: config, error, openapi, security, web, ratelimit
+src/main/resources/db/migration/   Flyway migrations
 ```
+
+The package rules and conventions are in the `backend-structure` skill (`../.claude/skills/`).
 
 ## Getting Started
 
 ### Prerequisites
 
 - **Java 25** (JDK)
-- A reachable **PostgreSQL** database. This project does **not** bundle a local database — point it at your own Postgres instance (e.g. a managed DB reached over an SSH tunnel). The `docker-compose.yml` here builds and runs the **API container** (host networking) for deployment; it does not start a database.
+- A reachable **PostgreSQL** database. This project does **not** bundle a local database — point it at your own Postgres instance. The root `docker-compose.yml` builds and runs the **API container** (host networking) for deployment; it does not start a database. The tests need Docker instead (they start their own Postgres).
 
 ### Configure environment
 

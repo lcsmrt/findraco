@@ -65,7 +65,7 @@ export type PagedProductsFilter = {
 ```
 
 - `type` only, never `interface` (lint `@typescript-eslint/consistent-type-definitions`).
-- Entities: plain PascalCase (`FinancialTransaction`).
+- Entities: plain PascalCase (`Transaction`).
 - Call shapes: `CreateXxxRequest` / `UpdateXxxRequest` / `DeleteXxxRequest`, holding `params` and/or
   `body`.
 - `XxxResponse`: the API wire shape when it differs from the entity (`DashboardSummaryResponse`). Keep it

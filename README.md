@@ -64,9 +64,6 @@ This project is planned and built with the `tlc-spec-driven` workflow. All plann
 
 Current feature: [`.specs/features/recurring-transactions/`](./.specs/features/recurring-transactions).
 
-## Known gaps (roadmap M3)
+## Known gaps
 
-- No DB migration tool yet — schema is managed by Hibernate `ddl-auto=update`.
-- No automated backend test coverage beyond the series-generator unit test.
-
-See `.specs/codebase/CONCERNS.md` for the full list.
+The open concerns are listed in `.specs/codebase/CONCERNS.md`; the backend standards (structure, tests, errors) are in the `backend-*` skills under `.claude/skills/`.

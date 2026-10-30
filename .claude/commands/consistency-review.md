@@ -38,16 +38,17 @@ correct output, not a made-up verdict.
 
 **Backend**
 - Controllers — status codes (`201`/`204`/`200`, `HttpStatus.CREATED` not raw `201`), `@Valid` on
-  bodies, param order (path → body → identity last), `PlanContext` vs `@AuthenticationPrincipal`, layer
-  boundary (no business logic), constructor injection.
-- Services — `@Transactional(readOnly)` for reads, ownership → not-found for privacy, `PlanAuthorization`
-  for roles, typed `XxxExceptions`, pass `Long` ids (not entities) when the entity isn't needed.
-- DTOs — `XxxRequestDto` Bean Validation, `XxxResponseDto` immutable from the entity, no Lombok/MapStruct,
-  naming.
-- Exceptions — nested in `XxxExceptions`, every one wired into `GlobalExceptionHandler` with an explicit
-  status, one exception per semantic.
-- Repositories/routing — plan-scoped queries, JPA Specifications for filtering, `ApiRoutes` constants
-  (no inline route strings).
+  bodies, param order (path → body → identity last), `PlanContext` vs `@CurrentUser AuthenticatedUser`,
+  layer boundary (no business logic), constructor injection. → `/backend-endpoint`
+- Services — `@Transactional(readOnly)` for reads, the response built inside the transaction, out of
+  scope → 404, `PlanAuthorization` for roles, `DomainException`s, ids (not entities) in signatures.
+  → `/backend-endpoint`
+- DTOs — records (`CreateXxxRequest`, `UpdateXxxRequest`, `XxxFilter`, `XxxResponse`), bounded input,
+  `version` on edits, no Lombok/MapStruct. → `/backend-endpoint`
+- Exceptions — nested in `XxxExceptions`, one per semantic, own `ProblemType` slug with frontend copy,
+  semantic status. → `/backend-exceptions`
+- Repositories/routing/structure — plan-scoped queries, specifications, `XxxRoutes` constants, feature
+  boundaries, migrations. → `/backend-structure`; tests → `/backend-testing`
 
 **Frontend**
 - Components — arrow fn + named export + module-scope `type` Props, never default/`React.FC`, `cn()`/`cva`.

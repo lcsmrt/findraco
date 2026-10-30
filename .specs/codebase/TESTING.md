@@ -1,7 +1,7 @@
 # Testing Infrastructure
 
 **Analyzed:** 2026-07-05
-**Updated:** 2026-10-29 (backend-standards BST-01: `*IT` back on a Testcontainers Postgres; CI runs `./mvnw -B verify`)
+**Updated:** 2026-10-30 (backend-standards BST-21: backend sections follow the `backend-testing` skill; BST-01: `*IT` on a Testcontainers Postgres, CI runs `./mvnw -B verify`)
 **Prior:** 2026-07-17 (test-foundation feature, T1–T21 — see `.specs/features/test-foundation/`)
 **Frontend:** 2026-10-20, recalibrated by the test-calibration feature (testing model AD-015, superseding AD-012; `.specs/features/test-calibration/`). The closed test table lives in the `frontend-testing` skill and, as code, in `frontend/scripts/testTable.ts`.
 
@@ -9,9 +9,10 @@
 
 **Backend (backend):**
 
-- Unit (`*Test`, surefire, `mvn test`): JUnit 5 via `spring-boot-starter-test`. Plain Mockito/AssertJ unit tests for pure logic — no Spring context.
-- Integration (`*IT`, failsafe, `mvn verify`): JUnit 5 + `spring-boot-starter-test`. Runs on a throwaway `postgres:16-alpine` Testcontainers instance (one per JVM, `@ServiceConnection`), full Flyway migration chain from an empty database, real MockMvc HTTP requests, real JWTs via the production `JwtService` (not `@WithMockUser` for security-sensitive tests).
-- Coverage: JaCoCo (`jacoco-maven-plugin` 0.8.15) — global report always generated; a `check` rule gates branch coverage ≥0.80 on exactly three invariant-bearing classes (see Coverage Targets below). No global minimum.
+- Unit (`*Test`, surefire, `mvn test`): JUnit 5 + AssertJ via `spring-boot-starter-test`. Plain unit tests for entity rules and pure logic: no Spring context, no mocks.
+- Integration (`*IT`, failsafe, `mvn verify`): JUnit 5 + `spring-boot-starter-test`. Runs on a throwaway `postgres:16-alpine` Testcontainers instance (one per JVM, `@ServiceConnection`), full Flyway migration chain from an empty database, real MockMvc HTTP requests, real JWTs via the production `JwtService` (not `@WithMockUser` for security-sensitive tests). No Mockito anywhere (`ArchitectureTest.noTestUsesMockito`); external boundaries get fakes (fixed `Clock`, `RecordingMailSender`).
+- Coverage: JaCoCo — global report always generated; a `check` rule gates branch coverage ≥0.80 on the invariant-bearing classes listed in Coverage Targets below. No global minimum.
+- Structure: `ArchitectureTest` (ArchUnit) holds every structural rule of the backend.
 - E2E: none (out of scope — MockMvc-driven integration tests substitute for HTTP-level E2E).
 
 **Frontend (frontend):** Vitest with four projects, run from `frontend/` with pnpm. What gets which test, and how much, is the closed test table in the `frontend-testing` skill: a code kind recognised by path and file name maps to a test kind and an amount, and a module matching no row gets no test.
@@ -27,12 +28,10 @@
 
 **Backend:**
 
-- Location: `backend/src/test/java/com/lcs/finsight/`.
-- Harness/support (test-infrastructure, not app code): `support/AbstractIntegrationTest.java` (base class every `*IT` extends — `@SpringBootTest(MOCK)` + MockMvc + `truncateAll()` `@BeforeEach` + the disposable-database guard), `support/TestcontainersConfig.java` (the container, database `findraco_test`), `support/DisposableDatabaseGuard.java` (refuses to truncate any database but `findraco_test`; `DisposableDatabaseGuardTest`), `support/TestAuthHelper.java` (real-JWT bearer tokens), `support/Fixtures.java` (plan/member/transaction builders via real repositories).
-- `*Test` files (existing, unchanged by this pass): `services/SplitResolverTest.java`, `services/CategorySpendingAssemblerTest.java`, `services/SeriesRegeneratorTest.java`, `services/RecurringTransactionGeneratorTest.java`, `security/PlanAuthorizationTest.java`.
-- `*IT` files (new): `support/HarnessSmokeIT.java`, `services/SplitInvariantIT.java`, `services/DashboardPartitionIT.java`, `security/PlanAuthorizationMatrixIT.java`, `security/AuthenticationIT.java`, `services/TransactionCrudIT.java`, `services/SeriesEditIT.java`, `services/MigrationsIT.java`, `services/CsvImportIT.java`, `services/InvitationLifecycleIT.java`.
-- `FinSightApplicationTests.java` now extends `AbstractIntegrationTest` (previously booted against the real `SPRING_DATASOURCE_URL`/`.env`, which made even the default context-load stub depend on a live tunnel).
-- Test config: `src/test/resources/application-test.properties` (fixed JWT secret, `ALLOWED_ORIGINS`, `spring.flyway.enabled=true`, `ddl-auto=validate`). The datasource comes from the container; the suite needs no `backend/.env`.
+- Location: `backend/src/test/java/com/lcs/findraco/`, mirroring the main packages (`plan/`, `transaction/`, `category/`, `auth/`, `shared/`, ...); `*Test` and `*IT` files sit in the package of the class or feature they test.
+- Harness (`support/`, test infrastructure, not app code): `AbstractIntegrationTest` (base class of every `*IT`: `@SpringBootTest(MOCK)`, MockMvc, truncation before each test, the disposable-database guard), `TestcontainersConfig` (the container, database `findraco_test`), `DisposableDatabaseGuard`, `TestAuthHelper` (real-JWT bearer tokens), `Fixtures` (plan, member, transaction and category builders through real repositories), `ProblemMatchers` (status, media type and problem slug), `CapturedLogs`, and the mail fake `RecordingMailSender` + `InMemoryMailConfig`.
+- Which test a piece of code gets is decided by the closed table in the `backend-testing` skill; the role matrix (`plan/PlanAuthorizationMatrixIT`) has a row per plan-scoped endpoint and fails on an endpoint without one.
+- Test config: `src/test/resources/application-test.properties` (fixed JWT secret, generous rate limits, no scheduled series job). The datasource comes from the container; the suite needs no `backend/.env`.
 
 **Frontend:**
 
@@ -45,7 +44,7 @@
 
 ### Unit Tests
 
-**Backend:** plain JUnit 5 + Mockito, no Spring context, fast. Covers `SplitResolver`, `CategorySpendingAssembler`, `SeriesRegenerator`, `RecurringTransactionGenerator`, `PlanAuthorization` — the pure-logic/invariant classes.
+**Backend:** plain JUnit 5, no Spring context, no mocks, fast. Covers the entity rules (`Transaction`, `RecurrenceDefinition`, `Category`) and the pure-logic classes (`SplitResolver`, `CategorySpendingAssembler`, `CategoryUsageCalculator`, the series generator and regenerator, the CSV parsers, `PlanAuthorization`, the rate limiter, the password policy).
 
 **Frontend:** the unit rows of the test table: business rules (form schema and mappers in `xxxForm.ts`, pure computation under a `utils/` folder), service hooks through MSW with the real `findracoApi` (method, URL, params/body and response mapping asserted; one test crosses the 401 → refresh → retry interceptor), URL params, and shared hooks through `renderHook`. Feature hooks have no test of their own; their container's flow covers them. Tests are derived from the spec's ACs and their names cite the AC. No test asserts library behaviour.
 
@@ -61,7 +60,11 @@
 
 Backend: none, by design (see Test Frameworks above). Frontend: Playwright smoke journeys (sign in, add a transaction, see it on the Overview, switch plans) once the local Docker database exists; they never run against a shared database.
 
-## Local Environment Setup — Docker for Testcontainers
+## Local Environment Setup — JDK 25 and Docker
+
+The backend builds on JDK 25 (the enforcer pins it). Install one (for example at `~/.jdks/jdk-25.0.5+8`) and put it in `JAVA_HOME` for every Maven call and for the pre-commit hook: `JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B verify`. Error Prone needs the `jdk.compiler` exports already in `backend/.mvn/jvm.config`.
+
+### Docker for Testcontainers
 
 `./mvnw verify` needs a running Docker daemon and nothing else: no tunnel, no `backend/.env`. Without Docker, every `*IT` errors at context startup (`Could not find a valid Docker environment`); nothing skips. CI uses the GitHub runner's Docker at the default socket.
 
@@ -108,7 +111,7 @@ pnpm test:coverage                                      # critical modules' cove
 ## Coverage Targets
 
 **Current:**
-- Backend: global JaCoCo report generated on every `mvn verify` (no global minimum). A `check` rule gates branch coverage ≥0.80 on exactly `SplitResolver`, `CategorySpendingAssembler`, `PlanAuthorization` — the three invariant-bearing classes identified during design (AD-007's partition invariant, SPLIT-01, and the two-layer plan authz model). Weakening test coverage on any of these three fails `mvn verify`; no other class is gated.
+- Backend: global JaCoCo report generated on every `mvn verify` (no global minimum). A `check` rule gates branch coverage ≥0.80 on exactly the invariant-bearing classes named in `backend/pom.xml` (the split resolver, the spending assembler, the item share allocator and `PlanAuthorization`). Weakening coverage on any of them fails `mvn verify`; no other class is gated.
 - Frontend: 90% branch coverage per module on exactly five critical modules: `utils/money.ts`, `components/input/currencyDigits.ts`, `transactionForm.ts`, `categoryForm.ts`, `api/clients/findracoApi.ts` (an error there writes wrong data or drops the session unnoticed). No other module is gated, and there is no global number.
 
 **Goals:** extend the JaCoCo floor to additional invariant classes as they're identified.
@@ -118,9 +121,9 @@ pnpm test:coverage                                      # critical modules' cove
 
 | Code Layer | Test Type | Location Pattern | Run Command | Amount |
 | --- | --- | --- | --- | --- |
-| Backend pure logic (resolvers/assemblers/authz) | unit (present) | `backend/src/test/**/*Test.java` | `./mvnw test` | — |
-| Backend HTTP/security/DB slice | integration (present) | `backend/src/test/**/*IT.java` | `./mvnw verify` | — |
-| Backend controllers (beyond the *IT already covering create/edit/auth/dashboard/csv/invitations) | integration (partial) | same as above | `./mvnw verify` | — |
+| Backend entity rules and pure logic | unit (present) | `backend/src/test/**/*Test.java` | `./mvnw test` | — |
+| Backend endpoint with a rule or guard | integration, one `*IT` per rule asserting status and problem `type` | `backend/src/test/**/*IT.java` | `./mvnw verify` | one per rule |
+| Backend endpoint × role | role matrix (`PlanAuthorizationMatrixIT`) | `backend/src/test/**/plan/PlanAuthorizationMatrixIT.java` | `./mvnw verify` | a row per plan-scoped endpoint |
 | Backend migrations | integration (present) | `backend/src/test/**/MigrationsIT.java` | `./mvnw verify` | — |
 | Frontend business rules (`*Form.ts`, `*Forms.ts`, `utils/**`) | unit (sibling gate; 90% branches on the critical modules only) | `frontend/src/**/*.test.ts` | `pnpm exec vitest run --project=unit` | one case per rule the spec states, plus the edges it names |
 | Frontend URL params (`*Params.ts`) | unit (sibling gate) | `frontend/src/**/*.test.ts` | `pnpm exec vitest run --project=unit` | a round trip, plus an invalid value |
