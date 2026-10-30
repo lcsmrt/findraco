@@ -23,6 +23,22 @@ Portainer/VPS steps in addition to the normal `git push` → GitHub Actions rede
 - [ ] Update the Portainer stack comment/URL reference (the workflow error message mentions
   `/stacks/findraco?id=<STACK_ID>`).
 
+- [ ] Before deploying the network slice (API reachable only through the proxy): set `SERVER_ADDRESS`
+  in the Portainer stack env to the **docker0 gateway**, usually `172.17.0.1` (check with
+  `ip -4 addr show docker0`). The compose file refuses to start without it, on purpose: an unset value
+  must never bind the API on the public IP. The nginx container reaches the API through
+  `host.docker.internal`, which is that same address.
+- [ ] After that deploy, from outside the VPS: `curl http://<public-ip>:3000/api/findraco/v3/api-docs`
+  must be refused (connection refused or timeout), and the site (`http://<public-ip>:<WEB_PORT>`) must
+  still log in and load data. Swagger is no longer on the public IP; for a look at it, use an SSH tunnel
+  (`ssh -L 3000:172.17.0.1:3000 <vps>`).
+- [ ] Before deploying the authentication slice (decoded JWT key): the API now Base64-**decodes**
+  `JWT_SECRET_KEY` and refuses to start when the result is under 32 bytes. Check the production value:
+  `printf '%s' "$JWT_SECRET_KEY" | base64 -d | wc -c` must print 32 or more and not fail. If not,
+  generate one with `openssl rand -base64 48` and set it in the Portainer stack env. Either way the
+  access tokens issued before the deploy stop working once (they last 15 minutes) and the browser
+  renews them from its session cookie without asking the user to sign in again.
+
 ## Post-deploy
 
 - [ ] Verify the browser tab shows the new favicon and the page title reads **findraco**.
