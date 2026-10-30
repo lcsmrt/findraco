@@ -49,14 +49,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
 
     long countByCategory(Category category);
 
+    // VERSIONED bumps each moved row's version, so an edit based on a read from before the move is stale.
     @Modifying(flushAutomatically = true)
-    @Query("UPDATE Transaction ft SET ft.category = :target WHERE ft.category = :source")
+    @Query("UPDATE VERSIONED Transaction ft SET ft.category = :target WHERE ft.category = :source")
     int reassignCategory(@Param("source") Category source, @Param("target") Category target);
 
     // Items are part of their transaction, so the transaction's repository reads and moves them;
     // they have no repository of their own.
     @Query("SELECT COUNT(it) FROM TransactionItem it WHERE it.category = :category")
     long countItemsByCategory(@Param("category") Category category);
+
+    // An item is part of its transaction, so moving the item changes the transaction: its version goes up
+    // first, while the items still point at the source category.
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE Transaction ft SET ft.version = ft.version + 1 "
+            + "WHERE ft IN (SELECT it.transaction FROM TransactionItem it WHERE it.category = :source)")
+    int bumpVersionsOfItemsIn(@Param("source") Category source);
 
     @Modifying(flushAutomatically = true)
     @Query("UPDATE TransactionItem it SET it.category = :target WHERE it.category = :source")

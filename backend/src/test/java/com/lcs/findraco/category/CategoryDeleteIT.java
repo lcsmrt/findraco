@@ -141,6 +141,37 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
         assertThat(definitionCategoryId(jdbc, definition.getId())).isEqualTo(target.getId());
     }
 
+    /**
+     * A reassignment changes the moved rows, so it bumps their versions: a client still holding a row read
+     * before the delete gets 409 stale-version on its edit instead of putting the deleted category back.
+     * A transaction whose item moves is bumped too (the item is part of it); untouched rows keep theirs.
+     */
+    @Test
+    void reassignBumpsTheVersionOfEveryMovedRowAndOnlyThose() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Food - Delivery");
+        Category target = fixtures.aCategory(plan, TransactionType.DEBIT, "Delivery");
+        Category other = fixtures.aCategory(plan, TransactionType.DEBIT, "Other");
+        Transaction direct = fixtures.aTransaction(plan, owner, new BigDecimal("10.00"), TransactionType.DEBIT, source);
+        Transaction withItem = transactionWithItem(plan, owner, other, source);
+        Transaction untouched =
+                fixtures.aTransaction(plan, owner, new BigDecimal("5.00"), TransactionType.DEBIT, other);
+        RecurrenceDefinition definition = recurrenceDefinition(plan, owner, source);
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        long directBefore = version(jdbc, "transactions", direct.getId());
+        long withItemBefore = version(jdbc, "transactions", withItem.getId());
+        long untouchedBefore = version(jdbc, "transactions", untouched.getId());
+        long definitionBefore = version(jdbc, "recurrence_definitions", definition.getId());
+
+        deleteCategory(plan, owner, source.getId(), target.getId()).andExpect(status().isNoContent());
+
+        assertThat(version(jdbc, "transactions", direct.getId())).isGreaterThan(directBefore);
+        assertThat(version(jdbc, "transactions", withItem.getId())).isGreaterThan(withItemBefore);
+        assertThat(version(jdbc, "recurrence_definitions", definition.getId())).isGreaterThan(definitionBefore);
+        assertThat(version(jdbc, "transactions", untouched.getId())).isEqualTo(untouchedBefore);
+    }
+
     // AC 16: target is the category itself
     @Test
     void targetIsTheCategoryItselfIsRejectedWith422() throws Exception {
@@ -337,6 +368,11 @@ class CategoryDeleteIT extends AbstractIntegrationTest {
                 null,
                 SplitMode.EQUAL,
                 List.of(new Share(owner, null)))));
+    }
+
+    private static long version(JdbcTemplate jdbc, String table, Long id) {
+        Long version = jdbc.queryForObject("SELECT version FROM " + table + " WHERE id = ?", Long.class, id);
+        return version == null ? 0 : version;
     }
 
     private static Long transactionCategoryId(JdbcTemplate jdbc, Long transactionId) {

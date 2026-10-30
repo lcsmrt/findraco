@@ -43,6 +43,7 @@ public class TransactionCategoryService {
         Category from = entityManager.getReference(Category.class, fromCategoryId);
         Category to = entityManager.getReference(Category.class, toCategoryId);
         transactionRepository.reassignCategory(from, to);
+        transactionRepository.bumpVersionsOfItemsIn(from);
         transactionRepository.reassignItemCategory(from, to);
         recurrenceDefinitionRepository.reassignCategory(from, to);
     }

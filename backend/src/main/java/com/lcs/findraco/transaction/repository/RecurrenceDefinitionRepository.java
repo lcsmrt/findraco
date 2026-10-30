@@ -22,7 +22,7 @@ public interface RecurrenceDefinitionRepository extends JpaRepository<Recurrence
     long countByCategory(Category category);
 
     @Modifying(flushAutomatically = true)
-    @Query("UPDATE RecurrenceDefinition rd SET rd.category = :target WHERE rd.category = :source")
+    @Query("UPDATE VERSIONED RecurrenceDefinition rd SET rd.category = :target WHERE rd.category = :source")
     int reassignCategory(@Param("source") Category source, @Param("target") Category target);
 
     // Rolling top-up due-set: open-ended (endDate IS NULL) RECURRING definitions whose materialized
