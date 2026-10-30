@@ -1343,6 +1343,18 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 ---
 
+**Batch 12 deviations (T70-T78, unattended run)**
+
+- T70: `PlanManagementIT` (21 cases). The owner's `changeRole` to OWNER is refused with `owner-role-needs-transfer` before the role check, so a non-owner asking for OWNER gets that 422, not 403; the test records the order.
+- T71: the paging IT of T69 passed with the tiebreakers removed (Postgres returned the rows in id order by chance), so it proved nothing. It now has 25 rows of one description, rewritten from the last to the first so the physical order runs against the id order, over every sort field and both directions. It failed with the `PageRequests` tiebreaker removed and, separately, with the two specification-owned orderings' `id` removed, and was reverted each time. `TransactionListFilterIT` also checks that the description filter matches a participant's name.
+- T72: the role matrix is a table (`rows()`: route key, request, status per role; a non-member is always 404) run by one parameterized test for owner, editor, contributor, viewer and non-member, 150 cases; `everyEndpointOfTheApplicationHasAMatrixRowOrIsListedAsNotRoleScoped` walks `RequestMappingHandlerMapping` and fails both on an endpoint with no row and on a row with no endpoint. The routes that are not role-scoped (public, about the caller, token-addressed) sit in `NOT_ROLE_SCOPED` with the reason. The earlier hand-written matrix tests stay (own-row and flag-agreement cases). Checked, reverted: removing the `requireCanModifyTransaction` guard from `TransactionService.delete` failed the contributor and viewer rows and the flag-agreement test; a planted controller failed the coverage test.
+- T72, mocks: Mockito was used in four places and is gone. `PasswordRecoveryIT` and `ForgotPasswordAsyncIT` share the in-memory mail fake (`support/RecordingMailSender` + `InMemoryMailConfig`, opted in with `@Import`, so other ITs keep their no-sender context); `LogHygieneIT` stays with SMTP off and re-keys the stored reset token to one it knows (it no longer needs the e-mailed link); `RecurringTransactionGeneratorTest` builds real `CreateSeriesRequest` records; `SessionServiceTest` (a mocked repository and JWT service) became `SessionClockBoundaryIT`: the service built by hand with a fixed clock over the real repository, three boundary cases (token expiring exactly now, replaced exactly at the grace limit, just past it); the rest of its cases were already in `SessionIT`. New `ArchitectureTest.noTestUsesMockito` keeps Mockito out (failed once on a planted file, reverted).
+- T72, unit gaps: no further entity or pure-logic class lacked a test; `PageRequests` is covered by `TransactionPagingIT`. Sign-up with a taken e-mail had no test, so `AuthenticationIT.registeringATakenEmailAnswers409` was added. Noticed, not changed: e-mail uniqueness is case sensitive (`TAKEN@x` registers beside `taken@x`), while the rate limiter lowercases its key.
+- T73-T76: four skills (`backend-endpoint`, `backend-exceptions`, new `backend-testing`, new `backend-structure`), each rule tagged with an ArchUnit rule, a test class, a build tool or "review". Rules that only review checks are said so (for example parameter order, the entity-versus-service test, the 422-versus-409 test). Two claims were dropped from the skills when no test backed them (global validation errors, `PublicEndpoints` by name).
+- T77: `CLAUDE.md` Backend section rewritten to essentials with pointers (the "ProblemDetail migration pending" and "Routes as `ApiRoutes` constants" lines are gone); `AGENTS.md`' Backend section mirrors it. `ARCHITECTURE`, `CONVENTIONS`, `INTEGRATIONS`, `STACK`, `STRUCTURE`, `TESTING` and `CONCERNS` in `.specs/codebase/` were rewritten where they named old identifiers, folders or facts (no migration tool, the tunnel, Mockito, Java 17); `backend/README.md`, the root `README.md`, `.claude/commands/consistency-review.md` and the `api-integration` skill had the same drift. `TESTING.md` now has the JDK 25 setup beside the Docker one. The audits and feature specs stay as the historical records they are. The frontend half of `STRUCTURE.md` ("Frontend migration status") was not touched.
+- T78: removed `TransactionService.findAllByPlan`, `CategoryService.findAllByPlan`, and `PlanRepository.findAllByUser` / `findByCreatedByAndIsDefaultTrue` (no caller anywhere). `TransactionRepository.findAllByPlan`, `CategoryRepository.findAllByPlan` and `CategoryMemberLimitRepository.findAllByCategory` are used only by tests and stay; so do `Transaction.replaceSplit` / `replaceItems` (public aggregate API, tested, no production caller). `/bin/` is ignored in `backend/.gitignore`; the files stay on disk. The JaCoCo gate still named `transaction.service.SplitResolver`, which moved to `transaction.model` in T31, so it had been matching nothing; it now points at the real class and passes.
+- Full gate once at the end: `./mvnw -B verify` green, 242 unit and 493 integration tests. The frontend was not touched.
+
 **Batch 11 deviations (T62-T69, unattended run)**
 
 - T62: V18 has the `recurrence_exceptions` table (FK `ON DELETE CASCADE`, PK `(definition_id, exception_date)`) and `plans.series_generated_until`. Deleting "this one" records the pivot date (the delete also had to learn it, since AC 1 is about the delete). The regenerator keeps a map by date; a duplicate date among the existing rows goes to `toDelete`. Installment labels stay position-derived (parcel k of N), the exceptions only drop slots.
@@ -1873,8 +1885,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] One IT per endpoint rule asserting status and `type`
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] One IT per endpoint rule asserting status and `type`
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1894,8 +1906,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] One case per filter
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] One case per filter
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1915,9 +1927,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Removing a guard from any endpoint fails a row (checked, reverted)
-- [ ] No Mockito mock of our own classes remains
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Removing a guard from any endpoint fails a row (checked, reverted)
+- [x] No Mockito mock of our own classes remains
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
@@ -1939,8 +1951,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Every rule maps to a context decision
-- [ ] Docs gate
+- [x] Every rule maps to a context decision
+- [x] Docs gate
 
 **Tests**: none
 **Gate**: docs
@@ -1960,8 +1972,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Every rule maps to a context decision
-- [ ] Docs gate
+- [x] Every rule maps to a context decision
+- [x] Docs gate
 
 **Tests**: none
 **Gate**: docs
@@ -1981,8 +1993,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Every rule maps to a context decision
-- [ ] Docs gate
+- [x] Every rule maps to a context decision
+- [x] Docs gate
 
 **Tests**: none
 **Gate**: docs
@@ -2002,8 +2014,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Every rule maps to a context decision
-- [ ] Docs gate
+- [x] Every rule maps to a context decision
+- [x] Docs gate
 
 **Tests**: none
 **Gate**: docs
@@ -2023,8 +2035,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Grep for each renamed identifier in docs: no hits
-- [ ] Docs gate
+- [x] Grep for each renamed identifier in docs: no hits
+- [x] Docs gate
 
 **Tests**: none
 **Gate**: docs
@@ -2044,9 +2056,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `git ls-files backend/bin` empty
-- [ ] Suite green
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] `git ls-files backend/bin` empty
+- [x] Suite green
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: none
 **Gate**: build
