@@ -1,6 +1,7 @@
 package com.lcs.findraco.user.controller;
 
 import com.lcs.findraco.auth.service.CustomUserDetails;
+import com.lcs.findraco.shared.web.RequestHeaders;
 import com.lcs.findraco.user.model.TimeZoneMode;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.service.UserService;
@@ -17,8 +18,6 @@ import org.springframework.web.servlet.HandlerInterceptor;
  */
 public class TimeZoneInterceptor implements HandlerInterceptor {
 
-    public static final String HEADER = "Time-Zone";
-
     private final UserService userService;
 
     public TimeZoneInterceptor(UserService userService) {
@@ -27,7 +26,7 @@ public class TimeZoneInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        String zone = request.getHeader(HEADER);
+        String zone = request.getHeader(RequestHeaders.TIME_ZONE);
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (zone == null
                 || authentication == null

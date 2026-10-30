@@ -7,6 +7,7 @@ import type {
   PasswordResetTokenValidationResponse,
   RegisterUserRequest,
   ResetPasswordRequest,
+  UpdateTimeZoneRequest,
   User,
 } from "../dtos";
 
@@ -51,6 +52,12 @@ export const authHandlers = {
   },
   me(user: User): HttpHandler {
     return http.get<NoParams, never, User>("*/user/me", () => HttpResponse.json(user));
+  },
+  updateTimeZone(user: User): HttpHandler {
+    return http.patch<NoParams, UpdateTimeZoneRequest["body"], User>(
+      "*/user/me/time-zone",
+      () => HttpResponse.json(user),
+    );
   },
   registerUser(user: User): HttpHandler {
     return http.post<NoParams, RegisterUserRequest["body"], User>("*/user", () =>

@@ -7,8 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.shared.web.RequestHeaders;
 import com.lcs.findraco.support.AbstractIntegrationTest;
-import com.lcs.findraco.user.controller.TimeZoneInterceptor;
 import com.lcs.findraco.user.controller.UserRoutes;
 import com.lcs.findraco.user.model.User;
 import org.junit.jupiter.api.Test;
@@ -94,7 +94,7 @@ class TimeZoneIT extends AbstractIntegrationTest {
     void anUnauthenticatedRequestWritesNothing() throws Exception {
         User user = fixtures.aUser();
 
-        mockMvc.perform(get(UserRoutes.USER + "/me").header(TimeZoneInterceptor.HEADER, "Asia/Tokyo"))
+        mockMvc.perform(get(UserRoutes.USER + "/me").header(RequestHeaders.TIME_ZONE, "Asia/Tokyo"))
                 .andExpect(status().isUnauthorized());
 
         assertThat(storedZone(user)).isEqualTo("America/Sao_Paulo");
@@ -103,7 +103,7 @@ class TimeZoneIT extends AbstractIntegrationTest {
     private ResultActions me(User user, String header) throws Exception {
         var request = get(UserRoutes.USER + "/me").with(testAuthHelper.asUser(user));
         if (header != null) {
-            request.header(TimeZoneInterceptor.HEADER, header);
+            request.header(RequestHeaders.TIME_ZONE, header);
         }
         return mockMvc.perform(request);
     }
@@ -114,7 +114,7 @@ class TimeZoneIT extends AbstractIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(body);
         if (header != null) {
-            request.header(TimeZoneInterceptor.HEADER, header);
+            request.header(RequestHeaders.TIME_ZONE, header);
         }
         return mockMvc.perform(request);
     }

@@ -122,6 +122,22 @@ describe("findracoApi request defaults", () => {
   });
 });
 
+describe("findracoApi time zone", () => {
+  it("sends the device's zone as the Time-Zone header on every request (BST-11 AC 7)", async () => {
+    server.use(...protectedRoutes());
+    const requests = recordRequests();
+    setAccessToken("new-token");
+
+    await findracoApi.get("/plans");
+    await findracoApi.get("/categories");
+
+    const zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    expect(requests.map((request) => request.headers.get("Time-Zone"))).toEqual(
+      [zone, zone],
+    );
+  });
+});
+
 describe("findracoApi session renewal", () => {
   it("renews once on a 401 and retries the request with the new token (401 → refresh → retry)", async () => {
     expect(navigator.locks).toBeUndefined();

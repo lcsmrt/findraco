@@ -62,7 +62,13 @@ function emptyPage<T>(): PagedResponse<T> {
 
 function authValue(): AuthContextValue {
   return {
-    user: { id: ana.userId, name: ana.name, email: ana.email },
+    user: {
+      id: ana.userId,
+      name: ana.name,
+      email: ana.email,
+      timeZone: "America/Sao_Paulo",
+      timeZoneMode: "AUTOMATIC",
+    },
     setUser: vi.fn(),
     status: "authenticated",
     signIn: vi.fn(),

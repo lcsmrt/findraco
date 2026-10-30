@@ -12,7 +12,13 @@ import { renderWithProviders } from "@/test/renderWithProviders";
 import type { FilterScreen } from "./filterStorage";
 import { PlanFiltersGate } from "./PlanFiltersGate";
 
-const signedInUser: User = { id: 1, name: "Ana", email: "ana@example.com" };
+const signedInUser: User = {
+  id: 1,
+  name: "Ana",
+  email: "ana@example.com",
+  timeZone: "America/Sao_Paulo",
+  timeZoneMode: "AUTOMATIC",
+};
 
 function authValue(user: User | null): AuthContextValue {
   return {

@@ -91,7 +91,7 @@ describe("InvitePlanDialog", () => {
     expect(await request?.json()).toEqual({
       role: "VIEWER",
       type: "LINK",
-      expiresAt: "2026-12-31T18:00",
+      expiresAt: new Date("2026-12-31T18:00").toISOString(),
     });
     expect(screen.getByDisplayValue(`${window.location.origin}/invitation/link-token`)).toBeTruthy();
   });

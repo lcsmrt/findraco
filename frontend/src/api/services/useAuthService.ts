@@ -1,6 +1,11 @@
-import { useMutation, useQuery, UseQueryOptions } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  UseQueryOptions,
+} from "@tanstack/react-query";
 import { findracoApi } from "../clients/findracoApi";
-import { RegisterUserRequest, User } from "../dtos/user";
+import { RegisterUserRequest, UpdateTimeZoneRequest, User } from "../dtos/user";
 import { MutationOptions } from "../types/mutationOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 import {
@@ -49,6 +54,52 @@ export async function logout(): Promise<void> {
 export async function getUserProfile(): Promise<User> {
   const { data } = await findracoApi.get("/user/me");
   return data;
+}
+
+/**
+ * Hook for the authenticated user's profile, shared with the session through the "profile" key.
+ */
+export function useGetUserProfile(
+  options?: Omit<UseQueryOptions<User>, "queryKey">,
+) {
+  return useQuery({
+    queryFn: getUserProfile,
+    queryKey: ["profile"],
+    ...options,
+  });
+}
+
+/**
+ * Pins a time zone, or hands the zone back to the device.
+ * @param params New mode and, to pin, the IANA zone id.
+ * @returns The updated user.
+ */
+async function updateTimeZone(params: UpdateTimeZoneRequest): Promise<User> {
+  const { body } = params;
+  const { data } = await findracoApi.patch("/user/me/time-zone", body);
+  return data;
+}
+
+/**
+ * Hook for choosing how the user's time zone is set.
+ */
+export function useUpdateTimeZone(
+  options?: MutationOptions<User, UpdateTimeZoneRequest>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateTimeZone,
+    ...buildMutationOptions(
+      { successMessage: "Time zone saved." },
+      {
+        ...options,
+        onSuccess: (data, variables) => {
+          queryClient.setQueryData(["profile"], data);
+          options?.onSuccess?.(data, variables);
+        },
+      },
+    ),
+  });
 }
 
 /**

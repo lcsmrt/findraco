@@ -5,6 +5,7 @@ import com.lcs.findraco.shared.error.ProblemAccessDeniedHandler;
 import com.lcs.findraco.shared.error.ProblemAuthenticationEntryPoint;
 import com.lcs.findraco.shared.error.ProblemErrorController;
 import com.lcs.findraco.shared.security.PublicEndpoints;
+import com.lcs.findraco.shared.web.RequestHeaders;
 import com.lcs.findraco.shared.web.RequestIdFilter;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
@@ -104,7 +105,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOrigins(corsProperties.allowedOrigins());
         config.setAllowedMethods(List.of("GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"));
-        config.setAllowedHeaders(List.of("Authorization", "Content-Type", RequestIdFilter.HEADER));
+        config.setAllowedHeaders(
+                List.of("Authorization", "Content-Type", RequestIdFilter.HEADER, RequestHeaders.TIME_ZONE));
         config.setExposedHeaders(List.of(RequestIdFilter.HEADER));
         config.setAllowCredentials(true);
 

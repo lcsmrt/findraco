@@ -11,6 +11,8 @@ const meta = {
   args: {
     userName: "Ada Lovelace",
     onSignOut: fn(),
+    onOpenTimeZone: fn(),
+    timeZoneDialog: null,
     planSwitcher: (
       <Button variant="ghost">
         Household
@@ -35,6 +37,17 @@ export const SignedIn: Story = {
     await userEvent.click(await screen.findByRole("menuitem", { name: "Logout" }));
     await expect(args.onSignOut).toHaveBeenCalledTimes(1);
     // Choosing an item closes the menu; the a11y check runs once it has left.
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+export const OpenTimeZone: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByText("AL"));
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: "Time zone" }),
+    );
+    await expect(args.onOpenTimeZone).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   },
 };

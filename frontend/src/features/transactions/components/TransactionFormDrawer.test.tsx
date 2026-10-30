@@ -55,7 +55,7 @@ const savedTransaction: Transaction = {
 
 function authValue(): AuthContextValue {
   return {
-    user: { id: lucas.userId, name: lucas.name, email: lucas.email },
+    user: { id: lucas.userId, name: lucas.name, email: lucas.email, timeZone: "America/Sao_Paulo", timeZoneMode: "AUTOMATIC" },
     setUser: vi.fn(),
     status: "authenticated",
     signIn: vi.fn(),
