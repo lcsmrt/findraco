@@ -869,6 +869,10 @@
         "enum" : [ "EQUAL", "EXACT", "PERCENT" ],
         "type" : "string"
       },
+      "TimeZoneMode" : {
+        "enum" : [ "AUTOMATIC", "PINNED" ],
+        "type" : "string"
+      },
       "TransactionCreatorResponse" : {
         "properties" : {
           "id" : {
@@ -1176,6 +1180,20 @@
         "required" : [ "scope", "series", "version" ],
         "type" : "object"
       },
+      "UpdateTimeZoneRequest" : {
+        "properties" : {
+          "mode" : {
+            "$ref" : "#/components/schemas/TimeZoneMode"
+          },
+          "zone" : {
+            "maxLength" : 64,
+            "minLength" : 0,
+            "type" : "string"
+          }
+        },
+        "required" : [ "mode" ],
+        "type" : "object"
+      },
       "UpdateTransactionRequest" : {
         "properties" : {
           "amount" : {
@@ -1268,9 +1286,15 @@
           },
           "name" : {
             "type" : "string"
+          },
+          "timeZone" : {
+            "type" : "string"
+          },
+          "timeZoneMode" : {
+            "$ref" : "#/components/schemas/TimeZoneMode"
           }
         },
-        "required" : [ "email", "id", "name" ],
+        "required" : [ "email", "id", "name", "timeZone", "timeZoneMode" ],
         "type" : "object"
       }
     },
@@ -5244,6 +5268,85 @@
           }
         },
         "summary" : "Returns the authenticated user's data",
+        "tags" : [ "Users" ]
+      }
+    },
+    "/api/findraco/user/me/time-zone" : {
+      "patch" : {
+        "operationId" : "updateTimeZone",
+        "requestBody" : {
+          "content" : {
+            "application/json" : {
+              "schema" : {
+                "$ref" : "#/components/schemas/UpdateTimeZoneRequest"
+              }
+            }
+          },
+          "required" : true
+        },
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UserResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "422" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unprocessable Content"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "summary" : "Pins a time zone, or hands the zone back to the device's Time-Zone header",
         "tags" : [ "Users" ]
       }
     }

@@ -1,10 +1,13 @@
 package com.lcs.findraco.user.service;
 
 import com.lcs.findraco.plan.service.PlanService;
+import com.lcs.findraco.shared.error.MalformedRequestException;
 import com.lcs.findraco.user.exception.UserExceptions;
+import com.lcs.findraco.user.model.TimeZoneMode;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import com.lcs.findraco.user.request.CreateUserRequest;
+import com.lcs.findraco.user.request.UpdateTimeZoneRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
 import com.lcs.findraco.user.response.UserResponse;
 import java.util.Collection;
@@ -87,5 +90,39 @@ public class UserService {
     public void changePassword(User user, String rawPassword) {
         user.setPassword(encoder.encode(rawPassword));
         userRepository.save(user);
+    }
+
+    /**
+     * The user's choice of zone: {@code PINNED} keeps the given IANA id whatever the device says;
+     * {@code AUTOMATIC} hands the zone back to the device header, which refreshes it on the next request.
+     */
+    @Transactional
+    public UserResponse updateTimeZone(UpdateTimeZoneRequest dto, long userId) {
+        User user = load(userId);
+        if (dto.mode() == TimeZoneMode.PINNED) {
+            if (!TimeZones.isIanaId(dto.zone())) {
+                throw new MalformedRequestException("zone", "The zone must be an IANA time zone id.");
+            }
+            user.pinTimeZone(dto.zone());
+        } else {
+            user.followDeviceTimeZone();
+        }
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    /**
+     * Records the zone a device reported. A value that is not an IANA id is ignored, and so is any value
+     * while the zone is pinned or already stored.
+     */
+    @Transactional
+    public void adoptDeviceTimeZone(long userId, String zone) {
+        if (!TimeZones.isIanaId(zone)) {
+            return;
+        }
+        User user = load(userId);
+        if (user.getTimeZoneMode() == TimeZoneMode.AUTOMATIC && !zone.equals(user.getTimeZone())) {
+            user.useDeviceTimeZone(zone);
+            userRepository.save(user);
+        }
     }
 }

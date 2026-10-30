@@ -3,6 +3,7 @@ package com.lcs.findraco.user.controller;
 import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
 import com.lcs.findraco.user.request.CreateUserRequest;
+import com.lcs.findraco.user.request.UpdateTimeZoneRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
 import com.lcs.findraco.user.response.UserResponse;
 import com.lcs.findraco.user.service.UserService;
@@ -44,5 +45,12 @@ public class UserController {
     public ResponseEntity<UserResponse> updateUser(
             @RequestBody @Valid UpdateUserRequest dto, @CurrentUser AuthenticatedUser user) {
         return ResponseEntity.ok(userService.update(dto, user.id()));
+    }
+
+    @Operation(summary = "Pins a time zone, or hands the zone back to the device's Time-Zone header")
+    @PatchMapping("/me/time-zone")
+    public ResponseEntity<UserResponse> updateTimeZone(
+            @RequestBody @Valid UpdateTimeZoneRequest dto, @CurrentUser AuthenticatedUser user) {
+        return ResponseEntity.ok(userService.updateTimeZone(dto, user.id()));
     }
 }

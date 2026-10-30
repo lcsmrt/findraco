@@ -59,6 +59,9 @@ public class User {
 
     public void useDeviceTimeZone(String zone) {
         this.timeZone = zone;
+    }
+
+    public void followDeviceTimeZone() {
         this.timeZoneMode = TimeZoneMode.AUTOMATIC;
     }
 
