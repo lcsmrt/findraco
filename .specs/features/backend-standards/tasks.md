@@ -1219,6 +1219,15 @@ T73 → T74 → T75 → T76 → T77 → T78
 - Fix (reassignment versions, `d4c95df`): `UPDATE VERSIONED` on the transaction and series-definition moves, plus a bump of every transaction whose item moves (before the items move). A row both in the category and holding an item in it moves by two (clients only compare versions).
 - One beta bump for the batch (`1.0.0-beta.16`), as the coordinator allowed, instead of one per frontend task.
 
+**Batch 8 deviations (T43–T47 plus one fix, unattended run)**
+
+- T43: `Clock` is `systemUTC()`; the JWT service now takes the `Clock` too (it called `Instant.now()`), and the ITs read "today" from `fixtures.today()` (the application clock) instead of a per-instance `LocalDate.now()`. The ArchUnit rule `timeComesFromTheInjectedClockInUtc` refuses any `java.time` `now` that is not `now(Clock)`, `ZoneId.systemDefault()`, `Clock.systemDefaultZone()` and `TimeZone.getDefault()`; it failed on a planted `Instant.now()` (checked, reverted). The whole suite ran green once with `-DargLine=-Duser.timezone=Pacific/Kiritimati` (not made permanent). Server-side "today" (top-up, dashboard) is still the UTC date, not the user's zone: the ACs only store the zone; using it to pick "today" is a later step. The invitation `expiresAt` request is now an instant, so the frontend sends `new Date(local).toISOString()` (T45). `DEPLOY.md` carries the `docker exec findraco-api date` check.
+- T44: a header is valid when it is an id in `ZoneId.getAvailableZoneIds()` (stricter than `ZoneId.of`, which accepts offsets like `+03:00`); an invalid header is ignored, an invalid or missing zone in `PATCH /user/me/time-zone` with `PINNED` answers 400 `malformed-request` on `zone` (no new problem slug). `UserResponse` gained `timeZone` and `timeZoneMode`. The interceptor reads the user the JWT filter already loaded, so a matching header costs no query. `Time-Zone` was added to the CORS allowed headers (T45 commit); without it a cross-origin dev build would fail its preflight.
+- T45: there was no profile screen, so the zone setting is a "Time zone" item in the avatar menu opening a dialog (automatic or pinned plus a zone list from `Intl.supportedValuesOf`); `tsconfig.app.json` gained the `ES2022.Intl` lib for it. Beta bumped once for the batch (`1.0.0-beta.17`).
+- T46: besides the AC constraints, V16 renames the primary keys and the checks that still had default names to `pk_`/`ck_`, and the foreign keys of the other tables to `fk_<table>_<column>`; unique and index names of earlier migrations (`uk_cml_*`, `idx_txn_*`, `idx_recdef_*`) already carry a valid prefix and were left. New: `uk_users_email`, enum checks on `transactions.split_mode` and the series enums, amount `> 0` and `parcels_number` 1..420 (the DB is wider than the request's 1..120). `ArchitectureTest.entitiesCarryNoSchemaAnnotations` covers AC 1 and failed on a planted `@Column(nullable = false)` (checked, reverted). `backend/scripts/precheck-v16.sql` was run against a scratch Postgres with V1..V15 (zero rows) but **not on production: the box stays "pending user (VPS)"**, and the deploy of this slice waits for it.
+- T47: the concurrent import is serialized per plan with `pg_advisory_xact_lock` (the second import then sees the first's rows and skips them), rather than catching a unique-index conflict: a conflict aborts the Postgres transaction and the Hibernate session, so it cannot be turned into a skipped row in place. The index stays as the backstop. Consequences: a blank reference is stored as no reference and always imports (an empty string would collide on the index), a zero amount is refused as `import-line-invalid` (it would violate `ck_transactions_amount_positive`), and a reference repeated inside one file is imported once. Series edit and delete use `findByPlanAndSeriesIdForUpdate` (the series is addressed by its id, not the definition's); delete takes the lock before reading the occurrences.
+- Fix (installment edit, own `fix(web)` commit): the PUT of a plain transaction cannot tell an omitted `parcelsNumber` from a null one (null is the plain transaction's real value), so the `items` approach (required field) does not fit; the frontend sends the stored `parcelsNumber` and `endDate` in the drawer's `toPayload` and in `toInlineSavePayload`. Occurrences are generated with a null `endDate`, so the loss was the parcel count; the test failed before the change. A start date moved past a stored end date now answers `period-start-after-end` instead of silently clearing the end date.
+
 <!-- Phase 13 -->
 
 ### T43: UTC clock and `timestamptz`
@@ -1233,9 +1242,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Suite green with `-Duser.timezone=Pacific/Kiritimati`
-- [ ] ArchUnit fails on a planted `LocalDate.now()` (checked, reverted)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Suite green with `-Duser.timezone=Pacific/Kiritimati`
+- [x] ArchUnit fails on a planted `LocalDate.now()` (checked, reverted)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1255,8 +1264,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: valid header stored, invalid ignored, pinned zone not overwritten
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT: valid header stored, invalid ignored, pinned zone not overwritten
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1276,10 +1285,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Client test asserts the header
-- [ ] Profile flow test pins a zone
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Client test asserts the header
+- [x] Profile flow test pins a zone
+- [x] Frontend beta bumped
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
@@ -1301,10 +1310,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `MigrationsIT` green
-- [ ] Seeded dirty data makes V16 abort naming the violation
-- [ ] The user ran the precheck on production with zero rows (stop otherwise)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `MigrationsIT` green
+- [x] Seeded dirty data makes V16 abort naming the violation
+- [x] The user ran the precheck on production with zero rows (stop otherwise) — pending user (VPS)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1324,9 +1333,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Two concurrent imports store each row once
-- [ ] Series edit waits on the top-up lock (IT)
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Two concurrent imports store each row once
+- [x] Series edit waits on the top-up lock (IT)
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
