@@ -66,6 +66,12 @@
             <scope>runtime</scope>
         </dependency>
 
+        <!-- Bank statement parsing -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.14.1</version>
+        </dependency>
         <!-- Rate limiting: token buckets kept in a bounded cache -->
         <dependency>
             <groupId>com.bucket4j</groupId>

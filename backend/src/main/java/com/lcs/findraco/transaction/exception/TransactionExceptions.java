@@ -191,4 +191,54 @@ public class TransactionExceptions {
                     "Line " + line + " of the CSV is invalid.");
         }
     }
+
+    public static class CsvUnknownFormatException extends DomainException {
+        public CsvUnknownFormatException() {
+            super(
+                    ProblemType.CSV_UNKNOWN_FORMAT,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "file",
+                    "The file's header matches no supported bank format.");
+        }
+    }
+
+    public static class CsvFormatNotSupportedException extends DomainException {
+        public CsvFormatNotSupportedException() {
+            super(
+                    ProblemType.CSV_FORMAT_NOT_SUPPORTED,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "file",
+                    "This bank format is recognised but cannot be imported yet.");
+        }
+    }
+
+    public static class ImportEncodingInvalidException extends DomainException {
+        public ImportEncodingInvalidException(int line) {
+            super(
+                    ProblemType.CSV_ENCODING_INVALID,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "file",
+                    "The file is not valid UTF-8; the first bad byte is on line " + line + ".");
+        }
+    }
+
+    public static class ImportTooManyRowsException extends DomainException {
+        public ImportTooManyRowsException(int max) {
+            super(
+                    ProblemType.CSV_TOO_MANY_ROWS,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "file",
+                    "The file has more than " + max + " rows.");
+        }
+    }
+
+    public static class ImportFileTooLargeException extends DomainException {
+        public ImportFileTooLargeException(long maxBytes) {
+            super(
+                    ProblemType.CSV_TOO_LARGE,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "file",
+                    "The file is larger than " + maxBytes + " bytes.");
+        }
+    }
 }

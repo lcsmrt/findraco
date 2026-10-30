@@ -77,7 +77,12 @@ public enum ProblemType {
     SERIES_PIVOT_NOT_FOUND("series-pivot-not-found"),
     SERIES_PARCELS_CHANGE_NEEDS_ALL("series-parcels-change-needs-all"),
     SERIES_TOO_MANY_OCCURRENCES("series-too-many-occurrences"),
-    IMPORT_LINE_INVALID("import-line-invalid");
+    IMPORT_LINE_INVALID("import-line-invalid"),
+    CSV_UNKNOWN_FORMAT("csv-unknown-format"),
+    CSV_FORMAT_NOT_SUPPORTED("csv-format-not-supported"),
+    CSV_ENCODING_INVALID("csv-encoding-invalid"),
+    CSV_TOO_MANY_ROWS("csv-too-many-rows"),
+    CSV_TOO_LARGE("csv-too-large");
 
     private static final String PREFIX = "urn:findraco:problem:";
 
