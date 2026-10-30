@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -72,15 +71,15 @@ public class CategorySpendingService {
     @Transactional(readOnly = true)
     public List<CategorySpendingResponse> getSpending(CategorySpendingFilter filter, PlanContext ctx) {
         openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
-        return compute(ctx.planId(), filter.startDate(), filter.endDate(), null);
+        return compute(ctx.planId(), filter.startDate(), filter.endDate());
     }
 
     /** Every category of the plan (DEBIT then CREDIT trees, zero spend included) for the period. */
     @Transactional(readOnly = true)
-    public List<CategorySpendingResponse> compute(long planId, LocalDate startDate, LocalDate endDate, Long memberId) {
+    public List<CategorySpendingResponse> compute(long planId, LocalDate startDate, LocalDate endDate) {
         Plan plan = entityManager.getReference(Plan.class, planId);
-        Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
-        Facts credit = facts(plan, TransactionType.CREDIT, startDate, endDate, memberId);
+        Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate);
+        Facts credit = facts(plan, TransactionType.CREDIT, startDate, endDate);
         Members members = members(plan, debit, credit);
         return assembler.assemble(
                 concat(debit.rowsA(), credit.rowsA()),
@@ -89,7 +88,7 @@ public class CategorySpendingService {
                 categoryRepository.findAllByPlanWithDetails(plan),
                 members.activeIds(),
                 members.names(),
-                memberId);
+                CategoryUsageCalculator.monthsTouched(startDate, endDate));
     }
 
     private record Members(Set<Long> activeIds, Map<Long, String> names) {}
@@ -122,22 +121,11 @@ public class CategorySpendingService {
 
     private record Facts(List<Object[]> rowsA, List<MemberFact> removed, List<MemberFact> added) {}
 
-    private Facts facts(Plan plan, TransactionType type, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rowsA = spendingRepository.findCategoryMemberFacts(plan, type, startDate, endDate, memberId);
+    private Facts facts(Plan plan, TransactionType type, LocalDate startDate, LocalDate endDate) {
+        List<Object[]> rowsA = spendingRepository.findCategoryMemberFacts(plan, type, startDate, endDate);
         Allocation allocation = itemShareAllocator.allocate(
                 spendingRepository.findCategorizedItemParticipantRows(plan, type, startDate, endDate));
-        // The member filter applies after allocation, so a member's item portion is the same with or
-        // without the filter (closes the former plan-total item gap of the member-filtered dashboard).
-        return new Facts(rowsA, forMember(allocation.removed(), memberId), forMember(allocation.added(), memberId));
-    }
-
-    private static List<MemberFact> forMember(List<MemberFact> facts, Long memberId) {
-        if (memberId == null) {
-            return facts;
-        }
-        return facts.stream()
-                .filter(fact -> Objects.equals(fact.memberId(), memberId))
-                .toList();
+        return new Facts(rowsA, allocation.removed(), allocation.added());
     }
 
     private static <T> List<T> concat(List<T> first, List<T> second) {

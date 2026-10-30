@@ -16,19 +16,17 @@ import org.springframework.data.repository.query.Param;
 public interface CategorySpendingRepository extends Repository<Transaction, Long> {
 
     // Query A of the category partition, per category x member: each member's participation share of
-    // the categorized transactions in the period (optional memberId; null → every member).
+    // the categorized transactions in the period.
     @Query("SELECT ft.category.id, tp.member.id, COALESCE(SUM(tp.shareAmount), 0) "
             + "FROM Transaction ft JOIN ft.participants tp "
             + "WHERE ft.plan = :plan AND ft.type = :type AND ft.category IS NOT NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId) "
             + "GROUP BY ft.category.id, tp.member.id")
     List<Object[]> findCategoryMemberFacts(
             @Param("plan") Plan plan,
             @Param("type") TransactionType type,
             @Param("startDate") LocalDate startDate,
-            @Param("endDate") LocalDate endDate,
-            @Param("memberId") Long memberId);
+            @Param("endDate") LocalDate endDate);
 
     // One row per categorized item x participant of its transaction, unaggregated, for
     // ItemShareAllocator: [itemId, itemCategoryId, transactionCategoryId (nullable), itemAmount,

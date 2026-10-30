@@ -1,6 +1,8 @@
 package com.lcs.findraco.category.response;
 
 import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.model.CategoryUsage;
+import com.lcs.findraco.category.model.UsageStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
@@ -9,8 +11,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * One category row of the spending tree (Categories tab and Overview breakdown): the period's spend,
- * the monthly limit and its usage, the per-member rows and, for a root, its children.
- * No limit → remaining/percentUsed/overLimit null; a zero limit → 0 percent.
+ * the limit scaled to the period and its usage, the per-member rows and, for a root, its children.
+ * No limit → limit/remaining/percentUsed/status null; a zero limit → 0 percent.
  */
 public record CategorySpendingResponse(
         Long categoryId,
@@ -24,7 +26,7 @@ public record CategorySpendingResponse(
         @Nullable BigDecimal limit,
         @Nullable BigDecimal remaining,
         @Nullable BigDecimal percentUsed,
-        @Nullable Boolean overLimit,
+        @Nullable UsageStatus status,
         List<CategoryMemberSpendingResponse> members,
         List<CategorySpendingResponse> children) {
 
@@ -38,7 +40,7 @@ public record CategorySpendingResponse(
             Category category,
             Boolean ownerActive,
             BigDecimal spent,
-            BigDecimal limit,
+            CategoryUsage usage,
             List<CategoryMemberSpendingResponse> members,
             List<CategorySpendingResponse> children) {
         User owner = category.getParent() == null
@@ -53,10 +55,10 @@ public record CategorySpendingResponse(
                 owner == null ? null : owner.getName(),
                 owner == null ? null : ownerActive,
                 spent,
-                limit,
-                LimitUsage.remaining(spent, limit),
-                LimitUsage.percentUsed(spent, limit),
-                LimitUsage.overLimit(spent, limit),
+                usage.limit(),
+                usage.remaining(),
+                usage.percentUsed(),
+                usage.status(),
                 List.copyOf(members),
                 List.copyOf(children));
     }

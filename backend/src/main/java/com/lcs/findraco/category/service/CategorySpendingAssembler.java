@@ -2,6 +2,7 @@ package com.lcs.findraco.category.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
+import com.lcs.findraco.category.model.CategoryUsage;
 import com.lcs.findraco.category.response.CategoryMemberSpendingResponse;
 import com.lcs.findraco.category.response.CategorySpendingResponse;
 import com.lcs.findraco.transaction.model.TransactionType;
@@ -31,8 +32,8 @@ import org.springframework.stereotype.Component;
  * parent's. A row's limit is the sum of its active per-member entries, or its plain limit when there
  * are none. Every member with spend in the row or with a limit entry gets a per-member row (sorted by
  * member id) with their (rolled-up) spend and their own amount, or no limit without an entry (UX-04 AC 1). Entries of users who are not active members are dormant: listed, but left out of
- * the sum and of evaluation (CAT-11, CAT-12, CAT-14). With a member filter, a row with an active entry
- * for that member shows the member's own limit. An owned category (a child inherits its parent's owner)
+ * the sum and of evaluation (CAT-11, CAT-12, CAT-14). Limits are monthly; every row's limit is scaled to the
+ * months the period touches and judged by {@link CategoryUsageCalculator}. An owned category (a child inherits its parent's owner)
  * counts the owner's spend only, even after the owner left the plan (the row then reports
  * {@code ownerActive=false}, inherited by the children); every member's share, the owner's included, is
  * listed as a per-member row without a limit (CAT-14, CAT-16). No Spring context or repository is needed;
@@ -54,7 +55,7 @@ public class CategorySpendingAssembler {
      * @param categories      every category of the plan
      * @param activeMemberIds user ids of the plan's current members
      * @param memberNames     display name by user id, for every member that has spend facts
-     * @param memberId        the member filter, or null for the whole plan
+     * @param months          calendar months the period touches, which scale every monthly limit
      */
     public List<CategorySpendingResponse> assemble(
             List<Object[]> rowsA,
@@ -63,9 +64,9 @@ public class CategorySpendingAssembler {
             List<Category> categories,
             Set<Long> activeMemberIds,
             Map<Long, String> memberNames,
-            Long memberId) {
+            int months) {
         Facts facts = Facts.of(rowsA, removed, added);
-        Limits limits = new Limits(activeMemberIds, memberNames, memberId);
+        Limits limits = new Limits(activeMemberIds, memberNames, months);
         List<CategorySpendingResponse> roots = buildTree(facts, limits, categories);
 
         List<CategorySpendingResponse> result = new ArrayList<>();
@@ -138,17 +139,17 @@ public class CategorySpendingAssembler {
                                     member,
                                     limits.memberNames().get(member),
                                     memberSpent,
-                                    null,
+                                    CategoryUsage.NONE,
                                     limits.activeMemberIds().contains(member))
                             : CategoryMemberSpendingResponse.of(
                                     member,
                                     entry.getMember().getName(),
                                     memberSpent,
-                                    entry.getAmount(),
+                                    limits.usage(entry, memberSpent),
                                     limits.isActive(entry));
                 })
                 .toList();
-        return CategorySpendingResponse.of(category, null, spent, limits.forRow(category), members, children);
+        return CategorySpendingResponse.of(category, null, spent, limits.usage(category, spent), members, children);
     }
 
     /**
@@ -169,15 +170,16 @@ public class CategorySpendingAssembler {
                         share.getKey(),
                         limits.memberNames().get(share.getKey()),
                         share.getValue(),
-                        null,
+                        CategoryUsage.NONE,
                         limits.activeMemberIds().contains(share.getKey())))
                 .toList();
         boolean ownerActive = limits.activeMemberIds().contains(owner.getId());
-        return CategorySpendingResponse.of(category, ownerActive, spent, limits.forRow(category), members, children);
+        return CategorySpendingResponse.of(
+                category, ownerActive, spent, limits.usage(category, spent), members, children);
     }
 
-    /** Limit rules shared by every row: effective limit, dormancy and the member filter. */
-    private record Limits(Set<Long> activeMemberIds, Map<Long, String> memberNames, Long memberId) {
+    /** Limit rules shared by every row: effective limit, dormancy and the period's scale. */
+    private record Limits(Set<Long> activeMemberIds, Map<Long, String> memberNames, int months) {
 
         boolean isActive(CategoryMemberLimit entry) {
             return activeMemberIds.contains(entry.getMember().getId());
@@ -193,16 +195,15 @@ public class CategorySpendingAssembler {
             return active.stream().map(CategoryMemberLimit::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
         }
 
-        /** The row's limit: the filtered member's own active entry when there is one, else the effective limit. */
-        BigDecimal forRow(Category category) {
-            if (memberId != null) {
-                for (CategoryMemberLimit entry : category.getMemberLimits()) {
-                    if (entry.getMember().getId().equals(memberId) && isActive(entry)) {
-                        return entry.getAmount();
-                    }
-                }
-            }
-            return effective(category);
+        CategoryUsage usage(Category category, BigDecimal spent) {
+            return CategoryUsageCalculator.evaluate(spent, effective(category), months);
+        }
+
+        /** A member's entry is judged while the member is in the plan; a former member's is only shown. */
+        CategoryUsage usage(CategoryMemberLimit entry, BigDecimal spent) {
+            return isActive(entry)
+                    ? CategoryUsageCalculator.evaluate(spent, entry.getAmount(), months)
+                    : CategoryUsage.unevaluated(CategoryUsageCalculator.scaledLimit(entry.getAmount(), months));
         }
     }
 

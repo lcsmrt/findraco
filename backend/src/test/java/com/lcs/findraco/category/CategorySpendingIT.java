@@ -23,6 +23,7 @@ import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -74,7 +75,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(food.get("limit").decimalValue()).isEqualByComparingTo("400.00");
         assertThat(food.get("remaining").decimalValue()).isEqualByComparingTo("0.00");
         assertThat(food.get("percentUsed").decimalValue()).isEqualByComparingTo("100.00");
-        assertThat(food.get("overLimit").asBoolean()).isFalse();
+        assertThat(food.get("status").asString()).isNotEqualTo("OVER");
         // UX-04 AC 1: the single participant is listed with the rolled-up spend and no limit.
         assertThat(food.get("members")).singleElement().satisfies(member -> {
             assertThat(member.get("memberId").asLong()).isEqualTo(owner.getId());
@@ -92,14 +93,14 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(delivery.get("limit").decimalValue()).isEqualByComparingTo("200.00");
         assertThat(delivery.get("remaining").decimalValue()).isEqualByComparingTo("-50.00");
         assertThat(delivery.get("percentUsed").decimalValue()).isEqualByComparingTo("125.00");
-        assertThat(delivery.get("overLimit").asBoolean()).isTrue();
+        assertThat(delivery.get("status").asString()).isEqualTo("OVER");
 
         // Zero-spend category without a limit is still listed.
         JsonNode rent = tree.get(1);
         assertThat(rent.get("spent").decimalValue()).isEqualByComparingTo("0");
         assertThat(rent.get("limit").isNull()).isTrue();
         assertThat(rent.get("percentUsed").isNull()).isTrue();
-        assertThat(rent.get("overLimit").isNull()).isTrue();
+        assertThat(rent.get("status").isNull()).isTrue();
         assertThat(rent.get("children")).isEmpty();
 
         JsonNode salary = tree.get(2);
@@ -107,6 +108,26 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(salary.get("children")).hasSize(1);
         assertThat(salary.get("children").get(0).get("name").asString()).isEqualTo("Bonus");
         assertThat(salary.get("children").get(0).get("spent").decimalValue()).isEqualByComparingTo("0");
+    }
+
+    /** BST-17 AC 1, 2: a period over two months doubles every limit and is judged by the server. */
+    @Test
+    void aPeriodOverTwoMonthsScalesTheLimitsAndJudgesThemOnTheServer() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        seed(plan, owner);
+        LocalDate start = today().minusMonths(1).withDayOfMonth(15);
+
+        JsonNode tree = readSpending(fetchSpending(plan, owner, start, today()).andExpect(status().isOk()));
+
+        JsonNode food = rowNamed(tree, "Food");
+        assertThat(food.get("limit").decimalValue()).isEqualByComparingTo("800.00");
+        assertThat(food.get("remaining").decimalValue()).isEqualByComparingTo("400.00");
+        assertThat(food.get("percentUsed").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(food.get("status").asString()).isEqualTo("OK");
+        JsonNode delivery = food.get("children").get(0);
+        assertThat(delivery.get("limit").decimalValue()).isEqualByComparingTo("400.00");
+        assertThat(delivery.get("status").asString()).isEqualTo("OK");
     }
 
     @Test
@@ -163,21 +184,21 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(row.get("spent").decimalValue()).isEqualByComparingTo("100.00");
         assertThat(row.get("limit").decimalValue()).isEqualByComparingTo("400.00");
         assertThat(row.get("percentUsed").decimalValue()).isEqualByComparingTo("25.00");
-        assertThat(row.get("overLimit").asBoolean()).isFalse();
+        assertThat(row.get("status").asString()).isNotEqualTo("OVER");
         assertThat(row.get("members")).hasSize(2);
 
         JsonNode mine = memberRow(row, owner);
         assertThat(mine.get("spent").decimalValue()).isEqualByComparingTo("50.00");
         assertThat(mine.get("limit").decimalValue()).isEqualByComparingTo("260.00");
         assertThat(mine.get("remaining").decimalValue()).isEqualByComparingTo("210.00");
-        assertThat(mine.get("overLimit").asBoolean()).isFalse();
+        assertThat(mine.get("status").asString()).isNotEqualTo("OVER");
         assertThat(mine.get("active").asBoolean()).isTrue();
 
         JsonNode theirs = memberRow(row, partner);
         assertThat(theirs.get("spent").decimalValue()).isEqualByComparingTo("50.00");
         assertThat(theirs.get("limit").decimalValue()).isEqualByComparingTo("140.00");
         assertThat(theirs.get("remaining").decimalValue()).isEqualByComparingTo("90.00");
-        assertThat(theirs.get("overLimit").asBoolean()).isFalse();
+        assertThat(theirs.get("status").asString()).isNotEqualTo("OVER");
         assertThat(theirs.get("active").asBoolean()).isTrue();
     }
 
@@ -205,7 +226,7 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         assertThat(former.get("spent").decimalValue()).isEqualByComparingTo("50.00");
         assertThat(former.get("remaining").isNull()).isTrue();
         assertThat(former.get("percentUsed").isNull()).isTrue();
-        assertThat(former.get("overLimit").isNull()).isTrue();
+        assertThat(former.get("status").isNull()).isTrue();
 
         rejoin(plan, owner, partner);
 
@@ -403,11 +424,16 @@ class CategorySpendingIT extends AbstractIntegrationTest {
         throw new AssertionError("No member row for " + member.getId() + " in " + row);
     }
 
+    /** The current calendar month, so the monthly limits are not scaled. */
     private ResultActions fetchSpending(Plan plan, User asUser) throws Exception {
+        return fetchSpending(plan, asUser, today().withDayOfMonth(1), today().withDayOfMonth(today().lengthOfMonth()));
+    }
+
+    private ResultActions fetchSpending(Plan plan, User asUser, LocalDate start, LocalDate end) throws Exception {
         return mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
                 .with(testAuthHelper.asUser(asUser))
-                .param("startDate", today().minusDays(1).toString())
-                .param("endDate", today().plusDays(1).toString()));
+                .param("startDate", start.toString())
+                .param("endDate", end.toString()));
     }
 
     private JsonNode readSpending(ResultActions actions) throws Exception {
