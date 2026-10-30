@@ -1343,6 +1343,17 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 ---
 
+**Batch 9 deviations (T48–T55, unattended run)**
+
+- T48: Bucket4j is 8.21.0 (latest 8.x on Central, not 8.19.0). `RateLimitProperties` has one `RateLimitRule` component per limit (`loginIp`, `loginEmail`, ...) instead of a map, so a missing key fails startup by plain `@NotNull @Valid`; `ConfigurationPropertiesTest` covers a zero capacity and a missing rule. Every key (IP too, not only e-mail) is trimmed, lower-cased and SHA-256 hashed. The buckets use a Bucket4j `TimeMeter` over the injected `Clock`; the Caffeine `expireAfterAccess` runs on Caffeine's own ticker (real time), which only affects when idle keys are forgotten. A refusal logs `WARN Rate limit LOGIN_EMAIL exceeded; retry in Ns` with no key at all (the IP is not logged either; the request log line already has the caller). `GlobalExceptionHandler` has a `RateLimitedException` handler that adds `Retry-After`. The test profile has 100000 for every rule.
+- T49: services call `consume` first (login: IP then e-mail; reset: IP then e-mail; register: IP; import: user id). `@ClientIp` lives in `shared.web` with its resolver and `SharedWebConfig`, which also tells springdoc to ignore the annotation, so the snapshot did not change (429 was already a common response). The import is limited per user across plans. `RateLimitIT` sets tight limits with `@TestPropertySource` (its own context) and checks each route, the e-mail limit across IPs, case-insensitive e-mails and that the log line carries no e-mail.
+- T50: the commit subject is `feat(deploy): api reachable only through the proxy` (lower-case `api`: the commit hook requires a lower-case description). `docker-compose.yml` uses `${SERVER_ADDRESS:?...}`, so the stack refuses to start without it instead of passing an empty value (an empty `server.address` could bind publicly). The `internal-proxies` regex is loopback plus 172.16.0.0/12; the IT (`ClientAddressIT`, real HTTP on a random port) proves `X-Forwarded-For` is honoured from a trusted peer, ignored from an untrusted one (the same loopback peer with the property narrowed to Docker's range) and that a forged leading entry does not hide the entry the proxy appended. The checklist in `DEPLOY.md` is written; the box "User ran the VPS checklist" stays **pending user (VPS)**.
+- T51: one `DelegatingPasswordEncoder` in `auth.config.PasswordEncoderConfig`; stored new hashes read `{argon2}$argon2id$...` (the `{id}` prefix is part of the format, so the IT checks for that prefix). BouncyCastle `bcprov-jdk18on` 1.86. The dummy hash for unknown users comes from the provider's encoder, i.e. the same bean (Argon2 for the dummy while real legacy users still verify with BCrypt 12, so until each user's first login the two paths differ in time; after the migration they match). `CustomUserDetailsService` also implements `UserDetailsPasswordService`; `UserService.replacePasswordHash` stores the re-hash.
+- T52: the constraint lives in `shared.security` (`ValidPassword`, `PasswordLength`, `PasswordCharacters`, `PasswordNormalizer`), not in `auth.request`, because `CreateUserRequest` is in `user.request` and the architecture rule forbids a feature reaching another feature's requests. To get the two `errors[].code` values from the existing code-derivation (the annotation's simple name), `@ValidPassword` is composed of `@PasswordLength` and `@PasswordCharacters` without `@ReportAsSingleViolation`. The ArchUnit rule "request strings are bounded" now accepts `@ValidPassword` in place of `@Size`. Create, update and reset requests use it (the update request carries a password too); the login request keeps no policy and its `@Size` bound went from 128 to 1024 so a 128-code-point emoji password (256 UTF-16 units) can still sign in. The OpenAPI schema for the three password fields lost `maxLength 128` (bound by the constraint, which the schema generator does not read). Frontend copy for the two codes is in `problems.ts`.
+- T53: `@Async` is on `EmailService.sendPasswordResetEmail` (a call from another bean, so the proxy applies), executor `mailExecutor` with `app.mail.executor.core-size/max-size/queue-capacity` (2/4/100). Spring grows the pool beyond the core only after the queue is full, so effectively 2 threads while fewer than 100 are queued. A full queue drops the message with a WARN instead of throwing, so the response never depends on the mail system. The "in-memory mail fake" did not exist; `ForgotPasswordAsyncIT` defines one (a `JavaMailSenderImpl` that records and can hold a send) and uses Awaitility. The response does not wait for the lookup either way, but a known account still does two small writes before answering; the ACs ask for the same status and body, which the IT checks.
+- T54: `JwtProperties` has `secretKeyBytes()` and an `@AssertTrue` check (field `secretKeyStrongEnough`), failing on non-Base64 text and on fewer than 32 decoded bytes. `JwtService.generateToken(long userId)`, `getUserIdFromToken`, and `JwtAuthenticationFilter` loads by id through `CustomUserDetailsService.loadUserById`; `isTokenExpired` and `validateToken` were removed (unused). Confirmed: `spring-dotenv` and `spring.dotenv.filename` were already gone (T4). The local `backend/.env` secret decodes to 64 bytes (checked, value not printed). `.env.example` and the README now say `openssl rand -base64 48`. The production check is in `DEPLOY.md`; **the user must run it before deploying this slice**.
+- T55: `utils/passwordSchema.ts` exports `newPasswordSchema(emptyMessage)` (used by the sign-up and reset schemas; sign-in keeps `min(1)`), `passwordLength`, and `passwordSpacesHint`, shown as the field description in the sign-up and reset forms. `ResetPasswordView` hit the 60-line logic cap, so its invalid-link branch became a small `InvalidLink` component. The sign-up story's password was lengthened to meet the policy (own `test(frontend)` commit, found by the full gate). Beta bumped once for the batch (`1.0.0-beta.18`).
+
 <!-- Phase 15 -->
 
 ### T48: Rate limiter
@@ -1357,8 +1368,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests with a fixed clock: allows N, refuses N+1 with retry-after, refills
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Unit tests with a fixed clock: allows N, refuses N+1 with retry-after, refills
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick
@@ -1378,8 +1389,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT per route: the limit + 1 answers 429 with `Retry-After`; login per e-mail across IPs
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT per route: the limit + 1 answers 429 with `Retry-After`; login per e-mail across IPs
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1399,9 +1410,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: `X-Forwarded-For` from a non-proxy address is ignored
+- [x] IT: `X-Forwarded-For` from a non-proxy address is ignored
 - [ ] User ran the VPS checklist
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
@@ -1423,8 +1434,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: a BCrypt user logs in and the hash starts with `$argon2id$`
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT: a BCrypt user logs in and the hash starts with `$argon2id$`
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1444,8 +1455,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests: 7/8/128/129 code points, emoji counted as one, zero-width and tab refused, accents and spaces accepted, NFKC equivalence
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Unit tests: 7/8/128/129 code points, emoji counted as one, zero-width and tab refused, accents and spaces accepted, NFKC equivalence
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick
@@ -1465,8 +1476,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: identical status and body for both cases; mail delivered asynchronously
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT: identical status and body for both cases; mail delivered asynchronously
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1486,9 +1497,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Context test: a 16-byte secret fails startup
-- [ ] IT: token `sub` is the id; session refresh still works
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Context test: a 16-byte secret fails startup
+- [x] IT: token `sub` is the id; session refresh still works
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1508,9 +1519,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests mirror T52's cases
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Unit tests mirror T52's cases
+- [x] Frontend beta bumped
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: build
