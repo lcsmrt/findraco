@@ -470,23 +470,25 @@ export function toSeriesEditPayload(
   );
 
   return {
-    type: definition.type,
-    amount: values.amount,
-    description: values.description,
-    categoryId: values.category?.id,
-    mode: definition.mode,
-    startDate: definition.startDate,
-    parcelsNumber:
-      definition.mode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
-    interval: definition.interval,
-    endDate:
-      definition.mode === "RECURRING" && values.endDate
-        ? format(values.endDate, "yyyy-MM-dd")
-        : undefined,
-    splitMode,
-    participants,
     scope,
     pivotOccurrenceId: transaction.id,
+    series: {
+      type: definition.type,
+      amount: values.amount,
+      description: values.description,
+      categoryId: values.category?.id,
+      mode: definition.mode,
+      startDate: definition.startDate,
+      parcelsNumber:
+        definition.mode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
+      interval: definition.interval,
+      endDate:
+        definition.mode === "RECURRING" && values.endDate
+          ? format(values.endDate, "yyyy-MM-dd")
+          : undefined,
+      splitMode,
+      participants,
+    },
     version: definition.version,
   };
 }

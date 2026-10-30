@@ -1109,10 +1109,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `SeriesEditIT` green on the new shape
-- [ ] Frontend series edit test green
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `SeriesEditIT` green on the new shape
+- [x] Frontend series edit test green
+- [x] Frontend beta bumped
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

@@ -1083,45 +1083,6 @@
       },
       "UpdateSeriesRequest" : {
         "properties" : {
-          "amount" : {
-            "exclusiveMinimum" : 0,
-            "type" : "number"
-          },
-          "categoryId" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "currentParcel" : {
-            "format" : "int32",
-            "minimum" : 1,
-            "type" : "integer"
-          },
-          "description" : {
-            "minLength" : 1,
-            "type" : "string"
-          },
-          "endDate" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "interval" : {
-            "$ref" : "#/components/schemas/RecurrenceInterval"
-          },
-          "mode" : {
-            "$ref" : "#/components/schemas/RecurrenceMode"
-          },
-          "parcelsNumber" : {
-            "format" : "int32",
-            "maximum" : 120,
-            "minimum" : 2,
-            "type" : "integer"
-          },
-          "participants" : {
-            "items" : {
-              "$ref" : "#/components/schemas/TransactionParticipantRequest"
-            },
-            "type" : "array"
-          },
           "pivotOccurrenceId" : {
             "format" : "int64",
             "type" : "integer"
@@ -1129,22 +1090,15 @@
           "scope" : {
             "$ref" : "#/components/schemas/SeriesEditScope"
           },
-          "splitMode" : {
-            "$ref" : "#/components/schemas/SplitMode"
-          },
-          "startDate" : {
-            "format" : "date",
-            "type" : "string"
-          },
-          "type" : {
-            "$ref" : "#/components/schemas/TransactionType"
+          "series" : {
+            "$ref" : "#/components/schemas/CreateSeriesRequest"
           },
           "version" : {
             "format" : "int64",
             "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "mode", "scope", "startDate", "type", "version" ],
+        "required" : [ "scope", "series", "version" ],
         "type" : "object"
       },
       "UpdateTransactionRequest" : {

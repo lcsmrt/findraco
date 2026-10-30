@@ -264,7 +264,7 @@ describe("series mutations", () => {
     const onSuccess = vi.fn();
     const request: UpdateTransactionSeriesRequest = {
       params: { seriesId: "s1" },
-      body: { ...seriesBody, scope: "THIS_AND_FOLLOWING", pivotOccurrenceId: 40, version: 2 },
+      body: { scope: "THIS_AND_FOLLOWING", pivotOccurrenceId: 40, series: seriesBody, version: 2 },
     };
 
     const { result, queryClient } = renderHookWithProviders(

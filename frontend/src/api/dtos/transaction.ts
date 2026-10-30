@@ -153,20 +153,10 @@ export type DeleteTransactionSeriesRequest = {
 export type UpdateTransactionSeriesRequest = {
   params: { seriesId: string };
   body: {
-    type: TransactionType;
-    amount: number;
-    description: string;
-    categoryId?: number;
-    mode: RecurrenceMode;
-    startDate: string;
-    parcelsNumber?: number;
-    currentParcel?: number;
-    interval?: RecurrenceInterval;
-    endDate?: string;
-    splitMode?: SplitMode;
-    participants?: ParticipantInput[];
     scope: SeriesEditScope;
     pivotOccurrenceId?: number;
+    /** The series as the create request describes it. */
+    series: CreateTransactionSeriesRequest["body"];
     version: number;
   };
 };

@@ -411,19 +411,21 @@ describe("toSeriesEditPayload", () => {
     );
 
     expect(body).toEqual({
-      type: "DEBIT",
-      amount: 100,
-      description: "Rent",
-      categoryId: undefined,
-      mode: "INSTALLMENT",
-      startDate: "2026-05-01",
-      parcelsNumber: 10,
-      interval: undefined,
-      endDate: undefined,
-      splitMode: undefined,
-      participants: undefined,
       scope: "ALL",
       pivotOccurrenceId: 55,
+      series: {
+        type: "DEBIT",
+        amount: 100,
+        description: "Rent",
+        categoryId: undefined,
+        mode: "INSTALLMENT",
+        startDate: "2026-05-01",
+        parcelsNumber: 10,
+        interval: undefined,
+        endDate: undefined,
+        splitMode: undefined,
+        participants: undefined,
+      },
       version: 6,
     });
   });
@@ -445,7 +447,7 @@ describe("toSeriesEditPayload", () => {
       undefined,
     );
 
-    expect(body.startDate).toBe("2026-05-01");
+    expect(body.series.startDate).toBe("2026-05-01");
     expect(body.scope).toBe("THIS_ONE");
   });
 
@@ -471,8 +473,8 @@ describe("toSeriesEditPayload", () => {
       undefined,
     );
 
-    expect(body.endDate).toBeUndefined();
-    expect(body.mode).toBe("RECURRING");
+    expect(body.series.endDate).toBeUndefined();
+    expect(body.series.mode).toBe("RECURRING");
   });
 });
 

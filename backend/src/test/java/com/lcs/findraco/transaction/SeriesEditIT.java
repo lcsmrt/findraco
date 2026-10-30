@@ -345,6 +345,26 @@ class SeriesEditIT extends AbstractIntegrationTest {
         assertThat(result.getResponse().getContentAsString()).contains("too many occurrences");
     }
 
+    /** The edit carries the create request, so the create's validation holds on the edit, field by field. */
+    @Test
+    void anEditValidatesItsSeriesLikeTheCreate() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = LocalDate.of(2026, 1, 1);
+        String seriesId = createSeries(plan, owner, recurringBody("Gym", "50.00", start, LocalDate.of(2026, 3, 1)))
+                .get("seriesId")
+                .asString();
+
+        JsonNode problem = editSeries(
+                plan,
+                owner,
+                seriesId,
+                recurringEditBody("", "50.00", start, null, "ALL"),
+                problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"));
+
+        assertThat(problem.get("errors").get(0).get("field").asString()).isEqualTo("series.description");
+    }
+
     @Test
     void maxOccurrencesOverflowOnEditIsRejected() throws Exception {
         User owner = fixtures.aUser();
@@ -374,7 +394,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
                         put(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                                 .with(testAuthHelper.asUser(owner))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(editBody)))
+                                .content(objectMapper.writeValueAsString(nested(editBody))))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-too-many-occurrences"))
                 .andReturn();
 
@@ -660,10 +680,23 @@ class SeriesEditIT extends AbstractIntegrationTest {
                         put(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                                 .with(testAuthHelper.asUser(asUser))
                                 .contentType(MediaType.APPLICATION_JSON)
-                                .content(objectMapper.writeValueAsString(versioned)))
+                                .content(objectMapper.writeValueAsString(nested(versioned))))
                 .andExpect(expectedStatus)
                 .andReturn();
         return objectMapper.readTree(result.getResponse().getContentAsString());
+    }
+
+    /** The edit request: scope, pivot and version beside the series, which is the create request. */
+    private static Map<String, Object> nested(Map<String, Object> flat) {
+        Map<String, Object> series = new LinkedHashMap<>(flat);
+        Map<String, Object> request = new LinkedHashMap<>();
+        for (String outer : List.of("scope", "pivotOccurrenceId", "version")) {
+            if (series.containsKey(outer)) {
+                request.put(outer, series.remove(outer));
+            }
+        }
+        request.put("series", series);
+        return request;
     }
 
     private JsonNode fetchOccurrence(Plan plan, User asUser, long id) throws Exception {

@@ -391,18 +391,19 @@ public class TransactionService {
                 .findByPlanAndSeriesId(plan(ctx), seriesId)
                 .orElseThrow(() -> new TransactionExceptions.TransactionSeriesNotFoundException(seriesId));
         claimVersion(definition, definition.getVersion(), dto.version());
+        CreateSeriesRequest series = dto.series();
 
         List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan(ctx), seriesId);
 
-        Category category = category(dto.categoryId(), ctx);
+        Category category = category(series.categoryId(), ctx);
 
-        if (dto.parcelsNumber() != null
-                && !Objects.equals(dto.parcelsNumber(), definition.getParcelsNumber())
+        if (series.parcelsNumber() != null
+                && !Objects.equals(series.parcelsNumber(), definition.getParcelsNumber())
                 && dto.scope() != SeriesEditScope.ALL) {
             throw new TransactionExceptions.SeriesParcelsChangeNeedsAllException();
         }
 
-        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
+        RequestedSplit split = requestedSplit(series.participants(), series.splitMode(), ctx);
 
         Transaction pivot = null;
         if (dto.scope() != SeriesEditScope.ALL) {
@@ -436,8 +437,8 @@ public class TransactionService {
                     new TransactionDetails(
                             category,
                             pivot.getType(),
-                            dto.amount(),
-                            suffix != null ? dto.description() + " " + suffix : dto.description(),
+                            series.amount(),
+                            suffix != null ? series.description() + " " + suffix : series.description(),
                             pivot.getStartDate(),
                             pivot.getEndDate(),
                             pivot.getParcelsNumber()),
@@ -450,10 +451,10 @@ public class TransactionService {
 
         definition.editPattern(new SeriesPattern(
                 category,
-                dto.amount(),
-                dto.description(),
-                dto.parcelsNumber(),
-                dto.endDate(),
+                series.amount(),
+                series.description(),
+                series.parcelsNumber(),
+                series.endDate(),
                 split.mode(),
                 split.shares()));
 

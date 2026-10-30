@@ -435,8 +435,7 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
     expect(body).toMatchObject({
       scope,
       pivotOccurrenceId: 55,
-      description: "Gym",
-      parcelsNumber: 12,
+      series: { description: "Gym", parcelsNumber: 12 },
     });
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
   });
@@ -452,7 +451,7 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     const body = await sentBody(requests, "PUT");
-    expect(body).toMatchObject({ scope: "ALL", parcelsNumber: 10 });
+    expect(body).toMatchObject({ scope: "ALL", series: { parcelsNumber: 10 } });
     expect(screen.queryByRole("radio", { name: /^This one/ })).toBeNull();
   });
 

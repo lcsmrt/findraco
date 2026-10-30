@@ -182,9 +182,11 @@ class OptimisticLockingIT extends AbstractIntegrationTest {
     }
 
     private static Map<String, Object> seriesEdit(String amount, String scope, long version) {
-        Map<String, Object> body = series();
-        body.put("amount", amount);
+        Map<String, Object> series = series();
+        series.put("amount", amount);
+        Map<String, Object> body = new HashMap<>();
         body.put("scope", scope);
+        body.put("series", series);
         body.put("version", version);
         return body;
     }
