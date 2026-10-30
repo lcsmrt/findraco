@@ -71,6 +71,9 @@ export type CategorySpendingFilter = {
   endDate: string;
 };
 
+/** How a spend stands against its limit, judged by the API. */
+export type UsageStatus = "OK" | "WARNING" | "OVER";
+
 export type CategorySpendingMember = {
   memberId: number;
   name: string;
@@ -78,11 +81,11 @@ export type CategorySpendingMember = {
   limit: number | null;
   remaining: number | null;
   percentUsed: number | null;
-  overLimit: boolean | null;
+  status: UsageStatus | null;
   active: boolean;
 };
 
-/** One row of the category spending tree; limits are monthly. */
+/** One row of the category spending tree; `limit` is scaled to the months of the requested period. */
 export type CategorySpending = {
   categoryId: number;
   parentId: number | null;
@@ -96,7 +99,7 @@ export type CategorySpending = {
   limit: number | null;
   remaining: number | null;
   percentUsed: number | null;
-  overLimit: boolean | null;
+  status: UsageStatus | null;
   members: CategorySpendingMember[];
   children: CategorySpending[];
 };

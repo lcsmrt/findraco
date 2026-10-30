@@ -1,4 +1,4 @@
-import type { CategorySpending, CategorySpendingMember } from "@/api/dtos";
+import type { CategorySpending, CategorySpendingMember, UsageStatus } from "@/api/dtos";
 import { describe, expect, it } from "vitest";
 import { buildSpendingRows, type SpendingRow } from "./spendingRows";
 
@@ -9,20 +9,31 @@ function colorOf(id: number) {
   return COLORS[id] ?? "grey";
 }
 
+type Judged = Pick<CategorySpending, "limit" | "remaining" | "percentUsed" | "status">;
+
+/** A limit as the API judged it for the period: the test states the verdict, it never computes one. */
+function judged(limit: number, remaining: number, percentUsed: number, status: UsageStatus): Judged {
+  return { limit, remaining, percentUsed, status };
+}
+
+/** A limit the API shows without judging it: a former member's entry. */
+function shown(limit: number): Judged {
+  return { limit, remaining: null, percentUsed: null, status: null };
+}
+
+const NO_LIMIT: Judged = { limit: null, remaining: null, percentUsed: null, status: null };
+
 function member(
   memberId: number,
   spent: number,
-  limit: number | null = null,
+  verdict: Judged = NO_LIMIT,
   active = true,
 ): CategorySpendingMember {
   return {
     memberId,
     name: memberId === LUCAS ? "Lucas" : "Livia",
     spent,
-    limit,
-    remaining: null,
-    percentUsed: null,
-    overLimit: null,
+    ...verdict,
     active,
   };
 }
@@ -42,10 +53,7 @@ function category(
     ownerName: null,
     ownerActive: null,
     spent,
-    limit: null,
-    remaining: null,
-    percentUsed: null,
-    overLimit: null,
+    ...NO_LIMIT,
     members: [],
     children: [],
     ...overrides,
@@ -55,9 +63,8 @@ function category(
 function build(
   tree: CategorySpending[],
   selectedMember: { id: number; name: string } | null = null,
-  monthCount = 1,
 ) {
-  return buildSpendingRows({ tree, monthCount, selectedMember, colorOf });
+  return buildSpendingRows({ tree, selectedMember, colorOf });
 }
 
 function rowNamed(rows: SpendingRow[], name: string): SpendingRow {
@@ -85,12 +92,12 @@ describe("buildSpendingRows: list and status (UX-03)", () => {
     expect(rows[0].children[0].depth).toBe(1);
   });
 
-  it("classifies over, warning (≥ 80%), ok and none (AC 3)", () => {
+  it("reads over, warning, ok and none from the API's status (AC 3)", () => {
     const { rows } = build([
-      category("Over", 101, { limit: 100 }),
-      category("AtLimit", 100, { limit: 100 }),
-      category("Warning", 80, { limit: 100 }),
-      category("Ok", 79, { limit: 100 }),
+      category("Over", 101, judged(100, -1, 101, "OVER")),
+      category("AtLimit", 100, judged(100, 0, 100, "WARNING")),
+      category("Warning", 80, judged(100, 20, 80, "WARNING")),
+      category("Ok", 79, judged(100, 21, 79, "OK")),
       category("NoLimit", 50),
     ]);
 
@@ -103,8 +110,8 @@ describe("buildSpendingRows: list and status (UX-03)", () => {
 
   it("gives remaining when within the limit and overBy when over (AC 4)", () => {
     const { rows } = build([
-      category("Within", 851, { limit: 1000 }),
-      category("Over", 1067, { limit: 1000 }),
+      category("Within", 851, judged(1000, 149, 85.1, "WARNING")),
+      category("Over", 1067, judged(1000, -67, 106.7, "OVER")),
     ]);
 
     expect(rowNamed(rows, "Within")).toMatchObject({ remaining: 149, overBy: null });
@@ -112,13 +119,13 @@ describe("buildSpendingRows: list and status (UX-03)", () => {
   });
 
   it("shows percentages as integers (AC 8)", () => {
-    const { rows } = build([category("Groceries", 872.8, { limit: 1000 })]);
+    const { rows } = build([category("Groceries", 872.8, judged(1000, 127.2, 87.28, "WARNING"))]);
 
     expect(rows[0].percent).toBe(87);
   });
 
   it("treats a zero limit with zero spend as 0% and not over (edge case)", () => {
-    const { rows } = build([category("Zero", 0, { limit: 0 })]);
+    const { rows } = build([category("Zero", 0, judged(0, 0, 0, "OK"))]);
 
     expect(rows[0]).toMatchObject({ status: "ok", percent: 0, overBy: null });
   });
@@ -135,7 +142,7 @@ describe("buildSpendingRows: list and status (UX-03)", () => {
 
   it("ticks the limit and sizes the bar to the spend when over (AC 5)", () => {
     const { rows } = build([
-      category("Over", 150, { limit: 100, members: [member(LUCAS, 150)] }),
+      category("Over", 150, { ...judged(100, -50, 150, "OVER"), members: [member(LUCAS, 150)] }),
     ]);
 
     expect(rows[0].bar?.limitTickPct).toBeCloseTo(66.67, 1);
@@ -144,7 +151,7 @@ describe("buildSpendingRows: list and status (UX-03)", () => {
 
   it("does not tick the limit when within it", () => {
     const { rows } = build([
-      category("Within", 50, { limit: 100, members: [member(LUCAS, 50)] }),
+      category("Within", 50, { ...judged(100, 50, 50, "OK"), members: [member(LUCAS, 50)] }),
     ]);
 
     expect(rows[0].bar?.limitTickPct).toBeNull();
@@ -153,16 +160,16 @@ describe("buildSpendingRows: list and status (UX-03)", () => {
 
   it("expands on load only roots with a child in warning or over (AC 6)", () => {
     const warned = category("Food", 0, {
-      children: [category("Delivery", 90, { limit: 100 })],
+      children: [category("Delivery", 90, judged(100, 10, 90, "WARNING"))],
     });
     const overChild = category("Home", 0, {
-      children: [category("Repairs", 200, { limit: 100 })],
+      children: [category("Repairs", 200, judged(100, -100, 200, "OVER"))],
     });
     const calm = category("Leisure", 0, {
-      children: [category("Cinema", 10, { limit: 100 })],
+      children: [category("Cinema", 10, judged(100, 90, 10, "OK"))],
     });
     const overRootOnly = category("Travel", 500, {
-      limit: 100,
+      ...judged(100, -400, 500, "OVER"),
       children: [category("Hotels", 0)],
     });
 
@@ -171,17 +178,16 @@ describe("buildSpendingRows: list and status (UX-03)", () => {
     expect(defaultExpandedIds.sort()).toEqual([warned.categoryId, overChild.categoryId].sort());
   });
 
-  it("scales monthly limits to the number of months (AC 9)", () => {
-    const { rows } = build(
-      [
-        category("Groceries", 900, {
-          limit: 400,
-          members: [member(LUCAS, 500, 260), member(LIVIA, 400, 140)],
-        }),
-      ],
-      null,
-      3,
-    );
+  it("shows the limits the API scaled to the period (AC 9)", () => {
+    const { rows } = build([
+      category("Groceries", 900, {
+        ...judged(1200, 300, 75, "OK"),
+        members: [
+          member(LUCAS, 500, judged(780, 280, 64.1, "OK")),
+          member(LIVIA, 400, judged(420, 20, 95.2, "WARNING")),
+        ],
+      }),
+    ]);
 
     expect(rows[0].limit).toBe(1200);
     expect(rows[0]).toMatchObject({ status: "ok", percent: 75, remaining: 300 });
@@ -193,7 +199,7 @@ describe("buildSpendingRows: per person (UX-04)", () => {
   it("draws unfiltered segments in member colours summing to the spend, with a member line (AC 3)", () => {
     const { rows } = build([
       category("Groceries", 1745, {
-        limit: 2000,
+        ...judged(2000, 255, 87.25, "WARNING"),
         members: [member(LUCAS, 1051), member(LIVIA, 694)],
       }),
     ]);
@@ -215,8 +221,11 @@ describe("buildSpendingRows: per person (UX-04)", () => {
   it("gives every per-member limit its own sub-row and status (AC 4)", () => {
     const { rows } = build([
       category("Groceries", 400, {
-        limit: 400,
-        members: [member(LUCAS, 250, 260), member(LIVIA, 150, 140)],
+        ...judged(400, 0, 100, "WARNING"),
+        members: [
+          member(LUCAS, 250, judged(260, 10, 96.15, "WARNING")),
+          member(LIVIA, 150, judged(140, -10, 107.14, "OVER")),
+        ],
       }),
     ]);
     const [lucas, livia] = rows[0].memberSubRows;
@@ -229,10 +238,10 @@ describe("buildSpendingRows: per person (UX-04)", () => {
   it("lists only limit holders as sub-rows and does not evaluate a former member", () => {
     const { rows } = build([
       category("Groceries", 500, {
-        limit: 260,
-        members: [member(LUCAS, 300, 260), member(LIVIA, 200, 140, false)],
+        ...judged(260, -240, 192.31, "OVER"),
+        members: [member(LUCAS, 300, judged(260, -40, 115.38, "OVER")), member(LIVIA, 200, shown(140), false)],
       }),
-      category("Market", 100, { limit: 500, members: [member(LUCAS, 100)] }),
+      category("Market", 100, { ...judged(500, 400, 20, "OK"), members: [member(LUCAS, 100)] }),
     ]);
 
     expect(rowNamed(rows, "Market").memberSubRows).toEqual([]);
@@ -243,7 +252,7 @@ describe("buildSpendingRows: per person (UX-04)", () => {
   it("draws an owned row as one owner segment with an owner pill (AC 5)", () => {
     const { rows } = build([
       category("Professional", 70, {
-        limit: 100,
+        ...judged(100, 30, 70, "OK"),
         ownerId: LIVIA,
         ownerName: "Livia",
         ownerActive: true,
@@ -263,8 +272,11 @@ describe("buildSpendingRows: per person (UX-04)", () => {
     const { rows } = build(
       [
         category("Groceries", 400, {
-          limit: 400,
-          members: [member(LUCAS, 250, 260), member(LIVIA, 150, 140)],
+          ...judged(400, 0, 100, "WARNING"),
+          members: [
+            member(LUCAS, 250, judged(260, 10, 96.15, "WARNING")),
+            member(LIVIA, 150, judged(140, -10, 107.14, "OVER")),
+          ],
         }),
       ],
       { id: LIVIA, name: "Livia" },
@@ -280,7 +292,7 @@ describe("buildSpendingRows: per person (UX-04)", () => {
     const { rows } = build(
       [
         category("Groceries", 1745, {
-          limit: 2000,
+          ...judged(2000, 255, 87.25, "WARNING"),
           members: [member(LUCAS, 1051), member(LIVIA, 694)],
         }),
       ],
@@ -300,7 +312,7 @@ describe("buildSpendingRows: per person (UX-04)", () => {
     const { rows } = build(
       [
         category("Groceries", 1700, {
-          limit: 2000,
+          ...judged(2000, 300, 85, "WARNING"),
           members: [member(LUCAS, 700), member(LIVIA, 1000)],
         }),
       ],
@@ -314,8 +326,8 @@ describe("buildSpendingRows: per person (UX-04)", () => {
     const { rows } = build(
       [
         category("Groceries", 300, {
-          limit: 260,
-          members: [member(LUCAS, 100, 260), member(LIVIA, 200, 140, false)],
+          ...judged(260, -40, 115.38, "OVER"),
+          members: [member(LUCAS, 100, judged(260, 160, 38.46, "OK")), member(LIVIA, 200, shown(140), false)],
         }),
       ],
       { id: LIVIA, name: "Livia" },
@@ -327,7 +339,7 @@ describe("buildSpendingRows: per person (UX-04)", () => {
 
   it("names a selected member with no spend in the category with 0 (AC 7)", () => {
     const { rows } = build(
-      [category("Rent", 1500, { limit: 1500, members: [member(LUCAS, 1500)] })],
+      [category("Rent", 1500, { ...judged(1500, 0, 100, "WARNING"), members: [member(LUCAS, 1500)] })],
       { id: LIVIA, name: "Livia" },
     );
 

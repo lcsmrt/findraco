@@ -6,7 +6,6 @@ import {
   type Period,
 } from "./filters/overviewParams";
 import { useOverviewFilters } from "./filters/useOverviewFilters";
-import { countMonths } from "./utils/scaleLimits";
 import { useMemberColors } from "@/hooks/useMemberColors";
 import {
   useOverviewMemberFilter,
@@ -44,8 +43,6 @@ export function OverviewPage() {
   // Unfiltered: the member filter is applied client-side so the other members' segments can be dimmed.
   const { data: spending, isLoading: isSpendingLoading } = useGetCategorySpending(range);
 
-  const monthCount = countMonths(range.startDate, range.endDate);
-
   const trend = useOverviewTrend(range, effectiveMemberId);
 
   const selectedName = selectedMember?.name;
@@ -62,12 +59,11 @@ export function OverviewPage() {
       spending
         ? buildSpendingRows({
             tree: spending,
-            monthCount,
             selectedMember: focusedMember,
             colorOf,
           })
         : null,
-    [spending, monthCount, focusedMember, colorOf],
+    [spending, focusedMember, colorOf],
   );
 
   function handlePeriodClick(p: Period) {

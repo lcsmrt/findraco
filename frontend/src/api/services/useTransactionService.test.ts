@@ -213,16 +213,13 @@ describe("transaction mutations", () => {
     expect(onSuccess).toHaveBeenCalledWith(undefined, 40);
   });
 
-  it(`import POSTs to the import URL, returns the count, refreshes the transaction, dashboard and category data and shows the counts (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
+  it(`import POSTs to the import URL and returns the counts; the toast and the refresh are asserted once, in the page flow (BST-17 AC 5)`, async () => {
     server.use(handlers.importCsv({ imported: 12, skippedDuplicates: 3 }));
     const requests = recordRequests();
     const onSuccess = vi.fn();
     const file = new File(["date,amount\n"], "nubank.csv", { type: "text/csv" });
 
-    const { result, queryClient } = renderHookWithProviders(() => useImportNubankCsv({ onSuccess }), {
-      plan: plan5,
-      seed: seedLists,
-    });
+    const { result } = renderHookWithProviders(() => useImportNubankCsv({ onSuccess }), { plan: plan5 });
     result.current.mutate(file);
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
@@ -230,8 +227,6 @@ describe("transaction mutations", () => {
     // reads, so the request arrives as the text "[object FormData]" here, never in a browser.
     expect(requests.map(sent)).toEqual([["POST", `${path}/import`, {}]]);
     expect(result.current.data).toEqual({ imported: 12, skippedDuplicates: 3 });
-    expect(invalidated(queryClient)).toMatchObject(transactionData);
-    expect(toast.success).toHaveBeenCalledWith("Imported 12 transactions; 3 already in the plan were skipped.");
     expect(onSuccess).toHaveBeenCalledWith({ imported: 12, skippedDuplicates: 3 }, file);
   });
 });

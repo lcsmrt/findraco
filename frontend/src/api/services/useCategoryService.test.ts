@@ -226,7 +226,7 @@ describe("useGetCategorySpending", () => {
       limit: 400,
       remaining: 100,
       percentUsed: 75,
-      overLimit: false,
+      status: "OK",
       members: [],
       children: [],
     },

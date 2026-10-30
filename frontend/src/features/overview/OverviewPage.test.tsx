@@ -1,4 +1,4 @@
-import type { DashboardSummaryResponse, Plan, PlanMember } from "@/api/dtos";
+import type { CategorySpending, DashboardSummaryResponse, Plan, PlanMember } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
 import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
@@ -47,12 +47,12 @@ function LocationProbe() {
   return null;
 }
 
-function renderOverview(route: string, members: PlanMember[]) {
+function renderOverview(route: string, members: PlanMember[], spendingTree: CategorySpending[] = []) {
   server.use(
     planHandlers.members(members),
     dashboardHandlers.summary(summary),
     dashboardHandlers.trend([]),
-    categoryHandlers.spending([]),
+    categoryHandlers.spending(spendingTree),
   );
   const requests = recordRequests();
   renderWithProviders(
@@ -126,5 +126,33 @@ describe("OverviewPage member filter", () => {
     await waitFor(() => expect(searchParams()).toEqual({ plan: "5", period: "last-3m" }));
     await waitFor(() => expect(lastTrendQuery(requests)).not.toHaveProperty("memberId"));
     expect(screen.getByRole("button", { name: "All" }).getAttribute("aria-pressed")).toBe("true");
+  });
+});
+
+describe("OverviewPage category usage", () => {
+  const food: CategorySpending = {
+    categoryId: 1,
+    parentId: null,
+    name: "Food",
+    type: "DEBIT",
+    ownerId: null,
+    ownerName: null,
+    ownerActive: null,
+    spent: 250,
+    limit: 200,
+    remaining: -50,
+    percentUsed: 125,
+    status: "OVER",
+    members: [],
+    children: [],
+  };
+
+  it("asks the server for the chosen period and shows the status it answers", async () => {
+    const { requests } = renderOverview("/?plan=5&period=last-3m", [ana, bruno], [food]);
+
+    expect(await screen.findByText(/over by/)).toBeTruthy();
+    expect(screen.getByText(/125%/)).toBeTruthy();
+    const spendingQuery = queries(requests, `/api/findraco/plan/${PLAN_ID}/category/spending`).at(-1);
+    expect(spendingQuery).toEqual({ startDate: expect.any(String), endDate: expect.any(String) });
   });
 });
