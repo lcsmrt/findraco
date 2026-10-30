@@ -3,6 +3,7 @@ package com.lcs.findraco.plan;
 import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -10,6 +11,7 @@ import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
+import com.lcs.findraco.plan.repository.PlanRepository;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
 import java.time.Duration;
@@ -51,6 +53,9 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
 
     @Autowired
     private PlanMembershipRepository planMembershipRepository;
+
+    @Autowired
+    private PlanRepository planRepository;
 
     @Test
     void acceptingALinkInvitationTwiceIsIdempotentAndDoesNotDuplicateMembership() throws Exception {
@@ -126,6 +131,34 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 .andExpect(status().isNoContent());
 
         acceptAs(token, invitee).andExpect(problem(HttpStatus.CONFLICT, "invitation-revoked"));
+
+        assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
+    }
+
+    @Test
+    void anEmailInvitationWithoutAnEmailAddressIsRejectedWith422() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        mockMvc.perform(post(PlanRoutes.PLAN_INVITATION, plan.getId())
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(invitationBody(PlanRole.EDITOR, "EMAIL", null, null))))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "invitation-email-required"));
+    }
+
+    @Test
+    void previewAndAcceptOfADeletedPlansInvitationAnswerNotFound() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User invitee = fixtures.aUser();
+        String token = createInvitation(plan, owner, PlanRole.EDITOR, "LINK", null, null);
+        plan.setDeletedAt(fixtures.now());
+        planRepository.save(plan);
+
+        mockMvc.perform(get(PlanRoutes.INVITATION + "/{token}", token).with(testAuthHelper.asUser(invitee)))
+                .andExpect(problem(HttpStatus.NOT_FOUND, "invitation-not-found"));
+        acceptAs(token, invitee).andExpect(problem(HttpStatus.NOT_FOUND, "invitation-not-found"));
 
         assertThat(planMembershipRepository.findAllByPlan(plan)).hasSize(1);
     }

@@ -29,6 +29,7 @@ export type ProblemType =
   | "invitation-revoked"
   | "invitation-used"
   | "invitation-expired"
+  | "invitation-email-required"
   | "category-not-found"
   | "category-parent-is-itself"
   | "category-parent-is-subcategory"

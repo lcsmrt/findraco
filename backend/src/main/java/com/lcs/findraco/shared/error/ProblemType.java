@@ -38,6 +38,7 @@ public enum ProblemType {
     INVITATION_REVOKED("invitation-revoked"),
     INVITATION_USED("invitation-used"),
     INVITATION_EXPIRED("invitation-expired"),
+    INVITATION_EMAIL_REQUIRED("invitation-email-required"),
 
     // Categories
     CATEGORY_NOT_FOUND("category-not-found"),

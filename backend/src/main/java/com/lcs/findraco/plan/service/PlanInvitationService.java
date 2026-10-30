@@ -51,6 +51,10 @@ public class PlanInvitationService {
         planAuthorization.requireCanManagePlan(ctx.role());
 
         InvitationType type = request.type();
+        if (type == InvitationType.EMAIL
+                && (request.email() == null || request.email().isBlank())) {
+            throw new PlanExceptions.InvitationEmailRequiredException();
+        }
         PlanInvitation invitation = new PlanInvitation();
         invitation.setPlan(planRepository.getReferenceById(ctx.planId()));
         invitation.setRole(request.role().role());
@@ -144,6 +148,10 @@ public class PlanInvitationService {
         PlanInvitation invitation =
                 invitationRepository.findByToken(token).orElseThrow(PlanExceptions.InvitationNotFoundException::new);
 
+        // A deleted plan has nothing to join: its invitations answer as if they never existed.
+        if (invitation.getPlan().getDeletedAt() != null) {
+            throw new PlanExceptions.InvitationNotFoundException();
+        }
         if (invitation.getStatus() == InvitationStatus.REVOKED) {
             throw new PlanExceptions.InvitationRevokedException();
         }

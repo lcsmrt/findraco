@@ -85,6 +85,15 @@ public class PlanExceptions {
         }
     }
 
+    public static class InvitationEmailRequiredException extends DomainException {
+        public InvitationEmailRequiredException() {
+            super(
+                    ProblemType.INVITATION_EMAIL_REQUIRED,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "An invitation by email needs the email address of the person invited.");
+        }
+    }
+
     public static class InvitationEmailMismatchException extends DomainException {
         public InvitationEmailMismatchException() {
             super(

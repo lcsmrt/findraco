@@ -31,6 +31,8 @@ const PROBLEM_COPY: Record<ProblemType, string> = {
   "invitation-revoked": "This invitation has been revoked.",
   "invitation-used": "This invitation has already been used.",
   "invitation-expired": "This invitation has expired.",
+  "invitation-email-required":
+    "Enter the email address of the person you are inviting.",
   "category-not-found": "This category no longer exists.",
   "category-parent-is-itself": "A category cannot be its own parent.",
   "category-parent-is-subcategory": "A subcategory cannot be a parent.",
