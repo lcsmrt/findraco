@@ -2,6 +2,7 @@ import { QueryClient, useMutation, useQuery, useQueryClient } from "@tanstack/re
 import { findracoApi } from "../clients/findracoApi";
 import {
   CreateTransactionRequest,
+  ImportResultResponse,
   CreateTransactionSeriesRequest,
   Transaction,
   TransactionSeriesResponse,
@@ -18,6 +19,7 @@ import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 import { buildPagedQuery } from "../utils/buildPagedQuery";
+import { importResultMessage } from "../utils/importResultMessage";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 
 /**
@@ -131,7 +133,7 @@ export function useUpdateTransaction(
 async function importNubankCsv(
   planId: number,
   file: File,
-): Promise<{ imported: number }> {
+): Promise<ImportResultResponse> {
   const formData = new FormData();
   formData.append("file", file);
   const { data } = await findracoApi.post(
@@ -145,13 +147,13 @@ async function importNubankCsv(
 }
 
 export function useImportNubankCsv(
-  options?: MutationOptions<{ imported: number }, File>,
+  options?: MutationOptions<ImportResultResponse, File>,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
     mutationFn: (file: File) => importNubankCsv(activePlanId!, file),
-    ...buildMutationOptions({ successMessage: "Transactions imported." }, {
+    ...buildMutationOptions({ successMessage: importResultMessage }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);

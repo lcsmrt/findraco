@@ -1,5 +1,7 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
+  ImportResultResponse,
+  LineProblem,
   Problem,
   ProblemType,
   CreateTransactionRequest,
@@ -27,14 +29,17 @@ export const transactionHandlers = {
   remove(): HttpHandler {
     return http.delete<TransactionParams>(`${base}/:id`, () => new HttpResponse(null, { status: 204 }));
   },
-  importCsv(result: { imported: number }): HttpHandler {
-    return http.post<PlanParams, never, { imported: number }>(`${base}/import`, () =>
+  importCsv(result: ImportResultResponse): HttpHandler {
+    return http.post<PlanParams, never, ImportResultResponse>(`${base}/import`, () =>
       HttpResponse.json(result),
     );
   },
-  importCsvRejected(status: number, type: ProblemType): HttpHandler {
+  importCsvRejected(status: number, type: ProblemType, errors: LineProblem[] = []): HttpHandler {
     return http.post<PlanParams, never, Problem>(`${base}/import`, () =>
-      HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),
+      HttpResponse.json(
+        { type: `urn:findraco:problem:${type}`, status, ...(errors.length > 0 && { errors }) },
+        { status },
+      ),
     );
   },
   series(definition: RecurrenceDefinitionResponse): HttpHandler {

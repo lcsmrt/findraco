@@ -329,30 +329,37 @@ describe("TransactionsPage CSV import (STD-12 AC 1)", () => {
   it("uploads the chosen file, shows the result and refreshes the list", async () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");
-    server.use(transactionHandlers.importCsv({ imported: 1 }));
+    server.use(transactionHandlers.importCsv({ imported: 1, skippedDuplicates: 2 }));
 
     await user.upload(fileInput(), csv);
 
-    expect(await screen.findByText("Transactions imported.")).toBeTruthy();
+    expect(
+      await screen.findByText("Imported 1 transaction; 2 already in the plan were skipped."),
+    ).toBeTruthy();
     // jsdom's FormData reaches MSW unserialised, so the request is asserted by method and URL.
     expect(importRequests(requests)).toHaveLength(1);
     await waitFor(() => expect(listQueries(requests)).toHaveLength(2));
   });
 
-  it("shows the copy of the problem type, not the API's detail, and leaves the list alone when the file is rejected (BST-08 AC 11)", async () => {
+  it("lists the invalid lines and leaves the list alone when the file is rejected (BST-08 AC 11; BST-16 AC 5)", async () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");
     server.use(
-      transactionHandlers.importCsvRejected(422, "import-line-invalid"),
+      transactionHandlers.importCsvRejected(422, "import-line-invalid", [
+        { line: 3, field: "date", code: "date-invalid" },
+        { line: 8, field: "amount", code: "amount-zero" },
+      ]),
     );
 
     await user.upload(fileInput(), csv);
 
     expect(
-      await screen.findByText("The file has a line that could not be read. Check the file and try again."),
+      await screen.findByText("The file has invalid lines, so nothing was imported. Fix them and try again."),
     ).toBeTruthy();
+    expect(screen.getByText(/Line 3: date must be a real date as dd\/mm\/yyyy/)).toBeTruthy();
+    expect(screen.getByText(/Line 8: amount cannot be zero/)).toBeTruthy();
     expect(importRequests(requests)).toHaveLength(1);
-    expect(screen.queryByText("Transactions imported.")).toBeNull();
+    expect(screen.queryByText(/^Imported/)).toBeNull();
     expect(listQueries(requests)).toHaveLength(1);
   });
 });

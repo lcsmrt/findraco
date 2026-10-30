@@ -213,8 +213,8 @@ describe("transaction mutations", () => {
     expect(onSuccess).toHaveBeenCalledWith(undefined, 40);
   });
 
-  it(`import POSTs to the import URL, returns the count, refreshes the transaction, dashboard and category data and shows "Transactions imported." (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
-    server.use(handlers.importCsv({ imported: 12 }));
+  it(`import POSTs to the import URL, returns the count, refreshes the transaction, dashboard and category data and shows the counts (NAV-02 AC 4; NAV-05 AC 2)`, async () => {
+    server.use(handlers.importCsv({ imported: 12, skippedDuplicates: 3 }));
     const requests = recordRequests();
     const onSuccess = vi.fn();
     const file = new File(["date,amount\n"], "nubank.csv", { type: "text/csv" });
@@ -229,10 +229,10 @@ describe("transaction mutations", () => {
     // The multipart body is not asserted: jsdom's FormData is not the one MSW's XHR interceptor
     // reads, so the request arrives as the text "[object FormData]" here, never in a browser.
     expect(requests.map(sent)).toEqual([["POST", `${path}/import`, {}]]);
-    expect(result.current.data).toEqual({ imported: 12 });
+    expect(result.current.data).toEqual({ imported: 12, skippedDuplicates: 3 });
     expect(invalidated(queryClient)).toMatchObject(transactionData);
-    expect(toast.success).toHaveBeenCalledWith("Transactions imported.");
-    expect(onSuccess).toHaveBeenCalledWith({ imported: 12 }, file);
+    expect(toast.success).toHaveBeenCalledWith("Imported 12 transactions; 3 already in the plan were skipped.");
+    expect(onSuccess).toHaveBeenCalledWith({ imported: 12, skippedDuplicates: 3 }, file);
   });
 });
 

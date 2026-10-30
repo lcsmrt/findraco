@@ -1,5 +1,5 @@
 import { AxiosError } from "axios";
-import type { FieldProblem, Problem, ProblemType } from "../dtos";
+import type { FieldProblem, LineProblem, Problem, ProblemType } from "../dtos";
 
 const PREFIX = "urn:findraco:problem:";
 
@@ -68,7 +68,12 @@ const PROBLEM_COPY: Record<ProblemType, string> = {
   "series-pivot-not-found": "This occurrence is no longer part of the series.",
   "series-parcels-change-needs-all": "The number of installments can only change for the whole series.",
   "series-too-many-occurrences": "This series would create too many occurrences. Shorten it.",
-  "import-line-invalid": "The file has a line that could not be read. Check the file and try again.",
+  "import-line-invalid": "The file has invalid lines, so nothing was imported. Fix them and try again.",
+  "csv-unknown-format": "This file is not a supported bank statement. Check that you exported the account statement.",
+  "csv-format-not-supported": "This looks like a card bill, which cannot be imported yet. Import the account statement.",
+  "csv-encoding-invalid": "The file is not UTF-8 text. Export it again as UTF-8 and try again.",
+  "csv-too-many-rows": "The file has too many rows. Split it and import the parts.",
+  "csv-too-large": "The file is too large. Split it and import the parts.",
 };
 
 /** Copy for a problem whose type this client does not know yet. */
@@ -104,6 +109,24 @@ const CONSTRAINT_COPY: Record<string, string> = {
   PasswordLength: "must be 8 to 128 characters",
   PasswordCharacters: "cannot contain tabs, line breaks or invisible characters",
 };
+
+/** Why a line of an imported file was refused, by the API's `code`. */
+const LINE_COPY: Record<string, string> = {
+  "date-invalid": "date must be a real date as dd/mm/yyyy",
+  "amount-invalid": "amount must be a number such as -12.50",
+  "amount-zero": "amount cannot be zero",
+  "column-count": "must have exactly 4 columns",
+  malformed: "has quotes that are not closed",
+  "too-long": "has a value that is too long",
+  blank: "has an empty description",
+};
+
+/** Lines listed in a toast before the rest are summed up. */
+const LINES_SHOWN = 10;
+
+function isLineProblem(error: FieldProblem | LineProblem): error is LineProblem {
+  return "line" in error;
+}
 
 function isProblemType(slug: string): slug is ProblemType {
   return Object.prototype.hasOwnProperty.call(PROBLEM_COPY, slug);
@@ -141,16 +164,25 @@ export function problemMessage(error: unknown, fallback?: string): string {
 
 /** The field errors of a 422 `validation-failed`, each as "field is required". */
 export function problemFieldErrors(error: unknown): { field: string | null; message: string }[] {
-  const errors: FieldProblem[] = readProblem(error)?.errors ?? [];
+  const errors = (readProblem(error)?.errors ?? []).filter((item) => !isLineProblem(item));
   return errors.map(({ field, code, message }) => {
     const constraint = CONSTRAINT_COPY[code] ?? message;
     return { field, message: field ? `${field} ${constraint}` : constraint };
   });
 }
 
-/** A toast for an error: the copy, plus the field errors and the request id to report. */
+/** The invalid lines of a rejected import, each as "Line 5: date must be ...", the rest summed up. */
+export function problemLineErrors(error: unknown): string[] {
+  const lines = (readProblem(error)?.errors ?? []).filter(isLineProblem);
+  const shown = lines.slice(0, LINES_SHOWN).map(({ line, field, code }) => {
+    return `Line ${line}: ${LINE_COPY[code] ?? `${field} is invalid`}`;
+  });
+  return lines.length > LINES_SHOWN ? [...shown, `...and ${lines.length - LINES_SHOWN} more`] : shown;
+}
+
+/** A toast for an error: the copy, plus the field or line errors and the request id to report. */
 export function problemToast(error: unknown, fallback?: string): { message: string; description?: string } {
-  const lines = problemFieldErrors(error).map((fieldError) => fieldError.message);
+  const lines = [...problemFieldErrors(error).map((fieldError) => fieldError.message), ...problemLineErrors(error)];
   const requestId = readProblem(error)?.requestId;
   if (requestId) lines.push(`Request id: ${requestId}`);
   return {

@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders } from "axios";
 import { describe, expect, it } from "vitest";
 import { problemError } from "@/test/problems";
-import { problemFieldErrors, problemMessage, problemToast, problemType } from "./problems";
+import { problemFieldErrors, problemLineErrors, problemMessage, problemToast, problemType } from "./problems";
 
 function plainHttpError(status: number, data: unknown) {
   return new AxiosError(`Request failed with status code ${status}`, String(status), undefined, undefined, {
@@ -103,5 +103,33 @@ describe("problemToast", () => {
 
   it("has no description without a request id or field errors", () => {
     expect(problemToast(new Error("Boom"), "Could not save.")).toEqual({ message: "Could not save." });
+  });
+});
+
+describe("problemLineErrors", () => {
+  it("says what is wrong on each line of a rejected import and sums up the rest", () => {
+    const errors = Array.from({ length: 12 }, (_, index) => ({
+      line: index + 2,
+      field: "date",
+      code: index === 0 ? "date-invalid" : "mystery",
+    }));
+    const error = problemError(422, "import-line-invalid", { errors });
+
+    const lines = problemLineErrors(error);
+
+    expect(lines).toHaveLength(11);
+    expect(lines[0]).toBe("Line 2: date must be a real date as dd/mm/yyyy");
+    expect(lines[1]).toBe("Line 3: date is invalid");
+    expect(lines[10]).toBe("...and 2 more");
+    expect(problemFieldErrors(error)).toEqual([]);
+    expect(problemToast(error).description).toContain("Line 2:");
+  });
+
+  it("is empty for field errors", () => {
+    const error = problemError(422, "validation-failed", {
+      errors: [{ field: "name", code: "NotBlank", message: "x" }],
+    });
+
+    expect(problemLineErrors(error)).toEqual([]);
   });
 });

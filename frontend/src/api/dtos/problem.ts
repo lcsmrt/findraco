@@ -64,13 +64,25 @@ export type ProblemType =
   | "series-pivot-not-found"
   | "series-parcels-change-needs-all"
   | "series-too-many-occurrences"
-  | "import-line-invalid";
+  | "import-line-invalid"
+  | "csv-unknown-format"
+  | "csv-format-not-supported"
+  | "csv-encoding-invalid"
+  | "csv-too-many-rows"
+  | "csv-too-large";
 
 /** One failed constraint of a 422 `validation-failed`; `code` is the constraint name (`NotBlank`). */
 export type FieldProblem = {
   field: string | null;
   code: string;
   message: string;
+};
+
+/** One invalid line of an imported file, in a 422 `import-line-invalid`; `code` names the reason. */
+export type LineProblem = {
+  line: number;
+  field: string;
+  code: string;
 };
 
 /** The RFC 9457 body of every API error. `detail` is for developers and never shown. */
@@ -82,5 +94,5 @@ export type Problem = {
   instance?: string;
   requestId?: string;
   field?: string;
-  errors?: FieldProblem[];
+  errors?: (FieldProblem | LineProblem)[];
 };

@@ -170,3 +170,9 @@ export type UpdateTransactionSeriesRequest = {
     version: number;
   };
 };
+
+/** What an import did: rows stored, and rows skipped because the bank's id was already stored. */
+export type ImportResultResponse = {
+  imported: number;
+  skippedDuplicates: number;
+};
