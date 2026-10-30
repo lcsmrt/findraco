@@ -1,5 +1,6 @@
 package com.lcs.findraco.shared.error;
 
+import java.util.List;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpStatus;
 
@@ -13,12 +14,19 @@ public abstract class DomainException extends RuntimeException {
     private final ProblemType type;
     private final HttpStatus status;
     private final @Nullable String field;
+    private final List<?> errors;
 
-    protected DomainException(ProblemType type, HttpStatus status, @Nullable String field, String detail) {
+    protected DomainException(
+            ProblemType type, HttpStatus status, @Nullable String field, String detail, List<?> errors) {
         super(detail);
         this.type = type;
         this.status = status;
         this.field = field;
+        this.errors = errors;
+    }
+
+    protected DomainException(ProblemType type, HttpStatus status, @Nullable String field, String detail) {
+        this(type, status, field, detail, List.of());
     }
 
     protected DomainException(ProblemType type, HttpStatus status, String detail) {
@@ -35,5 +43,10 @@ public abstract class DomainException extends RuntimeException {
 
     public @Nullable String field() {
         return field;
+    }
+
+    /** The items of the problem's {@code errors} extension, empty when the problem has none. */
+    public List<?> errors() {
+        return errors;
     }
 }

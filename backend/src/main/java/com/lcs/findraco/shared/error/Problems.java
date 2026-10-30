@@ -36,7 +36,11 @@ public final class Problems {
     }
 
     public static ProblemDetail of(DomainException exception) {
-        return of(exception.status(), exception.type(), exception.getMessage(), exception.field());
+        ProblemDetail problem = of(exception.status(), exception.type(), exception.getMessage(), exception.field());
+        if (!exception.errors().isEmpty()) {
+            problem.setProperty(ERRORS, exception.errors());
+        }
+        return problem;
     }
 
     /**

@@ -7,8 +7,6 @@ import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.error.StaleVersionException;
-import com.lcs.findraco.shared.ratelimit.RateLimit;
-import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.ItemDraft;
@@ -23,7 +21,6 @@ import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionSortField;
-import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.repository.TransactionSpecification;
@@ -35,7 +32,6 @@ import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
-import com.lcs.findraco.transaction.response.TransactionImportResponse;
 import com.lcs.findraco.transaction.response.TransactionPermissionsResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
@@ -43,14 +39,7 @@ import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -58,14 +47,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.jspecify.annotations.Nullable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class TransactionService {
@@ -76,13 +63,10 @@ public class TransactionService {
     private final PlanAuthorization planAuthorization;
     private final PlanService planService;
     private final UserService userService;
-    /** Keeps the import lock keys apart from any other advisory lock keyed by a plan id. */
-    private static final long IMPORT_LOCK_NAMESPACE = 1L << 40;
 
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final SeriesRegenerator seriesRegenerator;
     private final EntityManager entityManager;
-    private final RateLimiter rateLimiter;
 
     public TransactionService(
             TransactionRepository transactionRepository,
@@ -93,8 +77,7 @@ public class TransactionService {
             UserService userService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             SeriesRegenerator seriesRegenerator,
-            EntityManager entityManager,
-            RateLimiter rateLimiter) {
+            EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
         this.categoryService = categoryService;
         this.recurringTransactionGenerator = recurringTransactionGenerator;
@@ -104,7 +87,6 @@ public class TransactionService {
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.seriesRegenerator = seriesRegenerator;
         this.entityManager = entityManager;
-        this.rateLimiter = rateLimiter;
     }
 
     private Plan plan(PlanContext ctx) {
@@ -510,92 +492,5 @@ public class TransactionService {
         recurrenceDefinitionRepository.saveAndFlush(definition);
 
         return TransactionSeriesResponse.from(combined, transaction -> permissions(transaction, ctx));
-    }
-
-    @Transactional
-    public TransactionImportResponse importFromNubankCsv(MultipartFile file, PlanContext ctx) {
-        rateLimiter.consume(RateLimit.IMPORT_USER, String.valueOf(ctx.userId()));
-        planAuthorization.requireCanCreateTransaction(ctx.role());
-
-        List<String> lines;
-        try {
-            lines = new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))
-                    .lines()
-                    .toList();
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to read the CSV file.", e);
-        }
-
-        // Imports of one plan run one after the other: the second sees the rows the first committed and
-        // skips them, so a file imported twice at once still stores each row once.
-        entityManager
-                .createNativeQuery("SELECT 1 FROM (SELECT pg_advisory_xact_lock(?1)) AS locked")
-                .setParameter(1, IMPORT_LOCK_NAMESPACE + ctx.planId())
-                .getSingleResult();
-
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        List<Transaction> transactions = new ArrayList<>();
-
-        record ParsedRow(@Nullable String sourceRef, LocalDate date, BigDecimal rawAmount, String description) {}
-        List<ParsedRow> parsed = new ArrayList<>();
-
-        for (int i = 1; i < lines.size(); i++) {
-            String line = lines.get(i).trim();
-            if (line.isBlank()) continue;
-
-            String[] parts = line.split(",", 4);
-            if (parts.length < 4) continue;
-
-            try {
-                // A blank reference means the bank gave none: the row cannot be told apart, so it is always new.
-                ParsedRow row = new ParsedRow(
-                        parts[2].isBlank() ? null : parts[2].trim(),
-                        LocalDate.parse(parts[0].trim(), formatter),
-                        new BigDecimal(parts[1].trim()),
-                        parts[3].trim());
-                if (row.rawAmount().signum() == 0) {
-                    throw new TransactionExceptions.ImportLineInvalidException(i + 1);
-                }
-                parsed.add(row);
-            } catch (DateTimeParseException | NumberFormatException e) {
-                throw new TransactionExceptions.ImportLineInvalidException(i + 1);
-            }
-        }
-
-        Set<String> existingIds = transactionRepository.findExistingSourceRefs(
-                plan(ctx),
-                parsed.stream()
-                        .map(ParsedRow::sourceRef)
-                        .filter(Objects::nonNull)
-                        .toList());
-
-        Set<String> seenInFile = new HashSet<>();
-        for (ParsedRow row : parsed) {
-            // A reference already stored, or repeated earlier in this file, is the same bank row.
-            if (row.sourceRef() != null
-                    && (existingIds.contains(row.sourceRef()) || !seenInFile.add(row.sourceRef()))) {
-                continue;
-            }
-
-            TransactionType type =
-                    row.rawAmount().compareTo(BigDecimal.ZERO) >= 0 ? TransactionType.CREDIT : TransactionType.DEBIT;
-            TransactionDetails details = new TransactionDetails(
-                    null, type, row.rawAmount().abs(), row.description(), row.date(), null, null);
-            // The importer pays for every row, as a form without participants would.
-            Transaction t = Transaction.create(new TransactionDraft(
-                    plan(ctx),
-                    user(ctx),
-                    details,
-                    SplitMode.EQUAL,
-                    List.of(new Share(user(ctx), null)),
-                    List.of(),
-                    row.sourceRef(),
-                    null));
-
-            transactions.add(t);
-        }
-
-        transactionRepository.saveAll(transactions);
-        return new TransactionImportResponse(transactions.size());
     }
 }

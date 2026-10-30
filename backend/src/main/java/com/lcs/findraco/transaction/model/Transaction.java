@@ -43,6 +43,9 @@ public class Transaction {
     private String description;
     private String sourceRef;
 
+    @Column(updatable = false)
+    private String sourceText;
+
     @Column(name = "series_id")
     private String seriesId;
 
@@ -75,6 +78,7 @@ public class Transaction {
         transaction.plan = draft.plan();
         transaction.createdBy = draft.createdBy();
         transaction.sourceRef = draft.sourceRef();
+        transaction.sourceText = draft.sourceText();
         if (draft.series() != null) {
             transaction.recurrenceDefinition = draft.series();
             transaction.seriesId = draft.series().getSeriesId();
@@ -218,6 +222,11 @@ public class Transaction {
 
     public String getSourceRef() {
         return sourceRef;
+    }
+
+    /** The bank's text of an imported row; null for a row that did not come from a bank file. */
+    public String getSourceText() {
+        return sourceText;
     }
 
     public String getSeriesId() {

@@ -2,6 +2,8 @@ package com.lcs.findraco.transaction.exception;
 
 import com.lcs.findraco.shared.error.DomainException;
 import com.lcs.findraco.shared.error.ProblemType;
+import com.lcs.findraco.transaction.importer.ImportError;
+import java.util.List;
 import org.springframework.http.HttpStatus;
 
 public class TransactionExceptions {
@@ -182,13 +184,17 @@ public class TransactionExceptions {
         }
     }
 
-    public static class ImportLineInvalidException extends DomainException {
-        public ImportLineInvalidException(int line) {
+    /** The file has invalid lines; {@code errors} lists them, capped, and nothing was imported. */
+    public static class ImportRowsInvalidException extends DomainException {
+        public ImportRowsInvalidException(List<ImportError> errors, boolean capped) {
             super(
                     ProblemType.IMPORT_LINE_INVALID,
                     HttpStatus.UNPROCESSABLE_CONTENT,
                     "file",
-                    "Line " + line + " of the CSV is invalid.");
+                    capped
+                            ? "The file has invalid lines; the first " + errors.size() + " are listed."
+                            : "The file has invalid lines.",
+                    errors);
         }
     }
 

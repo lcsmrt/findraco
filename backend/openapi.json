@@ -462,6 +462,20 @@
         "required" : [ "email" ],
         "type" : "object"
       },
+      "ImportResultResponse" : {
+        "properties" : {
+          "imported" : {
+            "format" : "int32",
+            "type" : "integer"
+          },
+          "skippedDuplicates" : {
+            "format" : "int32",
+            "type" : "integer"
+          }
+        },
+        "required" : [ "imported", "skippedDuplicates" ],
+        "type" : "object"
+      },
       "InvitationPreviewResponse" : {
         "properties" : {
           "invitedByName" : {
@@ -755,7 +769,7 @@
       },
       "ProblemType" : {
         "description" : "The slug of a problem's type, after urn:findraco:problem:",
-        "enum" : [ "malformed-request", "unsupported-request", "validation-failed", "unauthenticated", "forbidden", "not-found", "stale-version", "rate-limited", "internal", "invalid-credentials", "session-invalid", "reset-token-invalid", "email-taken", "plan-not-found", "member-not-found", "insufficient-role", "not-transaction-creator", "last-plan", "last-owner", "owner-role-needs-transfer", "ownership-transfer-to-self", "invitation-not-found", "invitation-email-mismatch", "invitation-revoked", "invitation-used", "invitation-expired", "category-not-found", "category-parent-is-itself", "category-parent-is-subcategory", "category-parent-type-mismatch", "category-subcategories-block-parent", "category-subcategories-block-type-change", "category-has-subcategories", "category-in-use", "category-type-change-in-use", "category-invalid-reassign-target", "category-member-limits-on-income", "category-member-limits-on-owned", "category-member-limit-duplicate", "category-member-limit-not-member", "category-owner-on-subcategory", "category-owner-not-member", "transaction-not-found", "series-not-found", "transaction-category-type-mismatch", "item-category-type-mismatch", "items-exceed-amount", "participant-shares-mismatch", "participant-duplicate", "participant-not-member", "participants-required", "exact-share-invalid", "split-mode-not-supported", "item-invalid", "period-start-after-end", "series-parcels-required", "series-current-parcel-out-of-range", "series-interval-required", "series-pivot-not-found", "series-parcels-change-needs-all", "series-too-many-occurrences", "import-line-invalid" ],
+        "enum" : [ "malformed-request", "unsupported-request", "validation-failed", "unauthenticated", "forbidden", "not-found", "stale-version", "rate-limited", "internal", "invalid-credentials", "session-invalid", "reset-token-invalid", "email-taken", "plan-not-found", "member-not-found", "insufficient-role", "not-transaction-creator", "last-plan", "last-owner", "owner-role-needs-transfer", "ownership-transfer-to-self", "invitation-not-found", "invitation-email-mismatch", "invitation-revoked", "invitation-used", "invitation-expired", "category-not-found", "category-parent-is-itself", "category-parent-is-subcategory", "category-parent-type-mismatch", "category-subcategories-block-parent", "category-subcategories-block-type-change", "category-has-subcategories", "category-in-use", "category-type-change-in-use", "category-invalid-reassign-target", "category-member-limits-on-income", "category-member-limits-on-owned", "category-member-limit-duplicate", "category-member-limit-not-member", "category-owner-on-subcategory", "category-owner-not-member", "transaction-not-found", "series-not-found", "transaction-category-type-mismatch", "item-category-type-mismatch", "items-exceed-amount", "participant-shares-mismatch", "participant-duplicate", "participant-not-member", "participants-required", "exact-share-invalid", "split-mode-not-supported", "item-invalid", "period-start-after-end", "series-parcels-required", "series-current-parcel-out-of-range", "series-interval-required", "series-pivot-not-found", "series-parcels-change-needs-all", "series-too-many-occurrences", "import-line-invalid", "csv-unknown-format", "csv-format-not-supported", "csv-encoding-invalid", "csv-too-many-rows", "csv-too-large" ],
         "type" : "string"
       },
       "RecurrenceDefinitionParticipantResponse" : {
@@ -882,16 +896,6 @@
           }
         },
         "required" : [ "id", "name" ],
-        "type" : "object"
-      },
-      "TransactionImportResponse" : {
-        "properties" : {
-          "imported" : {
-            "format" : "int32",
-            "type" : "integer"
-          }
-        },
-        "required" : [ "imported" ],
         "type" : "object"
       },
       "TransactionItemRequest" : {
@@ -4276,7 +4280,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/TransactionImportResponse"
+                  "$ref" : "#/components/schemas/ImportResultResponse"
                 }
               }
             },
@@ -4286,7 +4290,7 @@
             "content" : {
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/TransactionImportResponse"
+                  "$ref" : "#/components/schemas/ImportResultResponse"
                 }
               }
             },
@@ -4353,7 +4357,7 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Imports transactions from a Nubank CSV file",
+        "summary" : "Imports transactions from a bank CSV file, all or nothing",
         "tags" : [ "Transactions" ]
       }
     },

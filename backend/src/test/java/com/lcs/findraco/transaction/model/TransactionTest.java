@@ -203,6 +203,20 @@ class TransactionTest {
                 .noneMatch(name -> name.startsWith("set"));
     }
 
+    @Test
+    void theBanksTextSurvivesEveryEdit() {
+        Transaction transaction = Transaction.create(new TransactionDraft(
+                plan, owner, details("100.00"), SplitMode.EQUAL, self(), List.of(), "ref-1", "UBER *TRIP", null));
+
+        transaction.edit(
+                new TransactionDetails(null, TransactionType.DEBIT, new BigDecimal("90.00"), "Taxi", DAY, null, null),
+                SplitMode.EQUAL,
+                self());
+
+        assertThat(transaction.getSourceText()).isEqualTo("UBER *TRIP");
+        assertThat(transaction.getDescription()).isEqualTo("Taxi");
+    }
+
     private TransactionDraft draft(
             TransactionDetails details, SplitMode mode, List<Share> shares, List<ItemDraft> items) {
         return new TransactionDraft(plan, owner, details, mode, shares, items, null, null);

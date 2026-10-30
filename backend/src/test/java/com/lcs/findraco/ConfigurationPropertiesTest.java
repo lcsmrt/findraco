@@ -9,6 +9,7 @@ import com.lcs.findraco.auth.config.MailProperties;
 import com.lcs.findraco.auth.config.SessionProperties;
 import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
+import com.lcs.findraco.transaction.config.ImportProperties;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
@@ -39,6 +40,9 @@ class ConfigurationPropertiesTest {
             "app.mail.from", "no-reply@findraco.local");
 
     private static final Map<String, String> VALID_RATE_LIMITS = Map.ofEntries(
+            Map.entry("app.import.max-bytes", "1048576"),
+            Map.entry("app.import.max-rows", "5000"),
+            Map.entry("app.import.max-errors", "50"),
             Map.entry("app.mail.executor.core-size", "2"),
             Map.entry("app.mail.executor.max-size", "4"),
             Map.entry("app.mail.executor.queue-capacity", "100"),
@@ -66,7 +70,8 @@ class ConfigurationPropertiesTest {
         MailProperties.class,
         CorsProperties.class,
         MailExecutorProperties.class,
-        RateLimitProperties.class
+        RateLimitProperties.class,
+        ImportProperties.class
     })
     static class AllProperties {}
 
@@ -134,6 +139,11 @@ class ConfigurationPropertiesTest {
     @Test
     void missingAppUrlFailsStartup() {
         assertStartupFailsOn(Map.of("app.url", ""), "app", "url");
+    }
+
+    @Test
+    void zeroImportRowBoundFailsStartup() {
+        assertStartupFailsOn(Map.of("app.import.max-rows", "0"), "app.import", "maxRows");
     }
 
     @Test

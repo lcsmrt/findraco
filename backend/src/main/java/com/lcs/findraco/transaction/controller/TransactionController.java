@@ -8,10 +8,11 @@ import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
 import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
+import com.lcs.findraco.transaction.response.ImportResultResponse;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
-import com.lcs.findraco.transaction.response.TransactionImportResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
+import com.lcs.findraco.transaction.service.TransactionImportService;
 import com.lcs.findraco.transaction.service.TransactionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -29,9 +30,11 @@ import org.springframework.web.multipart.MultipartFile;
 public class TransactionController {
 
     private final TransactionService transactionService;
+    private final TransactionImportService importService;
 
-    public TransactionController(TransactionService transactionService) {
+    public TransactionController(TransactionService transactionService, TransactionImportService importService) {
         this.transactionService = transactionService;
+        this.importService = importService;
     }
 
     @Operation(summary = "Fetches a transaction by ID")
@@ -70,13 +73,12 @@ public class TransactionController {
         return ResponseEntity.ok(transactionService.update(id, dto, ctx));
     }
 
-    @Operation(summary = "Imports transactions from a Nubank CSV file")
+    @Operation(summary = "Imports transactions from a bank CSV file, all or nothing")
     @ApiResponse(responseCode = "201", description = "Created")
     @ApiResponse(responseCode = "200", description = "OK")
     @PostMapping("/import")
-    public ResponseEntity<TransactionImportResponse> importCsv(
-            @RequestParam("file") MultipartFile file, PlanContext ctx) {
-        TransactionImportResponse result = transactionService.importFromNubankCsv(file, ctx);
+    public ResponseEntity<ImportResultResponse> importCsv(@RequestParam("file") MultipartFile file, PlanContext ctx) {
+        ImportResultResponse result = importService.importFile(file, ctx);
         HttpStatus status = result.imported() > 0 ? HttpStatus.CREATED : HttpStatus.OK;
         return ResponseEntity.status(status).body(result);
     }
