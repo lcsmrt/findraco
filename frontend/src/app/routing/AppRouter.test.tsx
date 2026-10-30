@@ -34,8 +34,6 @@ const emptySummary: DashboardSummaryResponse = {
   totalIncome: 0,
   totalExpenses: 0,
   netBalance: 0,
-  categoryBreakdown: [],
-  monthlyTrend: [],
   personBreakdown: [],
 };
 

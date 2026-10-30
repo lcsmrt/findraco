@@ -12,8 +12,6 @@ const dashboard: DashboardSummaryResponse = {
   totalIncome: 5147,
   totalExpenses: 4450,
   netBalance: 697,
-  categoryBreakdown: [],
-  monthlyTrend: [],
   // Unsorted on purpose: segments follow member id order.
   personBreakdown: [
     { userId: LIVIA, name: "Livia", income: 2414, expense: 2105, net: 309 },

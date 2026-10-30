@@ -23,44 +23,6 @@
         "required" : [ "token" ],
         "type" : "object"
       },
-      "CategoryBreakdownResponse" : {
-        "properties" : {
-          "categoryId" : {
-            "format" : "int64",
-            "type" : "integer"
-          },
-          "categoryName" : {
-            "type" : "string"
-          },
-          "children" : {
-            "items" : {
-              "$ref" : "#/components/schemas/CategoryBreakdownResponse"
-            },
-            "type" : "array"
-          },
-          "limit" : {
-            "type" : [ "number", "null" ]
-          },
-          "overLimit" : {
-            "type" : [ "boolean", "null" ]
-          },
-          "parentId" : {
-            "format" : "int64",
-            "type" : [ "integer", "null" ]
-          },
-          "percentUsed" : {
-            "type" : [ "number", "null" ]
-          },
-          "remaining" : {
-            "type" : [ "number", "null" ]
-          },
-          "spent" : {
-            "type" : "number"
-          }
-        },
-        "required" : [ "categoryId", "categoryName", "children", "spent" ],
-        "type" : "object"
-      },
       "CategoryMemberLimitRequest" : {
         "properties" : {
           "amount" : {
@@ -434,18 +396,6 @@
       },
       "DashboardSummaryResponse" : {
         "properties" : {
-          "categoryBreakdown" : {
-            "items" : {
-              "$ref" : "#/components/schemas/CategoryBreakdownResponse"
-            },
-            "type" : "array"
-          },
-          "monthlyTrend" : {
-            "items" : {
-              "$ref" : "#/components/schemas/MonthlyTrendResponse"
-            },
-            "type" : "array"
-          },
           "netBalance" : {
             "type" : "number"
           },
@@ -462,7 +412,7 @@
             "type" : "number"
           }
         },
-        "required" : [ "categoryBreakdown", "monthlyTrend", "netBalance", "personBreakdown", "totalExpenses", "totalIncome" ],
+        "required" : [ "netBalance", "personBreakdown", "totalExpenses", "totalIncome" ],
         "type" : "object"
       },
       "FieldProblem" : {
@@ -695,12 +645,12 @@
       },
       "PlanResponse" : {
         "properties" : {
-          "default" : {
-            "type" : "boolean"
-          },
           "id" : {
             "format" : "int64",
             "type" : "integer"
+          },
+          "isDefault" : {
+            "type" : "boolean"
           },
           "myRole" : {
             "$ref" : "#/components/schemas/PlanRole"
@@ -709,7 +659,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "default", "id", "myRole", "name" ],
+        "required" : [ "id", "isDefault", "myRole", "name" ],
         "type" : "object"
       },
       "PlanRole" : {

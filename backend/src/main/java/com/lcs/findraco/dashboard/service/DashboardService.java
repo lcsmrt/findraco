@@ -1,9 +1,7 @@
 package com.lcs.findraco.dashboard.service;
 
-import com.lcs.findraco.category.service.CategorySpendingService;
 import com.lcs.findraco.dashboard.repository.DashboardReportRepository;
 import com.lcs.findraco.dashboard.request.DashboardFilter;
-import com.lcs.findraco.dashboard.response.CategoryBreakdownResponse;
 import com.lcs.findraco.dashboard.response.DashboardSummaryResponse;
 import com.lcs.findraco.dashboard.response.MonthlyTrendResponse;
 import com.lcs.findraco.dashboard.response.PersonBreakdownResponse;
@@ -26,19 +24,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class DashboardService {
 
     private final DashboardReportRepository reportRepository;
-    private final CategorySpendingService categorySpendingService;
     private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
     private final Clock clock;
     private final EntityManager entityManager;
 
     public DashboardService(
             DashboardReportRepository reportRepository,
-            CategorySpendingService categorySpendingService,
             OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
             Clock clock,
             EntityManager entityManager) {
         this.reportRepository = reportRepository;
-        this.categorySpendingService = categorySpendingService;
         this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
         this.clock = clock;
         this.entityManager = entityManager;
@@ -61,12 +56,9 @@ public class DashboardService {
 
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
 
-        List<CategoryBreakdownResponse> categoryBreakdown = buildCategoryBreakdown(plan, startDate, endDate, memberId);
-        List<MonthlyTrendResponse> monthlyTrend = buildMonthlyTrend(plan, startDate, endDate, memberId);
         List<PersonBreakdownResponse> personBreakdown = buildPersonBreakdown(plan, startDate, endDate, memberId);
 
-        return new DashboardSummaryResponse(
-                totalIncome, totalExpenses, netBalance, categoryBreakdown, monthlyTrend, personBreakdown);
+        return new DashboardSummaryResponse(totalIncome, totalExpenses, netBalance, personBreakdown);
     }
 
     /** Income and expenses per calendar month of the range, optionally for one member's shares (UX-05 AC 7). */
@@ -75,13 +67,6 @@ public class DashboardService {
         Plan plan = entityManager.getReference(Plan.class, ctx.planId());
         openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
         return buildMonthlyTrend(plan, filter.startDate(), filter.endDate(), filter.memberId());
-    }
-
-    private List<CategoryBreakdownResponse> buildCategoryBreakdown(
-            Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        return categorySpendingService.computeOverview(plan.getId(), startDate, endDate, memberId).stream()
-                .map(CategoryBreakdownResponse::from)
-                .toList();
     }
 
     private record MonthKey(int year, int month) {}

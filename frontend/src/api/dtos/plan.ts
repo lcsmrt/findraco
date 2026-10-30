@@ -7,14 +7,6 @@ export type Plan = {
   myRole: PlanRole;
 };
 
-/** Wire shape of a plan; `mapPlan` renames `default` to the entity's `isDefault`. */
-export type PlanResponse = {
-  id: number;
-  name: string;
-  default: boolean;
-  myRole: PlanRole;
-};
-
 export type PlanMember = {
   userId: number;
   name: string;

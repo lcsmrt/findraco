@@ -1,9 +1,22 @@
 import { describe, expect, it } from "vitest";
-import type { CategoryBreakdown, CategorySpending, CategorySpendingMember } from "@/api/dtos";
+import type { CategorySpending, CategorySpendingMember } from "@/api/dtos";
 import { resolvePeriodDates } from "../filters/overviewParams";
 import { countMonths, scaleLimit, scaleMemberLimit, scaleTreeLimits } from "./scaleLimits";
 
 const now = new Date(2026, 9, 11); // 2026-10-11
+
+/** The smallest tree node `scaleTreeLimits` accepts: no per-member rows. */
+type CategoryBreakdown = {
+  categoryId: number;
+  parentId: number | null;
+  categoryName: string;
+  spent: number;
+  limit?: number;
+  remaining?: number;
+  percentUsed?: number;
+  overLimit?: boolean;
+  children: CategoryBreakdown[];
+};
 
 function breakdown(
   overrides: Partial<CategoryBreakdown> & Pick<CategoryBreakdown, "spent">,

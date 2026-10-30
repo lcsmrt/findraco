@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
-import java.util.function.Predicate;
 import org.springframework.stereotype.Component;
 
 /**
@@ -45,9 +44,6 @@ public class CategorySpendingAssembler {
     private static final Comparator<CategorySpendingResponse> BY_NAME =
             Comparator.comparing(CategorySpendingResponse::name, Comparator.nullsLast(String.CASE_INSENSITIVE_ORDER));
 
-    private static final Comparator<CategorySpendingResponse> BY_SPENT_DESC =
-            Comparator.comparing(CategorySpendingResponse::spent).reversed().thenComparing(BY_NAME);
-
     /**
      * Every category of the plan, zero-spend included: DEBIT roots then CREDIT roots, each by name,
      * children nested by name (Categories tab, CAT-01/02).
@@ -70,7 +66,7 @@ public class CategorySpendingAssembler {
             Long memberId) {
         Facts facts = Facts.of(rowsA, removed, added);
         Limits limits = new Limits(activeMemberIds, memberNames, memberId);
-        List<CategorySpendingResponse> roots = buildTree(facts, limits, categories, category -> true, BY_NAME);
+        List<CategorySpendingResponse> roots = buildTree(facts, limits, categories);
 
         List<CategorySpendingResponse> result = new ArrayList<>();
         roots.stream().filter(root -> root.type() == TransactionType.DEBIT).forEach(result::add);
@@ -78,35 +74,7 @@ public class CategorySpendingAssembler {
         return result;
     }
 
-    /**
-     * The Overview breakdown (CAT-08): DEBIT roots with rolled-up spend, sorted by spend descending.
-     * As before the hierarchy, a category is listed when it has spend facts in the period or a limit;
-     * a root is also listed when one of its children is.
-     */
-    public List<CategorySpendingResponse> assembleOverview(
-            List<Object[]> rowsA,
-            List<MemberFact> removed,
-            List<MemberFact> added,
-            List<Category> categories,
-            Set<Long> activeMemberIds,
-            Map<Long, String> memberNames,
-            Long memberId) {
-        Facts facts = Facts.of(rowsA, removed, added);
-        Limits limits = new Limits(activeMemberIds, memberNames, memberId);
-        Predicate<Category> listed =
-                category -> facts.hasActivity(category.getId()) || limits.effective(category) != null;
-        List<Category> debit = categories.stream()
-                .filter(category -> category.getType() == TransactionType.DEBIT)
-                .toList();
-        return buildTree(facts, limits, debit, listed, BY_SPENT_DESC);
-    }
-
-    private static List<CategorySpendingResponse> buildTree(
-            Facts facts,
-            Limits limits,
-            List<Category> categories,
-            Predicate<Category> listed,
-            Comparator<CategorySpendingResponse> order) {
+    private static List<CategorySpendingResponse> buildTree(Facts facts, Limits limits, List<Category> categories) {
         Set<Long> ids = new HashSet<>();
         categories.forEach(category -> ids.add(category.getId()));
 
@@ -130,16 +98,12 @@ public class CategorySpendingAssembler {
             for (Category child : childrenByParent.getOrDefault(root.getId(), List.of())) {
                 Map<Long, BigDecimal> childSpent = facts.byMember(child.getId());
                 childSpent.forEach((member, amount) -> rolledUp.merge(member, amount, BigDecimal::add));
-                if (listed.test(child)) {
-                    childNodes.add(node(child, childSpent, limits, List.of()));
-                }
+                childNodes.add(node(child, childSpent, limits, List.of()));
             }
-            if (listed.test(root) || !childNodes.isEmpty()) {
-                childNodes.sort(order);
-                rootNodes.add(node(root, rolledUp, limits, childNodes));
-            }
+            childNodes.sort(BY_NAME);
+            rootNodes.add(node(root, rolledUp, limits, childNodes));
         }
-        rootNodes.sort(order);
+        rootNodes.sort(BY_NAME);
         return rootNodes;
     }
 
@@ -243,20 +207,18 @@ public class CategorySpendingAssembler {
     }
 
     /** Leaf spend per category x member ({@code A - B + I}). */
-    private record Facts(Map<Long, Map<Long, BigDecimal>> leaf, Set<Long> active) {
+    private record Facts(Map<Long, Map<Long, BigDecimal>> leaf) {
 
         static Facts of(List<Object[]> rowsA, List<MemberFact> removed, List<MemberFact> added) {
-            Facts facts = new Facts(new LinkedHashMap<>(), new HashSet<>());
+            Facts facts = new Facts(new LinkedHashMap<>());
             for (Object[] row : rowsA) {
                 facts.add((Long) row[0], (Long) row[1], (BigDecimal) row[2]);
-                facts.active().add((Long) row[0]);
             }
             for (MemberFact fact : removed) {
                 facts.add(fact.categoryId(), fact.memberId(), fact.amount().negate());
             }
             for (MemberFact fact : added) {
                 facts.add(fact.categoryId(), fact.memberId(), fact.amount());
-                facts.active().add(fact.categoryId());
             }
             return facts;
         }
@@ -268,10 +230,6 @@ public class CategorySpendingAssembler {
 
         Map<Long, BigDecimal> byMember(Long categoryId) {
             return leaf.getOrDefault(categoryId, Map.of());
-        }
-
-        boolean hasActivity(Long categoryId) {
-            return active.contains(categoryId);
         }
     }
 }

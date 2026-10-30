@@ -1086,10 +1086,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Snapshot diff shows only these changes
-- [ ] Frontend build green
-- [ ] `ArchitectureTest` cross-feature rule: another feature's `response` is reachable only from a `response` package (a response embedding another feature's response, S10); green once `DashboardService` no longer reads `CategorySpendingResponse` (handed off by T18)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Snapshot diff shows only these changes
+- [x] Frontend build green
+- [x] `ArchitectureTest` cross-feature rule: another feature's `response` is reachable only from a `response` package (a response embedding another feature's response, S10); green once `DashboardService` no longer reads `CategorySpendingResponse` (handed off by T18)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

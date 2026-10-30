@@ -4,7 +4,6 @@ import {
   CreatePlanRequest,
   Plan,
   PlanMember,
-  PlanResponse,
   RemoveMemberRequest,
   TransferOwnershipRequest,
   UpdateMemberRoleRequest,
@@ -14,18 +13,9 @@ import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 
-function mapPlan(raw: PlanResponse): Plan {
-  return {
-    id: raw.id,
-    name: raw.name,
-    isDefault: raw.default,
-    myRole: raw.myRole,
-  };
-}
-
 async function getPlans(): Promise<Plan[]> {
-  const { data } = await findracoApi.get<PlanResponse[]>("/plan");
-  return data.map(mapPlan);
+  const { data } = await findracoApi.get<Plan[]>("/plan");
+  return data;
 }
 
 export function useGetPlans(options?: QueryOptions<Plan[]>) {
@@ -37,8 +27,8 @@ export function useGetPlans(options?: QueryOptions<Plan[]>) {
 }
 
 async function getPlan(id: number): Promise<Plan> {
-  const { data } = await findracoApi.get<PlanResponse>(`/plan/${id}`);
-  return mapPlan(data);
+  const { data } = await findracoApi.get<Plan>(`/plan/${id}`);
+  return data;
 }
 
 export function useGetPlan(id?: number, options?: QueryOptions<Plan>) {
@@ -70,8 +60,8 @@ export function useGetPlanMembers(
 }
 
 async function createPlan(payload: CreatePlanRequest): Promise<Plan> {
-  const { data } = await findracoApi.post<PlanResponse>("/plan", payload.body);
-  return mapPlan(data);
+  const { data } = await findracoApi.post<Plan>("/plan", payload.body);
+  return data;
 }
 
 export function useCreatePlan(
@@ -154,11 +144,11 @@ export function useRemoveMember(
 }
 
 async function renamePlan(payload: UpdatePlanRequest): Promise<Plan> {
-  const { data } = await findracoApi.put<PlanResponse>(
+  const { data } = await findracoApi.put<Plan>(
     `/plan/${payload.params.planId}`,
     payload.body,
   );
-  return mapPlan(data);
+  return data;
 }
 
 export function useRenamePlan(

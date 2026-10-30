@@ -41,7 +41,8 @@ import tools.jackson.databind.ObjectMapper;
  * Through-the-API proof of the AD-007 Partition Invariant: {@code spent[C] = A[C] - B[C] + I[C]},
  * where A is a category's whole-transaction sums, B is the categorized-item amounts subtracted
  * out of the parent category, and I is those same amounts re-attributed to the item's own
- * category. Uncategorized items and any un-itemized remainder stay with the parent category.
+ * category. Uncategorized items and any un-itemized remainder stay with the parent category. The
+ * partition is read from the category spending tree, the totals from the dashboard.
  *
  * <p>Responses are read as raw {@link JsonNode} trees rather than deserialized into the response
  * DTOs, since those DTOs are immutable (no default constructor/setters) and are only ever built
@@ -100,7 +101,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         createTransaction(plan, owner, body);
 
         JsonNode dashboard = fetchDashboard(plan, owner);
-        JsonNode breakdown = dashboard.get("categoryBreakdown");
+        JsonNode breakdown = fetchSpending(plan, owner);
 
         assertThat(categorySpent(breakdown, "Groceries")).isEqualByComparingTo("20.00");
         assertThat(categorySpent(breakdown, "Food")).isEqualByComparingTo("90.00");
@@ -137,7 +138,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         createTransaction(plan, owner, body);
 
         JsonNode dashboard = fetchDashboard(plan, owner);
-        JsonNode breakdown = dashboard.get("categoryBreakdown");
+        JsonNode breakdown = fetchSpending(plan, owner);
 
         assertThat(breakdown).hasSize(1);
         assertThat(categorySpent(breakdown, "Utilities")).isEqualByComparingTo("75.00");
@@ -315,7 +316,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                 recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
         assertThat(reloaded.getGeneratedThrough()).isEqualTo(expectedLastGenerated);
 
-        JsonNode breakdown = dashboard.get("categoryBreakdown");
+        JsonNode breakdown = fetchSpending(plan, owner, start, today.plusMonths(13));
         assertThat(categorySpent(breakdown, "Groceries")).isEqualByComparingTo("20.00");
         assertThat(categorySpent(breakdown, "Food")).isEqualByComparingTo("90.00");
         assertThat(categorySpent(breakdown, "Cleaning")).isEqualByComparingTo("40.00");
@@ -334,12 +335,12 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
     }
 
     /**
-     * CAT-07/CAT-08 (spec P1 Sub AC 7 and 11): the Overview lists the root with its direct spend plus
+     * CAT-07/CAT-08 (spec P1 Sub AC 7 and 11): the spending tree lists the root with its direct spend plus
      * its children's, the child nested under it. Edge case: once the child's parent is cleared, its
      * spend no longer rolls into the former parent.
      */
     @Test
-    void parentRollsUpChildSpendInTheDashboardUntilTheChildBecomesRoot() throws Exception {
+    void parentRollsUpChildSpendUntilTheChildBecomesRoot() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
@@ -378,13 +379,13 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                         "categoryId",
                         deliveryId));
 
-        JsonNode breakdown = fetchDashboard(plan, owner).get("categoryBreakdown");
+        JsonNode breakdown = fetchSpending(plan, owner);
 
         assertThat(breakdown).hasSize(1);
         JsonNode food = breakdown.get(0);
         assertThat(food.get("categoryId").asLong()).isEqualTo(foodId);
         assertThat(food.get("parentId").isNull()).isTrue();
-        assertThat(food.get("categoryName").asString()).isEqualTo("Food");
+        assertThat(food.get("name").asString()).isEqualTo("Food");
         assertThat(food.get("spent").decimalValue()).isEqualByComparingTo("100.00");
         assertThat(food.get("children")).hasSize(1);
         JsonNode delivery = food.get("children").get(0);
@@ -404,19 +405,19 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                                 fixtures.categoryVersion(deliveryId)))))
                 .andExpect(status().isOk());
 
-        JsonNode afterMove = fetchDashboard(plan, owner).get("categoryBreakdown");
+        JsonNode afterMove = fetchSpending(plan, owner);
         assertThat(afterMove).hasSize(2);
         assertThat(categorySpent(afterMove, "Food")).isEqualByComparingTo("40.00");
         assertThat(categorySpent(afterMove, "Delivery")).isEqualByComparingTo("60.00");
     }
 
     /**
-     * AD-008 / CAT-12: with a member filter, item portions follow the member too (the gap formerly
-     * documented in DashboardService). R$ 100 split 60/40 with a R$ 30 Cleaning item: the partner's
+     * AD-008 / CAT-12: item portions follow the member too: each member row carries the member's
+     * share of the item portions. R$ 100 split 60/40 with a R$ 30 Cleaning item: the partner's
      * portion of the item is R$ 12, so their Groceries spend is 40 - 12 and their Cleaning spend 12.
      */
     @Test
-    void memberFilterAppliesToItemPortions() throws Exception {
+    void memberRowsFollowTheItemPortions() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         User partner = fixtures.aUser();
@@ -456,17 +457,13 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
                                 "categoryId",
                                 cleaningId))));
 
-        JsonNode partnerBreakdown = fetchDashboard(plan, owner, partner.getId()).get("categoryBreakdown");
-        assertThat(categorySpent(partnerBreakdown, "Groceries")).isEqualByComparingTo("28.00");
-        assertThat(categorySpent(partnerBreakdown, "Cleaning")).isEqualByComparingTo("12.00");
-
-        JsonNode ownerBreakdown = fetchDashboard(plan, owner, owner.getId()).get("categoryBreakdown");
-        assertThat(categorySpent(ownerBreakdown, "Groceries")).isEqualByComparingTo("42.00");
-        assertThat(categorySpent(ownerBreakdown, "Cleaning")).isEqualByComparingTo("18.00");
-
-        JsonNode unfiltered = fetchDashboard(plan, owner).get("categoryBreakdown");
-        assertThat(categorySpent(unfiltered, "Groceries")).isEqualByComparingTo("70.00");
-        assertThat(categorySpent(unfiltered, "Cleaning")).isEqualByComparingTo("30.00");
+        JsonNode spending = fetchSpending(plan, owner);
+        assertThat(memberSpent(spending, "Groceries", partner)).isEqualByComparingTo("28.00");
+        assertThat(memberSpent(spending, "Cleaning", partner)).isEqualByComparingTo("12.00");
+        assertThat(memberSpent(spending, "Groceries", owner)).isEqualByComparingTo("42.00");
+        assertThat(memberSpent(spending, "Cleaning", owner)).isEqualByComparingTo("18.00");
+        assertThat(categorySpent(spending, "Groceries")).isEqualByComparingTo("70.00");
+        assertThat(categorySpent(spending, "Cleaning")).isEqualByComparingTo("30.00");
     }
 
     private RecurrenceDefinition anOpenEndedDefinition(
@@ -527,12 +524,15 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         return fetchDashboard(plan, asUser, today.minusDays(1), today.plusDays(1));
     }
 
-    private JsonNode fetchDashboard(Plan plan, User asUser, Long memberId) throws Exception {
-        MvcResult result = mockMvc.perform(get(DashboardRoutes.DASHBOARD, plan.getId())
+    private JsonNode fetchSpending(Plan plan, User asUser) throws Exception {
+        return fetchSpending(plan, asUser, today.minusDays(1), today.plusDays(1));
+    }
+
+    private JsonNode fetchSpending(Plan plan, User asUser, LocalDate startDate, LocalDate endDate) throws Exception {
+        MvcResult result = mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
                         .with(testAuthHelper.asUser(asUser))
-                        .param("startDate", today.minusDays(1).toString())
-                        .param("endDate", today.plusDays(1).toString())
-                        .param("memberId", memberId.toString()))
+                        .param("startDate", startDate.toString())
+                        .param("endDate", endDate.toString()))
                 .andExpect(status().isOk())
                 .andReturn();
 
@@ -550,12 +550,31 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         return objectMapper.readTree(result.getResponse().getContentAsString());
     }
 
-    private static BigDecimal categorySpent(JsonNode breakdown, String categoryName) {
-        for (JsonNode category : breakdown) {
-            if (category.get("categoryName").asString().equals(categoryName)) {
-                return category.get("spent").decimalValue();
+    private static BigDecimal categorySpent(JsonNode spending, String categoryName) {
+        return row(spending, categoryName).get("spent").decimalValue();
+    }
+
+    private static BigDecimal memberSpent(JsonNode spending, String categoryName, User member) {
+        for (JsonNode memberRow : row(spending, categoryName).get("members")) {
+            if (memberRow.get("memberId").asLong() == member.getId()) {
+                return memberRow.get("spent").decimalValue();
             }
         }
-        throw new AssertionError("No category named " + categoryName + " in breakdown: " + breakdown);
+        throw new AssertionError("No row of member " + member.getId() + " in " + categoryName);
+    }
+
+    /** A root or a nested child of the spending tree, by name. */
+    private static JsonNode row(JsonNode spending, String categoryName) {
+        for (JsonNode category : spending) {
+            if (category.get("name").asString().equals(categoryName)) {
+                return category;
+            }
+            for (JsonNode child : category.get("children")) {
+                if (child.get("name").asString().equals(categoryName)) {
+                    return child;
+                }
+            }
+        }
+        throw new AssertionError("No category named " + categoryName + " in spending: " + spending);
     }
 }

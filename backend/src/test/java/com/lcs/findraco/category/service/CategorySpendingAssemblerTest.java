@@ -27,7 +27,7 @@ class CategorySpendingAssemblerTest {
 
     private final CategorySpendingAssembler assembler = new CategorySpendingAssembler();
 
-    // ---- Ported from CategoryBreakdownAssemblerTest (AD-007 partition, Overview breakdown) ----
+    // ---- Ported from CategoryBreakdownAssemblerTest (AD-007 partition) ----
 
     @Test
     void workedExampleSplitsGroceryTransactionAcrossItemCategories() {
@@ -38,14 +38,13 @@ class CategorySpendingAssemblerTest {
         List<MemberFact> removed = List.of(fact(1L, MEMBER, "130"));
         List<MemberFact> added = List.of(fact(2L, MEMBER, "90"), fact(3L, MEMBER, "40"));
 
-        List<CategorySpendingResponse> result = assembler.assembleOverview(
-                rowsA, removed, added, List.of(groceries, food, cleaning), NO_MEMBERS, NAMES, null);
+        List<CategorySpendingResponse> result =
+                assembler.assemble(rowsA, removed, added, List.of(groceries, food, cleaning), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(3);
         assertThat(byName(result, "Groceries").spent()).isEqualByComparingTo("20");
         assertThat(byName(result, "Food").spent()).isEqualByComparingTo("90");
         assertThat(byName(result, "Cleaning").spent()).isEqualByComparingTo("40");
-        assertThat(result).extracting(CategorySpendingResponse::name).containsExactly("Food", "Cleaning", "Groceries");
     }
 
     @Test
@@ -54,7 +53,7 @@ class CategorySpendingAssemblerTest {
         List<Object[]> rowsA = List.<Object[]>of(a(10L, MEMBER, "75"));
 
         List<CategorySpendingResponse> result =
-                assembler.assembleOverview(rowsA, List.of(), List.of(), List.of(utilities), NO_MEMBERS, NAMES, null);
+                assembler.assemble(rowsA, List.of(), List.of(), List.of(utilities), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         CategorySpendingResponse row = result.get(0);
@@ -67,8 +66,8 @@ class CategorySpendingAssemblerTest {
         Category subscriptions = debit(5L, "Subscriptions", "100", null);
         List<MemberFact> added = List.of(fact(5L, MEMBER, "25"));
 
-        List<CategorySpendingResponse> result = assembler.assembleOverview(
-                List.of(), List.of(), added, List.of(subscriptions), NO_MEMBERS, NAMES, null);
+        List<CategorySpendingResponse> result =
+                assembler.assemble(List.of(), List.of(), added, List.of(subscriptions), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         CategorySpendingResponse row = result.get(0);
@@ -86,7 +85,7 @@ class CategorySpendingAssemblerTest {
         List<MemberFact> removed = List.of(fact(6L, MEMBER, "200"));
         List<MemberFact> added = List.of(fact(7L, MEMBER, "120"), fact(8L, MEMBER, "80"));
 
-        List<CategorySpendingResponse> result = assembler.assembleOverview(
+        List<CategorySpendingResponse> result = assembler.assemble(
                 rowsA, removed, added, List.of(entertainment, movies, snacks), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(3);
@@ -101,26 +100,10 @@ class CategorySpendingAssemblerTest {
         List<MemberFact> added = List.of(fact(11L, MEMBER, "30"), fact(11L, MEMBER, "45"));
 
         List<CategorySpendingResponse> result =
-                assembler.assembleOverview(List.of(), List.of(), added, List.of(fuel), NO_MEMBERS, NAMES, null);
+                assembler.assemble(List.of(), List.of(), added, List.of(fuel), NO_MEMBERS, NAMES, null);
 
         assertThat(result).hasSize(1);
         assertThat(result.get(0).spent()).isEqualByComparingTo("75");
-    }
-
-    @Test
-    void zeroSpendCategoryWithLimitIsBackfilledWhenAbsentFromAllRows() {
-        Category emergencyFund = debit(20L, "Emergency Fund", "1000", null);
-        Category noLimit = debit(21L, "No Limit Category", null, null);
-        Category income = category(22L, TransactionType.CREDIT, "Salary", "2000", null);
-
-        List<CategorySpendingResponse> result = assembler.assembleOverview(
-                List.of(), List.of(), List.of(), List.of(emergencyFund, noLimit, income), NO_MEMBERS, NAMES, null);
-
-        assertThat(result).hasSize(1);
-        CategorySpendingResponse backfilled = result.get(0);
-        assertThat(backfilled.name()).isEqualTo("Emergency Fund");
-        assertThat(backfilled.spent()).isEqualByComparingTo(BigDecimal.ZERO);
-        assertThat(backfilled.limit()).isEqualByComparingTo("1000");
     }
 
     // ---- New cases: hierarchy rollup and plain limits (CAT-02, CAT-07) ----
@@ -260,26 +243,6 @@ class CategorySpendingAssemblerTest {
         assertThat(row.remaining()).isEqualByComparingTo("0");
     }
 
-    /** P1 Sub AC 11: the Overview lists roots with rolled-up spend; only children with activity or a limit are nested. */
-    @Test
-    void overviewListsRootsWithRolledUpSpendAndTheirActiveChildren() {
-        Category food = debit(1L, "Food", null, null);
-        Category delivery = debit(2L, "Delivery", null, food);
-        Category diningOut = debit(3L, "Dining out", null, food);
-        Category snacks = debit(4L, "Snacks", "50", food);
-        Category idle = debit(5L, "Idle", null, null);
-        List<Object[]> rowsA = List.of(a(2L, MEMBER, "30"), a(3L, MEMBER, "70"));
-
-        List<CategorySpendingResponse> result = assembler.assembleOverview(
-                rowsA, List.of(), List.of(), List.of(food, delivery, diningOut, snacks, idle), NO_MEMBERS, NAMES, null);
-
-        assertThat(result).extracting(CategorySpendingResponse::name).containsExactly("Food");
-        assertThat(result.get(0).spent()).isEqualByComparingTo("100");
-        assertThat(result.get(0).children())
-                .extracting(CategorySpendingResponse::name)
-                .containsExactly("Dining out", "Delivery", "Snacks");
-    }
-
     // ---- Per-member limits and dormancy (CAT-11, CAT-12, CAT-14) ----
 
     /** P2 AC 2 + Independent Test: 260 / 140 entries make a 400 limit; each member row carries its own amount. */
@@ -414,7 +377,7 @@ class CategorySpendingAssemblerTest {
         Category rent = debit(2L, "Rent", "1000", null);
         List<Object[]> rowsA = List.of(a(1L, OTHER_MEMBER, "70"), a(2L, OTHER_MEMBER, "500"));
 
-        List<CategorySpendingResponse> result = assembler.assembleOverview(
+        List<CategorySpendingResponse> result = assembler.assemble(
                 rowsA, List.of(), List.of(), List.of(groceries, rent), BOTH_MEMBERS, NAMES, OTHER_MEMBER);
 
         CategorySpendingResponse groceriesRow = byName(result, "Groceries");
@@ -463,20 +426,6 @@ class CategorySpendingAssemblerTest {
         assertThat(member(deliveryRow, MEMBER).spent()).isEqualByComparingTo("60");
         assertThat(member(deliveryRow, MEMBER).limit()).isNull();
         assertThat(member(deliveryRow, OTHER_MEMBER).spent()).isEqualByComparingTo("30");
-    }
-
-    /** CAT-08 with per-member limits: a category whose only limit is per member is listed in the Overview. */
-    @Test
-    void overviewListsACategoryWhoseOnlyLimitIsPerMember() {
-        Category groceries = debit(1L, "Groceries", null, null);
-        limit(groceries, MEMBER, "Lucas", "260");
-
-        List<CategorySpendingResponse> result = assembler.assembleOverview(
-                List.of(), List.of(), List.of(), List.of(groceries), BOTH_MEMBERS, NAMES, null);
-
-        assertThat(result)
-                .singleElement()
-                .satisfies(row -> assertThat(row.limit()).isEqualByComparingTo("260"));
     }
 
     // ---- Owned categories (CAT-16) ----

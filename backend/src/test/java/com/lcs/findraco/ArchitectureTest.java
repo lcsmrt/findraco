@@ -98,10 +98,12 @@ class ArchitectureTest {
 
     /**
      * The layers a feature may reach in another feature. A feature reads another's entities through a
-     * read-only repository of its own (see below); the response layer later narrows to responses embedding
-     * another feature's response.
+     * read-only repository of its own (see below). Another feature's response is reachable only from a
+     * response, which embeds it; a service asks the owner's service instead.
      */
-    private static final Set<String> CROSS_FEATURE_LAYERS = Set.of("service", "model", "response");
+    private static final Set<String> CROSS_FEATURE_LAYERS = Set.of("service", "model");
+
+    private static final String RESPONSE_LAYER = "response";
 
     private static final Pattern FEATURE_LAYER = Pattern.compile(
             Pattern.quote(ROOT) + "\\.(auth|user|plan|category|transaction|dashboard)\\.([a-z]+)(\\..*)?");
@@ -122,7 +124,8 @@ class ArchitectureTest {
             .that()
             .resideInAnyPackage(ROOT + ".[auth|user|plan|category|transaction|dashboard]..")
             .should(onlyReachOtherFeaturesThrough(CROSS_FEATURE_LAYERS))
-            .because("a feature's controllers, requests, exceptions and configuration are its own");
+            .because("a feature's controllers, requests, exceptions and configuration are its own, and its "
+                    + "responses are embedded only by other responses");
 
     @ArchTest
     static final ArchRule sharedDependsOnNoFeature = noClasses()
@@ -238,6 +241,15 @@ class ArchitectureTest {
             .because("output is named XxxResponse or, embedded in another response, XxxSummaryResponse");
 
     @ArchTest
+    static final ArchRule dtosKeepTheirComponentNames = noClasses()
+            .that()
+            .resideInAnyPackage(ROOT + ".*.request", ROOT + ".*.response")
+            .should()
+            .dependOnClassesThat()
+            .haveFullyQualifiedName("com.fasterxml.jackson.annotation.JsonProperty")
+            .because("a JSON property is named after its record component, so the contract reads like the code");
+
+    @ArchTest
     static final ArchRule dtosDeclareNoNestedTypes = noClasses()
             .that()
             .resideInAnyPackage(ROOT + ".*.request", ROOT + ".*.response")
@@ -268,17 +280,23 @@ class ArchitectureTest {
                     + "own transaction");
 
     private static ArchCondition<JavaClass> onlyReachOtherFeaturesThrough(Set<String> layers) {
-        return new ArchCondition<>("only reach other features through " + layers) {
+        return new ArchCondition<>(
+                "only reach other features through " + layers + ", or their responses from a " + "response") {
             @Override
             public void check(JavaClass origin, ConditionEvents events) {
-                Optional<String> originFeature = featureOf(origin.getPackageName());
+                Matcher originMatcher = FEATURE_LAYER.matcher(origin.getPackageName());
+                if (!originMatcher.matches()) {
+                    return;
+                }
+                String originFeature = originMatcher.group(1);
+                boolean fromResponse = RESPONSE_LAYER.equals(originMatcher.group(2));
                 for (Dependency dependency : origin.getDirectDependenciesFromSelf()) {
                     Matcher target =
                             FEATURE_LAYER.matcher(dependency.getTargetClass().getPackageName());
-                    if (originFeature.isPresent()
-                            && target.matches()
-                            && !target.group(1).equals(originFeature.get())
-                            && !layers.contains(target.group(2))) {
+                    if (target.matches()
+                            && !target.group(1).equals(originFeature)
+                            && !layers.contains(target.group(2))
+                            && !(fromResponse && RESPONSE_LAYER.equals(target.group(2)))) {
                         events.add(SimpleConditionEvent.violated(dependency, dependency.getDescription()));
                     }
                 }

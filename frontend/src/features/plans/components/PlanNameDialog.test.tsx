@@ -1,4 +1,4 @@
-import type { Plan, PlanResponse } from "@/api/dtos";
+import type { Plan } from "@/api/dtos";
 import { planHandlers } from "@/api/services/plan.handlers";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
@@ -9,7 +9,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { PlanNameDialog } from "./PlanNameDialog";
 
 const home: Plan = { id: 7, name: "Home", isDefault: false, myRole: "OWNER" };
-const homeResponse: PlanResponse = { id: 7, name: "Household", default: false, myRole: "OWNER" };
+const homeResponse: Plan = { id: 7, name: "Household", isDefault: false, myRole: "OWNER" };
 
 async function sentBody(requests: Request[], method: string) {
   await waitFor(() => expect(requests.some((request) => request.method === method)).toBe(true));

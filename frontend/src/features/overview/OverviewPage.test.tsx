@@ -23,8 +23,6 @@ const summary: DashboardSummaryResponse = {
   totalIncome: 5000,
   totalExpenses: 3200,
   netBalance: 1800,
-  categoryBreakdown: [],
-  monthlyTrend: [],
   personBreakdown: [
     { userId: 7, name: "Ana", income: 3000, expense: 2222.23, net: 777.77 },
     { userId: 8, name: "Bruno", income: 2000, expense: 977.77, net: 1022.23 },

@@ -1,6 +1,5 @@
 package com.lcs.findraco.shared.openapi;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.media.Schema;
 import java.lang.reflect.RecordComponent;
@@ -58,7 +57,7 @@ public class RequiredUnlessNullableCustomizer implements OpenApiCustomizer {
     private static void apply(Class<?> record, Schema<?> schema) {
         List<String> required = new ArrayList<>();
         for (RecordComponent component : record.getRecordComponents()) {
-            String name = jsonName(component);
+            String name = component.getName();
             Schema<?> property = schema.getProperties().get(name);
             if (property == null) {
                 continue;
@@ -91,14 +90,6 @@ public class RequiredUnlessNullableCustomizer implements OpenApiCustomizer {
         types.add("null");
         property.setTypes(types);
         return property;
-    }
-
-    private static String jsonName(RecordComponent component) {
-        JsonProperty renamed = component.getAccessor().getAnnotation(JsonProperty.class);
-        if (renamed == null) {
-            renamed = component.getAnnotation(JsonProperty.class);
-        }
-        return renamed != null && !renamed.value().isEmpty() ? renamed.value() : component.getName();
     }
 
     private static Map<String, Class<?>> findResponseRecords() {

@@ -1,8 +1,8 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
   CreatePlanRequest,
+  Plan,
   PlanMember,
-  PlanResponse,
   TransferOwnershipRequest,
   UpdateMemberRoleRequest,
   UpdatePlanRequest,
@@ -17,11 +17,11 @@ function noContent() {
 }
 
 export const planHandlers = {
-  list(plans: PlanResponse[]): HttpHandler {
-    return http.get<NoParams, never, PlanResponse[]>("*/plan", () => HttpResponse.json(plans));
+  list(plans: Plan[]): HttpHandler {
+    return http.get<NoParams, never, Plan[]>("*/plan", () => HttpResponse.json(plans));
   },
-  get(plan: PlanResponse): HttpHandler {
-    return http.get<PlanParams, never, PlanResponse>("*/plan/:planId", () =>
+  get(plan: Plan): HttpHandler {
+    return http.get<PlanParams, never, Plan>("*/plan/:planId", () =>
       HttpResponse.json(plan),
     );
   },
@@ -30,8 +30,8 @@ export const planHandlers = {
       HttpResponse.json(members),
     );
   },
-  create(plan: PlanResponse): HttpHandler {
-    return http.post<NoParams, CreatePlanRequest["body"], PlanResponse>("*/plan", () =>
+  create(plan: Plan): HttpHandler {
+    return http.post<NoParams, CreatePlanRequest["body"], Plan>("*/plan", () =>
       HttpResponse.json(plan, { status: 201 }),
     );
   },
@@ -42,8 +42,8 @@ export const planHandlers = {
       return HttpResponse.error();
     });
   },
-  rename(plan: PlanResponse): HttpHandler {
-    return http.put<PlanParams, UpdatePlanRequest["body"], PlanResponse>("*/plan/:planId", () =>
+  rename(plan: Plan): HttpHandler {
+    return http.put<PlanParams, UpdatePlanRequest["body"], Plan>("*/plan/:planId", () =>
       HttpResponse.json(plan),
     );
   },

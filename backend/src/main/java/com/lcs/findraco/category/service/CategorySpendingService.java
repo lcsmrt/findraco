@@ -1,6 +1,5 @@
 package com.lcs.findraco.category.service;
 
-import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.repository.CategoryRepository;
 import com.lcs.findraco.category.repository.CategorySpendingRepository;
 import com.lcs.findraco.category.request.CategorySpendingFilter;
@@ -88,24 +87,6 @@ public class CategorySpendingService {
                 concat(debit.removed(), credit.removed()),
                 concat(debit.added(), credit.added()),
                 categoryRepository.findAllByPlanWithDetails(plan),
-                members.activeIds(),
-                members.names(),
-                memberId);
-    }
-
-    /** The Overview breakdown: DEBIT roots with rolled-up spend, children nested. */
-    @Transactional(readOnly = true)
-    public List<CategorySpendingResponse> computeOverview(
-            long planId, LocalDate startDate, LocalDate endDate, Long memberId) {
-        Plan plan = entityManager.getReference(Plan.class, planId);
-        Facts debit = facts(plan, TransactionType.DEBIT, startDate, endDate, memberId);
-        List<Category> categories = categoryRepository.findAllByPlanWithDetails(plan);
-        Members members = members(plan, debit);
-        return assembler.assembleOverview(
-                debit.rowsA(),
-                debit.removed(),
-                debit.added(),
-                categories,
                 members.activeIds(),
                 members.names(),
                 memberId);

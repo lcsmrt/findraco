@@ -22,9 +22,8 @@ Personal-finance app: Spring Boot API (`backend`) + React/TS SPA (`frontend`).
 - Package by feature: `com.lcs.findraco.<auth|user|plan|category|transaction|dashboard>.<layer>`, layers
   `controller`, `service`, `repository`, `model`, `request`, `response`, `exception`, `config` (plus
   `transaction.importer`); cross-cutting code in `shared.<config|error|openapi|security|web|ratelimit>`.
-  Another feature is reached through its `service`, `model` or `response` only, never its controllers,
-  requests, exceptions or configuration (ArchUnit); the repository reads still crossing features move
-  behind their owner in BST-05.
+  Another feature is reached through its `service` or `model` only, and its `response` only from a
+  response that embeds it; never its controllers, requests, exceptions or configuration (ArchUnit).
 - Layered: **controller → service → repository**. Controller resolves identity, delegates one call,
   wraps in a response record — no business logic.
 - Status: `201` create, `204` delete, `200` read/update (`HttpStatus.CREATED`, not raw `201`).
