@@ -1,6 +1,7 @@
 package com.lcs.findraco.transaction.repository;
 
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.shared.web.LikePatterns;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
 import com.lcs.findraco.transaction.model.TransactionType;
@@ -13,7 +14,6 @@ import jakarta.persistence.criteria.Root;
 import jakarta.persistence.criteria.Subquery;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Locale;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -75,16 +75,16 @@ public class TransactionSpecification {
         if (term == null || term.isBlank()) {
             return (root, query, cb) -> null;
         }
-        String pattern = "%" + term.toLowerCase(Locale.ROOT) + "%";
+        String pattern = LikePatterns.contains(term);
         return (root, query, cb) -> {
-            Predicate descriptionMatch = cb.like(cb.lower(root.get("description")), pattern);
+            Predicate descriptionMatch = cb.like(cb.lower(root.get("description")), pattern, LikePatterns.ESCAPE);
 
             Subquery<Long> sub = query.subquery(Long.class);
             Root<TransactionParticipant> tp = sub.from(TransactionParticipant.class);
             sub.select(tp.get("id"));
             sub.where(
                     cb.equal(tp.get("transaction"), root),
-                    cb.like(cb.lower(tp.get("member").get("name")), pattern));
+                    cb.like(cb.lower(tp.get("member").get("name")), pattern, LikePatterns.ESCAPE));
 
             return cb.or(descriptionMatch, cb.exists(sub));
         };
@@ -135,7 +135,7 @@ public class TransactionSpecification {
                     .as(Integer.class);
             Expression<String> name = cb.lower(category.get("description"));
             Order nameOrder = direction.isAscending() ? cb.asc(name) : cb.desc(name);
-            query.orderBy(cb.asc(nullRank), nameOrder);
+            query.orderBy(cb.asc(nullRank), nameOrder, cb.asc(root.get("id")));
             return null;
         };
     }
@@ -165,7 +165,7 @@ public class TransactionSpecification {
             nameSub.select(cb.least(memberName));
             nameSub.where(cb.equal(tp.get("transaction"), root), cb.equal(tpShare, maxShareSub));
 
-            query.orderBy(direction.isAscending() ? cb.asc(nameSub) : cb.desc(nameSub));
+            query.orderBy(direction.isAscending() ? cb.asc(nameSub) : cb.desc(nameSub), cb.asc(root.get("id")));
             return null;
         };
     }

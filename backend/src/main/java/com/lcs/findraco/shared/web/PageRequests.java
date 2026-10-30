@@ -7,10 +7,13 @@ import org.springframework.data.domain.Sort;
 /** Builds the page of a paged filter, refusing a sort field the endpoint does not allow. */
 public final class PageRequests {
 
+    private static final String TIEBREAKER = "id";
+
     private PageRequests() {}
 
     public static PageRequest of(int page, int size, String sortBy, String sortDirection) {
-        Sort sort = Sort.by(direction(sortDirection), sortBy);
+        // The id breaks ties between equal sort keys, so a row never shows on two pages or on none.
+        Sort sort = Sort.by(direction(sortDirection), sortBy).and(Sort.by(TIEBREAKER));
         return PageRequest.of(page, size, sort);
     }
 

@@ -167,7 +167,7 @@ public class TransactionService {
                         yield PageRequest.of(filter.page(), filter.size());
                     }
                     case startDate, endDate, amount, description ->
-                        PageRequest.of(filter.page(), filter.size(), Sort.by(direction, sortBy.name()));
+                        PageRequests.of(filter.page(), filter.size(), sortBy.name(), filter.sortDirection());
                 };
 
         Page<Transaction> page = transactionRepository.findAll(Specification.allOf(specs), pageable);

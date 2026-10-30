@@ -2,8 +2,8 @@ package com.lcs.findraco.category.repository;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.shared.web.LikePatterns;
 import com.lcs.findraco.transaction.model.TransactionType;
-import java.util.Locale;
 import org.springframework.data.jpa.domain.Specification;
 
 public class CategorySpecification {
@@ -16,8 +16,8 @@ public class CategorySpecification {
         if (description == null || description.isBlank()) {
             return (root, query, cb) -> null;
         }
-        return (root, query, cb) ->
-                cb.like(cb.lower(root.get("description")), "%" + description.toLowerCase(Locale.ROOT) + "%");
+        String pattern = LikePatterns.contains(description);
+        return (root, query, cb) -> cb.like(cb.lower(root.get("description")), pattern, LikePatterns.ESCAPE);
     }
 
     public static Specification<Category> typeEquals(TransactionType type) {
