@@ -128,6 +128,10 @@ function isLineProblem(error: FieldProblem | LineProblem): error is LineProblem 
   return "line" in error;
 }
 
+function isFieldProblem(error: FieldProblem | LineProblem): error is FieldProblem {
+  return !isLineProblem(error);
+}
+
 function isProblemType(slug: string): slug is ProblemType {
   return Object.prototype.hasOwnProperty.call(PROBLEM_COPY, slug);
 }
@@ -164,7 +168,7 @@ export function problemMessage(error: unknown, fallback?: string): string {
 
 /** The field errors of a 422 `validation-failed`, each as "field is required". */
 export function problemFieldErrors(error: unknown): { field: string | null; message: string }[] {
-  const errors = (readProblem(error)?.errors ?? []).filter((item) => !isLineProblem(item));
+  const errors = (readProblem(error)?.errors ?? []).filter(isFieldProblem);
   return errors.map(({ field, code, message }) => {
     const constraint = CONSTRAINT_COPY[code] ?? message;
     return { field, message: field ? `${field} ${constraint}` : constraint };
