@@ -16,6 +16,8 @@ import java.util.List;
 
 /**
  * The body of a transaction edit; it replaces every editable field, participants and items included.
+ * {@code items} is required: an omitted list would wipe the stored items, so it is refused, and an empty
+ * list removes them. Omitted {@code participants} keep their meaning on create: the caller pays it all.
  *
  * @param version the version the caller read; an edit of a version that changed since answers 409.
  */
@@ -45,7 +47,9 @@ public record UpdateTransactionRequest(
         @Valid @Size(max = 50, message = "A transaction takes at most 50 participants.")
         List<TransactionParticipantRequest> participants,
 
-        @Valid @Size(max = 100, message = "A transaction takes at most 100 items.")
+        @NotNull(message = "Items cannot be null; send an empty list to remove them.")
+        @Valid
+        @Size(max = 100, message = "A transaction takes at most 100 items.")
         List<TransactionItemRequest> items,
 
         @NotNull(message = "Version cannot be null.") Long version) {}

@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.lcs.findraco.category.controller.CategoryRoutes;
@@ -87,6 +88,46 @@ class TransactionCrudIT extends AbstractIntegrationTest {
                 .map(item -> item.get("description").asString())
                 .toList();
         assertThat(itemDescriptions).doesNotContain("Item A", "Item B");
+    }
+
+    /**
+     * The PUT replaces the whole transaction, so its items are required: omitting them is refused and keeps
+     * the stored items (a client that forgot them used to wipe them), while an empty list removes them.
+     */
+    @Test
+    void putWithoutItemsIsRefusedAndAnEmptyListRemovesThem() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        long transactionId = createTransaction(
+                        plan,
+                        owner,
+                        requestBody(
+                                "DEBIT",
+                                "100.00",
+                                "Groceries",
+                                owner,
+                                List.of(Map.of("description", "Item A", "amount", new BigDecimal("40.00")))))
+                .get("id")
+                .asLong();
+        Map<String, Object> withoutItems = new HashMap<>(
+                objectMapper.readValue(requestBody("DEBIT", "120.00", "Groceries", owner, List.of()), MAP));
+        withoutItems.remove("items");
+
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(versioned(transactionId, objectMapper.writeValueAsString(withoutItems))))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
+                .andExpect(jsonPath("$.errors[0].field").value("items"));
+        assertThat(fetchTransaction(plan, owner, transactionId).get("items")).hasSize(1);
+
+        mockMvc.perform(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId)
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(versioned(
+                                transactionId, requestBody("DEBIT", "120.00", "Groceries", owner, List.of()))))
+                .andExpect(status().isOk());
+        assertThat(fetchTransaction(plan, owner, transactionId).get("items")).isEmpty();
     }
 
     @Test

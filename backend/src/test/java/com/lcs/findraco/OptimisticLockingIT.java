@@ -165,6 +165,7 @@ class OptimisticLockingIT extends AbstractIntegrationTest {
         body.put("startDate", "2026-07-15");
         body.put("splitMode", splitMode);
         body.put("participants", participants);
+        body.put("items", List.of());
         return body;
     }
 

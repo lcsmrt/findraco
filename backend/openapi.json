@@ -1232,7 +1232,7 @@
             "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "startDate", "type", "version" ],
+        "required" : [ "amount", "description", "items", "startDate", "type", "version" ],
         "type" : "object"
       },
       "UpdateUserRequest" : {

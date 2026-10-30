@@ -92,9 +92,10 @@ export type CreateTransactionRequest = {
   };
 };
 
+/** A full replace: `items` is required, and an empty list removes the transaction's items. */
 export type UpdateTransactionRequest = {
   params: { id: number };
-  body: CreateTransactionRequest["body"] & { version: number };
+  body: Omit<CreateTransactionRequest["body"], "items"> & { items: ItemInput[]; version: number };
 };
 
 export type RecurrenceMode = "INSTALLMENT" | "RECURRING";

@@ -623,7 +623,16 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       { id: 1, name: "Ana", shareAmount: 150 },
       { id: 2, name: "Bia", shareAmount: 150 },
     ],
-    items: [],
+    items: [
+      {
+        id: 31,
+        description: "Wine",
+        amount: 80,
+        quantity: 2,
+        category: { id: 5, version: 0, type: "CREDIT", description: "Drinks", spendingLimit: null },
+      },
+      { id: 32, description: "Tip", amount: 20, quantity: 1 },
+    ],
   };
   const unchanged = {
     type: "CREDIT",
@@ -635,6 +644,11 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
     participants: [
       { memberId: 1, shareAmount: undefined },
       { memberId: 2, shareAmount: undefined },
+    ],
+    // The PUT replaces the items too: a cell edit sends them back unchanged, or they would be lost.
+    items: [
+      { description: "Wine", amount: 80, quantity: 2, categoryId: 5 },
+      { description: "Tip", amount: 20, quantity: 1, categoryId: undefined },
     ],
     version: 4,
   };

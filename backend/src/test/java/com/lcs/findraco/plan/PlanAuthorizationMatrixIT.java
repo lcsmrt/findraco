@@ -462,6 +462,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 description,
                 "startDate",
                 today.toString(),
+                "items",
+                List.of(),
                 "version",
                 0));
     }

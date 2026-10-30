@@ -185,11 +185,11 @@ describe("transaction mutations", () => {
       plan: plan5,
       seed: seedLists,
     });
-    result.current.mutate({ params: { id: 40 }, body: { ...body, version: 3 } });
+    result.current.mutate({ params: { id: 40 }, body: { ...body, items: [], version: 3 } });
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map(sent)).toEqual([["PUT", `${path}/40`, {}]]);
-    expect(await requests[0].json()).toEqual({ ...body, version: 3 });
+    expect(await requests[0].json()).toEqual({ ...body, items: [], version: 3 });
     expect(result.current.data).toEqual(transaction);
     expect(invalidated(queryClient)).toMatchObject(transactionData);
     expect(toast.success).toHaveBeenCalledWith("Transaction updated.");

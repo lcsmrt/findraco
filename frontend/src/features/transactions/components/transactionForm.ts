@@ -1,6 +1,5 @@
 import type { Category } from "@/api/dtos";
 import {
-  CreateTransactionRequest,
   CreateTransactionSeriesRequest,
   Transaction,
   ParticipantInput,
@@ -369,7 +368,7 @@ export function toPayload(
   values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
-): CreateTransactionRequest["body"] {
+): Omit<UpdateTransactionRequest["body"], "version"> {
   const { participants, splitMode } = attributionToPayload(
     values,
     showAttribution,
@@ -394,7 +393,8 @@ export function toPayload(
 
 /**
  * The update a table cell edit sends. The API replaces the whole transaction, so every field the cell
- * did not change is sent back as the transaction has it (the start date as its `yyyy-MM-dd` part).
+ * did not change is sent back as the transaction has it (the start date as its `yyyy-MM-dd` part),
+ * its items included: the API requires them, and an empty list would remove them.
  */
 export function toInlineSavePayload(
   transaction: Transaction,
@@ -416,6 +416,12 @@ export function toInlineSavePayload(
           shareAmount:
             transaction.splitMode === "EXACT" ? p.shareAmount : undefined,
         })),
+      items: transaction.items.map((item) => ({
+        description: item.description,
+        amount: item.amount,
+        quantity: item.quantity,
+        categoryId: item.category?.id,
+      })),
       version: transaction.version,
     },
   };
