@@ -1,5 +1,8 @@
 export type PlanRole = "OWNER" | "EDITOR" | "CONTRIBUTOR" | "VIEWER";
 
+/** A role a request may grant: owner changes hands only through a transfer. */
+export type GrantableRole = Exclude<PlanRole, "OWNER">;
+
 export type Plan = {
   id: number;
   name: string;
@@ -42,7 +45,7 @@ export type TransferOwnershipRequest = {
   params: { planId: number };
   body: {
     newOwnerUserId: number;
-    previousOwnerRole?: PlanRole;
+    previousOwnerRole?: GrantableRole;
   };
 };
 
@@ -53,7 +56,7 @@ export type InvitationStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
 export type CreateInvitationRequest = {
   params: { planId: number };
   body: {
-    role: PlanRole;
+    role: GrantableRole;
     type: InvitationType;
     email?: string;
     expiresAt?: string;

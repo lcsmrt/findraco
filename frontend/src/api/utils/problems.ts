@@ -98,6 +98,7 @@ const CONSTRAINT_COPY: Record<string, string> = {
   Max: "is too large",
   DecimalMax: "is too large",
   Digits: "has too many digits",
+  NarrowedEnum: "is not allowed here",
   Email: "is not a valid e-mail",
   Pattern: "has an invalid format",
 };

@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.request;
 
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -12,4 +13,5 @@ public record TransactionParticipantRequest(
         @NotNull(message = "Participant member id cannot be null.")
         Long memberId,
 
+        @Digits(integer = 13, fraction = 2, message = "Share amount must have at most 2 decimal places.")
         BigDecimal shareAmount) {}

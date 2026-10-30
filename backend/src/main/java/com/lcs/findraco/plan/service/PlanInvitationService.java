@@ -50,7 +50,7 @@ public class PlanInvitationService {
         InvitationType type = request.type();
         PlanInvitation invitation = new PlanInvitation();
         invitation.setPlan(planRepository.getReferenceById(ctx.planId()));
-        invitation.setRole(request.role());
+        invitation.setRole(request.role().role());
         invitation.setType(type);
         invitation.setEmail(type == InvitationType.EMAIL ? request.email() : null);
         invitation.setToken(UUID.randomUUID().toString());

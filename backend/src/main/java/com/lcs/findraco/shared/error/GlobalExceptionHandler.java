@@ -1,6 +1,7 @@
 package com.lcs.findraco.shared.error;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -11,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 /**
  * Turns every exception a controller lets escape into a problem: a {@link DomainException} with its own
@@ -78,6 +81,23 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         Stream<FieldProblem> objectErrors = exception.getBindingResult().getGlobalErrors().stream()
                 .map(error -> new FieldProblem(null, code(error), message(error)));
         return validationFailed(Stream.concat(fieldErrors, objectErrors).toList(), headers);
+    }
+
+    /** A value outside a {@link NarrowedEnum} is invalid, not unreadable; the field names where it was sent. */
+    @Override
+    protected ResponseEntity<Object> handleHttpMessageNotReadable(
+            HttpMessageNotReadableException exception, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
+        if (exception.getCause() instanceof InvalidFormatException invalid
+                && NarrowedEnum.class.isAssignableFrom(invalid.getTargetType())) {
+            String field = invalid.getPath().stream()
+                    .map(reference -> reference.getPropertyName() != null
+                            ? reference.getPropertyName()
+                            : String.valueOf(reference.getIndex()))
+                    .collect(Collectors.joining("."));
+            return validationFailed(
+                    List.of(new FieldProblem(field, "NarrowedEnum", "is not accepted by this request")), headers);
+        }
+        return super.handleHttpMessageNotReadable(exception, headers, status, request);
     }
 
     @Override

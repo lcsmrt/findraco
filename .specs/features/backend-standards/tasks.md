@@ -1132,9 +1132,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT per bound class: over-long string, 3 fraction digits, negative limit, OWNER role → 422
-- [ ] ArchUnit rule fails on an unbounded field (checked, reverted)
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT per bound class: over-long string, 3 fraction digits, negative limit, OWNER role → 422
+- [x] ArchUnit rule fails on an unbounded field (checked, reverted)
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick

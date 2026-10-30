@@ -1,6 +1,7 @@
 package com.lcs.findraco;
 
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
+import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.fields;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noFields;
@@ -31,10 +32,12 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import jakarta.persistence.Entity;
+import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -239,6 +242,22 @@ class ArchitectureTest {
             .should()
             .haveSimpleNameEndingWith("Response")
             .because("output is named XxxResponse or, embedded in another response, XxxSummaryResponse");
+
+    @ArchTest
+    static final ArchRule requestTextAndCollectionsAreBounded = fields().that()
+            .areDeclaredInClassesThat()
+            .resideInAPackage(ROOT + ".*.request")
+            .and()
+            .areNotStatic()
+            .and()
+            .haveRawType(DescribedPredicate.describe(
+                    "a string, a collection or a map",
+                    type -> type.isEquivalentTo(String.class)
+                            || type.isAssignableTo(Collection.class)
+                            || type.isAssignableTo(Map.class)))
+            .should()
+            .beAnnotatedWith(Size.class)
+            .because("an unbounded input reaches the database or a loop; strings stop at their column length");
 
     @ArchTest
     static final ArchRule dtosKeepTheirComponentNames = noClasses()

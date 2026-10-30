@@ -6,11 +6,14 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import org.springframework.data.domain.PageRequest;
 
 /** Query parameters of the category list; absent paging parameters take their defaults. */
 public record CategoryFilter(
+        @Size(max = 255, message = "Description cannot exceed 255 characters.")
         String description,
+
         TransactionType type,
 
         @Min(value = 0, message = "Page number cannot be negative.")
@@ -26,6 +29,7 @@ public record CategoryFilter(
                 regexp = "asc|desc",
                 flags = Pattern.Flag.CASE_INSENSITIVE,
                 message = "Sort direction must be 'asc' or 'desc'.")
+        @Size(max = 4, message = "Sort direction must be 'asc' or 'desc'.")
         String sortDirection) {
 
     public CategoryFilter {

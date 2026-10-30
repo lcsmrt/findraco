@@ -5,11 +5,13 @@ import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -26,10 +28,15 @@ public record CreateSeriesRequest(
         @NotNull(message = "Transaction type cannot be null.")
         TransactionType type,
 
-        @NotNull(message = "Amount cannot be null.") @Positive(message = "Amount must be positive.")
+        @NotNull(message = "Amount cannot be null.")
+        @Positive(message = "Amount must be positive.")
+        @Digits(integer = 13, fraction = 2, message = "Amount must have at most 2 decimal places.")
         BigDecimal amount,
 
-        @NotBlank(message = "Description cannot be blank.") String description,
+        @NotBlank(message = "Description cannot be blank.")
+        @Size(max = 245, message = "Description cannot exceed 245 characters.")
+        String description,
+
         Long categoryId,
 
         @NotNull(message = "Recurrence mode cannot be null.")
@@ -47,4 +54,6 @@ public record CreateSeriesRequest(
         RecurrenceInterval interval,
         LocalDate endDate,
         SplitMode splitMode,
-        @Valid List<TransactionParticipantRequest> participants) {}
+
+        @Valid @Size(max = 50, message = "A transaction takes at most 50 participants.")
+        List<TransactionParticipantRequest> participants) {}

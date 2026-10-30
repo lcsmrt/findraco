@@ -5,6 +5,7 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -13,7 +14,10 @@ public record TransactionFilter(
         TransactionType type,
         Long categoryId,
         Long memberId,
+
+        @Size(max = 255, message = "Description cannot exceed 255 characters.")
         String description,
+
         LocalDate startDateFrom,
         LocalDate startDateTo,
         BigDecimal amountMin,
@@ -32,6 +36,7 @@ public record TransactionFilter(
                 regexp = "asc|desc",
                 flags = Pattern.Flag.CASE_INSENSITIVE,
                 message = "Sort direction must be 'asc' or 'desc'.")
+        @Size(max = 4, message = "Sort direction must be 'asc' or 'desc'.")
         String sortDirection) {
 
     public TransactionFilter {

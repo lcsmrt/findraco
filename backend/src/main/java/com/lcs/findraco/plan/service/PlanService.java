@@ -4,6 +4,7 @@ import com.lcs.findraco.plan.exception.PlanExceptions;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.model.PlanRole;
+import com.lcs.findraco.plan.model.TransferredOwnerRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
 import com.lcs.findraco.plan.response.PlanMemberResponse;
@@ -196,7 +197,8 @@ public class PlanService {
     }
 
     @Transactional
-    public void transferOwnership(long planId, long targetUserId, PlanRole previousOwnerRole, long requesterId) {
+    public void transferOwnership(
+            long planId, long targetUserId, TransferredOwnerRole previousOwnerRole, long requesterId) {
         if (targetUserId == requesterId) {
             throw new PlanExceptions.OwnershipTransferToSelfException();
         }
@@ -209,7 +211,7 @@ public class PlanService {
                 .findByPlanAndUser_Id(plan, targetUserId)
                 .orElseThrow(() -> new PlanExceptions.MemberNotFoundException(planId, targetUserId));
 
-        PlanRole demotedRole = previousOwnerRole != null ? previousOwnerRole : PlanRole.EDITOR;
+        PlanRole demotedRole = previousOwnerRole != null ? previousOwnerRole.role() : PlanRole.EDITOR;
 
         newOwnerMembership.setRole(PlanRole.OWNER);
         requesterMembership.setRole(demotedRole);
