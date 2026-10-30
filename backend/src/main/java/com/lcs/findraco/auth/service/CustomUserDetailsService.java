@@ -29,6 +29,13 @@ public class CustomUserDetailsService implements UserDetailsService, UserDetails
         return new CustomUserDetails(user);
     }
 
+    /** The account a token's subject names; an account deleted since the token was issued is not found. */
+    public UserDetails loadUserById(long userId) throws UsernameNotFoundException {
+        User user = userService.findById(userId).orElseThrow(() -> new UsernameNotFoundException("User not found."));
+
+        return new CustomUserDetails(user);
+    }
+
     /** Called by the authentication provider after a login whose stored hash is older than the current encoder. */
     @Override
     public UserDetails updatePassword(UserDetails user, String newPassword) {

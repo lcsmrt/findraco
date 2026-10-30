@@ -112,6 +112,6 @@ public class SessionService {
         session.setCreatedAt(now);
         sessionRepository.save(session);
 
-        return new IssuedSession(jwtService.generateToken(user.getEmail()), sessionToken);
+        return new IssuedSession(jwtService.generateToken(user.getId()), sessionToken);
     }
 }

@@ -41,6 +41,7 @@ class LogHygieneIT extends AbstractIntegrationTest {
     private static final String PASSWORD = "Hunter2-Secret-Pa55";
     private static final String NEW_PASSWORD = "N3w-Secret-Pa55word";
     private static final String UNKNOWN_EMAIL = "ghost.person@example.test";
+    private static final long UNKNOWN_USER_ID = 987_654_321L;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -90,7 +91,7 @@ class LogHygieneIT extends AbstractIntegrationTest {
             secrets.add(accessToken(refreshed));
             secrets.add(refreshed.getCookie(SessionCookies.NAME).getValue());
 
-            String orphanToken = jwtService.generateToken(UNKNOWN_EMAIL);
+            String orphanToken = jwtService.generateToken(UNKNOWN_USER_ID);
             secrets.add(orphanToken);
             mockMvc.perform(get("/api/findraco/user/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + orphanToken))
                     .andExpect(status().isUnauthorized());

@@ -63,7 +63,7 @@ class SessionServiceTest {
         user = new User();
         user.setEmail("alice@test.com");
         ReflectionTestUtils.setField(user, "id", 42L);
-        when(jwtService.generateToken("alice@test.com")).thenReturn(ACCESS_TOKEN);
+        when(jwtService.generateToken(42L)).thenReturn(ACCESS_TOKEN);
         when(repository.save(any(UserSession.class))).thenAnswer(invocation -> invocation.getArgument(0));
         logs.start();
         serviceLogger.addAppender(logs);

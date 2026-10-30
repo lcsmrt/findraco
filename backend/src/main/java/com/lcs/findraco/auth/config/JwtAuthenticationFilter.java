@@ -1,6 +1,5 @@
 package com.lcs.findraco.auth.config;
 
-import com.lcs.findraco.auth.service.CustomUserDetails;
 import com.lcs.findraco.auth.service.CustomUserDetailsService;
 import com.lcs.findraco.auth.service.JwtService;
 import com.lcs.findraco.shared.web.RequestLogFilter;
@@ -44,24 +43,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         try {
             final String token = authHeader.substring(7);
-            final String username = jwtService.getEmailFromToken(token);
+            final Long userId = jwtService.getUserIdFromToken(token);
 
-            if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (userId != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                UserDetails userDetails = userDetailsService.loadUserById(userId);
 
-                if (jwtService.validateToken(token, userDetails)) {
-                    UsernamePasswordAuthenticationToken authToken =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                    if (userDetails instanceof CustomUserDetails customUserDetails) {
-                        request.setAttribute(
-                                RequestLogFilter.USER_ID_ATTRIBUTE,
-                                customUserDetails.authenticatedUser().id());
-                    }
-                }
+                SecurityContextHolder.getContext().setAuthentication(authToken);
+                request.setAttribute(RequestLogFilter.USER_ID_ATTRIBUTE, userId);
             }
         } catch (RuntimeException exception) {
             // The type is enough to investigate; the message and stack can carry the token's e-mail.

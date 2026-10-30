@@ -10,6 +10,7 @@ import com.lcs.findraco.auth.config.SessionProperties;
 import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
 import java.time.Duration;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -22,10 +23,13 @@ import org.springframework.context.annotation.Configuration;
 /** Every {@code app.*} record refuses to start the application on a missing or out-of-range value. */
 class ConfigurationPropertiesTest {
 
+    /** 48 random bytes, Base64-encoded: what {@code openssl rand -base64 48} prints. */
+    private static final String STRONG_KEY = Base64.getEncoder().encodeToString(new byte[48]);
+
     private static final Map<String, String> VALID = Map.of(
             "app.url", "http://localhost:5173",
             "app.version", "1.0.0",
-            "app.jwt.secret-key", "secret",
+            "app.jwt.secret-key", STRONG_KEY,
             "app.jwt.expiration", "900000",
             "app.session.ttl", "P30D",
             "app.session.reuse-grace", "PT30S",
@@ -82,6 +86,24 @@ class ConfigurationPropertiesTest {
     @Test
     void missingJwtSecretFailsStartup() {
         assertStartupFailsOn(Map.of("app.jwt.secret-key", ""), "app.jwt", "secretKey");
+    }
+
+    @Test
+    void sixteenByteJwtSecretFailsStartup() {
+        String sixteenBytes = Base64.getEncoder().encodeToString(new byte[16]);
+
+        assertStartupFailsOn(Map.of("app.jwt.secret-key", sixteenBytes), "app.jwt", "secretKeyStrongEnough");
+    }
+
+    @Test
+    void jwtSecretThatIsNotBase64FailsStartup() {
+        assertStartupFailsOn(Map.of("app.jwt.secret-key", "not base64 at all !!!"), "app.jwt", "secretKeyStrongEnough");
+    }
+
+    @Test
+    void thirtyTwoByteJwtSecretStarts() {
+        runWith(Map.of("app.jwt.secret-key", Base64.getEncoder().encodeToString(new byte[32])))
+                .run(context -> assertThat(context).hasNotFailed());
     }
 
     @Test

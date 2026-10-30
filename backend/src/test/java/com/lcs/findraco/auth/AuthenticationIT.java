@@ -11,6 +11,7 @@ import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.controller.UserRoutes;
 import com.lcs.findraco.user.model.User;
+import com.lcs.findraco.user.repository.UserRepository;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
@@ -40,6 +41,9 @@ class AuthenticationIT extends AbstractIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Value("${app.jwt.secret-key}")
     private String jwtSecretKey;
@@ -229,10 +233,12 @@ class AuthenticationIT extends AbstractIntegrationTest {
         User user = fixtures.aUser();
         Instant now = fixtures.now();
         String forged = Jwts.builder()
-                .subject(user.getEmail())
+                .subject(String.valueOf(user.getId()))
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusSeconds(900)))
-                .signWith(signingKey("a-different-secret-key-that-is-long-enough-for-hmac-sha-512-signatures"))
+                .signWith(signingKey(Base64.getEncoder()
+                        .encodeToString("a-different-secret-key-that-is-long-enough-for-hmac-sha-512-signatures"
+                                .getBytes(StandardCharsets.UTF_8))))
                 .compact();
 
         mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, "Bearer " + forged))
@@ -245,7 +251,7 @@ class AuthenticationIT extends AbstractIntegrationTest {
         User user = fixtures.aUser();
         Instant issuedAt = fixtures.now().minusSeconds(3_600);
         String expired = Jwts.builder()
-                .subject(user.getEmail())
+                .subject(String.valueOf(user.getId()))
                 .issuedAt(Date.from(issuedAt))
                 .expiration(Date.from(issuedAt.plusSeconds(900)))
                 .signWith(signingKey(jwtSecretKey))
@@ -257,6 +263,28 @@ class AuthenticationIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void accessTokenSubjectIsTheUserIdAndTheEmailIsNotInTheToken() throws Exception {
+        String email = "judy-" + System.nanoTime() + "@test.com";
+        String token = registerAndLogin(email);
+        long userId = userRepository.findByEmail(email).orElseThrow().getId();
+
+        String payload = new String(Base64.getUrlDecoder().decode(token.split("\\.", -1)[1]), StandardCharsets.UTF_8);
+        assertThat(objectMapper.readTree(payload).get("sub").asString()).isEqualTo(String.valueOf(userId));
+        assertThat(payload).doesNotContain(email);
+    }
+
+    @Test
+    void tokenStaysValidWhenTheEmailChanges() throws Exception {
+        User user = fixtures.aUser();
+        String bearer = testAuthHelper.bearerFor(user);
+        user.setEmail("renamed-" + System.nanoTime() + "@test.com");
+        userRepository.save(user);
+
+        mockMvc.perform(get(UserRoutes.USER + "/me").header(HttpHeaders.AUTHORIZATION, bearer))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void accessTokenFromLoginLivesFifteenMinutes() throws Exception {
         String token = registerAndLogin("ivan-" + System.nanoTime() + "@test.com");
 
@@ -264,9 +292,9 @@ class AuthenticationIT extends AbstractIntegrationTest {
         assertThat(claims.get("exp").asLong() - claims.get("iat").asLong()).isEqualTo(900);
     }
 
-    /** Same key derivation as JwtService, so only the secret (or the expiry) differs from a real token. */
-    private static SecretKey signingKey(String secret) {
-        return Keys.hmacShaKeyFor(Base64.getEncoder().encode(secret.getBytes(StandardCharsets.UTF_8)));
+    /** Same key derivation as JwtService (the Base64 text decoded), so only the secret or the expiry differs. */
+    private static SecretKey signingKey(String base64Secret) {
+        return Keys.hmacShaKeyFor(Base64.getDecoder().decode(base64Secret));
     }
 
     private Long fetchOwnPlanId(String token) throws Exception {

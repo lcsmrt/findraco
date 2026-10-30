@@ -4,14 +4,12 @@ import com.lcs.findraco.auth.config.JwtProperties;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.Base64;
 import java.util.Date;
 import javax.crypto.SecretKey;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -23,42 +21,33 @@ public class JwtService {
 
     public JwtService(JwtProperties properties, Clock clock) {
         this.clock = clock;
-        byte[] keyBytes = Base64.getEncoder().encode(properties.secretKey().getBytes(StandardCharsets.UTF_8));
-        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+        this.secretKey = Keys.hmacShaKeyFor(properties.secretKeyBytes());
         this.expiration = properties.expiration();
     }
 
-    public String generateToken(String email) {
+    /** An access token for the user; the subject is the id, which never changes (the e-mail can). */
+    public String generateToken(long userId) {
         Instant now = clock.instant();
         Instant expiresAt = now.plus(expiration);
 
         return Jwts.builder()
-                .subject(email)
+                .subject(String.valueOf(userId))
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(expiresAt))
                 .signWith(secretKey)
                 .compact();
     }
 
-    public String getEmailFromToken(String token) {
+    /** The user id in a valid, unexpired token, or null for anything else (bad signature, expired, not an id). */
+    public @Nullable Long getUserIdFromToken(String token) {
         try {
-            return extractClaims(token).getSubject();
-        } catch (Exception exception) {
+            Claims claims = extractClaims(token);
+            if (claims.getExpiration().toInstant().isBefore(clock.instant())) {
+                return null;
+            }
+            return Long.valueOf(claims.getSubject());
+        } catch (RuntimeException exception) {
             return null;
-        }
-    }
-
-    public boolean validateToken(String token, UserDetails userDetails) {
-        String username = getEmailFromToken(token);
-        return username != null && username.equals(userDetails.getUsername()) && !isTokenExpired(token);
-    }
-
-    public boolean isTokenExpired(String token) {
-        try {
-            Instant expiration = extractClaims(token).getExpiration().toInstant();
-            return expiration.isBefore(clock.instant());
-        } catch (Exception exception) {
-            return true;
         }
     }
 

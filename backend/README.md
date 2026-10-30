@@ -62,8 +62,9 @@ Required variables (see `.env.example`):
 SPRING_DATASOURCE_URL=jdbc:postgresql://HOST:PORT/DATABASE?ssl=true&sslmode=require
 SPRING_DATASOURCE_USERNAME=your_db_user
 SPRING_DATASOURCE_PASSWORD=your_db_password
-JWT_SECRET_KEY=generate_with__openssl_rand_-base64_64
-# Optional: SERVER_PORT (default 3000), JWT_EXPIRATION_MS (default 86400000)
+# Base64 text of at least 32 random bytes: openssl rand -base64 48 (the app refuses to start otherwise)
+JWT_SECRET_KEY=generate_with__openssl_rand_-base64_48
+# Optional: SERVER_PORT (default 3000), SERVER_ADDRESS (default 127.0.0.1), JWT_EXPIRATION_MS (default 900000)
 ```
 
 ### Run locally

@@ -14,7 +14,7 @@ public class TestAuthHelper {
     private JwtService jwtService;
 
     public String bearerFor(User user) {
-        return "Bearer " + jwtService.generateToken(user.getEmail());
+        return "Bearer " + jwtService.generateToken(user.getId());
     }
 
     public RequestPostProcessor asUser(User user) {
