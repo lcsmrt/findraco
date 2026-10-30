@@ -48,6 +48,7 @@ public class PasswordResetService {
      * Issues a reset link for the account, if one exists. Unknown emails are a silent no-op so
      * the response never reveals whether an account exists. Older links of the account stop
      * working: only the latest one is valid. Limited per e-mail (no inbox bombing) and per client address.
+     * The e-mail is queued and the call returns at once, so the response never waits on the mail server.
      */
     @Transactional
     public void requestReset(String email, String ip) {

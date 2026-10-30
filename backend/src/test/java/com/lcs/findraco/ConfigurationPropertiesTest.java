@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lcs.findraco.auth.config.CorsProperties;
 import com.lcs.findraco.auth.config.JwtProperties;
+import com.lcs.findraco.auth.config.MailExecutorProperties;
 import com.lcs.findraco.auth.config.MailProperties;
 import com.lcs.findraco.auth.config.SessionProperties;
 import com.lcs.findraco.shared.config.AppProperties;
@@ -34,6 +35,9 @@ class ConfigurationPropertiesTest {
             "app.mail.from", "no-reply@findraco.local");
 
     private static final Map<String, String> VALID_RATE_LIMITS = Map.ofEntries(
+            Map.entry("app.mail.executor.core-size", "2"),
+            Map.entry("app.mail.executor.max-size", "4"),
+            Map.entry("app.mail.executor.queue-capacity", "100"),
             Map.entry("app.rate-limit.login-ip.capacity", "20"),
             Map.entry("app.rate-limit.login-ip.period", "PT1M"),
             Map.entry("app.rate-limit.login-email.capacity", "5"),
@@ -57,6 +61,7 @@ class ConfigurationPropertiesTest {
         SessionProperties.class,
         MailProperties.class,
         CorsProperties.class,
+        MailExecutorProperties.class,
         RateLimitProperties.class
     })
     static class AllProperties {}
@@ -92,6 +97,11 @@ class ConfigurationPropertiesTest {
     @Test
     void outOfRangeSmtpPortFailsStartup() {
         assertStartupFailsOn(Map.of("app.mail.smtp-port", "0"), "app.mail", "smtpPort");
+    }
+
+    @Test
+    void mailExecutorWithoutThreadsFailsStartup() {
+        assertStartupFailsOn(Map.of("app.mail.executor.core-size", "0"), "app.mail.executor", "coreSize");
     }
 
     @Test

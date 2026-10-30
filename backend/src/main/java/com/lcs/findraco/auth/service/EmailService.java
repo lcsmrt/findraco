@@ -1,5 +1,6 @@
 package com.lcs.findraco.auth.service;
 
+import com.lcs.findraco.auth.config.MailExecutorConfig;
 import com.lcs.findraco.auth.config.MailProperties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -27,9 +29,11 @@ public class EmailService {
     }
 
     /**
-     * Sends the reset link. Delivery failures are logged, never thrown: the caller's response
+     * Sends the reset link, on the mail executor: the caller has already answered by the time it goes out.
+     * Delivery failures are logged, never thrown: the caller's response
      * must not differ between known and unknown emails.
      */
+    @Async(MailExecutorConfig.MAIL_EXECUTOR)
     public void sendPasswordResetEmail(String to, String resetUrl) {
         String text = """
                 You asked to reset your findraco password.
