@@ -8,41 +8,46 @@ import com.lcs.findraco.dashboard.response.PersonBreakdownResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.transaction.model.TransactionType;
-import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
+import com.lcs.findraco.transaction.service.SeriesHorizon;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 @Service
 public class DashboardService {
 
     private final DashboardReportRepository reportRepository;
-    private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
-    private final Clock clock;
+    private final SeriesHorizon seriesHorizon;
+    private final TransactionTemplate readTransaction;
     private final EntityManager entityManager;
 
     public DashboardService(
             DashboardReportRepository reportRepository,
-            OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
-            Clock clock,
+            SeriesHorizon seriesHorizon,
+            PlatformTransactionManager transactionManager,
             EntityManager entityManager) {
         this.reportRepository = reportRepository;
-        this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
-        this.clock = clock;
+        this.seriesHorizon = seriesHorizon;
+        this.readTransaction = new TransactionTemplate(transactionManager);
+        this.readTransaction.setReadOnly(true);
         this.entityManager = entityManager;
     }
 
-    @Transactional(readOnly = true)
+    /** The series are extended first, in their own transaction, so the read itself never writes. */
     public DashboardSummaryResponse getSummary(DashboardFilter filter, PlanContext ctx) {
+        seriesHorizon.ensureCovered(ctx.planId(), filter.endDate());
+        return readTransaction.execute(status -> summary(filter, ctx));
+    }
+
+    private DashboardSummaryResponse summary(DashboardFilter filter, PlanContext ctx) {
         Plan plan = entityManager.getReference(Plan.class, ctx.planId());
-        openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
 
         LocalDate startDate = filter.startDate();
         LocalDate endDate = filter.endDate();
@@ -62,11 +67,12 @@ public class DashboardService {
     }
 
     /** Income and expenses per calendar month of the range, optionally for one member's shares (UX-05 AC 7). */
-    @Transactional(readOnly = true)
     public List<MonthlyTrendResponse> getTrend(DashboardFilter filter, PlanContext ctx) {
-        Plan plan = entityManager.getReference(Plan.class, ctx.planId());
-        openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
-        return buildMonthlyTrend(plan, filter.startDate(), filter.endDate(), filter.memberId());
+        seriesHorizon.ensureCovered(ctx.planId(), filter.endDate());
+        return readTransaction.execute(status -> {
+            Plan plan = entityManager.getReference(Plan.class, ctx.planId());
+            return buildMonthlyTrend(plan, filter.startDate(), filter.endDate(), filter.memberId());
+        });
     }
 
     private record MonthKey(int year, int month) {}

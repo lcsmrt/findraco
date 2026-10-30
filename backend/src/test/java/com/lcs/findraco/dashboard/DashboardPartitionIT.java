@@ -291,7 +291,8 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
         LocalDate anchorMonth = today().withDayOfMonth(1);
         LocalDate start = anchorMonth.minusMonths(6);
         LocalDate staleGeneratedThrough = anchorMonth.minusMonths(2);
-        LocalDate expectedLastGenerated = anchorMonth.plusMonths(12);
+        // The read asks for a period ending 13 months out, so the series are extended to that end.
+        LocalDate expectedLastGenerated = anchorMonth.plusMonths(13);
 
         RecurrenceDefinition definition =
                 anOpenEndedDefinition(plan, owner, subscriptionsCategory, start, "Streaming", new BigDecimal("30.00"));
@@ -312,7 +313,7 @@ class DashboardPartitionIT extends AbstractIntegrationTest {
 
         RecurrenceDefinition reloaded =
                 recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
-        assertThat(reloaded.getGeneratedThrough()).isEqualTo(expectedLastGenerated);
+        assertThat(reloaded.getGeneratedThrough()).isEqualTo(today().plusMonths(13));
 
         JsonNode breakdown = fetchSpending(plan, owner, start, today().plusMonths(13));
         assertThat(categorySpent(breakdown, "Groceries")).isEqualByComparingTo("20.00");

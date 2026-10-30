@@ -11,10 +11,9 @@ import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.ItemShareAllocator;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.Allocation;
 import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
-import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
+import com.lcs.findraco.transaction.service.SeriesHorizon;
 import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
-import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -23,7 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * The single source of category spend (AD-008): the Overview breakdown and the Categories tab both
@@ -39,8 +40,8 @@ public class CategorySpendingService {
     private final UserService userService;
     private final ItemShareAllocator itemShareAllocator;
     private final CategorySpendingAssembler assembler;
-    private final OpenEndedSeriesTopUpService openEndedSeriesTopUpService;
-    private final Clock clock;
+    private final SeriesHorizon seriesHorizon;
+    private final TransactionTemplate readTransaction;
     private final EntityManager entityManager;
 
     public CategorySpendingService(
@@ -50,8 +51,8 @@ public class CategorySpendingService {
             UserService userService,
             ItemShareAllocator itemShareAllocator,
             CategorySpendingAssembler assembler,
-            OpenEndedSeriesTopUpService openEndedSeriesTopUpService,
-            Clock clock,
+            SeriesHorizon seriesHorizon,
+            PlatformTransactionManager transactionManager,
             EntityManager entityManager) {
         this.spendingRepository = spendingRepository;
         this.categoryRepository = categoryRepository;
@@ -59,19 +60,20 @@ public class CategorySpendingService {
         this.userService = userService;
         this.itemShareAllocator = itemShareAllocator;
         this.assembler = assembler;
-        this.openEndedSeriesTopUpService = openEndedSeriesTopUpService;
-        this.clock = clock;
+        this.seriesHorizon = seriesHorizon;
+        this.readTransaction = new TransactionTemplate(transactionManager);
+        this.readTransaction.setReadOnly(true);
         this.entityManager = entityManager;
     }
 
     /**
      * The Categories tab (CAT-01/02): every category of the plan for the period. Open-ended series are
-     * topped up first, as the dashboard does, so the tab and the Overview read the same transactions.
+     * extended first, in their own transaction and as the dashboard does, so the tab and the Overview
+     * read the same transactions and the read itself never writes.
      */
-    @Transactional(readOnly = true)
     public List<CategorySpendingResponse> getSpending(CategorySpendingFilter filter, PlanContext ctx) {
-        openEndedSeriesTopUpService.topUp(ctx.planId(), LocalDate.now(clock));
-        return compute(ctx.planId(), filter.startDate(), filter.endDate());
+        seriesHorizon.ensureCovered(ctx.planId(), filter.endDate());
+        return readTransaction.execute(status -> compute(ctx.planId(), filter.startDate(), filter.endDate()));
     }
 
     /** Every category of the plan (DEBIT then CREDIT trees, zero spend included) for the period. */
