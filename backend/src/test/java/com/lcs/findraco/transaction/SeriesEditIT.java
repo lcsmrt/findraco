@@ -559,6 +559,42 @@ class SeriesEditIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void deletingASeriesWithoutAScopeIsRejectedAndDeletesNothing() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode created = createSeries(
+                plan, owner, recurringBody("Gym", "50.00", LocalDate.of(2026, 1, 15), LocalDate.of(2026, 3, 15)));
+        String seriesId = created.get("seriesId").asString();
+
+        mockMvc.perform(delete(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                        .with(testAuthHelper.asUser(owner)))
+                .andExpect(problem(HttpStatus.BAD_REQUEST, "malformed-request"));
+
+        assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, seriesId))
+                .hasSize(3);
+    }
+
+    @Test
+    void deletingThisAndFollowingKeepsTheInstallmentLabelsWithTheOriginalTotal() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode created =
+                createSeries(plan, owner, installmentBody("Laptop", "300.00", LocalDate.of(2026, 1, 15), 10, null));
+        String seriesId = created.get("seriesId").asString();
+        long fifth = created.get("occurrences").get(4).get("id").asLong();
+
+        mockMvc.perform(delete(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
+                        .with(testAuthHelper.asUser(owner))
+                        .param("scope", "THIS_AND_FOLLOWING")
+                        .param("pivotOccurrenceId", String.valueOf(fifth)))
+                .andExpect(status().isNoContent());
+
+        assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, seriesId))
+                .extracting(Transaction::getDescription)
+                .containsExactlyInAnyOrder("Laptop (1/10)", "Laptop (2/10)", "Laptop (3/10)", "Laptop (4/10)");
+    }
+
+    @Test
     void endBeforeStartAnswersTheSameTypeOnCreateAndOnEdit() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

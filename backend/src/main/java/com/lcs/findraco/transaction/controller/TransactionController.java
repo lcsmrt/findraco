@@ -91,12 +91,14 @@ public class TransactionController {
         return ResponseEntity.noContent().build();
     }
 
-    @Operation(summary = "Deletes a series of recurring transactions (This one / This and following / All)")
+    @Operation(
+            summary =
+                    "Deletes a series of recurring transactions (This one / This and following / All); the scope is required")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @DeleteMapping("/series/{seriesId}")
     public ResponseEntity<Void> deleteSeries(
             @PathVariable String seriesId,
-            @RequestParam(defaultValue = "ALL") SeriesEditScope scope,
+            @RequestParam SeriesEditScope scope,
             @RequestParam(required = false) Long pivotOccurrenceId,
             PlanContext ctx) {
         transactionService.deleteSeries(seriesId, scope, pivotOccurrenceId, ctx);

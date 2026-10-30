@@ -4492,10 +4492,9 @@
         }, {
           "in" : "query",
           "name" : "scope",
-          "required" : false,
+          "required" : true,
           "schema" : {
-            "$ref" : "#/components/schemas/SeriesEditScope",
-            "default" : "ALL"
+            "$ref" : "#/components/schemas/SeriesEditScope"
           }
         }, {
           "in" : "query",
@@ -4571,7 +4570,7 @@
             "description" : "Internal Server Error"
           }
         },
-        "summary" : "Deletes a series of recurring transactions (This one / This and following / All)",
+        "summary" : "Deletes a series of recurring transactions (This one / This and following / All); the scope is required",
         "tags" : [ "Transactions" ]
       },
       "get" : {
