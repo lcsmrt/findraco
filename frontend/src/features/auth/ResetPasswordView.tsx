@@ -2,9 +2,10 @@ import { Button } from "@/components/button/base/Button";
 import { FormField } from "@/components/form/FormField";
 import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { AuthCard } from "./components/AuthCard";
 import { PasswordInput } from "./components/PasswordInput";
+import { passwordSpacesHint } from "./utils/passwordSchema";
 import {
   resetPasswordSchema,
   type ResetPasswordFormOutput,
@@ -19,6 +20,23 @@ type ResetPasswordViewProps = {
   onRequestNewLink: () => void;
   onBackToSignIn: () => void;
 };
+
+type InvalidLinkProps = {
+  onRequestNewLink: () => void;
+};
+
+function InvalidLink({ onRequestNewLink }: InvalidLinkProps) {
+  return (
+    <>
+      <Text as="p" variant="secondary" className="text-center">
+        This link is invalid or has expired.
+      </Text>
+      <Button type="button" className="w-full" onClick={onRequestNewLink}>
+        Request a new link
+      </Button>
+    </>
+  );
+}
 
 export function ResetPasswordView({
   isValidating,
@@ -40,6 +58,8 @@ export function ResetPasswordView({
     },
   });
 
+  const password = useWatch({ control, name: "password" });
+
   function renderContent() {
     if (isValidating) {
       return (
@@ -50,26 +70,18 @@ export function ResetPasswordView({
     }
 
     if (!isTokenValid) {
-      return (
-        <>
-          <Text as="p" variant="secondary" className="text-center">
-            This link is invalid or has expired.
-          </Text>
-          <Button
-            type="button"
-            className="w-full"
-            onClick={onRequestNewLink}
-          >
-            Request a new link
-          </Button>
-        </>
-      );
+      return <InvalidLink onRequestNewLink={onRequestNewLink} />;
     }
 
     return (
       <>
         <div className="flex w-full flex-col gap-3">
-          <FormField control={control} name="password" label="New password">
+          <FormField
+            control={control}
+            name="password"
+            label="New password"
+            description={passwordSpacesHint(password)}
+          >
             {(field) => <PasswordInput {...field} className="bg-card/70" />}
           </FormField>
           <FormField

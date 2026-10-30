@@ -12,6 +12,12 @@ function messages(result: z.SafeParseReturnType<unknown, unknown>) {
 }
 
 describe("loginSchema", () => {
+  it("does not apply the new-password policy: existing accounts keep their password", () => {
+    expect(
+      loginSchema.safeParse({ email: "ana@example.com", password: "abc" }).success,
+    ).toBe(true);
+  });
+
   it("accepts an email and a password", () => {
     expect(
       loginSchema.safeParse({ email: "ana@example.com", password: "secret" })
@@ -42,7 +48,7 @@ describe("registerUserSchema", () => {
     const result = registerUserSchema.safeParse({
       name: "Ana Souza",
       email: "ana@example.com",
-      password: "secret",
+      password: "secret-pass",
     });
 
     expect(result.success).toBe(true);
@@ -62,11 +68,21 @@ describe("registerUserSchema", () => {
     ]);
   });
 
+  it("holds a new password to the API's policy (BST-15 AC 11)", () => {
+    const result = registerUserSchema.safeParse({
+      name: "Ana",
+      email: "ana@example.com",
+      password: "short",
+    });
+
+    expect(messages(result)).toEqual([["password", "Use 8 to 128 characters"]]);
+  });
+
   it("rejects a malformed email", () => {
     const result = registerUserSchema.safeParse({
       name: "Ana",
       email: "ana@",
-      password: "secret",
+      password: "secret-pass",
     });
 
     expect(messages(result)).toEqual([["email", "Invalid email"]]);
@@ -102,6 +118,15 @@ describe("resetPasswordSchema", () => {
     });
 
     expect(result.success).toBe(true);
+  });
+
+  it("holds the new password to the API's policy (BST-15 AC 11)", () => {
+    const result = resetPasswordSchema.safeParse({
+      password: "short",
+      confirmPassword: "short",
+    });
+
+    expect(messages(result)).toEqual([["password", "Use 8 to 128 characters"]]);
   });
 
   it("flags the confirmation when the passwords differ", () => {

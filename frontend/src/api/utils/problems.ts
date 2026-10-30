@@ -101,6 +101,8 @@ const CONSTRAINT_COPY: Record<string, string> = {
   NarrowedEnum: "is not allowed here",
   Email: "is not a valid e-mail",
   Pattern: "has an invalid format",
+  PasswordLength: "must be 8 to 128 characters",
+  PasswordCharacters: "cannot contain tabs, line breaks or invisible characters",
 };
 
 function isProblemType(slug: string): slug is ProblemType {

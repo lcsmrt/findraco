@@ -3,7 +3,7 @@ import { FormField } from "@/components/form/FormField";
 import { Input } from "@/components/input/base/Input";
 import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import {
   registerUserSchema,
   type RegisterUserFormOutput,
@@ -11,6 +11,7 @@ import {
 } from "./authForms";
 import { AuthCard } from "./components/AuthCard";
 import { PasswordInput } from "./components/PasswordInput";
+import { passwordSpacesHint } from "./utils/passwordSchema";
 
 type RegisterUserViewProps = {
   isSubmitting: boolean;
@@ -35,6 +36,8 @@ export function RegisterUserView({
       password: "",
     },
   });
+
+  const password = useWatch({ control, name: "password" });
 
   return (
     <AuthCard title="Create your account">
@@ -65,7 +68,12 @@ export function RegisterUserView({
               />
             )}
           </FormField>
-          <FormField control={control} name="password" label="Password">
+          <FormField
+            control={control}
+            name="password"
+            label="Password"
+            description={passwordSpacesHint(password)}
+          >
             {(field) => (
               <PasswordInput
                 {...field}
