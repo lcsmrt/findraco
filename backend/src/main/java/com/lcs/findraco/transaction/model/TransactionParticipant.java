@@ -5,32 +5,21 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(
-        name = "transaction_participants",
-        uniqueConstraints =
-                @UniqueConstraint(
-                        name = "uk_txn_participants_txn_member",
-                        columnNames = {"transaction_id", "member_user_id"}))
+@Table(name = "transaction_participants")
 public class TransactionParticipant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "transaction_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_txn_participants_transaction"))
+    @JoinColumn(name = "transaction_id")
     private Transaction transaction;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "member_user_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_txn_participants_member"))
+    @JoinColumn(name = "member_user_id")
     private User member;
 
-    @Column(name = "share_amount", nullable = false)
+    @Column(name = "share_amount")
     private BigDecimal shareAmount;
 
     protected TransactionParticipant() {}

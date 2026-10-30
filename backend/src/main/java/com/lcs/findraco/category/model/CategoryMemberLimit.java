@@ -5,26 +5,20 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(
-        name = "category_member_limits",
-        uniqueConstraints =
-                @UniqueConstraint(
-                        name = "uk_cml_category_member",
-                        columnNames = {"category_id", "member_user_id"}))
+@Table(name = "category_member_limits")
 public class CategoryMemberLimit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "category_id", nullable = false, foreignKey = @ForeignKey(name = "fk_cml_category"))
+    @JoinColumn(name = "category_id")
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "member_user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_cml_member"))
+    @JoinColumn(name = "member_user_id")
     private User member;
 
-    @Column(nullable = false)
     private BigDecimal amount;
 
     protected CategoryMemberLimit() {}

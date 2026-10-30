@@ -23,13 +23,13 @@ import tools.jackson.databind.ObjectMapper;
 /**
  * Proves that {@code POST /transaction/import} (Nubank CSV import,
  * {@link com.lcs.findraco.transaction.service.TransactionService#importFromNubankCsv}) dedups on
- * {@code externalId} (the CSV's third column): re-importing the exact same file a second time
+ * {@code sourceRef} (the CSV's third column): re-importing the exact same file a second time
  * must not create duplicate rows, since
- * {@link TransactionRepository#findExistingExternalIds} is consulted before each row is
+ * {@link TransactionRepository#findExistingSourceRefs} is consulted before each row is
  * persisted.
  *
  * <p>CSV format expected by the parser (see {@code importFromNubankCsv}): a header line (skipped),
- * then {@code date,amount,externalId,description} per row, split on {@code ","} with a limit of 4
+ * then {@code date,amount,sourceRef,description} per row, split on {@code ","} with a limit of 4
  * (so a description may itself contain commas), date as {@code dd/MM/yyyy}, amount signed (negative
  * -&gt; DEBIT, non-negative -&gt; CREDIT, stored as its absolute value).
  */
@@ -49,7 +49,7 @@ class CsvImportIT extends AbstractIntegrationTest {
             """;
 
     @Test
-    void reimportingTheSameCsvDoesNotDuplicateRowsByExternalId() throws Exception {
+    void reimportingTheSameCsvDoesNotDuplicateRowsBySourceRef() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
@@ -59,7 +59,7 @@ class CsvImportIT extends AbstractIntegrationTest {
         List<Transaction> afterFirstImport = transactionRepository.findAllByPlan(plan);
         assertThat(afterFirstImport).hasSize(3);
         assertThat(afterFirstImport)
-                .extracting(Transaction::getExternalId)
+                .extracting(Transaction::getSourceRef)
                 .containsExactlyInAnyOrder("nu-ext-1", "nu-ext-2", "nu-ext-3");
 
         JsonNode secondImport = importCsv(plan, owner, CSV);
@@ -68,7 +68,7 @@ class CsvImportIT extends AbstractIntegrationTest {
         List<Transaction> afterSecondImport = transactionRepository.findAllByPlan(plan);
         assertThat(afterSecondImport).hasSize(3);
         assertThat(afterSecondImport)
-                .extracting(Transaction::getExternalId)
+                .extracting(Transaction::getSourceRef)
                 .containsExactlyInAnyOrder("nu-ext-1", "nu-ext-2", "nu-ext-3");
 
         MvcResult listResult = mockMvc.perform(
@@ -80,7 +80,7 @@ class CsvImportIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void reimportingWithOneNewExternalIdOnlyAddsTheNewRow() throws Exception {
+    void reimportingWithOneNewSourceRefOnlyAddsTheNewRow() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
 
@@ -94,7 +94,7 @@ class CsvImportIT extends AbstractIntegrationTest {
         List<Transaction> persisted = transactionRepository.findAllByPlan(plan);
         assertThat(persisted).hasSize(4);
         assertThat(persisted)
-                .extracting(Transaction::getExternalId)
+                .extracting(Transaction::getSourceRef)
                 .containsExactlyInAnyOrder("nu-ext-1", "nu-ext-2", "nu-ext-3", "nu-ext-4");
     }
 

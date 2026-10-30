@@ -12,31 +12,24 @@ public class PlanInvitation {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_plan_invitations_plan"))
+    @JoinColumn(name = "plan_id")
     private Plan plan;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private PlanRole role;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private InvitationType type;
 
     private String email;
 
-    @Column(nullable = false, unique = true)
     private String token;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private InvitationStatus status;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "invited_by",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_plan_invitations_invited_by"))
+    @JoinColumn(name = "invited_by")
     private User invitedBy;
 
     @Column(name = "expires_at")

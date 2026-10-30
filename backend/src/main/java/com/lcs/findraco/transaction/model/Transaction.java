@@ -16,14 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 @Entity
-@Table(
-        name = "transactions",
-        indexes = {
-            @Index(name = "idx_transactions_start_date", columnList = "start_date"),
-            @Index(name = "idx_transactions_plan_id", columnList = "plan_id"),
-            @Index(name = "idx_transactions_plan_id_start_date", columnList = "plan_id, start_date"),
-            @Index(name = "idx_transactions_plan_id_series_id", columnList = "plan_id, series_id"),
-        })
+@Table(name = "transactions")
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,15 +26,14 @@ public class Transaction {
     private long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_transactions_plans"))
+    @JoinColumn(name = "plan_id")
     private Plan plan;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by", nullable = false, foreignKey = @ForeignKey(name = "fk_transactions_created_by"))
+    @JoinColumn(name = "created_by")
     private User createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(foreignKey = @ForeignKey(name = "fk_transactions_categories"))
     private Category category;
 
     @Enumerated(EnumType.STRING)
@@ -49,7 +41,7 @@ public class Transaction {
 
     private BigDecimal amount;
     private String description;
-    private String externalId;
+    private String sourceRef;
 
     @Column(name = "series_id")
     private String seriesId;
@@ -57,16 +49,14 @@ public class Transaction {
     private Integer parcelsNumber;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(
-            name = "recurrence_definition_id",
-            foreignKey = @ForeignKey(name = "fk_transactions_recurrence_definitions"))
+    @JoinColumn(name = "recurrence_definition_id")
     private RecurrenceDefinition recurrenceDefinition;
 
     private LocalDate startDate;
     private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "split_mode", nullable = false)
+    @Column(name = "split_mode")
     private SplitMode splitMode = SplitMode.EQUAL;
 
     @OneToMany(mappedBy = "transaction", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -84,7 +74,7 @@ public class Transaction {
         Transaction transaction = new Transaction();
         transaction.plan = draft.plan();
         transaction.createdBy = draft.createdBy();
-        transaction.externalId = draft.externalId();
+        transaction.sourceRef = draft.sourceRef();
         if (draft.series() != null) {
             transaction.recurrenceDefinition = draft.series();
             transaction.seriesId = draft.series().getSeriesId();
@@ -226,8 +216,8 @@ public class Transaction {
         return description;
     }
 
-    public String getExternalId() {
-        return externalId;
+    public String getSourceRef() {
+        return sourceRef;
     }
 
     public String getSeriesId() {

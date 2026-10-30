@@ -518,7 +518,7 @@ public class TransactionService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         List<Transaction> transactions = new ArrayList<>();
 
-        record ParsedRow(String externalId, LocalDate date, BigDecimal rawAmount, String description) {}
+        record ParsedRow(String sourceRef, LocalDate date, BigDecimal rawAmount, String description) {}
         List<ParsedRow> parsed = new ArrayList<>();
 
         for (int i = 1; i < lines.size(); i++) {
@@ -539,11 +539,11 @@ public class TransactionService {
             }
         }
 
-        Set<String> existingIds = transactionRepository.findExistingExternalIds(
-                plan(ctx), parsed.stream().map(ParsedRow::externalId).toList());
+        Set<String> existingIds = transactionRepository.findExistingSourceRefs(
+                plan(ctx), parsed.stream().map(ParsedRow::sourceRef).toList());
 
         for (ParsedRow row : parsed) {
-            if (existingIds.contains(row.externalId())) continue;
+            if (existingIds.contains(row.sourceRef())) continue;
 
             TransactionType type =
                     row.rawAmount().compareTo(BigDecimal.ZERO) >= 0 ? TransactionType.CREDIT : TransactionType.DEBIT;
@@ -557,7 +557,7 @@ public class TransactionService {
                     SplitMode.EQUAL,
                     List.of(new Share(user(ctx), null)),
                     List.of(),
-                    row.externalId(),
+                    row.sourceRef(),
                     null));
 
             transactions.add(t);

@@ -70,6 +70,6 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     @Query("UPDATE TransactionItem it SET it.category = :target WHERE it.category = :source")
     int reassignItemCategory(@Param("source") Category source, @Param("target") Category target);
 
-    @Query("SELECT ft.externalId FROM Transaction ft WHERE ft.plan = :plan AND ft.externalId IN :externalIds")
-    Set<String> findExistingExternalIds(@Param("plan") Plan plan, @Param("externalIds") Collection<String> externalIds);
+    @Query("SELECT ft.sourceRef FROM Transaction ft WHERE ft.plan = :plan AND ft.sourceRef IN :sourceRefs")
+    Set<String> findExistingSourceRefs(@Param("plan") Plan plan, @Param("sourceRefs") Collection<String> sourceRefs);
 }

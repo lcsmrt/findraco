@@ -164,6 +164,9 @@ class MigrationsIT extends AbstractIntegrationTest {
                 .containsExactlyInAnyOrder(
                         "pk_transactions",
                         "ck_transactions_type",
+                        "ck_transactions_amount_positive",
+                        "ck_transactions_parcels_number",
+                        "ck_transactions_split_mode",
                         "fk_transactions_plans",
                         "fk_transactions_created_by",
                         "fk_transactions_categories",
@@ -172,6 +175,7 @@ class MigrationsIT extends AbstractIntegrationTest {
                 .containsExactlyInAnyOrder(
                         "pk_categories",
                         "ck_categories_type",
+                        "ck_categories_spending_limit_non_negative",
                         "fk_categories_plans",
                         "fk_categories_parent",
                         "fk_categories_owner_user");
@@ -182,9 +186,16 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "idx_transactions_plan_id",
                         "idx_transactions_plan_id_start_date",
                         "idx_transactions_plan_id_series_id",
-                        "idx_transactions_recurrence_definition_id");
+                        "idx_transactions_recurrence_definition_id",
+                        "idx_transactions_created_by",
+                        "idx_transactions_category_id",
+                        "uk_transactions_plan_source_ref");
         assertThat(namesOf(jdbc, "SELECT indexname FROM pg_indexes WHERE tablename = 'categories'"))
-                .containsExactlyInAnyOrder("pk_categories", "idx_categories_parent_id");
+                .containsExactlyInAnyOrder(
+                        "pk_categories",
+                        "idx_categories_parent_id",
+                        "idx_categories_plan_id",
+                        "idx_categories_owner_user_id");
         assertThat(namesOf(
                         jdbc,
                         "SELECT sequencename FROM pg_sequences WHERE sequencename IN "
@@ -244,6 +255,134 @@ class MigrationsIT extends AbstractIntegrationTest {
                         () -> jdbc.update("UPDATE users SET time_zone_mode = 'SOMETIMES' WHERE id = ?", user.getId()))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("ck_users_time_zone_mode");
+    }
+
+    /** V16 (BST-12 AC 3): every foreign key is the first column of some index. */
+    @Test
+    void everyForeignKeyIsIndexed() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+
+        assertThat(namesOf(
+                        jdbc,
+                        "SELECT c.conrelid::regclass::text || ' ' || c.conname FROM pg_constraint c "
+                                + "WHERE c.contype = 'f' AND c.connamespace = 'public'::regnamespace "
+                                + "AND NOT EXISTS (SELECT 1 FROM pg_index i WHERE i.indrelid = c.conrelid "
+                                + "AND i.indkey[0] = c.conkey[1])"))
+                .isEmpty();
+    }
+
+    /** V16 (BST-12 AC 1, 2): every constraint follows the pk_/uk_/fk_/ck_ convention. */
+    @Test
+    void everyConstraintCarriesAConventionalName() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+
+        assertThat(namesOf(
+                        jdbc,
+                        "SELECT conname FROM pg_constraint WHERE connamespace = 'public'::regnamespace "
+                                + "AND conrelid <> 'public.flyway_schema_history'::regclass "
+                                + "AND conname !~ '^(pk|uk|fk|ck)_'"))
+                .isEmpty();
+    }
+
+    @Test
+    void importedReferencesAreUniquePerPlanButOptional() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Plan other = fixtures.aPlan(owner);
+
+        insertTransaction(jdbc, plan, owner, "10.00", null);
+        insertTransaction(jdbc, plan, owner, "10.00", null);
+        insertTransaction(jdbc, plan, owner, "10.00", "ref-1");
+        insertTransaction(jdbc, other, owner, "10.00", "ref-1");
+
+        assertThatThrownBy(() -> insertTransaction(jdbc, plan, owner, "10.00", "ref-1"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("uk_transactions_plan_source_ref");
+    }
+
+    @Test
+    void aTransactionAmountThatIsNotPositiveIsRejectedByTheDatabase() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        assertThatThrownBy(() -> insertTransaction(jdbc, plan, owner, "0.00", null))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_transactions_amount_positive");
+    }
+
+    @Test
+    void aNegativeSpendingLimitIsRejectedByTheDatabase() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        Plan plan = fixtures.aPlan(fixtures.aUser());
+
+        assertThatThrownBy(() -> jdbc.update(
+                        "INSERT INTO categories (plan_id, type, description, spending_limit) "
+                                + "VALUES (?, 'DEBIT', 'Rent', -1.00)",
+                        plan.getId()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_categories_spending_limit_non_negative");
+    }
+
+    @Test
+    void aUserWithoutANameOrWithARepeatedEmailIsRejectedByTheDatabase() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User user = fixtures.aUser();
+
+        assertThatThrownBy(() -> jdbc.update("INSERT INTO users (email, name, password) VALUES ('x@y.z', NULL, 'p')"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("name");
+        assertThatThrownBy(() -> jdbc.update(
+                        "INSERT INTO users (email, name, password) VALUES (?, 'Other', 'p')", user.getEmail()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("uk_users_email");
+    }
+
+    /** Each case seeds one violation before V16 and expects the migration to abort naming it. */
+    @Test
+    void hardeningMigrationAbortsNamingEachViolation() {
+        String user = "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');";
+        String plan = "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);";
+        String seeded = user + plan;
+        String transaction = "INSERT INTO transactions "
+                + "(id, plan_id, created_by, amount, description, type, start_date, external_id) "
+                + "VALUES (%d, 1, 1, %s, 'T', 'DEBIT', '2026-01-01', %s);";
+
+        assertThatThrownBy(() -> migrateScratchDatabase("15", user + "UPDATE users SET name = NULL", jdbc -> {}))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V16 precondition failed: 1 users have a null email, name or password");
+        assertThatThrownBy(() -> migrateScratchDatabase(
+                        "15",
+                        user + "INSERT INTO users (id, email, name, password) VALUES (2, 'a@b.c', 'B', 'x')",
+                        jdbc -> {}))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V16 precondition failed: 1 user e-mails are registered more than once");
+        assertThatThrownBy(() ->
+                        migrateScratchDatabase("15", seeded + transaction.formatted(1, "0.00", "NULL"), jdbc -> {}))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V16 precondition failed: 1 transactions have an amount that is not positive");
+        assertThatThrownBy(() -> migrateScratchDatabase(
+                        "15",
+                        seeded + transaction.formatted(1, "5.00", "'dup'") + transaction.formatted(2, "5.00", "'dup'"),
+                        jdbc -> {}))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V16 precondition failed: 1 imported references appear more than once in a plan");
+    }
+
+    @Test
+    void hardeningMigrationKeepsCleanDataAndRenamesTheReference() {
+        String seed = "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
+                + "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);"
+                + "INSERT INTO transactions "
+                + "(id, plan_id, created_by, amount, description, type, start_date, external_id) "
+                + "VALUES (1, 1, 1, 5.00, 'T', 'DEBIT', '2026-01-01', 'bank-1');";
+
+        migrateScratchDatabase(
+                "15",
+                seed,
+                scratch -> assertThat(scratch.queryForObject("SELECT source_ref FROM transactions", String.class))
+                        .isEqualTo("bank-1"));
     }
 
     @Test
@@ -329,5 +468,15 @@ class MigrationsIT extends AbstractIntegrationTest {
                 .map(m -> m.group(1).replace('_', '.'))
                 .sorted(Comparator.comparingDouble(Double::parseDouble))
                 .collect(Collectors.toList());
+    }
+
+    private static void insertTransaction(JdbcTemplate jdbc, Plan plan, User owner, String amount, String sourceRef) {
+        jdbc.update(
+                "INSERT INTO transactions (plan_id, created_by, amount, description, type, start_date, source_ref) "
+                        + "VALUES (?, ?, ?::numeric, 'T', 'DEBIT', '2026-01-01', ?)",
+                plan.getId(),
+                owner.getId(),
+                amount,
+                sourceRef);
     }
 }

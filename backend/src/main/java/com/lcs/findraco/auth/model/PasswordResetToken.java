@@ -12,13 +12,11 @@ public class PasswordResetToken {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_password_reset_tokens_user"))
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false, unique = true, length = 64)
     private String tokenHash;
 
-    @Column(nullable = false)
     private Instant expiresAt;
 
     public PasswordResetToken() {}

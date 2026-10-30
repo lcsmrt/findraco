@@ -5,32 +5,21 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 
 @Entity
-@Table(
-        name = "recurrence_definition_participants",
-        uniqueConstraints =
-                @UniqueConstraint(
-                        name = "uk_recdef_participants_def_member",
-                        columnNames = {"recurrence_definition_id", "member_user_id"}))
+@Table(name = "recurrence_definition_participants")
 public class RecurrenceDefinitionParticipant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "recurrence_definition_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_recdef_participants_definition"))
+    @JoinColumn(name = "recurrence_definition_id")
     private RecurrenceDefinition definition;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(
-            name = "member_user_id",
-            nullable = false,
-            foreignKey = @ForeignKey(name = "fk_recdef_participants_member"))
+    @JoinColumn(name = "member_user_id")
     private User member;
 
-    @Column(name = "share_amount", nullable = false)
+    @Column(name = "share_amount")
     private BigDecimal shareAmount;
 
     protected RecurrenceDefinitionParticipant() {}

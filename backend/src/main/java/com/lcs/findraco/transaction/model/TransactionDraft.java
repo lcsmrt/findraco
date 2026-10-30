@@ -8,7 +8,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Everything a new transaction is made of, whichever path creates it (a form, a CSV row, a series).
  *
- * @param externalId the bank's id of an imported row.
+ * @param sourceRef the bank's id of an imported row.
  * @param series the series the transaction is an occurrence of.
  */
 public record TransactionDraft(
@@ -18,5 +18,5 @@ public record TransactionDraft(
         SplitMode splitMode,
         List<Share> participants,
         List<ItemDraft> items,
-        @Nullable String externalId,
+        @Nullable String sourceRef,
         @Nullable RecurrenceDefinition series) {}

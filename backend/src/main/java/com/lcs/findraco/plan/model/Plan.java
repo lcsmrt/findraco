@@ -11,14 +11,13 @@ public class Plan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
     private String name;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by", nullable = false, foreignKey = @ForeignKey(name = "fk_plans_created_by"))
+    @JoinColumn(name = "created_by")
     private User createdBy;
 
-    @Column(name = "is_default", nullable = false)
+    @Column(name = "is_default")
     private boolean isDefault;
 
     @Column(name = "deleted_at")

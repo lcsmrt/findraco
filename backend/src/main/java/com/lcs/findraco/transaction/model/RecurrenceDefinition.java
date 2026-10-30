@@ -17,11 +17,7 @@ import java.util.Set;
 import java.util.UUID;
 
 @Entity
-@Table(
-        name = "recurrence_definitions",
-        indexes = {
-            @Index(name = "idx_recdef_plan_id", columnList = "plan_id"),
-        })
+@Table(name = "recurrence_definitions")
 public class RecurrenceDefinition {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,32 +27,29 @@ public class RecurrenceDefinition {
     private long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_recdef_plan"))
+    @JoinColumn(name = "plan_id")
     private Plan plan;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "created_by", nullable = false, foreignKey = @ForeignKey(name = "fk_recdef_created_by"))
+    @JoinColumn(name = "created_by")
     private User createdBy;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_recdef_category"))
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "series_id", nullable = false, unique = true)
+    @Column(name = "series_id")
     private String seriesId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private TransactionType type;
 
-    @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(nullable = false)
     private String description;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "mode", nullable = false)
+    @Column(name = "mode")
     private RecurrenceMode mode;
 
     @Enumerated(EnumType.STRING)
@@ -68,14 +61,14 @@ public class RecurrenceDefinition {
     @Column(name = "first_parcel")
     private Integer firstParcel;
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date")
     private LocalDate startDate;
 
     @Column(name = "end_date")
     private LocalDate endDate;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "split_mode", nullable = false)
+    @Column(name = "split_mode")
     private SplitMode splitMode = SplitMode.EQUAL;
 
     @Column(name = "generated_through")

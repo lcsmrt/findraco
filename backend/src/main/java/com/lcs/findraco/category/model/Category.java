@@ -26,7 +26,7 @@ public class Category {
     private long version;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_categories_plans"))
+    @JoinColumn(name = "plan_id")
     private Plan plan;
 
     @Enumerated(EnumType.STRING)
@@ -36,11 +36,11 @@ public class Category {
     private BigDecimal spendingLimit;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_id", foreignKey = @ForeignKey(name = "fk_categories_parent"))
+    @JoinColumn(name = "parent_id")
     private Category parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "owner_user_id", foreignKey = @ForeignKey(name = "fk_categories_owner_user"))
+    @JoinColumn(name = "owner_user_id")
     private User owner;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)

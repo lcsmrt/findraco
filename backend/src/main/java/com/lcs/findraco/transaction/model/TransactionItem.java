@@ -12,20 +12,17 @@ public class TransactionItem {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "transaction_id", nullable = false, foreignKey = @ForeignKey(name = "fk_txn_items_transaction"))
+    @JoinColumn(name = "transaction_id")
     private Transaction transaction;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", foreignKey = @ForeignKey(name = "fk_txn_items_category"))
+    @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(nullable = false)
     private String description;
 
-    @Column(nullable = false)
     private BigDecimal amount;
 
-    @Column(nullable = false)
     private Integer quantity = 1;
 
     protected TransactionItem() {}

@@ -20,6 +20,7 @@ import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaCall;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaClasses;
+import com.tngtech.archunit.core.domain.JavaField;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaModifier;
 import com.tngtech.archunit.core.domain.JavaParameterizedType;
@@ -31,7 +32,10 @@ import com.tngtech.archunit.lang.ArchCondition;
 import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.Size;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -300,6 +304,14 @@ class ArchitectureTest {
                     + "ZoneId.systemDefault() and Clock.systemDefaultZone() depend on the machine zone");
 
     @ArchTest
+    static final ArchRule entitiesCarryNoSchemaAnnotations = classes()
+            .that()
+            .areAnnotatedWith(Entity.class)
+            .should(carryNoSchemaAnnotations())
+            .because("migrations are the only source of the schema: indexes, unique constraints, foreign keys, "
+                    + "nullability and lengths declared on an entity are dead under validate and drift");
+
+    @ArchTest
     static final ArchRule controllersReceiveNoEntities = methods()
             .that()
             .areDeclaredInClassesThat()
@@ -307,6 +319,36 @@ class ArchitectureTest {
             .should(takeNoEntityParameter())
             .because("a resolver supplies values (PlanContext, AuthenticatedUser); services load entities in their "
                     + "own transaction");
+
+    private static ArchCondition<JavaClass> carryNoSchemaAnnotations() {
+        return new ArchCondition<>("carry no @Index, @UniqueConstraint, @ForeignKey, nullable, unique or length") {
+            @Override
+            public void check(JavaClass entity, ConditionEvents events) {
+                entity.tryGetAnnotationOfType(Table.class).ifPresent(table -> {
+                    if (table.indexes().length > 0 || table.uniqueConstraints().length > 0) {
+                        events.add(SimpleConditionEvent.violated(
+                                entity, entity.getName() + " declares indexes or unique constraints on @Table"));
+                    }
+                });
+                for (JavaField field : entity.getFields()) {
+                    field.tryGetAnnotationOfType(Column.class).ifPresent(column -> {
+                        if (!column.nullable() || column.unique() || column.length() != DEFAULT_COLUMN_LENGTH) {
+                            events.add(SimpleConditionEvent.violated(
+                                    field, field.getFullName() + " declares nullable, unique or length on @Column"));
+                        }
+                    });
+                    field.tryGetAnnotationOfType(JoinColumn.class).ifPresent(join -> {
+                        if (!join.nullable() || !join.foreignKey().name().isEmpty()) {
+                            events.add(SimpleConditionEvent.violated(
+                                    field, field.getFullName() + " declares nullable or a foreign key on @JoinColumn"));
+                        }
+                    });
+                }
+            }
+        };
+    }
+
+    private static final int DEFAULT_COLUMN_LENGTH = 255;
 
     private static ArchCondition<JavaClass> onlyReachOtherFeaturesThrough(Set<String> layers) {
         return new ArchCondition<>(

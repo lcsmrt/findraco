@@ -13,21 +13,17 @@ public class UserSession {
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_user_sessions_user"))
+    @JoinColumn(name = "user_id")
     private User user;
 
-    @Column(nullable = false)
     private UUID familyId;
 
-    @Column(nullable = false, unique = true, length = 64)
     private String tokenHash;
 
-    @Column(nullable = false)
     private Instant expiresAt;
 
     private Instant replacedAt;
 
-    @Column(nullable = false)
     private Instant createdAt;
 
     public UserSession() {}

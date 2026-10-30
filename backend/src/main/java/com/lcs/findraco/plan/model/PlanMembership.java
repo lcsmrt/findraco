@@ -4,27 +4,21 @@ import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
 
 @Entity
-@Table(
-        name = "plan_memberships",
-        uniqueConstraints =
-                @UniqueConstraint(
-                        name = "uk_plan_memberships_plan_user",
-                        columnNames = {"plan_id", "user_id"}))
+@Table(name = "plan_memberships")
 public class PlanMembership {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "plan_id", nullable = false, foreignKey = @ForeignKey(name = "fk_plan_memberships_plan"))
+    @JoinColumn(name = "plan_id")
     private Plan plan;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false, foreignKey = @ForeignKey(name = "fk_plan_memberships_user"))
+    @JoinColumn(name = "user_id")
     private User user;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     private PlanRole role;
 
     public PlanMembership() {}
