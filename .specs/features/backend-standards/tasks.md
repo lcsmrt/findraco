@@ -1343,6 +1343,18 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 ---
 
+**Batch 11 deviations (T62-T69, unattended run)**
+
+- T62: V18 has the `recurrence_exceptions` table (FK `ON DELETE CASCADE`, PK `(definition_id, exception_date)`) and `plans.series_generated_until`. Deleting "this one" records the pivot date (the delete also had to learn it, since AC 1 is about the delete). The regenerator keeps a map by date; a duplicate date among the existing rows goes to `toDelete`. Installment labels stay position-derived (parcel k of N), the exceptions only drop slots.
+- T63: `app.series.horizon-months` / `app.series.top-up-cron` are `SeriesProperties`; the generator and the regenerator take it (their constants are gone) and `horizonFrom(today)` is the one place the horizon is computed. `OpenEndedSeriesTopUpService` keeps its name (it is the transactional worker) but is plain `@Transactional` now: `topUp(planId, today)` and `extendTo(planId, through)`. Both stamp each due definition's `generatedThrough` and the plan's `series_generated_until` with the requested date, also when nothing was due; this fixes the due query (before, the last occurrence was the mark, so every definition was "due" and locked on every read). `-` as the cron turns the schedule and the startup run off; the test profile sets it, so no job fires in a test. The job IT builds `SeriesTopUpJob` by hand with a fixed `Clock` (the context clock is the system one). Creating or re-opening an open-ended series lowers the plan's mark to the horizon, so a read past it extends the new series too. A new plan has a null mark until the first job run or first read: that first read writes once.
+- T64: `SeriesHorizon.ensureCovered(planId, end)` is called by `DashboardService` (summary, trend) and `CategorySpendingService.getSpending` before the read, which now runs in a `TransactionTemplate` (read-only) instead of `@Transactional`, because a Spring proxy would open the read transaction before the body. The extension goes to the period end (not only to the horizon) but at most 9 years ahead of today, so a request cannot ask for unbounded rows or hit the 120-occurrence cap of a pass. `DashboardPartitionIT` expected the old "always the horizon" mark; it now expects the period end. T63 and T64 were committed in that order but T63 alone leaves the dashboard reading inside a read-only transaction that writes (the T64 commit fixes it).
+- T65: nothing changed in the frontend (the delete call already sent `scope`); a missing scope is `400 malformed-request`. The "(k/N) keeps N" rule already held for the rows left behind, an IT now pins it. The snapshot changed (the parameter is required).
+- T66: only removal and plan deletion needed `ensurePersonalPlan`; leaving needs nothing because it already refuses the last plan (409 `last-plan`, IT kept). The new personal plan is the sign-up one ("My plan", default, OWNER).
+- T67: new problem `invitation-email-required` (422, with frontend slug and copy). Preview and accept of a deleted plan's invitation answer `invitation-not-found` (404).
+- T68: V19 checks `transactions` and `recurrence_definitions`; the abort message is `V19 precondition failed: N rows use the PERCENT split mode`. The problem `split-mode-not-supported` became unreachable and was removed (backend, frontend slug and copy). A request with `"PERCENT"` is now `400 malformed-request` (an unknown enum value). The only frontend use of the value was a test fixture (now `EXACT`).
+- T69: `PageRequests.of` appends `id`; `TransactionService` used `PageRequest.of` directly for the plain sorts and now goes through `PageRequests.of`; the two specification-owned orderings add `id` to their own `orderBy`. `LikePatterns.contains(term)` (lower case, escaped, wrapped) plus `ESCAPE` for `CriteriaBuilder.like`; both specifications use it. "Checked, reverted" was not done for the paging IT.
+- Frontend changed (a problem slug and copy, a type): beta bumped once at batch end.
+
 **Batch 10 deviations (T56-T61, unattended run)**
 
 - T56: Commons CSV 1.14.1; no `BOMInputStream`: `StrictUtf8` decodes the bytes with a `REPORT` decoder (line of the first bad byte from its position) and drops a leading U+FEFF. The registry takes `byte[]` (decode, read the header with Commons CSV, pick the parser), so the BOM and encoding cases are tested at registry level (`StatementParserRegistryTest`, 16 tests covering the 12 of AC 9). The header is now checked (it used to be skipped): `date,amount,id,description` or the Portuguese names, case and accent blind. Card bill = a header with `title` and `amount` and no `id`. Rules kept: `dd/MM/yyyy` (now STRICT, so 31/02 is an error instead of clamping), signed amount with a dot (now at most 2 decimals, no exponent), blank id = null ref. Rules tightened: a record must have exactly 4 columns (an unquoted comma in the description is now `column-count`; it used to be swallowed by `split(",", 4)`), a blank description is `blank`. Parser error codes: `date-invalid`, `amount-invalid`, `amount-zero`, `column-count`, `malformed` (bad quoting, the rest of the file is unreadable), `too-long`, `blank`. The parser collects maxErrors + 1 errors, so the service can tell the list was cut. `ParseResult` has the two components of the design.
@@ -1687,8 +1699,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Generator and regenerator unit tests: excepted date never produced; edit after a deleted occurrence keeps it gone
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Generator and regenerator unit tests: excepted date never produced; edit after a deleted occurrence keeps it gone
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick
@@ -1708,8 +1720,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT with fixed clock: job tops up to today + 12 months and advances the watermark
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT with fixed clock: job tops up to today + 12 months and advances the watermark
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1729,8 +1741,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: period beyond the watermark extends; covered period issues no write statement
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT: period beyond the watermark extends; covered period issues no write statement
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1750,9 +1762,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: missing scope → 400; labels keep N
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] IT: missing scope → 400; labels keep N
+- [x] Frontend beta bumped
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
@@ -1774,8 +1786,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] ITs: removal, plan deletion and leave
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] ITs: removal, plan deletion and leave
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1795,8 +1807,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT per rule
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] IT per rule
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1816,9 +1828,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `MigrationsIT` green; a stored `PERCENT` row makes V19 abort
-- [ ] Snapshot regenerated
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `MigrationsIT` green; a stored `PERCENT` row makes V19 abort
+- [x] Snapshot regenerated
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1838,8 +1850,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] IT: equal sort keys page deterministically; searching `%` matches literally
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] IT: equal sort keys page deterministically; searching `%` matches literally
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
