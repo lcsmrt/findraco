@@ -1343,6 +1343,15 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 ---
 
+**Batch 10 deviations (T56-T61, unattended run)**
+
+- T56: Commons CSV 1.14.1; no `BOMInputStream`: `StrictUtf8` decodes the bytes with a `REPORT` decoder (line of the first bad byte from its position) and drops a leading U+FEFF. The registry takes `byte[]` (decode, read the header with Commons CSV, pick the parser), so the BOM and encoding cases are tested at registry level (`StatementParserRegistryTest`, 16 tests covering the 12 of AC 9). The header is now checked (it used to be skipped): `date,amount,id,description` or the Portuguese names, case and accent blind. Card bill = a header with `title` and `amount` and no `id`. Rules kept: `dd/MM/yyyy` (now STRICT, so 31/02 is an error instead of clamping), signed amount with a dot (now at most 2 decimals, no exponent), blank id = null ref. Rules tightened: a record must have exactly 4 columns (an unquoted comma in the description is now `column-count`; it used to be swallowed by `split(",", 4)`), a blank description is `blank`. Parser error codes: `date-invalid`, `amount-invalid`, `amount-zero`, `column-count`, `malformed` (bad quoting, the rest of the file is unreadable), `too-long`, `blank`. The parser collects maxErrors + 1 errors, so the service can tell the list was cut. `ParseResult` has the two components of the design.
+- T57: new problem slugs `csv-unknown-format`, `csv-format-not-supported`, `csv-encoding-invalid`, `csv-too-many-rows`, `csv-too-large`; the rows-invalid problem keeps the existing slug `import-line-invalid` (its copy already existed). `DomainException` got an optional `errors` list that `Problems.of` writes as the `errors` extension. Order: size (`MultipartFile.getSize`) -> rate limit -> role -> parse. `TransactionImportService` is new (import left `TransactionService`, which lost its rate limiter and import imports); `TransactionImportResponse` became `ImportResultResponse`. The description keeps the first 255 characters of the bank's text (column limit); `sourceText` holds up to 512 (longer is `too-long`). Multipart limits are 2 MB, not 1 MB: with 1 MB the container would answer a bare 413 before the service could answer the typed 422 `csv-too-large` that AC 6 asks for; `app.import.max-bytes` is the real bound. `TransactionDraft` has a 9-component canonical constructor plus the old 8-argument one, so the other callers did not change. `Transaction.sourceText` is `updatable = false` with a getter only (`TransactionTest.theBanksTextSurvivesEveryEdit`). The existing CSV fixture with an unquoted comma was quoted.
+- T58: no dialog: the import stays a button + toast. The success toast says the counts (`importResultMessage`); a rejected file shows the type's copy plus up to 10 `Line N: ...` lines and "...and N more" in the toast description. Field/line errors share the `errors` array; `problemFieldErrors` ignores line errors. Commit subject is lower-case `csv` (the hook).
+- T59-T60: the period params stay `startDate`/`endDate` (the endpoint already took them; renaming would break the contract for nothing). `overLimit` was replaced by `status` (`OK|WARNING|OVER`, null without a limit or for a former member's entry); `limit` is now the limit scaled to the period for rows and members. `CategoryUsage` (record) and `UsageStatus` live in `category.model` so the response and the calculator can share them; `CategoryUsageCalculator` is a static pure class (`monthsTouched` clamps a reversed range to 1). Warning rule: `spent >= 0.8 * limit`, over: `spent > limit`, a zero limit with zero spend is ok (as the frontend did). The unreachable member-filter branch was removed from the service, the assembler, the repository query and two assembler tests. `CategorySpendingIT` used a "yesterday to tomorrow" period that scaled the limits on the first and last day of a month; it now asks for the whole current month.
+- T61: `countMonths` moved to `utils/periodMonths.ts` (the navigator and the trend still need it; it is period maths, not limit maths). `usageOf` now reads the API's `remaining`/`percentUsed`/`status`; `WARNING_RATIO` is gone from the frontend. The service hook test for the import lost its toast and refresh assertions; the page flow keeps POST + toast + list refresh. Fixtures in tests and stories state the API's verdict explicitly (`judged(...)`); none computes one.
+- Gate: `tsc --noEmit -p .` does not catch what `tsc -b` (the build) does; the batch-end build found one narrowing error, fixed in its own commit.
+
 **Batch 9 deviations (T48–T55, unattended run)**
 
 - T48: Bucket4j is 8.21.0 (latest 8.x on Central, not 8.19.0). `RateLimitProperties` has one `RateLimitRule` component per limit (`loginIp`, `loginEmail`, ...) instead of a map, so a missing key fails startup by plain `@NotNull @Valid`; `ConfigurationPropertiesTest` covers a zero capacity and a missing rule. Every key (IP too, not only e-mail) is trimmed, lower-cased and SHA-256 hashed. The buckets use a Bucket4j `TimeMeter` over the injected `Clock`; the Caffeine `expireAfterAccess` runs on Caffeine's own ticker (real time), which only affects when idle keys are forgotten. A refusal logs `WARN Rate limit LOGIN_EMAIL exceeded; retry in Ns` with no key at all (the IP is not logged either; the request log line already has the caller). `GlobalExceptionHandler` has a `RateLimitedException` handler that adds `Retry-After`. The test profile has 100000 for every rule.
@@ -1543,8 +1552,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] The 12 unit cases of AC 9 pass
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] The 12 unit cases of AC 9 pass
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick
@@ -1564,9 +1573,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `CsvImportIT`: one bad line imports nothing and lists it; re-import skips duplicates; size and row bound answer 422
-- [ ] Snapshot regenerated
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `CsvImportIT`: one bad line imports nothing and lists it; re-import skips duplicates; size and row bound answer 422
+- [x] Snapshot regenerated
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1586,9 +1595,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Flow test: error list shown; success counts shown
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Flow test: error list shown; success counts shown
+- [x] Frontend beta bumped
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
@@ -1610,8 +1619,8 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Unit tests incl. 15 Oct–10 Nov → limit 200, status boundaries
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] Unit tests incl. 15 Oct–10 Nov → limit 200, status boundaries
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: unit
 **Gate**: quick
@@ -1631,9 +1640,9 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] `CategorySpendingIT` covers a multi-month period
-- [ ] Snapshot regenerated
-- [ ] Gate passes: Quick (see Gate Check Commands)
+- [x] `CategorySpendingIT` covers a multi-month period
+- [x] Snapshot regenerated
+- [x] Gate passes: Quick (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: quick
@@ -1653,10 +1662,10 @@ T73 → T74 → T75 → T76 → T77 → T78
 
 **Done when**:
 
-- [ ] Overview flow tests green on server values
-- [ ] `scaleLimits.ts` gone
-- [ ] Frontend beta bumped
-- [ ] Gate passes: Build (see Gate Check Commands)
+- [x] Overview flow tests green on server values
+- [x] `scaleLimits.ts` gone
+- [x] Frontend beta bumped
+- [x] Gate passes: Build (see Gate Check Commands)
 
 **Tests**: integration
 **Gate**: build
