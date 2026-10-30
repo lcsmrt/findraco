@@ -50,6 +50,17 @@ public class PlanService {
         return createPlanInternal("My plan", owner, true);
     }
 
+    /**
+     * Every user keeps at least one plan: when losing a membership left the user with none, a personal
+     * plan is provisioned as at sign-up. Does nothing for a user who still has a live plan.
+     */
+    @Transactional
+    public void ensurePersonalPlan(long userId) {
+        if (membershipRepository.findAllByUserId(userId).isEmpty()) {
+            provisionDefaultPlan(entityManager.getReference(User.class, userId));
+        }
+    }
+
     private PlanMembership createPlanInternal(String name, User owner, boolean isDefault) {
         Plan plan = new Plan();
         plan.setName(name);
@@ -194,6 +205,10 @@ public class PlanService {
         Plan plan = requesterMembership.getPlan();
         plan.setDeletedAt(clock.instant());
         planRepository.save(plan);
+
+        membershipRepository.findAllByPlan(plan).stream()
+                .map(membership -> membership.getUser().getId())
+                .forEach(this::ensurePersonalPlan);
     }
 
     @Transactional
@@ -211,6 +226,7 @@ public class PlanService {
         }
 
         membershipRepository.delete(targetMembership);
+        ensurePersonalPlan(targetUserId);
     }
 
     @Transactional
