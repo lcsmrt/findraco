@@ -84,6 +84,8 @@ export type CreateTransactionRequest = {
     amount: number;
     description: string;
     categoryId?: number;
+    /** Installments only; an edit sends back the stored count, or the PUT clears it. */
+    parcelsNumber?: number;
     startDate: string;
     endDate?: string;
     splitMode?: SplitMode;

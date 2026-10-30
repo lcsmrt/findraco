@@ -281,6 +281,22 @@ describe("toPayload — plain transaction", () => {
     });
   });
 
+  it("sends back the parcel count and end date of the transaction being edited", () => {
+    const stored = { parcelsNumber: 3, endDate: "2026-07-31T00:00:00.000Z" };
+
+    const body = toPayload(validValues, false, undefined, stored);
+
+    expect(body.parcelsNumber).toBe(3);
+    expect(body.endDate).toBe("2026-07-31");
+  });
+
+  it("sends no parcel count or end date when nothing is being edited", () => {
+    const body = toPayload(validValues, false, undefined);
+
+    expect(body.parcelsNumber).toBeUndefined();
+    expect(body.endDate).toBeUndefined();
+  });
+
   it("sends no attribution for Me while the current user is unknown", () => {
     const body = toPayload(validValues, true, undefined);
 
@@ -616,6 +632,7 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
     amount: 300,
     description: "Dinner",
     category: { id: 3, version: 0, type: "CREDIT", description: "Food", spendingLimit: null },
+    parcelsNumber: 3,
     startDate: "2026-05-10T00:00:00.000Z",
     endDate: "2026-05-10T00:00:00.000Z",
     splitMode: "EQUAL",
@@ -640,6 +657,9 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
     amount: 300,
     categoryId: 3,
     startDate: "2026-05-10",
+    // The PUT replaces these too: leaving them out would clear an installment's parcel count.
+    parcelsNumber: 3,
+    endDate: "2026-05-10",
     splitMode: "EQUAL",
     participants: [
       { memberId: 1, shareAmount: undefined },
@@ -671,6 +691,14 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
 
   it("sends back the version it was read at, so a concurrent change is refused (BST-06 AC 9)", () => {
     expect(toInlineSavePayload(shared, { description: "Lunch" }).body.version).toBe(4);
+  });
+
+  it("sends no end date and no parcel count for a transaction that has none", () => {
+    const plain = { ...shared, parcelsNumber: undefined, endDate: null } as unknown as Transaction;
+    const { body } = toInlineSavePayload(plain, {});
+
+    expect(body.parcelsNumber).toBeUndefined();
+    expect(body.endDate).toBeUndefined();
   });
 
   it("sends no category for an uncategorised transaction", () => {

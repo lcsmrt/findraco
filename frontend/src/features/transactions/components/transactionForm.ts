@@ -364,10 +364,22 @@ function attributionToPayload(
   };
 }
 
+/** What the PUT would clear if an edit left it out: the form has no field for either. */
+type StoredPeriod = Pick<Transaction, "parcelsNumber" | "endDate">;
+
+function datePart(isoDate: string | null | undefined): string | undefined {
+  return isoDate ? isoDate.split("T")[0] : undefined;
+}
+
+/**
+ * @param stored The transaction being edited. The API replaces the whole transaction and the form
+ *   has no field for its parcel count or end date, so they travel back as stored.
+ */
 export function toPayload(
   values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
+  stored?: StoredPeriod,
 ): Omit<UpdateTransactionRequest["body"], "version"> {
   const { participants, splitMode } = attributionToPayload(
     values,
@@ -381,6 +393,8 @@ export function toPayload(
     amount: values.amount,
     categoryId: values.category?.id,
     startDate: format(values.date, "yyyy-MM-dd"),
+    parcelsNumber: stored?.parcelsNumber ?? undefined,
+    endDate: datePart(stored?.endDate),
     splitMode,
     participants,
     items: values.items.map((item) => ({
@@ -393,8 +407,9 @@ export function toPayload(
 
 /**
  * The update a table cell edit sends. The API replaces the whole transaction, so every field the cell
- * did not change is sent back as the transaction has it (the start date as its `yyyy-MM-dd` part),
- * its items included: the API requires them, and an empty list would remove them.
+ * did not change is sent back as the transaction has it (dates as their `yyyy-MM-dd` part), its
+ * items included (the API requires them, and an empty list would remove them) and its parcel count
+ * and end date (an installment would lose them).
  */
 export function toInlineSavePayload(
   transaction: Transaction,
@@ -408,6 +423,8 @@ export function toInlineSavePayload(
       amount: change.amount ?? transaction.amount,
       categoryId: change.categoryId ?? transaction.category?.id,
       startDate: change.startDate ?? transaction.startDate.split("T")[0],
+      parcelsNumber: transaction.parcelsNumber ?? undefined,
+      endDate: datePart(transaction.endDate),
       splitMode: change.splitMode ?? transaction.splitMode,
       participants:
         change.participants ??

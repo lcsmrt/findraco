@@ -86,7 +86,12 @@ export function useTransactionFormSubmit({
       return;
     }
 
-    const body = toPayload(values, showAttribution, currentUserId);
+    const body = toPayload(
+      values,
+      showAttribution,
+      currentUserId,
+      mode === "edit" ? transaction : undefined,
+    );
     if (mode === "edit" && transaction) {
       updateTransaction.mutate({
         params: { id: transaction.id },
