@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MvcResult;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -30,21 +31,44 @@ class TransactionPagingIT extends AbstractIntegrationTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
     @Test
     void rowsWithEqualSortKeysAppearOnExactlyOnePage() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        for (int i = 0; i < 7; i++) {
-            aTransaction(plan, owner, "Same " + i);
+        List<Long> created = new ArrayList<>();
+        for (int i = 0; i < 25; i++) {
+            created.add(aTransaction(plan, owner, "Same"));
+        }
+        // Rewriting the rows from the last to the first puts the table's physical order against the id order, so
+        // only an explicit tiebreaker keeps the pages apart.
+        for (Long id : created.reversed()) {
+            jdbcTemplate.update("UPDATE transactions SET description = description WHERE id = ?", id);
         }
 
         for (String sortBy : List.of("amount", "startDate", "description", "category", "attributedTo")) {
-            List<Long> seen = new ArrayList<>();
-            for (int page = 0; page < 4; page++) {
-                seen.addAll(idsOf(list(plan, owner, "sortBy", sortBy, "size", "2", "page", String.valueOf(page))));
+            for (String direction : List.of("asc", "desc")) {
+                List<Long> seen = new ArrayList<>();
+                for (int page = 0; page < 7; page++) {
+                    seen.addAll(idsOf(list(
+                            plan,
+                            owner,
+                            "sortBy",
+                            sortBy,
+                            "sortDirection",
+                            direction,
+                            "size",
+                            "4",
+                            "page",
+                            String.valueOf(page))));
+                }
+                assertThat(seen).as("sorted by " + sortBy + " " + direction).hasSize(25);
+                assertThat(new HashSet<>(seen))
+                        .as("sorted by " + sortBy + " " + direction)
+                        .hasSize(25);
             }
-            assertThat(seen).as("sorted by " + sortBy).hasSize(7).doesNotHaveDuplicates();
-            assertThat(new HashSet<>(seen)).hasSize(7);
         }
     }
 
@@ -63,11 +87,12 @@ class TransactionPagingIT extends AbstractIntegrationTest {
         assertThat(descriptionsOf(list(plan, owner, "description", "e_c"))).containsExactly("snake_case");
     }
 
-    private void aTransaction(Plan plan, User owner, String description) {
+    private long aTransaction(Plan plan, User owner, String description) {
         TransactionDetails details = new TransactionDetails(
                 null, TransactionType.DEBIT, new BigDecimal("10.00"), description, today(), null, null);
-        fixtures.aTransaction(new TransactionDraft(
-                plan, owner, details, SplitMode.EQUAL, List.of(new Share(owner, null)), List.of(), null, null));
+        return fixtures.aTransaction(new TransactionDraft(
+                        plan, owner, details, SplitMode.EQUAL, List.of(new Share(owner, null)), List.of(), null, null))
+                .getId();
     }
 
     private JsonNode list(Plan plan, User owner, String... params) throws Exception {
