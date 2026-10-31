@@ -3,10 +3,7 @@ import type {
   TransactionType,
   PagedTransactionsFilter,
 } from "@/api/dtos";
-import { format, parseISO } from "date-fns";
-import type { DateRange } from "react-day-picker";
 
-const ISO = "yyyy-MM-dd";
 export const TYPE_ALL = "ALL" as const;
 
 // StandardCombobox requires an `id`; PlanMember keys on `userId`, so members are adapted to this shape.
@@ -21,7 +18,6 @@ export type FilterDraft = {
   /** Kept apart from `member`, which is null until the plan members have loaded. */
   memberId: number | null;
   member: MemberOption | null;
-  dateRange: DateRange | undefined;
   /** Reais; `null` means no bound. */
   amountMin: number | null;
   amountMax: number | null;
@@ -41,15 +37,6 @@ export function toDraft(applied: AppliedFilters): FilterDraft {
     category: categoryForDisplay,
     memberId: filter.memberId ?? null,
     member: memberForDisplay,
-    dateRange:
-      filter.startDateFrom || filter.startDateTo
-        ? {
-            from: filter.startDateFrom
-              ? parseISO(filter.startDateFrom)
-              : undefined,
-            to: filter.startDateTo ? parseISO(filter.startDateTo) : undefined,
-          }
-        : undefined,
     amountMin: filter.amountMin ?? null,
     amountMax: filter.amountMax ?? null,
   };
@@ -74,9 +61,6 @@ export function fromDraft(draft: FilterDraft): AppliedFilters {
   if (draft.type !== TYPE_ALL) filter.type = draft.type;
   if (draft.categoryId != null) filter.categoryId = draft.categoryId;
   if (draft.memberId != null) filter.memberId = draft.memberId;
-  if (draft.dateRange?.from)
-    filter.startDateFrom = format(draft.dateRange.from, ISO);
-  if (draft.dateRange?.to) filter.startDateTo = format(draft.dateRange.to, ISO);
   if (draft.amountMin != null) filter.amountMin = draft.amountMin;
   if (draft.amountMax != null) filter.amountMax = draft.amountMax;
   return {

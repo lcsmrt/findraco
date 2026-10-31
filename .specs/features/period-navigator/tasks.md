@@ -148,9 +148,9 @@ T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Unit: `activeFilterCount` and `transactionFilterDraft` date cases removed with the behaviour they covered and replaced by one case each asserting the period is not counted / not drafted
-- [ ] The popover story no longer shows a Date field
-- [ ] Gate check passes: Quick
+- [x] Unit: `activeFilterCount` and `transactionFilterDraft` date cases removed with the behaviour they covered and replaced by one case each asserting the period is not counted / not drafted
+- [x] The popover story no longer shows a Date field
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick

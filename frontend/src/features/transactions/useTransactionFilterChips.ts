@@ -9,7 +9,6 @@ import {
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { formatMoney } from "@/utils/money";
-import { formatDate } from "@/utils/string/formatters";
 import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { useCallback, useEffect, useMemo } from "react";
@@ -103,21 +102,6 @@ export function useTransactionFilterChips() {
         key: "member",
         label: member.name,
         onRemove: () => removeFilters(["memberId"]),
-      });
-    }
-    if (filter.startDateFrom || filter.startDateTo) {
-      const from = filter.startDateFrom
-        ? formatDate(filter.startDateFrom, "dd/MM/yyyy")
-        : null;
-      const to = filter.startDateTo
-        ? formatDate(filter.startDateTo, "dd/MM/yyyy")
-        : null;
-      const label =
-        from && to ? `${from} – ${to}` : from ? `From ${from}` : `Until ${to!}`;
-      result.push({
-        key: "date",
-        label,
-        onRemove: () => removeFilters(["startDateFrom", "startDateTo"]),
       });
     }
     if (filter.amountMin != null || filter.amountMax != null) {
