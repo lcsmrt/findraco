@@ -25,7 +25,7 @@ jobs:
       deployable: ${{ steps.diff.outputs.deployable }}
       base: ${{ steps.diff.outputs.base }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
@@ -83,11 +83,11 @@ jobs:
       HUSKY: "0"
     steps:
       # Full history: the affected test run diffs against the base commit.
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
           # setup-node@v5 caches the package manager named in package.json by default, which fails
@@ -102,7 +102,7 @@ jobs:
         id: pnpm-store
         run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: ${{ steps.pnpm-store.outputs.path }}
           key: pnpm-store-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
@@ -125,7 +125,7 @@ jobs:
         working-directory: frontend
         run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         id: playwright-cache
         with:
           path: ~/.cache/ms-playwright
@@ -167,9 +167,9 @@ jobs:
     if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "25"
@@ -201,7 +201,7 @@ jobs:
       STACK_ID: "74"
       ENDPOINT_ID: "3"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       # Portainer builds whatever main is when called, not this commit. If main
       # moved on, the newer commit's pipeline tests and deploys it instead.
