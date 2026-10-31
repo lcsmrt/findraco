@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.lcs.findraco.plan.controller.PlanRoutes;
@@ -106,6 +107,20 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
                 plan, owner, PlanRole.VIEWER, "EMAIL", invitee.getEmail().toUpperCase(java.util.Locale.ROOT), null);
 
         acceptAs(token, invitee).andExpect(status().isCreated());
+    }
+
+    @Test
+    void anOwnerRoleInvitationIsRefusedAsANarrowedEnum() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        mockMvc.perform(post(PlanRoutes.PLAN_INVITATION, plan.getId())
+                        .with(testAuthHelper.asUser(owner))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"role\":\"OWNER\",\"type\":\"LINK\"}"))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
+                .andExpect(jsonPath("$.errors[0].field").value("role"))
+                .andExpect(jsonPath("$.errors[0].code").value("NarrowedEnum"));
     }
 
     @Test
