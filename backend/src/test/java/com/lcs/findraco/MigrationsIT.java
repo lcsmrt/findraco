@@ -403,6 +403,34 @@ class MigrationsIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void lowercasingEmailsAbortsOnACollisionAndRewritesOtherwise() {
+        String users = "INSERT INTO users (id, email, name, password) VALUES (1, 'Guest@X.com', 'A', 'x'), "
+                + "(2, 'other@x.com', 'B', 'x');";
+        String plan = "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);";
+        String invitation = "INSERT INTO plan_invitations (plan_id, role, type, email, token, status, invited_by) "
+                + "VALUES (1, 'VIEWER', 'EMAIL', '%s', '%s', 'PENDING', 1);";
+
+        assertThatThrownBy(() -> migrateScratchDatabase(
+                        "19",
+                        users + "INSERT INTO users (id, email, name, password) VALUES (3, 'guest@x.com ', 'C', 'x')",
+                        jdbc -> {}))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V20 precondition failed: 1 user e-mails collide");
+        assertThatThrownBy(() -> migrateScratchDatabase(
+                        "19",
+                        users + plan + invitation.formatted("A@x.com", "t1") + invitation.formatted("a@X.com", "t2"),
+                        jdbc -> {}))
+                .isInstanceOf(FlywayException.class)
+                .hasMessageContaining("V20 precondition failed: 1 pending invitations collide");
+        migrateScratchDatabase("19", users + plan + invitation.formatted("A@X.com", "t1"), scratch -> {
+            assertThat(scratch.queryForList("SELECT email FROM users ORDER BY id", String.class))
+                    .containsExactly("guest@x.com", "other@x.com");
+            assertThat(scratch.queryForObject("SELECT email FROM plan_invitations", String.class))
+                    .isEqualTo("a@x.com");
+        });
+    }
+
+    @Test
     void thePercentSplitModeIsRejectedByTheDatabase() {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

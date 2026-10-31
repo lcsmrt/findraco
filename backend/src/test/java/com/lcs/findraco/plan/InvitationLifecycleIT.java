@@ -97,6 +97,18 @@ class InvitationLifecycleIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void anEmailInvitationMatchesTheInviteeWhateverTheCase() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User invitee = fixtures.aUser("guest-" + System.nanoTime() + "@case.com");
+
+        String token = createInvitation(
+                plan, owner, PlanRole.VIEWER, "EMAIL", invitee.getEmail().toUpperCase(java.util.Locale.ROOT), null);
+
+        acceptAs(token, invitee).andExpect(status().isCreated());
+    }
+
+    @Test
     void acceptingAnExpiredLinkInvitationIsRejectedWith409() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

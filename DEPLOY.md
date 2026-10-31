@@ -38,6 +38,10 @@ Portainer/VPS steps in addition to the normal `git push` → GitHub Actions rede
   generate one with `openssl rand -base64 48` and set it in the Portainer stack env. Either way the
   access tokens issued before the deploy stop working once (they last 15 minutes) and the browser
   renews them from its session cookie without asking the user to sign in again.
+- [ ] Before deploying the case-insensitive e-mail slice (V20, e-mails stored trimmed and lower-cased):
+  run `backend/scripts/precheck-v20.sql` against production (see its header for the command). Both
+  queries must return zero rows; a row is two accounts, or two pending invitations to the same plan,
+  that would merge. Resolve them first, or V20 aborts and the deploy fails at start-up.
 
 ## Post-deploy
 

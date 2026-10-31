@@ -12,6 +12,7 @@ import com.lcs.findraco.plan.request.CreateInvitationRequest;
 import com.lcs.findraco.plan.response.AcceptInvitationResponse;
 import com.lcs.findraco.plan.response.InvitationPreviewResponse;
 import com.lcs.findraco.plan.response.InvitationResponse;
+import com.lcs.findraco.shared.security.EmailNormalizer;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
@@ -59,7 +60,7 @@ public class PlanInvitationService {
         invitation.setPlan(planRepository.getReferenceById(ctx.planId()));
         invitation.setRole(request.role().role());
         invitation.setType(type);
-        invitation.setEmail(type == InvitationType.EMAIL ? request.email() : null);
+        invitation.setEmail(type == InvitationType.EMAIL ? EmailNormalizer.normalize(request.email()) : null);
         invitation.setToken(UUID.randomUUID().toString());
         invitation.setStatus(InvitationStatus.PENDING);
         invitation.setInvitedBy(entityManager.getReference(User.class, ctx.userId()));
@@ -88,7 +89,7 @@ public class PlanInvitationService {
         User actor = entityManager.getReference(User.class, userId);
 
         if (invitation.getType() == InvitationType.EMAIL
-                && !invitation.getEmail().equalsIgnoreCase(actor.getEmail())) {
+                && !invitation.getEmail().equals(EmailNormalizer.normalize(actor.getEmail()))) {
             throw new PlanExceptions.InvitationEmailMismatchException();
         }
 

@@ -106,6 +106,18 @@ class AuthenticationIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void emailIsCaseInsensitiveOnRegisterAndLogin() throws Exception {
+        register("Taken@Case.com");
+
+        mockMvc.perform(post(UserRoutes.USER)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(
+                                Map.of("name", "Other", "email", "taken@case.com", "password", "password123"))))
+                .andExpect(problem(HttpStatus.CONFLICT, "email-taken"));
+        assertThat(login("TAKEN@case.com", "password123")).isNotBlank();
+    }
+
+    @Test
     void registerWithoutTokenRequiresNoAuthentication() throws Exception {
         // POST /users is permitAll in SecurityConfig: registration itself must not require a
         // bearer token, and the response carries the new user, not a token (login mints that).

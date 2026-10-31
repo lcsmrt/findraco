@@ -7,6 +7,7 @@ import com.lcs.findraco.auth.request.ResetPasswordRequest;
 import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimit;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
+import com.lcs.findraco.shared.security.EmailNormalizer;
 import com.lcs.findraco.user.service.UserService;
 import java.time.Clock;
 import java.time.Duration;
@@ -53,7 +54,7 @@ public class PasswordResetService {
     @Transactional
     public void requestReset(String email, String ip) {
         rateLimiter.consume(RateLimit.FORGOT_IP, ip);
-        rateLimiter.consume(RateLimit.FORGOT_EMAIL, email);
+        rateLimiter.consume(RateLimit.FORGOT_EMAIL, EmailNormalizer.normalize(email));
         userService.findByEmail(email).ifPresent(user -> {
             tokenRepository.deleteAllByUser(user);
 

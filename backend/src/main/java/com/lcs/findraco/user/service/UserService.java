@@ -4,6 +4,7 @@ import com.lcs.findraco.plan.service.PlanService;
 import com.lcs.findraco.shared.error.MalformedRequestException;
 import com.lcs.findraco.shared.ratelimit.RateLimit;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
+import com.lcs.findraco.shared.security.EmailNormalizer;
 import com.lcs.findraco.shared.security.PasswordNormalizer;
 import com.lcs.findraco.user.exception.UserExceptions;
 import com.lcs.findraco.user.model.TimeZoneMode;
@@ -40,14 +41,15 @@ public class UserService {
     public UserResponse create(CreateUserRequest dto, String ip) {
         rateLimiter.consume(RateLimit.REGISTER_IP, ip);
 
-        Optional<User> existingUser = userRepository.findByEmail(dto.email());
+        String email = EmailNormalizer.normalize(dto.email());
+        Optional<User> existingUser = userRepository.findByEmail(email);
         if (existingUser.isPresent()) {
             throw new UserExceptions.EmailAlreadyExistsException();
         }
 
         User user = new User();
         user.setName(dto.name());
-        user.setEmail(dto.email());
+        user.setEmail(email);
         user.setPassword(encoder.encode(PasswordNormalizer.normalize(dto.password())));
 
         User savedUser = userRepository.save(user);
@@ -57,7 +59,7 @@ public class UserService {
 
     @Transactional(readOnly = true)
     public Optional<User> findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(EmailNormalizer.normalize(email));
     }
 
     @Transactional(readOnly = true)
@@ -86,7 +88,7 @@ public class UserService {
     public UserResponse update(UpdateUserRequest dto, long userId) {
         User user = load(userId);
         user.setName(dto.name());
-        user.setEmail(dto.email());
+        user.setEmail(EmailNormalizer.normalize(dto.email()));
         user.setPassword(encoder.encode(PasswordNormalizer.normalize(dto.password())));
 
         return UserResponse.from(userRepository.save(user));
