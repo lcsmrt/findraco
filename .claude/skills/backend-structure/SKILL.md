@@ -142,7 +142,7 @@ Files `backend/src/main/resources/db/migration/V<n>__<what>.sql`, plain SQL, run
   in the database, rotation with a reuse grace). Spring Security's chain is `auth.config.SecurityConfig`;
   CSRF is off because no cookie authenticates an API call. [test: SessionIT, AuthenticationIT]
 - Passwords: `DelegatingPasswordEncoder` (Argon2id; BCrypt verifies old hashes and re-hashes at login), the
-  `@ValidPassword` policy (8 to 128 code points, NFKC, no control characters). [test: PasswordPolicyTest,
+  `@ValidPassword` policy (8 to 128 code points, NFKC, no control characters). [ArchUnit: onlyThePasswordEncoderConfigBuildsAnEncoder; test: PasswordPolicyTest,
   PasswordHashingIT]
 - The JWT secret is Base64 and at least 32 bytes or the app does not start; `sub` is the user id. [test:
   ConfigurationPropertiesTest]

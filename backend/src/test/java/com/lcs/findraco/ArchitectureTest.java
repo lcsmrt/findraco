@@ -62,6 +62,8 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.ListCrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 import org.springframework.data.repository.Repository;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -106,6 +108,19 @@ class ArchitectureTest {
             .because("dependencies and configuration arrive through the constructor");
 
     private static final String ROOT = "com.lcs.findraco";
+
+    @ArchTest
+    static final ArchRule onlyThePasswordEncoderConfigBuildsAnEncoder = noClasses()
+            .that()
+            .doNotHaveFullyQualifiedName(ROOT + ".auth.config.PasswordEncoderConfig")
+            .should()
+            .callConstructorWhere(JavaCall.Predicates.target(
+                    HasOwner.Predicates.With.owner(JavaClass.Predicates.assignableTo(PasswordEncoder.class))))
+            .orShould()
+            .callMethodWhere(JavaCall.Predicates.target(
+                    HasOwner.Predicates.With.owner(JavaClass.Predicates.assignableTo(PasswordEncoderFactories.class))))
+            .because("sign-up, reset, login and the dummy hash must share one encoder, or a hash written by one "
+                    + "path cannot be checked, or re-hashed, by another");
 
     /**
      * The layers a feature may reach in another feature. A feature reads another's entities through a

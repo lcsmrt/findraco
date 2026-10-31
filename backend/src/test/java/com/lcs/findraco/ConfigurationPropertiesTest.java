@@ -11,11 +11,15 @@ import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
 import com.lcs.findraco.transaction.config.ImportProperties;
 import com.lcs.findraco.transaction.config.SeriesProperties;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.context.properties.bind.validation.BindValidationException;
@@ -24,6 +28,23 @@ import org.springframework.context.annotation.Configuration;
 
 /** Every {@code app.*} record refuses to start the application on a missing or out-of-range value. */
 class ConfigurationPropertiesTest {
+
+    /** The loader of {@code backend/.env} is a fixed {@code spring.config.import}, never a configurable filename. */
+    @Test
+    void noConfigurationFileSetsTheDotenvFilename() throws IOException {
+        List<Path> files;
+        try (Stream<Path> found = Files.walk(Path.of("src"))) {
+            files = found.filter(path -> path.getFileName().toString().matches("application.*\\.(properties|ya?ml)"))
+                    .toList();
+        }
+
+        assertThat(files).isNotEmpty();
+        for (Path file : files) {
+            assertThat(Files.readString(file))
+                    .as(file.toString())
+                    .doesNotContainPattern("(?m)^\\s*(spring\\.)?dotenv[.:]");
+        }
+    }
 
     /** 48 random bytes, Base64-encoded: what {@code openssl rand -base64 48} prints. */
     private static final String STRONG_KEY = Base64.getEncoder().encodeToString(new byte[48]);
