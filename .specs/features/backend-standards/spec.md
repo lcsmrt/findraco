@@ -534,7 +534,7 @@ The backend audit (`.specs/codebase/backend-quality-audit.md`, 2026-10-20) found
 | BST-12 | P2 Migrations and database guarantees (AC 1–8) — S9, H12 | Execute | Done |
 | BST-13 | P2 Request tracing and logging (AC 1–5) — S14 | Execute | Done |
 | BST-14 | P2 Rate limits and network exposure (AC 1–4) — S20 | Execute | Done |
-| BST-15 | P2 Authentication hardening (AC 1–12) — S21, addendum AC 12 | Execute | In progress |
+| BST-15 | P2 Authentication hardening (AC 1–12) — S21, addendum AC 12 | Execute | Done |
 | BST-16 | P2 CSV import (AC 1–9) — S19 | Execute | Done |
 | BST-17 | P2 Category usage from the server (AC 1–5) — S22 | Execute | Done |
 | BST-18 | P2 Series correctness (AC 1–10) — S25, S26, H8, H10, H14 | Execute | Done |
