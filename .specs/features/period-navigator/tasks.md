@@ -107,9 +107,9 @@ T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Story `play`: clicking the label opens the dialog "Choose a period"; picking two different days calls `onRangeChange` with them and closes it
-- [ ] Range menu still lists This month, Last 3 months, Last 6 months, This year, Custom…
-- [ ] Gate check passes: Build (phase end)
+- [x] Story `play`: clicking the label opens the dialog "Choose a period"; picking two different days calls `onRangeChange` with them and closes it
+- [x] Range menu still lists This month, Last 3 months, Last 6 months, This year, Custom…
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: story
 **Gate**: build

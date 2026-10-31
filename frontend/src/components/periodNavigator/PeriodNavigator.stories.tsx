@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, screen } from "storybook/test";
+import { expect, fn, screen, waitFor, within } from "storybook/test";
 import { PeriodNavigator } from "./PeriodNavigator";
 
 const meta = {
-  title: "Overview/PeriodNavigator",
+  title: "PeriodNavigator",
   component: PeriodNavigator,
   args: {
     range: { startDate: "2026-10-01", endDate: "2026-10-31" },
@@ -52,6 +52,14 @@ export const AcrossYears: Story = {
 export const RangeMenu: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Range" }));
+    const options = await screen.findAllByRole("menuitemradio");
+    await expect(options.map((option) => option.textContent)).toEqual([
+      "This month",
+      "Last 3 months",
+      "Last 6 months",
+      "This year",
+    ]);
+    await expect(screen.getByRole("menuitem", { name: "Custom…" })).toBeVisible();
     await userEvent.click(await screen.findByRole("menuitemradio", { name: "Last 6 months" }));
     await expect(args.onPresetChange).toHaveBeenCalledWith("last-6m");
   },
@@ -62,5 +70,18 @@ export const CustomCalendar: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Range" }));
     await userEvent.click(await screen.findByRole("menuitem", { name: "Custom…" }));
     await expect(await screen.findByRole("dialog", { name: "Choose a period" })).toBeVisible();
+  },
+};
+
+// The calendar opens preset to the current range, so a one-day range makes the next click the range's end.
+export const LabelOpensCalendar: Story = {
+  args: { range: { startDate: "2026-10-05", endDate: "2026-10-05" }, isCustom: true },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Choose period, 5 Oct 2026" }));
+    const dialog = await screen.findByRole("dialog", { name: "Choose a period" });
+    await expect(dialog).toBeVisible();
+    await userEvent.click(await within(dialog).findByRole("button", { name: /October 20th, 2026/ }));
+    await expect(args.onRangeChange).toHaveBeenCalledWith({ from: "2026-10-05", to: "2026-10-20" });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Choose a period" })).toBeNull());
   },
 };

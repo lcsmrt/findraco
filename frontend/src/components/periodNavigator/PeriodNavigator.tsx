@@ -51,6 +51,7 @@ function toCustom(range: PeriodRange): CustomRange {
 /**
  * "‹ October 2026 ›" plus a Range menu. The arrows step the period by
  * its own length and always produce an absolute range; presets set the period.
+ * The label opens the same range calendar as Custom…, so a custom range is one tap away.
  */
 export function PeriodNavigator({
   range,
@@ -62,6 +63,8 @@ export function PeriodNavigator({
   const anchorRef = useRef<HTMLDivElement>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
+
+  const label = periodLabel(range);
 
   function openCalendar() {
     setDraft({ from: parseISO(range.startDate), to: parseISO(range.endDate) });
@@ -89,13 +92,16 @@ export function PeriodNavigator({
       >
         <ChevronLeftIcon />
       </Button>
-      <Text
-        variant="title"
-        className="min-w-36 text-center tabular-nums sm:min-w-40"
-        aria-live="polite"
+      <Button
+        variant="ghost"
+        className="min-w-36 tabular-nums sm:min-w-40"
+        aria-label={`Choose period, ${label}`}
+        onClick={openCalendar}
       >
-        {periodLabel(range)}
-      </Text>
+        <Text variant="title" aria-live="polite">
+          {label}
+        </Text>
+      </Button>
       <Button
         variant="ghost"
         size="icon"
