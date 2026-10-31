@@ -57,7 +57,12 @@ describe("toInvitePayload", () => {
   it("sends the expiry and no address for a link invitation", () => {
     expect(
       toInvitePayload({ role: "VIEWER", type: "LINK", email: "ana@example.com", expiresAt: "2026-12-31T18:00" }),
-    ).toEqual({ role: "VIEWER", type: "LINK", email: undefined, expiresAt: "2026-12-31T18:00" });
+    ).toEqual({
+      role: "VIEWER",
+      type: "LINK",
+      email: undefined,
+      expiresAt: new Date("2026-12-31T18:00").toISOString(),
+    });
   });
 
   it("sends no expiry for a link invitation left without one", () => {

@@ -9,7 +9,7 @@ import {
   startOfMonth,
 } from "date-fns";
 import { resolvePeriodDates, type Period } from "../filters/overviewParams";
-import { countMonths } from "./scaleLimits";
+import { countMonths } from "./periodMonths";
 
 /** An inclusive `yyyy-MM-dd` date range. */
 export type PeriodRange = { startDate: string; endDate: string };

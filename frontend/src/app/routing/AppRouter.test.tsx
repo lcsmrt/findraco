@@ -1,14 +1,14 @@
 import type {
   DashboardSummaryResponse,
-  FinancialTransaction,
-  FinancialTransactionCategory,
+  Transaction,
+  Category,
   PagedResponse,
   Plan,
   PlanMember,
 } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
-import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { transactionHandlers } from "@/api/services/transaction.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
@@ -28,14 +28,12 @@ import { AppRouter } from "./AppRouter";
 
 const PLAN_ID = 5;
 const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "EDITOR" };
-const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "EDITOR" };
+const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } };
 
 const emptySummary: DashboardSummaryResponse = {
   totalIncome: 0,
   totalExpenses: 0,
   netBalance: 0,
-  categoryBreakdown: [],
-  monthlyTrend: [],
   personBreakdown: [],
 };
 
@@ -45,7 +43,13 @@ function emptyPage<T>(): PagedResponse<T> {
 
 function authValue(): AuthContextValue {
   return {
-    user: { id: ana.userId, name: ana.name, email: ana.email },
+    user: {
+      id: ana.userId,
+      name: ana.name,
+      email: ana.email,
+      timeZone: "America/Sao_Paulo",
+      timeZoneMode: "AUTOMATIC",
+    },
     setUser: vi.fn(),
     status: "authenticated",
     signIn: vi.fn(),
@@ -102,9 +106,9 @@ beforeEach(() => {
     planHandlers.members([ana]),
     dashboardHandlers.summary(emptySummary),
     dashboardHandlers.trend([]),
-    financialTransactionCategoryHandlers.spending([]),
-    financialTransactionCategoryHandlers.list(emptyPage<FinancialTransactionCategory>()),
-    financialTransactionHandlers.list(emptyPage<FinancialTransaction>()),
+    categoryHandlers.spending([]),
+    categoryHandlers.list(emptyPage<Category>()),
+    transactionHandlers.list(emptyPage<Transaction>()),
   );
 });
 

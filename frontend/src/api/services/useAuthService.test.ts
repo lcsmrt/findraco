@@ -1,6 +1,7 @@
 import { waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { User } from "@/api/dtos";
 import { recordRequests } from "@/test/recordRequests";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
@@ -12,10 +13,17 @@ import {
   useLogin,
   useRegisterUser,
   useResetPassword,
+  useUpdateTimeZone,
   useValidatePasswordResetToken,
 } from "./useAuthService";
 
-const user = { id: 3, name: "Ana", email: "ana@example.com" };
+const user: User = {
+  id: 3,
+  name: "Ana",
+  email: "ana@example.com",
+  timeZone: "America/Sao_Paulo",
+  timeZoneMode: "AUTOMATIC",
+};
 
 // The toast is the user-visible outcome of a mutation; sonner is a third-party module.
 beforeEach(() => {
@@ -136,5 +144,32 @@ describe("useResetPassword", () => {
     expect(new URL(requests[0].url).pathname).toBe("/api/findraco/auth/reset-password");
     expect(await requests[0].json()).toEqual({ token: "abc", password: "new-secret" });
     expect(toast.success).toHaveBeenCalledWith("Password updated. Sign in with your new password.");
+  });
+});
+
+describe("useUpdateTimeZone", () => {
+  it("PATCHes the mode and zone to /user/me/time-zone and keeps the profile cache current (BST-11 AC 5)", async () => {
+    const pinned = {
+      ...user,
+      timeZone: "Europe/Lisbon",
+      timeZoneMode: "PINNED" as const,
+    };
+    server.use(authHandlers.updateTimeZone(pinned));
+    const requests = recordRequests();
+
+    const { result } = renderHookWithProviders(() => useUpdateTimeZone());
+    result.current.mutate({ body: { mode: "PINNED", zone: "Europe/Lisbon" } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests[0].method).toBe("PATCH");
+    expect(new URL(requests[0].url).pathname).toBe(
+      "/api/findraco/user/me/time-zone",
+    );
+    expect(await requests[0].json()).toEqual({
+      mode: "PINNED",
+      zone: "Europe/Lisbon",
+    });
+    expect(result.current.data).toEqual(pinned);
+    expect(toast.success).toHaveBeenCalledWith("Time zone saved.");
   });
 });

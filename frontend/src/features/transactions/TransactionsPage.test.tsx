@@ -1,13 +1,13 @@
 import type {
-  FinancialTransaction,
-  FinancialTransactionCategory,
+  Transaction,
+  Category,
   PagedResponse,
   Plan,
   PlanMember,
   SeriesEditScope,
 } from "@/api/dtos";
-import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { transactionHandlers } from "@/api/services/transaction.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
@@ -27,13 +27,15 @@ import { SeriesScopeDialogProvider } from "./components/SeriesScopeDialogProvide
 import { TransactionsPage } from "./TransactionsPage";
 
 const PLAN_ID = 5;
-const API = `/api/findraco/plan/${PLAN_ID}/financial-transaction`;
+const API = `/api/findraco/plan/${PLAN_ID}/transaction`;
 
 const lucas: PlanMember = { userId: 1, name: "Lucas", email: "lucas@example.com", role: "OWNER" };
 const livia: PlanMember = { userId: 2, name: "Livia", email: "livia@example.com", role: "EDITOR" };
 
-const rent: FinancialTransaction = {
+const rent: Transaction = {
   id: 42,
+  permissions: { edit: true, delete: true },
+  version: 0,
   type: "DEBIT",
   amount: 150.5,
   description: "Rent",
@@ -43,23 +45,23 @@ const rent: FinancialTransaction = {
   participants: [],
   items: [],
 };
-const gym: FinancialTransaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
+const gym: Transaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
 
-const groceries: FinancialTransactionCategory = { id: 12, type: "DEBIT", description: "Groceries" };
+const groceries: Category = { id: 12, version: 0, type: "DEBIT", description: "Groceries" };
 
 function categoryPage(
-  content: FinancialTransactionCategory[],
-): PagedResponse<FinancialTransactionCategory> {
+  content: Category[],
+): PagedResponse<Category> {
   return { content, page: 0, size: 1000, totalElements: content.length, totalPages: 1, last: true };
 }
 
-function pageOf(content: FinancialTransaction[], page = 0): PagedResponse<FinancialTransaction> {
+function pageOf(content: Transaction[], page = 0): PagedResponse<Transaction> {
   return { content, page, size: 10, totalElements: 25, totalPages: 3, last: page === 2 };
 }
 
 function authValue(): AuthContextValue {
   return {
-    user: { id: lucas.userId, name: lucas.name, email: lucas.email },
+    user: { id: lucas.userId, name: lucas.name, email: lucas.email, timeZone: "America/Sao_Paulo", timeZoneMode: "AUTOMATIC" },
     setUser: vi.fn(),
     status: "authenticated",
     signIn: vi.fn(),
@@ -70,7 +72,7 @@ function authValue(): AuthContextValue {
 }
 
 function planValue(): PlanContextValue {
-  const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER" };
+  const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
   return {
     activePlanId: PLAN_ID,
     setActivePlanId: vi.fn(),
@@ -83,17 +85,17 @@ function planValue(): PlanContextValue {
 const categorySheet: CategoryFormSheetContextValue = { openCreate: vi.fn(), openEdit: vi.fn() };
 
 type TabOptions = {
-  transactions?: FinancialTransaction[];
+  transactions?: Transaction[];
   /** The starting URL; its query string holds the filters. */
   route?: string;
-  categories?: FinancialTransactionCategory[];
+  categories?: Category[];
 };
 
 function renderTab({ transactions = [rent], route = "/", categories = [] }: TabOptions = {}) {
   server.use(
-    financialTransactionHandlers.list(pageOf(transactions)),
+    transactionHandlers.list(pageOf(transactions)),
     planHandlers.members([lucas, livia]),
-    financialTransactionCategoryHandlers.list(categoryPage(categories)),
+    categoryHandlers.list(categoryPage(categories)),
   );
   const requests = recordRequests();
   renderWithProviders(
@@ -145,7 +147,7 @@ function categoryFetches(requests: Request[], id: number) {
   return requests.filter(
     (request) =>
       new URL(request.url).pathname ===
-      `/api/findraco/plan/${PLAN_ID}/financial-transaction-category/${id}`,
+      `/api/findraco/plan/${PLAN_ID}/category/${id}`,
   ).length;
 }
 
@@ -250,7 +252,7 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
   it("deletes the transaction once confirmed", async () => {
     const { requests, user } = renderTab();
     const row = await tableRow("Rent");
-    server.use(financialTransactionHandlers.remove());
+    server.use(transactionHandlers.remove());
 
     await user.click(row.getByRole("button", { name: "Delete" }));
     const dialog = await screen.findByRole("dialog", { name: "Confirm Deletion" });
@@ -259,6 +261,51 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     await waitFor(() =>
       expect(requests.some((r) => r.method === "DELETE" && new URL(r.url).pathname === `${API}/42`)).toBe(true),
     );
+  });
+});
+
+describe("TransactionsPage row permissions (BST-10 AC 10, 11)", () => {
+  // A contributor's view: the server marks their own row editable and another member's row not.
+  const dinnerByLivia: Transaction = {
+    ...rent,
+    id: 60,
+    description: "Dinner",
+    createdBy: { id: livia.userId, name: livia.name },
+    permissions: { edit: false, delete: false },
+  };
+
+  it("offers no edit or delete on another member's row, only on the rows the server allows", async () => {
+    const { user } = renderTab({ transactions: [rent, dinnerByLivia] });
+    const others = await tableRow("Dinner");
+    const own = await tableRow("Rent");
+
+    expect(others.queryByRole("button", { name: "Edit" })).toBeNull();
+    expect(others.queryByRole("button", { name: "Delete" })).toBeNull();
+    expect(own.getByRole("button", { name: "Edit" })).toBeTruthy();
+    expect(own.getByRole("button", { name: "Delete" })).toBeTruthy();
+
+    await user.click(others.getByText("Dinner"));
+    expect(others.queryByRole("textbox", { name: "Description" })).toBeNull();
+  });
+});
+
+describe("TransactionsPage stale edit (BST-06 AC 11)", () => {
+  it("tells the user someone else changed the transaction, closes the drawer and reloads the list", async () => {
+    const { requests, user } = renderTab({ transactions: [{ ...rent, version: 7 }] });
+    const row = await tableRow("Rent");
+    server.use(transactionHandlers.updateRejected(409, "stale-version"));
+
+    await user.click(row.getByRole("button", { name: "Edit" }));
+    const drawer = await screen.findByRole("dialog", { name: "Edit Transaction" });
+    await user.click(within(drawer).getByRole("button", { name: "Save" }));
+
+    expect(
+      await screen.findByText("Someone else changed this in the meantime. Reload it and try again."),
+    ).toBeTruthy();
+    const put = requests.find((request) => request.method === "PUT");
+    expect(await put?.json()).toMatchObject({ version: 7 });
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Edit Transaction" })).toBeNull());
+    await waitFor(() => expect(listQueries(requests)).toHaveLength(2));
   });
 });
 
@@ -282,28 +329,37 @@ describe("TransactionsPage CSV import (STD-12 AC 1)", () => {
   it("uploads the chosen file, shows the result and refreshes the list", async () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");
-    server.use(financialTransactionHandlers.importCsv({ imported: 1 }));
+    server.use(transactionHandlers.importCsv({ imported: 1, skippedDuplicates: 2 }));
 
     await user.upload(fileInput(), csv);
 
-    expect(await screen.findByText("Transactions imported.")).toBeTruthy();
+    expect(
+      await screen.findByText("Imported 1 transaction; 2 already in the plan were skipped."),
+    ).toBeTruthy();
     // jsdom's FormData reaches MSW unserialised, so the request is asserted by method and URL.
     expect(importRequests(requests)).toHaveLength(1);
     await waitFor(() => expect(listQueries(requests)).toHaveLength(2));
   });
 
-  it("shows the API's message and leaves the list alone when the file is rejected", async () => {
+  it("lists the invalid lines and leaves the list alone when the file is rejected (BST-08 AC 11; BST-16 AC 5)", async () => {
     const { requests, user } = renderTab();
     await tableRow("Rent");
     server.use(
-      financialTransactionHandlers.importCsvRejected("Line 3 of the CSV is invalid: bad date"),
+      transactionHandlers.importCsvRejected(422, "import-line-invalid", [
+        { line: 3, field: "date", code: "date-invalid" },
+        { line: 8, field: "amount", code: "amount-zero" },
+      ]),
     );
 
     await user.upload(fileInput(), csv);
 
-    expect(await screen.findByText("Line 3 of the CSV is invalid: bad date")).toBeTruthy();
+    expect(
+      await screen.findByText("The file has invalid lines, so nothing was imported. Fix them and try again."),
+    ).toBeTruthy();
+    expect(screen.getByText(/Line 3: date must be a real date as dd\/mm\/yyyy/)).toBeTruthy();
+    expect(screen.getByText(/Line 8: amount cannot be zero/)).toBeTruthy();
     expect(importRequests(requests)).toHaveLength(1);
-    expect(screen.queryByText("Transactions imported.")).toBeNull();
+    expect(screen.queryByText(/^Imported/)).toBeNull();
     expect(listQueries(requests)).toHaveLength(1);
   });
 });
@@ -323,7 +379,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
   it("closes the drawer before asking to delete from it", async () => {
     const { requests, user } = renderTab();
     const row = await tableRow("Rent");
-    server.use(financialTransactionHandlers.remove());
+    server.use(transactionHandlers.remove());
     await user.click(row.getByRole("button", { name: "Edit" }));
     const drawer = await screen.findByRole("dialog", { name: "Edit Transaction" });
 
@@ -354,7 +410,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
   ])("deletes %s of a series from the chosen occurrence", async (label, scope) => {
     const { requests, user } = renderTab({ transactions: [gym] });
     const row = await tableRow("Gym (3/12)");
-    server.use(financialTransactionHandlers.removeSeries());
+    server.use(transactionHandlers.removeSeries());
 
     await user.click(row.getByRole("button", { name: "Delete" }));
     const dialog = await screen.findByRole("dialog", { name: "Delete series" });
@@ -383,7 +439,7 @@ describe("TransactionsPage drawer and delete (STD-12 AC 1)", () => {
 
 describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   it("shows every active filter as a chip, with the category and member names, and requests it", async () => {
-    server.use(financialTransactionCategoryHandlers.get(groceries));
+    server.use(categoryHandlers.get(groceries));
     const { requests } = renderTab({
       route: "/?type=DEBIT&category=12&member=2&from=2026-10-01&to=2026-10-31&min=50&max=200",
     });
@@ -497,7 +553,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it("drops a category that no longer exists (404) from the filters", async () => {
-    server.use(financialTransactionCategoryHandlers.getNotFound());
+    server.use(categoryHandlers.getNotFound());
     const { requests } = renderTab({ route: "/?category=12&type=DEBIT" });
 
     await waitFor(() =>
@@ -508,8 +564,8 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it.each([
-    ["a server error (500)", financialTransactionCategoryHandlers.getServerError],
-    ["a network error", financialTransactionCategoryHandlers.getNetworkError],
+    ["a server error (500)", categoryHandlers.getServerError],
+    ["a network error", categoryHandlers.getNetworkError],
   ])("keeps the category filter when fetching it fails with %s", async (_, failure) => {
     server.use(failure());
     const { requests } = renderTab({ route: "/?category=12&type=DEBIT" });
@@ -523,7 +579,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it("drops a member who is not in the plan once the members are loaded", async () => {
-    server.use(financialTransactionCategoryHandlers.get(groceries));
+    server.use(categoryHandlers.get(groceries));
     const { requests } = renderTab({ route: "/?member=99&category=12" });
 
     await waitFor(() =>

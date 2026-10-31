@@ -5,8 +5,6 @@ import org.junit.jupiter.api.Test;
 
 class FindracoApplicationIT extends AbstractIntegrationTest {
 
-	@Test
-	void contextLoads() {
-	}
-
+    @Test
+    void contextLoads() {}
 }

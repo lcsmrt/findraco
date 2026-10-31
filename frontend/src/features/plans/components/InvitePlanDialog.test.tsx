@@ -91,7 +91,7 @@ describe("InvitePlanDialog", () => {
     expect(await request?.json()).toEqual({
       role: "VIEWER",
       type: "LINK",
-      expiresAt: "2026-12-31T18:00",
+      expiresAt: new Date("2026-12-31T18:00").toISOString(),
     });
     expect(screen.getByDisplayValue(`${window.location.origin}/invitation/link-token`)).toBeTruthy();
   });
@@ -113,7 +113,7 @@ describe("InvitePlanDialog", () => {
     const user = userEvent.setup();
     const requests = recordRequests();
     const onOpenChange = vi.fn();
-    server.use(invitationHandlers.createRejected("Already a member"));
+    server.use(invitationHandlers.createRejected(422, "validation-failed"));
     renderDialog(onOpenChange);
 
     await user.type(screen.getByLabelText("Email"), "ana@example.com");

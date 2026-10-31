@@ -1,4 +1,4 @@
-import type { CategorySpending, CategorySpendingMember } from "@/api/dtos";
+import type { CategorySpending, CategorySpendingMember, UsageStatus } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect } from "storybook/test";
@@ -9,21 +9,27 @@ function colorOf(memberId: number) {
   return MEMBER_PALETTE[(memberId - 1) % MEMBER_PALETTE.length];
 }
 
+type Judged = Pick<CategorySpending, "limit" | "remaining" | "percentUsed" | "status">;
+
+const NO_LIMIT: Judged = { limit: null, remaining: null, percentUsed: null, status: null };
+
+/** A limit as the API judged it for the period; stories state the verdict, they never compute one. */
+function judged(limit: number, remaining: number, percentUsed: number, status: UsageStatus): Judged {
+  return { limit, remaining, percentUsed, status };
+}
+
 function member(
   memberId: number,
   name: string,
   spent: number,
-  limit: number | null = null,
+  verdict: Judged = NO_LIMIT,
   active = true,
 ): CategorySpendingMember {
   return {
     memberId,
     name,
     spent,
-    limit,
-    remaining: null,
-    percentUsed: null,
-    overLimit: null,
+    ...verdict,
     active,
   };
 }
@@ -39,10 +45,7 @@ function category(input: CategoryInput): CategorySpending {
     ownerName: null,
     ownerActive: null,
     spent: members.reduce((sum, entry) => sum + entry.spent, 0),
-    limit: null,
-    remaining: null,
-    percentUsed: null,
-    overLimit: null,
+    ...NO_LIMIT,
     children: [],
     ...input,
     members,
@@ -53,14 +56,14 @@ const tree: CategorySpending[] = [
   category({
     categoryId: 1,
     name: "Food",
-    limit: 2000,
+    ...judged(2000, 255, 87.25, "WARNING"),
     members: [member(1, "Lucas Martins", 1051), member(2, "Livia Souza", 694)],
     children: [
       category({
         categoryId: 11,
         parentId: 1,
         name: "Restaurants",
-        limit: 400,
+        ...judged(400, -90, 122.5, "OVER"),
         members: [member(1, "Lucas Martins", 310), member(2, "Livia Souza", 180)],
       }),
       category({
@@ -74,7 +77,7 @@ const tree: CategorySpending[] = [
   category({
     categoryId: 2,
     name: "Housing",
-    limit: 3000,
+    ...judged(3000, 600, 80, "WARNING"),
     members: [member(1, "Lucas Martins", 1200), member(2, "Livia Souza", 1200)],
   }),
   category({
@@ -83,18 +86,18 @@ const tree: CategorySpending[] = [
     ownerId: 2,
     ownerName: "Livia Souza",
     ownerActive: true,
-    members: [member(2, "Livia Souza", 230, 300)],
+    members: [member(2, "Livia Souza", 230, judged(300, 70, 76.67, "OK"))],
   }),
   category({
     categoryId: 4,
     name: "Transport",
-    limit: 500,
-    members: [member(1, "Lucas Martins", 420, 300), member(3, "Ana Lima", 130, null, false)],
+    ...judged(500, -50, 110, "OVER"),
+    members: [member(1, "Lucas Martins", 420, judged(300, -120, 140, "OVER")), member(3, "Ana Lima", 130, NO_LIMIT, false)],
   }),
 ];
 
 function view(categories: CategorySpending[], selectedMember: SelectedMember | null = null) {
-  return buildSpendingRows({ tree: categories, monthCount: 1, selectedMember, colorOf });
+  return buildSpendingRows({ tree: categories, selectedMember, colorOf });
 }
 
 const meta = {
@@ -137,7 +140,7 @@ export const ManyLongCategories: Story = {
         category({
           categoryId: index + 100,
           name: `Household maintenance, repairs and improvements ${index + 1}`,
-          limit: 98765432.1,
+          ...judged(98765432.1, 9876543.12, 90, "WARNING"),
           members: [
             member(1, "Maximiliano Albuquerque", 87654321.09 + index * 1000000),
             member(2, "Livia Souza", 1234567.89),

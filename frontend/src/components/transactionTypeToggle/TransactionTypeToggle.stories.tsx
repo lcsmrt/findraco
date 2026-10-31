@@ -1,11 +1,11 @@
-import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import type { TransactionType } from "@/api/dtos/transaction";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
 import { expect } from "storybook/test";
 import { TransactionTypeToggle } from "./TransactionTypeToggle";
 
 type TypeFieldProps = {
-  initialValue: FinancialTransactionType;
+  initialValue: TransactionType;
   disabled?: boolean;
 };
 

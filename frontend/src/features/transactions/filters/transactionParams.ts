@@ -1,15 +1,15 @@
 import type {
-  FinancialTransactionSortBy,
-  FinancialTransactionType,
-  PagedFinancialTransactionsFilter,
-} from "@/api/dtos/financialTransaction";
+  TransactionSortBy,
+  TransactionType,
+  PagedTransactionsFilter,
+} from "@/api/dtos/transaction";
 import { parseDate, parseId } from "@/utils/searchParams";
 
 export type SortDirection = "asc" | "desc";
 
 export type TransactionFilters = {
-  filter: PagedFinancialTransactionsFilter;
-  sort: { by: FinancialTransactionSortBy; direction: SortDirection } | null;
+  filter: PagedTransactionsFilter;
+  sort: { by: TransactionSortBy; direction: SortDirection } | null;
   size: number;
 };
 
@@ -29,8 +29,8 @@ export const TRANSACTION_PARAM_KEYS = [
   "size",
 ] as const;
 
-const TYPES: readonly FinancialTransactionType[] = ["CREDIT", "DEBIT"];
-const SORT_FIELDS: readonly FinancialTransactionSortBy[] = [
+const TYPES: readonly TransactionType[] = ["CREDIT", "DEBIT"];
+const SORT_FIELDS: readonly TransactionSortBy[] = [
   "startDate",
   "endDate",
   "amount",
@@ -59,7 +59,7 @@ function parseSort(value: string | null): TransactionFilters["sort"] {
 export function parseTransactionFilters(
   params: URLSearchParams,
 ): TransactionFilters {
-  const filter: PagedFinancialTransactionsFilter = {};
+  const filter: PagedTransactionsFilter = {};
 
   const type = TYPES.find((t) => t === params.get("type"));
   if (type) filter.type = type;

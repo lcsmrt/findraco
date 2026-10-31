@@ -1,14 +1,14 @@
 import type {
   DashboardSummaryResponse,
-  FinancialTransaction,
-  FinancialTransactionCategory,
+  Transaction,
+  Category,
   PagedResponse,
   Plan,
   PlanMember,
 } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
-import { financialTransactionHandlers } from "@/api/services/financialTransaction.handlers";
-import { financialTransactionCategoryHandlers } from "@/api/services/financialTransactionCategory.handlers";
+import { transactionHandlers } from "@/api/services/transaction.handlers";
+import { categoryHandlers } from "@/api/services/category.handlers";
 import { invitationHandlers } from "@/api/services/invitation.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
@@ -32,20 +32,20 @@ import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "EDITOR" };
-const editorPlan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "EDITOR" };
-const viewerPlan: Plan = { id: 6, name: "Parents", isDefault: false, myRole: "VIEWER" };
+const editorPlan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } };
+const viewerPlan: Plan = { id: 6, name: "Parents", isDefault: false, myRole: "VIEWER", permissions: { createTransactions: false, attributeToOthers: false, manageCategories: false, managePlan: false } };
 
 const emptySummary: DashboardSummaryResponse = {
   totalIncome: 0,
   totalExpenses: 0,
   netBalance: 0,
-  categoryBreakdown: [],
-  monthlyTrend: [],
   personBreakdown: [],
 };
 
-const created: FinancialTransaction = {
+const created: Transaction = {
   id: 42,
+  permissions: { edit: true, delete: true },
+  version: 0,
   type: "DEBIT",
   amount: 12.34,
   description: "Groceries",
@@ -62,7 +62,13 @@ function emptyPage<T>(): PagedResponse<T> {
 
 function authValue(): AuthContextValue {
   return {
-    user: { id: ana.userId, name: ana.name, email: ana.email },
+    user: {
+      id: ana.userId,
+      name: ana.name,
+      email: ana.email,
+      timeZone: "America/Sao_Paulo",
+      timeZoneMode: "AUTOMATIC",
+    },
     setUser: vi.fn(),
     status: "authenticated",
     signIn: vi.fn(),
@@ -149,9 +155,9 @@ beforeEach(() => {
     planHandlers.members([ana]),
     dashboardHandlers.summary(emptySummary),
     dashboardHandlers.trend([]),
-    financialTransactionCategoryHandlers.spending([]),
-    financialTransactionCategoryHandlers.list(emptyPage<FinancialTransactionCategory>()),
-    financialTransactionHandlers.list(emptyPage<FinancialTransaction>()),
+    categoryHandlers.spending([]),
+    categoryHandlers.list(emptyPage<Category>()),
+    transactionHandlers.list(emptyPage<Transaction>()),
   );
 });
 
@@ -221,7 +227,7 @@ describe("MainLayout global add", () => {
   it("saving from the Overview closes the form, stays there, shows \"Transaction added.\" and refetches the summary (NAV-02 AC 1, 3, 4)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.create(created));
+    server.use(transactionHandlers.create(created));
     renderAt("/overview");
     await waitFor(() => expect(summaryRequests(requests)).toHaveLength(1));
 
@@ -236,7 +242,7 @@ describe("MainLayout global add", () => {
 
   it("saving from the Plans page stays on the Plans page (NAV-02 edge)", async () => {
     const user = userEvent.setup();
-    server.use(financialTransactionHandlers.create(created));
+    server.use(transactionHandlers.create(created));
     renderAt("/plans");
 
     await user.click(within(bottomBar()).getByRole("button", { name: "New Transaction" }));
@@ -250,7 +256,7 @@ describe("MainLayout global add", () => {
   it("a failed create keeps the form open with its values and shows no success toast (NAV-02 AC 7)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    server.use(financialTransactionHandlers.createRejected("Amount too large"));
+    server.use(transactionHandlers.createRejected(422, "items-exceed-amount"));
     renderAt("/overview");
 
     await user.click(within(bottomBar()).getByRole("button", { name: "New Transaction" }));

@@ -1,0 +1,253 @@
+package com.lcs.findraco.transaction;
+
+import static org.assertj.core.api.Assertions.assertThat;
+
+import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.transaction.model.RecurrenceDefinition;
+import com.lcs.findraco.transaction.model.RecurrenceInterval;
+import com.lcs.findraco.transaction.model.RecurrenceMode;
+import com.lcs.findraco.transaction.model.SeriesDraft;
+import com.lcs.findraco.transaction.model.SeriesPattern;
+import com.lcs.findraco.transaction.model.Share;
+import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
+import com.lcs.findraco.transaction.model.TransactionType;
+import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
+import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
+import com.lcs.findraco.user.model.User;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+
+/**
+ * Proves {@link OpenEndedSeriesTopUpService} (RMV2-06, D1/D2): lazily materializing missing
+ * future months for open-ended (mode = RECURRING, endDate = null) series up to the rolling
+ * 12-month horizon, idempotently, without ever touching bounded series.
+ *
+ * <p>Fixtures build {@link RecurrenceDefinition}/{@link Transaction} rows directly via
+ * the repositories (bypassing {@code createSeries}, owned by a sibling task) so this suite is
+ * self-contained and exercises the top-up service and its locked due-query in isolation.
+ *
+ * <p>"Today" is a fixed date passed to the service (never the ambient
+ * {@code LocalDate.now()}), so the rolling horizon is deterministic and the watermark math is
+ * exact. All fixture dates use day-of-month 1 so the monthly stepping in the generator always
+ * lands exactly on the horizon date, keeping the arithmetic in these assertions unambiguous.
+ */
+class OpenEndedTopUpIT extends AbstractIntegrationTest {
+
+    private static final LocalDate TODAY = LocalDate.of(2026, 7, 1);
+    private static final LocalDate HORIZON_CAP = TODAY.plusMonths(12);
+
+    @Autowired
+    private RecurrenceDefinitionRepository recurrenceDefinitionRepository;
+
+    @Autowired
+    private TransactionRepository transactionRepository;
+
+    @Autowired
+    private OpenEndedSeriesTopUpService topUpService;
+
+    @Test
+    void topUpMaterializesMissingMonthsUpToHorizonAndAdvancesWatermarkUsingCurrentDefinitionValues() {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = TODAY.minusMonths(6);
+        LocalDate generatedThrough = TODAY.minusMonths(2);
+
+        RecurrenceDefinition definition = anOpenEndedDefinition(plan, owner, start, "Gym", new BigDecimal("50.00"));
+        seedOccurrences(definition, start, generatedThrough);
+        definition.markGeneratedThrough(generatedThrough);
+        definition = recurrenceDefinitionRepository.save(definition);
+
+        // Simulate the definition having been edited (scope ALL) after the last materialization,
+        // before the rolling top-up runs: newly materialized months must reflect this, not the
+        // stale amount the seeded occurrences were stamped with.
+        definition.editPattern(new SeriesPattern(
+                null, new BigDecimal("75.00"), "Gym", null, null, SplitMode.EQUAL, List.of(new Share(owner, null))));
+        recurrenceDefinitionRepository.save(definition);
+
+        topUpService.topUp(plan.getId(), TODAY);
+
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+
+        long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
+        assertThat(occurrences).hasSize((int) expectedTotal);
+
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        assertThat(reloaded.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
+
+        assertThat(findByDate(occurrences, generatedThrough).getAmount()).isEqualByComparingTo("50.00");
+        assertThat(findByDate(occurrences, generatedThrough.plusMonths(1)).getAmount())
+                .isEqualByComparingTo("75.00");
+        assertThat(findByDate(occurrences, HORIZON_CAP).getAmount()).isEqualByComparingTo("75.00");
+    }
+
+    @Test
+    void topUpIsNoOpWhenWatermarkAlreadyMeetsHorizon() {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = TODAY.minusMonths(1);
+
+        RecurrenceDefinition definition =
+                anOpenEndedDefinition(plan, owner, start, "Streaming", new BigDecimal("20.00"));
+        definition.markGeneratedThrough(HORIZON_CAP);
+        recurrenceDefinitionRepository.save(definition);
+
+        topUpService.topUp(plan.getId(), TODAY);
+
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        assertThat(occurrences).isEmpty();
+
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        assertThat(reloaded.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
+    }
+
+    @Test
+    void firingTopUpTwiceProducesNoDuplicateOccurrences() {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = TODAY.minusMonths(2);
+
+        RecurrenceDefinition definition =
+                anOpenEndedDefinition(plan, owner, start, "Internet", new BigDecimal("100.00"));
+
+        topUpService.topUp(plan.getId(), TODAY);
+        List<Transaction> firstPass = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
+        assertThat(firstPass).hasSize((int) expectedTotal);
+
+        topUpService.topUp(plan.getId(), TODAY);
+        List<Transaction> secondPass = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        assertThat(secondPass).hasSize((int) expectedTotal);
+
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        assertThat(reloaded.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
+    }
+
+    @Test
+    void resettingWatermarkBackwardThenFiringSelfHealsWithoutDuplicating() {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = TODAY.minusMonths(2);
+
+        RecurrenceDefinition definition =
+                anOpenEndedDefinition(plan, owner, start, "Cloud storage", new BigDecimal("15.00"));
+
+        topUpService.topUp(plan.getId(), TODAY);
+        long expectedTotal = ChronoUnit.MONTHS.between(start, HORIZON_CAP) + 1;
+        assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId()))
+                .hasSize((int) expectedTotal);
+
+        // Simulate the watermark drifting backward (e.g. a bug, or a race with a bounding edit that
+        // was later rolled back) — top-up must reconcile against what's already persisted rather
+        // than blindly regenerating from the stale watermark.
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        reloaded.markGeneratedThrough(start);
+        recurrenceDefinitionRepository.save(reloaded);
+
+        topUpService.topUp(plan.getId(), TODAY);
+
+        List<Transaction> afterSecondFire =
+                transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        assertThat(afterSecondFire).hasSize((int) expectedTotal);
+
+        RecurrenceDefinition healed =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        assertThat(healed.getGeneratedThrough()).isEqualTo(HORIZON_CAP);
+    }
+
+    @Test
+    void boundedSeriesAreNeverSelectedOrToppedUp() {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = TODAY.minusMonths(3);
+        LocalDate end = TODAY.plusMonths(2);
+
+        RecurrenceDefinition definition =
+                aBoundedDefinition(plan, owner, start, end, "Car loan", new BigDecimal("400.00"));
+
+        topUpService.topUp(plan.getId(), TODAY);
+
+        List<Transaction> occurrences = transactionRepository.findAllByPlanAndSeriesId(plan, definition.getSeriesId());
+        assertThat(occurrences).isEmpty();
+
+        RecurrenceDefinition reloaded =
+                recurrenceDefinitionRepository.findById(definition.getId()).orElseThrow();
+        assertThat(reloaded.getGeneratedThrough()).isNull();
+        assertThat(reloaded.getEndDate()).isEqualTo(end);
+    }
+
+    private RecurrenceDefinition anOpenEndedDefinition(
+            Plan plan, User owner, LocalDate start, String description, BigDecimal amount) {
+        return aDefinition(plan, owner, start, null, description, amount);
+    }
+
+    private RecurrenceDefinition aBoundedDefinition(
+            Plan plan, User owner, LocalDate start, LocalDate end, String description, BigDecimal amount) {
+        return aDefinition(plan, owner, start, end, description, amount);
+    }
+
+    private RecurrenceDefinition aDefinition(
+            Plan plan, User owner, LocalDate start, LocalDate end, String description, BigDecimal amount) {
+        return recurrenceDefinitionRepository.save(RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                owner,
+                null,
+                TransactionType.DEBIT,
+                amount,
+                description,
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                start,
+                end,
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null)))));
+    }
+
+    private void seedOccurrences(RecurrenceDefinition definition, LocalDate from, LocalDate throughInclusive) {
+        List<Transaction> occurrences = new ArrayList<>();
+        for (LocalDate date = from; !date.isAfter(throughInclusive); date = date.plusMonths(1)) {
+            TransactionDetails details = new TransactionDetails(
+                    definition.getCategory(),
+                    definition.getType(),
+                    definition.getAmount(),
+                    definition.getDescription(),
+                    date,
+                    null,
+                    null);
+            Transaction tx = Transaction.create(new TransactionDraft(
+                    definition.getPlan(),
+                    definition.getCreatedBy(),
+                    details,
+                    definition.getSplitMode(),
+                    List.of(new Share(definition.getCreatedBy(), definition.getAmount())),
+                    List.of(),
+                    null,
+                    definition));
+
+            occurrences.add(tx);
+        }
+        transactionRepository.saveAll(occurrences);
+    }
+
+    private Transaction findByDate(List<Transaction> occurrences, LocalDate date) {
+        return occurrences.stream()
+                .filter(occurrence -> occurrence.getStartDate().equals(date))
+                .findFirst()
+                .orElseThrow(() -> new AssertionError("No occurrence dated " + date + " in " + occurrences));
+    }
+}

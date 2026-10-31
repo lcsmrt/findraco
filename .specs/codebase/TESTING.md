@@ -1,7 +1,7 @@
 # Testing Infrastructure
 
 **Analyzed:** 2026-07-05
-**Updated:** 2026-07-25 (`*IT` moved off Testcontainers onto the `dev_finsight` database)
+**Updated:** 2026-10-30 (backend-standards BST-21: backend sections follow the `backend-testing` skill; BST-01: `*IT` on a Testcontainers Postgres, CI runs `./mvnw -B verify`)
 **Prior:** 2026-07-17 (test-foundation feature, T1–T21 — see `.specs/features/test-foundation/`)
 **Frontend:** 2026-10-20, recalibrated by the test-calibration feature (testing model AD-015, superseding AD-012; `.specs/features/test-calibration/`). The closed test table lives in the `frontend-testing` skill and, as code, in `frontend/scripts/testTable.ts`.
 
@@ -9,9 +9,10 @@
 
 **Backend (backend):**
 
-- Unit (`*Test`, surefire, `mvn test`): JUnit 5 via `spring-boot-starter-test`. Plain Mockito/AssertJ unit tests for pure logic — no Spring context.
-- Integration (`*IT`, failsafe, `mvn verify`): JUnit 5 + `spring-boot-starter-test`. Runs against the real `dev_finsight` Postgres over the SSH tunnel (**not** an ephemeral container — Testcontainers was removed 2026-07-25), full Flyway migration chain, real MockMvc HTTP requests, real JWTs via the production `JwtService` (not `@WithMockUser` for security-sensitive tests).
-- Coverage: JaCoCo (`jacoco-maven-plugin` 0.8.15) — global report always generated; a `check` rule gates branch coverage ≥0.80 on exactly three invariant-bearing classes (see Coverage Targets below). No global minimum.
+- Unit (`*Test`, surefire, `mvn test`): JUnit 5 + AssertJ via `spring-boot-starter-test`. Plain unit tests for entity rules and pure logic: no Spring context, no mocks.
+- Integration (`*IT`, failsafe, `mvn verify`): JUnit 5 + `spring-boot-starter-test`. Runs on a throwaway `postgres:16-alpine` Testcontainers instance (one per JVM, `@ServiceConnection`), full Flyway migration chain from an empty database, real MockMvc HTTP requests, real JWTs via the production `JwtService` (not `@WithMockUser` for security-sensitive tests). No Mockito anywhere (`ArchitectureTest.noTestUsesMockito`); external boundaries get fakes (fixed `Clock`, `RecordingMailSender`).
+- Coverage: JaCoCo — global report always generated; a `check` rule gates branch coverage ≥0.80 on the invariant-bearing classes listed in Coverage Targets below. No global minimum.
+- Structure: `ArchitectureTest` (ArchUnit) holds every structural rule of the backend.
 - E2E: none (out of scope — MockMvc-driven integration tests substitute for HTTP-level E2E).
 
 **Frontend (frontend):** Vitest with four projects, run from `frontend/` with pnpm. What gets which test, and how much, is the closed test table in the `frontend-testing` skill: a code kind recognised by path and file name maps to a test kind and an amount, and a module matching no row gets no test.
@@ -27,12 +28,10 @@
 
 **Backend:**
 
-- Location: `backend/src/test/java/com/lcs/finsight/`.
-- Harness/support (test-infrastructure, not app code): `support/AbstractIntegrationTest.java` (base class every `*IT` extends — `@SpringBootTest(MOCK)` + MockMvc + `truncateAll()` `@BeforeEach` + the disposable-database guard), `support/TestAuthHelper.java` (real-JWT bearer tokens), `support/Fixtures.java` (plan/member/transaction builders via real repositories).
-- `*Test` files (existing, unchanged by this pass): `services/SplitResolverTest.java`, `services/CategorySpendingAssemblerTest.java`, `services/SeriesRegeneratorTest.java`, `services/RecurringTransactionGeneratorTest.java`, `security/PlanAuthorizationTest.java`.
-- `*IT` files (new): `support/HarnessSmokeIT.java`, `services/SplitInvariantIT.java`, `services/DashboardPartitionIT.java`, `security/PlanAuthorizationMatrixIT.java`, `security/AuthenticationIT.java`, `services/TransactionCrudIT.java`, `services/SeriesEditIT.java`, `services/MigrationsIT.java`, `services/CsvImportIT.java`, `services/InvitationLifecycleIT.java`.
-- `FinSightApplicationTests.java` now extends `AbstractIntegrationTest` (previously booted against the real `SPRING_DATASOURCE_URL`/`.env`, which made even the default context-load stub depend on a live tunnel).
-- Test config: `src/test/resources/application-test.properties` (fixed `JWT_SECRET_KEY`, `spring.flyway.enabled=true`, `ddl-auto=validate`). It deliberately does **not** set the datasource — `application.properties`' `${SPRING_DATASOURCE_*}` placeholders resolve from `backend/.env` exactly as in a normal run.
+- Location: `backend/src/test/java/com/lcs/findraco/`, mirroring the main packages (`plan/`, `transaction/`, `category/`, `auth/`, `shared/`, ...); `*Test` and `*IT` files sit in the package of the class or feature they test.
+- Harness (`support/`, test infrastructure, not app code): `AbstractIntegrationTest` (base class of every `*IT`: `@SpringBootTest(MOCK)`, MockMvc, truncation before each test, the disposable-database guard), `TestcontainersConfig` (the container, database `findraco_test`), `DisposableDatabaseGuard`, `TestAuthHelper` (real-JWT bearer tokens), `Fixtures` (plan, member, transaction and category builders through real repositories), `ProblemMatchers` (status, media type and problem slug), `CapturedLogs`, and the mail fake `RecordingMailSender` + `InMemoryMailConfig`.
+- Which test a piece of code gets is decided by the closed table in the `backend-testing` skill; the role matrix (`plan/PlanAuthorizationMatrixIT`) has a row per plan-scoped endpoint and fails on an endpoint without one.
+- Test config: `src/test/resources/application-test.properties` (fixed JWT secret, generous rate limits, no scheduled series job). The datasource comes from the container; the suite needs no `backend/.env`.
 
 **Frontend:**
 
@@ -45,27 +44,41 @@
 
 ### Unit Tests
 
-**Backend:** plain JUnit 5 + Mockito, no Spring context, fast. Covers `SplitResolver`, `CategorySpendingAssembler`, `SeriesRegenerator`, `RecurringTransactionGenerator`, `PlanAuthorization` — the pure-logic/invariant classes.
+**Backend:** plain JUnit 5, no Spring context, no mocks, fast. Covers the entity rules (`Transaction`, `RecurrenceDefinition`, `Category`) and the pure-logic classes (`SplitResolver`, `CategorySpendingAssembler`, `CategoryUsageCalculator`, the series generator and regenerator, the CSV parsers, `PlanAuthorization`, the rate limiter, the password policy).
 
 **Frontend:** the unit rows of the test table: business rules (form schema and mappers in `xxxForm.ts`, pure computation under a `utils/` folder), service hooks through MSW with the real `findracoApi` (method, URL, params/body and response mapping asserted; one test crosses the 401 → refresh → retry interceptor), URL params, and shared hooks through `renderHook`. Feature hooks have no test of their own; their container's flow covers them. Tests are derived from the spec's ACs and their names cite the AC. No test asserts library behaviour.
 
 ### Integration Tests
 
-**Backend — Approach:** `*IT` classes extend `AbstractIntegrationTest`, drive the app through real HTTP requests via MockMvc against the `dev_finsight` Postgres (real commits — **not** `@Transactional` rollback; state is reset via a fast `TRUNCATE ... RESTART IDENTITY CASCADE` `@BeforeEach`, deliberately, because rollback-wrapping would hide flush-order bugs like the one found during series-edit, CONCERNS.md L-007). Real JWTs via `TestAuthHelper`, not mocked auth, for anything security-sensitive. Fixtures seed data directly through repositories (fast, clear setup) rather than driving every precondition through the API.
+**Backend — Approach:** `*IT` classes extend `AbstractIntegrationTest`, drive the app through real HTTP requests via MockMvc against the container Postgres (real commits — **not** `@Transactional` rollback; state is reset via a fast `TRUNCATE ... RESTART IDENTITY CASCADE` `@BeforeEach`, deliberately, because rollback-wrapping would hide flush-order bugs like the one found during series-edit, CONCERNS.md L-007). Real JWTs via `TestAuthHelper`, not mocked auth, for anything security-sensitive. Fixtures seed data directly through repositories (fast, clear setup) rather than driving every precondition through the API.
 
-**⚠️ The suite empties `dev_finsight`.** `truncateAll()` wipes every table (except `flyway_schema_history`) before *each* test, so after any `./mvnw verify` the dev database is empty and needs re-seeding for manual UI testing. That is the accepted trade — there are only two databases and `dev_finsight` is the throwaway one now that the real data lives in prod. Because the datasource comes from `backend/.env` (which sits next to `.env.production`, and both point at the same Postgres instance), `AbstractIntegrationTest` fails the run unless the connected database's name is in its `DISPOSABLE_DATABASES` allowlist. Widen that set only for another genuinely throwaway database; **never** add the production one.
+`truncateAll()` wipes every table (except `flyway_schema_history`) before each test. `DisposableDatabaseGuard` fails the run unless the connected database is the container's `findraco_test`; never widen it to a shared database.
 
 **Frontend — Approach:** integration tests in the `unit` project render the real screen through `renderWithProviders` (`QueryClientProvider` with retries off, `MemoryRouter`, and the real context objects with explicit values, e.g. `<PlanContext.Provider value={…}>`), with only the network simulated by MSW. Named scenarios (`signedInMember({ role: "VIEWER" })`) group handler factories and expose everything the test relies on as parameters. Flow tests never `vi.mock` our own modules. A flow test asserts only container decisions: one happy submit with the full payload that reaches the network, an API failure, cancel, permission, and what happens after saving; a pure function's input and output belong to its unit test. Once E2E journeys exist, a happy path a journey covers gets no flow test.
 
 ### E2E Tests
 
-Backend: none, by design (see Test Frameworks above). Frontend: Playwright smoke journeys (sign in, add a transaction, see it on the Overview, switch plans) once the local Docker database exists; they never run against `dev_finsight`.
+Backend: none, by design (see Test Frameworks above). Frontend: Playwright smoke journeys (sign in, add a transaction, see it on the Overview, switch plans) once the local Docker database exists; they never run against a shared database.
 
-## Local Environment Setup — the DB tunnel (read before running `*IT`/`mvn verify`)
+## Local Environment Setup — JDK 25 and Docker
 
-The `*IT` suite talks to `dev_finsight` on the VPS through the SSH tunnel that publishes it on `localhost:5432`. **Bring the tunnel up first** — with it down, every `*IT` (and `FinSightApplicationTests`, which surefire also picks up) fails at context startup with `Connection to localhost:5432 refused`. `backend/.env` must exist too; nothing supplies a fallback datasource anymore.
+The backend builds on JDK 25 (the enforcer pins it). Install one (for example at `~/.jdks/jdk-25.0.5+8`) and put it in `JAVA_HOME` for every Maven call and for the pre-commit hook: `JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B verify`. Error Prone needs the `jdk.compiler` exports already in `backend/.mvn/jvm.config`.
 
-Docker is no longer involved. Testcontainers, `TestContainersConfig.java`, and `docker-java.properties` were removed 2026-07-25, which retires the `DOCKER_HOST` / `TESTCONTAINERS_RYUK_DISABLED` exports that CONCERNS.md Lesson L-008 documented — that lesson is now historical.
+### Docker for Testcontainers
+
+`./mvnw verify` needs a running Docker daemon and nothing else: no tunnel, no `backend/.env`. Without Docker, every `*IT` errors at context startup (`Could not find a valid Docker environment`); nothing skips. CI uses the GitHub runner's Docker at the default socket.
+
+Docker Desktop on Linux puts its socket at `~/.docker/desktop/docker.sock`, not `/var/run/docker.sock`, so two user-level files (never in the repo) point Testcontainers at it:
+
+```bash
+# ~/.testcontainers.properties — where the daemon is
+docker.host=unix:///home/<you>/.docker/desktop/docker.sock
+
+# ~/.mavenrc (read by the Maven the wrapper runs) — Ryuk mounts the socket path inside the Desktop VM
+export TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE=/var/run/docker.sock
+```
+
+`TESTCONTAINERS_DOCKER_SOCKET_OVERRIDE` is an environment variable only; Testcontainers does not read it from the properties file. A Docker Engine (no Desktop) at `/var/run/docker.sock` needs neither file.
 
 ## Test Execution
 
@@ -73,10 +86,14 @@ Docker is no longer involved. Testcontainers, `TestContainersConfig.java`, and `
 
 ```bash
 cd backend
-./mvnw test          # *Test (surefire) — but FinSightApplicationTests is an integration test by
-                     # inheritance, so this still needs the tunnel; -Dtest=<name> for a pure unit test
-./mvnw verify         # unit + integration (*Test + *IT) + jacoco:check — needs the tunnel, empties dev_finsight
+./mvnw test          # *Test (surefire), no Docker needed
+./mvnw verify         # unit + integration (*Test + *IT on the container) + jacoco:check — needs Docker
+./mvnw verify -Dit.test=OpenApiSnapshotIT -Dopenapi.update=true   # rewrite backend/openapi.json after a contract change
 ```
+
+`OpenApiSnapshotIT` compares the generated `/v3/api-docs` (keys sorted, no server URL, no app version) with the
+committed `backend/openapi.json` and fails with the diff. Every change to a request or response regenerates the
+file in the same commit.
 
 **Frontend:**
 
@@ -94,7 +111,7 @@ pnpm test:coverage                                      # critical modules' cove
 ## Coverage Targets
 
 **Current:**
-- Backend: global JaCoCo report generated on every `mvn verify` (no global minimum). A `check` rule gates branch coverage ≥0.80 on exactly `SplitResolver`, `CategorySpendingAssembler`, `PlanAuthorization` — the three invariant-bearing classes identified during design (AD-007's partition invariant, SPLIT-01, and the two-layer plan authz model). Weakening test coverage on any of these three fails `mvn verify`; no other class is gated.
+- Backend: global JaCoCo report generated on every `mvn verify` (no global minimum). A `check` rule gates branch coverage ≥0.80 on exactly the invariant-bearing classes named in `backend/pom.xml` (the split resolver, the spending assembler, the item share allocator and `PlanAuthorization`). Weakening coverage on any of them fails `mvn verify`; no other class is gated.
 - Frontend: 90% branch coverage per module on exactly five critical modules: `utils/money.ts`, `components/input/currencyDigits.ts`, `transactionForm.ts`, `categoryForm.ts`, `api/clients/findracoApi.ts` (an error there writes wrong data or drops the session unnoticed). No other module is gated, and there is no global number.
 
 **Goals:** extend the JaCoCo floor to additional invariant classes as they're identified.
@@ -104,9 +121,9 @@ pnpm test:coverage                                      # critical modules' cove
 
 | Code Layer | Test Type | Location Pattern | Run Command | Amount |
 | --- | --- | --- | --- | --- |
-| Backend pure logic (resolvers/assemblers/authz) | unit (present) | `backend/src/test/**/*Test.java` | `./mvnw test` | — |
-| Backend HTTP/security/DB slice | integration (present) | `backend/src/test/**/*IT.java` | `./mvnw verify` | — |
-| Backend controllers (beyond the *IT already covering create/edit/auth/dashboard/csv/invitations) | integration (partial) | same as above | `./mvnw verify` | — |
+| Backend entity rules and pure logic | unit (present) | `backend/src/test/**/*Test.java` | `./mvnw test` | — |
+| Backend endpoint with a rule or guard | integration, one `*IT` per rule asserting status and problem `type` | `backend/src/test/**/*IT.java` | `./mvnw verify` | one per rule |
+| Backend endpoint × role | role matrix (`PlanAuthorizationMatrixIT`) | `backend/src/test/**/plan/PlanAuthorizationMatrixIT.java` | `./mvnw verify` | a row per plan-scoped endpoint |
 | Backend migrations | integration (present) | `backend/src/test/**/MigrationsIT.java` | `./mvnw verify` | — |
 | Frontend business rules (`*Form.ts`, `*Forms.ts`, `utils/**`) | unit (sibling gate; 90% branches on the critical modules only) | `frontend/src/**/*.test.ts` | `pnpm exec vitest run --project=unit` | one case per rule the spec states, plus the edges it names |
 | Frontend URL params (`*Params.ts`) | unit (sibling gate) | `frontend/src/**/*.test.ts` | `pnpm exec vitest run --project=unit` | a round trip, plus an invalid value |
@@ -133,7 +150,6 @@ Remaining gaps (not "no coverage exists" anymore, but "coverage is not yet exhau
 | Test Type                     | Parallel-Safe? | Isolation Model                                                                                  | Evidence |
 | ------------------------------ | -------------- | -------------------------------------------------------------------------------------------------- | -------- |
 | Backend `*Test` (unit)         | Yes            | No Spring context, no shared state                                                                  | Plain JUnit/Mockito |
-| Backend `*IT` (integration, **development**) | **No — superseded 2026-07-25** | All concurrent `mvn` invocations now share the one `dev_finsight` database, and each truncates every table between tests. Two parallel runs will wipe each other's data mid-test. Run the backend suite one at a time; do not fan `[P]` sub-agents across `mvn verify`. | Testcontainers removed — no per-JVM container |
 | Backend `*IT` (integration, **committed suite**) | No — single-fork by design | All `*IT` in one `mvn verify` run share one container + truncate-between-tests; this supersedes the old "shares one real datasource, no isolation" note | design.md TD-3 |
 | Frontend `unit` project tests   | Yes            | jsdom; one MSW server per test file, handlers reset after each test, no default handlers            | `setupUnit.ts` |
 | Frontend `tooling` project tests | Yes          | Node, no shared state                                                                                | `RuleTester`, AST script tests |
@@ -143,12 +159,12 @@ Remaining gaps (not "no coverage exists" anymore, but "coverage is not yet exhau
 
 | Gate Level | When to Use                               | Command                                                                                       |
 | ---------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------- |
-| Quick      | Backend change, unit tests only            | `cd backend && ./mvnw test` (needs the tunnel — `FinSightApplicationTests` boots a context) |
+| Quick      | Backend change                             | `cd backend && ./mvnw -B verify -Dtest='<touched>*Test' -Dit.test='<touched>*IT' -Dsurefire.failIfNoSpecifiedTests=false -Dfailsafe.failIfNoSpecifiedTests=false` |
 | Docs (FE)  | Skill and doc changes                      | none; check the change against the feature's `context.md` and `design.md`                     |
 | Quick (FE) | Every task that is not the last of its phase | `cd frontend && pnpm exec vitest related --run <changed files>` (only the tests that import them) |
-| Full       | Backend change touching HTTP/DB/security   | `cd backend && ./mvnw verify` (tunnel up; empties `dev_finsight` — see Local Environment Setup) |
+| Full       | Backend change touching HTTP/DB/security   | `cd backend && ./mvnw -B verify` (needs Docker — see Local Environment Setup) |
 | Full (FE)  | Frontend change with stories               | `cd frontend && pnpm test` |
-| Build      | Last task of each phase only               | `cd backend && ./mvnw package` ; `cd frontend && pnpm lint && pnpm build && pnpm test` |
+| Build      | Last task of each phase only               | `cd backend && ./mvnw -B verify` ; `cd frontend && pnpm lint && pnpm build && pnpm test` |
 
 **Gate policy (user, 2026-10-19):** per task, run only the tests related to the files it changed; lint,
 build and the whole suite run once, at the end of each phase. Lint already runs on staged files at every
@@ -162,6 +178,6 @@ Commands are extracted from `backend/pom.xml` (Maven wrapper, failsafe+jacoco bi
 ## CI and Local Gates
 
 - **Local (husky, `frontend/.husky/`, STD-03):** `pre-commit` runs `lint-staged` (ESLint on staged frontend files); `commit-msg` runs `python3 .claude/skills/tlc-spec-driven/scripts/check_commit.py` (Conventional Commits). `--no-verify` skips them; CI does not.
-- **CI (`.github/workflows/ci.yml`, STD-03):** the `changes` job diffs from the last green run on the branch (not the previous push, so code a failed run rejected is tested again) and runs each app job only when that app changed: docs (`.specs/`, `.claude/`, `*.md`) touch neither, `frontend/**` and `backend/**` their own, anything else (root config, lockfile, workflow, compose) both; dispatch, a first run or a force push run both. `frontend` job — pnpm, Playwright browser (cached), `pnpm lint`, `pnpm build` (`tsc`) and the sibling gate over the whole tree on every run; with a usable base, only the `unit` and `storybook` tests that import a file changed since it (`vitest run --changed <base>`), with `tooling` (Vitest's related-file walk fails with `EISDIR` on its `eslint` import) and `critical` with coverage always whole; a change to a file tests depend on without importing it (theme CSS, `vite.config.ts`, `src/test/**`, `.storybook/**`, `package.json`, the lockfile, `scripts/testTable.ts`) reruns everything (`forceRerunTriggers`); without a usable base, `pnpm test`. A weekly run (Mondays 06:00 UTC, on `main`) and every manual dispatch run the full suite and never deploy; a failure ends the run red and GitHub emails it; `backend` job — Temurin 17, `./mvnw test` (surefire only; `*IT` join once the local Postgres in Docker exists, via a CI service container).
+- **CI (`.github/workflows/ci.yml`, STD-03):** the `changes` job diffs from the last green run on the branch (not the previous push, so code a failed run rejected is tested again) and runs each app job only when that app changed: docs (`.specs/`, `.claude/`, `*.md`) touch neither, `frontend/**` and `backend/**` their own, anything else (root config, lockfile, workflow, compose) both; dispatch, a first run or a force push run both. `frontend` job — pnpm, Playwright browser (cached), `pnpm lint`, `pnpm build` (`tsc`) and the sibling gate over the whole tree on every run; with a usable base, only the `unit` and `storybook` tests that import a file changed since it (`vitest run --changed <base>`), with `tooling` (Vitest's related-file walk fails with `EISDIR` on its `eslint` import) and `critical` with coverage always whole; a change to a file tests depend on without importing it (theme CSS, `vite.config.ts`, `src/test/**`, `.storybook/**`, `package.json`, the lockfile, `scripts/testTable.ts`) reruns everything (`forceRerunTriggers`); without a usable base, `pnpm test`. A weekly run (Mondays 06:00 UTC, on `main`) and every manual dispatch run the full suite and never deploy; a failure ends the run red and GitHub emails it; `backend` job — Temurin 25, `./mvnw -B verify` (every `*Test`, every `*IT` on Testcontainers through the runner's Docker, and the JaCoCo gate).
 - **Deploy:** the `deploy` job `needs` `changes`, `frontend` and `backend` (each passed or skipped as unchanged); runs only on `main` when some app changed; one at a time; a head guard skips it when the tested commit is no longer the tip of `main`. Today `deploy.yml` still deploys every push to `main` untested.
 - **Flaky tests** are fixed at the cause; retries are never added.

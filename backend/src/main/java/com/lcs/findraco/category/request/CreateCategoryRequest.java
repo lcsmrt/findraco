@@ -1,0 +1,35 @@
+package com.lcs.findraco.category.request;
+
+import com.lcs.findraco.transaction.model.TransactionType;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Digits;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PositiveOrZero;
+import jakarta.validation.constraints.Size;
+import java.math.BigDecimal;
+import java.util.List;
+
+/**
+ * The body of a new category.
+ *
+ * @param ownerId the member the category belongs to; roots only (a child inherits its parent's). Null = shared.
+ * @param memberLimits per-member limits, replaced as a set. Null keeps the stored entries unchanged; an empty list
+ *     removes them all.
+ */
+public record CreateCategoryRequest(
+        @NotNull(message = "Type cannot be null.") TransactionType type,
+
+        @NotBlank(message = "Description cannot be blank.")
+        @Size(max = 255, message = "Description cannot exceed 255 characters.")
+        String description,
+
+        @PositiveOrZero(message = "Spending limit cannot be negative.")
+        @Digits(integer = 13, fraction = 2, message = "Spending limit must have at most 2 decimal places.")
+        BigDecimal spendingLimit,
+
+        Long parentId,
+        Long ownerId,
+
+        @Valid @Size(max = 50, message = "A category takes at most 50 member limits.")
+        List<CategoryMemberLimitRequest> memberLimits) {}

@@ -1,6 +1,6 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
-import { FinancialTransaction } from "@/api/dtos/financialTransaction";
-import { useGetFinancialTransactionSeries } from "@/api/services/useFinancialTransactionService";
+import type { Category } from "@/api/dtos";
+import { Transaction } from "@/api/dtos/transaction";
+import { useGetTransactionSeries } from "@/api/services/useTransactionService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
 import { usePlanContext } from "@/app/providers/usePlanContext";
@@ -55,11 +55,11 @@ const TITLES: Record<TransactionFormMode, string> = {
 type TransactionFormDrawerProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  transaction?: FinancialTransaction;
+  transaction?: Transaction;
   mode: TransactionFormMode;
   /** Edit footer, narrow screens. */
-  onDuplicate?: (transaction: FinancialTransaction) => void;
-  onDelete?: (transaction: FinancialTransaction) => void;
+  onDuplicate?: (transaction: Transaction) => void;
+  onDelete?: (transaction: Transaction) => void;
 };
 
 export function TransactionFormDrawer({
@@ -77,7 +77,7 @@ export function TransactionFormDrawer({
   const { canAttributeToOthers } = usePlanPermissions();
   const showAttribution = canAttributeToOthers && members.length > 1;
   const chooseScope = useSeriesScope();
-  const { data: definition } = useGetFinancialTransactionSeries(transaction?.seriesId, {
+  const { data: definition } = useGetTransactionSeries(transaction?.seriesId, {
     enabled: open && isSeriesEdit,
   });
 
@@ -94,7 +94,7 @@ export function TransactionFormDrawer({
   // Set by any change in AttributionFields: hand-edited participants win over the category's owner.
   const participantsTouchedRef = useRef(false);
 
-  function applyCategoryAttribution(category: FinancialTransactionCategory | null | undefined) {
+  function applyCategoryAttribution(category: Category | null | undefined) {
     if (!canAttributeToOthers) return;
     const attribution = categoryAttribution({
       mode,
@@ -139,7 +139,7 @@ export function TransactionFormDrawer({
         transaction &&
         (onDuplicate || onDelete) && (
           <>
-            {onDelete && (
+            {onDelete && transaction.permissions.delete && (
               <Button
                 variant="outline"
                 type="button"
@@ -297,7 +297,7 @@ function TypeField({ control, setValue, disabled }: SectionProps) {
 
 type CategoryFieldProps = {
   control: TransactionFormControl;
-  onCategoryChange: (category: FinancialTransactionCategory | null | undefined) => void;
+  onCategoryChange: (category: Category | null | undefined) => void;
   disabled: boolean;
 };
 

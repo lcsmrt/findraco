@@ -122,9 +122,65 @@
 - **Date**: 2026-10-20
 - **Status**: active
 
+### AD-016
+- **Decision**: Backend standards live in the backend skills, the `CLAUDE.md` Backend section and `.specs/codebase/`, and every checkable one is enforced by the build: ArchUnit (one `ArchitectureTest`), Spotless with palantir-java-format, maven-enforcer (no Lombok/MapStruct, Java 25), `-Xlint:all` with `failOnWarning`, Error Prone. No `@SuppressWarnings`; a wrong check is disabled once, project-wide. Each rule lands in the slice that makes the code comply, never red.
+- **Reason**: The backend audit found missing and unchecked standards as the root cause, as on the frontend (AD-010).
+- **Trade-off**: No escape hatch; Error Prone can delay a JDK upgrade until it supports it.
+- **Scope**: Backend (`backend/`), skills, `CLAUDE.md`, pre-commit hook.
+- **Date**: 2026-10-29
+- **Status**: active
+
+### AD-017
+- **Decision**: The backend is packaged by feature (`transaction`, `category`, `plan`, `auth`, `user`, `dashboard`) plus `shared`, with layer sub-packages (`controller`, `service`, `repository`, `model`, `request`, `response`, `exception`, `config`, and `importer` in `transaction`). `shared` depends on no feature. A feature uses another only through its `service` and `model`; writes to another feature's tables go through its owner's service; aggregate reads may use a read-only repository (`extends Repository`) over the other feature's entity. One name per domain in code, tables and routes (`Transaction*`, `Category*`, `/transaction`, `/category`).
+- **Reason**: Packages by type gave no boundary between domains; business rules lived on one path and not another.
+- **Trade-off**: Repositories and helpers must be `public` (the boundary is ArchUnit, not the compiler); one large move.
+- **Scope**: All backend code; ArchUnit rules.
+- **Date**: 2026-10-29
+- **Status**: active
+
+### AD-018
+- **Decision**: Every backend error is RFC 9457 `application/problem+json` with `type` `urn:findraco:problem:<slug>` from the `ProblemType` enum, plus `requestId` and `field` when one applies; field errors as `errors[{field, code, message}]`. Feature exceptions extend `DomainException`, which carries type and status, handled once in `shared.error`. Statuses are semantic (400 unreadable, 422 invalid, 409 conflicts with state, 404 outside scope, never 403 for scope). User-facing text belongs to the client (`type` → copy map); `detail` is English, for developers, without personal data.
+- **Reason**: Three error formats coexisted; the frontend parsed message text; i18n and new channels need a stable identifier.
+- **Trade-off**: Changing the `type` format later breaks every client; each new error needs frontend copy (the build forces it).
+- **Scope**: Backend `shared.error`, every exception; frontend problem map.
+- **Date**: 2026-10-29
+- **Status**: active
+
+### AD-019
+- **Decision**: The OpenAPI schema is the API contract, made true by springdoc customizers (required unless `@Nullable`, `planId` as path parameter, enums as `$ref`, real success status, common problem responses) and committed as `backend/openapi.json`; an IT fails on any difference. The frontend generates its types from the committed file.
+- **Reason**: Generated frontend types were wrong everywhere (all optional, `PlanContext` leaking); contract changes must show in review.
+- **Trade-off**: Every DTO change regenerates the snapshot in the same commit.
+- **Scope**: Backend `shared.openapi`, `openapi.json`; frontend type generation.
+- **Date**: 2026-10-29
+- **Status**: active
+
+### AD-020
+- **Decision**: Backend tests run on a disposable Postgres 16 Testcontainers instance (`@ServiceConnection`), locally and in CI (`./mvnw -B verify`, deploy waits for it). A closed table decides tests: entity rules and pure logic get unit tests without Spring or mocks; endpoints with a rule or guard get an IT per rule asserting status and `type`; every endpoint × role sits in one role-matrix IT; no mocks of our own classes, fakes at external boundaries (fixed `Clock`, in-memory mail).
+- **Reason**: ITs ran against the shared dev database over an SSH tunnel, so CI ran 9 of 32 classes; mock-heavy tests break on refactors without a bug.
+- **Trade-off**: Docker needed on the dev machine; a few seconds per run.
+- **Scope**: Backend tests, CI.
+- **Date**: 2026-10-29
+- **Status**: active
+
+### AD-021
+- **Decision**: Backend operational configuration lives under `app.*` (including `app.jwt` and `app.cors`), bound by `@Validated @ConfigurationProperties` records that fail startup on a missing or out-of-range value; no `@Value`. Environment variable names stay stable. Operational values (rate limits, CSV bounds, series horizon and schedule, sessions) are configurable; contract values the frontend mirrors (password length, field sizes, money scale, warning ratio) stay in code.
+- **Reason**: The user wants what can be tuned in config; a contract value changed only on the server would drift from the client.
+- **Trade-off**: One properties record per area.
+- **Scope**: Backend configuration.
+- **Date**: 2026-10-29
+- **Status**: active
+
+### AD-022
+- **Decision**: Reads never write. Open-ended series are topped up to today + 12 months by a daily job (also at startup) and on creation or edit; a read past a plan's generated watermark first extends that plan's series in its own transaction. Deleting one occurrence records its date in `recurrence_exceptions` (iCalendar `EXDATE`); the generator never produces an excepted date and reconciles by date. Conforms to AD-002 (materialised future rows); whether future rows become forecasts is the "Recurrence v3" feature.
+- **Reason**: Every dashboard read opened a second connection with a write lock; deleted occurrences came back on the next edit.
+- **Trade-off**: A job and a watermark; distributed locking needed only with several instances.
+- **Scope**: Series generation, read services, dashboard.
+- **Date**: 2026-10-29
+- **Status**: active
+
 ## Handoff
 
-- **Next**: pick from the Queue (user). Quick task `transactions-dead-branches` done on branch `dead-branches` (beta.12), awaiting the user's go to merge and deploy
+- **Next**: user reviews branch `backend-standards` (backend-standards Done, Verifier PASS lean 2026-10-30, `.specs/features/backend-standards/validation.md`; frontend `1.0.0-beta.20`; not pushed). Before deploying: VPS steps in `DEPLOY.md` (container `date` = UTC, `backend/scripts/precheck-v16.sql` zero rows, `SERVER_ADDRESS` = docker0 IP, `JWT_SECRET_KEY` decodes to ≥ 32 bytes); push the branch to see CI. Open decisions: e-mail uniqueness is case sensitive; 8 non-blocking Verifier gaps (OWNER invite test, no-lock on reads, PII in `detail` test, single encoder/dotenv guard, bind test, exceptions table, sourceText IT, flaky `TimeZoneDialog` test). Local env: JDK 25 at `~/.jdks/jdk-25.0.5+8` (pre-commit needs `JAVA_HOME` for backend Java), Docker Desktop started. Quick task `transactions-dead-branches` on branch `dead-branches` (beta.12) still awaiting the user's go
 - **Last delivered**: flow-coverage Done (2026-10-20): audit follow-ups F1–F7 closed. Provider guards get no test (table + TESTING.md); `useAuthSession.test.tsx` → `AuthProvider.test.tsx`; DatePicker `InForm` story `play`; new `OverviewPage.test.tsx`; category, plan dialog, transactions page and drawer flows gained the decisions the hook tests held. Feature-hook test cases 74 → 1 (`useCategoryFormSheet`, shared-hook row). Verifier PASS first run, 8/8 mutants killed. No beta bump (tests and docs only)
 - **Verifier lesson**: never run `pnpm install` in a sensor worktree; symlink the real `node_modules` instead (a first run relinked and broke the real install; restored from the lockfile)
 - **Pending decisions (user)**: explain flow test vs E2E with a concrete example when E2E starts (user still unsure why both)
@@ -135,5 +191,5 @@
 - **1.0 criteria**: draft at the top of the ROADMAP
 - **Explain to the user when asked (2026-10-18)**: (1) the story-gate refinement (design decision 8, T126; now superseded by AD-015); (2) the `interface` in `*.d.ts` exception (E1 addendum, T11)
 - **Low notes**: `buildMutationOptions` keeps an unreachable "Operation completed successfully." fallback; one Storybook duplicate-React flake after `react-router-dom` entered stories (fix: `optimizeDeps.include`); the two `setupUnit.test.ts` cases depend on their order; Vitest 3.2.7 `--changed` hits EISDIR on the tooling project (tooling runs in full, ~1s)
-- **Queue**: backend standards review (include CSV import parsing tests: `CsvImportIT` covers only dedup; bad date/amount, missing column, empty file, comma in description untested. Each layer tests its own job: the frontend only sends the file. After it, check which frontend tests the backend makes redundant), M5-06 period navigator, M5-07 PWA, M5-05 Claude MCP connector, M5-10 i18n, local Docker DB quick task, round-2 UX topics
+- **Queue**: backend standards review (include CSV import parsing tests: `CsvImportIT` covers only dedup; bad date/amount, missing column, empty file, comma in description untested. Each layer tests its own job: the frontend only sends the file. After it, check which frontend tests the backend makes redundant), Recurrence v3: actual vs forecast (own Discuss; is a future occurrence an entry or a forecast; see backend-standards S26), M5-06 period navigator, M5-07 PWA, M5-05 Claude MCP connector, M5-10 i18n, local Docker DB quick task, round-2 UX topics
 - **Blockers**: none. **Branch**: main, pushed. API/Vite not running

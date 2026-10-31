@@ -1,8 +1,4 @@
-import type { CategorySpending, CategorySpendingMember } from "@/api/dtos";
-import { scaleTreeLimits, type ScaledNode } from "./scaleLimits";
-
-/** Share of the limit from which a row reads as a warning. */
-export const WARNING_RATIO = 0.8;
+import type { CategorySpending, CategorySpendingMember, UsageStatus } from "@/api/dtos";
 
 export type SpendingStatus = "ok" | "warning" | "over" | "none";
 
@@ -88,7 +84,6 @@ export type SelectedMember = { id: number; name: string };
 
 export type SpendingRowsInput = {
   tree: CategorySpending[];
-  monthCount: number;
   selectedMember: SelectedMember | null;
   colorOf: (memberId: number) => string;
 };
@@ -99,29 +94,26 @@ export type SpendingRowsView = {
   defaultExpandedIds: number[];
 };
 
-type Row = ScaledNode<CategorySpending>;
-
 function byName(a: { name: string }, b: { name: string }) {
   return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
 }
 
-/** Status, integer percent and remaining / over-by of a spend against a limit. */
-export function usageOf(spent: number, limit: number | null | undefined): Usage {
-  if (limit == null) return { status: "none", percent: null, remaining: null, overBy: null };
-  if (spent > limit) {
-    return {
-      status: "over",
-      percent: limit === 0 ? 0 : Math.round((spent / limit) * 100),
-      remaining: null,
-      overBy: spent - limit,
-    };
+const STATUS: Record<UsageStatus, SpendingStatus> = { OK: "ok", WARNING: "warning", OVER: "over" };
+
+/** What the API evaluated for a spend against a limit; all null without one. */
+type Evaluated = Pick<CategorySpendingMember, "remaining" | "percentUsed" | "status">;
+
+/** The API's evaluation as the row shows it: integer percent, and remaining or over-by. */
+export function usageOf({ remaining, percentUsed, status }: Evaluated): Usage {
+  if (status == null || remaining == null || percentUsed == null) {
+    return { status: "none", percent: null, remaining: null, overBy: null };
   }
-  const ratio = limit === 0 ? 0 : spent / limit;
+  const over = status === "OVER";
   return {
-    status: ratio >= WARNING_RATIO ? "warning" : "ok",
-    percent: Math.round(ratio * 100),
-    remaining: limit - spent,
-    overBy: null,
+    status: STATUS[status],
+    percent: Math.round(percentUsed),
+    remaining: over ? null : remaining,
+    overBy: over ? -remaining : null,
   };
 }
 
@@ -141,17 +133,14 @@ function buildBar(segments: SegmentInput[], spent: number, limit: number | null)
   };
 }
 
-function spendingMembers(row: Row) {
+function spendingMembers(row: CategorySpending) {
   return row.members.filter((member) => member.spent !== 0);
 }
 
 function memberSubRow(member: CategorySpendingMember, colorOf: (id: number) => string): MemberSubRow {
   const color = colorOf(member.memberId);
-  const usage = member.active
-    ? usageOf(member.spent, member.limit)
-    : usageOf(member.spent, null);
   return {
-    ...usage,
+    ...usageOf(member),
     memberId: member.memberId,
     name: member.name,
     color,
@@ -168,7 +157,7 @@ function memberSubRow(member: CategorySpendingMember, colorOf: (id: number) => s
   };
 }
 
-function toRow(row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
+function toRow(row: CategorySpending, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
   const { selectedMember, colorOf } = input;
   const limit = row.limit ?? null;
   const owner: OwnerPill | null =
@@ -215,7 +204,7 @@ function toRow(row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
     // bar and amounts of the row become theirs.
     const color = colorOf(ownEntry.memberId);
     return {
-      ...usageOf(ownEntry.spent, ownEntry.limit),
+      ...usageOf(ownEntry),
       categoryId: row.categoryId,
       name: row.name,
       depth,
@@ -258,7 +247,7 @@ function toRow(row: Row, depth: 0 | 1, input: SpendingRowsInput): SpendingRow {
     : null;
 
   return {
-    ...usageOf(row.spent, limit),
+    ...usageOf(row),
     categoryId: row.categoryId,
     name: row.name,
     depth,
@@ -283,14 +272,12 @@ function needsAttention(row: SpendingRow) {
 
 /**
  * The Overview spending list: DEBIT roots and their children sorted by
- * name, limits scaled to the period, member segments and sub-rows, and the roots that
+ * name, member segments and sub-rows, and the roots that
  * open on load.
  */
 export function buildSpendingRows(input: SpendingRowsInput): SpendingRowsView {
   const debit = input.tree.filter((root) => root.type === "DEBIT");
-  const rows = scaleTreeLimits(debit, input.monthCount)
-    .map((root) => toRow(root, 0, input))
-    .sort(byName);
+  const rows = debit.map((root) => toRow(root, 0, input)).sort(byName);
   return {
     rows,
     defaultExpandedIds: rows

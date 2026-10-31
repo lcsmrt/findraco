@@ -1,13 +1,13 @@
 import type {
-  FinancialTransaction,
+  Transaction,
   RecurrenceDefinitionResponse,
-} from "@/api/dtos/financialTransaction";
+} from "@/api/dtos/transaction";
 import {
-  useCreateFinancialTransaction,
-  useCreateFinancialTransactionSeries,
-  useUpdateFinancialTransaction,
-  useUpdateFinancialTransactionSeries,
-} from "@/api/services/useFinancialTransactionService";
+  useCreateTransaction,
+  useCreateTransactionSeries,
+  useUpdateTransaction,
+  useUpdateTransactionSeries,
+} from "@/api/services/useTransactionService";
 import {
   seriesParcelsChanged,
   toPayload,
@@ -20,7 +20,7 @@ import type { SeriesScopeDialogContextValue } from "./useSeriesScope";
 
 type UseTransactionFormSubmitArgs = {
   mode: TransactionFormMode;
-  transaction?: FinancialTransaction;
+  transaction?: Transaction;
   /** The edited series' definition; a series edit waits for it. */
   definition?: RecurrenceDefinitionResponse;
   showAttribution: boolean;
@@ -43,14 +43,15 @@ export function useTransactionFormSubmit({
   chooseScope,
   onDone,
 }: UseTransactionFormSubmitArgs) {
-  const createTransaction = useCreateFinancialTransaction({ onSuccess: onDone });
-  const updateTransaction = useUpdateFinancialTransaction({ onSuccess: onDone });
-  const createSeries = useCreateFinancialTransactionSeries({ onSuccess: onDone });
-  const updateSeries = useUpdateFinancialTransactionSeries({ onSuccess: onDone });
+  const createTransaction = useCreateTransaction({ onSuccess: onDone });
+  // A stale edit closes the form: the data it was opened on has been reloaded.
+  const updateTransaction = useUpdateTransaction({ onSuccess: onDone, onStale: onDone });
+  const createSeries = useCreateTransactionSeries({ onSuccess: onDone });
+  const updateSeries = useUpdateTransactionSeries({ onSuccess: onDone, onStale: onDone });
 
   async function editSeries(
     values: TransactionFormOutput,
-    seriesTransaction: FinancialTransaction,
+    seriesTransaction: Transaction,
     seriesId: string,
   ) {
     // Unreachable from the drawer, which disables Save until the definition loads; it narrows
@@ -85,9 +86,17 @@ export function useTransactionFormSubmit({
       return;
     }
 
-    const body = toPayload(values, showAttribution, currentUserId);
+    const body = toPayload(
+      values,
+      showAttribution,
+      currentUserId,
+      mode === "edit" ? transaction : undefined,
+    );
     if (mode === "edit" && transaction) {
-      updateTransaction.mutate({ params: { id: transaction.id }, body });
+      updateTransaction.mutate({
+        params: { id: transaction.id },
+        body: { ...body, version: transaction.version },
+      });
       return;
     }
     createTransaction.mutate({ body });

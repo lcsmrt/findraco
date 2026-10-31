@@ -1,7 +1,7 @@
 package com.lcs.findraco.support;
 
-import com.lcs.findraco.models.User;
-import com.lcs.findraco.security.JwtService;
+import com.lcs.findraco.auth.service.JwtService;
+import com.lcs.findraco.user.model.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
 import org.springframework.http.HttpHeaders;
@@ -14,7 +14,7 @@ public class TestAuthHelper {
     private JwtService jwtService;
 
     public String bearerFor(User user) {
-        return "Bearer " + jwtService.generateToken(user.getEmail());
+        return "Bearer " + jwtService.generateToken(user.getId());
     }
 
     public RequestPostProcessor asUser(User user) {

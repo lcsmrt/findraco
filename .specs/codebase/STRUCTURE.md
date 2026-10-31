@@ -5,25 +5,22 @@
 ## Directory Tree
 
 ```
-finsight/
-  docker-compose.yml               Production stack (finsight-api + finsight-web)
+findraco/
+  docker-compose.yml               Production stack (findraco-api + findraco-web)
   DEPLOY.md                        Portainer deploy procedure
   backend/
     Dockerfile                     Maven build → JRE runtime image
-    src/main/java/com/lcs/finsight/
-      FinSightApplication.java     Spring Boot entrypoint
-      config/                      OpenApiConfig, SecurityConfig
-      controllers/                 REST controllers (@RestController)
-      services/                    Business logic (@Service, @Transactional)
-      repositories/                Spring Data JPA repositories
-      models/                      JPA entities + enums
-      dtos/
-        request/                   Inbound request + filter DTOs
-        response/                  Outbound response DTOs
-      specifications/              JPA Specification query builders
-      security/                    JWT filter/service, UserDetails
-      exceptions/                  GlobalExceptionHandler + typed exceptions
-      utils/                       ApiRoutes constants, DateUtils
+    openapi.json                   Committed API contract (checked by OpenApiSnapshotIT)
+    pom.xml, .mvn/jvm.config       Build, checks (Spotless, Error Prone, enforcer, JaCoCo)
+    src/main/java/com/lcs/findraco/
+      FindracoApplication.java     Spring Boot entrypoint
+      auth/ user/ plan/            One package per feature, each with layer sub-packages:
+      category/ transaction/       controller, service, repository, model, request, response,
+      dashboard/                   exception, config (transaction also has importer)
+      shared/                      config, error, openapi, security, web, ratelimit
+    src/main/resources/            application.properties, db/migration (Flyway), logback-spring.xml
+    src/test/java/com/lcs/findraco/ Mirrors the packages; support/ holds the integration harness
+    scripts/                       One-off SQL prechecks for risky migrations
   .github/workflows/
     ci.yml                         CI per push, each app job only when that app changed; deploy gated by CI
   frontend/
@@ -85,11 +82,11 @@ The tree above is the target set by the frontend standards. Migration is in prog
 
 ## Module Organization
 
-### Backend — Layered (controller → service → repository)
+### Backend — Package by feature (controller → service → repository)
 
-**Purpose:** REST API for auth, transactions, categories, dashboard.
-**Location:** `backend/src/main/java/com/lcs/finsight/`
-**Key files:** `controllers/FinancialTransactionController.java`, `services/FinancialTransactionService.java`, `models/FinancialTransaction.java`, `utils/ApiRoutes.java`. Each domain has a matching Controller/Service/Repository triplet; DTOs split into `dtos/request` and `dtos/response`; dynamic filtering lives in `specifications/`.
+**Purpose:** REST API for auth, users, plans, categories, transactions (with series and CSV import) and the dashboard.
+**Location:** `backend/src/main/java/com/lcs/findraco/`
+**Key folders:** each feature package (`transaction/`, `category/`, `plan/`, `auth/`, `user/`, `dashboard/`) holds its controllers, services, repositories, entities, request and response records and exceptions; `shared/` holds the infrastructure no feature owns. The package rules and what checks them are in the `backend-structure` skill; `ArchitectureTest` is the executable version.
 
 ### Frontend — Feature-oriented SPA
 
@@ -101,43 +98,49 @@ The tree above is the target set by the frontend standards. Migration is in prog
 
 **Purpose:** All data access. Service hooks are global (NOT per-feature).
 **Location:** `src/api/`
-**Key files:** `clients/findracoApi.ts` (axios), `services/useFinancialTransactionService.ts`, `services/*.handlers.ts` (MSW factories, imported by tests only), `utils/buildMutationOptions.ts`, `utils/buildPagedQuery.ts`.
+**Key files:** `clients/findracoApi.ts` (axios), `services/useTransactionService.ts`, `services/*.handlers.ts` (MSW factories, imported by tests only), `utils/buildMutationOptions.ts`, `utils/buildPagedQuery.ts`.
 
 ## Where Things Live
 
 **Transactions:**
 
-- UI: `frontend/src/features/transactions/` (`TransactionsPage.tsx`, `TransactionFormDrawer.tsx` + `transactionForm.ts`, `TransactionFilterPopover.tsx`, `transactionColumns.tsx`, `filters/`)
-- Data access (FE): `frontend/src/api/services/useFinancialTransactionService.ts`, DTOs `api/dtos/financialTransaction.ts`
-- Business logic (BE): `backend/services/FinancialTransactionService.java` (incl. Nubank CSV import)
-- API/Data (BE): `controllers/FinancialTransactionController.java`, `repositories/FinancialTransactionRepository.java`, `specifications/FinancialTransactionSpecification.java`, `models/FinancialTransaction.java`
+- UI: `frontend/src/features/transactions/`
+- Data access (FE): `frontend/src/api/services/useTransactionService.ts`, DTOs `api/dtos/transaction.ts`
+- Backend: `backend/.../transaction/` (aggregates in `model/`, rules in `service/`, CSV parsers in `importer/`)
 
 **Categories:**
 
-- UI: `frontend/src/features/categories/` (`CategoriesPage.tsx`, `CategoryFormSheet.tsx` + `categoryForm.ts`, `CategoryTreeRow.tsx`, `DeleteCategoryDialog.tsx`); the picker `CategoryCombobox.tsx` in `features/transactions/`
-- Data access (FE): `api/services/useFinancialTransactionCategoryService.ts`, DTOs `api/dtos/financialTransactionCategory.ts`
-- Business logic + data (BE): `services/FinancialTransactionCategoryService.java`, `controllers/FinancialTransactionCategoryController.java`, `models/FinancialTransactionCategory.java`
+- UI: `frontend/src/features/categories/`; the picker `CategoryCombobox.tsx` is in `features/transactions/`
+- Data access (FE): `api/services/useCategoryService.ts`, DTOs `api/dtos/category.ts`
+- Backend: `backend/.../category/`
 
 **Dashboard:**
 
-- UI: `frontend/src/features/overview/` (`OverviewPage.tsx`, `SummaryCards.tsx`, `CategorySpendingList.tsx`, `MonthlyTrendChart.tsx`, `filters/`)
+- UI: `frontend/src/features/overview/`
 - Data access (FE): `api/services/useDashboardService.ts`, DTOs `api/dtos/dashboard.ts`
-- Business logic + data (BE): `services/DashboardService.java`, `controllers/DashboardController.java`, response DTOs `DashboardSummaryDto`, `CategoryBreakdownDto`, `MonthlyTrendDto`
+- Backend: `backend/.../dashboard/` (report queries in its own read-only repository)
+
+**Plans and members:**
+
+- UI: `frontend/src/features/plans/`; data access `api/services/usePlanService.ts`, `useInvitationService.ts`
+- Backend: `backend/.../plan/` (`PlanAuthorization` holds the role rules)
 
 **Auth:**
 
-- UI: `frontend/src/features/auth/` (four pages, `components/AuthCard.tsx`, `components/PasswordInput.tsx`), `app/providers/AuthProvider.tsx` + `useAuth.ts`, `app/routing/PrivateRoute.tsx`
+- UI: `frontend/src/features/auth/`, `app/providers/AuthProvider.tsx` + `useAuth.ts`, `app/routing/PrivateRoute.tsx`
 - Data access (FE): `api/services/useAuthService.ts`, access token in memory (`api/clients/accessToken.ts`), renewal through the session cookie in `findracoApi.ts`
-- Business logic + data (BE): `services/AuthenticationService.java`, `controllers/AuthenticationController.java`, `security/` (JwtService, JwtAuthenticationFilter, CustomUserDetailsService), `config/SecurityConfig.java`
+- Backend: `backend/.../auth/` (JWT, sessions, password reset) and `shared/security`
 
 **Configuration:**
 
-- BE routes: `utils/ApiRoutes.java` (all paths under `/api/finsight`)
+- BE routes: each feature's `controller/XxxRoutes`, built from `shared/web/ApiRoutes` (all paths under `/api/findraco`)
 - FE base URL: `api/clients/findracoApi.ts` — same-origin `/api/findraco` by default; `VITE_FINDRACO_API_URL` in `.env.development` overrides it for the dev server
 
 ## Special Directories
 
-**`backend/specifications/`:** JPA `Specification` builders for dynamic, filter-driven queries (e.g. `FinancialTransactionSpecification.belongsToUser`, `typeEquals`).
+**`backend/src/main/resources/db/migration/`:** the Flyway migrations, the only source of the schema; never edited once applied.
+
+**`backend/openapi.json`:** the committed API contract; regenerated in the same commit as any contract change.
 
 **`frontend/src/components/<family>/base/`:** Primitive pieces of each component family (from shadcn/Base UI), e.g. `input/base/` (`Field`, `Input`, `Select`, …). Editable only for app-wide changes; compositions sit beside `base/` in the family folder. Every primitive has a sibling `.stories.tsx`.
 

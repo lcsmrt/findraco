@@ -1,7 +1,7 @@
-import { AxiosError, AxiosHeaders } from "axios";
+import { problemError } from "@/test/problems";
 import { describe, expect, it } from "vitest";
 import { SessionExpiredError } from "@/api/clients/sessionExpiredError";
-import type { CategoryUsage, FinancialTransactionCategory } from "@/api/dtos";
+import type { CategoryUsage, Category } from "@/api/dtos";
 import {
   buildDeleteRequest,
   classifyDeleteError,
@@ -13,10 +13,11 @@ import {
 function cat(
   id: number,
   description: string,
-  overrides: Partial<FinancialTransactionCategory> = {},
-): FinancialTransactionCategory {
+  overrides: Partial<Category> = {},
+): Category {
   return {
     id,
+    version: 0,
     description,
     type: "DEBIT",
     parentId: null,
@@ -31,16 +32,6 @@ const shopping = cat(4, "Shopping");
 const home = cat(5, "Home", { parentId: 4 });
 const salary = cat(6, "Salary", { type: "CREDIT" });
 const categories = [food, delivery, diningOut, shopping, home, salary];
-
-function httpError(status: number, message: string) {
-  return new AxiosError(message, String(status), undefined, undefined, {
-    status,
-    statusText: "",
-    headers: {},
-    config: { headers: new AxiosHeaders() },
-    data: { message },
-  });
-}
 
 describe("eligibleDeleteTargets", () => {
   it("offers every other category of the same type, sorted by name", () => {
@@ -142,35 +133,29 @@ describe("buildDeleteRequest", () => {
 });
 
 describe("classifyDeleteError", () => {
-  it("reads the children 409", () => {
+  it("reads the children 409 from its type (BST-08 AC 12)", () => {
     expect(
-      classifyDeleteError(
-        httpError(409, "Category 1 has subcategories. Move or delete them before deleting it."),
-      ),
+      classifyDeleteError(problemError(409, "category-has-subcategories")),
     ).toBe("has-children");
   });
 
-  it("reads the in-use 409", () => {
+  it("reads the in-use 409 from its type (BST-08 AC 12)", () => {
     expect(
-      classifyDeleteError(
-        httpError(
-          409,
-          "Category 4 is in use by 3 transaction(s), 0 item(s) and 1 recurrence definition(s).",
-        ),
-      ),
+      classifyDeleteError(problemError(409, "category-in-use")),
     ).toBe("in-use");
   });
 
   it("recognizes a failure caused by an expired session", () => {
     expect(
       classifyDeleteError(
-        new SessionExpiredError(httpError(401, "Authentication required.")),
+        new SessionExpiredError(problemError(401, "session-invalid")),
       ),
     ).toBe("session-expired");
   });
 
   it("ignores other errors", () => {
-    expect(classifyDeleteError(httpError(404, "Not found"))).toBeNull();
+    expect(classifyDeleteError(problemError(404, "category-not-found"))).toBeNull();
+    expect(classifyDeleteError(problemError(409, "stale-version"))).toBeNull();
     expect(classifyDeleteError(new Error("Network"))).toBeNull();
   });
 });

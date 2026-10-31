@@ -1,7 +1,7 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
+import { Category } from "@/api/dtos";
 
 export type CategoryOption = {
-  category: FinancialTransactionCategory;
+  category: Category;
   isChild: boolean;
 };
 
@@ -11,18 +11,18 @@ export type CategoryOption = {
  * parent of a matching child visible so the child stays under it.
  */
 export function groupCategoryOptions(
-  categories: FinancialTransactionCategory[],
+  categories: Category[],
   search = "",
 ): CategoryOption[] {
   const query = search.trim().toLowerCase();
-  function matches(c: FinancialTransactionCategory) {
+  function matches(c: Category) {
     return !query || c.description.toLowerCase().includes(query);
   }
-  function byName(a: FinancialTransactionCategory, b: FinancialTransactionCategory) {
+  function byName(a: Category, b: Category) {
     return a.description.localeCompare(b.description);
   }
   const ids = new Set(categories.map((c) => c.id));
-  function isRoot(c: FinancialTransactionCategory) {
+  function isRoot(c: Category) {
     return c.parentId == null || !ids.has(c.parentId);
   }
 

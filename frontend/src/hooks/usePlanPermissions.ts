@@ -1,4 +1,3 @@
-import type { PlanRole } from "@/api/dtos";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 
 /** What the current member may do in the active plan. */
@@ -17,27 +16,19 @@ const NO_PERMISSIONS: PlanPermissions = {
 };
 
 /**
- * The active plan's capabilities for the current member. They mirror the backend's
- * `PlanAuthorization`, which still enforces them; a rule changed there must change here too.
- * Every capability is false until the plan and its role have loaded, so no screen offers an
- * action the role may not allow.
+ * The active plan's capabilities for the current member, read from the plan the server sent; the
+ * server decides them and still checks every call. Every capability is false until the plan has
+ * loaded, so no screen offers an action the role may not allow.
  */
 export function usePlanPermissions(): PlanPermissions {
-  // The plans query has no data while it loads, so the active plan, and its role, is missing then.
+  // The plans query has no data while it loads, so the active plan is missing then.
   const { activePlan } = usePlanContext();
   if (!activePlan) return NO_PERMISSIONS;
-  return permissionsFor(activePlan.myRole);
-}
-
-function permissionsFor(role: PlanRole): PlanPermissions {
+  const { permissions } = activePlan;
   return {
-    // Mirrors PlanAuthorization.requireCanCreateTransaction.
-    canCreateTransactions: role !== "VIEWER",
-    // Mirrors PlanAuthorization.requireCanAttributeToOthers.
-    canAttributeToOthers: role === "OWNER" || role === "EDITOR",
-    // Mirrors PlanAuthorization.requireCanManageCategories.
-    canManageCategories: role === "OWNER",
-    // Mirrors PlanAuthorization.requireOwner.
-    canManagePlan: role === "OWNER",
+    canCreateTransactions: permissions.createTransactions,
+    canAttributeToOthers: permissions.attributeToOthers,
+    canManageCategories: permissions.manageCategories,
+    canManagePlan: permissions.managePlan,
   };
 }

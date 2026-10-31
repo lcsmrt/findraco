@@ -5,8 +5,8 @@ import { expect, fn } from "storybook/test";
 import { PlansPageView } from "./PlansPageView";
 
 const plans: Plan[] = [
-  { id: 1, name: "Personal", isDefault: true, myRole: "OWNER" },
-  { id: 2, name: "Household", isDefault: false, myRole: "EDITOR" },
+  { id: 1, name: "Personal", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } },
+  { id: 2, name: "Household", isDefault: false, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } },
 ];
 
 const meta = {
@@ -72,12 +72,14 @@ export const ManyLongPlans: Story = {
       name: `Household finances shared with the whole family ${index + 1}`,
       isDefault: index === 0,
       myRole: index % 2 === 0 ? ("OWNER" as const) : ("VIEWER" as const),
+      permissions: index % 2 === 0 ? { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } : { createTransactions: false, attributeToOthers: false, manageCategories: false, managePlan: false },
     })),
     activePlan: {
       id: 1,
       name: "Household finances shared with the whole family 1",
       isDefault: true,
       myRole: "OWNER",
+      permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true },
     },
   },
 };

@@ -4,11 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.lcs.findraco.models.User;
-import com.lcs.findraco.utils.ApiRoutes;
+import com.lcs.findraco.shared.web.ApiRoutes;
+import com.lcs.findraco.user.model.User;
 import javax.sql.DataSource;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.ConfigurableEnvironment;
+import org.springframework.core.env.PropertySource;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
@@ -21,8 +23,11 @@ class HarnessSmokeIT extends AbstractIntegrationTest {
     @Autowired
     private DataSource dataSource;
 
+    @Autowired
+    private ConfigurableEnvironment environment;
+
     @Test
-    void bootsAgainstTheDevDatabaseWithTheFlywayChainApplied() {
+    void bootsAgainstTheContainerWithTheFlywayChainApplied() {
         JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
         Integer failedMigrations = jdbcTemplate.queryForObject(
                 "SELECT COUNT(*) FROM flyway_schema_history WHERE success = false", Integer.class);
@@ -37,20 +42,25 @@ class HarnessSmokeIT extends AbstractIntegrationTest {
     void authenticatedRequestSucceedsAndUnauthenticatedIsRejected() throws Exception {
         User user = fixtures.aUser();
 
-        mockMvc.perform(get(ApiRoutes.PLAN).with(testAuthHelper.asUser(user)))
-                .andExpect(status().is2xxSuccessful());
+        mockMvc.perform(get(ApiRoutes.PLAN).with(testAuthHelper.asUser(user))).andExpect(status().is2xxSuccessful());
 
-        mockMvc.perform(get(ApiRoutes.PLAN))
-                .andExpect(status().is4xxClientError());
+        mockMvc.perform(get(ApiRoutes.PLAN)).andExpect(status().is4xxClientError());
     }
 
     @Test
     void truncateAllIsolatesStateBetweenTests() {
-        long userCountBeforeAnyFixtureInThisTest = new JdbcTemplate(dataSource)
-                .queryForObject("SELECT COUNT(*) FROM users", Long.class);
+        long userCountBeforeAnyFixtureInThisTest =
+                new JdbcTemplate(dataSource).queryForObject("SELECT COUNT(*) FROM users", Long.class);
 
         assertThat(userCountBeforeAnyFixtureInThisTest)
                 .as("truncateAll must have cleared users left over from the previous test method")
                 .isZero();
+    }
+
+    @Test
+    void neverReadsTheDevelopersDotEnv() {
+        assertThat(environment.getPropertySources().stream().map(PropertySource::getName))
+                .as("a test run must match CI, where backend/.env does not exist (and must never send real mail)")
+                .noneMatch(name -> name.contains(".env"));
     }
 }

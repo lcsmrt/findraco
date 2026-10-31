@@ -1,1 +1,17 @@
+staged_java=$(git diff --cached --name-only --diff-filter=ACMR -- 'backend/*.java')
+if [ -n "$staged_java" ]; then
+  java_bin="${JAVA_HOME:+$JAVA_HOME/bin/}java"
+  java_major=$("$java_bin" -XshowSettings:properties -version 2>&1 | sed -n 's/^ *java\.specification\.version = //p')
+  if [ "$java_major" != "25" ]; then
+    echo "pre-commit: the backend needs JDK 25 (found '${java_major:-no java}' at $java_bin). Set JAVA_HOME to a JDK 25." >&2
+    exit 1
+  fi
+  # Only the staged Java files, so the check stays fast.
+  files_regex=$(printf '%s\n' "$staged_java" | sed 's|^backend/||; s|[.]|\\.|g; s|^|.*/|' | paste -sd '|' -)
+  (cd backend && ./mvnw -B -q spotless:check -DspotlessFiles="$files_regex") || {
+    echo "pre-commit: backend formatting failed. Run 'cd backend && ./mvnw spotless:apply'." >&2
+    exit 1
+  }
+fi
+
 cd frontend && pnpm exec lint-staged

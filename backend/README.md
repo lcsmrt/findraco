@@ -4,14 +4,14 @@ Spring Boot REST API for personal finance management. Built as a learning projec
 
 ## Tech Stack
 
-- **Java 17** + **Spring Boot 3.5** — application framework
+- **Java 25** + **Spring Boot 4.1** — application framework
 - **Spring Security** + **JWT** (jjwt) — authentication and authorization
 - **Spring Data JPA** + **Hibernate** — data access layer
 - **PostgreSQL** — relational database
 - **SpringDoc / OpenAPI 3** — API documentation (Swagger UI)
 - **Docker** — containerized deployment
 
-> **Schema management:** there is no migration tool yet — the schema is created/updated by Hibernate `spring.jpa.hibernate.ddl-auto=update` at startup. New columns (e.g. `series_id`) are added automatically on boot. Adopting Flyway/Liquibase is tracked in the roadmap (`../.specs/project/ROADMAP.md`, milestone M3).
+> **Schema management:** Flyway migrations in `src/main/resources/db/migration` are the only source of the schema; Hibernate only validates it (`ddl-auto=validate`).
 
 ## Features
 
@@ -27,26 +27,21 @@ Spring Boot REST API for personal finance management. Built as a learning projec
 
 ```
 src/main/java/com/lcs/findraco/
-  config/           Spring and OpenAPI configuration
-  controllers/      REST controllers
-  dtos/
-    request/        Request DTOs with validation annotations
-    response/       Response DTOs
-  exceptions/       Domain exceptions and global exception handler
-  models/           JPA entities + enums
-  repositories/     Spring Data repositories with JPA Specifications
-  security/         JWT filter, UserDetails service
-  services/         Business logic (incl. RecurringTransactionGenerator)
-  specifications/   JPA Specifications for dynamic filtering
-  utils/            Shared utilities (date validation, API route constants)
+  auth/ user/ plan/       One package per feature, each with layer sub-packages
+  category/ transaction/  (controller, service, repository, model, request, response,
+  dashboard/              exception, config)
+  shared/                 Cross-cutting: config, error, openapi, security, web, ratelimit
+src/main/resources/db/migration/   Flyway migrations
 ```
+
+The package rules and conventions are in the `backend-structure` skill (`../.claude/skills/`).
 
 ## Getting Started
 
 ### Prerequisites
 
-- **Java 17** (JDK)
-- A reachable **PostgreSQL** database. This project does **not** bundle a local database — point it at your own Postgres instance (e.g. a managed DB reached over an SSH tunnel). The `docker-compose.yml` here builds and runs the **API container** (host networking) for deployment; it does not start a database.
+- **Java 25** (JDK)
+- A reachable **PostgreSQL** database. This project does **not** bundle a local database — point it at your own Postgres instance. The root `docker-compose.yml` builds and runs the **API container** (host networking) for deployment; it does not start a database. The tests need Docker instead (they start their own Postgres).
 
 ### Configure environment
 
@@ -62,15 +57,19 @@ Required variables (see `.env.example`):
 SPRING_DATASOURCE_URL=jdbc:postgresql://HOST:PORT/DATABASE?ssl=true&sslmode=require
 SPRING_DATASOURCE_USERNAME=your_db_user
 SPRING_DATASOURCE_PASSWORD=your_db_password
-JWT_SECRET_KEY=generate_with__openssl_rand_-base64_64
-# Optional: SERVER_PORT (default 3000), JWT_EXPIRATION_MS (default 86400000)
+# Base64 text of at least 32 random bytes: openssl rand -base64 48 (the app refuses to start otherwise)
+JWT_SECRET_KEY=generate_with__openssl_rand_-base64_48
+# Optional: SERVER_PORT (default 3000), SERVER_ADDRESS (default 127.0.0.1), JWT_EXPIRATION_MS (default 900000)
 ```
 
 ### Run locally
 
 ```bash
-./mvnw spring-boot:run
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
 ```
+
+The `local` profile (`application-local.properties`, also what `pnpm dev` uses) echoes SQL and, when
+SMTP is not configured, logs the password reset link. Every other profile logs neither.
 
 The API starts on **http://localhost:3000** (configurable via `SERVER_PORT`).
 
@@ -89,6 +88,13 @@ captured by Mailpit (UI at http://localhost:8025, see `.env.example`), not deliv
 ### API documentation
 
 Swagger UI: **http://localhost:3000/swagger-ui.html**
+
+The contract is committed as [`openapi.json`](openapi.json): `OpenApiSnapshotIT` fails with a diff when the
+generated `/v3/api-docs` differs from it. A change to a request or response regenerates it in the same commit:
+
+```bash
+./mvnw verify -Dit.test=OpenApiSnapshotIT -Dopenapi.update=true
+```
 
 Recurring/installment endpoints (base `/api/findraco/financial-transaction`):
 

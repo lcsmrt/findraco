@@ -1,9 +1,9 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
+import { Category } from "@/api/dtos";
 import {
-  useDeleteFinancialTransactionCategory,
+  useDeleteCategory,
   useGetCategoryUsage,
-} from "@/api/services/useFinancialTransactionCategoryService";
-import { resolveErrorMessage } from "@/api/utils/resolveErrorMessage";
+} from "@/api/services/useCategoryService";
+import { problemMessage, problemToast } from "@/api/utils/problems";
 import { Button } from "@/components/button/base/Button";
 import {
   Dialog,
@@ -31,8 +31,8 @@ import { categoryHasChildren } from "./categoryForm";
 type DeleteCategoryDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  category: FinancialTransactionCategory | null;
-  categories: FinancialTransactionCategory[];
+  category: Category | null;
+  categories: Category[];
 };
 
 export function DeleteCategoryDialog({
@@ -56,21 +56,21 @@ export function DeleteCategoryDialog({
   } = useGetCategoryUsage(category?.id ?? null, { enabled: open });
 
   const { mutate: deleteCategory, isPending } =
-    useDeleteFinancialTransactionCategory({
+    useDeleteCategory({
       showErrorToast: false,
       onSuccess: () => onOpenChange(false),
       onError: (error) => {
         const kind = classifyDeleteError(error);
         // The session-expired handler already told the user.
         if (kind === "session-expired") return;
-        const message = resolveErrorMessage({ error });
         if (kind == null) {
-          toast.error(message);
+          const { message, description } = problemToast(error);
+          toast.error(message, description ? { description } : undefined);
           return;
         }
         // The category changed since the dialog opened (a child or a reference
         // was added): show why and reload the counts.
-        setConflict(message);
+        setConflict(problemMessage(error));
         refetchUsage();
       },
     });

@@ -1,7 +1,7 @@
 import { waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Plan, PlanMember, PlanResponse } from "@/api/dtos";
+import type { Plan, PlanMember } from "@/api/dtos";
 import { recordRequests } from "@/test/recordRequests";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
@@ -28,18 +28,23 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const wirePlan: PlanResponse = { id: 5, name: "Home", default: true, myRole: "OWNER" };
-const plan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "OWNER" };
+const plan: Plan = { id: 5, name: "Home", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
+
+const trip: Plan = {
+  id: 6,
+  name: "Trip",
+  isDefault: false,
+  myRole: "VIEWER",
+  permissions: { createTransactions: false, attributeToOthers: false, manageCategories: false, managePlan: false },
+};
 
 function sent(requests: Request[]) {
   return requests.map((request) => [request.method, new URL(request.url).pathname]);
 }
 
-describe("plan queries map the wire `default` flag to isDefault", () => {
-  it("useGetPlans GETs /plan and returns the mapped plans", async () => {
-    server.use(
-      planHandlers.list([wirePlan, { id: 6, name: "Trip", default: false, myRole: "VIEWER" }]),
-    );
+describe("plan queries read the plan as the API sends it", () => {
+  it("useGetPlans GETs /plan and returns the plans", async () => {
+    server.use(planHandlers.list([plan, trip]));
     const requests = recordRequests();
 
     const { result } = renderHookWithProviders(() => useGetPlans());
@@ -48,12 +53,12 @@ describe("plan queries map the wire `default` flag to isDefault", () => {
     expect(sent(requests)).toEqual([["GET", "/api/findraco/plan"]]);
     expect(result.current.data).toEqual([
       plan,
-      { id: 6, name: "Trip", isDefault: false, myRole: "VIEWER" },
+      trip,
     ]);
   });
 
-  it("useGetPlan GETs /plan/{id} and returns the mapped plan", async () => {
-    server.use(planHandlers.get(wirePlan));
+  it("useGetPlan GETs /plan/{id} and returns the plan", async () => {
+    server.use(planHandlers.get(plan));
     const requests = recordRequests();
 
     const { result } = renderHookWithProviders(() => useGetPlan(5));
@@ -79,8 +84,8 @@ describe("useGetPlanMembers", () => {
 });
 
 describe("useCreatePlan", () => {
-  it(`POSTs the name to /plan, returns the mapped plan, invalidates the plans query and shows "Plan created." (NAV-05 AC 1, 2)`, async () => {
-    server.use(planHandlers.create({ ...wirePlan, default: false }));
+  it(`POSTs the name to /plan, returns the plan, invalidates the plans query and shows "Plan created." (NAV-05 AC 1, 2)`, async () => {
+    server.use(planHandlers.create({ ...plan, isDefault: false }));
     const requests = recordRequests();
 
     const { result, queryClient } = renderHookWithProviders(() => useCreatePlan(), {
@@ -99,7 +104,7 @@ describe("useCreatePlan", () => {
 
 describe("useRenamePlan", () => {
   it(`PUTs to a plan-scoped URL, invalidates the plans query and shows "Plan renamed." on success (NAV-05 AC 1, 2)`, async () => {
-    server.use(planHandlers.rename({ id: 5, name: "New name", default: false, myRole: "OWNER" }));
+    server.use(planHandlers.rename({ ...plan, name: "New name", isDefault: false }));
     const requests = recordRequests();
 
     const { result, queryClient } = renderHookWithProviders(() => useRenamePlan(), {
@@ -114,7 +119,7 @@ describe("useRenamePlan", () => {
 
     expect(sent(requests)).toEqual([["PUT", "/api/findraco/plan/5"]]);
     expect(await requests[0].json()).toEqual({ name: "New name" });
-    expect(result.current.data).toEqual({ id: 5, name: "New name", isDefault: false, myRole: "OWNER" });
+    expect(result.current.data).toEqual({ ...plan, name: "New name", isDefault: false });
     expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: ["plans"] });
     expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
   });

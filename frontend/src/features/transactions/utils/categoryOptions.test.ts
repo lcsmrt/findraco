@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import { groupCategoryOptions } from "./categoryOptions";
 
 function cat(
   id: number,
   description: string,
   parentId: number | null = null,
-): FinancialTransactionCategory {
-  return { id, description, type: "DEBIT", parentId };
+): Category {
+  return { id, version: 0, description, type: "DEBIT", parentId };
 }
 
 const food = cat(1, "Food");

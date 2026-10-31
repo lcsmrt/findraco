@@ -1,11 +1,11 @@
-import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import type { TransactionType } from "@/api/dtos/transaction";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
 
 type AmountProps = {
   /** Reais, always positive: the sign comes from `type`. */
   value: number;
-  type: FinancialTransactionType;
+  type: TransactionType;
   className?: string;
 };
 

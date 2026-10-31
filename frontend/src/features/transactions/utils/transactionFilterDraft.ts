@@ -1,7 +1,7 @@
 import type {
-  FinancialTransactionCategory,
-  FinancialTransactionType,
-  PagedFinancialTransactionsFilter,
+  Category,
+  TransactionType,
+  PagedTransactionsFilter,
 } from "@/api/dtos";
 import { format, parseISO } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -14,10 +14,10 @@ export type MemberOption = { id: number; name: string };
 
 /** Editable popover state; mapped from and back to the applied URL filters. */
 export type FilterDraft = {
-  type: FinancialTransactionType | typeof TYPE_ALL;
+  type: TransactionType | typeof TYPE_ALL;
   /** Kept apart from `category`, which is null until the category name has loaded. */
   categoryId: number | null;
-  category: FinancialTransactionCategory | null;
+  category: Category | null;
   /** Kept apart from `member`, which is null until the plan members have loaded. */
   memberId: number | null;
   member: MemberOption | null;
@@ -28,8 +28,8 @@ export type FilterDraft = {
 };
 
 export type AppliedFilters = {
-  filter: PagedFinancialTransactionsFilter;
-  categoryForDisplay: FinancialTransactionCategory | null;
+  filter: PagedTransactionsFilter;
+  categoryForDisplay: Category | null;
   memberForDisplay: MemberOption | null;
 };
 
@@ -57,7 +57,7 @@ export function toDraft(applied: AppliedFilters): FilterDraft {
 
 export function withDraftCategory(
   draft: FilterDraft,
-  category: FinancialTransactionCategory | null,
+  category: Category | null,
 ): FilterDraft {
   return { ...draft, category, categoryId: category?.id ?? null };
 }
@@ -70,7 +70,7 @@ export function withDraftMember(
 }
 
 export function fromDraft(draft: FilterDraft): AppliedFilters {
-  const filter: PagedFinancialTransactionsFilter = {};
+  const filter: PagedTransactionsFilter = {};
   if (draft.type !== TYPE_ALL) filter.type = draft.type;
   if (draft.categoryId != null) filter.categoryId = draft.categoryId;
   if (draft.memberId != null) filter.memberId = draft.memberId;

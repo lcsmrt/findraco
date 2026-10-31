@@ -13,6 +13,9 @@ services:
       - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY}
+      # Where the API listens: the docker0 gateway, never a public address (see DEPLOY.md). No default on
+      # purpose: an unset value must stop the deploy instead of binding the API publicly.
+      - SERVER_ADDRESS=${SERVER_ADDRESS:?set SERVER_ADDRESS to the docker0 gateway, see DEPLOY.md}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - APP_URL=${APP_URL}
       - SMTP_HOST=${SMTP_HOST:-}

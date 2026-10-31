@@ -21,8 +21,6 @@ function summary(people: DashboardSummaryResponse["personBreakdown"]): Dashboard
     totalIncome,
     totalExpenses,
     netBalance: totalIncome - totalExpenses,
-    categoryBreakdown: [],
-    monthlyTrend: [],
     personBreakdown: people,
   };
 }

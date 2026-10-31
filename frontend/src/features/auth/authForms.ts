@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { newPasswordSchema } from "./utils/passwordSchema";
 
 // Sign in, sign up and the reset request all ask for the account email, so they share one rule.
 const emailField = z
@@ -17,7 +18,7 @@ export type LoginFormOutput = z.output<typeof loginSchema>;
 export const registerUserSchema = z.object({
   name: z.string().min(1, "Please enter your full name"),
   email: emailField,
-  password: z.string().min(1, "Please enter your password"),
+  password: newPasswordSchema("Please enter your password"),
 });
 
 export type RegisterUserFormValues = z.input<typeof registerUserSchema>;
@@ -32,7 +33,7 @@ export type ForgotPasswordFormOutput = z.output<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z
   .object({
-    password: z.string().min(1, "Please enter a new password"),
+    password: newPasswordSchema("Please enter a new password"),
     confirmPassword: z.string().min(1, "Please confirm the new password"),
   })
   .refine((values) => values.password === values.confirmPassword, {

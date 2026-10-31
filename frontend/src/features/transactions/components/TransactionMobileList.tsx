@@ -1,4 +1,4 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import { Amount } from "@/components/amount/Amount";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { TablePagination } from "@/components/table";
@@ -10,11 +10,11 @@ import { formatDate } from "@/utils/string/formatters";
 import { groupByDay } from "../utils/groupByDay";
 
 type TransactionMobileRowProps = {
-  transaction: FinancialTransaction;
-  onEdit: (transaction: FinancialTransaction) => void;
+  transaction: Transaction;
+  onEdit: (transaction: Transaction) => void;
 };
 
-/** Description, category and people on the left, signed amount on the right; tap edits. */
+/** Description, category and people on the left, signed amount on the right; tap edits when allowed. */
 function TransactionMobileRow({
   transaction,
   onEdit,
@@ -24,6 +24,7 @@ function TransactionMobileRow({
   return (
     <button
       type="button"
+      disabled={!transaction.permissions.edit}
       onClick={() => onEdit(transaction)}
       className="active:bg-muted/60 flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
     >
@@ -45,12 +46,12 @@ function TransactionMobileRow({
 }
 
 type TransactionMobileListProps = {
-  transactions: FinancialTransaction[];
+  transactions: Transaction[];
   isLoading: boolean;
   pagination?: Partial<Pagination>;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  onEdit: (transaction: FinancialTransaction) => void;
+  onEdit: (transaction: Transaction) => void;
   className?: string;
 };
 

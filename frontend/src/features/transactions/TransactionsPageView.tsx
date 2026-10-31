@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -25,15 +25,15 @@ type TransactionsPageViewProps = {
   onClearFilters: () => void;
   onImport: (file: File) => void;
   isImporting: boolean;
-  transactions: FinancialTransaction[];
+  transactions: Transaction[];
   isLoading: boolean;
   pagination?: Partial<Pagination>;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  columns: ColumnDef<FinancialTransaction>[];
+  columns: ColumnDef<Transaction>[];
   sorting: Sorting[];
   onSortChange: (next: Sorting[]) => void;
-  onEdit: (transaction: FinancialTransaction) => void;
+  onEdit: (transaction: Transaction) => void;
 };
 
 export function TransactionsPageView({

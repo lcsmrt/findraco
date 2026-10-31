@@ -1,8 +1,8 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import {
-  useGetFinancialTransactions,
-  useUpdateFinancialTransaction,
-} from "@/api/services/useFinancialTransactionService";
+  useGetTransactions,
+  useUpdateTransaction,
+} from "@/api/services/useTransactionService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { toPagination } from "@/api/utils/toPagination";
 import { usePlanContext } from "@/app/providers/usePlanContext";
@@ -35,7 +35,7 @@ export function TransactionsPage() {
   const actions = useTransactionActions();
   const { importCsv, isImporting } = useCsvImport();
 
-  const { data, isLoading } = useGetFinancialTransactions({
+  const { data, isLoading } = useGetTransactions({
     page,
     size,
     filter,
@@ -44,7 +44,7 @@ export function TransactionsPage() {
   const { activePlanId } = usePlanContext();
   const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
   const { canAttributeToOthers } = usePlanPermissions();
-  const { mutate: updateTransaction } = useUpdateFinancialTransaction();
+  const { mutate: updateTransaction } = useUpdateTransaction();
   const sorting = useMemo(() => toSorting(sort), [sort]);
 
   function onApplyFilters(applied: AppliedFilters) {
@@ -68,7 +68,7 @@ export function TransactionsPage() {
     updateTransactions((t) => ({ ...t, sort: toTransactionSort(next) }));
   }
 
-  function onInlineSave(transaction: FinancialTransaction, change: InlineSaveBody) {
+  function onInlineSave(transaction: Transaction, change: InlineSaveBody) {
     updateTransaction(toInlineSavePayload(transaction, change));
   }
 

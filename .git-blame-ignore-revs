@@ -1,0 +1,3 @@
+# Formatting-only commits, skipped by git blame (git config blame.ignoreRevsFile .git-blame-ignore-revs).
+# style(backend): apply palantir-java-format
+6e9f36461bfebe5b3858e6afc395f84aab93ca93

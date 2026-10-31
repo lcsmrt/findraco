@@ -1,8 +1,8 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
+import { Category } from "@/api/dtos";
 import {
-  FinancialTransaction,
+  Transaction,
   ParticipantShare,
-} from "@/api/dtos/financialTransaction";
+} from "@/api/dtos/transaction";
 import { PlanMember } from "@/api/dtos/plan";
 import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
 import { Badge } from "@/components/badge/base/Badge";
@@ -33,8 +33,8 @@ import { CategoryCombobox } from "./CategoryCombobox";
 import type { InlineSaveBody } from "./transactionColumns";
 
 type EditableCellProps = {
-  transaction: FinancialTransaction;
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+  transaction: Transaction;
+  onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 }
 
 function EditableDescriptionCell({
@@ -52,6 +52,10 @@ function EditableDescriptionCell({
       setDraft(transaction.description);
     }
     setEditing(false);
+  }
+
+  if (!transaction.permissions.edit) {
+    return <span>{transaction.description}</span>;
   }
 
   if (!editing) {
@@ -99,6 +103,10 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
     setEditing(false);
   }
 
+  if (!transaction.permissions.edit) {
+    return <Amount value={amount} type={type} />;
+  }
+
   if (!editing) {
     return (
       <div
@@ -134,7 +142,7 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
   const [editing, setEditing] = useState(false);
 
   function handleValueChange(
-    newCategory: FinancialTransactionCategory | null | undefined,
+    newCategory: Category | null | undefined,
   ) {
     if (newCategory != null) {
       onSave(transaction, { categoryId: newCategory.id });
@@ -146,16 +154,22 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
     if (!open) setEditing(false);
   }
 
+  const display = category ? (
+    <Badge variant="outline">{category.description}</Badge>
+  ) : (
+    <Text variant="caption" className="text-muted-foreground/50">
+      —
+    </Text>
+  );
+
+  if (!transaction.permissions.edit) {
+    return display;
+  }
+
   if (!editing) {
     return (
       <div className="cursor-pointer" onClick={() => setEditing(true)}>
-        {category ? (
-          <Badge variant="outline">{category.description}</Badge>
-        ) : (
-          <Text variant="caption" className="text-muted-foreground/50">
-            —
-          </Text>
-        )}
+        {display}
       </div>
     );
   }
@@ -187,6 +201,10 @@ export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
       }
     }
     setEditing(false);
+  }
+
+  if (!transaction.permissions.edit) {
+    return <span>{displayDate}</span>;
   }
 
   if (!editing) {
@@ -262,9 +280,9 @@ function EditableParticipantsCell({
   members,
   onSave,
 }: {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   members: PlanMember[];
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+  onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 }) {
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<number[]>([]);
@@ -343,10 +361,10 @@ export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
 }
 
 type ParticipantsCellProps = {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   members: PlanMember[];
   canEdit?: boolean;
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+  onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 };
 
 export function ParticipantsCell({
@@ -355,7 +373,7 @@ export function ParticipantsCell({
   canEdit,
   onSave,
 }: ParticipantsCellProps) {
-  if (!canEdit) {
+  if (!canEdit || !transaction.permissions.edit) {
     return <ParticipantsSummary participants={transaction.participants} />;
   }
   return (
@@ -368,11 +386,11 @@ export function ParticipantsCell({
 }
 
 type ActionsCellProps = {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   isDeleting?: boolean;
-  onDuplicate: (transaction: FinancialTransaction) => void;
-  onEdit: (transaction: FinancialTransaction) => void;
-  onDelete: (transaction: FinancialTransaction) => void;
+  onDuplicate: (transaction: Transaction) => void;
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
 };
 
 export function ActionsCell({
@@ -394,27 +412,31 @@ export function ActionsCell({
       >
         <CopyIcon className="h-4 w-4" />
       </Button>
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
-        aria-label="Edit"
-        onClick={() => onEdit(transaction)}
-      >
-        <PencilIcon className="h-4 w-4" />
-      </Button>
-      <Button
-        type="button"
-        size="icon"
-        variant="ghost"
-        className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
-        aria-label="Delete"
-        disabled={isDeleting}
-        onClick={() => onDelete(transaction)}
-      >
-        <Trash2Icon className="h-4 w-4" />
-      </Button>
+      {transaction.permissions.edit && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
+          aria-label="Edit"
+          onClick={() => onEdit(transaction)}
+        >
+          <PencilIcon className="h-4 w-4" />
+        </Button>
+      )}
+      {transaction.permissions.delete && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
+          aria-label="Delete"
+          disabled={isDeleting}
+          onClick={() => onDelete(transaction)}
+        >
+          <Trash2Icon className="h-4 w-4" />
+        </Button>
+      )}
     </div>
   );
 }

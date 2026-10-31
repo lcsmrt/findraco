@@ -1,78 +1,64 @@
 # External Integrations
 
 **Analyzed:** 2026-07-05
+**Updated:** 2026-10-30 (backend-standards BST-21)
 
 ## Database
 
-**Service:** PostgreSQL (relational database).
-**Purpose:** Primary persistence for users, transactions, categories.
-**Implementation:** Spring Data JPA / Hibernate. Driver `org.postgresql:postgresql` (`backend/pom.xml`, lines 68-72). Datasource wired in `backend/src/main/resources/application.properties`.
-**Local provisioning:** `backend/docker-compose.yml` builds and runs the API container (`network_mode: host`), reading DB connection from environment. There is no Postgres service block in the compose file — a database is expected to already be reachable at the configured URL (e.g. a locally installed Postgres or an external instance).
-**Configuration:** via env vars resolved by `spring-dotenv` (`me.paulschwarz:spring-dotenv`, `pom.xml` lines 73-77). Keys: `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`. `spring.dotenv.filename=.env.${spring.profiles.active:.local}` selects the env file per profile.
-**Schema management:** `spring.jpa.hibernate.ddl-auto=update` — Hibernate auto-generates/updates the schema at startup. No migration tool is present despite the README claiming Flyway. See `CONCERNS.md` (No database migration tool).
-**Authentication:** DB username/password from env.
+**Service:** PostgreSQL 16.
+**Purpose:** Primary persistence for users, plans, categories, transactions and series, sessions and reset tokens.
+**Implementation:** Spring Data JPA / Hibernate over the PostgreSQL driver; the datasource comes from `SPRING_DATASOURCE_*` in `backend/src/main/resources/application.properties`.
+**Schema management:** Flyway migrations in `backend/src/main/resources/db/migration` are the only source of the schema; Hibernate runs with `ddl-auto=validate`. The migration rules are in the `backend-structure` skill.
+**Provisioning:** the root `docker-compose.yml` runs the API (`network_mode: host`) and the web container; the database is a separate instance reachable on the VPS's localhost. Tests start their own disposable Postgres (Testcontainers); see `TESTING.md`.
+**Configuration:** environment variables only (`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`). Local runs read `backend/.env`; production reads the Portainer stack environment.
 
-## Authentication (JWT)
+## Authentication (JWT and sessions)
 
-**Service:** JSON Web Tokens via `io.jsonwebtoken` (jjwt `0.12.6`: `jjwt-api`, `jjwt-impl`, `jjwt-jackson`; `pom.xml` lines 42-59), layered on Spring Security (`spring-boot-starter-security`).
-**Purpose:** Stateless auth for the REST API; token issued at login and validated on each request.
-**Implementation:** JWT filter and `UserDetails` service under `backend/src/main/java/com/lcs/finsight/security/`. Controllers resolve the caller via `@AuthenticationPrincipal UserDetails` (see `FinancialTransactionController`).
-**Configuration:** `jwt.secret-key=${JWT_SECRET_KEY}` and `jwt.expiration-ms=${JWT_EXPIRATION_MS:86400000}` (24h default) in `application.properties`. Secret sourced from the `JWT_SECRET_KEY` env var.
-**Authentication:** HMAC-signed tokens; secret must be supplied via environment (never hardcoded).
+**Service:** JSON Web Tokens via `io.jsonwebtoken` (jjwt: `jjwt-api`, `jjwt-impl`, `jjwt-jackson`, one version property in `backend/pom.xml`), layered on Spring Security.
+**Purpose:** Stateless auth for the REST API (15-minute access token) with a renewable cookie session behind it.
+**Implementation:** `JwtAuthenticationFilter` and `SecurityConfig` in the `auth` feature; controllers receive `@CurrentUser AuthenticatedUser` or a `PlanContext`.
+**Configuration:** `app.jwt.*` (`JWT_SECRET_KEY` Base64, at least 32 decoded bytes or the app does not start; `JWT_EXPIRATION_MS`). Details in `ARCHITECTURE.md` and the `backend-structure` skill.
 
 ## API Integrations
 
-### Nubank CSV Import (inbound external data)
+### CSV import (inbound external data)
 
-**Purpose:** Primary "external data" integration — ingests a user's transaction history exported from the Nubank bank/card as a CSV file. This is a manual file upload, not a live bank API.
-**Location:**
+**Purpose:** Ingests a transaction history exported from a bank as a CSV file. This is a manual file upload, not a live bank API.
+**Location:** `POST /api/findraco/plan/{planId}/transaction/import` (`TransactionController`), `transaction/service/TransactionImportService`, and the parsers behind `StatementParser` in `transaction/importer` (chosen by a registry from the file header).
+**Behaviour:** `multipart/form-data`, field `file`; strict UTF-8; the format is recognised by its header (an unknown one is `csv-unknown-format`, a known unsupported one `csv-format-not-supported`); file size, row count and listed errors are bounded by `app.import.*`; all or nothing (any bad row rejects the file with the lines listed); each row becomes a transaction through the aggregate's own creation method; a row already stored (same source reference) is skipped; the response says `{ imported, skippedDuplicates }`. Imports of one plan run one after the other (advisory lock) and are rate limited per user.
+**Authentication:** a valid JWT and a role allowed to create transactions.
 
-- Controller: `backend/src/main/java/com/lcs/finsight/controllers/FinancialTransactionController.java` — `POST /import` (`importCsv`, `@RequestParam("file") MultipartFile`), returning `FinancialTransactionImportResponseDto` with the imported count.
-- Service: `backend/src/main/java/com/lcs/finsight/services/FinancialTransactionService.java` — `importFromNubankCsv(MultipartFile, User)` (lines 140-192).
+### E-mail (SMTP)
 
-**Endpoint:** `POST /api/finsight/financial-transaction/import` (base path from `ApiRoutes.FINANCIAL_TRANSACTION`), `multipart/form-data`, field name `file`.
-**Parsing behavior:**
+**Purpose:** Sends the password reset link.
+**Implementation:** `auth/service/EmailService` on a dedicated executor (`app.mail.executor.*`), so the reset request answers at once whether or not the account exists. SMTP is optional: without `SMTP_HOST` nothing is sent (a local run logs the link; any other run does not).
+**Configuration:** `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM`, `APP_URL`.
 
-- Reads UTF-8 lines, skips the header row (loop starts at index 1) and blank lines.
-- Splits each row into 4 columns: `date` (`dd/MM/yyyy`), `amount` (BigDecimal), `externalId`, `description`.
-- Sign convention: amount `>= 0` → `CREDIT`, `< 0` → `DEBIT`; the stored amount is `abs()`.
-- **Deduplication:** looks up already-persisted `externalId`s for the user via `financialTransactionRepository.findExistingExternalIds(...)` and skips rows whose `externalId` already exists, then `saveAll` the remainder.
+### API documentation (springdoc / OpenAPI)
 
-**Fragility note:** parse errors throw a wrapped `RuntimeException("Erro ao processar o arquivo CSV.")`; a malformed row can abort the whole import. Format is positional (assumes Nubank's exact 4-column layout). See `CONCERNS.md`.
-**Upload limits:** `spring.servlet.multipart.max-file-size=50MB` / `max-request-size=50MB` (`application.properties`).
-**Authentication:** requires a valid JWT (resolves the owning `User` from the principal).
-
-### API Documentation (SpringDoc / OpenAPI)
-
-**Purpose:** Interactive API docs / Swagger UI.
-**Location:** `springdoc-openapi-starter-webmvc-ui` `2.8.9` (`pom.xml` lines 94-99). Endpoints tagged via `@Tag`/`@Operation` annotations on controllers.
-**Configuration:** enabled in `application.properties` (`springdoc.swagger-ui.enabled=true`, `springdoc.api-docs.enabled=true`, alpha sorting).
-**URL:** `http://<host>:<port>/swagger-ui.html` (default server port is `3000`, not the `8080` the README states — see `CONCERNS.md`).
+**Purpose:** The API contract and interactive docs.
+**Implementation:** springdoc-openapi, shaped by the customizers in `shared/openapi`. The committed `backend/openapi.json` is compared with the generated schema by `OpenApiSnapshotIT`; the frontend types follow it.
+**URL:** `http://<host>:3000/swagger-ui.html`. The API listens on `server.address` (localhost by default, the docker0 gateway in production), so Swagger is not on a public address.
 
 ### Frontend → Backend HTTP client
 
 **Purpose:** The React SPA consumes the Spring Boot REST API.
-**Location:** `frontend/src/api/clients/finsightApi.ts` — an Axios instance.
-**Configuration:** `baseURL: import.meta.env.VITE_FINSIGHT_API_URL ?? "/api/finsight"`. Only development sets the variable (`frontend/.env.development`); the production build relies on the same-origin fallback, proxied by the nginx container.
-**Authentication:** request interceptor injects `Authorization: Bearer <token>`, where the token is read via a pluggable accessor (`getAccessToken` → `getItemFromStorage(STORAGE_KEYS.accessToken)`, overridable via `setAccessTokenAccessor`). A pass-through response interceptor is in place (no global 401/refresh handling yet).
-**Data layer:** TanStack Query (`@tanstack/react-query`) service hooks wrap the client (per `frontend/CLAUDE.md`); components never call Axios directly.
-**CORS:** backend allowed origins come from the `ALLOWED_ORIGINS` env var (`docker-compose.yml`).
+**Location:** `frontend/src/api/clients/findracoApi.ts`, an Axios instance with `baseURL: import.meta.env.VITE_FINDRACO_API_URL ?? "/api/findraco"`; only development sets the variable, and production uses the same-origin fallback proxied by the nginx container.
+**Authentication:** a request interceptor injects `Authorization: Bearer <token>` from the in-memory store; a response interceptor renews the session on a `401` and retries once (see `ARCHITECTURE.md`). The client also sends the `Time-Zone` header.
+**Data layer:** TanStack Query service hooks in `frontend/src/api/services` wrap the client; components never call Axios directly.
+**CORS:** allowed origins come from `ALLOWED_ORIGINS` (`app.cors`).
 
 ## Deployment / CI
 
-### Frontend deploy (GitHub Actions)
+### CI and deploy (GitHub Actions)
 
-**Location:** `frontend/.github/workflows/deploy.yml`.
-**Trigger:** push to `main`.
-**Flow:** `actions/checkout@v4` → `setup-node@v4` (Node 20) → `npm ci` → `npm run build:prod` → deploy the built `dist/*` to a server over SCP via `appleboy/scp-action@v0.1.7`, target `/var/www/finsight` (served as static files, e.g. behind nginx).
-**Secrets:** `SERVER_HOST`, `SERVER_USER`, `SERVER_PASSWORD` (GitHub Actions secrets). Note: password-based SCP auth. No test/lint gate runs before deploy.
+**Location:** `.github/workflows/ci.yml`.
+**Flow:** a push runs the jobs of the apps it changed (frontend lint, build, tests; backend `./mvnw -B verify`); a push to `main` that passes redeploys the Portainer stack through its API. Nothing deploys without passing the gates. Steps done by hand on the VPS are in `DEPLOY.md`.
 
-### Backend container
+### Containers
 
-**Location:** `backend/Dockerfile` — multi-stage build (`maven:3.9-eclipse-temurin-17` build stage → `eclipse-temurin:17-jre-alpine` runtime), packages the fat JAR with `mvn -DskipTests package`, `EXPOSE 3000`.
-**Orchestration:** `backend/docker-compose.yml` (`build: .`, `network_mode: host`, `restart: unless-stopped`), injecting `SPRING_DATASOURCE_*`, `JWT_SECRET_KEY`, `ALLOWED_ORIGINS` from the environment.
-**Note:** the Docker image builds on JDK 17, matching `pom.xml` (`java.version=17`) but not the README's stated Java 21. See `CONCERNS.md`.
+**Location:** `backend/Dockerfile` (multi-stage: `maven:3.9-eclipse-temurin-25` build, `eclipse-temurin:25-jre-alpine` runtime; dependencies resolve in their own layer before `src`), `frontend/Dockerfile` (nginx serving the SPA and proxying `/api`), and the root `docker-compose.yml`, which injects the environment.
 
 ## Not Present
 
-No message queue, no background job/scheduler infrastructure, no third-party payment, email, or notification providers, and no live banking/aggregation API were found in the codebase. External data enters only through the manual Nubank CSV upload described above.
+No message queue, no third-party payment or notification providers and no live banking or aggregation API. The only background work is the in-process daily series top-up job (`app.series.top-up-cron`) and the mail executor.

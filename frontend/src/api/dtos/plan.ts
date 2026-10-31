@@ -1,18 +1,22 @@
 export type PlanRole = "OWNER" | "EDITOR" | "CONTRIBUTOR" | "VIEWER";
 
+/** A role a request may grant: owner changes hands only through a transfer. */
+export type GrantableRole = Exclude<PlanRole, "OWNER">;
+
 export type Plan = {
   id: number;
   name: string;
   isDefault: boolean;
   myRole: PlanRole;
+  /** What the current member may do in the plan, as the server decides it. */
+  permissions: PlanCapabilities;
 };
 
-/** Wire shape of a plan; `mapPlan` renames `default` to the entity's `isDefault`. */
-export type PlanResponse = {
-  id: number;
-  name: string;
-  default: boolean;
-  myRole: PlanRole;
+export type PlanCapabilities = {
+  createTransactions: boolean;
+  attributeToOthers: boolean;
+  manageCategories: boolean;
+  managePlan: boolean;
 };
 
 export type PlanMember = {
@@ -50,7 +54,7 @@ export type TransferOwnershipRequest = {
   params: { planId: number };
   body: {
     newOwnerUserId: number;
-    previousOwnerRole?: PlanRole;
+    previousOwnerRole?: GrantableRole;
   };
 };
 
@@ -61,7 +65,7 @@ export type InvitationStatus = "PENDING" | "ACCEPTED" | "EXPIRED" | "REVOKED";
 export type CreateInvitationRequest = {
   params: { planId: number };
   body: {
-    role: PlanRole;
+    role: GrantableRole;
     type: InvitationType;
     email?: string;
     expiresAt?: string;

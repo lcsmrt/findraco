@@ -1,4 +1,4 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { TableBase, TableBodyBase, TableCellBase, TableRowBase } from "@/components/table/base/TableParts";
 import type { Meta, StoryObj } from "@storybook/react-vite";
@@ -18,14 +18,16 @@ const members: PlanMember[] = [
   { userId: 3, name: "Ana Lima", email: "ana@example.com", role: "VIEWER" },
 ];
 
-const groceries: FinancialTransaction = {
+const groceries: Transaction = {
   id: 1,
+  permissions: { edit: true, delete: true },
+  version: 0,
   type: "DEBIT",
   amount: 320,
   description: "Groceries",
   startDate: "2026-10-14",
   endDate: "2026-10-14",
-  category: { id: 1, type: "DEBIT", description: "Food" },
+  category: { id: 1, version: 0, type: "DEBIT", description: "Food" },
   splitMode: "EQUAL",
   participants: [
     { id: 1, name: "Lucas Martins", shareAmount: 160 },
@@ -35,7 +37,7 @@ const groceries: FinancialTransaction = {
 };
 
 type DemoRowProps = {
-  transaction: FinancialTransaction;
+  transaction: Transaction;
   canEditParticipants?: boolean;
   isDeleting?: boolean;
   onSave: () => void;
@@ -125,7 +127,7 @@ export const Income: Story = {
       type: "CREDIT",
       amount: 5000,
       description: "Salary",
-      category: { id: 9, type: "CREDIT", description: "Income" },
+      category: { id: 9, version: 0, type: "CREDIT", description: "Income" },
       participants: [{ id: 1, name: "Lucas Martins", shareAmount: 5000 }],
     },
   },
@@ -182,6 +184,21 @@ export const EditParticipants: Story = {
   },
 };
 
+// Another member's row seen by a contributor: the server allows neither edit nor delete.
+export const ReadOnly: Story = {
+  args: {
+    transaction: { ...groceries, permissions: { edit: false, delete: false } },
+    canEditParticipants: true,
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await expect(canvas.queryByRole("button", { name: "Edit" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Delete" })).toBeNull();
+    await userEvent.click(canvas.getByText("Groceries"));
+    await expect(canvas.queryByRole("textbox", { name: "Description" })).toBeNull();
+    await expect(args.onSave).not.toHaveBeenCalled();
+  },
+};
+
 export const LongDescriptionLargeAmount: Story = {
   tags: ["!test"],
   args: {
@@ -189,7 +206,7 @@ export const LongDescriptionLargeAmount: Story = {
       ...groceries,
       description: "Annual maintenance contract for the building's elevators and generators",
       amount: 987654321.99,
-      category: { id: 5, type: "DEBIT", description: "Household maintenance and repairs" },
+      category: { id: 5, version: 0, type: "DEBIT", description: "Household maintenance and repairs" },
       participants: [{ id: 3, name: "Maximiliano Albuquerque de Vasconcelos", shareAmount: 1 }],
     },
   },

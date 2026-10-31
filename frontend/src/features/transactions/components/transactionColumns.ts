@@ -1,7 +1,7 @@
 import {
-  FinancialTransaction,
+  Transaction,
   SplitMode,
-} from "@/api/dtos/financialTransaction";
+} from "@/api/dtos/transaction";
 import { PlanMember } from "@/api/dtos/plan";
 import { ColumnDef } from "@tanstack/react-table";
 import { createElement } from "react";
@@ -24,10 +24,10 @@ export type InlineSaveBody = {
 }
 
 type TransactionColumnHandlers = {
-  onDuplicate: (transaction: FinancialTransaction) => void;
-  onEdit: (transaction: FinancialTransaction) => void;
-  onDelete: (transaction: FinancialTransaction) => void;
-  onSave: (transaction: FinancialTransaction, body: InlineSaveBody) => void;
+  onDuplicate: (transaction: Transaction) => void;
+  onEdit: (transaction: Transaction) => void;
+  onDelete: (transaction: Transaction) => void;
+  onSave: (transaction: Transaction, body: InlineSaveBody) => void;
   isDeleting?: boolean;
   showParticipantsColumn?: boolean;
   canEditParticipants?: boolean;
@@ -47,7 +47,7 @@ export function buildTransactionColumns({
   showParticipantsColumn,
   canEditParticipants,
   members = [],
-}: TransactionColumnHandlers): ColumnDef<FinancialTransaction>[] {
+}: TransactionColumnHandlers): ColumnDef<Transaction>[] {
   return [
     {
       id: "description",
@@ -87,14 +87,14 @@ export function buildTransactionColumns({
             id: "participants",
             header: "Attributed to",
             enableSorting: true,
-            cell: ({ row }: { row: { original: FinancialTransaction } }) =>
+            cell: ({ row }: { row: { original: Transaction } }) =>
               createElement(ParticipantsCell, {
                 transaction: row.original,
                 members,
                 canEdit: canEditParticipants,
                 onSave,
               }),
-          } satisfies ColumnDef<FinancialTransaction>,
+          } satisfies ColumnDef<Transaction>,
         ]
       : []),
     {

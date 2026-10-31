@@ -66,6 +66,10 @@ export function renewSession(): Promise<string> {
 
 findracoApi.interceptors.request.use(
   (config) => {
+    // The device's zone, so the API keeps the user's "today" right while the zone is automatic.
+    config.headers["Time-Zone"] =
+      Intl.DateTimeFormat().resolvedOptions().timeZone;
+
     const accessToken = getAccessToken();
 
     if (accessToken) {

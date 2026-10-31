@@ -1,109 +1,121 @@
 ---
 name: backend-exceptions
-description: Add or wire a domain exception in a layered Spring Boot API — define a typed exception and map it to an RFC 7807 ProblemDetail response through one central @RestControllerAdvice. Covers per-domain exception containers, naming, the status taxonomy, one-exception-per-semantic, ProblemDetail with own type URIs, and field-validation errors as an `errors` extension. Use when adding a new error condition or exception type, or changing error-to-status/response mapping. For building the endpoint itself, use /backend-endpoint. Triggers on "exception", "error handling", "ControllerAdvice", "GlobalExceptionHandler", "ProblemDetail", "error response", "not found exception", "validation error", "HTTP status mapping".
+description: Add or change an error the findraco API answers - a `DomainException` subclass nested in the feature's `XxxExceptions`, its `ProblemType` slug, the semantic HTTP status (400 unreadable, 422 invalid, 409 conflicts with state, 404 outside scope, 403, 401, 500), field errors, the frontend `problems.ts` copy, and how the one RFC 9457 `application/problem+json` format is produced by the advice, the security handlers, filters and the error page. Each rule says what checks it (ArchUnit rule, test, or review). Use when adding a new error condition, changing a status, mapping a framework exception, or touching `shared.error`. For the endpoint itself use /backend-endpoint, for testing an error /backend-testing. Triggers on "exception", "error handling", "DomainException", "ProblemType", "ProblemDetail", "problem+json", "GlobalExceptionHandler", "status code", "422", "409", "validation error", "error response", "problems.ts".
 metadata:
   type: reference
 ---
 
 # Backend Exceptions
 
-Domain errors are **typed exceptions** thrown from the service layer and mapped to HTTP responses in **one
-central place** — a `@RestControllerAdvice`. Response bodies use **RFC 7807 `ProblemDetail`**
-(`application/problem+json`). Never put HTTP status on the exception class (`@ResponseStatus`), and never
-handle errors in controllers.
+Every error is one format, `application/problem+json` (RFC 9457), with a stable `type`, produced in
+`shared.error`. A feature throws a named exception where the rule lives; nothing maps HTTP in a
+controller. The client owns the user-facing text: it maps `type` to copy, and `detail` is English for
+developers. Layout of a slice is in `backend-endpoint`; tests in `backend-testing`.
 
-> Names below (`Product`, URIs) are placeholders — adapt to the project. The `type`-URI scheme and the
-> `errors` extension name are project conventions (see `CLAUDE.md`).
+Tags: **[ArchUnit: rule]** a rule of `ArchitectureTest`; **[test: Class]** a test that fails when the rule
+breaks; **[build]** compiler or `tsc`; **[review]** no tool checks it. `S` numbers are decisions in
+`.specs/features/backend-standards/context.md`.
 
-## 1. Define the exception
+---
 
-- One `XxxExceptions` container per domain, holding `static` nested `RuntimeException` subclasses.
-- Name `<Entity><Condition>Exception` (`ProductNotFoundException`, `ProductAlreadyExistsException`).
-- **One exception per semantic** — distinct meaning/status ⇒ distinct type; the same error with variable
-  data ⇒ one type parameterized. Never reuse an exception whose message/meaning is written for another
-  context (that couples two behaviors to one class and leaks the wrong message).
+## 1. The contract (S15)
+
+- Body: `type` = `urn:findraco:problem:<slug>`, `title` = the status phrase, `status`, `detail`, plus
+  `requestId` (the request id of the log line) and, when one applies, `field`. Field errors are
+  `errors: [{ field, code, message }]`, where `code` is the constraint's simple name (`NotBlank`, `Size`)
+  and `message` a fallback. [test: ProblemProducersIT]
+- One builder, `shared.error.Problems`, serves the advice (`GlobalExceptionHandler`), the 401 entry point
+  (`ProblemAuthenticationEntryPoint`), the 403 handler (`ProblemAccessDeniedHandler`), filters
+  (`ProblemResponseWriter`) and the servlet error page (`ProblemErrorController`). A new producer uses it.
+  [test: ProblemProducersIT checks the media type of each producer]
+- The slug is contract: never renamed, and a new rule gets a new slug. The slug list is the
+  `ProblemType` enum, exposed in the OpenAPI schema. [test: OpenApiConventionsIT
+  `theProblemTypeCatalogueIsAnEnum`]
+- `detail` never carries a token, an e-mail or personal data (it reaches the log, S14); machine data a
+  client needs goes in an extension (`field`, `errors`). A 5xx always carries the fixed
+  `Problems.INTERNAL_DETAIL`. [test: LogHygieneIT, ProblemProducersIT; review]
+
+## 2. Define the exception (S5)
+
+- One class per rule, nested in the feature's `<feature>.exception.XxxExceptions` (`PlanExceptions`,
+  `CategoryExceptions`, `TransactionExceptions`, ...), extending `shared.error.DomainException`, named
+  `<Subject><Condition>Exception`. The status is declared in the constructor, next to the rule. [review]
+- Distinct meaning or status means a distinct class and slug. The same error with variable data is one class
+  with the data in `detail`. Never reuse a class whose message is written for another context. [review]
+- Pass the `field` when the error belongs to one request field (`super(type, status, "role", detail)`), so
+  the frontend highlights it. A list of items (the import's bad lines) goes in `errors`. [test: the IT of
+  the rule]
+- Throw it where the rule lives: in the entity when the object alone decides (S3), in the service when it
+  needs a repository, the user, the clock or another feature. [review]
+- Our code never throws `IllegalArgumentException` as a user-facing error; an escaped one answers 500 with
+  the fixed detail. [ArchUnit: noIllegalArgumentAsUserError; test: ProblemProducersIT
+  `anEscapedIllegalArgumentExceptionIsHandledAsUnexpected`]
+- Bean Validation (`@Valid`) stays for the shape of single request fields; an invariant also lives in the
+  entity, because CSV and future entry paths bypass the request. [review]
 
 ```java
-public class ProductExceptions {
-    public static class ProductNotFoundException extends RuntimeException {
-        public ProductNotFoundException(Long id) {
-            super("Product not found for id " + id + ".");
-        }
+public static class LastOwnerException extends DomainException {
+    public LastOwnerException() {
+        super(ProblemType.LAST_OWNER, HttpStatus.CONFLICT,
+                "You cannot remove or demote the last owner of the plan. Transfer ownership first.");
     }
-    public static class ProductAlreadyExistsException extends RuntimeException {
-        public ProductAlreadyExistsException(String name) {
-            super("A product named '" + name + "' already exists.");
-        }
-    }
 }
 ```
 
-## 2. Choose the status
+## 3. Choose the status (S5)
 
-| Condition                                                     | Status |
-| ------------------------------------------------------------ | ------ |
-| Resource missing / hidden for privacy                        | `404`  |
-| Authenticated but not allowed (action on a visible resource) | `403`  |
-| State conflict (duplicate, last-owner, ...)                  | `409`  |
-| Invalid input / broken invariant                             | `400`  |
-| Gone (expired, consumed)                                     | `410`  |
+| Status | Meaning | Test |
+| ------ | ------- | ---- |
+| `400` | The request could not be read: malformed JSON, wrong type, unknown enum value, missing parameter (`MalformedRequestException`, slug `malformed-request`) | |
+| `422` | It was read, but its content is invalid on its own: a field constraint (`validation-failed`), a rule such as `participants-required` or `exact-share-invalid` | Would it still be invalid against an empty database? Yes: 422 |
+| `409` | It would be valid, but clashes with stored state: taken e-mail, subcategories, category in use, last plan or owner, used/revoked/expired invitation, `stale-version` | stored state must change first: 409 |
+| `404` | The resource does not exist or is outside the caller's scope | never 403 for scope |
+| `403` | The caller can see the resource but their role does not allow the action | `insufficient-role`, `not-transaction-creator` |
+| `401` | No usable session; login answers a generic `invalid-credentials` | |
+| `429` | `RateLimitedException`, with a `Retry-After` header | |
+| `500` | Unexpected: a fixed detail, the cause logged at ERROR | |
 
-To deny access to a resource whose existence shouldn't leak, use `404`, not `403` (see /backend-endpoint).
+- The table is applied by review; each status is asserted by the IT of the rule with
+  `ProblemMatchers.problem(status, slug)`. [test: the feature ITs, e.g. PlanManagementIT]
+- Where a semantic status would reveal data, security wins: out of scope is 404, login fails generically,
+  forgot-password answers the same for any e-mail. Accepted exception: sign-up with a taken e-mail is 409
+  `email-taken`. [test: AuthenticationIT `registeringATakenEmailAnswers409`, ForgotPasswordAsyncIT]
+- A 4xx logs no stack trace; ERROR is for what needs action (5xx); suspicious refusals log WARN. [test:
+  RequestLogFilterIT; review]
 
-## 3. Map it centrally → ProblemDetail
+## 4. Mapping lives in one place
 
-In the single `@RestControllerAdvice extends ResponseEntityExceptionHandler`, add an `@ExceptionHandler`
-returning a `ProblemDetail`. Set an own `type` URI + `title`; Spring fills `status`, `instance`, and the
-`application/problem+json` content type. Extending `ResponseEntityExceptionHandler` means Spring's own MVC
-exceptions already return `ProblemDetail` too — keep everything consistent, don't shadow them.
+- `GlobalExceptionHandler` (`@RestControllerAdvice extends ResponseEntityExceptionHandler`) answers a
+  `DomainException` with its own type and status, so a new rule needs **no new handler**. It also types
+  Spring's request errors (400 unreadable, 422 failed constraint, 409 for a race caught at commit by the
+  optimistic lock) and backstops everything else as 500. [test: ProblemProducersIT]
+- Class-level (global) validation errors are mapped to a field-less entry of `errors`. [review]
+- A value outside a `NarrowedEnum` (an enum that accepts only part of its values) is 422 on its field;
+  any other unknown enum value stays 400. [test: BoundedInputsIT, ProblemProducersIT]
+- `StaleVersionException.requireCurrent(stored, sent)` is the one stale check (409 `stale-version`, field
+  `version`). [test: OptimisticLockingIT]
 
-```java
-@ExceptionHandler(ProductExceptions.ProductNotFoundException.class)
-public ProblemDetail handleProductNotFound(ProductExceptions.ProductNotFoundException ex) {
-    ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
-    pd.setType(URI.create("https://<app>/problems/product-not-found"));
-    pd.setTitle("Product not found");
-    return pd;
-}
-```
+## 5. Add a new problem: the checklist
 
-- `type` — a **stable per-type URI**, `https://<app>/problems/<kebab-slug>` (one per problem type).
-- `title` — a stable human label for the type ("Product not found").
-- `detail` — the per-occurrence message (the exception's message).
+1. Add the constant to `ProblemType` (`MY_RULE("my-rule")`), grouped with its feature's slugs.
+2. Add the exception to the feature's `XxxExceptions`, with the status from section 3.
+3. Throw it in the entity or service.
+4. Add the slug to the `ProblemType` union in `frontend/src/api/dtos/problem.ts` and its copy to
+   `PROBLEM_COPY` in `frontend/src/api/utils/problems.ts`. The record is `Record<ProblemType, string>`, so a
+   slug without copy fails `pnpm build`. The union is hand-written until the types are generated, so a slug
+   missing from the union is caught by review. [build: tsc; review]
+5. Regenerate the snapshot: `./mvnw verify -Dit.test=OpenApiSnapshotIT -Dopenapi.update=true`. [test:
+   OpenApiSnapshotIT]
+6. Write the IT that asserts `problem(status, slug)` (and `field` when it has one). [review]
 
-Group exceptions that share a status + type under one handler where it reads cleanly.
-
-## 4. Validation & generic input errors
-
-Bean Validation failures → override `handleMethodArgumentNotValid`, returning a `400` `ProblemDetail` that
-carries an **`errors` extension** (the project's chosen name; RFC 7807 leaves field errors unspecified):
-
-```java
-@Override
-protected ResponseEntity<Object> handleMethodArgumentNotValid(
-        MethodArgumentNotValidException ex, HttpHeaders headers, HttpStatusCode status, WebRequest request) {
-    List<Map<String, String>> errors = ex.getBindingResult().getFieldErrors().stream()
-            .map(fe -> Map.of("field", fe.getField(), "message", fe.getDefaultMessage()))
-            .toList();
-    ProblemDetail pd = ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, "Validation failed.");
-    pd.setType(URI.create("https://<app>/problems/validation-error"));
-    pd.setTitle("Validation failed");
-    pd.setProperty("errors", errors);
-    return ResponseEntity.badRequest().body(pd);
-}
-```
-
-Generic input errors thrown from the service → `IllegalArgumentException`, mapped to a `400` `ProblemDetail`.
-
-## 5. Never reach the fallback
-
-Every domain exception has an explicit handler. A catch-all `@ExceptionHandler(Exception.class)` → `500`
-`ProblemDetail` exists only as a backstop — nothing domain-specific should fall through to it.
+The frontend reads errors only through `problems.ts` (`problemType`, `problemMessage`,
+`problemFieldErrors`, `problemLineErrors`, `problemToast`): it branches on the slug, never on message
+text, and an unknown slug falls back to a generic sentence per status.
 
 ## Before done
 
-- [ ] Exception is a nested type in the domain's `XxxExceptions`, named `<Entity><Condition>Exception`.
-- [ ] Distinct semantic ⇒ distinct type; no reuse across different meanings.
-- [ ] Central `@RestControllerAdvice` handler returns a `ProblemDetail` with an own `type` URI + `title`.
-- [ ] Status matches the taxonomy; existence-hiding denials use `404`.
-- [ ] Validation errors carry the `errors` extension; nothing falls through to the `500` backstop.
+- [ ] Exception nested in `XxxExceptions`, extends `DomainException`, one per meaning.
+- [ ] Status from the table (422 vs 409 by the empty-database test; 404 for scope).
+- [ ] `field` set when it belongs to a request field; `detail` English, no personal data.
+- [ ] New slug in `ProblemType`, the frontend union and `PROBLEM_COPY`; snapshot regenerated.
+- [ ] An IT asserts status and slug with `ProblemMatchers.problem`.

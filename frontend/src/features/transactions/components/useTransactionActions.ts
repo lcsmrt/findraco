@@ -1,8 +1,8 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import {
-  useDeleteFinancialTransaction,
-  useDeleteFinancialTransactionSeries,
-} from "@/api/services/useFinancialTransactionService";
+  useDeleteTransaction,
+  useDeleteTransactionSeries,
+} from "@/api/services/useTransactionService";
 import { useConfirm } from "@/components/dialog/useConfirm";
 import { useState } from "react";
 import type { TransactionFormMode } from "./transactionForm";
@@ -13,14 +13,14 @@ type DrawerState =
   | {
       open: true;
       mode: "edit" | "duplicate";
-      transaction: FinancialTransaction;
+      transaction: Transaction;
     };
 
 /** What the transaction drawer renders from: closed, or editing/duplicating a transaction. */
 export type TransactionDrawer = {
   open: boolean;
   mode: TransactionFormMode;
-  transaction?: FinancialTransaction;
+  transaction?: Transaction;
 };
 
 function toDrawer(state: DrawerState): TransactionDrawer {
@@ -38,18 +38,18 @@ export function useTransactionActions() {
   const confirm = useConfirm();
   const chooseScope = useSeriesScope();
   const { mutate: deleteTransaction, isPending: isDeleting } =
-    useDeleteFinancialTransaction();
-  const { mutate: deleteSeries } = useDeleteFinancialTransactionSeries();
+    useDeleteTransaction();
+  const { mutate: deleteSeries } = useDeleteTransactionSeries();
 
-  function edit(transaction: FinancialTransaction) {
+  function edit(transaction: Transaction) {
     setDrawerState({ open: true, mode: "edit", transaction });
   }
 
-  function duplicate(transaction: FinancialTransaction) {
+  function duplicate(transaction: Transaction) {
     setDrawerState({ open: true, mode: "duplicate", transaction });
   }
 
-  async function remove(transaction: FinancialTransaction) {
+  async function remove(transaction: Transaction) {
     if (transaction.seriesId) {
       const scope = await chooseScope({
         title: "Delete series",
@@ -84,7 +84,7 @@ export function useTransactionActions() {
   }
 
   /** The drawer closes first, so the delete dialog is not stacked on top of it. */
-  function removeFromDrawer(transaction: FinancialTransaction) {
+  function removeFromDrawer(transaction: Transaction) {
     setDrawerState({ open: false });
     void remove(transaction);
   }

@@ -1,13 +1,13 @@
 import { UseMutationOptions } from "@tanstack/react-query";
 import { SessionExpiredError } from "../clients/sessionExpiredError";
 import { MutationOptions } from "../types/mutationOptions";
-import { resolveErrorMessage } from "./resolveErrorMessage";
+import { problemToast, problemType } from "./problems";
 import { resolveSuccessMessage } from "./resolveSuccessMessage";
 import { toast } from "sonner";
 
 type MutationDefaults<TData, TVariables> = Omit<
   MutationOptions<TData, TVariables>,
-  "onSuccess" | "onError"
+  "onSuccess" | "onError" | "onStale"
 >;
 
 /**
@@ -26,7 +26,7 @@ export function buildMutationOptions<TData, TVariables>(
     showErrorToast = true,
   } = { ...defaults, ...options };
 
-  const { onSuccess, onError } = options ?? {};
+  const { onSuccess, onError, onStale } = options ?? {};
 
   return {
     onSuccess: (data, variables) => {
@@ -42,15 +42,17 @@ export function buildMutationOptions<TData, TVariables>(
       }
       onSuccess?.(data, variables);
     },
-    onError: (error) => {
+    onError: (error, _variables, _onMutateResult, context) => {
       // A failed renewal already showed the session-expired message.
       if (showErrorToast && !(error instanceof SessionExpiredError)) {
-        toast.error(
-          resolveErrorMessage({
-            error,
-            fallbackMessage: errorMessage ?? "An error occurred.",
-          }),
-        );
+        const { message, description } = problemToast(error, errorMessage);
+        toast.error(message, description ? { description } : undefined);
+      }
+      if (problemType(error) === "stale-version") {
+        // Someone changed the item since it was read: reload what is on screen, so the next edit
+        // starts from the stored version instead of failing again.
+        void context.client.invalidateQueries();
+        onStale?.();
       }
       onError?.(error);
     },

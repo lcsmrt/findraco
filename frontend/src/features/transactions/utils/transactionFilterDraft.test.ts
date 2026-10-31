@@ -1,4 +1,4 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import { describe, expect, it } from "vitest";
 import {
   fromDraft,
@@ -8,8 +8,9 @@ import {
   type AppliedFilters,
 } from "./transactionFilterDraft";
 
-const groceries: FinancialTransactionCategory = {
+const groceries: Category = {
   id: 12,
+  version: 0,
   type: "DEBIT",
   description: "Groceries",
 };

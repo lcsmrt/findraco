@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import { Transaction } from "@/api/dtos/transaction";
 import {
   TransactionFormOutput,
   TransactionFormValues,
@@ -18,7 +18,7 @@ const validValues: TransactionFormOutput = {
   type: "DEBIT",
   description: "Groceries",
   amount: 100,
-  category: { id: 1, type: "DEBIT", description: "Food", spendingLimit: null },
+  category: { id: 1, version: 0, type: "DEBIT", description: "Food", spendingLimit: null },
   date: new Date(2026, 6, 1),
   recurring: false,
   seriesEdit: false,
@@ -28,8 +28,10 @@ const validValues: TransactionFormOutput = {
   items: [],
 };
 
-const baseTransaction: FinancialTransaction = {
+const baseTransaction: Transaction = {
   id: 42,
+  permissions: { edit: true, delete: true },
+  version: 0,
   type: "DEBIT",
   amount: 150.5,
   description: "Rent",
@@ -279,6 +281,22 @@ describe("toPayload — plain transaction", () => {
     });
   });
 
+  it("sends back the parcel count and end date of the transaction being edited", () => {
+    const stored = { parcelsNumber: 3, endDate: "2026-07-31T00:00:00.000Z" };
+
+    const body = toPayload(validValues, false, undefined, stored);
+
+    expect(body.parcelsNumber).toBe(3);
+    expect(body.endDate).toBe("2026-07-31");
+  });
+
+  it("sends no parcel count or end date when nothing is being edited", () => {
+    const body = toPayload(validValues, false, undefined);
+
+    expect(body.parcelsNumber).toBeUndefined();
+    expect(body.endDate).toBeUndefined();
+  });
+
   it("sends no attribution for Me while the current user is unknown", () => {
     const body = toPayload(validValues, true, undefined);
 
@@ -341,7 +359,7 @@ describe("toPayload — plain transaction", () => {
           {
             description: "Snacks",
             amount: 25,
-            category: { id: 5, type: "DEBIT", description: "Food" },
+            category: { id: 5, version: 0, type: "DEBIT", description: "Food" },
           },
         ],
       },
@@ -511,7 +529,7 @@ describe("categoryAttribution — participants follow the selected category (CAT
   });
 
   it("restores the duplicated transaction's participants as the default when duplicating", () => {
-    const duplicated: FinancialTransaction = {
+    const duplicated: Transaction = {
       ...baseTransaction,
       participants: [{ id: 4, name: "Rafa", shareAmount: 150.5 }],
     };
@@ -606,12 +624,15 @@ describe("participantsForMode — the participants an attribution mode starts wi
 });
 
 describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
-  const shared: FinancialTransaction = {
+  const shared: Transaction = {
     id: 7,
+    permissions: { edit: true, delete: true },
+    version: 4,
     type: "CREDIT",
     amount: 300,
     description: "Dinner",
-    category: { id: 3, type: "CREDIT", description: "Food", spendingLimit: null },
+    category: { id: 3, version: 0, type: "CREDIT", description: "Food", spendingLimit: null },
+    parcelsNumber: 3,
     startDate: "2026-05-10T00:00:00.000Z",
     endDate: "2026-05-10T00:00:00.000Z",
     splitMode: "EQUAL",
@@ -619,7 +640,16 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       { id: 1, name: "Ana", shareAmount: 150 },
       { id: 2, name: "Bia", shareAmount: 150 },
     ],
-    items: [],
+    items: [
+      {
+        id: 31,
+        description: "Wine",
+        amount: 80,
+        quantity: 2,
+        category: { id: 5, version: 0, type: "CREDIT", description: "Drinks", spendingLimit: null },
+      },
+      { id: 32, description: "Tip", amount: 20, quantity: 1 },
+    ],
   };
   const unchanged = {
     type: "CREDIT",
@@ -627,11 +657,20 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
     amount: 300,
     categoryId: 3,
     startDate: "2026-05-10",
+    // The PUT replaces these too: leaving them out would clear an installment's parcel count.
+    parcelsNumber: 3,
+    endDate: "2026-05-10",
     splitMode: "EQUAL",
     participants: [
       { memberId: 1, shareAmount: undefined },
       { memberId: 2, shareAmount: undefined },
     ],
+    // The PUT replaces the items too: a cell edit sends them back unchanged, or they would be lost.
+    items: [
+      { description: "Wine", amount: 80, quantity: 2, categoryId: 5 },
+      { description: "Tip", amount: 20, quantity: 1, categoryId: undefined },
+    ],
+    version: 4,
   };
 
   it("sends the transaction as it is, keyed by its id, when no field changes", () => {
@@ -645,18 +684,30 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       categoryId: 9,
       startDate: "2026-06-01",
       participants: [{ memberId: 2 }],
-      splitMode: "PERCENT" as const,
+      splitMode: "EXACT" as const,
     };
     expect(toInlineSavePayload(shared, change).body).toEqual({ ...unchanged, ...change });
   });
 
+  it("sends back the version it was read at, so a concurrent change is refused (BST-06 AC 9)", () => {
+    expect(toInlineSavePayload(shared, { description: "Lunch" }).body.version).toBe(4);
+  });
+
+  it("sends no end date and no parcel count for a transaction that has none", () => {
+    const plain = { ...shared, parcelsNumber: undefined, endDate: null } as unknown as Transaction;
+    const { body } = toInlineSavePayload(plain, {});
+
+    expect(body.parcelsNumber).toBeUndefined();
+    expect(body.endDate).toBeUndefined();
+  });
+
   it("sends no category for an uncategorised transaction", () => {
-    const uncategorised: FinancialTransaction = { ...shared, category: undefined };
+    const uncategorised: Transaction = { ...shared, category: undefined };
     expect(toInlineSavePayload(uncategorised, {}).body.categoryId).toBeUndefined();
   });
 
   it("keeps each participant's share of an exact split", () => {
-    const exact: FinancialTransaction = {
+    const exact: Transaction = {
       ...shared,
       splitMode: "EXACT",
       participants: [

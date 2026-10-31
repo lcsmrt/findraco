@@ -1,10 +1,12 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { groupByDay } from "./groupByDay";
 
-function tx(id: number, startDate: string): FinancialTransaction {
+function tx(id: number, startDate: string): Transaction {
   return {
     id,
+    permissions: { edit: true, delete: true },
+    version: 0,
     type: "DEBIT",
     amount: 10,
     description: `T${id}`,

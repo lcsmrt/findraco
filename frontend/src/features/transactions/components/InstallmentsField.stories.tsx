@@ -1,4 +1,4 @@
-import type { RecurrenceDefinitionResponse } from "@/api/dtos/financialTransaction";
+import type { RecurrenceDefinitionResponse } from "@/api/dtos/transaction";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useForm } from "react-hook-form";
 import { expect } from "storybook/test";
@@ -11,6 +11,7 @@ import {
 
 const definition: RecurrenceDefinitionResponse = {
   id: 9,
+  version: 0,
   seriesId: "s-1",
   type: "DEBIT",
   amount: 150,

@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { SeriesEditScope } from "@/api/dtos/financialTransaction";
+import { SeriesEditScope } from "@/api/dtos/transaction";
 import { SeriesScopeDialog } from "./SeriesScopeDialog";
 import {
   SeriesScopeDialogContext,

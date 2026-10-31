@@ -6,7 +6,7 @@ Monorepo with two apps:
 
 | App | Stack | Path |
 | --- | ----- | ---- |
-| **Backend** | Java 17 · Spring Boot 3.5 · PostgreSQL · JWT | [`backend/`](./backend) |
+| **Backend** | Java 25 · Spring Boot 4.1 · PostgreSQL · JWT | [`backend/`](./backend) |
 | **Frontend** | React 19 · Vite 6 · TanStack Query · Tailwind v4 | [`frontend/`](./frontend) |
 
 ## Run it locally
@@ -64,9 +64,6 @@ This project is planned and built with the `tlc-spec-driven` workflow. All plann
 
 Current feature: [`.specs/features/recurring-transactions/`](./.specs/features/recurring-transactions).
 
-## Known gaps (roadmap M3)
+## Known gaps
 
-- No DB migration tool yet — schema is managed by Hibernate `ddl-auto=update`.
-- No automated backend test coverage beyond the series-generator unit test.
-
-See `.specs/codebase/CONCERNS.md` for the full list.
+The open concerns are listed in `.specs/codebase/CONCERNS.md`; the backend standards (structure, tests, errors) are in the `backend-*` skills under `.claude/skills/`.

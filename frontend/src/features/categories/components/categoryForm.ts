@@ -1,8 +1,8 @@
 import {
-  CreateFinancialTransactionCategoryRequest,
-  FinancialTransactionCategory,
+  CreateCategoryRequest,
+  Category,
 } from "@/api/dtos";
-import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import { TransactionType } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
 import { toCents } from "@/utils/money";
@@ -10,15 +10,15 @@ import { z } from "zod";
 
 export function categoryHasChildren(
   categoryId: number,
-  categories: FinancialTransactionCategory[],
+  categories: Category[],
 ) {
   return categories.some((c) => c.parentId === categoryId);
 }
 
 /** Categories that can be the parent of `editingId`: roots of `type`, never itself. */
 export function parentOptions(
-  categories: FinancialTransactionCategory[],
-  type: FinancialTransactionType,
+  categories: Category[],
+  type: TransactionType,
   editingId?: number,
 ) {
   return categories
@@ -30,7 +30,7 @@ export function parentOptions(
 export function effectiveOwnerId(
   parentId: number | null,
   ownerId: number | null,
-  categories: FinancialTransactionCategory[],
+  categories: Category[],
 ): number | null {
   if (parentId != null) {
     return categories.find((c) => c.id === parentId)?.ownerId ?? null;
@@ -46,7 +46,7 @@ export type OwnerOption = { id: number; name: string; active: boolean };
  */
 export function ownerOptions(
   members: PlanMember[],
-  category?: FinancialTransactionCategory | null,
+  category?: Category | null,
 ): OwnerOption[] {
   const options: OwnerOption[] = members
     .map((member) => ({ id: member.userId, name: member.name, active: true }))
@@ -92,8 +92,8 @@ export type CategoryFormOutput = z.output<typeof categoryFormBaseSchema>;
  * the same type.
  */
 export function createCategoryFormSchema(
-  categories: FinancialTransactionCategory[],
-  editing?: FinancialTransactionCategory | null,
+  categories: Category[],
+  editing?: Category | null,
 ) {
   return categoryFormBaseSchema.superRefine((values, ctx) => {
     refineMemberLimits(values, ctx, categories);
@@ -137,7 +137,7 @@ export function createCategoryFormSchema(
 function refineMemberLimits(
   values: CategoryFormValues,
   ctx: z.RefinementCtx,
-  categories: FinancialTransactionCategory[],
+  categories: Category[],
 ) {
   if (values.limitMode !== "perMember") return;
   if (values.type === "CREDIT") {
@@ -204,7 +204,7 @@ export function memberLimitShares(
  * stored entries of former members.
  */
 export function buildMemberLimitRows(
-  category: FinancialTransactionCategory | null | undefined,
+  category: Category | null | undefined,
   members: PlanMember[],
 ): MemberLimitRow[] {
   const stored = category?.memberLimits ?? [];
@@ -232,10 +232,10 @@ export function buildMemberLimitRows(
 }
 
 export function buildDefaultValues(
-  category?: FinancialTransactionCategory | null,
+  category?: Category | null,
   defaults?: CategoryFormDefaults,
   members: PlanMember[] = [],
-  categories: FinancialTransactionCategory[] = [],
+  categories: Category[] = [],
 ): CategoryFormValues {
   const memberLimits = buildMemberLimitRows(category, members);
   if (category) {
@@ -272,7 +272,7 @@ export function buildDefaultValues(
  */
 export function toPayload(
   values: CategoryFormOutput,
-): CreateFinancialTransactionCategoryRequest["body"] {
+): CreateCategoryRequest["body"] {
   const perMember = values.type === "DEBIT" && values.limitMode === "perMember";
   return {
     type: values.type,

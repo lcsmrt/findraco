@@ -1,23 +1,30 @@
 package com.lcs.findraco.support;
 
-import com.lcs.findraco.models.FinancialTransaction;
-import com.lcs.findraco.models.FinancialTransactionCategory;
-import com.lcs.findraco.models.FinancialTransactionType;
-import com.lcs.findraco.models.Plan;
-import com.lcs.findraco.models.PlanMembership;
-import com.lcs.findraco.models.PlanRole;
-import com.lcs.findraco.models.TransactionParticipant;
-import com.lcs.findraco.models.User;
-import com.lcs.findraco.repositories.FinancialTransactionCategoryRepository;
-import com.lcs.findraco.repositories.FinancialTransactionRepository;
-import com.lcs.findraco.repositories.PlanMembershipRepository;
-import com.lcs.findraco.repositories.PlanRepository;
-import com.lcs.findraco.repositories.UserRepository;
+import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.plan.model.PlanMembership;
+import com.lcs.findraco.plan.model.PlanRole;
+import com.lcs.findraco.plan.repository.PlanMembershipRepository;
+import com.lcs.findraco.plan.repository.PlanRepository;
+import com.lcs.findraco.transaction.model.Share;
+import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionDetails;
+import com.lcs.findraco.transaction.model.TransactionDraft;
+import com.lcs.findraco.transaction.model.TransactionType;
+import com.lcs.findraco.transaction.repository.TransactionRepository;
+import com.lcs.findraco.user.model.User;
+import com.lcs.findraco.user.repository.UserRepository;
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestComponent;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @TestComponent
@@ -35,10 +42,47 @@ public class Fixtures {
     private PlanMembershipRepository planMembershipRepository;
 
     @Autowired
-    private FinancialTransactionRepository financialTransactionRepository;
+    private TransactionRepository transactionRepository;
 
     @Autowired
-    private FinancialTransactionCategoryRepository financialTransactionCategoryRepository;
+    private CategoryRepository categoryRepository;
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
+    private Clock clock;
+
+    /** The application clock's current instant. */
+    public Instant now() {
+        return clock.instant();
+    }
+
+    /** Today on the application clock (UTC), the date the server uses. */
+    public LocalDate today() {
+        return LocalDate.now(clock);
+    }
+
+    /** The stored version of a transaction, which an edit sends back; 0 when there is no such row. */
+    public long transactionVersion(long id) {
+        return version("SELECT version FROM transactions WHERE id = ?", id);
+    }
+
+    /** The stored version of a category, which an edit sends back; 0 when there is no such row. */
+    public long categoryVersion(long id) {
+        return version("SELECT version FROM categories WHERE id = ?", id);
+    }
+
+    /** The stored version of a series definition, which a series edit sends back; 0 when there is no such row. */
+    public long seriesVersion(String seriesId) {
+        return version("SELECT version FROM recurrence_definitions WHERE series_id = ?", seriesId);
+    }
+
+    private long version(String sql, Object key) {
+        return jdbcTemplate.queryForList(sql, Long.class, key).stream()
+                .findFirst()
+                .orElse(0L);
+    }
 
     public User aUser() {
         return aUser("user-" + UUID.randomUUID() + "@test.com");
@@ -71,42 +115,28 @@ public class Fixtures {
         return planMembershipRepository.save(membership);
     }
 
-    public FinancialTransaction aTransaction(Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type) {
+    public Transaction aTransaction(Plan plan, User createdBy, BigDecimal amount, TransactionType type) {
         return aTransaction(plan, createdBy, amount, type, null);
     }
 
     /** A single-participant (createdBy at 100%) transaction dated today in the given category. */
-    public FinancialTransaction aTransaction(Plan plan, User createdBy, BigDecimal amount, FinancialTransactionType type,
-                                             FinancialTransactionCategory category) {
-        FinancialTransaction transaction = new FinancialTransaction();
-        transaction.setCategory(category);
-        transaction.setPlan(plan);
-        transaction.setCreatedBy(createdBy);
-        transaction.setType(type);
-        transaction.setAmount(amount);
-        transaction.setDescription("Test transaction");
-        transaction.setStartDate(LocalDate.now());
-
-        TransactionParticipant participant = new TransactionParticipant();
-        participant.setTransaction(transaction);
-        participant.setMember(createdBy);
-        participant.setShareAmount(amount);
-        transaction.getParticipants().add(participant);
-
-        return financialTransactionRepository.save(transaction);
+    public Transaction aTransaction(
+            Plan plan, User createdBy, BigDecimal amount, TransactionType type, Category category) {
+        TransactionDetails details =
+                new TransactionDetails(category, type, amount, "Test transaction", today(), null, null);
+        return aTransaction(new TransactionDraft(
+                plan, createdBy, details, SplitMode.EQUAL, List.of(new Share(createdBy, null)), List.of(), null, null));
     }
 
-    public FinancialTransactionCategory aCategory(Plan plan, FinancialTransactionType type, String description) {
+    public Transaction aTransaction(TransactionDraft draft) {
+        return transactionRepository.save(Transaction.create(draft));
+    }
+
+    public Category aCategory(Plan plan, TransactionType type, String description) {
         return aCategory(plan, type, description, null);
     }
 
-    public FinancialTransactionCategory aCategory(Plan plan, FinancialTransactionType type, String description,
-                                                  FinancialTransactionCategory parent) {
-        FinancialTransactionCategory category = new FinancialTransactionCategory();
-        category.setPlan(plan);
-        category.setType(type);
-        category.setDescription(description);
-        category.setParent(parent);
-        return financialTransactionCategoryRepository.save(category);
+    public Category aCategory(Plan plan, TransactionType type, String description, Category parent) {
+        return categoryRepository.save(Category.create(plan, type, description, parent));
     }
 }

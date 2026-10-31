@@ -1,9 +1,9 @@
-import type { FinancialTransaction } from "@/api/dtos/financialTransaction";
+import type { Transaction } from "@/api/dtos/transaction";
 
 export type TransactionDay = {
   /** Calendar day, `yyyy-MM-dd`, as stored (no timezone conversion). */
   day: string;
-  transactions: FinancialTransaction[];
+  transactions: Transaction[];
 };
 
 /**
@@ -11,9 +11,9 @@ export type TransactionDay = {
  * order of their first transaction on the page; rows keep their page order.
  */
 export function groupByDay(
-  transactions: FinancialTransaction[],
+  transactions: Transaction[],
 ): TransactionDay[] {
-  const groups = new Map<string, FinancialTransaction[]>();
+  const groups = new Map<string, Transaction[]>();
   transactions.forEach((transaction) => {
     const day = transaction.startDate.split("T")[0];
     const group = groups.get(day);

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
-  FinancialTransaction,
+  Transaction,
   RecurrenceDefinitionResponse,
-} from "@/api/dtos/financialTransaction";
+} from "@/api/dtos/transaction";
 import {
   TransactionFormOutput,
   buildDefaultValues,
@@ -27,8 +27,10 @@ const baseValues: TransactionFormOutput = {
   items: [],
 };
 
-const installmentTransaction: FinancialTransaction = {
+const installmentTransaction: Transaction = {
   id: 55,
+  permissions: { edit: true, delete: true },
+  version: 0,
   seriesId: "series-abc",
   type: "DEBIT",
   amount: 100,
@@ -42,6 +44,7 @@ const installmentTransaction: FinancialTransaction = {
 
 const installmentDefinition: RecurrenceDefinitionResponse = {
   id: 9,
+  version: 6,
   seriesId: "series-abc",
   type: "DEBIT",
   amount: 100,
@@ -56,6 +59,7 @@ const installmentDefinition: RecurrenceDefinitionResponse = {
 
 const recurringDefinition: RecurrenceDefinitionResponse = {
   id: 10,
+  version: 0,
   seriesId: "series-xyz",
   type: "CREDIT",
   amount: 200,
@@ -285,7 +289,7 @@ describe("buildDefaultValues — series edit mode", () => {
   });
 
   it("maps a recurring series into edit defaults with a parsed end date", () => {
-    const recurringTransaction: FinancialTransaction = {
+    const recurringTransaction: Transaction = {
       ...installmentTransaction,
       seriesId: "series-xyz",
       description: "Salary",
@@ -408,19 +412,22 @@ describe("toSeriesEditPayload", () => {
     );
 
     expect(body).toEqual({
-      type: "DEBIT",
-      amount: 100,
-      description: "Rent",
-      categoryId: undefined,
-      mode: "INSTALLMENT",
-      startDate: "2026-05-01",
-      parcelsNumber: 10,
-      interval: undefined,
-      endDate: undefined,
-      splitMode: undefined,
-      participants: undefined,
       scope: "ALL",
       pivotOccurrenceId: 55,
+      series: {
+        type: "DEBIT",
+        amount: 100,
+        description: "Rent",
+        categoryId: undefined,
+        mode: "INSTALLMENT",
+        startDate: "2026-05-01",
+        parcelsNumber: 10,
+        interval: undefined,
+        endDate: undefined,
+        splitMode: undefined,
+        participants: undefined,
+      },
+      version: 6,
     });
   });
 
@@ -441,12 +448,12 @@ describe("toSeriesEditPayload", () => {
       undefined,
     );
 
-    expect(body.startDate).toBe("2026-05-01");
+    expect(body.series.startDate).toBe("2026-05-01");
     expect(body.scope).toBe("THIS_ONE");
   });
 
   it("omits endDate when a recurring series edit is left open-ended", () => {
-    const recurringTransaction: FinancialTransaction = {
+    const recurringTransaction: Transaction = {
       ...installmentTransaction,
       seriesId: "series-xyz",
       description: "Salary",
@@ -467,8 +474,8 @@ describe("toSeriesEditPayload", () => {
       undefined,
     );
 
-    expect(body.endDate).toBeUndefined();
-    expect(body.mode).toBe("RECURRING");
+    expect(body.series.endDate).toBeUndefined();
+    expect(body.series.mode).toBe("RECURRING");
   });
 });
 

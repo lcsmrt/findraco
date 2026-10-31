@@ -1,4 +1,4 @@
-import type { RecurrenceDefinitionResponse } from "@/api/dtos/financialTransaction";
+import type { RecurrenceDefinitionResponse } from "@/api/dtos/transaction";
 import { FormField } from "@/components/form/FormField";
 import { NumberField } from "@/components/input/base/NumberField";
 import { Text } from "@/components/typography/base/Text";

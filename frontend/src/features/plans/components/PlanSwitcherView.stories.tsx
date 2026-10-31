@@ -4,8 +4,8 @@ import { expect, fn, screen, waitFor } from "storybook/test";
 import { PlanSwitcherView } from "./PlanSwitcherView";
 
 const plans: Plan[] = [
-  { id: 1, name: "Personal", isDefault: true, myRole: "OWNER" },
-  { id: 2, name: "Household", isDefault: false, myRole: "EDITOR" },
+  { id: 1, name: "Personal", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } },
+  { id: 2, name: "Household", isDefault: false, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } },
 ];
 
 const meta = {
@@ -49,7 +49,7 @@ export const LongPlanName: Story = {
   args: {
     plans: [
       ...plans,
-      { id: 3, name: "Household finances shared with the whole family", isDefault: false, myRole: "VIEWER" },
+      { id: 3, name: "Household finances shared with the whole family", isDefault: false, myRole: "VIEWER", permissions: { createTransactions: false, attributeToOthers: false, manageCategories: false, managePlan: false } },
     ],
     activePlanId: 3,
     activePlanName: "Household finances shared with the whole family",

@@ -1,13 +1,13 @@
 import type {
-  FinancialTransaction,
-  FinancialTransactionSortBy,
-} from "@/api/dtos/financialTransaction";
+  Transaction,
+  TransactionSortBy,
+} from "@/api/dtos/transaction";
 import type { Sorting } from "@/components/table/components/TableHeader";
 import type { TransactionFilters } from "../filters/transactionParams";
 
 // The table's column ids and the API's sort fields differ (`participants` sorts by `attributedTo`),
 // so sorting translates both ways.
-const SORTABLE_FIELDS: Record<string, FinancialTransactionSortBy> = {
+const SORTABLE_FIELDS: Record<string, TransactionSortBy> = {
   startDate: "startDate",
   amount: "amount",
   description: "description",
@@ -15,8 +15,8 @@ const SORTABLE_FIELDS: Record<string, FinancialTransactionSortBy> = {
   participants: "attributedTo",
 };
 const SORT_COLUMNS: Record<
-  FinancialTransactionSortBy,
-  keyof FinancialTransaction
+  TransactionSortBy,
+  keyof Transaction
 > = {
   startDate: "startDate",
   endDate: "endDate",

@@ -1,6 +1,6 @@
 import type {
-  FinancialTransactionCategory,
-  FinancialTransactionType,
+  Category,
+  TransactionType,
   PlanMember,
 } from "@/api/dtos";
 import { Badge } from "@/components/badge/base/Badge";
@@ -36,7 +36,7 @@ import {
   type MemberOption,
 } from "../utils/transactionFilterDraft";
 
-const TYPE_LABELS: Record<FinancialTransactionType | typeof TYPE_ALL, string> = {
+const TYPE_LABELS: Record<TransactionType | typeof TYPE_ALL, string> = {
   ALL: "All",
   CREDIT: "Credit",
   DEBIT: "Debit",
@@ -54,7 +54,7 @@ type TransactionFilterPopoverViewProps = {
   onApply: (filters: AppliedFilters) => void;
   members?: PlanMember[];
   /** Every category of the plan, ungrouped. */
-  categories: FinancialTransactionCategory[];
+  categories: Category[];
   isLoadingCategories: boolean;
 };
 

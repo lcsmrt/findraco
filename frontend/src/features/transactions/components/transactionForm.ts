@@ -1,15 +1,14 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import {
-  CreateFinancialTransactionRequest,
-  CreateFinancialTransactionSeriesRequest,
-  FinancialTransaction,
+  CreateTransactionSeriesRequest,
+  Transaction,
   ParticipantInput,
   RecurrenceDefinitionResponse,
   SeriesEditScope,
   SplitMode,
-  UpdateFinancialTransactionRequest,
-  UpdateFinancialTransactionSeriesRequest,
-} from "@/api/dtos/financialTransaction";
+  UpdateTransactionRequest,
+  UpdateTransactionSeriesRequest,
+} from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
 import { addMonths, format } from "date-fns";
@@ -39,6 +38,7 @@ export const transactionFormSchema = z
     category: z
       .object({
         id: z.number(),
+        version: z.number(),
         type: z.enum(["DEBIT", "CREDIT"]),
         description: z.string(),
         spendingLimit: z.number().nullish(),
@@ -70,6 +70,7 @@ export const transactionFormSchema = z
         category: z
           .object({
             id: z.number(),
+            version: z.number(),
             type: z.enum(["DEBIT", "CREDIT"]),
             description: z.string(),
             spendingLimit: z.number().nullish(),
@@ -192,7 +193,7 @@ export type TransactionFormValues = z.input<typeof transactionFormSchema>;
 export type TransactionFormOutput = z.output<typeof transactionFormSchema>;
 
 function deriveAttributionMode(
-  participants: FinancialTransaction["participants"],
+  participants: Transaction["participants"],
   currentUserId?: number,
 ): TransactionFormValues["attributionMode"] {
   if (participants.length === 0) return "ME";
@@ -203,7 +204,7 @@ function deriveAttributionMode(
 }
 
 type OwnerDefaultInput = {
-  category: Pick<FinancialTransactionCategory, "ownerId"> | null | undefined;
+  category: Pick<Category, "ownerId"> | null | undefined;
   members: PlanMember[];
   currentUserId?: number;
   /** True once the user changed the attribution or participants by hand. */
@@ -363,11 +364,23 @@ function attributionToPayload(
   };
 }
 
+/** What the PUT would clear if an edit left it out: the form has no field for either. */
+type StoredPeriod = Pick<Transaction, "parcelsNumber" | "endDate">;
+
+function datePart(isoDate: string | null | undefined): string | undefined {
+  return isoDate ? isoDate.split("T")[0] : undefined;
+}
+
+/**
+ * @param stored The transaction being edited. The API replaces the whole transaction and the form
+ *   has no field for its parcel count or end date, so they travel back as stored.
+ */
 export function toPayload(
   values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
-): CreateFinancialTransactionRequest["body"] {
+  stored?: StoredPeriod,
+): Omit<UpdateTransactionRequest["body"], "version"> {
   const { participants, splitMode } = attributionToPayload(
     values,
     showAttribution,
@@ -380,6 +393,8 @@ export function toPayload(
     amount: values.amount,
     categoryId: values.category?.id,
     startDate: format(values.date, "yyyy-MM-dd"),
+    parcelsNumber: stored?.parcelsNumber ?? undefined,
+    endDate: datePart(stored?.endDate),
     splitMode,
     participants,
     items: values.items.map((item) => ({
@@ -392,12 +407,14 @@ export function toPayload(
 
 /**
  * The update a table cell edit sends. The API replaces the whole transaction, so every field the cell
- * did not change is sent back as the transaction has it (the start date as its `yyyy-MM-dd` part).
+ * did not change is sent back as the transaction has it (dates as their `yyyy-MM-dd` part), its
+ * items included (the API requires them, and an empty list would remove them) and its parcel count
+ * and end date (an installment would lose them).
  */
 export function toInlineSavePayload(
-  transaction: FinancialTransaction,
+  transaction: Transaction,
   change: InlineSaveBody,
-): UpdateFinancialTransactionRequest {
+): UpdateTransactionRequest {
   return {
     params: { id: transaction.id },
     body: {
@@ -406,6 +423,8 @@ export function toInlineSavePayload(
       amount: change.amount ?? transaction.amount,
       categoryId: change.categoryId ?? transaction.category?.id,
       startDate: change.startDate ?? transaction.startDate.split("T")[0],
+      parcelsNumber: transaction.parcelsNumber ?? undefined,
+      endDate: datePart(transaction.endDate),
       splitMode: change.splitMode ?? transaction.splitMode,
       participants:
         change.participants ??
@@ -414,6 +433,13 @@ export function toInlineSavePayload(
           shareAmount:
             transaction.splitMode === "EXACT" ? p.shareAmount : undefined,
         })),
+      items: transaction.items.map((item) => ({
+        description: item.description,
+        amount: item.amount,
+        quantity: item.quantity,
+        categoryId: item.category?.id,
+      })),
+      version: transaction.version,
     },
   };
 }
@@ -422,7 +448,7 @@ export function toSeriesCreatePayload(
   values: TransactionFormOutput,
   showAttribution: boolean,
   currentUserId?: number,
-): CreateFinancialTransactionSeriesRequest["body"] {
+): CreateTransactionSeriesRequest["body"] {
   const { participants, splitMode } = attributionToPayload(
     values,
     showAttribution,
@@ -454,12 +480,12 @@ export function toSeriesCreatePayload(
 
 export function toSeriesEditPayload(
   values: TransactionFormOutput,
-  transaction: FinancialTransaction,
+  transaction: Transaction,
   definition: RecurrenceDefinitionResponse,
   scope: SeriesEditScope,
   showAttribution: boolean,
   currentUserId?: number,
-): UpdateFinancialTransactionSeriesRequest["body"] {
+): UpdateTransactionSeriesRequest["body"] {
   const { participants, splitMode } = attributionToPayload(
     values,
     showAttribution,
@@ -467,28 +493,31 @@ export function toSeriesEditPayload(
   );
 
   return {
-    type: definition.type,
-    amount: values.amount,
-    description: values.description,
-    categoryId: values.category?.id,
-    mode: definition.mode,
-    startDate: definition.startDate,
-    parcelsNumber:
-      definition.mode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
-    interval: definition.interval,
-    endDate:
-      definition.mode === "RECURRING" && values.endDate
-        ? format(values.endDate, "yyyy-MM-dd")
-        : undefined,
-    splitMode,
-    participants,
     scope,
     pivotOccurrenceId: transaction.id,
+    series: {
+      type: definition.type,
+      amount: values.amount,
+      description: values.description,
+      categoryId: values.category?.id,
+      mode: definition.mode,
+      startDate: definition.startDate,
+      parcelsNumber:
+        definition.mode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
+      interval: definition.interval,
+      endDate:
+        definition.mode === "RECURRING" && values.endDate
+          ? format(values.endDate, "yyyy-MM-dd")
+          : undefined,
+      splitMode,
+      participants,
+    },
+    version: definition.version,
   };
 }
 
 export function buildDefaultValues(
-  transaction?: FinancialTransaction,
+  transaction?: Transaction,
   currentUserId?: number,
   definition?: RecurrenceDefinitionResponse,
 ): TransactionFormValues {

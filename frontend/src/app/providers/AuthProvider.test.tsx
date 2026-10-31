@@ -22,7 +22,13 @@ import { AuthProvider } from "./AuthProvider";
 import { useAuth } from "./useAuth";
 
 const SESSION_EXPIRED_MESSAGE = "Your session expired. Please sign in again.";
-const PROFILE: User = { id: 1, name: "Ana Lima", email: "ana@example.com" };
+const PROFILE: User = {
+  id: 1,
+  name: "Ana Lima",
+  email: "ana@example.com",
+  timeZone: "America/Sao_Paulo",
+  timeZoneMode: "AUTOMATIC",
+};
 const API_PATH = "/api/findraco";
 
 let auth: ReturnType<typeof useAuth>;

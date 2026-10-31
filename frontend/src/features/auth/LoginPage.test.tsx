@@ -85,12 +85,12 @@ describe("Login sign-in", () => {
 
   it("shows the wrong-credentials message and does not sign in", async () => {
     const user = userEvent.setup();
-    server.use(authHandlers.loginRejected("Invalid username or password."));
+    server.use(authHandlers.loginRejected());
     const { signIn } = renderLogin();
 
     await submitCredentials(user);
 
-    expect(await screen.findByText("Invalid username or password.")).toBeTruthy();
+    expect(await screen.findByText("Invalid e-mail or password.")).toBeTruthy();
     expect(signIn).not.toHaveBeenCalled();
     expect(screen.getByRole("heading", { level: 1, name: "Sign in" })).toBeTruthy();
     expect(screen.queryByLabelText("location")).toBeNull();

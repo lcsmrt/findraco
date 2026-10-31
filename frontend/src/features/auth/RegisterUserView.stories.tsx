@@ -19,10 +19,10 @@ export const SignUp: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.type(canvas.getByRole("textbox", { name: "Name" }), "Ana Lima");
     await userEvent.type(canvas.getByRole("textbox", { name: "Email" }), "ana@example.com");
-    await userEvent.type(canvas.getByLabelText("Password", { selector: "input" }), "s3cret");
+    await userEvent.type(canvas.getByLabelText("Password", { selector: "input" }), "s3cret-pass");
     await userEvent.click(canvas.getByRole("button", { name: "Sign up" }));
     await expect(args.onSubmit).toHaveBeenCalledWith(
-      { name: "Ana Lima", email: "ana@example.com", password: "s3cret" },
+      { name: "Ana Lima", email: "ana@example.com", password: "s3cret-pass" },
       expect.anything(),
     );
   },

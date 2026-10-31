@@ -1,17 +1,17 @@
 # Tech Stack
 
 **Analyzed:** 2026-07-05
+**Updated:** 2026-10-30 (backend-standards BST-21)
 
 Monorepo at `/home/lcs/dev/finsight` with two independent apps: `backend` (Spring Boot REST API) and `frontend` (React SPA). Single git repo at the root since 2026-07-25, carrying both apps' histories; they deploy as one Docker stack (see `DEPLOY.md`).
 
 ## Core
 
-- Framework: Spring Boot 3.5.3 (backend) + React 19 (frontend)
-- Language: Java 17 (backend), TypeScript ~5.7 (frontend)
-- Runtime: JVM 17 (backend), Node/Vite 6 (frontend)
-- Package manager: Maven (backend), npm (frontend)
+- Framework: Spring Boot 4.1.2 (backend) + React 19 (frontend)
+- Language: Java 25 (backend), TypeScript ~5.7 (frontend)
+- Runtime: JVM 25 (backend), Node/Vite 6 (frontend)
+- Package manager: Maven wrapper (backend), pnpm (frontend, workspace at the root)
 
-> **Discrepancy:** `backend/README.md` states Java 21, but `pom.xml` declares `<java.version>17</java.version>`. Java 17 is authoritative.
 
 ## Frontend
 
@@ -27,34 +27,34 @@ Monorepo at `/home/lcs/dev/finsight` with two independent apps: `backend` (Sprin
 
 ## Backend
 
-- API Style: REST via Spring Web (`@RestController`); base path `/api/finsight`
-- Database: PostgreSQL (`org.postgresql`, `PostgreSQLDialect`) via Spring Data JPA / Hibernate
-- ORM config: `spring.jpa.hibernate.ddl-auto=update` (schema managed by Hibernate — **no migration tool**), `globally_quoted_identifiers=true`, camelCase→snake_case naming
-- Authentication: Spring Security + JWT bearer tokens (`io.jsonwebtoken` jjwt 0.12.6 api/impl/jackson); user resolved by email from token via `@AuthenticationPrincipal`
-- Validation: Spring Validation (`spring-boot-starter-validation`)
-- API docs: springdoc-openapi 2.8.9 (Swagger UI at `/swagger-ui.html`)
-- Config loading: `me.paulschwarz:spring-dotenv` 4.0.0 (reads `.env`)
+- API style: REST via Spring Web (`@RestController`); base path `/api/findraco`; the contract is the committed `backend/openapi.json`
+- Database: PostgreSQL 16 via Spring Data JPA / Hibernate 7, `ddl-auto=validate`; schema owned by Flyway migrations (`src/main/resources/db/migration`); `globally_quoted_identifiers=true`, snake_case naming
+- Authentication: Spring Security 7 + JWT bearer tokens (jjwt, one version property) + an opaque cookie session; Argon2id passwords (BouncyCastle) with BCrypt verified for old hashes
+- Validation: Spring Validation (`spring-boot-starter-validation`); errors as RFC 9457 problem+json
+- Rate limiting: Bucket4j in memory
+- CSV: Apache Commons CSV
+- API docs: springdoc-openapi (Swagger UI at `/swagger-ui.html`)
+- Configuration: `app.*` `@ConfigurationProperties` records; `spring.config.import=optional:file:.env[.properties]` (reads `backend/.env` locally; production uses real environment variables)
 - Server port: 3000 (not the Spring default 8080)
-
-> **Discrepancy:** README claims Flyway migrations, but there is no Flyway/Liquibase dependency and no `db/migration` folder. Schema is created/updated by Hibernate `ddl-auto=update`.
+- Build checks (run by `./mvnw verify`): Spotless (palantir-java-format), `-Xlint:all` with `failOnWarning`, Error Prone, maven-enforcer (Java 25, no Lombok or MapStruct), ArchUnit (`ArchitectureTest`), JaCoCo branch gate on the invariant classes
 
 ## Testing
 
-- Backend Unit/Integration: `spring-boot-starter-test` (JUnit/Mockito) — dependency present; minimal test coverage
+- Backend unit (`*Test`) and integration (`*IT`): JUnit 5 + AssertJ via `spring-boot-starter-test`, Testcontainers Postgres, Awaitility, ArchUnit; no Mockito in tests (see `TESTING.md`)
 - Frontend Unit/Component: Vitest 3 + Storybook 9 (`@storybook/addon-vitest`, `@vitest/browser`, `@vitest/coverage-v8`)
 - Frontend E2E: Playwright 1.55 (available via Vitest browser runner)
 
 ## External Services
 
-- Database: PostgreSQL (local instance via `backend/docker-compose.yml`)
-- No third-party API integrations, message queues, or payment providers
+- Database: PostgreSQL on the VPS; tests use a disposable container
+- Optional SMTP for password reset; no third-party API integrations, message queues, or payment providers
 
 ## Development Tools
 
-- Backend: `spring-boot-devtools`, Maven wrapper (`mvnw`), Dockerfile + docker-compose
+- Backend: `spring-boot-devtools`, Maven wrapper (`mvnw`), Dockerfile; the root `docker-compose.yml`
 - Frontend: ESLint 9 (`typescript-eslint`, `eslint-plugin-check-file`, `eslint-plugin-import`, react-hooks/react-refresh/storybook plugins), Prettier 3 (+ `prettier-plugin-tailwindcss`), Husky 9 git hooks
-- No Lombok, no MapStruct on the backend (DTO mapping is manual)
+- No Lombok, no MapStruct on the backend (DTOs are records mapped by `from(entity)`)
 
 ## Backend Configuration (`.env`)
 
-`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET_KEY`. Frontend needs no variables in production (the axios base URL defaults to the same-origin `/api/finsight`); `VITE_FINSIGHT_API_URL` overrides it for the dev server.
+`SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD`, `JWT_SECRET_KEY`, `ALLOWED_ORIGINS`, `APP_URL`, `SERVER_ADDRESS` and the optional `SMTP_*`; the full list with defaults is `backend/.env.example` and `application.properties`. Frontend needs no variables in production (the axios base URL defaults to the same-origin `/api/findraco`); `VITE_FINDRACO_API_URL` overrides it for the dev server.

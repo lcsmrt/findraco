@@ -1,9 +1,9 @@
-import { FinancialTransactionCategory } from "@/api/dtos";
-import { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import { Category } from "@/api/dtos";
+import { TransactionType } from "@/api/dtos/transaction";
 import {
   ALL_CATEGORIES_PAGE_SIZE,
-  useGetFinancialTransactionCategories,
-} from "@/api/services/useFinancialTransactionCategoryService";
+  useGetCategories,
+} from "@/api/services/useCategoryService";
 import { useMemo, useState } from "react";
 import { useCategoryFormSheet } from "@/hooks/useCategoryFormSheet";
 import { groupCategoryOptions } from "../utils/categoryOptions";
@@ -11,11 +11,11 @@ import { CategoryComboboxView } from "./CategoryComboboxView";
 
 type CategoryComboboxProps = {
   id?: string;
-  value: FinancialTransactionCategory | null | undefined;
+  value: Category | null | undefined;
   onValueChange: (
-    value: FinancialTransactionCategory | null | undefined,
+    value: Category | null | undefined,
   ) => void;
-  type?: FinancialTransactionType;
+  type?: TransactionType;
   disabled?: boolean;
   defaultOpen?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -34,7 +34,7 @@ export function CategoryCombobox({
 
   const [search, setSearch] = useState("");
 
-  const { data: categories, isLoading } = useGetFinancialTransactionCategories({
+  const { data: categories, isLoading } = useGetCategories({
     size: ALL_CATEGORIES_PAGE_SIZE,
     filter: { type },
   });
@@ -52,7 +52,7 @@ export function CategoryCombobox({
     }
   }
 
-  function handleValueChange(next: FinancialTransactionCategory | null | undefined) {
+  function handleValueChange(next: Category | null | undefined) {
     onValueChange(next);
     setSearch("");
   }

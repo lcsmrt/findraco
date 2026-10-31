@@ -1,4 +1,4 @@
-import type { FinancialTransactionType } from "@/api/dtos/financialTransaction";
+import type { TransactionType } from "@/api/dtos/transaction";
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -6,8 +6,8 @@ import {
 import { BanknoteArrowDownIcon, BanknoteArrowUpIcon } from "lucide-react";
 
 type TransactionTypeToggleProps = {
-  value: FinancialTransactionType;
-  onChange: (value: FinancialTransactionType) => void;
+  value: TransactionType;
+  onChange: (value: TransactionType) => void;
   disabled?: boolean;
 };
 

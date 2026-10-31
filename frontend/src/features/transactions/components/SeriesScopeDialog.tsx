@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/button/base/Button";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import { RadioGroup, RadioGroupItem } from "@/components/input/base/RadioGroup";
-import { SeriesEditScope } from "@/api/dtos/financialTransaction";
+import { SeriesEditScope } from "@/api/dtos/transaction";
 import type { ScopeDialogOptions } from "./useSeriesScope";
 import { Text } from "@/components/typography/base/Text";
 

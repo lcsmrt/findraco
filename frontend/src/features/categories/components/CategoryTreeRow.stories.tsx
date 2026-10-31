@@ -1,4 +1,4 @@
-import type { FinancialTransactionCategory } from "@/api/dtos";
+import type { Category } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn } from "storybook/test";
@@ -8,15 +8,17 @@ function colorOf(memberId: number) {
   return MEMBER_PALETTE[(memberId - 1) % MEMBER_PALETTE.length];
 }
 
-const food: FinancialTransactionCategory = {
+const food: Category = {
   id: 1,
+  version: 0,
   type: "DEBIT",
   description: "Food",
   spendingLimit: 2000,
 };
 
-const hobbies: FinancialTransactionCategory = {
+const hobbies: Category = {
   id: 2,
+  version: 0,
   type: "DEBIT",
   description: "Hobbies",
   ownerId: 2,
@@ -57,7 +59,7 @@ export const OwnerAndMemberLimits: Story = { args: { category: hobbies } };
 
 export const Child: Story = {
   args: {
-    category: { id: 11, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },
+    category: { id: 11, version: 0, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },
     child: { isLast: false },
   },
 };
@@ -65,7 +67,7 @@ export const Child: Story = {
 export const LastChild: Story = {
   tags: ["!test"],
   args: {
-    category: { id: 12, type: "DEBIT", description: "Groceries", parentId: 1 },
+    category: { id: 12, version: 0, type: "DEBIT", description: "Groceries", parentId: 1 },
     child: { isLast: true },
   },
 };
