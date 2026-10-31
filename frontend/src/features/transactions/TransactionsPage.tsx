@@ -11,6 +11,7 @@ import type { Sorting } from "@/components/table/components/TableHeader";
 import { useMemo } from "react";
 import { useTransactionFilters } from "./filters/useTransactionFilters";
 import { useTransactionFilterChips } from "./useTransactionFilterChips";
+import { useTransactionPeriod } from "./useTransactionPeriod";
 import { useTransactionsPage } from "./useTransactionsPage";
 import {
   AppliedFilters,
@@ -35,10 +36,12 @@ export function TransactionsPage() {
   const actions = useTransactionActions();
   const { importCsv, isImporting } = useCsvImport();
 
+  const { range, navigator } = useTransactionPeriod();
+
   const { data, isLoading } = useGetTransactions({
     page,
     size,
-    filter,
+    filter: { ...filter, startDateFrom: range.startDate, startDateTo: range.endDate },
     ...(sort ? { sort } : {}),
   });
   const { activePlanId } = usePlanContext();
@@ -86,6 +89,7 @@ export function TransactionsPage() {
   return (
     <>
       <TransactionsPageView
+        navigator={navigator}
         search={search}
         onSearchChange={setSearch}
         filters={

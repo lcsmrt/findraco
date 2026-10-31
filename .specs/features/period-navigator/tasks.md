@@ -169,9 +169,9 @@ T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Flow (`TransactionsPage.test.tsx`, fixed date): first load requests the current month and shows its label; "Previous period" requests the previous month across a year boundary; Clear all after a category filter keeps the period; no date chip; existing popover-date cases rewritten against the navigator
-- [ ] `TransactionsPageView` story shows the navigator row
-- [ ] Gate check passes: Build (phase end)
+- [x] Flow (`TransactionsPage.test.tsx`, fixed date): first load requests the current month and shows its label; "Previous period" requests the previous month across a year boundary; Clear all after a category filter keeps the period; no date chip; existing popover-date cases rewritten against the navigator
+- [x] `TransactionsPageView` story shows the navigator row
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: flow, story
 **Gate**: build

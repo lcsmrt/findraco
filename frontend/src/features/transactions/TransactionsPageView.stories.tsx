@@ -4,6 +4,7 @@ import { Button } from "@/components/button/base/Button";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { expect, fn } from "storybook/test";
+import PeriodNavigatorMeta from "@/components/periodNavigator/PeriodNavigator.stories";
 import { buildTransactionColumns } from "./components/transactionColumns";
 import { TransactionsPageView } from "./TransactionsPageView";
 
@@ -57,6 +58,7 @@ const meta = {
   title: "Transactions/TransactionsPageView",
   component: TransactionsPageView,
   args: {
+    navigator: PeriodNavigatorMeta.args,
     search: "",
     onSearchChange: fn(),
     filters: (
@@ -86,6 +88,8 @@ type Story = StoryObj<typeof meta>;
 
 export const SharedPlan: Story = {
   play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: "Choose period, October 2026" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "Previous period" })).toBeVisible();
     await expect(canvas.getByRole("columnheader", { name: /Attributed/ })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Import CSV" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "New Transaction" })).toBeNull();

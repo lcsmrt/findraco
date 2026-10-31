@@ -122,6 +122,8 @@ describe("AppRouter", () => {
     renderAt("/");
 
     expect(await screen.findByRole("button", { name: "Previous period" })).toBeTruthy();
+    // Both screens have a period navigator; the search box tells Transactions apart.
+    expect(screen.queryByRole("textbox", { name: "Search transactions" })).toBeNull();
     expect(pathname).toBe("/overview");
   });
 
@@ -129,7 +131,7 @@ describe("AppRouter", () => {
     renderAt("/transactions");
 
     expect(await screen.findByRole("textbox", { name: "Search transactions" })).toBeTruthy();
-    expect(screen.queryByRole("button", { name: "Previous period" })).toBeNull();
+    expect(screen.getByRole("button", { name: "Previous period" })).toBeTruthy();
     expect(pathname).toBe("/transactions");
   });
 });

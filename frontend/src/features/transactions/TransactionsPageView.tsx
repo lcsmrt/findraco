@@ -1,6 +1,7 @@
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import type { Transaction } from "@/api/dtos/transaction";
 import { Badge } from "@/components/badge/base/Badge";
+import { PeriodNavigator } from "@/components/periodNavigator/PeriodNavigator";
 import { Button } from "@/components/button/base/Button";
 import {
   InputGroup,
@@ -17,6 +18,7 @@ import type { FilterChip } from "./useTransactionFilterChips";
 import { TransactionMobileList } from "./components/TransactionMobileList";
 
 type TransactionsPageViewProps = {
+  navigator: ComponentProps<typeof PeriodNavigator>;
   search: string;
   onSearchChange: (search: string) => void;
   /** The filter popover: a slot, because it loads the plan's categories itself. */
@@ -37,6 +39,7 @@ type TransactionsPageViewProps = {
 };
 
 export function TransactionsPageView({
+  navigator,
   search,
   onSearchChange,
   filters,
@@ -71,6 +74,10 @@ export function TransactionsPageView({
   return (
     <>
       <div className="flex flex-col gap-2 px-2">
+        <div className="self-start">
+          <PeriodNavigator {...navigator} />
+        </div>
+
         <div className="flex gap-2">
           <div className="flex flex-1 justify-between gap-2">
             <InputGroup className="flex-1 sm:max-w-sm">
