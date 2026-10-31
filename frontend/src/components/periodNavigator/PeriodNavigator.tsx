@@ -151,6 +151,7 @@ export function PeriodNavigator({
         >
           <Calendar
             mode="range"
+            resetOnSelect
             selected={draft}
             defaultMonth={draft?.from}
             captionLayout="dropdown"

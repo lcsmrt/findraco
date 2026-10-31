@@ -73,13 +73,15 @@ export const CustomCalendar: Story = {
   },
 };
 
-// The calendar opens preset to the current range, so a one-day range makes the next click the range's end.
+// The calendar opens preset to the current range; the first click starts a new range, the second completes it.
 export const LabelOpensCalendar: Story = {
-  args: { range: { startDate: "2026-10-05", endDate: "2026-10-05" }, isCustom: true },
   play: async ({ args, canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Choose period, 5 Oct 2026" }));
+    await userEvent.click(canvas.getByRole("button", { name: "Choose period, October 2026" }));
     const dialog = await screen.findByRole("dialog", { name: "Choose a period" });
     await expect(dialog).toBeVisible();
+    await userEvent.click(await within(dialog).findByRole("button", { name: /October 5th, 2026/ }));
+    await expect(args.onRangeChange).not.toHaveBeenCalled();
+    await expect(screen.getByRole("dialog", { name: "Choose a period" })).toBeVisible();
     await userEvent.click(await within(dialog).findByRole("button", { name: /October 20th, 2026/ }));
     await expect(args.onRangeChange).toHaveBeenCalledWith({ from: "2026-10-05", to: "2026-10-20" });
     await waitFor(() => expect(screen.queryByRole("dialog", { name: "Choose a period" })).toBeNull());

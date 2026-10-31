@@ -214,3 +214,61 @@ Execution is strictly sequential. 6 tasks → one worker.
 | T4 | URL params | unit | unit | ✅ |
 | T5 | utils + view | unit | unit | ✅ |
 | T6 | container + view | flow, story | flow, story | ✅ |
+
+---
+
+## Fix Round 1 (Verifier 2026-10-31)
+
+### F1: Range calendar starts a new range on the first click
+
+**What**: The range `Calendar` in `PeriodNavigator` gets `resetOnSelect` (react-day-picker 9.14), so with the current range preset the first click starts a fresh range and the second completes it. The `LabelOpensCalendar` story starts from a full month.
+**Where**: `frontend/src/components/periodNavigator/PeriodNavigator.tsx`
+**Requirement**: PNAV-04 (AC1, AC2)
+
+**Done when**:
+
+- [x] Story `play` from "October 2026": open via the label, first click on 5 Oct keeps the dialog open and does not call `onRangeChange`; second click on 20 Oct calls it with 2026-10-05..2026-10-20 and closes the dialog
+- [x] Gate check passes: Full
+
+**Tests**: story
+**Gate**: full
+
+**Commit**: `fix(frontend): range calendar starts a new range on the first click`
+
+---
+
+### F2: Period restore and kept search are covered
+
+**What**: Tests for the saved custom period being restored by the gate, for a custom range replaced by a preset, and for the search kept on a period change; drop the duplicated `...OCTOBER` spreads.
+**Where**: `frontend/src/app/routing/PlanFiltersGate.test.tsx`, `frontend/src/features/transactions/TransactionsPage.test.tsx`
+**Requirement**: PNAV-03 (AC1, AC3), PNAV-01 (AC9)
+
+**Done when**:
+
+- [ ] Gate test: saved `period=custom&periodFrom&periodTo` is restored on entering /transactions without params; fails when `PERIOD_PARAM_KEYS` leaves `TRANSACTION_PARAM_KEYS` (checked by temporary mutation)
+- [ ] Flow: custom range, then Range, then This month requests October's dates
+- [ ] PNAV-01 AC9 case asserts the search is kept
+- [ ] Gate check passes: Quick
+
+**Tests**: unit, flow
+**Gate**: quick
+
+**Commit**: `test(frontend): cover period restore and kept search`
+
+---
+
+### F3: Popover has no date field
+
+**What**: A story `play` on the filters popover view asserts there is no "Date" field.
+**Where**: `frontend/src/features/transactions/filters/TransactionFilterPopoverView.stories.tsx`
+**Requirement**: PNAV-02 (AC1)
+
+**Done when**:
+
+- [ ] Story `play` asserts no "Date" field
+- [ ] Gate check passes: Build
+
+**Tests**: story
+**Gate**: build
+
+**Commit**: `test(frontend): popover has no date field`
