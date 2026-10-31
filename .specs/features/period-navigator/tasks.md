@@ -245,10 +245,10 @@ Execution is strictly sequential. 6 tasks → one worker.
 
 **Done when**:
 
-- [ ] Gate test: saved `period=custom&periodFrom&periodTo` is restored on entering /transactions without params; fails when `PERIOD_PARAM_KEYS` leaves `TRANSACTION_PARAM_KEYS` (checked by temporary mutation)
-- [ ] Flow: custom range, then Range, then This month requests October's dates
-- [ ] PNAV-01 AC9 case asserts the search is kept
-- [ ] Gate check passes: Quick
+- [x] Gate test: saved `period=custom&periodFrom&periodTo` is restored on entering /transactions without params; fails when `PERIOD_PARAM_KEYS` leaves `TRANSACTION_PARAM_KEYS` (checked by temporary mutation)
+- [x] Flow: custom range, then Range, then This month requests October's dates
+- [x] PNAV-01 AC9 case asserts the search is kept
+- [x] Gate check passes: Quick
 
 **Tests**: unit, flow
 **Gate**: quick

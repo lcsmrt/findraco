@@ -510,7 +510,6 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
     await waitFor(() =>
       expect(listQueries(requests).at(-1)).toEqual({
         ...OCTOBER,
-        ...OCTOBER,
         page: "0",
         size: "10",
         sortBy: "amount",
@@ -548,7 +547,6 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
     expect(searchBox()).toHaveProperty("value", "");
     await waitFor(() =>
       expect(listQueries(requests).at(-1)).toEqual({
-        ...OCTOBER,
         ...OCTOBER,
         page: "0",
         size: "25",
@@ -694,7 +692,7 @@ describe("TransactionsPage period navigator (PNAV-01, PNAV-02)", () => {
   });
 
   it("goes back to the first page and keeps the other filters when the period changes (PNAV-01 AC 6, 9)", async () => {
-    const { requests, user } = renderTab({ route: "/?type=DEBIT&sort=amount.asc&size=25" });
+    const { requests, user } = renderTab({ route: "/?q=rent&type=DEBIT&sort=amount.asc&size=25" });
     await tableRow("Rent");
     await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
     await waitFor(() => expect(listQueries(requests).at(-1)?.page).toBe("1"));
@@ -707,10 +705,26 @@ describe("TransactionsPage period navigator (PNAV-01, PNAV-02)", () => {
         startDateTo: "2026-09-30",
         page: "0",
         size: "25",
+        description: "rent",
         type: "DEBIT",
         sortBy: "amount",
         sortDirection: "asc",
       }),
+    );
+  });
+
+  it("replaces a custom range with the This month preset (PNAV-03 AC 1)", async () => {
+    const { requests, user } = renderTab({
+      route: "/?period=custom&periodFrom=2026-09-01&periodTo=2026-09-30",
+    });
+    await label("September 2026");
+
+    await user.click(screen.getByRole("button", { name: "Range" }));
+    await user.click(await screen.findByRole("menuitemradio", { name: "This month" }));
+
+    await label("October 2026");
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10" }),
     );
   });
 

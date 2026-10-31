@@ -149,6 +149,22 @@ describe("PlanFiltersGate", () => {
     ).toBe(true);
   });
 
+  it("restores a saved custom period on entering the transactions screen (PNAV-03 AC 1)", () => {
+    localStorage.setItem(
+      "filters:transactions:1:5",
+      "plan=5&period=custom&periodFrom=2026-08-01&periodTo=2026-08-31",
+    );
+
+    renderAt("/transactions");
+
+    expect(params()).toEqual({
+      plan: "5",
+      period: "custom",
+      periodFrom: "2026-08-01",
+      periodTo: "2026-08-31",
+    });
+  });
+
   it("falls back to defaults with only the active plan when nothing is saved", () => {
     renderAt("/overview", "overview");
 
@@ -197,6 +213,15 @@ describe("PlanFiltersGate", () => {
 
     expect(params()).toEqual({ category: "x", plan: "5" });
     expect(localStorage.getItem("filters:transactions:1:5")).toBe("category=x&plan=5");
+  });
+
+  it("treats a period key as a Transactions param: a link with only it applies to the active plan and is saved (PNAV-03 AC 1)", () => {
+    localStorage.setItem("filters:transactions:1:5", "plan=5&category=12");
+
+    renderAt("/transactions?period=last-3m");
+
+    expect(params()).toEqual({ period: "last-3m", plan: "5" });
+    expect(localStorage.getItem("filters:transactions:1:5")).toBe("period=last-3m&plan=5");
   });
 
   it("applies URL params for the active plan and saves them as the new state", () => {
