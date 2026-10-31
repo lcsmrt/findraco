@@ -11,6 +11,7 @@ function params(init: Record<string, string>) {
 
 const DEFAULT_TRANSACTIONS: TransactionFilters = {
   filter: {},
+  period: { period: "this-month", customRange: null },
   sort: null,
   size: 10,
 };
@@ -21,12 +22,11 @@ describe("transactions codec", () => {
       type: "DEBIT",
       categoryId: 12,
       memberId: 7,
-      startDateFrom: "2026-10-01",
-      startDateTo: "2026-10-31",
       amountMin: 50,
       amountMax: 99.5,
       description: "mercado",
     },
+    period: { period: "this-month", customRange: { from: "2026-10-01", to: "2026-10-31" } },
     sort: { by: "amount", direction: "desc" },
     size: 25,
   };
@@ -37,8 +37,9 @@ describe("transactions codec", () => {
       type: "DEBIT",
       category: "12",
       member: "7",
-      from: "2026-10-01",
-      to: "2026-10-31",
+      period: "custom",
+      periodFrom: "2026-10-01",
+      periodTo: "2026-10-31",
       min: "50",
       max: "99.5",
       q: "mercado",
@@ -60,8 +61,9 @@ describe("transactions codec", () => {
     ["type", "TRANSFER"],
     ["category", "abc"],
     ["member", "1.5"],
-    ["from", "yesterday"],
-    ["to", "2026-02-30"],
+    ["period", "last-decade"],
+    ["periodFrom", "yesterday"],
+    ["periodTo", "2026-02-30"],
     ["min", "abc"],
     ["max", "-5"],
     ["sort", "bogus.desc"],
@@ -70,6 +72,35 @@ describe("transactions codec", () => {
     expect(parseTransactionFilters(params({ [key]: value }))).toEqual(
       DEFAULT_TRANSACTIONS,
     );
+  });
+
+  it("opens on This month with no dates in the filter when no period is set (PNAV-01)", () => {
+    const out = parseTransactionFilters(params({}));
+    expect(out.period).toEqual({ period: "this-month", customRange: null });
+    expect(out.filter).not.toHaveProperty("startDateFrom");
+    expect(out.filter).not.toHaveProperty("startDateTo");
+  });
+
+  it("round-trips a preset period (PNAV-03)", () => {
+    const filters: TransactionFilters = { ...DEFAULT_TRANSACTIONS, period: { period: "last-3m", customRange: null } };
+    const serialized = serializeTransactionFilters(filters);
+    expect(serialized).toEqual({ period: "last-3m" });
+    expect(parseTransactionFilters(params(serialized))).toEqual(filters);
+  });
+
+  it("falls back to This month for a partial or reversed custom range (PNAV-05)", () => {
+    const partial = parseTransactionFilters(params({ period: "custom", periodFrom: "2026-10-01" }));
+    const reversed = parseTransactionFilters(
+      params({ period: "custom", periodFrom: "2026-10-31", periodTo: "2026-10-01" }),
+    );
+    expect(partial).toEqual(DEFAULT_TRANSACTIONS);
+    expect(reversed).toEqual(DEFAULT_TRANSACTIONS);
+  });
+
+  it("ignores the pre-feature from and to params (PNAV-05)", () => {
+    const out = parseTransactionFilters(params({ from: "2026-09-01", to: "2026-09-30" }));
+    expect(out).toEqual(DEFAULT_TRANSACTIONS);
+    expect(serializeTransactionFilters(out)).toEqual({});
   });
 
   it("keeps valid params when a sibling param is invalid", () => {
@@ -90,7 +121,11 @@ describe("legacy Categories period params", () => {
   });
 
   it("parses a URL with categoriesPeriod, ignores it and serializes no categories period", () => {
-    expect(parseTransactionFilters(legacy)).toEqual(DEFAULT_TRANSACTIONS);
-    expect(serializeTransactionFilters(parseTransactionFilters(legacy))).toEqual({});
+    // `period` is now the Transactions period too; only the categories keys are ignored.
+    expect(parseTransactionFilters(legacy)).toEqual({
+      ...DEFAULT_TRANSACTIONS,
+      period: { period: "this-year", customRange: null },
+    });
+    expect(serializeTransactionFilters(parseTransactionFilters(legacy))).toEqual({ period: "this-year" });
   });
 });

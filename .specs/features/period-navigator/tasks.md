@@ -128,8 +128,8 @@ T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Unit: no params → `period` This month and no `startDateFrom`/`startDateTo` in `filter`; a custom period round-trips; old `from`/`to` params are ignored; date cases of `transactionParams.test.ts` rewritten for the amended outcome, not deleted
-- [ ] Gate check passes: Quick
+- [x] Unit: no params → `period` This month and no `startDateFrom`/`startDateTo` in `filter`; a custom period round-trips; old `from`/`to` params are ignored; date cases of `transactionParams.test.ts` rewritten for the amended outcome, not deleted
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick

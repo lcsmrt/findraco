@@ -359,7 +359,7 @@ describe("PlanFiltersGate", () => {
   it("treats another screen's filter key as no params for this screen (NAV-06 AC 2)", () => {
     localStorage.setItem("filters:transactions:1:5", "plan=5&q=market");
 
-    renderAt("/transactions?period=last-3m");
+    renderAt("/transactions?overviewMember=3");
 
     expect(params()).toEqual({ plan: "5", q: "market" });
   });
