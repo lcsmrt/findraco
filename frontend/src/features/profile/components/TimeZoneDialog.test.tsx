@@ -20,7 +20,7 @@ afterEach(cleanup);
 
 describe("TimeZoneDialog", () => {
   it("pins the chosen zone and closes (BST-11 AC 7)", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const onOpenChange = vi.fn();
     const requests = recordRequests();
     server.use(
@@ -36,9 +36,8 @@ describe("TimeZoneDialog", () => {
     await user.click(await screen.findByLabelText("Time zone source"));
     await user.click(await screen.findByRole("option", { name: "Pinned" }));
     await user.click(screen.getByLabelText("Time zone", { selector: "button" }));
-    await user.click(
-      await screen.findByRole("option", { name: "Europe/Lisbon" }),
-    );
+    // The list holds every IANA zone: a role query would compute the accessible name of each option.
+    await user.click(await screen.findByText("Europe/Lisbon"));
     await user.click(screen.getByRole("button", { name: "Save" }));
 
     await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(false));
@@ -53,7 +52,7 @@ describe("TimeZoneDialog", () => {
   });
 
   it("hands the zone back to the device without sending a zone (BST-11 AC 7)", async () => {
-    const user = userEvent.setup();
+    const user = userEvent.setup({ delay: null });
     const requests = recordRequests();
     const pinned: User = {
       ...automatic,
