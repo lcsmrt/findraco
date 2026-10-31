@@ -5,6 +5,8 @@
 --
 -- Every query must return ZERO rows. A row names a record that would make V16 abort (and the deploy
 -- fail at start-up): fix or remove it first, then run the precheck again. Nothing here writes.
+-- It runs before V13, so it uses the pre-V13 table names (financial_transactions,
+-- financial_transaction_categories).
 
 \echo '1. users with a null e-mail, name or password'
 SELECT id, email, name FROM users WHERE email IS NULL OR name IS NULL OR password IS NULL;
@@ -13,15 +15,15 @@ SELECT id, email, name FROM users WHERE email IS NULL OR name IS NULL OR passwor
 SELECT email, count(*) AS users FROM users GROUP BY email HAVING count(*) > 1;
 
 \echo '3. categories with a null description or type, or a negative spending limit'
-SELECT id, plan_id, description, type, spending_limit FROM categories
+SELECT id, plan_id, description, type, spending_limit FROM financial_transaction_categories
 WHERE description IS NULL OR type IS NULL OR spending_limit < 0;
 
 \echo '4. transactions with a null amount, description, type or start date'
-SELECT id, plan_id, amount, description, type, start_date FROM transactions
+SELECT id, plan_id, amount, description, type, start_date FROM financial_transactions
 WHERE amount IS NULL OR description IS NULL OR type IS NULL OR start_date IS NULL;
 
 \echo '5. transactions with an amount that is not positive, parcels outside 1..420 or an unknown split mode'
-SELECT id, plan_id, amount, parcels_number, split_mode FROM transactions
+SELECT id, plan_id, amount, parcels_number, split_mode FROM financial_transactions
 WHERE amount <= 0
    OR (parcels_number IS NOT NULL AND parcels_number NOT BETWEEN 1 AND 420)
    OR split_mode NOT IN ('EQUAL', 'EXACT', 'PERCENT');
@@ -45,6 +47,6 @@ UNION ALL
 SELECT 'series', id, share_amount FROM recurrence_definition_participants WHERE share_amount < 0;
 
 \echo '8. imported references that appear more than once in a plan'
-SELECT plan_id, external_id, count(*) AS transactions FROM transactions
+SELECT plan_id, external_id, count(*) AS transactions FROM financial_transactions
 WHERE external_id IS NOT NULL
 GROUP BY plan_id, external_id HAVING count(*) > 1;
