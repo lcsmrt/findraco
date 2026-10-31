@@ -20,8 +20,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import type { Period } from "../filters/overviewParams";
-import { periodLabel, shiftRange, type PeriodRange } from "../utils/periodNavigator";
+import { PERIODS, periodLabel, shiftRange, type Period, type PeriodRange } from "@/utils/period";
 
 const PRESET_LABELS: Record<Period, string> = {
   "this-month": "This month",
@@ -29,8 +28,6 @@ const PRESET_LABELS: Record<Period, string> = {
   "last-6m": "Last 6 months",
   "this-year": "This year",
 };
-
-const PRESETS: readonly Period[] = ["this-month", "last-3m", "last-6m", "this-year"];
 
 type CustomRange = { from: string; to: string };
 
@@ -54,6 +51,7 @@ function toCustom(range: PeriodRange): CustomRange {
 /**
  * "‹ October 2026 ›" plus a Range menu. The arrows step the period by
  * its own length and always produce an absolute range; presets set the period.
+ * The label opens the same range calendar as Custom…, so a custom range is one tap away.
  */
 export function PeriodNavigator({
   range,
@@ -65,6 +63,8 @@ export function PeriodNavigator({
   const anchorRef = useRef<HTMLDivElement>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
+
+  const label = periodLabel(range);
 
   function openCalendar() {
     setDraft({ from: parseISO(range.startDate), to: parseISO(range.endDate) });
@@ -92,13 +92,16 @@ export function PeriodNavigator({
       >
         <ChevronLeftIcon />
       </Button>
-      <Text
-        variant="title"
-        className="min-w-36 text-center tabular-nums sm:min-w-40"
-        aria-live="polite"
+      <Button
+        variant="ghost"
+        className="min-w-36 tabular-nums sm:min-w-40"
+        aria-label={`Choose period, ${label}`}
+        onClick={openCalendar}
       >
-        {periodLabel(range)}
-      </Text>
+        <Text variant="title" aria-live="polite">
+          {label}
+        </Text>
+      </Button>
       <Button
         variant="ghost"
         size="icon"
@@ -121,11 +124,11 @@ export function PeriodNavigator({
           <DropdownMenuRadioGroup
             value={isCustom ? "" : period}
             onValueChange={(value) => {
-              const preset = PRESETS.find((p) => p === value);
+              const preset = PERIODS.find((p) => p === value);
               if (preset) onPresetChange(preset);
             }}
           >
-            {PRESETS.map((preset) => (
+            {PERIODS.map((preset) => (
               <DropdownMenuRadioItem key={preset} value={preset}>
                 {PRESET_LABELS[preset]}
               </DropdownMenuRadioItem>
@@ -148,6 +151,7 @@ export function PeriodNavigator({
         >
           <Calendar
             mode="range"
+            resetOnSelect
             selected={draft}
             defaultMonth={draft?.from}
             captionLayout="dropdown"

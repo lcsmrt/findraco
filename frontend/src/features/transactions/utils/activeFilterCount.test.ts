@@ -10,15 +10,12 @@ describe("countActiveFilters", () => {
     expect(countActiveFilters({ categoryId: 7 })).toBe(1);
   });
 
-  it("counts a date range and an amount range once each, whatever bounds are set", () => {
-    expect(
-      countActiveFilters({
-        startDateFrom: "2026-07-01",
-        startDateTo: "2026-07-31",
-        amountMin: 10,
-        amountMax: 500,
-      }),
-    ).toBe(2);
+  it("counts an amount range once, whatever bounds are set", () => {
+    expect(countActiveFilters({ amountMin: 10, amountMax: 500 })).toBe(1);
+  });
+
+  it("does not count the period dates (PNAV-02 AC 3)", () => {
+    expect(countActiveFilters({ startDateFrom: "2026-07-01", startDateTo: "2026-07-31" })).toBe(0);
   });
 
   it("counts every filter group and leaves the description search out", () => {
@@ -28,9 +25,8 @@ describe("countActiveFilters", () => {
         categoryId: 7,
         memberId: 3,
         description: "rent",
-        startDateFrom: "2026-07-01",
         amountMax: 500,
       }),
-    ).toBe(5);
+    ).toBe(4);
   });
 });

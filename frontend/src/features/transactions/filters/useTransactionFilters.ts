@@ -1,4 +1,5 @@
 import { useSearchParamGroup } from "@/hooks/useSearchParamGroup";
+import { PERIOD_PARAM_KEYS } from "@/utils/periodParams";
 import { useCallback } from "react";
 import {
   parseTransactionFilters,
@@ -6,9 +7,9 @@ import {
   TRANSACTION_PARAM_KEYS,
 } from "./transactionParams";
 
-/** Clear removes filters and the search; sort and page size are display preferences. */
+/** Clear removes filters and the search; the period is where the member is, and sort and page size are display preferences. */
 const CLEARABLE_TRANSACTION_PARAM_KEYS = TRANSACTION_PARAM_KEYS.filter(
-  (key) => key !== "sort" && key !== "size",
+  (key) => key !== "sort" && key !== "size" && !PERIOD_PARAM_KEYS.some((periodKey) => periodKey === key),
 );
 
 /** Transactions filters, read from and written to the URL query string (the single source of truth). */

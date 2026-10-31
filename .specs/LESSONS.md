@@ -176,6 +176,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: M6 transactionSort.ts:13 (frontend unit tests)
 - last seen: 2026-10-20T06:24:28Z
 
+### L-028 - When a screen's param-key list drives persistence or clearing, test that a URL holding only the new keys is saved, restored and cleared as intended.
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend/url-params` · harmful: 0
+- features: period-navigator
+- evidence: transactionParams.ts:31 M4 (frontend/url-params)
+- last seen: 2026-10-31T13:03:51Z
+
+### L-029 - Start an interaction story from the state users actually reach (the default), not a state chosen to make the interaction pass.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/stories` · harmful: 0
+- features: period-navigator
+- evidence: PNAV-04 AC2; PeriodNavigator.stories.tsx:78 (frontend/stories)
+- last seen: 2026-10-31T13:03:51Z
+
+### L-030 - Write layout acceptance criteria as assertable structure (order, landmark, role), or mark them as visual review only.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `frontend/specs` · harmful: 0
+- features: period-navigator
+- evidence: PNAV-01 AC8 (frontend/specs)
+- last seen: 2026-10-31T13:03:51Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

@@ -1,15 +1,23 @@
 import {
   addMonths,
+  differenceInCalendarMonths,
   endOfMonth,
+  endOfYear,
   format,
   isSameDay,
   isSameMonth,
   isSameYear,
   parseISO,
   startOfMonth,
+  startOfYear,
+  subMonths,
 } from "date-fns";
-import { resolvePeriodDates, type Period } from "../filters/overviewParams";
-import { countMonths } from "./periodMonths";
+
+export type Period = "this-month" | "last-3m" | "last-6m" | "this-year";
+
+export const PERIODS: readonly Period[] = ["this-month", "last-3m", "last-6m", "this-year"];
+
+export const DEFAULT_PERIOD: Period = "this-month";
 
 /** An inclusive `yyyy-MM-dd` date range. */
 export type PeriodRange = { startDate: string; endDate: string };
@@ -62,7 +70,33 @@ export function shiftRange(range: PeriodRange, direction: 1 | -1): PeriodRange {
   };
 }
 
-/** Dates of a range-menu preset, resolved like the home filters. */
-export function presetRange(preset: Period, now: Date): PeriodRange {
-  return resolvePeriodDates(preset, now);
+/** Calendar months touched by an inclusive `yyyy-MM-dd` range (Oct 15 – Nov 10 → 2). */
+export function countMonths(startDate: string, endDate: string): number {
+  return differenceInCalendarMonths(parseISO(endDate), parseISO(startDate)) + 1;
+}
+
+/** Resolves a preset token to an inclusive `yyyy-MM-dd` range relative to `now`. */
+export function resolvePeriodDates(period: Period, now: Date): PeriodRange {
+  function fmt(d: Date) {
+    return format(d, DATE_FORMAT);
+  }
+  switch (period) {
+    case "this-month":
+      return {
+        startDate: fmt(startOfMonth(now)),
+        endDate: fmt(endOfMonth(now)),
+      };
+    case "last-3m":
+      return {
+        startDate: fmt(startOfMonth(subMonths(now, 2))),
+        endDate: fmt(endOfMonth(now)),
+      };
+    case "last-6m":
+      return {
+        startDate: fmt(startOfMonth(subMonths(now, 5))),
+        endDate: fmt(endOfMonth(now)),
+      };
+    case "this-year":
+      return { startDate: fmt(startOfYear(now)), endDate: fmt(endOfYear(now)) };
+  }
 }

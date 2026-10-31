@@ -1,7 +1,7 @@
 import { useGetDashboardTrend } from "@/api/services/useDashboardService";
 import { useMemo } from "react";
 import { fillTrendMonths, trendWindow } from "./utils/trendMonths";
-import type { PeriodRange } from "./utils/periodNavigator";
+import type { PeriodRange } from "@/utils/period";
 
 /**
  * The Overview trend: the months around the selected period, filtered by member on the server

@@ -3,7 +3,7 @@ import { expect, fn } from "storybook/test";
 import { memberColor } from "@/utils/memberColors";
 import * as SpendingStories from "./components/CategorySpendingList.stories";
 import * as TrendStories from "./components/MonthlyTrendChart.stories";
-import PeriodNavigatorMeta from "./components/PeriodNavigator.stories";
+import PeriodNavigatorMeta from "@/components/periodNavigator/PeriodNavigator.stories";
 import * as SummaryStories from "./components/SummaryCards.stories";
 import { OverviewPageView } from "./OverviewPageView";
 

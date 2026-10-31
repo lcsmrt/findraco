@@ -5,7 +5,6 @@ import type {
 } from "@/api/dtos";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
-import { DateRangePicker } from "@/components/input/DatePicker";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import {
@@ -173,15 +172,6 @@ export function TransactionFilterPopoverView({
               />
             </Field>
           )}
-
-          <Field>
-            <FieldLabel htmlFor={`${fieldId}-date`}>Date</FieldLabel>
-            <DateRangePicker
-              id={`${fieldId}-date`}
-              value={draft.dateRange}
-              onChange={(r) => setDraft((d) => ({ ...d, dateRange: r }))}
-            />
-          </Field>
 
           <Field>
             <FieldLabel htmlFor={`${fieldId}-amount-min`}>Amount</FieldLabel>

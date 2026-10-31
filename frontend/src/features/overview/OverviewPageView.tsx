@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { CategorySpendingList } from "./components/CategorySpendingList";
 import { MemberFilterChips } from "./components/MemberFilterChips";
 import { MonthlyTrendChart } from "./components/MonthlyTrendChart";
-import { PeriodNavigator } from "./components/PeriodNavigator";
+import { PeriodNavigator } from "@/components/periodNavigator/PeriodNavigator";
 import type { SpendingRowsView } from "./utils/spendingRows";
 import { SummaryCards } from "./components/SummaryCards";
 import type { SummaryView } from "./utils/summaryView";

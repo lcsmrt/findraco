@@ -22,7 +22,7 @@ import { server } from "@/test/server";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Toaster } from "sonner";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SeriesScopeDialogProvider } from "./components/SeriesScopeDialogProvider";
 import { TransactionsPage } from "./TransactionsPage";
 
@@ -120,6 +120,9 @@ function listQueries(requests: Request[]) {
     .map((request) => Object.fromEntries(new URL(request.url).searchParams));
 }
 
+/** The dates every list request carries on the fixed current month (October 2026). */
+const OCTOBER = { startDateFrom: "2026-10-01", startDateTo: "2026-10-31" };
+
 /** Method and path with query of every write request, in order. */
 function writes(requests: Request[]) {
   return requests
@@ -159,7 +162,16 @@ async function tableRow(description: string) {
   return within(row);
 }
 
-afterEach(cleanup);
+// Only the clock is faked: the screen opens on the current month, so the requests depend on "today".
+beforeEach(() => {
+  vi.useFakeTimers({ toFake: ["Date"] });
+  vi.setSystemTime(new Date(2026, 9, 15));
+});
+
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe("TransactionsPage toolbar", () => {
   it("shows search, filters and import, and neither New Transaction nor Manage Categories (NAV-02 AC 8; NAV-04 AC 1, 2)", async () => {
@@ -179,7 +191,7 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     const { requests } = renderTab();
 
     await tableRow("Rent");
-    expect(listQueries(requests)).toEqual([{ page: "0", size: "10" }]);
+    expect(listQueries(requests)).toEqual([{ ...OCTOBER, page: "0", size: "10" }]);
     expect(searchBox()).toHaveProperty("value", "");
   });
 
@@ -188,7 +200,7 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
 
     await tableRow("Rent");
     expect(searchBox()).toHaveProperty("value", "rent");
-    expect(listQueries(requests)).toEqual([{ page: "0", size: "10", description: "rent" }]);
+    expect(listQueries(requests)).toEqual([{ ...OCTOBER, page: "0", size: "10", description: "rent" }]);
   });
 
   it("searches by description once typing settles, keeping the other filters", async () => {
@@ -200,6 +212,7 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     await waitFor(
       () =>
         expect(listQueries(requests).at(-1)).toEqual({
+          ...OCTOBER,
           page: "0",
           size: "10",
           type: "DEBIT",
@@ -218,7 +231,7 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
 
     await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({ page: "1", size: "10" }),
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "1", size: "10" }),
     );
   });
 
@@ -441,26 +454,20 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   it("shows every active filter as a chip, with the category and member names, and requests it", async () => {
     server.use(categoryHandlers.get(groceries));
     const { requests } = renderTab({
-      route: "/?type=DEBIT&category=12&member=2&from=2026-10-01&to=2026-10-31&min=50&max=200",
+      route: "/?type=DEBIT&category=12&member=2&min=50&max=200",
     });
 
-    await waitFor(() => expect(chipLabels()).toHaveLength(5));
-    expect(chipLabels()).toEqual([
-      "Debit",
-      "Groceries",
-      "Livia",
-      "01/10/2026 – 31/10/2026",
-      "R$ 50,00 – R$ 200,00",
-    ]);
+    await waitFor(() => expect(chipLabels()).toHaveLength(4));
+    // The period is shown by the navigator, never as a chip (PNAV-02 AC 2).
+    expect(chipLabels()).toEqual(["Debit", "Groceries", "Livia", "R$ 50,00 – R$ 200,00"]);
     expect(listQueries(requests)).toEqual([
       {
+        ...OCTOBER,
         page: "0",
         size: "10",
         type: "DEBIT",
         categoryId: "12",
         memberId: "2",
-        startDateFrom: "2026-10-01",
-        startDateTo: "2026-10-31",
         amountMin: "50",
         amountMax: "200",
       },
@@ -468,8 +475,8 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it.each([
-    ["/?type=CREDIT&from=2026-10-01&min=50", ["Credit", "From 01/10/2026", "≥ R$ 50,00"]],
-    ["/?to=2026-10-31&max=200", ["Until 31/10/2026", "≤ R$ 200,00"]],
+    ["/?type=CREDIT&min=50", ["Credit", "≥ R$ 50,00"]],
+    ["/?max=200", ["≤ R$ 200,00"]],
   ])("labels open-ended ranges and the type (%s)", async (route, labels) => {
     renderTab({ route });
 
@@ -478,15 +485,15 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
   });
 
   it("removing a chip clears only its filter and goes back to the first page", async () => {
-    const { requests, user } = renderTab({ route: "/?type=DEBIT&from=2026-10-01&to=2026-10-31" });
+    const { requests, user } = renderTab({ route: "/?type=DEBIT&min=50&max=200" });
     await tableRow("Rent");
     await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
     await waitFor(() => expect(listQueries(requests).at(-1)?.page).toBe("1"));
 
-    await user.click(screen.getByRole("button", { name: "Remove 01/10/2026 – 31/10/2026" }));
+    await user.click(screen.getByRole("button", { name: /^Remove R\$.*50,00.*200,00$/ }));
 
     await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", type: "DEBIT" }),
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10", type: "DEBIT" }),
     );
     expect(chipLabels()).toEqual(["Debit"]);
   });
@@ -502,6 +509,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
 
     await waitFor(() =>
       expect(listQueries(requests).at(-1)).toEqual({
+        ...OCTOBER,
         page: "0",
         size: "10",
         sortBy: "amount",
@@ -520,7 +528,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
     await user.click(await screen.findByRole("option", { name: "20" }));
 
     await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "20" }),
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "20" }),
     );
   });
 
@@ -539,6 +547,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
     expect(searchBox()).toHaveProperty("value", "");
     await waitFor(() =>
       expect(listQueries(requests).at(-1)).toEqual({
+        ...OCTOBER,
         page: "0",
         size: "25",
         sortBy: "amount",
@@ -557,7 +566,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
     const { requests } = renderTab({ route: "/?category=12&type=DEBIT" });
 
     await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", type: "DEBIT" }),
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10", type: "DEBIT" }),
     );
     expect(chipLabels()).toEqual(["Debit"]);
     expect(categoryFetches(requests, 12)).toBe(1);
@@ -574,7 +583,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
     await waitFor(() => expect(categoryFetches(requests, 12)).toBe(2), { timeout: 3000 });
     await new Promise((resolve) => setTimeout(resolve, 100));
     expect(listQueries(requests)).toEqual([
-      { page: "0", size: "10", type: "DEBIT", categoryId: "12" },
+      { ...OCTOBER, page: "0", size: "10", type: "DEBIT", categoryId: "12" },
     ]);
   });
 
@@ -583,7 +592,7 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
     const { requests } = renderTab({ route: "/?member=99&category=12" });
 
     await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", categoryId: "12" }),
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10", categoryId: "12" }),
     );
     await waitFor(() => expect(chipLabels()).toEqual(["Groceries"]));
   });
@@ -600,8 +609,148 @@ describe("TransactionsPage filters (STD-12 AC 1, 2)", () => {
 
     await waitFor(() => expect(chipLabels()).toEqual(["Groceries"]));
     await waitFor(() =>
-      expect(listQueries(requests).at(-1)).toEqual({ page: "0", size: "10", categoryId: "12" }),
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10", categoryId: "12" }),
     );
     expect(categoryFetches(requests, 12)).toBe(0);
+  });
+});
+
+describe("TransactionsPage period navigator (PNAV-01, PNAV-02)", () => {
+  function label(name: string) {
+    return screen.findByRole("button", { name: `Choose period, ${name}` });
+  }
+
+  it("opens on the current month and requests only its dates (PNAV-01 AC 1)", async () => {
+    const { requests } = renderTab();
+
+    await label("October 2026");
+    await tableRow("Rent");
+    expect(listQueries(requests)).toEqual([{ ...OCTOBER, page: "0", size: "10" }]);
+  });
+
+  it("steps back across a year boundary and forward again (PNAV-01 AC 2, 3)", async () => {
+    vi.setSystemTime(new Date(2026, 0, 20));
+    const { requests, user } = renderTab();
+    await label("January 2026");
+
+    await user.click(screen.getByRole("button", { name: "Previous period" }));
+    await label("December 2025");
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({
+        startDateFrom: "2025-12-01",
+        startDateTo: "2025-12-31",
+        page: "0",
+        size: "10",
+      }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next period" }));
+    await label("January 2026");
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({
+        startDateFrom: "2026-01-01",
+        startDateTo: "2026-01-31",
+        page: "0",
+        size: "10",
+      }),
+    );
+  });
+
+  it("moves a multi-month period by its own length (PNAV-01 AC 5)", async () => {
+    const { requests, user } = renderTab({ route: "/?period=last-3m" });
+    await label("Aug – Oct 2026");
+
+    await user.click(screen.getByRole("button", { name: "Previous period" }));
+
+    await label("May – Jul 2026");
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({
+        startDateFrom: "2026-05-01",
+        startDateTo: "2026-07-31",
+        page: "0",
+        size: "10",
+      }),
+    );
+  });
+
+  it("requests the range a Range menu option resolves to (PNAV-01 AC 4)", async () => {
+    const { requests, user } = renderTab();
+    await label("October 2026");
+
+    await user.click(screen.getByRole("button", { name: "Range" }));
+    await user.click(await screen.findByRole("menuitemradio", { name: "Last 6 months" }));
+
+    await label("May – Oct 2026");
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({
+        startDateFrom: "2026-05-01",
+        startDateTo: "2026-10-31",
+        page: "0",
+        size: "10",
+      }),
+    );
+  });
+
+  it("goes back to the first page and keeps the other filters when the period changes (PNAV-01 AC 6, 9)", async () => {
+    const { requests, user } = renderTab({ route: "/?q=rent&type=DEBIT&sort=amount.asc&size=25" });
+    await tableRow("Rent");
+    await user.click(screen.getAllByRole("button", { name: "Next page" })[0]);
+    await waitFor(() => expect(listQueries(requests).at(-1)?.page).toBe("1"));
+
+    await user.click(screen.getByRole("button", { name: "Previous period" }));
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({
+        startDateFrom: "2026-09-01",
+        startDateTo: "2026-09-30",
+        page: "0",
+        size: "25",
+        description: "rent",
+        type: "DEBIT",
+        sortBy: "amount",
+        sortDirection: "asc",
+      }),
+    );
+  });
+
+  it("replaces a custom range with the This month preset (PNAV-03 AC 1)", async () => {
+    const { requests, user } = renderTab({
+      route: "/?period=custom&periodFrom=2026-09-01&periodTo=2026-09-30",
+    });
+    await label("September 2026");
+
+    await user.click(screen.getByRole("button", { name: "Range" }));
+    await user.click(await screen.findByRole("menuitemradio", { name: "This month" }));
+
+    await label("October 2026");
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10" }),
+    );
+  });
+
+  it("keeps the period when all filters are cleared (PNAV-02 AC 4)", async () => {
+    const { requests, user } = renderTab({
+      route: "/?period=custom&periodFrom=2026-09-01&periodTo=2026-09-30&type=DEBIT",
+    });
+    await label("September 2026");
+    await waitFor(() => expect(chipLabels()).toEqual(["Debit"]));
+
+    await user.click(screen.getByRole("button", { name: "Clear all" }));
+
+    await waitFor(() => expect(chipLabels()).toEqual([]));
+    await label("September 2026");
+    expect(listQueries(requests).at(-1)).toEqual({
+      startDateFrom: "2026-09-01",
+      startDateTo: "2026-09-30",
+      page: "0",
+      size: "10",
+    });
+  });
+
+  it("ignores the pre-feature from and to params and opens on the current month (PNAV-05)", async () => {
+    const { requests } = renderTab({ route: "/?from=2026-03-01&to=2026-03-31" });
+
+    await label("October 2026");
+    expect(listQueries(requests)).toEqual([{ ...OCTOBER, page: "0", size: "10" }]);
   });
 });

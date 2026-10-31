@@ -3,12 +3,20 @@ import type {
   TransactionType,
   PagedTransactionsFilter,
 } from "@/api/dtos/transaction";
-import { parseDate, parseId } from "@/utils/searchParams";
+import {
+  PERIOD_PARAM_KEYS,
+  parsePeriodParams,
+  serializePeriodParams,
+  type PeriodSelection,
+} from "@/utils/periodParams";
+import { parseId } from "@/utils/searchParams";
 
 export type SortDirection = "asc" | "desc";
 
 export type TransactionFilters = {
+  /** Never carries the dates: the period is kept apart and resolved into them when the list is queried. */
   filter: PagedTransactionsFilter;
+  period: PeriodSelection;
   sort: { by: TransactionSortBy; direction: SortDirection } | null;
   size: number;
 };
@@ -20,8 +28,7 @@ export const TRANSACTION_PARAM_KEYS = [
   "type",
   "category",
   "member",
-  "from",
-  "to",
+  ...PERIOD_PARAM_KEYS,
   "min",
   "max",
   "q",
@@ -67,10 +74,6 @@ export function parseTransactionFilters(
   if (categoryId != null) filter.categoryId = categoryId;
   const memberId = parseId(params.get("member"));
   if (memberId != null) filter.memberId = memberId;
-  const startDateFrom = parseDate(params.get("from"));
-  if (startDateFrom) filter.startDateFrom = startDateFrom;
-  const startDateTo = parseDate(params.get("to"));
-  if (startDateTo) filter.startDateTo = startDateTo;
   const amountMin = parseAmount(params.get("min"));
   if (amountMin != null) filter.amountMin = amountMin;
   const amountMax = parseAmount(params.get("max"));
@@ -84,19 +87,17 @@ export function parseTransactionFilters(
       ? Number(rawSize)
       : DEFAULT_PAGE_SIZE;
 
-  return { filter, sort: parseSort(params.get("sort")), size };
+  return { filter, period: parsePeriodParams(params), sort: parseSort(params.get("sort")), size };
 }
 
 export function serializeTransactionFilters(
   filters: TransactionFilters,
 ): Record<string, string> {
-  const { filter, sort, size } = filters;
-  const out: Record<string, string> = {};
+  const { filter, period, sort, size } = filters;
+  const out: Record<string, string> = serializePeriodParams(period);
   if (filter.type) out.type = filter.type;
   if (filter.categoryId != null) out.category = String(filter.categoryId);
   if (filter.memberId != null) out.member = String(filter.memberId);
-  if (filter.startDateFrom) out.from = filter.startDateFrom;
-  if (filter.startDateTo) out.to = filter.startDateTo;
   if (filter.amountMin != null) out.min = String(filter.amountMin);
   if (filter.amountMax != null) out.max = String(filter.amountMax);
   if (filter.description) out.q = filter.description;
