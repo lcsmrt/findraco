@@ -109,6 +109,20 @@ class CsvImportIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void aLongBankTextIsKeptWholeInSourceTextAndCutInTheDescription() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        String bankText = "x".repeat(255) + "-tail-only-the-source-text-keeps";
+
+        importCsv(plan, owner, "date,amount,id,description\n15/07/2026,-5.00,long-1," + bankText + "\n");
+
+        assertThat(transactionRepository.findAllByPlan(plan)).singleElement().satisfies(row -> {
+            assertThat(row.getSourceText()).isEqualTo(bankText);
+            assertThat(row.getDescription()).isEqualTo("x".repeat(255));
+        });
+    }
+
+    @Test
     void oneBadLineImportsNothingAndIsListed() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
