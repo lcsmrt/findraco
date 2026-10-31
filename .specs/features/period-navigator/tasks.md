@@ -86,9 +86,9 @@ T4 → T5 → T6
 
 **Done when**:
 
-- [ ] Unit: round-trip of each preset and of a custom range; default preset serializes to nothing; missing params → This month; `period=custom` missing either end, with an unparsable date or with start after end → This month; unknown token → This month; `resolveSelection` returns the custom range as is and resolves a preset against `now`
-- [ ] `overviewParams.test.ts` keeps its member cases; the Overview URL format is unchanged (existing gate test still passes)
-- [ ] Gate check passes: Quick
+- [x] Unit: round-trip of each preset and of a custom range; default preset serializes to nothing; missing params → This month; `period=custom` missing either end, with an unparsable date or with start after end → This month; unknown token → This month; `resolveSelection` returns the custom range as is and resolves a preset against `now`
+- [x] `overviewParams.test.ts` keeps its member cases; the Overview URL format is unchanged (existing gate test still passes)
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
