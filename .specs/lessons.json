@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 28,
+  "next_id": 31,
   "lessons": [
     {
       "id": "L-001",
@@ -490,6 +490,60 @@
       ],
       "created": "2026-10-20T06:24:28Z",
       "last_seen": "2026-10-20T06:24:28Z"
+    },
+    {
+      "id": "L-028",
+      "key": "surviving_mutant::when a screen s param key list drives persistence or clearing test that a url holding only the new keys is saved restored and cleared as intended",
+      "text": "When a screen's param-key list drives persistence or clearing, test that a URL holding only the new keys is saved, restored and cleared as intended.",
+      "signal": "surviving_mutant",
+      "scope": "frontend/url-params",
+      "status": "candidate",
+      "features": [
+        "period-navigator"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "transactionParams.ts:31 M4 (frontend/url-params)"
+      ],
+      "created": "2026-10-31T13:03:51Z",
+      "last_seen": "2026-10-31T13:03:51Z"
+    },
+    {
+      "id": "L-029",
+      "key": "ac_gap::start an interaction story from the state users actually reach the default not a state chosen to make the interaction pass",
+      "text": "Start an interaction story from the state users actually reach (the default), not a state chosen to make the interaction pass.",
+      "signal": "ac_gap",
+      "scope": "frontend/stories",
+      "status": "candidate",
+      "features": [
+        "period-navigator"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "PNAV-04 AC2; PeriodNavigator.stories.tsx:78 (frontend/stories)"
+      ],
+      "created": "2026-10-31T13:03:51Z",
+      "last_seen": "2026-10-31T13:03:51Z"
+    },
+    {
+      "id": "L-030",
+      "key": "spec_precision_gap::write layout acceptance criteria as assertable structure order landmark role or mark them as visual review only",
+      "text": "Write layout acceptance criteria as assertable structure (order, landmark, role), or mark them as visual review only.",
+      "signal": "spec_precision_gap",
+      "scope": "frontend/specs",
+      "status": "candidate",
+      "features": [
+        "period-navigator"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "PNAV-01 AC8 (frontend/specs)"
+      ],
+      "created": "2026-10-31T13:03:51Z",
+      "last_seen": "2026-10-31T13:03:51Z"
     }
   ]
 }

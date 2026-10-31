@@ -131,13 +131,13 @@ On the Transactions screen, the period is a Date field buried in the filters pop
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| PNAV-01 | P1: Step through months (AC 1–9) | Execute | Pending |
-| PNAV-02 | P1: Navigator replaces the date filter (AC 1–4) | Execute | Pending |
-| PNAV-03 | P1: Last period viewed is restored (AC 1–3) | Execute | Pending |
-| PNAV-04 | P2: Label opens the range calendar (AC 1–4) | Execute | Pending |
-| PNAV-05 | Edge cases (invalid / missing range, empty month, day-range label) | Execute | Pending |
+| PNAV-01 | P1: Step through months (AC 1–9) | Execute | Verified |
+| PNAV-02 | P1: Navigator replaces the date filter (AC 1–4) | Execute | Verified |
+| PNAV-03 | P1: Last period viewed is restored (AC 1–3) | Execute | Verified |
+| PNAV-04 | P2: Label opens the range calendar (AC 1–4) | Execute | Verified |
+| PNAV-05 | Edge cases (invalid / missing range, empty month, day-range label) | Execute | Verified |
 
-**Coverage:** 5 total, 0 mapped to tasks, 5 unmapped ⚠️ (tasks come next)
+**Coverage:** 5 total, 5 mapped to tasks (T1–T6, F1–F3), 0 unmapped
 
 ---
 

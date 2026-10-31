@@ -11,7 +11,7 @@
 
 Leaving beta means "you can rely on it every day, without a backup spreadsheet". 1.0 ships when all hold:
 
-1. **Daily use on the phone without friction**: mobile navigation (M5-09, shipped), PWA (M5-07), period navigator (M5-06).
+1. **Daily use on the phone without friction**: mobile navigation (M5-09, shipped), PWA (M5-07), period navigator (M5-06, done 2026-10-31).
 2. **Data safety**: no known bug that loses or corrupts data; backups exist and a restore has been tested (✅ 2026-10-31: daily `pg_dump` on the VPS, 7 kept, `backend/scripts/backup-db.sh`, restore tested; the provider's weekly VPS backup covers losing the machine; off-VPS copy deferred); permanent plan deletion with retention (M4-07).
 3. **A settled base** (✅ 2026-10-31, `backend-standards` shipped): backend standards review and the ProblemDetail error-contract migration done, so later changes are features rather than restructuring.
 4. **A trial period**: a stretch of using only findraco with no serious bug found.
@@ -28,7 +28,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 | - | ------- | --- | ------ |
 | M5-04 | **Categories revamp** ✅ SHIPPED 2026-10-13 (UAT passed 2026-10-16) | Categories get their own tab; explore subcategories (parent/child) and per-person categories. Scope to be shaped in spec. | User — 2026-10-11 |
 | M5-05 | **Claude MCP connector** | Remote MCP server so Claude can read and modify plan data from chat — "the chat where I send things"; replaces WhatsApp capture for now. | User — 2026-10-11 |
-| M5-06 | **Period navigator (month)** | Prev/next arrows step one month; clicking the current month opens a custom-range picker. Later: step by quarter/semester/year when that granularity is selected (parked 2026-10-11 — start with month only). | User — 2026-10-11 |
+| M5-06 | **Period navigator (month)** ✅ DONE 2026-10-31, awaiting UAT (spec: `.specs/features/period-navigator/`) | Prev/next arrows step one month; clicking the current month opens a custom-range picker. Later: step by quarter/semester/year when that granularity is selected (parked 2026-10-11 — start with month only). | User — 2026-10-11 |
 | M5-07 | **PWA (installable)** | Make the web app installable on the phone (manifest, icons, service worker; offline read and push later). Builds on the mobile-first layout of the categories UX round. | User — 2026-10-12 |
 | M5-08 | **Session persistence** ✅ SHIPPED 2026-10-16 (UAT approved) (spec: `.specs/features/session-persistence/`) | An expired session shows empty pages instead of redirecting to login, and the 24h JWT forces a sign-in every day. Fix the expiry handling and add renewable 30-day sessions. | User — 2026-10-16 |
 | M5-09 | **Mobile navigation** (spec: `.specs/features/mobile-navigation/`) | Bottom bar on the phone (Overview · Transactions · + · Categories · Plans), global add from any screen, Plans as a destination; desktop tabs mirror it. First topic of the second categories UX round (one topic at a time). | User — 2026-10-16 |
