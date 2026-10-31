@@ -260,13 +260,13 @@ Execution is strictly sequential. 6 tasks → one worker.
 ### F3: Popover has no date field
 
 **What**: A story `play` on the filters popover view asserts there is no "Date" field.
-**Where**: `frontend/src/features/transactions/filters/TransactionFilterPopoverView.stories.tsx`
+**Where**: `frontend/src/features/transactions/components/TransactionFilterPopoverView.stories.tsx`
 **Requirement**: PNAV-02 (AC1)
 
 **Done when**:
 
-- [ ] Story `play` asserts no "Date" field
-- [ ] Gate check passes: Build
+- [x] Story `play` asserts no "Date" field
+- [x] Gate check passes: Build
 
 **Tests**: story
 **Gate**: build

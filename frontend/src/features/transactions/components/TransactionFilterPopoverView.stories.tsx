@@ -56,6 +56,9 @@ export const OpenSharedPlan: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Filters" }));
     await expect(await screen.findByText("Attributed to")).toBeVisible();
     await expect(screen.getByLabelText("Type")).toHaveTextContent("All");
+    // The period lives in the navigator, not in the filters.
+    await expect(screen.queryByLabelText("Date")).toBeNull();
+    await expect(screen.queryByText("Date")).toBeNull();
     await userEvent.click(screen.getByRole("button", { name: "Apply" }));
     await expect(args.onApply).toHaveBeenCalledWith(noFilters);
     // Applying closes the popover; the a11y check runs once it has left.
