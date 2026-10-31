@@ -65,9 +65,9 @@ T4 → T5 → T6
 
 **Done when**:
 
-- [ ] `utils/period.test.ts` holds every moved case of `periodNavigator.test.ts`, `periodMonths.test.ts` and the `resolvePeriodDates` cases, assertions unchanged
-- [ ] No import of the deleted modules remains
-- [ ] Gate check passes: Quick
+- [x] `utils/period.test.ts` holds every moved case of `periodNavigator.test.ts`, `periodMonths.test.ts` and the `resolvePeriodDates` cases, assertions unchanged
+- [x] No import of the deleted modules remains
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick

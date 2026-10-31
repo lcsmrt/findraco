@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { resolvePeriodDates, type Period } from "../filters/overviewParams";
-import { periodLabel, presetRange, shiftRange } from "./periodNavigator";
+import { countMonths, periodLabel, resolvePeriodDates, shiftRange } from "./period";
+
+const now = new Date(2026, 9, 11); // 2026-10-11
 
 function range(startDate: string, endDate: string) {
   return { startDate, endDate };
@@ -49,13 +50,42 @@ describe("shiftRange (UX-05 AC 8)", () => {
   });
 });
 
-describe("presetRange (UX-05 AC 9)", () => {
-  it("resolves every preset like resolvePeriodDates", () => {
-    const now = new Date(2026, 9, 12);
-    const presets: Period[] = ["this-month", "last-3m", "last-6m", "this-year"];
-    for (const preset of presets) {
-      expect(presetRange(preset, now)).toEqual(resolvePeriodDates(preset, now));
-    }
-    expect(presetRange("last-3m", now)).toEqual(range("2026-08-01", "2026-10-31"));
+describe("countMonths", () => {
+  it("counts a preset's months", () => {
+    const { startDate, endDate } = resolvePeriodDates("last-3m", now);
+    expect(countMonths(startDate, endDate)).toBe(3);
+  });
+
+  it("counts every calendar month a custom range touches", () => {
+    expect(countMonths("2026-09-15", "2026-10-10")).toBe(2);
+    expect(countMonths("2026-10-03", "2026-10-20")).toBe(1);
+    expect(countMonths("2025-12-20", "2026-01-05")).toBe(2);
+  });
+});
+
+describe("resolvePeriodDates", () => {
+  const now = new Date(2026, 9, 11); // 2026-10-11
+
+  it.each([
+    ["this-month", "2026-10-01", "2026-10-31"],
+    ["last-3m", "2026-08-01", "2026-10-31"],
+    ["last-6m", "2026-05-01", "2026-10-31"],
+    ["this-year", "2026-01-01", "2026-12-31"],
+  ] as const)("resolves %s relative to now", (period, startDate, endDate) => {
+    expect(resolvePeriodDates(period, now)).toEqual({ startDate, endDate });
+  });
+
+  it("resolves a saved this-month to the later month when restored later", () => {
+    expect(resolvePeriodDates("this-month", new Date(2026, 10, 3))).toEqual({
+      startDate: "2026-11-01",
+      endDate: "2026-11-30",
+    });
+  });
+
+  it("crosses the year boundary for last-3m", () => {
+    expect(resolvePeriodDates("last-3m", new Date(2026, 0, 15))).toEqual({
+      startDate: "2025-11-01",
+      endDate: "2026-01-31",
+    });
   });
 });

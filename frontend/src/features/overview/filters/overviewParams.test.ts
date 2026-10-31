@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   parseOverviewFilters,
-  resolvePeriodDates,
   serializeOverviewFilters,
   type OverviewFilters,
 } from "./overviewParams";
@@ -87,33 +86,6 @@ describe("overview codec", () => {
     );
     expect(out.customRange).toBeNull();
     expect(out.period).toBe("last-3m");
-  });
-});
-
-describe("resolvePeriodDates", () => {
-  const now = new Date(2026, 9, 11); // 2026-10-11
-
-  it.each([
-    ["this-month", "2026-10-01", "2026-10-31"],
-    ["last-3m", "2026-08-01", "2026-10-31"],
-    ["last-6m", "2026-05-01", "2026-10-31"],
-    ["this-year", "2026-01-01", "2026-12-31"],
-  ] as const)("resolves %s relative to now", (period, startDate, endDate) => {
-    expect(resolvePeriodDates(period, now)).toEqual({ startDate, endDate });
-  });
-
-  it("resolves a saved this-month to the later month when restored later", () => {
-    expect(resolvePeriodDates("this-month", new Date(2026, 10, 3))).toEqual({
-      startDate: "2026-11-01",
-      endDate: "2026-11-30",
-    });
-  });
-
-  it("crosses the year boundary for last-3m", () => {
-    expect(resolvePeriodDates("last-3m", new Date(2026, 0, 15))).toEqual({
-      startDate: "2025-11-01",
-      endDate: "2026-01-31",
-    });
   });
 });
 

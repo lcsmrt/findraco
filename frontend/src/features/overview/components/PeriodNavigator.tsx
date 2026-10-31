@@ -20,8 +20,7 @@ import {
 } from "lucide-react";
 import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
-import type { Period } from "../filters/overviewParams";
-import { periodLabel, shiftRange, type PeriodRange } from "../utils/periodNavigator";
+import { PERIODS, periodLabel, shiftRange, type Period, type PeriodRange } from "@/utils/period";
 
 const PRESET_LABELS: Record<Period, string> = {
   "this-month": "This month",
@@ -29,8 +28,6 @@ const PRESET_LABELS: Record<Period, string> = {
   "last-6m": "Last 6 months",
   "this-year": "This year",
 };
-
-const PRESETS: readonly Period[] = ["this-month", "last-3m", "last-6m", "this-year"];
 
 type CustomRange = { from: string; to: string };
 
@@ -121,11 +118,11 @@ export function PeriodNavigator({
           <DropdownMenuRadioGroup
             value={isCustom ? "" : period}
             onValueChange={(value) => {
-              const preset = PRESETS.find((p) => p === value);
+              const preset = PERIODS.find((p) => p === value);
               if (preset) onPresetChange(preset);
             }}
           >
-            {PRESETS.map((preset) => (
+            {PERIODS.map((preset) => (
               <DropdownMenuRadioItem key={preset} value={preset}>
                 {PRESET_LABELS[preset]}
               </DropdownMenuRadioItem>

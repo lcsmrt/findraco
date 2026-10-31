@@ -1,10 +1,7 @@
 import { useGetDashboardSummary } from "@/api/services/useDashboardService";
 import { useGetCategorySpending } from "@/api/services/useCategoryService";
 import { useMemo } from "react";
-import {
-  resolvePeriodDates,
-  type Period,
-} from "./filters/overviewParams";
+import { resolvePeriodDates, type Period } from "@/utils/period";
 import { useOverviewFilters } from "./filters/useOverviewFilters";
 import { useMemberColors } from "@/hooks/useMemberColors";
 import {

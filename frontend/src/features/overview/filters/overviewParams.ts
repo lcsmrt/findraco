@@ -1,14 +1,5 @@
 import { parseDate, parseId } from "@/utils/searchParams";
-import {
-  endOfMonth,
-  endOfYear,
-  format,
-  startOfMonth,
-  startOfYear,
-  subMonths,
-} from "date-fns";
-
-export type Period = "this-month" | "last-3m" | "last-6m" | "this-year";
+import { DEFAULT_PERIOD, PERIODS, type Period } from "@/utils/period";
 
 export type OverviewFilters = {
   period: Period;
@@ -17,8 +8,6 @@ export type OverviewFilters = {
   memberId: number | null;
 };
 
-export const DEFAULT_PERIOD: Period = "this-month";
-
 /** Every query param the Overview owns; its filters gate keeps exactly these. */
 export const OVERVIEW_PARAM_KEYS = [
   "period",
@@ -26,15 +15,6 @@ export const OVERVIEW_PARAM_KEYS = [
   "periodTo",
   "overviewMember",
 ] as const;
-
-const PERIODS: readonly Period[] = [
-  "this-month",
-  "last-3m",
-  "last-6m",
-  "this-year",
-];
-
-const DATE_FORMAT = "yyyy-MM-dd";
 
 export function parseOverviewFilters(params: URLSearchParams): OverviewFilters {
   const memberId = parseId(params.get("overviewMember"));
@@ -66,30 +46,4 @@ export function serializeOverviewFilters(
   }
   if (filters.memberId != null) out.overviewMember = String(filters.memberId);
   return out;
-}
-
-/** Resolves a preset token to an inclusive `yyyy-MM-dd` range relative to `now`. */
-export function resolvePeriodDates(period: Period, now: Date) {
-  function fmt(d: Date) {
-    return format(d, DATE_FORMAT);
-  }
-  switch (period) {
-    case "this-month":
-      return {
-        startDate: fmt(startOfMonth(now)),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "last-3m":
-      return {
-        startDate: fmt(startOfMonth(subMonths(now, 2))),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "last-6m":
-      return {
-        startDate: fmt(startOfMonth(subMonths(now, 5))),
-        endDate: fmt(endOfMonth(now)),
-      };
-    case "this-year":
-      return { startDate: fmt(startOfYear(now)), endDate: fmt(endOfYear(now)) };
-  }
 }
