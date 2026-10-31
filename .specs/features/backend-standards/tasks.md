@@ -2331,14 +2331,45 @@ T73 → T74 → T75 → T76 → T77 → T78
 | BST-08 | T22, T23, T24 |
 | BST-09 | T25, T26 |
 | BST-10 | T37, T38, T39, T40, T41, T42 |
-| BST-11 | T43, T44, T45 |
+| BST-11 | T43, T44, T45, T83 |
 | BST-12 | T46, T47 |
 | BST-13 | T19, T20, T21 |
 | BST-14 | T24, T48, T49, T50 |
-| BST-15 | T51, T52, T53, T54, T55 |
-| BST-16 | T56, T57, T58 |
+| BST-15 | T51, T52, T53, T54, T55, T79, T80 |
+| BST-16 | T56, T57, T58, T82 |
 | BST-17 | T59, T60, T61 |
 | BST-18 | T62, T63, T64, T65 |
-| BST-19 | T39, T66, T67, T68, T69 |
+| BST-19 | T39, T66, T67, T68, T69, T81 |
 | BST-20 | T70, T71, T72 |
 | BST-21 | T73, T74, T75, T76, T77, T78 |
+
+---
+
+## Phase 23: Review follow-ups (2026-10-30)
+
+User decisions after review: e-mail is case-insensitive (BST-15 AC 12); close Verifier gaps 1, 4, 7, 8 from `validation.md`. Gaps 2, 3, 5, 6 are accepted as-is. One batch, gate at the end.
+
+### T79: Case-insensitive e-mail
+**Requirement**: BST-15 (AC 12)
+Normalise e-mail with `trim` + `toLowerCase(Locale.ROOT)` in one place (a small value/helper in the user or shared package, per ArchUnit rules) and use it on every write and lookup: sign-up, login, forgot-password, reset, e-mail invitations (create and accept/match). Migration V20: refuse (RAISE EXCEPTION, like V16) if `lower(trim(email))` collides in `users` or in pending `plan_invitations`, else lower-case both. Add `backend/scripts/precheck-v20.sql` and a VPS step in `DEPLOY.md` (append only). Frontend: no change needed beyond what already sends the typed value.
+**Done when**: IT registers `Taken@X.com`, then `taken@x.com` answers the existing duplicate-e-mail error; login with `TAKEN@x.com` works; an invitation sent to `Guest@x` is accepted by the user `guest@x`; migration IT/precondition covered.
+
+### T80: Guard single encoder and no dotenv filename
+**Requirement**: BST-15 (AC 6, AC 10)
+ArchUnit rule: only the security config may construct a `PasswordEncoder`/call `PasswordEncoderFactories`; the dummy-hash path uses the injected bean. A test asserts no `spring.dotenv.filename` key in any `application*.yml/properties`.
+**Done when**: both fail when the violation is injected (check once, revert).
+
+### T81: OWNER invitation role is refused
+**Requirement**: BST-19 (AC 5)
+IT sends role `OWNER` to the invitation endpoint and expects 422 `validation-failed` with code `NarrowedEnum`.
+**Done when**: the IT passes and fails if OWNER is added to `InvitationRole`.
+
+### T82: CSV IT tells `sourceText` from description
+**Requirement**: BST-16 (AC 8)
+Change the `CsvImportIT` fixture/flow so the stored description differs from the raw source text (e.g. the import maps or the user edits the description) and assert both fields separately.
+**Done when**: swapping the two fields in the mapper fails the IT.
+
+### T83: De-flake `TimeZoneDialog.test.tsx`
+**Requirement**: BST-11 (AC 7)
+Find the slow path (likely many `userEvent` steps in a long list or a combobox search); reduce steps (type to filter, `userEvent.setup({ delay: null })`) rather than only raising the timeout. No lint/TS bypasses.
+**Done when**: the file passes 10 consecutive runs (`pnpm vitest run src/.../TimeZoneDialog.test.tsx` in a loop).

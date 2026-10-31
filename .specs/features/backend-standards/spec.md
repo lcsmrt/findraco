@@ -364,6 +364,7 @@ The backend audit (`.specs/codebase/backend-quality-audit.md`, 2026-10-20) found
 9. The JWT `sub` SHALL be the user id.  <!-- ubiquitous -->
 10. `spring.dotenv.filename` SHALL not exist in the configuration.  <!-- ubiquitous -->
 11. The frontend password schema SHALL mirror AC 1–3 and warn, without blocking, about leading or trailing spaces.  <!-- ubiquitous -->
+12. The system SHALL trim and lower-case (`Locale.ROOT`) every e-mail before storing or comparing it (sign-up, login, forgot/reset password, e-mail invitations), so `Taken@x` and `taken@x` are the same account; a migration SHALL lower-case existing e-mails and refuse to run if that creates a duplicate. (Addendum 2026-10-30, user decision after review.)  <!-- ubiquitous -->
 
 **Independent Test**: "coração tropeira 🌵" registers and logs in from another device; a BCrypt user logs in and the stored hash starts with `$argon2id$`.
 
@@ -533,7 +534,7 @@ The backend audit (`.specs/codebase/backend-quality-audit.md`, 2026-10-20) found
 | BST-12 | P2 Migrations and database guarantees (AC 1–8) — S9, H12 | Execute | Done |
 | BST-13 | P2 Request tracing and logging (AC 1–5) — S14 | Execute | Done |
 | BST-14 | P2 Rate limits and network exposure (AC 1–4) — S20 | Execute | Done |
-| BST-15 | P2 Authentication hardening (AC 1–11) — S21 | Execute | Done |
+| BST-15 | P2 Authentication hardening (AC 1–12) — S21, addendum AC 12 | Execute | In progress |
 | BST-16 | P2 CSV import (AC 1–9) — S19 | Execute | Done |
 | BST-17 | P2 Category usage from the server (AC 1–5) — S22 | Execute | Done |
 | BST-18 | P2 Series correctness (AC 1–10) — S25, S26, H8, H10, H14 | Execute | Done |
@@ -543,7 +544,7 @@ The backend audit (`.specs/codebase/backend-quality-audit.md`, 2026-10-20) found
 
 **ID format:** `BST-NN`; each ID is one slice covering the AC range in its row. Slice order follows the IDs unless Design refines it (Assumptions).
 
-**Coverage:** 21 total, 21 mapped to tasks (T1–T78)
+**Coverage:** 21 total, 21 mapped to tasks (T1–T83)
 
 ---
 
