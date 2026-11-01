@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/pwa/design.md`
-**Status**: Approved (2026-11-01)
+**Status**: Done (Verifier PASS, iteration 2, 2026-11-01)
 
 ---
 

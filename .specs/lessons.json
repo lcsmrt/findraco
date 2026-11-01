@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 31,
+  "next_id": 35,
   "lessons": [
     {
       "id": "L-001",
@@ -544,6 +544,78 @@
       ],
       "created": "2026-10-31T13:03:51Z",
       "last_seen": "2026-10-31T13:03:51Z"
+    },
+    {
+      "id": "L-031",
+      "key": "ac_gap::verify a generated service worker by running it in a real browser cache populated offline navigation renders not by reading its precache list",
+      "text": "Verify a generated service worker by running it in a real browser (cache populated, offline navigation renders), not by reading its precache list",
+      "signal": "ac_gap",
+      "scope": "frontend build, pwa",
+      "status": "candidate",
+      "features": [
+        "pwa"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "PWA-02 AC 1/2/4; frontend/vite.config.ts:114 (frontend build, pwa)"
+      ],
+      "created": "2026-11-01T17:06:54Z",
+      "last_seen": "2026-11-01T17:06:54Z"
+    },
+    {
+      "id": "L-032",
+      "key": "surviving_mutant::assert an outcome only the tested branch can cause so a sibling branch reaching the same state does not satisfy the test",
+      "text": "Assert an outcome only the tested branch can cause, so a sibling branch reaching the same state does not satisfy the test",
+      "signal": "surviving_mutant",
+      "scope": "frontend flow tests",
+      "status": "candidate",
+      "features": [
+        "pwa"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "M5 frontend/src/app/providers/InstallAppProvider.tsx:36 (frontend flow tests)"
+      ],
+      "created": "2026-11-01T17:06:54Z",
+      "last_seen": "2026-11-01T17:06:54Z"
+    },
+    {
+      "id": "L-033",
+      "key": "spec_precision_gap::for a fail open ac state what a failed later check does to state already shown not only to the first check",
+      "text": "For a fail-open AC, state what a failed later check does to state already shown, not only to the first check",
+      "signal": "spec_precision_gap",
+      "scope": "spec",
+      "status": "candidate",
+      "features": [
+        "pwa"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "PWA-04 AC 5; frontend/src/app/providers/useVersionManifest.ts:29 (spec)"
+      ],
+      "created": "2026-11-01T17:06:54Z",
+      "last_seen": "2026-11-01T17:06:54Z"
+    },
+    {
+      "id": "L-034",
+      "key": "ac_gap::cover timer driven triggers intervals timeouts with fake timer flow cases an ac listing several triggers needs one case per trigger",
+      "text": "Cover timer-driven triggers (intervals, timeouts) with fake-timer flow cases; an AC listing several triggers needs one case per trigger",
+      "signal": "ac_gap",
+      "scope": "frontend flow tests",
+      "status": "candidate",
+      "features": [
+        "pwa"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "PWA-03 AC 8; frontend/src/app/providers/useVersionManifest.ts:37 (frontend flow tests)"
+      ],
+      "created": "2026-11-01T17:06:54Z",
+      "last_seen": "2026-11-01T17:06:54Z"
     }
   ]
 }

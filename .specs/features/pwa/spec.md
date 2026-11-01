@@ -179,16 +179,16 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 
 | Requirement ID | Story | Phase | Status |
 | -------------- | ----- | ----- | ------ |
-| PWA-01 | P1: Install and open full screen (AC 1–4) | Design | Pending |
-| PWA-02 | P1: Opens without network (AC 1–6) | Design | Pending |
-| PWA-03 | P1: Update notice for a new release (AC 1–9) | Design | Implementing |
-| PWA-04 | P1: Blocking update below the minimum version (AC 1–7) | Design | Implementing |
-| PWA-05 | P2: Install from the app (AC 1–5) | Design | Implementing |
-| PWA-06 | P2: Status bar follows the theme (AC 1–3) | Design | Pending |
-| PWA-07 | Edge cases (no SW support, single dialog, toast coexistence, signed out, failed update) | Design | Pending |
-| PWA-08 | `DEPLOY.md`: raising `minSupported`, nginx headers, emergency self-destroying worker | Design | Implementing |
+| PWA-01 | P1: Install and open full screen (AC 1–4) | Execute | Verified |
+| PWA-02 | P1: Opens without network (AC 1–6) | Execute | Verified |
+| PWA-03 | P1: Update notice for a new release (AC 1–9) | Execute | Verified |
+| PWA-04 | P1: Blocking update below the minimum version (AC 1–7) | Execute | Verified |
+| PWA-05 | P2: Install from the app (AC 1–5) | Execute | Verified |
+| PWA-06 | P2: Status bar follows the theme (AC 1–3) | Execute | Verified |
+| PWA-07 | Edge cases (no SW support, single dialog, toast coexistence, signed out, failed update) | Execute | Verified |
+| PWA-08 | `DEPLOY.md`: raising `minSupported`, nginx headers, emergency self-destroying worker | Execute | Verified |
 
-**Coverage:** 8 total, 0 mapped to tasks, 8 unmapped ⚠️ (Tasks not written yet)
+**Coverage:** 8 total, 8 mapped to tasks (T1–T14, F1–F4), 0 unmapped
 
 ---
 
