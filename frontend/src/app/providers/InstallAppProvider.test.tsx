@@ -46,6 +46,13 @@ function offerInstallation(outcome: "accepted" | "dismissed" = "accepted") {
   return { event, prompt };
 }
 
+// Lets the prompt's promise chain finish, so the provider has seen the user's choice.
+async function settlePrompt() {
+  await act(async () => {
+    for (let turn = 0; turn < 5; turn += 1) await Promise.resolve();
+  });
+}
+
 function mode() {
   return screen.getByTestId("mode").textContent;
 }
@@ -91,6 +98,29 @@ describe("InstallAppProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "Install" }));
 
     await waitFor(() => expect(mode()).toBe("none"));
+  });
+
+  it("keeps the item hidden after an accepted prompt even if the browser offers again (PWA-05 AC 5)", async () => {
+    renderProvider();
+    offerInstallation("accepted");
+    fireEvent.click(screen.getByRole("button", { name: "Install" }));
+    await settlePrompt();
+
+    offerInstallation();
+
+    expect(mode()).toBe("none");
+  });
+
+  it("offers the install again when the browser offers after a dismissed prompt (PWA-05 AC 5)", async () => {
+    renderProvider();
+    offerInstallation("dismissed");
+    fireEvent.click(screen.getByRole("button", { name: "Install" }));
+    await settlePrompt();
+    expect(mode()).toBe("none");
+
+    offerInstallation();
+
+    expect(mode()).toBe("native");
   });
 
   it("hides the item when the app reports being installed (PWA-05 AC 5)", () => {

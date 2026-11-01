@@ -425,3 +425,10 @@ Batches (~7 tasks, whole phases): Phase 1 (4), Phase 2 (5), Phase 3 (5) → thre
 - **Done when**: `sw.js` lists each URL once; the guard test passes; re-adding `webmanifest` to the glob or lowering the size limit fails `pnpm build`; headless Chromium on `dist` populates the precache (15 entries) and opens `/transactions` offline on the sign-in screen.
 - **Tests**: unit (tooling) `scripts/precacheManifest.test.ts`
 - **Gate**: quick
+
+### F2: Tell an accepted install prompt from a dismissed one ✅
+
+- **What**: Two flow tests in `InstallAppProvider.test.tsx`: after an accepted prompt a later `beforeinstallprompt` keeps "Install app" hidden; after a dismissed one it shows again.
+- **Done when**: removing `store.markInstalled()` fails a test (checked by hand).
+- **Tests**: flow
+- **Gate**: quick
