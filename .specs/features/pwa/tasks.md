@@ -234,8 +234,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Stories: default (no item, no dot) and update waiting (dot; `play` opens the menu, sees "Update to 1.0.0-beta.99", clicks it, `onUpdate` called)
-- [ ] Gate check passes: Full + Build (phase end)
+- [x] Stories: default (no item, no dot) and update waiting (dot; `play` opens the menu, sees "Update to 1.0.0-beta.99", clicks it, `onUpdate` called)
+- [x] Gate check passes: Full + Build (phase end)
 
 **Tests**: story
 **Gate**: build
