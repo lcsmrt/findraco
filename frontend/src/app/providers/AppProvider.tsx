@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { BrowserRouter } from "react-router-dom";
+import { AppUpdateProvider } from "./AppUpdateProvider";
 import { AuthProvider } from "./AuthProvider";
 import { PlanProvider } from "./PlanProvider";
 import { TanStackQueryProvider } from "./TanStackQueryProvider";
@@ -17,17 +18,19 @@ export function AppProvider({ children }: AppProviderProps) {
     <BrowserRouter>
       <TanStackQueryProvider>
         <ThemeProvider>
-          <AuthProvider>
-            <PlanProvider>
-              <ConfirmDialogProvider>
-                <SeriesScopeDialogProvider>
-                  <CategoryFormSheetProvider>
-                    {children}
-                  </CategoryFormSheetProvider>
-                </SeriesScopeDialogProvider>
-              </ConfirmDialogProvider>
-            </PlanProvider>
-          </AuthProvider>
+          <AppUpdateProvider>
+            <AuthProvider>
+              <PlanProvider>
+                <ConfirmDialogProvider>
+                  <SeriesScopeDialogProvider>
+                    <CategoryFormSheetProvider>
+                      {children}
+                    </CategoryFormSheetProvider>
+                  </SeriesScopeDialogProvider>
+                </ConfirmDialogProvider>
+              </PlanProvider>
+            </AuthProvider>
+          </AppUpdateProvider>
         </ThemeProvider>
       </TanStackQueryProvider>
     </BrowserRouter>

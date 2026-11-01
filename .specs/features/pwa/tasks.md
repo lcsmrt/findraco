@@ -214,8 +214,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Flow: newer version + waiting worker → toast "New version available"; close it → not shown again for that version after a foreground check; a newer second version shows it again; `minSupported` above running → blocking dialog, one instance across repeated checks; `version.json` 500 / malformed → no toast, no dialog; foreground event triggers a new fetch; "Update" with a waiting worker activates it; signed-out route still shows the toast
-- [ ] Gate check passes: Quick
+- [x] Flow: newer version + waiting worker → toast "New version available"; close it → not shown again for that version after a foreground check; a newer second version shows it again; `minSupported` above running → blocking dialog, one instance across repeated checks; `version.json` 500 / malformed → no toast, no dialog; foreground event triggers a new fetch; "Update" with a waiting worker activates it; signed-out route still shows the toast
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
