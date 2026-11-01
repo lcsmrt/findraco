@@ -334,8 +334,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Section present and matches the shipped config
-- [ ] Gate check passes: Build (phase end)
+- [x] Section present and matches the shipped config
+- [x] Gate check passes: Build (phase end)
 
 **Tests**: none
 **Gate**: build

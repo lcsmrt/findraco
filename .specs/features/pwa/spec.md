@@ -185,7 +185,7 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 | PWA-05 | P2: Install from the app (AC 1–5) | Design | Implementing |
 | PWA-06 | P2: Status bar follows the theme (AC 1–3) | Design | Pending |
 | PWA-07 | Edge cases (no SW support, single dialog, toast coexistence, signed out, failed update) | Design | Pending |
-| PWA-08 | `DEPLOY.md`: raising `minSupported`, nginx headers, emergency self-destroying worker | Design | Pending |
+| PWA-08 | `DEPLOY.md`: raising `minSupported`, nginx headers, emergency self-destroying worker | Design | Implementing |
 
 **Coverage:** 8 total, 0 mapped to tasks, 8 unmapped ⚠️ (Tasks not written yet)
 
