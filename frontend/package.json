@@ -1,9 +1,9 @@
 {
   "name": "findraco-frontend",
   "private": true,
-  "version": "1.0.0-beta.22",
+  "version": "1.0.0-beta.23",
   "findraco": {
-    "minSupportedVersion": "1.0.0-beta.22"
+    "minSupportedVersion": "1.0.0-beta.23"
   },
   "type": "module",
   "scripts": {
