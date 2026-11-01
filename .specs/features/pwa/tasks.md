@@ -254,8 +254,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Unit: standalone by `display-mode` and by `navigator.standalone`; iPhone UA, iPad UA, iPadOS reporting Macintosh with touch points → iOS; desktop Mac without touch, Android → not iOS
-- [ ] Gate check passes: Quick
+- [x] Unit: standalone by `display-mode` and by `navigator.standalone`; iPhone UA, iPad UA, iPadOS reporting Macintosh with touch points → iOS; desktop Mac without touch, Android → not iOS
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
