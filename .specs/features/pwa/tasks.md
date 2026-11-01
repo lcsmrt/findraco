@@ -154,8 +154,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Unit: `1.0.0-beta.9` < `1.0.0-beta.23` < `1.0.0` < `1.0.1`; equal versions → 0; malformed / missing fields / non-object → `null`; `null` manifest → none; `minSupported` > running → required (also when no worker waits); newer version + waiting worker → available with `showToast` true, false when dismissed version equals it, true when a different version was dismissed; newer version without a waiting worker → none; same version + waiting worker → none
-- [ ] Gate check passes: Quick
+- [x] Unit: `1.0.0-beta.9` < `1.0.0-beta.23` < `1.0.0` < `1.0.1`; equal versions → 0; malformed / missing fields / non-object → `null`; `null` manifest → none; `minSupported` > running → required (also when no worker waits); newer version + waiting worker → available with `showToast` true, false when dismissed version equals it, true when a different version was dismissed; newer version without a waiting worker → none; same version + waiting worker → none
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick

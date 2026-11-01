@@ -180,8 +180,8 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 | -------------- | ----- | ----- | ------ |
 | PWA-01 | P1: Install and open full screen (AC 1–4) | Design | Pending |
 | PWA-02 | P1: Opens without network (AC 1–6) | Design | Pending |
-| PWA-03 | P1: Update notice for a new release (AC 1–9) | Design | Pending |
-| PWA-04 | P1: Blocking update below the minimum version (AC 1–6) | Design | Pending |
+| PWA-03 | P1: Update notice for a new release (AC 1–9) | Design | Implementing |
+| PWA-04 | P1: Blocking update below the minimum version (AC 1–6) | Design | Implementing |
 | PWA-05 | P2: Install from the app (AC 1–5) | Design | Pending |
 | PWA-06 | P2: Status bar follows the theme (AC 1–3) | Design | Pending |
 | PWA-07 | Edge cases (no SW support, single dialog, toast coexistence, signed out, failed update) | Design | Pending |
