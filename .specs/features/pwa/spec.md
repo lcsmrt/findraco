@@ -159,7 +159,7 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 
 1. The document SHALL carry a `theme-color` equal to the resolved theme's background (`#f5f3ec` light, `#262624` dark) from the first paint.  <!-- ubiquitous -->
 2. WHEN the resolved theme changes (toggle, or the system theme under "system") THEN the system SHALL update `theme-color` to the new theme's background.  <!-- event-driven -->
-3. WHILE the app runs in standalone mode on iOS the navbar background SHALL show behind the status bar (`black-translucent` status bar style) in both themes.  <!-- state-driven -->
+3. WHILE the app runs in standalone mode on iOS the status bar SHALL be opaque in the page colour (no `apple-mobile-web-app-status-bar-style`), so iOS 26's top-edge blur does not fall on the navbar (changed 2026-11-01 after device UAT; `black-translucent` let the blur cover the navbar).  <!-- state-driven -->
 
 **Independent Test**: Installed on Android, switch the theme in the app: the status bar changes colour with it.
 

@@ -124,3 +124,4 @@ self.addEventListener("activate", (event) => {
   menu; the app reloads on the new version.
 - [ ] On iPhone, the bottom bar sits above the home indicator and toasts clear it.
 - [ ] The status bar matches the theme in light and in dark, including after toggling the theme.
+- [ ] iPhone: the top of the navbar is sharp (iOS 26 blurs the top edge when the status bar is `black-translucent`, which is why that meta tag is gone). iOS reads the status-bar style only when the app is added to the home screen: after a change to it, remove the app and add it again.

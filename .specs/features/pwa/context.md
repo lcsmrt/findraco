@@ -45,7 +45,8 @@ Make findraco installable (manifest, icons, standalone look) with a service work
 
 ### 6. Standalone appearance
 
-- Status bar follows the resolved theme (`theme-color` synced; iOS `black-translucent` + navbar `safe-area-inset-top`).
+- Status bar follows the resolved theme (`theme-color` synced; navbar `safe-area-inset-top`). Device UAT 2026-11-01: `black-translucent` let iOS 26's top-edge blur cover the navbar, so it was removed (status bar opaque in the page colour). If the blur persists, next step is extra top clearance in iOS standalone (user-approved fallback).
+- Bottom bar pads the home-indicator inset minus 12px (`--bottom-bar-inset`): the full inset left the labels higher than a native tab bar.
 - Defaults accepted: name/short name "findraco", `start_url` `/`, `display: standalone`, orientation unlocked, icons 192/512/maskable from the 1024 px logo, Android splash from the manifest, no iOS splash images.
 
 ### Agent's Discretion

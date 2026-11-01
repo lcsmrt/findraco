@@ -145,7 +145,7 @@ graph TD
 
 ### Standalone look
 
-- `index.html`: `viewport-fit=cover`; `<meta name="theme-color">`; `<meta name="apple-mobile-web-app-capable" content="yes">`, `apple-mobile-web-app-status-bar-style` `black-translucent`, `apple-mobile-web-app-title` "findraco"; the inline theme script also sets `theme-color` from the computed `--background` after toggling `dark`. Head links for icons come from `pwaAssets`.
+- `index.html`: `viewport-fit=cover`; `<meta name="theme-color">`; `<meta name="apple-mobile-web-app-capable" content="yes">`, no `apple-mobile-web-app-status-bar-style` (removed after device UAT: with `black-translucent`, iOS 26 blurred the navbar; without it the status bar is opaque in the page colour and the top inset is 0), `apple-mobile-web-app-title` "findraco"; the inline theme script also sets `theme-color` from the computed `--background` after toggling `dark`. Head links for icons come from `pwaAssets`.
 - `ThemeProvider.applyTheme` sets the same meta from the computed `--background` (single source: the CSS tokens).
 - `NavbarView`: `pt-[env(safe-area-inset-top)]` and height `calc(4rem + env(safe-area-inset-top))`; `MainLayoutView` `pt-16` → `pt-[calc(4rem+env(safe-area-inset-top))]`. The inset is 0 outside a notched standalone view, so no platform branch.
 - Toasts on mobile: `ToasterView` `mobileOffset={{ bottom: "var(--toast-mobile-bottom, 1rem)" }}`; `index.css` sets `--toast-mobile-bottom: calc(4rem + env(safe-area-inset-bottom) + 1rem)` on `:root:has([data-bottom-bar])`, and `BottomBarView` carries `data-bottom-bar`. The offset applies only where the bar exists (not on auth screens).

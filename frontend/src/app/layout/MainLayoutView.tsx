@@ -20,7 +20,7 @@ export function MainLayoutView({ navbar, navigation, overlay, children }: MainLa
           "flex flex-1 flex-col pt-[calc(4rem+env(safe-area-inset-top))]",
           // The bottom bar is fixed, so the page keeps its height free below `sm`; otherwise the bar
           // would cover the last rows.
-          navigation && "pb-[calc(4rem+env(safe-area-inset-bottom))] sm:pb-0",
+          navigation && "pb-[calc(4rem+var(--bottom-bar-inset))] sm:pb-0",
         )}
       >
         {navigation ? (
