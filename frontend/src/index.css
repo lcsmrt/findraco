@@ -185,9 +185,17 @@
   --sidebar-ring: #f59e0b;
 }
 
+/*
+ * The bottom bar's padding over the home indicator. The full inset left the labels visibly higher
+ * than a native tab bar; 12px less still keeps them clear of the indicator.
+ */
+:root {
+  --bottom-bar-inset: max(0px, calc(env(safe-area-inset-bottom) - 12px));
+}
+
 /* Sonner reads this as its mobile bottom offset, lifting toasts above the fixed bottom bar. */
 :root:has([data-bottom-bar]) {
-  --toast-mobile-bottom: calc(4rem + env(safe-area-inset-bottom) + 1rem);
+  --toast-mobile-bottom: calc(4rem + var(--bottom-bar-inset) + 1rem);
 }
 
 @layer base {
