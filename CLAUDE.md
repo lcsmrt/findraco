@@ -107,7 +107,7 @@ they are enforced. Read the matching skill before writing frontend code.
 - Every push that ships a frontend fix or change bumps the prerelease in `frontend/package.json`
   (`1.0.0-beta.N` → `N+1`), in its own `chore(release): <version>` commit; the app shows it.
 - CI gates deploy: a push that changes an app runs its lint, build and tests (docs-only pushes run
-  nothing; the frontend runs the affected tests, the full suite weekly and on dispatch); nothing reaches
-  production without passing them. → `/frontend-testing`
+  nothing; the frontend runs the affected tests, the full suite weekly and on dispatch; a merge whose
+  tree already passed goes straight to deploy); nothing reaches production without passing them. → `/frontend-testing`
 - Skills: `/component-creation`, `/feature-structure`, `/form-creation`, `/api-integration`,
   `/frontend-testing`.
