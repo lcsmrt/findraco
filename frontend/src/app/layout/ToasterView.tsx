@@ -23,6 +23,8 @@ export function ToasterView(props: ToasterProps) {
       className="toaster group"
       position="bottom-left"
       closeButton
+      // Set by index.css only while the bottom bar is mounted, so auth screens keep the default gap.
+      mobileOffset={{ bottom: "var(--toast-mobile-bottom, 1rem)" }}
       icons={{
         success: (
           <div className="flex size-6 items-center justify-center rounded-full bg-success/15 text-success">

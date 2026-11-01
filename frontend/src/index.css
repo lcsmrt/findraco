@@ -185,6 +185,11 @@
   --sidebar-ring: #f59e0b;
 }
 
+/* Sonner reads this as its mobile bottom offset, lifting toasts above the fixed bottom bar. */
+:root:has([data-bottom-bar]) {
+  --toast-mobile-bottom: calc(4rem + env(safe-area-inset-bottom) + 1rem);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

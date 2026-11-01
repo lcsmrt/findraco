@@ -31,7 +31,7 @@ export function NavbarView({
   timeZoneDialog,
 }: NavbarViewProps) {
   return (
-    <nav className="border-border bg-background fixed z-20 flex h-16 w-full items-center justify-between border-b px-4">
+    <nav className="border-border bg-background fixed z-20 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between border-b px-4 pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-4">
         <img src={"/findraco-logo-128.png"} alt="findraco logo" className="h-8" />
         {planSwitcher}

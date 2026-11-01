@@ -134,8 +134,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] At 375 px with the bottom bar, a toast's bottom edge sits above the bar (checked in the browser or a `MainLayoutView` story `play`)
-- [ ] Gate check passes: Full + Build (phase end)
+- [x] At 375 px with the bottom bar, a toast's bottom edge sits above the bar (checked in the browser or a `MainLayoutView` story `play`)
+- [x] Gate check passes: Full + Build (phase end)
 
 **Tests**: story
 **Gate**: build
