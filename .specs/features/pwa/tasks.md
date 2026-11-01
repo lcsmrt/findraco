@@ -72,10 +72,10 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] `scripts/versionManifest.test.ts`: content equals `{ version, minSupported }`; `minSupported` greater than `version` (incl. pre-release order) throws naming both
-- [ ] `pnpm build` output holds `sw.js`, `manifest.webmanifest` (name, short name, start_url, display, 192/512/maskable icons), `version.json`, the icons and the woff2 font; `sw.js` precache lists no `version.json` and no `findraco-logo.png`
-- [ ] `vite dev` registers no worker
-- [ ] Gate check passes: Tooling + Build
+- [x] `scripts/versionManifest.test.ts`: content equals `{ version, minSupported }`; `minSupported` greater than `version` (incl. pre-release order) throws naming both
+- [x] `pnpm build` output holds `sw.js`, `manifest.webmanifest` (name, short name, start_url, display, 192/512/maskable icons), `version.json`, the icons and the woff2 font; `sw.js` precache lists no `version.json` and no `findraco-logo.png`
+- [x] `vite dev` registers no worker
+- [x] Gate check passes: Tooling + Build
 
 **Tests**: unit
 **Gate**: build

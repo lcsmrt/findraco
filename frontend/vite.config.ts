@@ -1,5 +1,5 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import path from "path";
@@ -9,7 +9,9 @@ import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
+import { VitePWA } from "vite-plugin-pwa";
 import { criticalModules } from "./scripts/testTable.ts";
+import { buildVersionManifest } from "./scripts/versionManifest.ts";
 const dirname =
   typeof __dirname !== "undefined"
     ? __dirname
@@ -18,6 +20,13 @@ const dirname =
 const pkg = JSON.parse(
   readFileSync(new URL("./package.json", import.meta.url), "utf-8"),
 );
+function readMinSupportedVersion(): string {
+  const value: unknown = pkg.findraco?.minSupportedVersion;
+  if (typeof value !== "string") {
+    throw new Error("package.json is missing findraco.minSupportedVersion");
+  }
+  return value;
+}
 const buildDate = new Date().toISOString().slice(0, 10).replace(/-/g, "");
 
 /**
@@ -44,13 +53,67 @@ function baseUiEntryPoints(): string[] {
     .map((subpath) => path.posix.join("@base-ui/react", subpath));
 }
 
+/**
+ * Emits `version.json` for the running app to compare itself against. It stays outside the worker's
+ * precache so a device always reads the live file, and it only exists in builds: the dev server has
+ * no worker and nothing to update.
+ */
+function versionManifestPlugin(): Plugin {
+  return {
+    name: "findraco-version-manifest",
+    apply: "build",
+    generateBundle() {
+      this.emitFile({
+        type: "asset",
+        fileName: "version.json",
+        source: JSON.stringify(buildVersionManifest(pkg.version, readMinSupportedVersion())),
+      });
+    },
+  };
+}
+
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __APP_BUILD_DATE__: JSON.stringify(buildDate),
   },
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    versionManifestPlugin(),
+    VitePWA({
+      // The app asks before swapping workers, so a tab is never replaced mid-edit.
+      registerType: "prompt",
+      // Registration lives in the app (one adapter), not in an injected script.
+      injectRegister: false,
+      manifest: {
+        name: "findraco",
+        short_name: "findraco",
+        start_url: "/",
+        scope: "/",
+        display: "standalone",
+        // The manifest is static; the theme-color meta tag overrides the theme colour at runtime.
+        background_color: "#f5f3ec",
+        theme_color: "#f5f3ec",
+      },
+      pwaAssets: {
+        config: true,
+        overrideManifestIcons: true,
+        includeHtmlHeadLinks: true,
+        // ThemeProvider and the inline script own the meta tag, from the --background token.
+        injectThemeColor: false,
+      },
+      workbox: {
+        globPatterns: ["**/*.{js,css,html,woff2,png,ico,svg,webmanifest}"],
+        // The 1024 px logo source is only read at build time; no page renders it.
+        globIgnores: ["findraco-logo.png"],
+        navigateFallback: "index.html",
+        // The API is never served from the shell, and nothing under it is cached.
+        navigateFallbackDenylist: [/^\/api\//],
+      },
+    }),
+  ],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

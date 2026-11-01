@@ -73,7 +73,7 @@ graph TD
   - `manifest`: `name`/`short_name` "findraco", `start_url` "/", `scope` "/", `display` "standalone", `background_color` and `theme_color` `#f5f3ec` (manifest is static; the meta tag overrides it at runtime).
   - `workbox.globPatterns`: `**/*.{js,css,html,woff2,png,ico,svg,webmanifest}`; `globIgnores`: `findraco-logo.png` (1024 px source, 428 KB, never rendered); `navigateFallback` `index.html`; `navigateFallbackDenylist` `[/^\/api\//]`; no `runtimeCaching` (nothing under `/api` is ever cached). `version.json` is outside the glob, so never precached.
   - `devOptions.enabled` stays `false` (default): no worker under `vite dev` (PWA-02 AC 6).
-  - `pwaAssets` (assets generator 2.x): `image` `public/findraco-logo.png`, preset `minimal-2023` with maskable/apple padding sized to keep the logo inside the 80% safe zone, `overrideManifestIcons: true`, `includeHtmlHeadLinks: true`, `injectThemeColor: false` (we manage `theme-color`).
+  - `pwaAssets` (assets generator 2.x, `config: true` reading `pwa-assets.config.ts`): `public/findraco-logo.png` (it already leaves ~20% empty per side) with the `minimal-2023` preset and `padding: 0` overrides plus a `#f5f3ec` background on the maskable and apple assets (the preset defaults pad 30% on a white background), `overrideManifestIcons: true`, `includeHtmlHeadLinks: true`, `injectThemeColor: false` (we manage `theme-color`).
 - **Reuses**: existing `define` block and `pkg` read.
 
 ### Build: `versionManifest` inline plugin
@@ -90,6 +90,7 @@ graph TD
 - **Interfaces**:
   - `useServiceWorker(): { needRefresh: boolean; checkForUpdate(): Promise<void>; activateUpdate(): Promise<void> }` - `checkForUpdate` calls `registration.update()` when online (the plugin's documented periodic recipe); `activateUpdate` = `updateServiceWorker(true)`.
 - **Dependencies**: `vite-plugin-pwa/react` types.
+- **Verified against 2.0.0 types**: `useRegisterSW` returns `needRefresh`/`offlineReady` as `[value, setter]` tuples and `updateServiceWorker(reloadPage?)`, where the `reloadPage` argument is ignored (the page reloads when the new worker takes control; `onNeedReload` can override that). `RegisterSWOptions` adds `onNeedReload`, `onRegisteredSW(url, registration)` is the non-deprecated hook for the registration.
 - **Test seam**: Vitest aliases the virtual module to `src/test/fakePwaRegister.ts` (controllable `needRefresh`, records calls).
 
 ### `appUpdate.ts` (pure rules)
