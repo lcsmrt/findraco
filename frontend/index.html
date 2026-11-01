@@ -2,13 +2,12 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300..700&display=swap" rel="stylesheet" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f5f3ec" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="findraco" />
     <link rel="stylesheet" href="/src/index.css" />
-    <link rel="icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <title>findraco</title>
     <script>
       (function () {
@@ -30,6 +29,20 @@
     </script>
   </head>
   <body>
+    <script>
+      // A script in the body waits for the stylesheet, so --background already holds the resolved
+      // theme's colour; in the head it would still be empty.
+      (function () {
+        const background = getComputedStyle(document.documentElement)
+          .getPropertyValue("--background")
+          .trim();
+        if (background) {
+          document
+            .querySelector('meta[name="theme-color"]')
+            .setAttribute("content", background);
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>

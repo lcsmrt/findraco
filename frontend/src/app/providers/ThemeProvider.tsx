@@ -8,6 +8,12 @@ function applyTheme(theme: Theme) {
   const root = document.documentElement;
   const resolved = resolveTheme(theme);
   root.classList.toggle("dark", resolved === "dark");
+  // Read after the class toggle so the status bar takes the colour the page now paints with; the
+  // CSS token stays the only place a theme colour is written.
+  const background = getComputedStyle(root).getPropertyValue("--background").trim();
+  if (background) {
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", background);
+  }
 }
 
 function getStoredTheme(): Theme {

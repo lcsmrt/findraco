@@ -88,7 +88,7 @@ function renderAt(route: string) {
         </SeriesScopeDialogProvider>
       </ConfirmDialogProvider>
     </CategoryFormSheetContext.Provider>,
-    { route, auth: authValue(), plan: planValue(), theme },
+    { route, auth: authValue(), plan: planValue(), theme, appUpdate: { state: { kind: "none" }, update: vi.fn() }, installApp: { mode: null, install: vi.fn(), instructionsOpen: false, closeInstructions: vi.fn() } },
   );
 }
 

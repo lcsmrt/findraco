@@ -1,10 +1,12 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MemoryRouter } from "react-router-dom";
+import { toast } from "sonner";
 import { expect, fn, waitFor } from "storybook/test";
 import { Text } from "@/components/typography/base/Text";
 import { BottomBarView } from "./BottomBarView";
 import { MainLayoutView } from "./MainLayoutView";
 import { TabRowView } from "./TabRowView";
+import { ToasterView } from "./ToasterView";
 
 const meta = {
   title: "App/MainLayoutView",
@@ -88,5 +90,29 @@ export const WithNavigationMobile: Story = {
     // Pinned to the viewport, not laid out at the end of the page: it stays in view while scrolling.
     await expect(getComputedStyle(bar).position).toBe("fixed");
     await expect(Math.round(bar.getBoundingClientRect().bottom)).toBe(view?.innerHeight);
+  },
+};
+
+export const ToastAboveBottomBar: Story = {
+  ...WithNavigationMobile,
+  args: {
+    ...WithNavigationMobile.args,
+    overlay: <ToasterView theme="light" />,
+  },
+  // Sonner keeps its toasts in a module-level store, so each run starts from an empty one.
+  beforeEach: () => {
+    toast.dismiss();
+  },
+  play: async ({ canvas, canvasElement }) => {
+    toast("Transaction saved");
+    const bar = canvas.getByRole("navigation", { name: "Bottom bar" });
+    const toastElement = await waitFor(() => {
+      const element = canvasElement.ownerDocument.querySelector("[data-sonner-toast]");
+      expect(element).toBeVisible();
+      return element as HTMLElement;
+    });
+    await waitFor(() =>
+      expect(toastElement.getBoundingClientRect().bottom).toBeLessThanOrEqual(bar.getBoundingClientRect().top),
+    );
   },
 };

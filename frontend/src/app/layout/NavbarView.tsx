@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
-import { Globe, LogOut } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
+import { Download, Globe, LogOut, Smartphone } from "lucide-react";
+import { Avatar, AvatarBadge, AvatarFallback } from "@/components/avatar/base/Avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,6 +20,10 @@ type NavbarViewProps = {
   themeToggle: ReactNode;
   // Slot: the dialog reads the profile, so its container stays outside the view.
   timeZoneDialog: ReactNode;
+  /** Set while a newer version waits: adds the menu item and the dot on the avatar. */
+  update?: { version: string; onUpdate: () => void };
+  /** Set while the app can be installed from here: adds the menu item. */
+  install?: { onInstall: () => void };
 };
 
 export function NavbarView({
@@ -29,9 +33,11 @@ export function NavbarView({
   planSwitcher,
   themeToggle,
   timeZoneDialog,
+  update,
+  install,
 }: NavbarViewProps) {
   return (
-    <nav className="border-border bg-background fixed z-20 flex h-16 w-full items-center justify-between border-b px-4">
+    <nav className="border-border bg-background fixed z-20 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between border-b px-4 pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-4">
         <img src={"/findraco-logo-128.png"} alt="findraco logo" className="h-8" />
         {planSwitcher}
@@ -46,10 +52,33 @@ export function NavbarView({
               <AvatarFallback>
                 {getFirstAndLastInitials(userName)}
               </AvatarFallback>
+              {update && (
+                <AvatarBadge>
+                  <span className="sr-only">Update available</span>
+                </AvatarBadge>
+              )}
             </Avatar>
           </DropdownMenuTrigger>
 
           <DropdownMenuContent>
+            {update && (
+              <DropdownMenuItem
+                className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
+                onClick={update.onUpdate}
+              >
+                Update to {update.version}
+                <Download className="text-foreground" />
+              </DropdownMenuItem>
+            )}
+            {install && (
+              <DropdownMenuItem
+                className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
+                onClick={install.onInstall}
+              >
+                Install app
+                <Smartphone className="text-foreground" />
+              </DropdownMenuItem>
+            )}
             <DropdownMenuItem
               className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
               onClick={onOpenTimeZone}

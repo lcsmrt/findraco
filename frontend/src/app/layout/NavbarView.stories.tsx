@@ -33,11 +33,52 @@ type Story = StoryObj<typeof meta>;
 export const SignedIn: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("AL")).toBeVisible();
+    await expect(canvas.queryByText("Update available")).toBeNull();
     await userEvent.click(canvas.getByText("AL"));
     await userEvent.click(await screen.findByRole("menuitem", { name: "Logout" }));
     await expect(args.onSignOut).toHaveBeenCalledTimes(1);
     // Choosing an item closes the menu; the a11y check runs once it has left.
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+export const UpdateWaiting: Story = {
+  args: { update: { version: "1.0.0-beta.99", onUpdate: fn() } },
+  play: async ({ args, canvas, userEvent }) => {
+    await expect(canvas.getByText("Update available")).toBeInTheDocument();
+    await userEvent.click(canvas.getByText("AL"));
+    await userEvent.click(
+      await screen.findByRole("menuitem", { name: "Update to 1.0.0-beta.99" }),
+    );
+    await expect(args.update?.onUpdate).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+export const Installable: Story = {
+  args: { install: { onInstall: fn() } },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByText("AL"));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Install app" }));
+    await expect(args.install?.onInstall).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+export const UpdateWaitingAndInstallable: Story = {
+  args: {
+    update: { version: "1.0.0-beta.99", onUpdate: fn() },
+    install: { onInstall: fn() },
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByText("AL"));
+    const items = await screen.findAllByRole("menuitem");
+    await expect(items.map((item) => item.textContent)).toEqual([
+      "Update to 1.0.0-beta.99",
+      "Install app",
+      "Time zone",
+      "Logout",
+    ]);
   },
 };
 

@@ -194,6 +194,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: PNAV-01 AC8 (frontend/specs)
 - last seen: 2026-10-31T13:03:51Z
 
+### L-031 - Verify a generated service worker by running it in a real browser (cache populated, offline navigation renders), not by reading its precache list
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend build, pwa` · harmful: 0
+- features: pwa
+- evidence: PWA-02 AC 1/2/4; frontend/vite.config.ts:114 (frontend build, pwa)
+- last seen: 2026-11-01T17:06:54Z
+
+### L-032 - Assert an outcome only the tested branch can cause, so a sibling branch reaching the same state does not satisfy the test
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
+- features: pwa
+- evidence: M5 frontend/src/app/providers/InstallAppProvider.tsx:36 (frontend flow tests)
+- last seen: 2026-11-01T17:06:54Z
+
+### L-033 - For a fail-open AC, state what a failed later check does to state already shown, not only to the first check
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `spec` · harmful: 0
+- features: pwa
+- evidence: PWA-04 AC 5; frontend/src/app/providers/useVersionManifest.ts:29 (spec)
+- last seen: 2026-11-01T17:06:54Z
+
+### L-034 - Cover timer-driven triggers (intervals, timeouts) with fake-timer flow cases; an AC listing several triggers needs one case per trigger
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
+- features: pwa
+- evidence: PWA-03 AC 8; frontend/src/app/providers/useVersionManifest.ts:37 (frontend flow tests)
+- last seen: 2026-11-01T17:06:54Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

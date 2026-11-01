@@ -24,6 +24,7 @@ export function BottomBarView({ current, onAdd, className }: BottomBarViewProps)
   return (
     <nav
       aria-label="Bottom bar"
+      data-bottom-bar
       className={cn(
         "border-border bg-background fixed inset-x-0 bottom-0 z-20 border-t pb-[env(safe-area-inset-bottom)] sm:hidden",
         className,

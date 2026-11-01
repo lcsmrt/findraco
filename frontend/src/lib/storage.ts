@@ -4,7 +4,11 @@ export const STORAGE_KEYS = {
   hasSession: "hasSession",
   user: "user",
   activePlanId: "activePlanId",
+  dismissedUpdate: "dismissedUpdate",
 } as const;
+
+// Belongs to the device, not the session: signing out must not bring a dismissed update notice back.
+const DEVICE_KEYS: ReadonlyArray<keyof typeof STORAGE_KEYS> = ["dismissedUpdate"];
 
 /**
  * Stores a value in Local Storage.
@@ -60,5 +64,7 @@ export function clearStorage(): void {
  * `clearStorage`, keeps unrelated entries such as saved filters and the theme.
  */
 export function clearSessionStorage(): void {
-  Object.values(STORAGE_KEYS).forEach((name) => localStorage.removeItem(name));
+  Object.entries(STORAGE_KEYS)
+    .filter(([key]) => !DEVICE_KEYS.some((deviceKey) => deviceKey === key))
+    .forEach(([, name]) => localStorage.removeItem(name));
 }
