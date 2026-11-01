@@ -414,3 +414,14 @@ Batches (~7 tasks, whole phases): Phase 1 (4), Phase 2 (5), Phase 3 (5) → thre
 | T12 | Presentational | story | story | ✅ |
 | T13 | Container (no new decision) + view prop | story | story | ✅ |
 | T14 | Docs | none | none | ✅ |
+
+---
+
+## Fix Tasks (Verifier iteration 1)
+
+### F1: Precache the app shell without duplicate entries ✅
+
+- **What**: Drop `webmanifest` from `globPatterns` (the plugin precaches the manifest itself). A pure `rejectDuplicateUrls` transform in `frontend/scripts/precacheManifest.ts`, added to Workbox's `manifestTransforms` from the plugin's `beforeBuildServiceWorker` hook (Workbox appends the plugin's entries after the transforms run, so they are passed in), fails the build on a repeated URL. `showMaximumFileSizeToCacheInBytesWarning: false` makes a file over the size limit fail the build too.
+- **Done when**: `sw.js` lists each URL once; the guard test passes; re-adding `webmanifest` to the glob or lowering the size limit fails `pnpm build`; headless Chromium on `dist` populates the precache (15 entries) and opens `/transactions` offline on the sign-in screen.
+- **Tests**: unit (tooling) `scripts/precacheManifest.test.ts`
+- **Gate**: quick

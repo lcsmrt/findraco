@@ -11,6 +11,7 @@ import { createRequire } from "node:module";
 import { storybookTest } from "@storybook/addon-vitest/vitest-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 import { criticalModules } from "./scripts/testTable.ts";
+import { rejectDuplicateUrls } from "./scripts/precacheManifest.ts";
 import { buildVersionManifest } from "./scripts/versionManifest.ts";
 const dirname =
   typeof __dirname !== "undefined"
@@ -110,8 +111,25 @@ export default defineConfig({
         // ThemeProvider and the inline script own the meta tag, from the --background token.
         injectThemeColor: false,
       },
+      // A file over the size limit is dropped from the precache; that would leave the offline shell
+      // incomplete, so the build fails instead of warning.
+      showMaximumFileSizeToCacheInBytesWarning: false,
+      integration: {
+        // Workbox applies transforms before it appends the plugin's own entries, so the list is
+        // checked here, once those entries are known.
+        beforeBuildServiceWorker(options) {
+          const added = (options.workbox.additionalManifestEntries ?? []).map((entry) =>
+            typeof entry === "string" ? entry : entry.url,
+          );
+          options.workbox.manifestTransforms = [
+            ...(options.workbox.manifestTransforms ?? []),
+            rejectDuplicateUrls(added),
+          ];
+        },
+      },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,woff2,png,ico,svg,webmanifest}"],
+        // The plugin adds the web manifest to the precache itself; globbing it too duplicates the entry.
+        globPatterns: ["**/*.{js,css,html,woff2,png,ico,svg}"],
         // The 1024 px logo source is only read at build time; no page renders it.
         globIgnores: ["findraco-logo.png"],
         navigateFallback: "index.html",
