@@ -38,7 +38,7 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 | Status bar colour in standalone | Follows the app's resolved theme (light `#f5f3ec`, dark `#262624`); on iOS the content extends behind the status bar and the navbar pads `safe-area-inset-top` | Decision 6, option A | y |
 | Manifest basics | Name and short name "findraco"; `start_url` `/`; `display: standalone`; orientation unlocked; icons 192, 512 and a maskable 512 generated from `findraco-logo.png` (1024 px) | Defaults accepted by the user with decision 6 | y |
 | When the app checks for a new version | On start-up, when the app returns to the foreground, and every 60 minutes while open | Standalone apps are rarely cold-started; the browser's own check alone could leave a device behind for a day | y |
-| `version.json` unreachable (offline, error, malformed) | No notice and no block; the app keeps running and checks again at the next trigger | Failing closed would lock users out of an offline-capable app over a transient error | y |
+| `version.json` unreachable (offline, error, malformed) | No notice and no block when no check has succeeded yet; after a success, a failed check keeps the last known state; checks again at the next trigger | Failing closed would lock users out over a transient error; a blocking dialog must not vanish because the phone went offline | y (refined 2026-11-01 after verification, PWA-04 AC 7) |
 | Version ordering | Semantic Versioning 2.0.0 precedence, including pre-release (`1.0.0-beta.9` < `1.0.0-beta.23` < `1.0.0`) | Versions are `1.0.0-beta.N` now and plain `1.0.0` later | y |
 | Where `minSupported` comes from | A value committed in the frontend, written into `version.json` at build time; raising it is a deliberate commit | Same "contract in the repo" approach as `openapi.json`; exact place decided in Design | y |
 | Update notice on auth screens (login, register, reset) | Toast and blocking dialog show there too; the avatar menu item and dot exist only where the navbar is | The notice is app-wide; the menu does not exist signed out | y |
@@ -123,7 +123,8 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 2. WHEN a version check reads a `minSupported` greater than the running version THEN the system SHALL show a blocking dialog titled "Update required" with the text "A new version of findraco is needed to continue." and a single "Update" action, with no close button and no dismissal by Escape or outside click.  <!-- event-driven -->
 3. WHEN the member taps "Update" in the blocking dialog THEN the system SHALL load the newest version (activating a waiting worker, or fetching and activating it first) and reload.  <!-- event-driven -->
 4. WHEN a version check reads a `version` greater than the running version and a `minSupported` not greater than the running version THEN the system SHALL show the normal update notice, not the blocking dialog.  <!-- event-driven -->
-5. IF `version.json` cannot be fetched or parsed THEN the system SHALL show neither notice nor dialog and keep the app usable.  <!-- unwanted-behavior -->
+5. IF `version.json` cannot be fetched or parsed and no earlier check in this session succeeded THEN the system SHALL show neither notice nor dialog and keep the app usable.  <!-- unwanted-behavior -->
+7. IF a later check fails after an earlier one succeeded THEN the system SHALL keep the state the last successful check produced (a shown notice or blocking dialog stays).  <!-- unwanted-behavior -->
 6. The system SHALL order versions by Semantic Versioning 2.0.0 precedence, so that `1.0.0-beta.9` < `1.0.0-beta.23` < `1.0.0`.  <!-- ubiquitous -->
 
 **Independent Test**: With beta.N installed, deploy beta.N+1 with `minSupported` = beta.N+1, bring the app to the foreground: the blocking dialog appears and nothing behind it is reachable; tap "Update": the app reloads on beta.N+1 and the dialog is gone.
@@ -181,7 +182,7 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 | PWA-01 | P1: Install and open full screen (AC 1–4) | Design | Pending |
 | PWA-02 | P1: Opens without network (AC 1–6) | Design | Pending |
 | PWA-03 | P1: Update notice for a new release (AC 1–9) | Design | Implementing |
-| PWA-04 | P1: Blocking update below the minimum version (AC 1–6) | Design | Implementing |
+| PWA-04 | P1: Blocking update below the minimum version (AC 1–7) | Design | Implementing |
 | PWA-05 | P2: Install from the app (AC 1–5) | Design | Implementing |
 | PWA-06 | P2: Status bar follows the theme (AC 1–3) | Design | Pending |
 | PWA-07 | Edge cases (no SW support, single dialog, toast coexistence, signed out, failed update) | Design | Pending |
