@@ -72,6 +72,12 @@ function versionManifestPlugin(): Plugin {
   };
 }
 
+// The plugin's virtual module exists only in a real build; tests get a controllable fake of that
+// external boundary instead.
+const pwaRegisterAlias = {
+  "virtual:pwa-register/react": path.resolve(__dirname, "./src/test/fakePwaRegister.ts"),
+};
+
 // More info at: https://storybook.js.org/docs/next/writing-tests/integrations/vitest-addon
 export default defineConfig({
   define: {
@@ -186,6 +192,7 @@ export default defineConfig({
         test: {
           name: "unit",
           environment: "jsdom",
+          alias: pwaRegisterAlias,
           include: ["src/**/*.test.{ts,tsx}"],
           setupFiles: ["src/test/setupUnit.ts"],
         },
@@ -195,6 +202,7 @@ export default defineConfig({
         test: {
           name: "critical",
           environment: "jsdom",
+          alias: pwaRegisterAlias,
           include: criticalModules.flatMap((modulePath) => {
             const base = `src/${modulePath.replace(/\.ts$/, "")}`;
             return [`${base}.test.ts`, `${base}.*.test.ts`];

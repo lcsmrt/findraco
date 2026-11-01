@@ -194,8 +194,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Type-check passes with the virtual module; existing unit suite passes with the alias
-- [ ] Gate check passes: Build
+- [x] Type-check passes with the virtual module; existing unit suite passes with the alias
+- [x] Gate check passes: Build
 
 **Tests**: none
 **Gate**: build
