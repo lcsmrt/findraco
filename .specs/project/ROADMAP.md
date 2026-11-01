@@ -11,7 +11,7 @@
 
 Leaving beta means "you can rely on it every day, without a backup spreadsheet". 1.0 ships when all hold:
 
-1. **Daily use on the phone without friction**: mobile navigation (M5-09, shipped), PWA (M5-07), period navigator (M5-06, done 2026-10-31).
+1. **Daily use on the phone without friction**: mobile navigation (M5-09, shipped), PWA (M5-07, done 2026-11-01), period navigator (M5-06, done 2026-10-31).
 2. **Data safety**: no known bug that loses or corrupts data; backups exist and a restore has been tested (✅ 2026-10-31: daily `pg_dump` on the VPS, 7 kept, `backend/scripts/backup-db.sh`, restore tested; the provider's weekly VPS backup covers losing the machine; off-VPS copy deferred); permanent plan deletion with retention (M4-07).
 3. **A settled base** (✅ 2026-10-31, `backend-standards` shipped): backend standards review and the ProblemDetail error-contract migration done, so later changes are features rather than restructuring.
 4. **A trial period**: a stretch of using only findraco with no serious bug found.

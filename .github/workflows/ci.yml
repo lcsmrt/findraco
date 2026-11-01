@@ -67,6 +67,21 @@ jobs:
           fi
           deployable=false
           if [[ "$frontend" == true || "$backend" == true ]]; then deployable=true; fi
+          # A merge of a branch that was up to date with main has the exact tree
+          # its last push already passed with, so testing it again proves nothing.
+          # The diff above still decides whether there is anything to deploy.
+          if [[ "$EVENT" == push && "$deployable" == true ]]; then
+            tree=$(git rev-parse "$GITHUB_SHA^{tree}")
+            for sha in $(gh run list --repo "$GITHUB_REPOSITORY" --workflow ci.yml --event push \
+              --status success --limit 30 --json headSha --jq '.[].headSha'); do
+              if [[ "$(git rev-parse --verify --quiet "$sha^{tree}")" == "$tree" ]]; then
+                echo "::notice::Tree already passed in the run for $sha; skipping tests."
+                frontend=false
+                backend=false
+                break
+              fi
+            done
+          fi
           echo "base=${base:-none} frontend=$frontend backend=$backend deployable=$deployable"
           {
             echo "frontend=$frontend"
