@@ -167,7 +167,7 @@ findraco is used daily on the phone, but only as a browser tab: no home-screen i
 
 ## Edge Cases
 
-- IF the browser does not support service workers THEN the system SHALL run as today, with no notice, dialog or error.
+- IF the browser does not support service workers THEN the system SHALL run as today, with no update notice and no error; the blocking dialog still applies below `minSupported`, its "Update" reloading from the network.
 - IF a new version is detected while the blocking dialog is already open THEN the system SHALL keep a single dialog.
 - WHEN the update toast and an operation toast (e.g. "Transaction saved") are both visible THEN the system SHALL keep the update toast until the member acts on it.
 - WHEN the member is signed out and an update waits THEN the system SHALL still show the toast on the auth screens.
