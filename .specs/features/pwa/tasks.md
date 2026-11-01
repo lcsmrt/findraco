@@ -274,8 +274,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Flow: dispatched `beforeinstallprompt` → mode native, `install()` calls `prompt()`, accepted → null; iOS UA outside standalone → ios; standalone → null; no event and not iOS → null
-- [ ] Gate check passes: Quick
+- [x] Flow: dispatched `beforeinstallprompt` → mode native, `install()` calls `prompt()`, accepted → null; iOS UA outside standalone → ios; standalone → null; no event and not iOS → null
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
