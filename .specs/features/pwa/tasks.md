@@ -314,8 +314,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Stories: installable (`play` opens the menu, clicks "Install app", `onInstall` called) and update + installable together
-- [ ] Gate check passes: Full
+- [x] Stories: installable (`play` opens the menu, clicks "Install app", `onInstall` called) and update + installable together
+- [x] Gate check passes: Full
 
 **Tests**: story
 **Gate**: full

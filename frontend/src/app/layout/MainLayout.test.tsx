@@ -114,7 +114,7 @@ function renderAt(route: string, plan: PlanState = { plans: [editorPlan], active
         </ConfirmDialogProvider>
       </CategoryFormSheetContext.Provider>
     </StatefulPlan>,
-    { route, auth: authValue(), theme, appUpdate: { state: { kind: "none" }, update: vi.fn() } },
+    { route, auth: authValue(), theme, appUpdate: { state: { kind: "none" }, update: vi.fn() }, installApp: { mode: null, install: vi.fn(), instructionsOpen: false, closeInstructions: vi.fn() } },
   );
 }
 

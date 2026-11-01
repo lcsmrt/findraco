@@ -3,6 +3,7 @@ import { render, renderHook } from "@testing-library/react";
 import type { ReactElement, ReactNode } from "react";
 import { MemoryRouter, type InitialEntry } from "react-router-dom";
 import { AppUpdateContext, type AppUpdateContextValue } from "@/app/providers/useAppUpdate";
+import { InstallAppContext, type InstallAppContextValue } from "@/app/providers/useInstallApp";
 import { AuthContext, type AuthContextValue } from "@/app/providers/useAuth";
 import { PlanContext, type PlanContextValue } from "@/app/providers/usePlanContext";
 import { ThemeContext, type ThemeContextValue } from "@/app/providers/useTheme";
@@ -18,6 +19,7 @@ export type ProviderValues = {
   plan?: PlanContextValue;
   theme?: ThemeContextValue;
   appUpdate?: AppUpdateContextValue;
+  installApp?: InstallAppContextValue;
 };
 
 function createTestQueryClient() {
@@ -30,6 +32,9 @@ function createTestQueryClient() {
 function createProviders(values: ProviderValues, queryClient: QueryClient) {
   return function Providers({ children }: { children: ReactNode }) {
     let tree = children;
+    if (values.installApp) {
+      tree = <InstallAppContext.Provider value={values.installApp}>{tree}</InstallAppContext.Provider>;
+    }
     if (values.appUpdate) {
       tree = <AppUpdateContext.Provider value={values.appUpdate}>{tree}</AppUpdateContext.Provider>;
     }

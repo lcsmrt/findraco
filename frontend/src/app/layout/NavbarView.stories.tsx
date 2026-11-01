@@ -55,6 +55,33 @@ export const UpdateWaiting: Story = {
   },
 };
 
+export const Installable: Story = {
+  args: { install: { onInstall: fn() } },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByText("AL"));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Install app" }));
+    await expect(args.install?.onInstall).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+export const UpdateWaitingAndInstallable: Story = {
+  args: {
+    update: { version: "1.0.0-beta.99", onUpdate: fn() },
+    install: { onInstall: fn() },
+  },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByText("AL"));
+    const items = await screen.findAllByRole("menuitem");
+    await expect(items.map((item) => item.textContent)).toEqual([
+      "Update to 1.0.0-beta.99",
+      "Install app",
+      "Time zone",
+      "Logout",
+    ]);
+  },
+};
+
 export const OpenTimeZone: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByText("AL"));
