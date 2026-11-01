@@ -10,6 +10,7 @@ type FakeOptions = {
 const listeners = new Set<() => void>();
 let needRefresh = false;
 let workerAppearsOnUpdate = false;
+let workerSupported = true;
 let updateCalls = 0;
 let activateCalls = 0;
 
@@ -40,6 +41,10 @@ export const pwaRegisterFake = {
   installWorkerOnUpdate() {
     workerAppearsOnUpdate = true;
   },
+  /** The browser has no service-worker support: nothing registers and no worker ever appears. */
+  withoutWorkerSupport() {
+    workerSupported = false;
+  },
   get updateCalls() {
     return updateCalls;
   },
@@ -49,6 +54,7 @@ export const pwaRegisterFake = {
   reset() {
     needRefresh = false;
     workerAppearsOnUpdate = false;
+    workerSupported = true;
     updateCalls = 0;
     activateCalls = 0;
     notify();
@@ -59,7 +65,7 @@ export function useRegisterSW(options: FakeOptions = {}) {
   const current = useSyncExternalStore(subscribe, () => needRefresh);
   const { onRegisteredSW } = options;
   useEffect(() => {
-    onRegisteredSW?.("/sw.js", registration);
+    if (workerSupported) onRegisteredSW?.("/sw.js", registration);
   }, [onRegisteredSW]);
   return {
     needRefresh: [current, pwaRegisterFake.setNeedRefresh] as const,

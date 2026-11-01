@@ -59,6 +59,7 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllGlobals();
   // The toast store outlives a render; clear it while the Toaster is still mounted.
   act(() => {
     toast.dismiss();
@@ -271,5 +272,69 @@ describe("AppUpdateProvider required update", () => {
 
     await waitFor(() => expect(pwaRegisterFake.activateCalls).toBe(1));
     expect(pwaRegisterFake.updateCalls).toBe(2);
+  });
+});
+
+describe("AppUpdateProvider edge cases", () => {
+  it("keeps the update toast past sonner's default duration and past an operation toast (PWA-03 AC 1, PWA-07 toasts together)", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    pwaRegisterFake.setNeedRefresh(true);
+    server.use(versionHandlers.manifest({ version: NEWER, minSupported: RUNNING }));
+    renderProvider();
+    await screen.findByText(TOAST_TITLE);
+
+    act(() => {
+      toast("Saved");
+    });
+    await screen.findByText("Saved");
+    // Well past the default duration of a toast: the operation toast has gone, the update toast not.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30_000);
+    });
+
+    await waitFor(() => expect(screen.queryByText("Saved")).toBeNull());
+    expect(screen.getByText(TOAST_TITLE)).toBeTruthy();
+  });
+
+  it("reloads once when no worker arrives after Update, and never again by itself (PWA-07 reload still old)", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    const reload = vi.fn();
+    vi.stubGlobal("location", { ...window.location, reload });
+    server.use(versionHandlers.manifest({ version: NEWER, minSupported: NEWER }));
+    renderProvider();
+    const button = await screen.findByRole("button", { name: "Update" });
+    await waitFor(() => expect(pwaRegisterFake.updateCalls).toBe(1));
+
+    fireEvent.click(button);
+    await waitFor(() => expect(pwaRegisterFake.updateCalls).toBe(2));
+    expect(reload).not.toHaveBeenCalled();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10_000);
+    });
+
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(pwaRegisterFake.activateCalls).toBe(0);
+
+    // Nothing retries on its own; the next check only raises the notice again.
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    });
+    expect(reload).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("dialog", { name: "Update required" })).toBeTruthy();
+  });
+
+  it("runs as today without service-worker support (PWA-07 no support)", async () => {
+    pwaRegisterFake.withoutWorkerSupport();
+    server.use(versionHandlers.manifest({ version: NEWER, minSupported: RUNNING }));
+    const requests = recordRequests();
+
+    renderProvider();
+
+    await waitFor(() => expect(versionRequests(requests)).toHaveLength(1));
+    await act(async () => {});
+    expect(pwaRegisterFake.updateCalls).toBe(0);
+    expect(screen.getByTestId("state").textContent).toBe("none");
+    expect(screen.queryByRole("dialog")).toBeNull();
+    await expectNoUpdateToast();
   });
 });

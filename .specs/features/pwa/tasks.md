@@ -439,3 +439,10 @@ Batches (~7 tasks, whole phases): Phase 1 (4), Phase 2 (5), Phase 3 (5) → thre
 - **Done when**: changing the interval or letting a failed read clear the manifest fails a test (checked by hand).
 - **Tests**: flow
 - **Gate**: quick
+
+### F4: Update edge cases ✅
+
+- **What**: Flow tests: the update toast outlives sonner's default duration and an operation toast; "Update" with no worker arriving reloads exactly once (observed through a stubbed `location.reload`) and nothing loops; a browser without service-worker support shows no notice, dialog or error (the fake register module gains `withoutWorkerSupport()`).
+- **Done when**: giving the toast a finite duration or dropping the reload fails a test (checked by hand).
+- **Tests**: flow
+- **Gate**: quick
