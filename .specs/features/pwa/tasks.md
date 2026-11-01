@@ -114,8 +114,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] In the browser: light → `#f5f3ec`, dark → `#262624`, switching updates the meta
-- [ ] Gate check passes: Build
+- [x] In the browser: light → `#f5f3ec`, dark → `#262624`, switching updates the meta
+- [x] Gate check passes: Build
 
 **Tests**: none
 **Gate**: build

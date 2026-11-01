@@ -29,6 +29,20 @@
     </script>
   </head>
   <body>
+    <script>
+      // A script in the body waits for the stylesheet, so --background already holds the resolved
+      // theme's colour; in the head it would still be empty.
+      (function () {
+        const background = getComputedStyle(document.documentElement)
+          .getPropertyValue("--background")
+          .trim();
+        if (background) {
+          document
+            .querySelector('meta[name="theme-color"]')
+            .setAttribute("content", background);
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/index.tsx"></script>
   </body>
