@@ -73,7 +73,7 @@ export function TransactionsPageView({
 
   return (
     <>
-      <div className="flex flex-col gap-2 px-2">
+      <div className="flex flex-col gap-2 px-4">
         <div className="self-start">
           <PeriodNavigator {...navigator} />
         </div>
@@ -163,7 +163,7 @@ export function TransactionsPageView({
         <Table
           tableId="financialTransactionsPagele"
           border="all"
-          className="mx-2 w-auto rounded-lg shadow-sm"
+          className="mx-4 w-auto rounded-lg shadow-sm"
           data={transactions}
           columns={columns}
         >
