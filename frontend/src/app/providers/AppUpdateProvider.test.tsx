@@ -183,7 +183,7 @@ describe("AppUpdateProvider checks", () => {
     expect(pwaRegisterFake.updateCalls).toBe(2);
   });
 
-  it("keeps the blocking dialog when a later check fails (PWA-04 AC 5)", async () => {
+  it("keeps the blocking dialog when a later check fails (PWA-04 AC 7)", async () => {
     server.use(versionHandlers.manifest({ version: NEWER, minSupported: NEWER }));
     const requests = recordRequests();
     renderProvider();
@@ -198,7 +198,7 @@ describe("AppUpdateProvider checks", () => {
     expect(screen.getByRole("dialog", { name: "Update required" })).toBeTruthy();
   });
 
-  it("keeps the update notice when a later check fails (PWA-04 AC 5)", async () => {
+  it("keeps the update notice when a later check fails (PWA-04 AC 7)", async () => {
     pwaRegisterFake.setNeedRefresh(true);
     server.use(versionHandlers.manifest({ version: NEWER, minSupported: RUNNING }));
     const requests = recordRequests();
