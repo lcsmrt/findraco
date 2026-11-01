@@ -294,8 +294,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Story: open state (a11y clean)
-- [ ] Gate check passes: Full
+- [x] Story: open state (a11y clean)
+- [x] Gate check passes: Full
 
 **Tests**: story
 **Gate**: full
