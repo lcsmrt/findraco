@@ -174,8 +174,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] Story: open state; `play` presses Escape and clicks outside, dialog stays; clicking "Update" calls `onUpdate`
-- [ ] Gate check passes: Full
+- [x] Story: open state; `play` presses Escape and clicks outside, dialog stays; clicking "Update" calls `onUpdate`
+- [x] Gate check passes: Full
 
 **Tests**: story
 **Gate**: full
