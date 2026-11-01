@@ -69,7 +69,7 @@ export function TransactionMobileList({
   return (
     <div
       className={cn(
-        "bg-card mx-2 overflow-hidden rounded-lg border shadow-sm",
+        "bg-card mx-4 overflow-hidden rounded-lg border shadow-sm",
         className,
       )}
     >
