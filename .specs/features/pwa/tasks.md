@@ -94,8 +94,8 @@ T10 → T11 → T12 → T13 → T14
 
 **Done when**:
 
-- [ ] `docker run --rm -v $PWD/frontend/nginx.conf:/etc/nginx/conf.d/default.conf nginx:1.27-alpine nginx -t` passes (or the built image starts) and `curl -I` on each path shows the header
-- [ ] Gate check passes: Build
+- [x] `docker run --rm -v $PWD/frontend/nginx.conf:/etc/nginx/conf.d/default.conf nginx:1.27-alpine nginx -t` passes (or the built image starts) and `curl -I` on each path shows the header
+- [x] Gate check passes: Build
 
 **Tests**: none
 **Gate**: build
