@@ -432,3 +432,10 @@ Batches (~7 tasks, whole phases): Phase 1 (4), Phase 2 (5), Phase 3 (5) → thre
 - **Done when**: removing `store.markInstalled()` fails a test (checked by hand).
 - **Tests**: flow
 - **Gate**: quick
+
+### F3: Hourly version check and last known state ✅
+
+- **What**: Flow tests in `AppUpdateProvider.test.tsx`: 59 minutes trigger no check, 60 trigger a `/version.json` read and a worker update check; a failing later check keeps a shown blocking dialog and a shown notice.
+- **Done when**: changing the interval or letting a failed read clear the manifest fails a test (checked by hand).
+- **Tests**: flow
+- **Gate**: quick

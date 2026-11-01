@@ -1,6 +1,6 @@
 import { act, cleanup, fireEvent, screen, waitFor } from "@testing-library/react";
 import { toast } from "sonner";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToasterView } from "@/app/layout/ToasterView";
 import { clearSessionStorage } from "@/lib/storage";
 import { pwaRegisterFake } from "@/test/fakePwaRegister";
@@ -58,6 +58,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   // The toast store outlives a render; clear it while the Toaster is still mounted.
   act(() => {
     toast.dismiss();
@@ -155,6 +156,61 @@ describe("AppUpdateProvider checks", () => {
 
     await waitFor(() => expect(versionRequests(requests)).toHaveLength(2));
     expect(pwaRegisterFake.updateCalls).toBe(2);
+  });
+
+  it("checks again every 60 minutes, not sooner (PWA-03 AC 8)", async () => {
+    // Only the interval is faked; the rest of the app and its network keep real time.
+    vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
+    server.use(versionHandlers.manifest({ version: RUNNING, minSupported: RUNNING }));
+    const requests = recordRequests();
+    renderProvider();
+    await waitFor(() => expect(versionRequests(requests)).toHaveLength(1));
+    expect(pwaRegisterFake.updateCalls).toBe(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(59 * 60 * 1000);
+    });
+
+    expect(versionRequests(requests)).toHaveLength(1);
+    expect(pwaRegisterFake.updateCalls).toBe(1);
+
+    await act(async () => {
+      vi.advanceTimersByTime(60 * 1000);
+    });
+
+    await waitFor(() => expect(versionRequests(requests)).toHaveLength(2));
+    expect(pwaRegisterFake.updateCalls).toBe(2);
+  });
+
+  it("keeps the blocking dialog when a later check fails (PWA-04 AC 5)", async () => {
+    server.use(versionHandlers.manifest({ version: NEWER, minSupported: NEWER }));
+    const requests = recordRequests();
+    renderProvider();
+    await screen.findByRole("dialog", { name: "Update required" });
+
+    server.use(versionHandlers.serverError());
+    await bringAppToForeground();
+    await waitFor(() => expect(versionRequests(requests)).toHaveLength(2));
+    // Let the failed response be read before asserting that nothing changed.
+    await act(async () => {});
+
+    expect(screen.getByRole("dialog", { name: "Update required" })).toBeTruthy();
+  });
+
+  it("keeps the update notice when a later check fails (PWA-04 AC 5)", async () => {
+    pwaRegisterFake.setNeedRefresh(true);
+    server.use(versionHandlers.manifest({ version: NEWER, minSupported: RUNNING }));
+    const requests = recordRequests();
+    renderProvider();
+    await screen.findByText(TOAST_TITLE);
+
+    server.use(versionHandlers.malformed());
+    await bringAppToForeground();
+    await waitFor(() => expect(versionRequests(requests)).toHaveLength(2));
+    await act(async () => {});
+
+    expect(screen.getByTestId("state").textContent).toBe(`available ${NEWER}`);
+    expect(screen.getByText(TOAST_TITLE)).toBeTruthy();
   });
 
   it.each([
