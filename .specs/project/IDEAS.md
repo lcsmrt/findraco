@@ -154,6 +154,12 @@ Complete the Shared Plans experience.
   - Migration: existing "Divisão" credits can be linked to the expense they repay.
   - Not the same as Expense Splitting, which only splits between plan members.
 
+- **Balance alignment (untracked spending)**
+  - Raised 2026-11-01 while closing Oct/2026: some outgoing Pix have no known purpose, and the user does not want to log "junk" entries just to make totals match.
+  - Idea: at month close, the user enters the real closing balance (per member or account). The app compares it with opening balance + tracked income − tracked expenses and shows the gap as "untracked" for that month, without creating fake transactions.
+  - Example: opened with R$ 200, income R$ 3.000, tracked expenses R$ 2.000 → expected R$ 1.200; real balance R$ 500 → R$ 700 untracked.
+  - Open questions: per account vs. per member, how card invoices (paid next month) enter the balance, and whether the gap shows on the dashboard as its own line.
+
 - **Item-level splits (revisit the item × member rule)**
   - Raised 2026-10-12 during M5-04 (categories revamp); the user is not satisfied with the current rule and wants to come back to it.
   - Today (M5-04, AD-008): a line item has no split of its own; its amount is attributed to members in proportion to the transaction's participation shares, allocated in cents by largest remainder.
