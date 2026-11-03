@@ -18,12 +18,12 @@ type InstallmentsFieldProps = {
   disabled?: boolean;
 } & (
   | { mode: "create" }
-  | { mode: "seriesEdit"; definition: RecurrenceDefinitionResponse }
+  | { mode: "seriesEdit"; definition: RecurrenceDefinitionResponse; occurrenceParcel: number }
 );
 
 /**
  * The number of installments. Creating, it adds the current installment and previews the last
- * one; editing a series, it shows where the series stands and warns that a new count changes it all.
+ * one; editing a series, it shows which parcel the edited occurrence is and warns that a new count changes it all.
  */
 export function InstallmentsField(props: InstallmentsFieldProps) {
   const { control, disabled } = props;
@@ -36,7 +36,7 @@ export function InstallmentsField(props: InstallmentsFieldProps) {
         label="Number of installments"
         description={
           props.mode === "seriesEdit"
-            ? `Currently: parcel ${props.definition.firstParcel ?? 1} of ${props.definition.parcelsNumber}`
+            ? `Currently: parcel ${props.occurrenceParcel} of ${props.definition.parcelsNumber}`
             : undefined
         }
       >

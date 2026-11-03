@@ -11,7 +11,7 @@ import {
 } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
-import { addMonths, format } from "date-fns";
+import { addMonths, differenceInCalendarMonths, format } from "date-fns";
 import { z } from "zod";
 import type { InlineSaveBody } from "./transactionColumns";
 
@@ -299,6 +299,21 @@ export function seriesParcelsChanged(
   parcelsNumber: number | null | undefined,
 ): boolean {
   return definition?.mode === "INSTALLMENT" && parcelsNumber !== (definition.parcelsNumber ?? null);
+}
+
+/**
+ * The installment number of one occurrence of a series. The definition keeps only the first
+ * generated parcel and its month, one parcel a month after it, as the backend generates them.
+ */
+export function occurrenceParcel(
+  definition: Pick<RecurrenceDefinitionResponse, "startDate" | "firstParcel">,
+  occurrenceDate: string,
+): number {
+  const months = differenceInCalendarMonths(
+    parseLocalDate(occurrenceDate),
+    parseLocalDate(definition.startDate),
+  );
+  return (definition.firstParcel ?? 1) + months;
 }
 
 /**

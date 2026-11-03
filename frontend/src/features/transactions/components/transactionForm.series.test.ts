@@ -7,6 +7,7 @@ import {
   TransactionFormOutput,
   buildDefaultValues,
   lastInstallment,
+  occurrenceParcel,
   seriesParcelsChanged,
   toSeriesCreatePayload,
   toSeriesEditPayload,
@@ -552,5 +553,21 @@ describe("lastInstallment — the preview under the installment count (STD-07 AC
   it("shows nothing when the current installment is beyond the count or below 1", () => {
     expect(lastInstallment(july, 12, 13)).toBeNull();
     expect(lastInstallment(july, 12, 0)).toBeNull();
+  });
+});
+
+describe("occurrenceParcel — the parcel of the occurrence being edited", () => {
+  it("counts the months from the first generated parcel", () => {
+    expect(occurrenceParcel(installmentDefinition, "2026-07-01T00:00:00.000Z")).toBe(5);
+  });
+
+  it("is the first parcel on the series' start month", () => {
+    expect(occurrenceParcel(installmentDefinition, "2026-05-01")).toBe(3);
+  });
+
+  it("starts at 1 when the definition has no first parcel", () => {
+    expect(
+      occurrenceParcel({ startDate: "2026-11-30", firstParcel: undefined }, "2027-01-30"),
+    ).toBe(3);
   });
 });

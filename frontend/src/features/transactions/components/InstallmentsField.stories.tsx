@@ -41,7 +41,12 @@ function DemoForm({ parcelsNumber, currentParcel, seriesEdit = false, error }: D
   return (
     <form className="flex w-80 flex-col gap-4">
       {seriesEdit ? (
-        <InstallmentsField mode="seriesEdit" definition={definition} control={control} />
+        <InstallmentsField
+          mode="seriesEdit"
+          definition={definition}
+          occurrenceParcel={5}
+          control={control}
+        />
       ) : (
         <InstallmentsField mode="create" control={control} />
       )}
@@ -85,7 +90,7 @@ export const CreateTooFewInstallments: Story = {
 export const SeriesEdit: Story = {
   args: { seriesEdit: true, parcelsNumber: 12 },
   play: async ({ canvas, userEvent }) => {
-    await expect(canvas.getByText("Currently: parcel 3 of 12")).toBeVisible();
+    await expect(canvas.getByText("Currently: parcel 5 of 12")).toBeVisible();
     await expect(canvas.queryByText(/updates the whole series/)).toBeNull();
     await userEvent.click(canvas.getByRole("button", { name: "Increase" }));
     await expect(
