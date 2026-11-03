@@ -38,6 +38,7 @@ import {
   TransactionFormValues,
   buildDefaultValues,
   categoryAttribution,
+  occurrenceParcel,
   transactionFormSchema,
 } from "./transactionForm";
 import { useSeriesScope } from "./useSeriesScope";
@@ -244,10 +245,11 @@ export function TransactionFormDrawer({
           />
         )}
 
-        {isSeriesEdit && definition?.mode === "INSTALLMENT" && (
+        {transaction && isSeriesEdit && definition?.mode === "INSTALLMENT" && (
           <InstallmentsField
             mode="seriesEdit"
             definition={definition}
+            occurrenceParcel={occurrenceParcel(definition, transaction.startDate)}
             control={control}
             disabled={isPending}
           />
