@@ -83,6 +83,26 @@ class PlanPurgeJobIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void purgeRefusesAPlanArchivedLessThanThePeriodAgoEvenWhenHandedItsId() {
+        User owner = fixtures.aUser();
+        Plan plan = archivedDaysAgo(owner, 29);
+
+        assertThat(planService.purge(plan.getId(), NOW.minus(PlanRetention.PERIOD)))
+                .isFalse();
+        assertThat(exists(plan)).isTrue();
+    }
+
+    @Test
+    void purgeRefusesAnActivePlanEvenWhenHandedItsId() {
+        User owner = fixtures.aUser();
+        Plan active = fixtures.aPlan(owner);
+
+        assertThat(planService.purge(active.getId(), NOW.minus(PlanRetention.PERIOD)))
+                .isFalse();
+        assertThat(exists(active)).isTrue();
+    }
+
+    @Test
     void theCompletionLogCarriesTheCountAndPlanIdsAndNoPlanName() {
         User owner = fixtures.aUser();
         Plan purged = archivedDaysAgo(owner, 31);
