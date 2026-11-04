@@ -12,7 +12,7 @@ const plans: ArchivedPlan[] = [
 const meta = {
   title: "Plans/ArchivedPlansListView",
   component: ArchivedPlansListView,
-  args: { plans, isLoading: false, isError: false, restoringPlanId: null, onRestore: fn(), onDelete: fn() },
+  args: { plans, isError: false, restoringPlanId: null, onRestore: fn(), onDelete: fn() },
 } satisfies Meta<typeof ArchivedPlansListView>;
 export default meta;
 
@@ -30,14 +30,6 @@ export const TwoPlans: Story = {
     await expect(args.onRestore).toHaveBeenCalledWith(plans[1]);
     await userEvent.click(canvas.getByRole("button", { name: "Delete Old home now" }));
     await expect(args.onDelete).toHaveBeenCalledWith(plans[0]);
-  },
-};
-
-export const Loading: Story = {
-  args: { plans: [], isLoading: true },
-  play: async ({ canvas }) => {
-    await expect(canvas.getByText("Archived plans")).toBeVisible();
-    await expect(canvas.queryByRole("button")).toBeNull();
   },
 };
 

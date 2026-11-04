@@ -7,7 +7,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/card/base/Card";
-import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
 import { format } from "date-fns";
 import { RotateCcwIcon, Trash2Icon } from "lucide-react";
@@ -16,7 +15,6 @@ const DATE_FORMAT = "dd/MM/yyyy";
 
 type ArchivedPlansListViewProps = {
   plans: ArchivedPlan[];
-  isLoading: boolean;
   isError: boolean;
   /** The plan whose restore is in flight, if any. */
   restoringPlanId: number | null;
@@ -27,7 +25,6 @@ type ArchivedPlansListViewProps = {
 /** The owner's archived plans, with the date each is deleted permanently. */
 export function ArchivedPlansListView({
   plans,
-  isLoading,
   isError,
   restoringPlanId,
   onRestore,
@@ -42,11 +39,7 @@ export function ArchivedPlansListView({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="flex justify-center py-6">
-            <Spinner />
-          </div>
-        ) : isError ? (
+        {isError ? (
           <Text as="p" role="alert" className="text-destructive py-6 text-center">
             Could not load your archived plans. Try again later.
           </Text>

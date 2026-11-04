@@ -5,6 +5,7 @@ import type { AuthContextValue } from "@/app/providers/useAuth";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
+import { http, HttpResponse } from "msw";
 import { cleanup, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
@@ -28,6 +29,17 @@ const archivedTrip: ArchivedPlan = {
   archivedAt: "2026-10-28T12:00:00Z",
   deletesAt: "2026-11-27T12:00:00Z",
 };
+
+function noop() {}
+
+/** A promise held open until `release` is called. */
+function deferred() {
+  let release = noop;
+  const promise = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  return { promise, release };
+}
 
 const auth: AuthContextValue = {
   user: { id: 1, name: "Ana", email: "ana@example.com", timeZone: "UTC", timeZoneMode: "AUTOMATIC" },
@@ -63,13 +75,24 @@ afterEach(() => {
 describe("ArchivedPlansSection", () => {
   it("shows no Archived plans heading when the user owns no archived plan (PDEL-01 AC 2)", async () => {
     const requests = recordRequests();
-    server.use(planHandlers.list([personal]), planHandlers.archived([]));
+    const { promise: held, release } = deferred();
+    server.use(
+      planHandlers.list([personal]),
+      http.get("*/plan/archived", async () => {
+        await held;
+        return HttpResponse.json([]);
+      }),
+    );
 
     renderSection();
 
     await waitFor(() => expect(requests.some((request) => request.url.endsWith("/plan/archived"))).toBe(true));
     expect(await screen.findByRole("button", { name: /Personal/ })).toBeTruthy();
-    await waitFor(() => expect(screen.queryByText("Archived plans")).toBeNull());
+    expect(screen.queryByText("Archived plans")).toBeNull();
+
+    release();
+    await waitFor(() => expect(screen.getByRole("button", { name: /Personal/ })).toBeTruthy());
+    expect(screen.queryByText("Archived plans")).toBeNull();
   });
 
   it("lists each archived plan with its archive and deletion dates (PDEL-01 AC 1)", async () => {
