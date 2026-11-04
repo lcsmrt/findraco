@@ -23,6 +23,9 @@ public interface PlanRepository extends JpaRepository<Plan, Long> {
     @Query("delete from Plan p where p.id = :id and p.deletedAt is not null and p.deletedAt <= :cutoff")
     int deleteArchivedBefore(@Param("id") long id, @Param("cutoff") Instant cutoff);
 
+    @Query("select p.id from Plan p where p.deletedAt is not null and p.deletedAt <= :cutoff")
+    List<Long> findIdsArchivedBefore(@Param("cutoff") Instant cutoff);
+
     @Query("select p.seriesGeneratedUntil from Plan p where p.id = :id")
     Optional<LocalDate> findSeriesGeneratedUntil(@Param("id") long id);
 }

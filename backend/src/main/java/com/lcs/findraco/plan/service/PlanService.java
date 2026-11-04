@@ -14,6 +14,7 @@ import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -128,6 +129,18 @@ public class PlanService {
         if (planRepository.deleteArchivedBefore(planId, clock.instant()) == 0) {
             throw new PlanExceptions.PlanNotArchivedException(planId);
         }
+    }
+
+    /** Ids of the plans archived at or before {@code cutoff}, for the purge job. */
+    @Transactional(readOnly = true)
+    public List<Long> findPlanIdsArchivedBefore(Instant cutoff) {
+        return planRepository.findIdsArchivedBefore(cutoff);
+    }
+
+    /** Deletes the plan in its own transaction if it is still archived at or before {@code cutoff}; false when not. */
+    @Transactional
+    public boolean purge(long planId, Instant cutoff) {
+        return planRepository.deleteArchivedBefore(planId, cutoff) > 0;
     }
 
     /** The owner's membership of a plan; a non-owner and a missing plan are the same not-found, an active plan a conflict. */

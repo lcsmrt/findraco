@@ -158,11 +158,11 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `PlanPurgeProperties` (`@Validated`, `@NotBlank purgeCron`) bound; `application.properties` sets `app.plans.purge-cron=0 0 4 * * *`; the test profile turns it off with `-`
-- [ ] `PlanPurgeJobIT` with `Clock.fixed`: archived exactly 30 days ago → gone; 29 days → kept; active → kept
-- [ ] `PlanPurgeJobIT`: `purge(id, cutoff)` on a plan restored after the id list was read deletes nothing
-- [ ] The completion log carries plan ids and no plan name (`CapturedLogs`)
-- [ ] Build gate: `./mvnw -B verify` passes (end of Phase 1)
+- [x] `PlanPurgeProperties` (`@Validated`, `@NotBlank purgeCron`) bound; `application.properties` sets `app.plans.purge-cron=0 0 4 * * *`; the test profile turns it off with `-`
+- [x] `PlanPurgeJobIT` with `Clock.fixed`: archived exactly 30 days ago → gone; 29 days → kept; active → kept
+- [x] `PlanPurgeJobIT`: `purge(id, cutoff)` on a plan restored after the id list was read deletes nothing
+- [x] The completion log carries plan ids and no plan name (`CapturedLogs`)
+- [x] Build gate: `./mvnw -B verify` passes (end of Phase 1)
 
 **Tests**: integration
 **Gate**: build

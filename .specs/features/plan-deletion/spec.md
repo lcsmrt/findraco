@@ -120,9 +120,9 @@
 | PDEL-03 | P1: Restore — archive dialog copy (AC 6) | Design | Pending |
 | PDEL-04 | P1: Delete now — typed-name confirmation (AC 1, 3) | Design | Pending |
 | PDEL-05 | P1: Delete now — cascade removal and guards (AC 2, 4, 5, 6) | Execute | Backend done |
-| PDEL-06 | P1: Purge — retention job (AC 1, 2, 4) | Design | Pending |
-| PDEL-07 | P1: Purge — failure isolation and logging (AC 3, 5) | Design | Pending |
-| PDEL-08 | P1: Purge — configuration (AC 6) | Design | Pending |
+| PDEL-06 | P1: Purge — retention job (AC 1, 2, 4) | Execute | Backend done |
+| PDEL-07 | P1: Purge — failure isolation and logging (AC 3, 5) | Execute | Backend done |
+| PDEL-08 | P1: Purge — configuration (AC 6) | Execute | Backend done |
 
 **Coverage:** 8 total, 0 mapped to tasks, 8 unmapped ⚠️
 

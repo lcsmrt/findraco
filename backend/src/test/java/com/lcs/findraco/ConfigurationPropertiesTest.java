@@ -7,6 +7,7 @@ import com.lcs.findraco.auth.config.JwtProperties;
 import com.lcs.findraco.auth.config.MailExecutorProperties;
 import com.lcs.findraco.auth.config.MailProperties;
 import com.lcs.findraco.auth.config.SessionProperties;
+import com.lcs.findraco.plan.config.PlanPurgeProperties;
 import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
 import com.lcs.findraco.transaction.config.ImportProperties;
@@ -64,6 +65,7 @@ class ConfigurationPropertiesTest {
     private static final Map<String, String> VALID_RATE_LIMITS = Map.ofEntries(
             Map.entry("app.series.horizon-months", "12"),
             Map.entry("app.series.top-up-cron", "0 30 3 * * *"),
+            Map.entry("app.plans.purge-cron", "0 0 4 * * *"),
             Map.entry("app.import.max-bytes", "1048576"),
             Map.entry("app.import.max-rows", "5000"),
             Map.entry("app.import.max-errors", "50"),
@@ -96,7 +98,8 @@ class ConfigurationPropertiesTest {
         MailExecutorProperties.class,
         RateLimitProperties.class,
         ImportProperties.class,
-        SeriesProperties.class
+        SeriesProperties.class,
+        PlanPurgeProperties.class
     })
     static class AllProperties {}
 
@@ -174,6 +177,11 @@ class ConfigurationPropertiesTest {
     @Test
     void blankSeriesCronFailsStartup() {
         assertStartupFailsOn(Map.of("app.series.top-up-cron", ""), "app.series", "topUpCron");
+    }
+
+    @Test
+    void blankPlanPurgeCronFailsStartup() {
+        assertStartupFailsOn(Map.of("app.plans.purge-cron", ""), "app.plans", "purgeCron");
     }
 
     @Test
