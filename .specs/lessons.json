@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 40,
+  "next_id": 41,
   "lessons": [
     {
       "id": "L-001",
@@ -706,6 +706,24 @@
       ],
       "created": "2026-11-04T02:21:06Z",
       "last_seen": "2026-11-04T02:21:06Z"
+    },
+    {
+      "id": "L-040",
+      "key": "surviving_mutant::after releasing a held response wait on a signal that the response was applied before asserting the settled state a waitfor on something already true does not wait",
+      "text": "After releasing a held response, wait on a signal that the response was applied before asserting the settled state; a waitFor on something already true does not wait",
+      "signal": "surviving_mutant",
+      "scope": "frontend flow tests",
+      "status": "candidate",
+      "features": [
+        "plan-deletion"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M-F3b; ArchivedPlansSection.test.tsx:93-95 (frontend flow tests)"
+      ],
+      "created": "2026-11-04T02:43:33Z",
+      "last_seen": "2026-11-04T02:43:33Z"
     }
   ]
 }

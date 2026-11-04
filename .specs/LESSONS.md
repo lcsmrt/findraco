@@ -248,6 +248,12 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: Restore AC 3, PlanArchiveIT.java:91 (backend-it)
 - last seen: 2026-11-04T02:21:06Z
 
+### L-040 - After releasing a held response, wait on a signal that the response was applied before asserting the settled state; a waitFor on something already true does not wait
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
+- features: plan-deletion
+- evidence: validation.md M-F3b; ArchivedPlansSection.test.tsx:93-95 (frontend flow tests)
+- last seen: 2026-11-04T02:43:33Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
