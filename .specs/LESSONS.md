@@ -218,6 +218,36 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: PWA-03 AC 8; frontend/src/app/providers/useVersionManifest.ts:37 (frontend flow tests)
 - last seen: 2026-11-01T17:06:54Z
 
+### L-035 - Test each condition of a guarded destructive query on its own, with input that only that condition rejects
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-it` · harmful: 0
+- features: plan-deletion
+- evidence: validation.md B1 PlanRepository.java:23 (backend-it)
+- last seen: 2026-11-04T02:21:06Z
+
+### L-036 - Give the race-loser branch of a conditional write a test that forces the interleaving, such as a row lock held by a second transaction
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-it` · harmful: 0
+- features: plan-deletion
+- evidence: validation.md B5 PlanService.java:129 (backend-it)
+- last seen: 2026-11-04T02:21:06Z
+
+### L-037 - Test that a job's disabled schedule value also skips its startup run
+- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-jobs` · harmful: 0
+- features: plan-deletion
+- evidence: validation.md B10 PlanPurgeJob.java:44 (backend-jobs)
+- last seen: 2026-11-04T02:21:06Z
+
+### L-038 - Assert a negative UI criterion from the first render, including while the request is loading, not only after it settles
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
+- features: plan-deletion
+- evidence: Restore AC 2, ArchivedPlansSection.tsx:17 (frontend flow tests)
+- last seen: 2026-11-04T02:21:06Z
+
+### L-039 - When an AC says an entity comes back with its related data, seed that data, run the real round trip and assert it afterwards
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backend-it` · harmful: 0
+- features: plan-deletion
+- evidence: Restore AC 3, PlanArchiveIT.java:91 (backend-it)
+- last seen: 2026-11-04T02:21:06Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
