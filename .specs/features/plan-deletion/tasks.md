@@ -186,8 +186,8 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] Unit tests: each hook calls its route; restore invalidates `["plans"]`; delete invalidates `["plans", "archived"]`
-- [ ] Gate: `usePlanService.test.ts` passes and `pnpm lint` is clean
+- [x] Unit tests: each hook calls its route; restore invalidates `["plans"]`; delete invalidates `["plans", "archived"]`
+- [x] Gate: `usePlanService.test.ts` passes and `pnpm lint` is clean
 
 **Tests**: unit
 **Gate**: quick

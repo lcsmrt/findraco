@@ -1,7 +1,7 @@
 import { waitFor } from "@testing-library/react";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Plan, PlanMember } from "@/api/dtos";
+import type { ArchivedPlan, Plan, PlanMember } from "@/api/dtos";
 import { recordRequests } from "@/test/recordRequests";
 import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
@@ -9,12 +9,15 @@ import { planHandlers } from "./plan.handlers";
 import {
   useCreatePlan,
   useDeletePlan,
+  useDeletePlanPermanently,
+  useGetArchivedPlans,
   useGetPlan,
   useGetPlanMembers,
   useGetPlans,
   useLeavePlan,
   useRemoveMember,
   useRenamePlan,
+  useRestorePlan,
   useTransferOwnership,
   useUpdateMemberRole,
 } from "./usePlanService";
@@ -36,6 +39,13 @@ const trip: Plan = {
   isDefault: false,
   myRole: "VIEWER",
   permissions: { createTransactions: false, attributeToOthers: false, manageCategories: false, managePlan: false },
+};
+
+const archivedHome: ArchivedPlan = {
+  id: 8,
+  name: "Old home",
+  archivedAt: "2026-10-20T12:00:00Z",
+  deletesAt: "2026-11-19T12:00:00Z",
 };
 
 function sent(requests: Request[]) {
@@ -254,5 +264,74 @@ describe("plan mutations hand the result and the request to the caller's onSucce
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(onSuccess).toHaveBeenCalledWith(member, request);
+  });
+});
+
+describe("archived plans", () => {
+  it("useGetArchivedPlans GETs /plan/archived and returns the archived plans (PDEL-01)", async () => {
+    server.use(planHandlers.archived([archivedHome]));
+    const requests = recordRequests();
+
+    const { result } = renderHookWithProviders(() => useGetArchivedPlans());
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(sent(requests)).toEqual([["GET", "/api/findraco/plan/archived"]]);
+    expect(result.current.data).toEqual([archivedHome]);
+  });
+
+  it(`useRestorePlan POSTs /plan/{planId}/restore, invalidates the plans and archived lists and shows "Plan restored." (PDEL-02)`, async () => {
+    server.use(planHandlers.restore(plan));
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useRestorePlan(), {
+      seed: (client) => {
+        client.setQueryData(["plans"], []);
+        client.setQueryData(["plans", "archived"], [archivedHome]);
+      },
+    });
+    result.current.mutate(8);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Plan restored.");
+    expect(sent(requests)).toEqual([["POST", "/api/findraco/plan/8/restore"]]);
+    expect(result.current.data).toEqual(plan);
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(["plans", "archived"])?.isInvalidated).toBe(true);
+  });
+
+  it(`useDeletePlanPermanently DELETEs /plan/{planId}/permanent, invalidates only the archived list and shows "Plan deleted." (PDEL-05)`, async () => {
+    server.use(planHandlers.deletePermanently());
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useDeletePlanPermanently(), {
+      seed: (client) => {
+        client.setQueryData(["plans"], []);
+        client.setQueryData(["plans", "archived"], [archivedHome]);
+      },
+    });
+    result.current.mutate(8);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(toast.success).toHaveBeenCalledWith("Plan deleted.");
+    expect(sent(requests)).toEqual([["DELETE", "/api/findraco/plan/8/permanent"]]);
+    expect(queryClient.getQueryState(["plans", "archived"])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(false);
+  });
+
+  it("useDeletePlanPermanently refreshes the plans and archived lists when the plan is no longer archived (PDEL-05)", async () => {
+    server.use(planHandlers.deletePermanentlyConflict());
+
+    const { result, queryClient } = renderHookWithProviders(() => useDeletePlanPermanently(), {
+      seed: (client) => {
+        client.setQueryData(["plans"], []);
+        client.setQueryData(["plans", "archived"], [archivedHome]);
+      },
+    });
+    result.current.mutate(8);
+
+    await waitFor(() => expect(result.current.isError).toBe(true));
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(queryClient.getQueryState(["plans"])?.isInvalidated).toBe(true);
+    expect(queryClient.getQueryState(["plans", "archived"])?.isInvalidated).toBe(true);
   });
 });

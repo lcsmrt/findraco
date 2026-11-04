@@ -21,6 +21,7 @@ export type ProblemType =
   | "insufficient-role"
   | "not-transaction-creator"
   | "last-plan"
+  | "plan-not-archived"
   | "last-owner"
   | "owner-role-needs-transfer"
   | "ownership-transfer-to-self"

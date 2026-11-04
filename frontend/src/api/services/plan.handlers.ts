@@ -1,8 +1,10 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
+  ArchivedPlan,
   CreatePlanRequest,
   Plan,
   PlanMember,
+  Problem,
   TransferOwnershipRequest,
   UpdateMemberRoleRequest,
   UpdatePlanRequest,
@@ -19,6 +21,27 @@ function noContent() {
 export const planHandlers = {
   list(plans: Plan[]): HttpHandler {
     return http.get<NoParams, never, Plan[]>("*/plan", () => HttpResponse.json(plans));
+  },
+  archived(plans: ArchivedPlan[]): HttpHandler {
+    return http.get<NoParams, never, ArchivedPlan[]>("*/plan/archived", () => HttpResponse.json(plans));
+  },
+  archivedError(): HttpHandler {
+    return http.get("*/plan/archived", () => HttpResponse.error());
+  },
+  restore(plan: Plan): HttpHandler {
+    return http.post<PlanParams, never, Plan>("*/plan/:planId/restore", () => HttpResponse.json(plan));
+  },
+  deletePermanently(): HttpHandler {
+    return http.delete<PlanParams>("*/plan/:planId/permanent", noContent);
+  },
+  /** The plan is not archived (anymore): the 409 the dialog tells by `type`. */
+  deletePermanentlyConflict(): HttpHandler {
+    return http.delete<PlanParams, never, Problem>("*/plan/:planId/permanent", () =>
+      HttpResponse.json(
+        { type: "urn:findraco:problem:plan-not-archived", status: 409, requestId: "req-permanent" },
+        { status: 409 },
+      ),
+    );
   },
   get(plan: Plan): HttpHandler {
     return http.get<PlanParams, never, Plan>("*/plan/:planId", () =>
