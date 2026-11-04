@@ -84,6 +84,14 @@ public class PlanController {
         return ResponseEntity.noContent().build();
     }
 
+    @Operation(summary = "Deletes an archived plan and everything in it permanently (owner only)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> deletePlanPermanently(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
+        planService.deletePermanently(id, user.id());
+        return ResponseEntity.noContent().build();
+    }
+
     @Operation(summary = "Leaves a plan (non-owner only)")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/{id}/leave")

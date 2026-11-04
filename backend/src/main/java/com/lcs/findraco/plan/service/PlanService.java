@@ -121,6 +121,15 @@ public class PlanService {
         return response(ownerMembership);
     }
 
+    /** Deletes an archived plan and everything scoped to it at once, as its owner. */
+    @Transactional
+    public void deletePermanently(long planId, long userId) {
+        getArchivedPlanMembership(planId, userId);
+        if (planRepository.deleteArchivedBefore(planId, clock.instant()) == 0) {
+            throw new PlanExceptions.PlanNotArchivedException(planId);
+        }
+    }
+
     /** The owner's membership of a plan; a non-owner and a missing plan are the same not-found, an active plan a conflict. */
     private PlanMembership getArchivedPlanMembership(long planId, long userId) {
         PlanMembership membership = membershipRepository

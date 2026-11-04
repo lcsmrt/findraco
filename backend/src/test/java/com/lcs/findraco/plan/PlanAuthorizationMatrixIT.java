@@ -398,6 +398,13 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         404,
                         404,
                         404),
+                new Row(
+                        "DELETE " + PLAN_ID + "/permanent",
+                        s -> delete(PLAN_ID + "/permanent", s.cast().plan().getId()),
+                        409,
+                        404,
+                        404,
+                        404),
                 // The owner cannot leave (409 last-owner); a member with another plan can.
                 new Row(
                         "POST " + PLAN_ID + "/leave",

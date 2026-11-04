@@ -129,12 +129,12 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `PlanPermanentDeletionIT` seeds a plan with a child category, a member limit, an itemised transaction with participants and an item category, an installment series with an exception, a second member and a pending invitation; archives it; deletes it → 204; zero rows with its id (directly or through a parent) in every plan-scoped table
-- [ ] A second plan with the same row kinds is unchanged; every user account remains
-- [ ] Active plan → 409 `plan-not-archived`, nothing deleted; non-owner → 404; already deleted → 404
-- [ ] The pending invitation's token answers as unknown afterwards
-- [ ] Endpoint × role in `PlanAuthorizationMatrixIT`; `openapi.json` regenerated
-- [ ] Gate: `./mvnw verify -Dit.test='PlanPermanentDeletionIT,PlanAuthorizationMatrixIT,OpenApiSnapshotIT'` passes
+- [x] `PlanPermanentDeletionIT` seeds a plan with a child category, a member limit, an itemised transaction with participants and an item category, an installment series with an exception, a second member and a pending invitation; archives it; deletes it → 204; zero rows with its id (directly or through a parent) in every plan-scoped table
+- [x] A second plan with the same row kinds is unchanged; every user account remains
+- [x] Active plan → 409 `plan-not-archived`, nothing deleted; non-owner → 404; already deleted → 404
+- [x] The pending invitation's token answers as unknown afterwards
+- [x] Endpoint × role in `PlanAuthorizationMatrixIT`; `openapi.json` regenerated
+- [x] Gate: `./mvnw verify -Dit.test='PlanPermanentDeletionIT,PlanAuthorizationMatrixIT,OpenApiSnapshotIT'` passes
 
 **Tests**: integration
 **Gate**: full
