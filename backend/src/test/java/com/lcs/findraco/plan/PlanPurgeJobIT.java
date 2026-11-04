@@ -25,7 +25,6 @@ class PlanPurgeJobIT extends AbstractIntegrationTest {
 
     private static final Instant NOW = Instant.parse("2026-07-31T10:00:00Z");
 
-    private final PlanPurgeProperties properties = new PlanPurgeProperties("-");
     private final Clock fixedClock = Clock.fixed(NOW, ZoneOffset.UTC);
 
     @Autowired
@@ -38,7 +37,11 @@ class PlanPurgeJobIT extends AbstractIntegrationTest {
     private JdbcTemplate jdbcTemplate;
 
     private PlanPurgeJob job() {
-        return new PlanPurgeJob(planService, properties, fixedClock);
+        return jobWithCron("-");
+    }
+
+    private PlanPurgeJob jobWithCron(String cron) {
+        return new PlanPurgeJob(planService, new PlanPurgeProperties(cron), fixedClock);
     }
 
     private Plan archivedDaysAgo(User owner, int days) {
@@ -100,6 +103,26 @@ class PlanPurgeJobIT extends AbstractIntegrationTest {
         assertThat(planService.purge(active.getId(), NOW.minus(PlanRetention.PERIOD)))
                 .isFalse();
         assertThat(exists(active)).isTrue();
+    }
+
+    @Test
+    void theStartupRunDoesNothingWhenTheCronIsTheDisabledMarker() {
+        User owner = fixtures.aUser();
+        Plan overdue = archivedDaysAgo(owner, 31);
+
+        jobWithCron("-").runAtStartup();
+
+        assertThat(exists(overdue)).isTrue();
+    }
+
+    @Test
+    void theStartupRunPurgesWhenTheCronIsReal() {
+        User owner = fixtures.aUser();
+        Plan overdue = archivedDaysAgo(owner, 31);
+
+        jobWithCron("0 0 3 * * *").runAtStartup();
+
+        assertThat(exists(overdue)).isFalse();
     }
 
     @Test
