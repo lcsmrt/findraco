@@ -84,14 +84,14 @@ describe("ArchivedPlansSection", () => {
       }),
     );
 
-    renderSection();
+    const { queryClient } = renderSection();
 
     await waitFor(() => expect(requests.some((request) => request.url.endsWith("/plan/archived"))).toBe(true));
     expect(await screen.findByRole("button", { name: /Personal/ })).toBeTruthy();
     expect(screen.queryByText("Archived plans")).toBeNull();
 
     release();
-    await waitFor(() => expect(screen.getByRole("button", { name: /Personal/ })).toBeTruthy());
+    await waitFor(() => expect(queryClient.getQueryState(["plans", "archived"])?.status).toBe("success"));
     expect(screen.queryByText("Archived plans")).toBeNull();
   });
 
