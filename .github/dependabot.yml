@@ -1,4 +1,5 @@
-# One weekly pull request per ecosystem, every update grouped.
+# One weekly pull request per ecosystem for minor and patch updates. A major update arrives in its own
+# pull request: it may need a migration, and a failure in a grouped one cannot be traced to its package.
 version: 2
 updates:
   - package-ecosystem: maven
@@ -8,6 +9,7 @@ updates:
     groups:
       maven:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
 
   # The pnpm workspace: root package.json and pnpm-lock.yaml cover backend/ and frontend/.
   - package-ecosystem: npm
@@ -17,6 +19,14 @@ updates:
     groups:
       npm:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
+    ignore:
+      # The types follow the Node major CI and production run (24), not the latest one.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # typescript-eslint does not support TypeScript 7 yet; lift once it does.
+      - dependency-name: "typescript"
+        versions: [">=7"]
 
   - package-ecosystem: github-actions
     directory: /
@@ -25,3 +35,4 @@ updates:
     groups:
       github-actions:
         patterns: ["*"]
+        update-types: ["minor", "patch"]
