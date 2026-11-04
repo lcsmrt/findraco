@@ -5,6 +5,7 @@ import { usePlanContext } from "@/app/providers/usePlanContext";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { PlanNameDialog } from "./components/PlanNameDialog";
 import { InvitePlanDialog } from "./components/InvitePlanDialog";
+import { ArchivedPlansSection } from "./components/ArchivedPlansSection";
 import { PlanInvitationsList } from "./components/PlanInvitationsList";
 import { PlanMembersList } from "./components/PlanMembersList";
 import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
@@ -70,6 +71,7 @@ export function PlansPage() {
         onLeave={handleLeavePlan}
         membersList={activePlan && <PlanMembersList planId={activePlan.id} />}
         invitationsList={activePlan && <PlanInvitationsList planId={activePlan.id} />}
+        archivedPlans={<ArchivedPlansSection />}
       />
 
       <PlanNameDialog

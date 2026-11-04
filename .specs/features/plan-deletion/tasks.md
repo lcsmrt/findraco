@@ -211,9 +211,9 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] Stories with `play`: list with two plans (both dates visible), loading
-- [ ] Flow test: empty list → no "Archived plans" heading; failing request → section error while active plans render; Restore → POST sent, row leaves the list, plan appears in the switcher
-- [ ] Gate: `src/features/plans` tests and stories pass; `pnpm lint` clean
+- [x] Stories with `play`: list with two plans (both dates visible), loading
+- [x] Flow test: empty list → no "Archived plans" heading; failing request → section error while active plans render; Restore → POST sent, row leaves the list, plan appears in the switcher
+- [x] Gate: `src/features/plans` tests and stories pass; `pnpm lint` clean
 
 **Tests**: integration
 **Gate**: quick
