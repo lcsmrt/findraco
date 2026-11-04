@@ -43,6 +43,8 @@ type PlansPageViewProps = {
   // Slots: both lists load their own data for the active plan.
   membersList: ReactNode;
   invitationsList: ReactNode;
+  // Not tied to the active plan: the owner's archived plans.
+  archivedPlans: ReactNode;
 };
 
 export function PlansPageView({
@@ -62,6 +64,7 @@ export function PlansPageView({
   onLeave,
   membersList,
   invitationsList,
+  archivedPlans,
 }: PlansPageViewProps) {
   return (
     // The layout gives the page its vertical spacing under the tab row, as for the other destinations.
@@ -178,6 +181,8 @@ export function PlansPageView({
           </CardContent>
         </Card>
       )}
+
+      {archivedPlans}
     </div>
   );
 }

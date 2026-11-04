@@ -4,6 +4,7 @@ import com.lcs.findraco.plan.request.CreatePlanRequest;
 import com.lcs.findraco.plan.request.TransferOwnershipRequest;
 import com.lcs.findraco.plan.request.UpdateMemberRoleRequest;
 import com.lcs.findraco.plan.request.UpdatePlanRequest;
+import com.lcs.findraco.plan.response.ArchivedPlanResponse;
 import com.lcs.findraco.plan.response.PlanMemberResponse;
 import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.plan.service.PlanService;
@@ -43,6 +44,18 @@ public class PlanController {
         return ResponseEntity.ok(planService.listPlans(user.id()));
     }
 
+    @Operation(summary = "Fetches the archived plans the authenticated user owns")
+    @GetMapping("/archived")
+    public ResponseEntity<List<ArchivedPlanResponse>> getArchivedPlans(@CurrentUser AuthenticatedUser user) {
+        return ResponseEntity.ok(planService.listArchived(user.id()));
+    }
+
+    @Operation(summary = "Restores an archived plan (owner only)")
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<PlanResponse> restorePlan(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
+        return ResponseEntity.ok(planService.restore(id, user.id()));
+    }
+
     @Operation(summary = "Fetches a plan the authenticated user belongs to")
     @GetMapping("/{id}")
     public ResponseEntity<PlanResponse> getPlan(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
@@ -68,6 +81,14 @@ public class PlanController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePlan(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
         planService.deletePlan(id, user.id());
+        return ResponseEntity.noContent().build();
+    }
+
+    @Operation(summary = "Deletes an archived plan and everything in it permanently (owner only)")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @DeleteMapping("/{id}/permanent")
+    public ResponseEntity<Void> deletePlanPermanently(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
+        planService.deletePermanently(id, user.id());
         return ResponseEntity.noContent().build();
     }
 

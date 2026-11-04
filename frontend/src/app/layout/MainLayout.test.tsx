@@ -153,6 +153,7 @@ beforeEach(() => {
   localStorage.clear();
   server.use(
     planHandlers.members([ana]),
+    planHandlers.archived([]),
     dashboardHandlers.summary(emptySummary),
     dashboardHandlers.trend([]),
     categoryHandlers.spending([]),

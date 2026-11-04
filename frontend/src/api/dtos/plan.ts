@@ -19,6 +19,16 @@ export type PlanCapabilities = {
   managePlan: boolean;
 };
 
+/** A plan the user archived and may still restore; it is deleted permanently at `deletesAt`. */
+export type ArchivedPlan = {
+  id: number;
+  name: string;
+  /** ISO instant. */
+  archivedAt: string;
+  /** ISO instant: the archive date plus the retention period. */
+  deletesAt: string;
+};
+
 export type PlanMember = {
   userId: number;
   name: string;

@@ -29,6 +29,7 @@ const meta = {
     onLeave: fn(),
     membersList: <Text as="p">Members list</Text>,
     invitationsList: <Text as="p">Invitations list</Text>,
+    archivedPlans: <Text as="p">Archived plans list</Text>,
   },
 } satisfies Meta<typeof PlansPageView>;
 export default meta;

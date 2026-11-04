@@ -7,12 +7,14 @@ import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.model.TransferredOwnerRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
+import com.lcs.findraco.plan.response.ArchivedPlanResponse;
 import com.lcs.findraco.plan.response.PlanMemberResponse;
 import com.lcs.findraco.plan.response.PlanPermissionsResponse;
 import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.stereotype.Service;
@@ -103,6 +105,57 @@ public class PlanService {
                         planAuthorization.canAttributeToOthers(role),
                         planAuthorization.canManageCategories(role),
                         planAuthorization.canManagePlan(role)));
+    }
+
+    /** The plans the user owns that are archived, newest archive first. */
+    @Transactional(readOnly = true)
+    public List<ArchivedPlanResponse> listArchived(long userId) {
+        return membershipRepository.findArchivedByUserIdAndRole(userId, PlanRole.OWNER).stream()
+                .map(membership -> ArchivedPlanResponse.from(membership.getPlan()))
+                .toList();
+    }
+
+    @Transactional
+    public PlanResponse restore(long planId, long userId) {
+        PlanMembership ownerMembership = getArchivedPlanMembership(planId, userId);
+        ownerMembership.getPlan().setDeletedAt(null);
+        return response(ownerMembership);
+    }
+
+    /** Deletes an archived plan and everything scoped to it at once, as its owner. */
+    @Transactional
+    public void deletePermanently(long planId, long userId) {
+        getArchivedPlanMembership(planId, userId);
+        planRepository.deleteArchivedBefore(planId, clock.instant());
+    }
+
+    /** Ids of the plans archived at or before {@code cutoff}, for the purge job. */
+    @Transactional(readOnly = true)
+    public List<Long> findPlanIdsArchivedBefore(Instant cutoff) {
+        return planRepository.findIdsArchivedBefore(cutoff);
+    }
+
+    /** Deletes the plan in its own transaction if it is still archived at or before {@code cutoff}; false when not. */
+    @Transactional
+    public boolean purge(long planId, Instant cutoff) {
+        return planRepository.deleteArchivedBefore(planId, cutoff) > 0;
+    }
+
+    /** The owner's membership of a plan; a non-owner and a missing plan are the same not-found, an active plan a conflict. */
+    private PlanMembership getArchivedPlanMembership(long planId, long userId) {
+        // The row lock makes a concurrent restore and delete-now run one after the other: the second one sees what the
+        // first committed.
+        Plan plan = planRepository
+                .findByIdForUpdate(planId)
+                .orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
+        PlanMembership membership = membershipRepository
+                .findByPlanIdAndUserId(planId, userId)
+                .filter(found -> found.getRole() == PlanRole.OWNER)
+                .orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
+        if (plan.getDeletedAt() == null) {
+            throw new PlanExceptions.PlanNotArchivedException(planId);
+        }
+        return membership;
     }
 
     private PlanMembership getMembership(long planId, long userId) {

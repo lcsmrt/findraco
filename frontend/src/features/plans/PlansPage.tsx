@@ -5,6 +5,7 @@ import { usePlanContext } from "@/app/providers/usePlanContext";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { PlanNameDialog } from "./components/PlanNameDialog";
 import { InvitePlanDialog } from "./components/InvitePlanDialog";
+import { ArchivedPlansSection } from "./components/ArchivedPlansSection";
 import { PlanInvitationsList } from "./components/PlanInvitationsList";
 import { PlanMembersList } from "./components/PlanMembersList";
 import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
@@ -27,7 +28,7 @@ export function PlansPage() {
     if (!activePlan) return;
     const confirmed = await confirm({
       title: "Archive plan",
-      description: `Are you sure you want to archive the plan "${activePlan.name}"? You can contact support to revert this later.`,
+      description: `Are you sure you want to archive the plan "${activePlan.name}"? You can restore it from "Archived plans" for 30 days; after that it is deleted permanently.`,
       confirmLabel: "Archive",
       cancelLabel: "Cancel",
       variant: "destructive",
@@ -70,6 +71,7 @@ export function PlansPage() {
         onLeave={handleLeavePlan}
         membersList={activePlan && <PlanMembersList planId={activePlan.id} />}
         invitationsList={activePlan && <PlanInvitationsList planId={activePlan.id} />}
+        archivedPlans={<ArchivedPlansSection />}
       />
 
       <PlanNameDialog

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { findracoApi } from "../clients/findracoApi";
 import {
+  ArchivedPlan,
   CreatePlanRequest,
   Plan,
   PlanMember,
@@ -22,6 +23,19 @@ export function useGetPlans(options?: QueryOptions<Plan[]>) {
   return useQuery({
     queryFn: getPlans,
     queryKey: ["plans"],
+    ...options,
+  });
+}
+
+async function getArchivedPlans(): Promise<ArchivedPlan[]> {
+  const { data } = await findracoApi.get<ArchivedPlan[]>("/plan/archived");
+  return data;
+}
+
+export function useGetArchivedPlans(options?: QueryOptions<ArchivedPlan[]>) {
+  return useQuery({
+    queryFn: getArchivedPlans,
+    queryKey: ["plans", "archived"],
     ...options,
   });
 }
@@ -186,6 +200,55 @@ export function useDeletePlan(options?: MutationOptions<void, number>) {
           queryClient.invalidateQueries({ queryKey: ["plans"] });
           queryClient.invalidateQueries({ queryKey: ["members", planId] });
           options?.onSuccess?.(data, planId);
+        },
+      },
+    ),
+  });
+}
+
+async function restorePlan(planId: number): Promise<Plan> {
+  const { data } = await findracoApi.post<Plan>(`/plan/${planId}/restore`);
+  return data;
+}
+
+export function useRestorePlan(options?: MutationOptions<Plan, number>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: restorePlan,
+    ...buildMutationOptions(
+      { successMessage: "Plan restored." },
+      {
+        ...options,
+        onSuccess: (data, planId) => {
+          // The prefix also refreshes the archived list.
+          queryClient.invalidateQueries({ queryKey: ["plans"] });
+          options?.onSuccess?.(data, planId);
+        },
+      },
+    ),
+  });
+}
+
+async function deletePlanPermanently(planId: number): Promise<void> {
+  await findracoApi.delete(`/plan/${planId}/permanent`);
+}
+
+export function useDeletePlanPermanently(options?: MutationOptions<void, number>) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deletePlanPermanently,
+    ...buildMutationOptions(
+      { successMessage: "Plan deleted." },
+      {
+        ...options,
+        onSuccess: (data, planId) => {
+          queryClient.invalidateQueries({ queryKey: ["plans", "archived"] });
+          options?.onSuccess?.(data, planId);
+        },
+        // The plan is gone or active again either way: refresh what the list shows.
+        onError: (error) => {
+          queryClient.invalidateQueries({ queryKey: ["plans"] });
+          options?.onError?.(error);
         },
       },
     ),

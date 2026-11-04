@@ -22,6 +22,7 @@ const PROBLEM_COPY: Record<ProblemType, string> = {
   "member-not-found": "This person is no longer a member of the plan.",
   "insufficient-role": "Your role in this plan does not allow this.",
   "not-transaction-creator": "You can only change transactions you created.",
+  "plan-not-archived": "This plan is no longer archived.",
   "last-plan": "You cannot leave or delete your only plan.",
   "last-owner": "The plan needs another owner first. Transfer ownership before this.",
   "owner-role-needs-transfer": "To make someone the owner, transfer ownership.",

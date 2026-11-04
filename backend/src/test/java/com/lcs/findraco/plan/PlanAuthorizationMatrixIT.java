@@ -348,6 +348,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     private static final Set<String> NOT_ROLE_SCOPED = Set.of(
             "POST " + ApiRoutes.PLAN,
             "GET " + ApiRoutes.PLAN,
+            // About the caller: lists the archived plans the caller owns (empty for anyone else, PlanArchiveIT).
+            "GET " + ApiRoutes.PLAN + "/archived",
             "GET " + PlanRoutes.INVITATION + "/{token}",
             "POST " + PlanRoutes.INVITATION + "/{token}/accept",
             "POST /api/findraco/auth/login",
@@ -388,6 +390,21 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         403,
                         403,
                         403),
+                // The scene's plan is active: only the owner reaches the 409, everyone else is outside the scope.
+                new Row(
+                        "POST " + PLAN_ID + "/restore",
+                        s -> post(PLAN_ID + "/restore", s.cast().plan().getId()),
+                        409,
+                        404,
+                        404,
+                        404),
+                new Row(
+                        "DELETE " + PLAN_ID + "/permanent",
+                        s -> delete(PLAN_ID + "/permanent", s.cast().plan().getId()),
+                        409,
+                        404,
+                        404,
+                        404),
                 // The owner cannot leave (409 last-owner); a member with another plan can.
                 new Row(
                         "POST " + PLAN_ID + "/leave",

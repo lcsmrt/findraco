@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 35,
+  "next_id": 41,
   "lessons": [
     {
       "id": "L-001",
@@ -616,6 +616,114 @@
       ],
       "created": "2026-11-01T17:06:54Z",
       "last_seen": "2026-11-01T17:06:54Z"
+    },
+    {
+      "id": "L-035",
+      "key": "surviving_mutant::test each condition of a guarded destructive query on its own with input that only that condition rejects",
+      "text": "Test each condition of a guarded destructive query on its own, with input that only that condition rejects",
+      "signal": "surviving_mutant",
+      "scope": "backend-it",
+      "status": "candidate",
+      "features": [
+        "plan-deletion"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md B1 PlanRepository.java:23 (backend-it)"
+      ],
+      "created": "2026-11-04T02:21:06Z",
+      "last_seen": "2026-11-04T02:21:06Z"
+    },
+    {
+      "id": "L-036",
+      "key": "surviving_mutant::give the race loser branch of a conditional write a test that forces the interleaving such as a row lock held by a second transaction",
+      "text": "Give the race-loser branch of a conditional write a test that forces the interleaving, such as a row lock held by a second transaction",
+      "signal": "surviving_mutant",
+      "scope": "backend-it",
+      "status": "candidate",
+      "features": [
+        "plan-deletion"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md B5 PlanService.java:129 (backend-it)"
+      ],
+      "created": "2026-11-04T02:21:06Z",
+      "last_seen": "2026-11-04T02:21:06Z"
+    },
+    {
+      "id": "L-037",
+      "key": "surviving_mutant::test that a job s disabled schedule value also skips its startup run",
+      "text": "Test that a job's disabled schedule value also skips its startup run",
+      "signal": "surviving_mutant",
+      "scope": "backend-jobs",
+      "status": "candidate",
+      "features": [
+        "plan-deletion"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md B10 PlanPurgeJob.java:44 (backend-jobs)"
+      ],
+      "created": "2026-11-04T02:21:06Z",
+      "last_seen": "2026-11-04T02:21:06Z"
+    },
+    {
+      "id": "L-038",
+      "key": "ac_gap::assert a negative ui criterion from the first render including while the request is loading not only after it settles",
+      "text": "Assert a negative UI criterion from the first render, including while the request is loading, not only after it settles",
+      "signal": "ac_gap",
+      "scope": "frontend flow tests",
+      "status": "candidate",
+      "features": [
+        "plan-deletion"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "Restore AC 2, ArchivedPlansSection.tsx:17 (frontend flow tests)"
+      ],
+      "created": "2026-11-04T02:21:06Z",
+      "last_seen": "2026-11-04T02:21:06Z"
+    },
+    {
+      "id": "L-039",
+      "key": "ac_gap::when an ac says an entity comes back with its related data seed that data run the real round trip and assert it afterwards",
+      "text": "When an AC says an entity comes back with its related data, seed that data, run the real round trip and assert it afterwards",
+      "signal": "ac_gap",
+      "scope": "backend-it",
+      "status": "candidate",
+      "features": [
+        "plan-deletion"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "Restore AC 3, PlanArchiveIT.java:91 (backend-it)"
+      ],
+      "created": "2026-11-04T02:21:06Z",
+      "last_seen": "2026-11-04T02:21:06Z"
+    },
+    {
+      "id": "L-040",
+      "key": "surviving_mutant::after releasing a held response wait on a signal that the response was applied before asserting the settled state a waitfor on something already true does not wait",
+      "text": "After releasing a held response, wait on a signal that the response was applied before asserting the settled state; a waitFor on something already true does not wait",
+      "signal": "surviving_mutant",
+      "scope": "frontend flow tests",
+      "status": "candidate",
+      "features": [
+        "plan-deletion"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "validation.md M-F3b; ArchivedPlansSection.test.tsx:93-95 (frontend flow tests)"
+      ],
+      "created": "2026-11-04T02:43:33Z",
+      "last_seen": "2026-11-04T02:43:33Z"
     }
   ]
 }
