@@ -126,9 +126,7 @@ public class PlanService {
     @Transactional
     public void deletePermanently(long planId, long userId) {
         getArchivedPlanMembership(planId, userId);
-        if (planRepository.deleteArchivedBefore(planId, clock.instant()) == 0) {
-            throw new PlanExceptions.PlanNotArchivedException(planId);
-        }
+        planRepository.deleteArchivedBefore(planId, clock.instant());
     }
 
     /** Ids of the plans archived at or before {@code cutoff}, for the purge job. */
@@ -145,11 +143,16 @@ public class PlanService {
 
     /** The owner's membership of a plan; a non-owner and a missing plan are the same not-found, an active plan a conflict. */
     private PlanMembership getArchivedPlanMembership(long planId, long userId) {
+        // The row lock makes a concurrent restore and delete-now run one after the other: the second one sees what the
+        // first committed.
+        Plan plan = planRepository
+                .findByIdForUpdate(planId)
+                .orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
         PlanMembership membership = membershipRepository
                 .findByPlanIdAndUserId(planId, userId)
                 .filter(found -> found.getRole() == PlanRole.OWNER)
                 .orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
-        if (membership.getPlan().getDeletedAt() == null) {
+        if (plan.getDeletedAt() == null) {
             throw new PlanExceptions.PlanNotArchivedException(planId);
         }
         return membership;

@@ -148,7 +148,7 @@ No new table; `plans.deleted_at` already exists (V4).
 | -------------- | -------- | ----------- |
 | Restore / delete-now by a non-owner or on a missing plan | `PlanNotFoundException` → 404 `plan-not-found` | Existing copy "This plan no longer exists…" |
 | Restore / delete-now on an active plan | new `PlanNotArchivedException` → 409 `plan-not-archived` | "This plan is no longer archived." and the lists refresh |
-| Delete-now loses the race to a restore | `deleteArchivedBefore` returns 0 → 409 `plan-not-archived` | Same as above |
+| Restore and delete-now race | Both lock the plan row (`PESSIMISTIC_WRITE`) before the guards; the first to commit wins: a restore that waited on a delete-now → 404 `plan-not-found`, a delete-now that waited on a restore → 409 `plan-not-archived` | Existing copy / same as above; lists refresh |
 | Restore loses the race to a purge | lookup finds no plan → 404 | Existing copy; list refreshes |
 | One plan fails in the job | caught per plan, logged by id, retried next run | None |
 | Archived list request fails | section shows its own error | Active plans still usable |
