@@ -178,6 +178,14 @@
 - **Date**: 2026-10-29
 - **Status**: active
 
+### AD-023
+- **Decision**: A permanent plan deletion is one `DELETE FROM plans` and every foreign key to `plans` is `ON DELETE CASCADE` (V21), so Postgres removes the plan's memberships, invitations, transactions, series definitions and categories with their children. Archiving stays the soft delete of AD-006; only "Delete now" and the daily purge (30 days after `deleted_at`) delete. This is the one exception to AD-017's rule that writes to a feature's tables go through its owner's service. `PlanSchemaIT` fails when a foreign key to `plans` lacks the cascade, so a future plan-scoped table cannot escape the purge.
+- **Reason**: Closes the AD-006 trade-off (archived rows accumulate) and ROADMAP M4-07; a database cascade cannot leave orphans, while an application-side cascade would need an edit with every new table.
+- **Trade-off**: A raw `DELETE` on `plans` outside the service removes everything scoped to it; recovery is a restore from the daily `pg_dump`.
+- **Scope**: `plans` foreign keys, `PlanService`, `PlanPurgeJob`.
+- **Date**: 2026-11-03
+- **Status**: active
+
 ## Handoff
 
 - **Next**: M4-07 permanent plan deletion (closes 1.0 criterion 2). PR #10 (`ci-skip-retest`) merged 2026-11-01; check that a later merge run shows the "Tree already passed" notice. Series-edit validation round with the user (they saw several bugs; first one fixed in `small-fixes`: "Currently: parcel k of N" showed the series' first parcel, not the edited occurrence's). Deferred from period-navigator: shared period across screens, "All time" on Transactions, `DateRangePicker` used only by its own story.

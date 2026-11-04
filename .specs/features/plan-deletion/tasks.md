@@ -74,9 +74,9 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `PlanSchemaIT` queries `pg_constraint` for FKs whose `confrelid` is `plans` and asserts each `confdeltype = 'c'`; it fails before V21 and passes after
-- [ ] AD-023 added (cascade only on permanent deletion; AD-006 archive unchanged; exception to AD-017 writes; enforced by `PlanSchemaIT`)
-- [ ] Gate: `./mvnw verify -Dit.test=PlanSchemaIT` passes
+- [x] `PlanSchemaIT` queries `pg_constraint` for FKs whose `confrelid` is `plans` and asserts each `confdeltype = 'c'`; it fails before V21 and passes after
+- [x] AD-023 added (cascade only on permanent deletion; AD-006 archive unchanged; exception to AD-017 writes; enforced by `PlanSchemaIT`)
+- [x] Gate: `./mvnw verify -Dit.test=PlanSchemaIT` passes
 
 **Tests**: integration
 **Gate**: full
