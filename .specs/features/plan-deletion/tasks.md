@@ -100,12 +100,12 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] `PlanArchiveIT`: the list returns only plans the caller owns that are archived, newest first, `deletesAt = archivedAt + 30 days`; empty list for a non-owner member of an archived plan
-- [ ] `PlanArchiveIT`: restore → 200, `deleted_at` null, every member's `GET /plan` lists it with the same role; non-owner → 404 `plan-not-found`; active plan → 409 `plan-not-archived`; unknown id → 404
-- [ ] Both endpoints × every role in `PlanAuthorizationMatrixIT`
-- [ ] `plan-not-archived` copy added to `frontend/src/api/utils/problems.ts` (the build forces it)
-- [ ] `openapi.json` regenerated; `OpenApiSnapshotIT` green
-- [ ] Gate: `./mvnw verify -Dit.test='PlanArchiveIT,PlanAuthorizationMatrixIT,OpenApiSnapshotIT'` passes
+- [x] `PlanArchiveIT`: the list returns only plans the caller owns that are archived, newest first, `deletesAt = archivedAt + 30 days`; empty list for a non-owner member of an archived plan
+- [x] `PlanArchiveIT`: restore → 200, `deleted_at` null, every member's `GET /plan` lists it with the same role; non-owner → 404 `plan-not-found`; active plan → 409 `plan-not-archived`; unknown id → 404
+- [x] Both endpoints × every role in `PlanAuthorizationMatrixIT`
+- [x] `plan-not-archived` copy added to `frontend/src/api/utils/problems.ts` (the build forces it)
+- [x] `openapi.json` regenerated; `OpenApiSnapshotIT` green
+- [x] Gate: `./mvnw verify -Dit.test='PlanArchiveIT,PlanAuthorizationMatrixIT,OpenApiSnapshotIT'` passes
 
 **Tests**: integration
 **Gate**: full

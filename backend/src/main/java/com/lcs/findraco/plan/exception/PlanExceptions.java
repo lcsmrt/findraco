@@ -49,6 +49,12 @@ public class PlanExceptions {
         }
     }
 
+    public static class PlanNotArchivedException extends DomainException {
+        public PlanNotArchivedException(Long planId) {
+            super(ProblemType.PLAN_NOT_ARCHIVED, HttpStatus.CONFLICT, "Plan " + planId + " is not archived.");
+        }
+    }
+
     public static class LastOwnerException extends DomainException {
         public LastOwnerException() {
             super(

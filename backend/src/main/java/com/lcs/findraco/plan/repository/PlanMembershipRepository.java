@@ -18,6 +18,13 @@ public interface PlanMembershipRepository extends JpaRepository<PlanMembership, 
     @Query("select m from PlanMembership m join fetch m.plan where m.user.id = :userId and m.plan.deletedAt is null")
     List<PlanMembership> findAllByUserId(@Param("userId") long userId);
 
+    @Query("select m from PlanMembership m join fetch m.plan p where m.user.id = :userId and m.role = :role "
+            + "and p.deletedAt is not null order by p.deletedAt desc, p.id desc")
+    List<PlanMembership> findArchivedByUserIdAndRole(@Param("userId") long userId, @Param("role") PlanRole role);
+
+    @Query("select m from PlanMembership m join fetch m.plan where m.plan.id = :planId and m.user.id = :userId")
+    Optional<PlanMembership> findByPlanIdAndUserId(@Param("planId") long planId, @Param("userId") long userId);
+
     Optional<PlanMembership> findByPlanAndUser(Plan plan, User user);
 
     Optional<PlanMembership> findByPlanAndUser_Id(Plan plan, Long userId);

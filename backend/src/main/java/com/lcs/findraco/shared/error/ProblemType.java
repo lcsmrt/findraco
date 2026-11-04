@@ -30,6 +30,7 @@ public enum ProblemType {
     INSUFFICIENT_ROLE("insufficient-role"),
     NOT_TRANSACTION_CREATOR("not-transaction-creator"),
     LAST_PLAN("last-plan"),
+    PLAN_NOT_ARCHIVED("plan-not-archived"),
     LAST_OWNER("last-owner"),
     OWNER_ROLE_NEEDS_TRANSFER("owner-role-needs-transfer"),
     OWNERSHIP_TRANSFER_TO_SELF("ownership-transfer-to-self"),

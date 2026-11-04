@@ -7,6 +7,7 @@ import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.model.TransferredOwnerRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
+import com.lcs.findraco.plan.response.ArchivedPlanResponse;
 import com.lcs.findraco.plan.response.PlanMemberResponse;
 import com.lcs.findraco.plan.response.PlanPermissionsResponse;
 import com.lcs.findraco.plan.response.PlanResponse;
@@ -103,6 +104,33 @@ public class PlanService {
                         planAuthorization.canAttributeToOthers(role),
                         planAuthorization.canManageCategories(role),
                         planAuthorization.canManagePlan(role)));
+    }
+
+    /** The plans the user owns that are archived, newest archive first. */
+    @Transactional(readOnly = true)
+    public List<ArchivedPlanResponse> listArchived(long userId) {
+        return membershipRepository.findArchivedByUserIdAndRole(userId, PlanRole.OWNER).stream()
+                .map(membership -> ArchivedPlanResponse.from(membership.getPlan()))
+                .toList();
+    }
+
+    @Transactional
+    public PlanResponse restore(long planId, long userId) {
+        PlanMembership ownerMembership = getArchivedPlanMembership(planId, userId);
+        ownerMembership.getPlan().setDeletedAt(null);
+        return response(ownerMembership);
+    }
+
+    /** The owner's membership of a plan; a non-owner and a missing plan are the same not-found, an active plan a conflict. */
+    private PlanMembership getArchivedPlanMembership(long planId, long userId) {
+        PlanMembership membership = membershipRepository
+                .findByPlanIdAndUserId(planId, userId)
+                .filter(found -> found.getRole() == PlanRole.OWNER)
+                .orElseThrow(() -> new PlanExceptions.PlanNotFoundException(planId));
+        if (membership.getPlan().getDeletedAt() == null) {
+            throw new PlanExceptions.PlanNotArchivedException(planId);
+        }
+        return membership;
     }
 
     private PlanMembership getMembership(long planId, long userId) {

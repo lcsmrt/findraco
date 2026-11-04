@@ -4,6 +4,7 @@ import com.lcs.findraco.plan.request.CreatePlanRequest;
 import com.lcs.findraco.plan.request.TransferOwnershipRequest;
 import com.lcs.findraco.plan.request.UpdateMemberRoleRequest;
 import com.lcs.findraco.plan.request.UpdatePlanRequest;
+import com.lcs.findraco.plan.response.ArchivedPlanResponse;
 import com.lcs.findraco.plan.response.PlanMemberResponse;
 import com.lcs.findraco.plan.response.PlanResponse;
 import com.lcs.findraco.plan.service.PlanService;
@@ -41,6 +42,18 @@ public class PlanController {
     @GetMapping
     public ResponseEntity<List<PlanResponse>> getPlans(@CurrentUser AuthenticatedUser user) {
         return ResponseEntity.ok(planService.listPlans(user.id()));
+    }
+
+    @Operation(summary = "Fetches the archived plans the authenticated user owns")
+    @GetMapping("/archived")
+    public ResponseEntity<List<ArchivedPlanResponse>> getArchivedPlans(@CurrentUser AuthenticatedUser user) {
+        return ResponseEntity.ok(planService.listArchived(user.id()));
+    }
+
+    @Operation(summary = "Restores an archived plan (owner only)")
+    @PostMapping("/{id}/restore")
+    public ResponseEntity<PlanResponse> restorePlan(@PathVariable Long id, @CurrentUser AuthenticatedUser user) {
+        return ResponseEntity.ok(planService.restore(id, user.id()));
     }
 
     @Operation(summary = "Fetches a plan the authenticated user belongs to")
