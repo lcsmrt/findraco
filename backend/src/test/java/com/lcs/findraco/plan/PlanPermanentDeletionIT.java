@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.lcs.findraco.category.controller.CategoryRoutes;
@@ -257,5 +258,24 @@ class PlanPermanentDeletionIT extends AbstractIntegrationTest {
         deleteNow(plan, owner).andExpect(status().isNoContent());
 
         deleteNow(plan, owner).andExpect(problem(HttpStatus.NOT_FOUND, "plan-not-found"));
+    }
+
+    @Test
+    void aMemberWhoseOnlyPlanWasArchivedKeepsThePersonalPlanMadeAtArchiveTime() throws Exception {
+        User owner = fixtures.aUser();
+        User member = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        fixtures.aPlan(owner);
+        fixtures.addMember(plan, member, PlanRole.EDITOR);
+        mockMvc.perform(delete(ApiRoutes.PLAN + "/{id}", plan.getId()).with(testAuthHelper.asUser(owner)))
+                .andExpect(status().isNoContent());
+
+        deleteNow(plan, owner).andExpect(status().isNoContent());
+
+        mockMvc.perform(get(ApiRoutes.PLAN).with(testAuthHelper.asUser(member)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.length()").value(1))
+                .andExpect(jsonPath("$[0].isDefault").value(true))
+                .andExpect(jsonPath("$[0].myRole").value("OWNER"));
     }
 }
