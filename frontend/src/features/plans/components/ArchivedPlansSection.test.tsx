@@ -52,6 +52,7 @@ function renderSection() {
 beforeEach(() => {
   localStorage.clear();
   vi.spyOn(toast, "success");
+  vi.spyOn(toast, "error");
 });
 
 afterEach(() => {
@@ -118,5 +119,70 @@ describe("ArchivedPlansSection", () => {
 
     await user.click(screen.getByRole("button", { name: /Personal/ }));
     expect(await screen.findByRole("menuitemradio", { name: "Old home" })).toBeTruthy();
+  });
+
+  async function openDeleteDialog(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(await screen.findByRole("button", { name: "Delete Old home now" }));
+    return screen.findByRole("dialog", { name: "Delete plan now" });
+  }
+
+  it("deletes a plan only after its exact name is typed: sends the DELETE, closes the dialog and drops the row (PDEL-04 AC 1, 3; PDEL-05)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(planHandlers.list([personal]), planHandlers.archived([archivedOldHome, archivedTrip]));
+    renderSection();
+    await openDeleteDialog(user);
+    const confirm = screen.getByRole<HTMLButtonElement>("button", { name: "Delete now" });
+    expect(confirm.disabled).toBe(true);
+    await user.type(screen.getByLabelText('Type "Old home" to confirm'), "old home");
+    expect(confirm.disabled).toBe(true);
+    await user.clear(screen.getByLabelText('Type "Old home" to confirm'));
+    await user.type(screen.getByLabelText('Type "Old home" to confirm'), "Old home");
+    expect(confirm.disabled).toBe(false);
+    server.use(planHandlers.deletePermanently(), planHandlers.archived([archivedTrip]));
+
+    await user.click(confirm);
+
+    await waitFor(() =>
+      expect(requests.some((request) => request.method === "DELETE" && request.url.endsWith("/plan/8/permanent"))).toBe(true),
+    );
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    await waitFor(() => expect(screen.queryByText("Old home")).toBeNull());
+    expect(screen.getByText("Trip to Lisbon")).toBeTruthy();
+    expect(toast.success).toHaveBeenCalledWith("Plan deleted.");
+  });
+
+  it("sends nothing when the dialog is cancelled (PDEL-04 AC 1)", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(planHandlers.list([personal]), planHandlers.archived([archivedOldHome]));
+    renderSection();
+    await openDeleteDialog(user);
+
+    await user.click(screen.getByRole("button", { name: "Cancel" }));
+
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(requests.some((request) => request.method === "DELETE")).toBe(false);
+  });
+
+  it("tells that the plan is no longer archived when the API answers 409, and refreshes the lists (PDEL-05 AC 4)", async () => {
+    const user = userEvent.setup();
+    server.use(planHandlers.list([personal]), planHandlers.archived([archivedOldHome, archivedTrip]));
+    renderSection();
+    await openDeleteDialog(user);
+    await user.type(screen.getByLabelText('Type "Old home" to confirm'), "Old home");
+    // The plan was restored elsewhere meanwhile, so the refreshed lists no longer hold it as archived.
+    server.use(
+      planHandlers.deletePermanentlyConflict(),
+      planHandlers.list([personal, oldHome]),
+      planHandlers.archived([archivedTrip]),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Delete now" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("This plan is no longer archived.", expect.anything()));
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull());
+    expect(screen.queryByText("Old home")).toBeNull();
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });

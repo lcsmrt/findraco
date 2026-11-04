@@ -10,7 +10,7 @@ import {
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
 import { format } from "date-fns";
-import { RotateCcwIcon } from "lucide-react";
+import { RotateCcwIcon, Trash2Icon } from "lucide-react";
 
 const DATE_FORMAT = "dd/MM/yyyy";
 
@@ -21,6 +21,7 @@ type ArchivedPlansListViewProps = {
   /** The plan whose restore is in flight, if any. */
   restoringPlanId: number | null;
   onRestore: (plan: ArchivedPlan) => void;
+  onDelete: (plan: ArchivedPlan) => void;
 };
 
 /** The owner's archived plans, with the date each is deleted permanently. */
@@ -30,6 +31,7 @@ export function ArchivedPlansListView({
   isError,
   restoringPlanId,
   onRestore,
+  onDelete,
 }: ArchivedPlansListViewProps) {
   return (
     <Card>
@@ -67,18 +69,32 @@ export function ArchivedPlansListView({
                     {format(new Date(plan.deletesAt), DATE_FORMAT)}
                   </Text>
                 </div>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  aria-label={`Restore ${plan.name}`}
-                  isLoading={restoringPlanId === plan.id}
-                  disabled={restoringPlanId !== null}
-                  onClick={() => onRestore(plan)}
-                >
-                  <RotateCcwIcon className="h-4 w-4" />
-                  Restore
-                </Button>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    aria-label={`Restore ${plan.name}`}
+                    isLoading={restoringPlanId === plan.id}
+                    disabled={restoringPlanId !== null}
+                    onClick={() => onRestore(plan)}
+                  >
+                    <RotateCcwIcon className="h-4 w-4" />
+                    Restore
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:bg-accent hover:text-destructive"
+                    aria-label={`Delete ${plan.name} now`}
+                    disabled={restoringPlanId !== null}
+                    onClick={() => onDelete(plan)}
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                    Delete now
+                  </Button>
+                </div>
               </li>
             ))}
           </ul>

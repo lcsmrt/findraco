@@ -237,9 +237,9 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] Story with `play`: button disabled on empty and on a near match (`"Casa "`, `"casa"`), enabled on the exact name
-- [ ] Flow test: Delete now → type name → confirm → DELETE sent, dialog closes, row gone; a 409 `plan-not-archived` shows its copy
-- [ ] Gate: `src/features/plans` tests and stories pass; `pnpm lint` clean
+- [x] Story with `play`: button disabled on empty and on a near match (`"Casa "`, `"casa"`), enabled on the exact name
+- [x] Flow test: Delete now → type name → confirm → DELETE sent, dialog closes, row gone; a 409 `plan-not-archived` shows its copy
+- [x] Gate: `src/features/plans` tests and stories pass; `pnpm lint` clean
 
 **Tests**: integration
 **Gate**: quick
