@@ -263,8 +263,8 @@ T5 → T6 → T7 → T8
 
 **Done when**:
 
-- [ ] Copy changed; `frontend/package.json` at `1.0.0-beta.26` in its own `chore(release)` commit
-- [ ] Build gate: `pnpm lint && pnpm build && pnpm test` passes (end of Phase 2)
+- [x] Copy changed; `frontend/package.json` at `1.0.0-beta.26` in its own `chore(release)` commit
+- [x] Build gate: `pnpm lint && pnpm build && pnpm test` passes (end of Phase 2)
 
 **Tests**: none
 **Gate**: build
