@@ -16,7 +16,7 @@
 | C6 | walk - FormSheet `Short` (`short.png`) | yes - handle centred at the top edge |
 | C7 | walk - FormSheet `Short` swipe (`short-after-swipe.png`) | partly - the sheet is gone, but the walk records "the submit button was never pressed", not the submit spy the check names; only a swipe from the handle, not from the scrolled-to-top form body |
 | C8 | `TransactionFormDrawer.test.tsx` `closes without saving on Escape or a backdrop tap` | yes - `false` twice and no non-GET request; dropping the close in `FormSheet` fails it |
-| C9 | walk - deferred to UAT on the iPhone PWA | no - not walked; the `**Walked:**` line does not mention C9, yet `proofs.md` records it as pass |
+| C9 | walk - deferred to UAT on the iPhone PWA | yes - walked by the user at UAT (d69d58c) |
 | C10 | walk - FormSheet `Short` (`short.png`) | yes - Cancel x16 w175, Submit x199 w175 |
 | C11 | walk - FormSheet `WithMobileActions` (`mobile-actions.png`) | yes |
 | C12 | walk - FormSheet `Short` (`short.png`) | yes |
@@ -40,6 +40,6 @@ Implementation review: no `eslint-disable`/`@ts-ignore`; `--drawer-keyboard-inse
 | Finding | Evidence | Fix | Closed |
 | --- | --- | --- | --- |
 | The container's permission wiring has no test: forcing the create row on for every member keeps the suite green | `CategoryCombobox.tsx:54` - mutation `canManageCategories: true` survived; C15's test calls `categoryQuickCreate` directly and `renderDrawer` always grants `manageCategories` | add a `TransactionFormDrawer.test.tsx` case rendering a plan with `manageCategories: false`, typing "Pet" and asserting no `Create expense category "Pet"` button; point C15 at it | 5cae8ea |
-| C9 is recorded as passed but was never walked | `proofs.md` row C9 `pass (Walked)`; the `**Walked:**` line in `spec.md` covers C4-C7 and C10-C12 only | leave C9 open until the user confirms the footer above the keyboard on the iPhone PWA, then record it on the `**Walked:**` line | |
+| C9 is recorded as passed but was never walked | `proofs.md` row C9 `pass (Walked)`; the `**Walked:**` line in `spec.md` covers C4-C7 and C10-C12 only | leave C9 open until the user confirms the footer above the keyboard on the iPhone PWA, then record it on the `**Walked:**` line | d69d58c |
 | C7's walk does not record what the check names | `**Walked:**` says "the submit button was never pressed", the check says "the story's submit spy stays uncalled"; only a drag from the handle | re-walk asserting the `onSubmit` spy's call count, and drag from the form body scrolled to its top as AC 6 states | 0673257 |
 | The stored-name half of "ignoring surrounding spaces" is untested | `categoryQuickCreate.ts:43` - removing `.trim()` on `category.description` survived | add a stored `" Food "` to the C14 test and assert `"food"` offers no row | c4a7f87 |

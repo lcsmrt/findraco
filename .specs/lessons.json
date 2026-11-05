@@ -3,13 +3,13 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 41,
+  "next_id": 44,
   "lessons": [
     {
       "id": "L-001",
-      "key": "surviving_mutant::for a write through persistence effect assert storage reflects a state change made after mount not only the initial save",
+      "key": "weak_test::for a write through persistence effect assert storage reflects a state change made after mount not only the initial save",
       "text": "For a write-through persistence effect, assert storage reflects a state change made after mount, not only the initial save",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend-hooks",
       "status": "candidate",
       "features": [
@@ -25,9 +25,9 @@
     },
     {
       "id": "L-002",
-      "key": "surviving_mutant::when behavior depends on a specific error status test a different error status and assert the behavior does not trigger",
+      "key": "weak_test::when behavior depends on a specific error status test a different error status and assert the behavior does not trigger",
       "text": "When behavior depends on a specific error status, test a different error status and assert the behavior does not trigger",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend-hooks",
       "status": "candidate",
       "features": [
@@ -169,9 +169,9 @@
     },
     {
       "id": "L-010",
-      "key": "surviving_mutant::when a rule lists new rows that carry a status flag test each flag value on the new rows not only on the rows that existed before",
+      "key": "weak_test::when a rule lists new rows that carry a status flag test each flag value on the new rows not only on the rows that existed before",
       "text": "When a rule lists new rows that carry a status flag, test each flag value on the new rows, not only on the rows that existed before",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "backend-assembler",
       "status": "candidate",
       "features": [
@@ -241,9 +241,9 @@
     },
     {
       "id": "L-014",
-      "key": "surviving_mutant::when a page consumes navigation state that an ac depends on test the page itself not only the component that produces the state",
+      "key": "weak_test::when a page consumes navigation state that an ac depends on test the page itself not only the component that produces the state",
       "text": "When a page consumes navigation state that an AC depends on, test the page itself, not only the component that produces the state",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend-pages",
       "status": "candidate",
       "features": [
@@ -313,9 +313,9 @@
     },
     {
       "id": "L-018",
-      "key": "surviving_mutant::for a one shot notification test that repeating the triggering condition later in the same session does not show it again",
+      "key": "weak_test::for a one shot notification test that repeating the triggering condition later in the same session does not show it again",
       "text": "For a one-shot notification, test that repeating the triggering condition later in the same session does not show it again",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend-auth",
       "status": "candidate",
       "features": [
@@ -349,9 +349,9 @@
     },
     {
       "id": "L-020",
-      "key": "surviving_mutant::test a count based guard at its boundary exactly one item not only with several",
+      "key": "weak_test::test a count based guard at its boundary exactly one item not only with several",
       "text": "Test a count-based guard at its boundary (exactly one item), not only with several",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "test-infrastructure",
       "status": "candidate",
       "features": [
@@ -367,9 +367,9 @@
     },
     {
       "id": "L-021",
-      "key": "surviving_mutant::prove global test harness wiring with a test that triggers it not only the helper it calls",
+      "key": "weak_test::prove global test harness wiring with a test that triggers it not only the helper it calls",
       "text": "Prove global test-harness wiring with a test that triggers it, not only the helper it calls",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "test-infrastructure",
       "status": "candidate",
       "features": [
@@ -439,9 +439,9 @@
     },
     {
       "id": "L-025",
-      "key": "surviving_mutant::give every ast node type a custom lint rule listens to its own ruletester case",
+      "key": "weak_test::give every ast node type a custom lint rule listens to its own ruletester case",
       "text": "Give every AST node type a custom lint rule listens to its own RuleTester case",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "eslint-rules",
       "status": "candidate",
       "features": [
@@ -475,9 +475,9 @@
     },
     {
       "id": "L-027",
-      "key": "surviving_mutant::a lookup table or mapping is data not one rule assert every entry in one table driven case rather than a single sample entry",
+      "key": "weak_test::a lookup table or mapping is data not one rule assert every entry in one table driven case rather than a single sample entry",
       "text": "A lookup table or mapping is data, not one rule: assert every entry in one table-driven case rather than a single sample entry",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend unit tests",
       "status": "candidate",
       "features": [
@@ -493,9 +493,9 @@
     },
     {
       "id": "L-028",
-      "key": "surviving_mutant::when a screen s param key list drives persistence or clearing test that a url holding only the new keys is saved restored and cleared as intended",
+      "key": "weak_test::when a screen s param key list drives persistence or clearing test that a url holding only the new keys is saved restored and cleared as intended",
       "text": "When a screen's param-key list drives persistence or clearing, test that a URL holding only the new keys is saved, restored and cleared as intended.",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend/url-params",
       "status": "candidate",
       "features": [
@@ -565,9 +565,9 @@
     },
     {
       "id": "L-032",
-      "key": "surviving_mutant::assert an outcome only the tested branch can cause so a sibling branch reaching the same state does not satisfy the test",
+      "key": "weak_test::assert an outcome only the tested branch can cause so a sibling branch reaching the same state does not satisfy the test",
       "text": "Assert an outcome only the tested branch can cause, so a sibling branch reaching the same state does not satisfy the test",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend flow tests",
       "status": "candidate",
       "features": [
@@ -619,9 +619,9 @@
     },
     {
       "id": "L-035",
-      "key": "surviving_mutant::test each condition of a guarded destructive query on its own with input that only that condition rejects",
+      "key": "weak_test::test each condition of a guarded destructive query on its own with input that only that condition rejects",
       "text": "Test each condition of a guarded destructive query on its own, with input that only that condition rejects",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "backend-it",
       "status": "candidate",
       "features": [
@@ -637,9 +637,9 @@
     },
     {
       "id": "L-036",
-      "key": "surviving_mutant::give the race loser branch of a conditional write a test that forces the interleaving such as a row lock held by a second transaction",
+      "key": "weak_test::give the race loser branch of a conditional write a test that forces the interleaving such as a row lock held by a second transaction",
       "text": "Give the race-loser branch of a conditional write a test that forces the interleaving, such as a row lock held by a second transaction",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "backend-it",
       "status": "candidate",
       "features": [
@@ -655,9 +655,9 @@
     },
     {
       "id": "L-037",
-      "key": "surviving_mutant::test that a job s disabled schedule value also skips its startup run",
+      "key": "weak_test::test that a job s disabled schedule value also skips its startup run",
       "text": "Test that a job's disabled schedule value also skips its startup run",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "backend-jobs",
       "status": "candidate",
       "features": [
@@ -709,9 +709,9 @@
     },
     {
       "id": "L-040",
-      "key": "surviving_mutant::after releasing a held response wait on a signal that the response was applied before asserting the settled state a waitfor on something already true does not wait",
+      "key": "weak_test::after releasing a held response wait on a signal that the response was applied before asserting the settled state a waitfor on something already true does not wait",
       "text": "After releasing a held response, wait on a signal that the response was applied before asserting the settled state; a waitFor on something already true does not wait",
-      "signal": "surviving_mutant",
+      "signal": "weak_test",
       "scope": "frontend flow tests",
       "status": "candidate",
       "features": [
@@ -724,6 +724,60 @@
       ],
       "created": "2026-11-04T02:43:33Z",
       "last_seen": "2026-11-04T02:43:33Z"
+    },
+    {
+      "id": "L-041",
+      "key": "weak_test::a permission gate wired in a container needs a flow test rendering the denied role a unit test of the pure rule leaves the wiring unproven",
+      "text": "A permission gate wired in a container needs a flow test rendering the denied role; a unit test of the pure rule leaves the wiring unproven.",
+      "signal": "weak_test",
+      "scope": "frontend/containers",
+      "status": "candidate",
+      "features": [
+        "mobile-form-sheet"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "CategoryCombobox.tsx:54 / C15 (frontend/containers)"
+      ],
+      "created": "2026-11-05T02:53:07Z",
+      "last_seen": "2026-11-05T02:53:07Z"
+    },
+    {
+      "id": "L-042",
+      "key": "weak_test::when a criterion says ignoring case and spaces test the normalisation on both sides the stored value as well as the input",
+      "text": "When a criterion says 'ignoring case and spaces', test the normalisation on both sides: the stored value as well as the input.",
+      "signal": "weak_test",
+      "scope": "frontend/utils",
+      "status": "candidate",
+      "features": [
+        "mobile-form-sheet"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "categoryQuickCreate.ts:43 / C14 (frontend/utils)"
+      ],
+      "created": "2026-11-05T02:53:07Z",
+      "last_seen": "2026-11-05T02:53:07Z"
+    },
+    {
+      "id": "L-043",
+      "key": "spec_precision_gap::a claim headless chromium cannot reach virtual keyboard is planned as a user uat walk from the start not recorded as walked",
+      "text": "A claim headless Chromium cannot reach (virtual keyboard) is planned as a user UAT walk from the start, not recorded as walked.",
+      "signal": "spec_precision_gap",
+      "scope": "frontend/mobile",
+      "status": "candidate",
+      "features": [
+        "mobile-form-sheet"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C9 / MFS-01 AC 8 (frontend/mobile)"
+      ],
+      "created": "2026-11-05T02:53:07Z",
+      "last_seen": "2026-11-05T02:53:07Z"
     }
   ]
 }

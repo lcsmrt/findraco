@@ -4,7 +4,7 @@
 > Canonical state lives in `.specs/lessons.json`. Edit lessons only via the script.
 > promote_threshold=2 distinct features · window_days=45 · quarantine_threshold=2
 
-## Confirmed (load these at Specify/Design)
+## Confirmed (load these at Plan/Checks)
 
 Corroborated across multiple features. Safe to apply as guidance.
 
@@ -15,13 +15,13 @@ _none_
 Seen once or not yet corroborated. Tracked, not trusted.
 
 ### L-001 - For a write-through persistence effect, assert storage reflects a state change made after mount, not only the initial save
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend-hooks` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend-hooks` · harmful: 0
 - features: filter-persistence
 - evidence: M1 frontend/src/features/home/filters/HomeFiltersGate.tsx:44 (frontend-hooks)
 - last seen: 2026-10-12T02:31:17Z
 
 ### L-002 - When behavior depends on a specific error status, test a different error status and assert the behavior does not trigger
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend-hooks` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend-hooks` · harmful: 0
 - features: filter-persistence
 - evidence: M9 frontend/src/features/home/hooks/useTransactionFilterChips.ts:60 (frontend-hooks)
 - last seen: 2026-10-12T02:31:17Z
@@ -69,7 +69,7 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-10-12T18:23:53Z
 
 ### L-010 - When a rule lists new rows that carry a status flag, test each flag value on the new rows, not only on the rows that existed before
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-assembler` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `backend-assembler` · harmful: 0
 - features: categories-revamp
 - evidence: validation.md UX round B3 CategorySpendingAssembler.java:162 (backend-assembler)
 - last seen: 2026-10-13T02:20:14Z
@@ -93,7 +93,7 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-10-13T02:20:14Z
 
 ### L-014 - When a page consumes navigation state that an AC depends on, test the page itself, not only the component that produces the state
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend-pages` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend-pages` · harmful: 0
 - features: session-persistence
 - evidence: frontend/src/features/login/LoginPage.tsx:55 (mutant L1) (frontend-pages)
 - last seen: 2026-10-16T17:58:23Z
@@ -117,7 +117,7 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-10-16T17:58:23Z
 
 ### L-018 - For a one-shot notification, test that repeating the triggering condition later in the same session does not show it again
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend-auth` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend-auth` · harmful: 0
 - features: session-persistence
 - evidence: frontend/src/app/providers/AuthProvider.tsx:113 (mutant A15, iteration 2) (frontend-auth)
 - last seen: 2026-10-16T20:19:27Z
@@ -129,13 +129,13 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-10-17T00:16:24Z
 
 ### L-020 - Test a count-based guard at its boundary (exactly one item), not only with several
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `test-infrastructure` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `test-infrastructure` · harmful: 0
 - features: frontend-standards
 - evidence: validation.md M28 src/test/unhandledRequests.ts:19 (test-infrastructure)
 - last seen: 2026-10-19T05:32:26Z
 
 ### L-021 - Prove global test-harness wiring with a test that triggers it, not only the helper it calls
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `test-infrastructure` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `test-infrastructure` · harmful: 0
 - features: frontend-standards
 - evidence: validation.md M29 src/test/setupUnit.ts:18 (test-infrastructure)
 - last seen: 2026-10-19T05:32:26Z
@@ -159,7 +159,7 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-10-19T05:32:26Z
 
 ### L-025 - Give every AST node type a custom lint rule listens to its own RuleTester case
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `eslint-rules` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `eslint-rules` · harmful: 0
 - features: frontend-standards
 - evidence: validation.md iteration 1: N2 (componentLogicCap.ts JSXFragment listener) (eslint-rules)
 - last seen: 2026-10-19T12:00:37Z
@@ -171,13 +171,13 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-10-20T06:24:27Z
 
 ### L-027 - A lookup table or mapping is data, not one rule: assert every entry in one table-driven case rather than a single sample entry
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend unit tests` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend unit tests` · harmful: 0
 - features: test-calibration
 - evidence: M6 transactionSort.ts:13 (frontend unit tests)
 - last seen: 2026-10-20T06:24:28Z
 
 ### L-028 - When a screen's param-key list drives persistence or clearing, test that a URL holding only the new keys is saved, restored and cleared as intended.
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend/url-params` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/url-params` · harmful: 0
 - features: period-navigator
 - evidence: transactionParams.ts:31 M4 (frontend/url-params)
 - last seen: 2026-10-31T13:03:51Z
@@ -201,7 +201,7 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-11-01T17:06:54Z
 
 ### L-032 - Assert an outcome only the tested branch can cause, so a sibling branch reaching the same state does not satisfy the test
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
 - features: pwa
 - evidence: M5 frontend/src/app/providers/InstallAppProvider.tsx:36 (frontend flow tests)
 - last seen: 2026-11-01T17:06:54Z
@@ -219,19 +219,19 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-11-01T17:06:54Z
 
 ### L-035 - Test each condition of a guarded destructive query on its own, with input that only that condition rejects
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-it` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `backend-it` · harmful: 0
 - features: plan-deletion
 - evidence: validation.md B1 PlanRepository.java:23 (backend-it)
 - last seen: 2026-11-04T02:21:06Z
 
 ### L-036 - Give the race-loser branch of a conditional write a test that forces the interleaving, such as a row lock held by a second transaction
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-it` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `backend-it` · harmful: 0
 - features: plan-deletion
 - evidence: validation.md B5 PlanService.java:129 (backend-it)
 - last seen: 2026-11-04T02:21:06Z
 
 ### L-037 - Test that a job's disabled schedule value also skips its startup run
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `backend-jobs` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `backend-jobs` · harmful: 0
 - features: plan-deletion
 - evidence: validation.md B10 PlanPurgeJob.java:44 (backend-jobs)
 - last seen: 2026-11-04T02:21:06Z
@@ -249,10 +249,28 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - last seen: 2026-11-04T02:21:06Z
 
 ### L-040 - After releasing a held response, wait on a signal that the response was applied before asserting the settled state; a waitFor on something already true does not wait
-- signal: `surviving_mutant` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend flow tests` · harmful: 0
 - features: plan-deletion
 - evidence: validation.md M-F3b; ArchivedPlansSection.test.tsx:93-95 (frontend flow tests)
 - last seen: 2026-11-04T02:43:33Z
+
+### L-041 - A permission gate wired in a container needs a flow test rendering the denied role; a unit test of the pure rule leaves the wiring unproven.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/containers` · harmful: 0
+- features: mobile-form-sheet
+- evidence: CategoryCombobox.tsx:54 / C15 (frontend/containers)
+- last seen: 2026-11-05T02:53:07Z
+
+### L-042 - When a criterion says 'ignoring case and spaces', test the normalisation on both sides: the stored value as well as the input.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/utils` · harmful: 0
+- features: mobile-form-sheet
+- evidence: categoryQuickCreate.ts:43 / C14 (frontend/utils)
+- last seen: 2026-11-05T02:53:07Z
+
+### L-043 - A claim headless Chromium cannot reach (virtual keyboard) is planned as a user UAT walk from the start, not recorded as walked.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `frontend/mobile` · harmful: 0
+- features: mobile-form-sheet
+- evidence: C9 / MFS-01 AC 8 (frontend/mobile)
+- last seen: 2026-11-05T02:53:07Z
 
 ## Quarantined (failed when applied - ignore)
 
