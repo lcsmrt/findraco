@@ -15,6 +15,7 @@ import {
   type TransactionFormOutput,
   type TransactionFormValues,
 } from "./transactionForm";
+import { useTranslation } from "react-i18next";
 
 /** What an item row hands its category picker. */
 export type ItemCategoryPicker = {
@@ -34,6 +35,8 @@ type ItemsFieldProps = {
 
 /** The transaction's items: each with a description, an amount and a category, and the remainder. */
 export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProps) {
+  const { t } = useTranslation();
+
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const items = useWatch({ control, name: "items" });
   const amount = useWatch({ control, name: "amount" });
@@ -43,7 +46,7 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
 
   return (
     <Field>
-      <FieldLabel>Items</FieldLabel>
+      <FieldLabel>{t("transactions.itemsField.items")}</FieldLabel>
       <div className="flex flex-col gap-2">
         {fields.map((item, index) => (
           <div key={item.id} className="border-border flex flex-col gap-2 rounded-md border p-2">
@@ -55,9 +58,11 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
                 render={({ field, fieldState }) => (
                   <Input
                     {...field}
-                    aria-label={`Item ${index + 1} description`}
+                    aria-label={t("transactions.itemsField.itemDescriptionLabel", {
+                      number: index + 1,
+                    })}
                     aria-invalid={fieldState.invalid}
-                    placeholder="Item description"
+                    placeholder={t("transactions.itemsField.itemDescription")}
                     className="flex-1"
                     disabled={disabled}
                   />
@@ -70,9 +75,9 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
                   <CurrencyInput
                     {...field}
                     onValueChange={field.onChange}
-                    aria-label={`Item ${index + 1} amount`}
+                    aria-label={t("transactions.itemsField.itemAmountLabel", { number: index + 1 })}
                     aria-invalid={fieldState.invalid}
-                    placeholder="R$ 0,00"
+                    placeholder={t("common.r000")}
                     className="w-28"
                     disabled={disabled}
                   />
@@ -82,7 +87,7 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Remove item ${index + 1}`}
+                aria-label={t("transactions.itemsField.removeItem", { number: index + 1 })}
                 disabled={disabled}
                 onClick={() => remove(index)}
               >
@@ -112,12 +117,12 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
           onClick={() => append({ description: "", amount: null, category: null })}
         >
           <PlusIcon className="h-3.5 w-3.5" />
-          Add item
+          {t("transactions.itemsField.addItem")}
         </Button>
       </div>
       {fields.length > 0 && (
         <Text as="p" variant="secondary" className={cn(remainderCents < 0 && "text-destructive")}>
-          Remainder: {formatMoney(remainderCents / 100)}
+          {t("transactions.itemsField.remainder", { amount: formatMoney(remainderCents / 100) })}
         </Text>
       )}
       {/* With the item amounts registered as fields, the resolver files the list-level error under

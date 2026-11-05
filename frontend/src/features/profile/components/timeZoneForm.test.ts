@@ -13,7 +13,7 @@ describe("timeZoneSchema", () => {
     expect(result.success).toBe(false);
     expect(result.error?.issues[0]).toMatchObject({
       path: ["zone"],
-      message: "Pick a time zone",
+      message: "profile.timeZoneForm.pickATimeZone",
     });
   });
 

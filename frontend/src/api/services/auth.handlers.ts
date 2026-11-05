@@ -7,6 +7,7 @@ import type {
   PasswordResetTokenValidationResponse,
   RegisterUserRequest,
   ResetPasswordRequest,
+  UpdateLanguageRequest,
   UpdateTimeZoneRequest,
   User,
 } from "../dtos";
@@ -57,6 +58,21 @@ export const authHandlers = {
     return http.patch<NoParams, UpdateTimeZoneRequest["body"], User>(
       "*/user/me/time-zone",
       () => HttpResponse.json(user),
+    );
+  },
+  updateLanguage(user: User): HttpHandler {
+    return http.patch<NoParams, UpdateLanguageRequest["body"], User>(
+      "*/user/me/language",
+      () => HttpResponse.json(user),
+    );
+  },
+  /** The save is refused with a problem body, as the API answers. */
+  updateLanguageFailed(): HttpHandler {
+    return http.patch<NoParams, UpdateLanguageRequest["body"], Problem>("*/user/me/language", () =>
+      HttpResponse.json(
+        { type: "urn:findraco:problem:internal", status: 500, requestId: "req-language" },
+        { status: 500 },
+      ),
     );
   },
   registerUser(user: User): HttpHandler {

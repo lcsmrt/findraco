@@ -11,11 +11,12 @@ import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
+import { i18n } from "@/i18n/i18n";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { stubScreenWidth } from "@/test/screenWidth";
 import { server } from "@/test/server";
-import { cleanup, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -53,7 +54,7 @@ const savedTransaction: Transaction = {
 
 function authValue(): AuthContextValue {
   return {
-    user: { id: lucas.userId, name: lucas.name, email: lucas.email, timeZone: "America/Sao_Paulo", timeZoneMode: "AUTOMATIC" },
+    user: { id: lucas.userId, name: lucas.name, email: lucas.email, timeZone: "America/Sao_Paulo", timeZoneMode: "AUTOMATIC", language: null },
     setUser: vi.fn(),
     status: "authenticated",
     signIn: vi.fn(),
@@ -638,5 +639,38 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
     await waitFor(() => expect(screen.queryByRole("radio", { name: /^This one/ })).toBeNull());
     expect(writes(requests)).toEqual([]);
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
+  });
+});
+
+describe("TransactionFormDrawer language", () => {
+  afterEach(cleanup);
+
+  it("keeps typed values when the language changes", async () => {
+    const user = userEvent.setup();
+    renderDrawer({ members: [lucas] });
+    await user.type(screen.getByLabelText("Description"), "Rent");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+    expect(await screen.findByText("Amount must be positive")).toBeDefined();
+
+    await act(() => i18n.changeLanguage("pt-BR"));
+
+    expect(screen.getByLabelText<HTMLInputElement>("Descrição").value).toBe("Rent");
+    expect(screen.getByText("O valor deve ser positivo")).toBeDefined();
+    expect(screen.getByRole("button", { name: "Criar" })).toBeDefined();
+  });
+
+  it("shows user data as typed in Portuguese", async () => {
+    await i18n.changeLanguage("pt-BR");
+    const groceries: Category = { id: 3, version: 0, type: "DEBIT", description: "Groceries" };
+    renderDrawer({
+      mode: "edit",
+      transaction: { ...savedTransaction, description: "Monthly rent", category: groceries },
+      members: [lucas],
+      categories: [groceries],
+    });
+
+    expect(screen.getByText("Editar transação")).toBeDefined();
+    expect(screen.getByLabelText<HTMLInputElement>("Descrição").value).toBe("Monthly rent");
+    expect(screen.getByLabelText("Categoria").textContent).toContain("Groceries");
   });
 });

@@ -361,7 +361,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             "POST /api/findraco/user",
             "GET /api/findraco/user/me",
             "PUT /api/findraco/user",
-            "PATCH /api/findraco/user/me/time-zone");
+            "PATCH /api/findraco/user/me/time-zone",
+            "PATCH /api/findraco/user/me/language");
 
     private static List<Row> rows() {
         return List.of(

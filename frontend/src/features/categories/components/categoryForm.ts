@@ -71,7 +71,7 @@ export type MemberLimitRow = z.input<typeof memberLimitRowSchema>;
 
 const categoryFormBaseSchema = z.object({
   type: z.enum(["DEBIT", "CREDIT"]),
-  description: z.string().trim().min(1, "Name is required"),
+  description: z.string().trim().min(1, "categories.form.nameIsRequired"),
   parentId: z.number().nullable(),
   ownerId: z.number().nullable(),
   /** Reais; `null` = no limit. */
@@ -100,7 +100,7 @@ export function createCategoryFormSchema(
     if (values.parentId != null && values.ownerId != null) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "A subcategory has its parent's owner",
+        message: "categories.form.aSubcategoryHasItsParent",
         path: ["ownerId"],
       });
     }
@@ -109,7 +109,7 @@ export function createCategoryFormSchema(
     if (hasChildren && values.type !== editing.type) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "A category with subcategories cannot change type",
+        message: "categories.form.aCategoryWithSubcategoriesCannot2",
         path: ["type"],
       });
     }
@@ -117,7 +117,7 @@ export function createCategoryFormSchema(
     if (hasChildren) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "A category with subcategories cannot have a parent",
+        message: "categories.form.aCategoryWithSubcategoriesCannot",
         path: ["parentId"],
       });
       return;
@@ -126,7 +126,7 @@ export function createCategoryFormSchema(
     if (!allowed.some((c) => c.id === values.parentId)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Choose a top-level category of the same type",
+        message: "categories.form.chooseATopLevelCategory",
         path: ["parentId"],
       });
     }
@@ -143,7 +143,7 @@ function refineMemberLimits(
   if (values.type === "CREDIT") {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "Income categories cannot have per-member limits",
+      message: "categories.form.incomeCategoriesCannotHavePer",
       path: ["limitMode"],
     });
     return;
@@ -151,7 +151,7 @@ function refineMemberLimits(
   if (effectiveOwnerId(values.parentId, values.ownerId, categories) != null) {
     ctx.addIssue({
       code: z.ZodIssueCode.custom,
-      message: "A category that belongs to one member cannot have per-member limits",
+      message: "categories.form.aCategoryThatBelongsTo",
       path: ["limitMode"],
     });
     return;
@@ -161,7 +161,7 @@ function refineMemberLimits(
     if (seen.has(row.memberId)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Each member can have only one limit",
+        message: "categories.form.eachMemberCanHaveOnly",
         path: ["memberLimits", index, "memberId"],
       });
     }
@@ -169,7 +169,7 @@ function refineMemberLimits(
     if (row.amount != null && row.amount < 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Amount cannot be negative",
+        message: "categories.form.amountCannotBeNegative",
         path: ["memberLimits", index, "amount"],
       });
     }

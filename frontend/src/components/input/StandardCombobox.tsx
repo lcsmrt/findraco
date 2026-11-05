@@ -13,6 +13,7 @@ import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 type WithId = { id: number | string };
 
@@ -39,7 +40,7 @@ export type StandardCombobox<T extends WithId> = {
   onCreateOption?: (search: string) => void;
   /** Custom content for an item, in the list and in the trigger; defaults to `itemLabel`. */
   renderItem?: (item: T) => React.ReactNode;
-}
+};
 
 export function StandardCombobox<T extends WithId>({
   id,
@@ -47,12 +48,12 @@ export function StandardCombobox<T extends WithId>({
   value,
   onValueChange,
   itemLabel,
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
+  placeholder: placeholderProp,
+  searchPlaceholder: searchPlaceholderProp,
   searchValue: externalSearch,
   onSearchChange,
   isItemEqualToValue = defaultEqual,
-  emptyMessage = "No results",
+  emptyMessage: emptyMessageProp,
   loading,
   disabled,
   className,
@@ -60,6 +61,11 @@ export function StandardCombobox<T extends WithId>({
   onCreateOption,
   renderItem = itemLabel,
 }: StandardCombobox<T>) {
+  const { t } = useTranslation();
+  const placeholder = placeholderProp ?? t("components.standardCombobox.select");
+  const searchPlaceholder = searchPlaceholderProp ?? t("components.standardCombobox.search");
+  const emptyMessage = emptyMessageProp ?? t("components.standardCombobox.noResults");
+
   const anchor = useComboboxAnchor();
   const [internalSearch, setInternalSearch] = React.useState("");
 
@@ -80,9 +86,7 @@ export function StandardCombobox<T extends WithId>({
   const displayedItems = React.useMemo(() => {
     if (isSearchControlled) return items;
     const q = searchTerm.trim().toLowerCase();
-    return q
-      ? items.filter((item) => itemLabel(item).toLowerCase().includes(q))
-      : items;
+    return q ? items.filter((item) => itemLabel(item).toLowerCase().includes(q)) : items;
   }, [items, searchTerm, isSearchControlled, itemLabel]);
 
   const showClear = clearable && value !== null;
@@ -119,7 +123,7 @@ export function StandardCombobox<T extends WithId>({
           <button
             type="button"
             tabIndex={-1}
-            aria-label="Clear selection"
+            aria-label={t("components.standardCombobox.clearSelection")}
             className="text-muted-foreground hover:text-foreground absolute top-1/2 right-2 flex h-4 w-4 -translate-y-1/2 items-center justify-center rounded"
             onClick={(e) => {
               e.stopPropagation();
@@ -156,7 +160,7 @@ export function StandardCombobox<T extends WithId>({
               className="text-primary-ink hover:bg-accent flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5"
             >
               <PlusIcon className="h-3.5 w-3.5 shrink-0" />
-              <Text>Create &ldquo;{searchTerm}&rdquo;</Text>
+              <Text>{t("components.standardCombobox.createTerm", { term: searchTerm })}</Text>
             </button>
           </div>
         ) : (

@@ -2,13 +2,7 @@ import type { ReactNode } from "react";
 import type { Plan } from "@/api/dtos";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/card/base/Card";
+import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
 import { PageHeader } from "@/components/pageHeader/PageHeader";
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
@@ -22,7 +16,8 @@ import {
   PlusIcon,
   UserPlusIcon,
 } from "lucide-react";
-import { ROLE_LABELS } from "./utils/planLabels";
+import { buildRoleLabels } from "./utils/planLabels";
+import { useTranslation } from "react-i18next";
 
 type PlansPageViewProps = {
   plans: Plan[];
@@ -66,16 +61,19 @@ export function PlansPageView({
   invitationsList,
   archivedPlans,
 }: PlansPageViewProps) {
+  const { t } = useTranslation();
+  const roleLabels = buildRoleLabels(t);
+
   return (
     // The layout gives the page its vertical spacing under the tab row, as for the other destinations.
     <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4">
       <PageHeader
-        title="Plans"
-        description="Manage your plans and switch between them."
+        title={t("plans.plansPageView.plans")}
+        description={t("plans.plansPageView.manageYourPlansAndSwitch")}
         actions={
           <Button size="sm" onClick={onCreatePlan}>
             <PlusIcon className="h-4 w-4" />
-            New plan
+            {t("plans.plansPageView.newPlan")}
           </Button>
         }
       />
@@ -103,8 +101,10 @@ export function PlansPageView({
                   {isActive && <CheckIcon className="text-primary-ink h-4 w-4" />}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="secondary">{ROLE_LABELS[plan.myRole]}</Badge>
-                  {plan.isDefault && <Badge variant="outline">Default</Badge>}
+                  <Badge variant="secondary">{roleLabels[plan.myRole]}</Badge>
+                  {plan.isDefault && (
+                    <Badge variant="outline">{t("plans.plansPageView.default")}</Badge>
+                  )}
                 </div>
               </button>
             );
@@ -115,14 +115,14 @@ export function PlansPageView({
       {activePlan && (
         <Card>
           <CardHeader>
-            <CardTitle>Members of {activePlan.name}</CardTitle>
+            <CardTitle>{t("plans.plansPageView.membersOf", { name: activePlan.name })}</CardTitle>
             <CardAction className="flex items-center gap-2">
               {canManagePlan ? (
                 <>
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Rename plan"
+                    aria-label={t("plans.plansPageView.renamePlan")}
                     onClick={onRename}
                   >
                     <PencilIcon className="h-4 w-4" />
@@ -130,7 +130,7 @@ export function PlansPageView({
                   <Button
                     variant="ghost"
                     size="icon-sm"
-                    aria-label="Transfer ownership"
+                    aria-label={t("plans.plansPageView.transferOwnership")}
                     onClick={onTransferOwnership}
                   >
                     <ArrowRightLeftIcon className="h-4 w-4" />
@@ -139,7 +139,7 @@ export function PlansPageView({
                     variant="ghost"
                     size="icon-sm"
                     className="text-muted-foreground hover:bg-accent hover:text-destructive"
-                    aria-label="Archive plan"
+                    aria-label={t("plans.plansPageView.archivePlan")}
                     isLoading={isArchiving}
                     disabled={isArchiving}
                     onClick={onArchive}
@@ -148,7 +148,7 @@ export function PlansPageView({
                   </Button>
                   <Button size="sm" onClick={onInvite}>
                     <UserPlusIcon className="h-4 w-4" />
-                    Invite
+                    {t("plans.plansPageView.invite")}
                   </Button>
                 </>
               ) : (
@@ -160,25 +160,23 @@ export function PlansPageView({
                   onClick={onLeave}
                 >
                   <LogOutIcon className="h-4 w-4" />
-                  Leave plan
+                  {t("plans.plansPageView.leavePlan")}
                 </Button>
               )}
             </CardAction>
           </CardHeader>
-          <CardContent>
-            {membersList}
-          </CardContent>
+          <CardContent>{membersList}</CardContent>
         </Card>
       )}
 
       {activePlan && canManagePlan && (
         <Card>
           <CardHeader>
-            <CardTitle>Invitations for {activePlan.name}</CardTitle>
+            <CardTitle>
+              {t("plans.plansPageView.invitationsFor", { name: activePlan.name })}
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            {invitationsList}
-          </CardContent>
+          <CardContent>{invitationsList}</CardContent>
         </Card>
       )}
 

@@ -5,6 +5,7 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import { typographyVariants } from "@/components/typography/base/typographyVariants";
 import { cn } from "@/lib/mergeClasses";
@@ -18,11 +19,14 @@ const toasterStyle: StyleWithVariables = {
 };
 
 export function ToasterView(props: ToasterProps) {
+  const { t } = useTranslation();
+
   return (
     <Sonner
       className="toaster group"
       position="bottom-left"
       closeButton
+      containerAriaLabel={t("app.toaster.notifications")}
       // Set by index.css only while the bottom bar is mounted, so auth screens keep the default gap.
       mobileOffset={{ bottom: "var(--toast-mobile-bottom, 1rem)" }}
       icons={{
@@ -54,6 +58,7 @@ export function ToasterView(props: ToasterProps) {
       }}
       style={toasterStyle}
       toastOptions={{
+        closeButtonAriaLabel: t("app.toaster.close"),
         classNames: {
           toast:
             "group flex items-start gap-3 rounded-md border bg-popover px-4 py-3 shadow-md",

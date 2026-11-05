@@ -1,8 +1,5 @@
 import { Category } from "@/api/dtos";
-import {
-  Transaction,
-  ParticipantShare,
-} from "@/api/dtos/transaction";
+import { Transaction, ParticipantShare } from "@/api/dtos/transaction";
 import { PlanMember } from "@/api/dtos/plan";
 import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
 import { Badge } from "@/components/badge/base/Badge";
@@ -11,36 +8,27 @@ import { Amount } from "@/components/amount/Amount";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { Input } from "@/components/input/base/Input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/popover/base/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/popover/base/Popover";
 import { Text } from "@/components/typography/base/Text";
 import { toCents } from "@/utils/money";
-import { formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
+import { datePlaceholder, formatDate, parseDate, toIsoDate } from "@/utils/dates";
+import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskDate } from "@/utils/string/masks";
-import { format, isValid, parse } from "date-fns";
-import {
-  CopyIcon,
-  PencilIcon,
-  RepeatIcon,
-  Trash2Icon,
-  UsersIcon,
-} from "lucide-react";
+import { isValid } from "date-fns";
+import { CopyIcon, PencilIcon, RepeatIcon, Trash2Icon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import { CategoryCombobox } from "./CategoryCombobox";
 import type { InlineSaveBody } from "./transactionColumns";
+import { useTranslation } from "react-i18next";
 
 type EditableCellProps = {
   transaction: Transaction;
   onSave: (transaction: Transaction, body: InlineSaveBody) => void;
-}
+};
 
-function EditableDescriptionCell({
-  transaction,
-  onSave,
-}: EditableCellProps) {
+function EditableDescriptionCell({ transaction, onSave }: EditableCellProps) {
+  const { t } = useTranslation();
+
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(transaction.description);
 
@@ -75,7 +63,7 @@ function EditableDescriptionCell({
   return (
     <Input
       autoFocus
-      aria-label="Description"
+      aria-label={t("transactions.editableDescriptionCell.description")}
       value={draft}
       onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
@@ -92,6 +80,8 @@ function EditableDescriptionCell({
 }
 
 export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
+  const { t } = useTranslation();
+
   const { amount, type } = transaction;
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<number | null>(null);
@@ -124,7 +114,7 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
   return (
     <CurrencyInput
       autoFocus
-      aria-label="Amount"
+      aria-label={t("common.amount")}
       value={draft}
       onValueChange={setDraft}
       onBlur={commit}
@@ -141,9 +131,7 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
   const { category, type } = transaction;
   const [editing, setEditing] = useState(false);
 
-  function handleValueChange(
-    newCategory: Category | null | undefined,
-  ) {
+  function handleValueChange(newCategory: Category | null | undefined) {
     if (newCategory != null) {
       onSave(transaction, { categoryId: newCategory.id });
     }
@@ -188,14 +176,16 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
 }
 
 export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
-  const displayDate = formatDate(transaction.startDate, "dd/MM/yyyy");
+  const { t } = useTranslation();
+
+  const displayDate = formatDate(transaction.startDate);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
   function commit() {
-    const parsed = parse(draft, "dd/MM/yyyy", new Date());
+    const parsed = parseDate(draft);
     if (isValid(parsed)) {
-      const newStartDate = format(parsed, "yyyy-MM-dd");
+      const newStartDate = toIsoDate(parsed);
       if (newStartDate !== transaction.startDate.split("T")[0]) {
         onSave(transaction, { startDate: newStartDate });
       }
@@ -224,9 +214,9 @@ export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
   return (
     <Input
       autoFocus
-      aria-label="Date"
+      aria-label={t("transactions.editableDateCell.date")}
       value={draft}
-      placeholder="dd/mm/yyyy"
+      placeholder={datePlaceholder()}
       onChange={(e) => setDraft(maskDate(e.target.value))}
       onBlur={commit}
       onKeyDown={(e) => {
@@ -238,11 +228,9 @@ export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
   );
 }
 
-function ParticipantsSummary({
-  participants,
-}: {
-  participants: ParticipantShare[];
-}) {
+function ParticipantsSummary({ participants }: { participants: ParticipantShare[] }) {
+  const { t } = useTranslation();
+
   if (participants.length === 0) {
     return (
       <Text variant="caption" className="text-muted-foreground/50">
@@ -264,13 +252,9 @@ function ParticipantsSummary({
   }
 
   return (
-    <Badge
-      variant="secondary"
-      className="gap-1"
-      title={participants.map((p) => p.name).join(", ")}
-    >
+    <Badge variant="secondary" className="gap-1" title={participants.map((p) => p.name).join(", ")}>
       <UsersIcon className="h-3 w-3" />
-      {participants.length} people
+      {t("transactions.transactionCells.people", { count: participants.length })}
     </Badge>
   );
 }
@@ -284,6 +268,8 @@ function EditableParticipantsCell({
   members: PlanMember[];
   onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 }) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = useState(false);
   const [draft, setDraft] = useState<number[]>([]);
 
@@ -308,9 +294,7 @@ function EditableParticipantsCell({
 
   function toggle(userId: number) {
     setDraft((prev) =>
-      prev.includes(userId)
-        ? prev.filter((x) => x !== userId)
-        : [...prev, userId],
+      prev.includes(userId) ? prev.filter((x) => x !== userId) : [...prev, userId],
     );
   }
 
@@ -326,7 +310,11 @@ function EditableParticipantsCell({
       >
         <ParticipantsSummary participants={transaction.participants} />
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-56 gap-1" aria-label="Participants">
+      <PopoverContent
+        align="start"
+        className="w-56 gap-1"
+        aria-label={t("transactions.editableParticipantsCell.participants")}
+      >
         {members.map((member) => (
           <label
             key={member.userId}
@@ -347,13 +335,15 @@ function EditableParticipantsCell({
 type DescriptionCellProps = EditableCellProps;
 
 export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center gap-1.5">
       <EditableDescriptionCell transaction={transaction} onSave={onSave} />
       {transaction.seriesId && (
         <Badge variant="secondary" className="gap-1">
           <RepeatIcon />
-          Series
+          {t("transactions.descriptionCell.series")}
         </Badge>
       )}
     </div>
@@ -367,22 +357,11 @@ type ParticipantsCellProps = {
   onSave: (transaction: Transaction, body: InlineSaveBody) => void;
 };
 
-export function ParticipantsCell({
-  transaction,
-  members,
-  canEdit,
-  onSave,
-}: ParticipantsCellProps) {
+export function ParticipantsCell({ transaction, members, canEdit, onSave }: ParticipantsCellProps) {
   if (!canEdit || !transaction.permissions.edit) {
     return <ParticipantsSummary participants={transaction.participants} />;
   }
-  return (
-    <EditableParticipantsCell
-      transaction={transaction}
-      members={members}
-      onSave={onSave}
-    />
-  );
+  return <EditableParticipantsCell transaction={transaction} members={members} onSave={onSave} />;
 }
 
 type ActionsCellProps = {
@@ -400,6 +379,8 @@ export function ActionsCell({
   onEdit,
   onDelete,
 }: ActionsCellProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within/row:opacity-100 sm:group-hover/row:opacity-100">
       <Button
@@ -407,7 +388,7 @@ export function ActionsCell({
         size="icon"
         variant="ghost"
         className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
-        aria-label="Duplicate"
+        aria-label={t("transactions.actionsCell.duplicate")}
         onClick={() => onDuplicate(transaction)}
       >
         <CopyIcon className="h-4 w-4" />
@@ -418,7 +399,7 @@ export function ActionsCell({
           size="icon"
           variant="ghost"
           className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
-          aria-label="Edit"
+          aria-label={t("transactions.actionsCell.edit")}
           onClick={() => onEdit(transaction)}
         >
           <PencilIcon className="h-4 w-4" />
@@ -430,7 +411,7 @@ export function ActionsCell({
           size="icon"
           variant="ghost"
           className="text-muted-foreground hover:bg-accent hover:text-destructive rounded p-1"
-          aria-label="Delete"
+          aria-label={t("common.delete")}
           disabled={isDeleting}
           onClick={() => onDelete(transaction)}
         >

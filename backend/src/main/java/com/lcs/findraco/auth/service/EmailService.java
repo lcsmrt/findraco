@@ -2,6 +2,7 @@ package com.lcs.findraco.auth.service;
 
 import com.lcs.findraco.auth.config.MailExecutorConfig;
 import com.lcs.findraco.auth.config.MailProperties;
+import com.lcs.findraco.user.model.Language;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -29,21 +30,39 @@ public class EmailService {
     }
 
     /**
-     * Sends the reset link, on the mail executor: the caller has already answered by the time it goes out.
+     * Sends the reset link in the given language, on the mail executor: the caller has already answered by the time it goes out.
      * Delivery failures are logged, never thrown: the caller's response
      * must not differ between known and unknown emails.
      */
     @Async(MailExecutorConfig.MAIL_EXECUTOR)
-    public void sendPasswordResetEmail(String to, String resetUrl) {
-        String text = """
-                You asked to reset your findraco password.
+    public void sendPasswordResetEmail(String to, String resetUrl, Language language) {
+        long minutes = PasswordResetService.TOKEN_TTL.toMinutes();
+        String text =
+                switch (language) {
+                    case EN -> """
+                    You asked to reset your findraco password.
 
-                Open the link below to choose a new password (it expires in %d minutes):
+                    Open the link below to choose a new password (it expires in %d minutes):
 
-                %s
+                    %s
 
-                If this wasn't you, ignore this email.
-                """.formatted(PasswordResetService.TOKEN_TTL.toMinutes(), resetUrl);
+                    If this wasn't you, ignore this email.
+                    """.formatted(minutes, resetUrl);
+                    case PT_BR -> """
+                    Você pediu para redefinir a sua senha do findraco.
+
+                    Abra o link abaixo para escolher uma nova senha (ele expira em %d minutos):
+
+                    %s
+
+                    Se não foi você, ignore este e-mail.
+                    """.formatted(minutes, resetUrl);
+                };
+        String subject =
+                switch (language) {
+                    case EN -> "Reset your password — findraco";
+                    case PT_BR -> "Redefina a sua senha — findraco";
+                };
 
         if (mailSender == null) {
             // A live reset link in a shared log is an account takeover; only a developer's own run prints it.
@@ -58,7 +77,7 @@ public class EmailService {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(from);
         message.setTo(to);
-        message.setSubject("Reset your password — findraco");
+        message.setSubject(subject);
         message.setText(text);
 
         try {

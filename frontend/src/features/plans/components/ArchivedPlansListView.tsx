@@ -8,10 +8,9 @@ import {
   CardTitle,
 } from "@/components/card/base/Card";
 import { Text } from "@/components/typography/base/Text";
-import { format } from "date-fns";
+import { formatDate } from "@/utils/dates";
 import { RotateCcwIcon, Trash2Icon } from "lucide-react";
-
-const DATE_FORMAT = "dd/MM/yyyy";
+import { useTranslation } from "react-i18next";
 
 type ArchivedPlansListViewProps = {
   plans: ArchivedPlan[];
@@ -30,18 +29,18 @@ export function ArchivedPlansListView({
   onRestore,
   onDelete,
 }: ArchivedPlansListViewProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Archived plans</CardTitle>
-        <CardDescription>
-          An archived plan can be restored until its deletion date.
-        </CardDescription>
+        <CardTitle>{t("plans.archivedPlansListView.archivedPlans")}</CardTitle>
+        <CardDescription>{t("plans.archivedPlansListView.anArchivedPlanCanBe")}</CardDescription>
       </CardHeader>
       <CardContent>
         {isError ? (
           <Text as="p" role="alert" className="text-destructive py-6 text-center">
-            Could not load your archived plans. Try again later.
+            {t("plans.archivedPlansListView.couldNotLoadYourArchived")}
           </Text>
         ) : (
           <ul className="flex flex-col gap-2">
@@ -55,11 +54,14 @@ export function ArchivedPlansListView({
                     {plan.name}
                   </Text>
                   <Text variant="caption">
-                    Archived on {format(new Date(plan.archivedAt), DATE_FORMAT)}
+                    {t("plans.archivedPlansListView.archivedOn", {
+                      date: formatDate(new Date(plan.archivedAt)),
+                    })}
                   </Text>
                   <Text variant="caption">
-                    Deleted permanently on{" "}
-                    {format(new Date(plan.deletesAt), DATE_FORMAT)}
+                    {t("plans.archivedPlansListView.deletedOn", {
+                      date: formatDate(new Date(plan.deletesAt)),
+                    })}
                   </Text>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 *:flex-1 sm:*:flex-none">
@@ -67,25 +69,25 @@ export function ArchivedPlansListView({
                     type="button"
                     variant="outline"
                     size="sm"
-                    aria-label={`Restore ${plan.name}`}
+                    aria-label={t("plans.archivedPlansListView.restorePlan", { name: plan.name })}
                     isLoading={restoringPlanId === plan.id}
                     disabled={restoringPlanId !== null}
                     onClick={() => onRestore(plan)}
                   >
                     <RotateCcwIcon className="h-4 w-4" />
-                    Restore
+                    {t("plans.archivedPlansListView.restore")}
                   </Button>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:bg-accent hover:text-destructive"
-                    aria-label={`Delete ${plan.name} now`}
+                    aria-label={t("plans.archivedPlansListView.deletePlanNow", { name: plan.name })}
                     disabled={restoringPlanId !== null}
                     onClick={() => onDelete(plan)}
                   >
                     <Trash2Icon className="h-4 w-4" />
-                    Delete now
+                    {t("plans.archivedPlansListView.deleteNow")}
                   </Button>
                 </div>
               </li>

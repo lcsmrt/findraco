@@ -272,6 +272,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C9 / MFS-01 AC 8 (frontend/mobile)
 - last seen: 2026-11-05T02:53:07Z
 
+### L-044 - Locale logic gets a test per region family (BR, US, GB), not only the two the spec names; ICU fallbacks differ by script and region.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/utils` · harmful: 0
+- features: i18n
+- evidence: utils/dates.ts:28 / I18N-03 (frontend/utils)
+- last seen: 2026-11-05T06:12:34Z
+
+### L-045 - A lint rule's test includes text passed through JSX-valued props (render=, icon=), not only JSX children and string attributes.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/lint` · harmful: 0
+- features: i18n
+- evidence: C6 / no-literal-string (frontend/lint)
+- last seen: 2026-11-05T06:12:34Z
+
+### L-046 - A proof runs in the layer that owns the behaviour: parsing done by the backend is proven by a backend test.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `proofs` · harmful: 0
+- features: i18n
+- evidence: C28 (proofs)
+- last seen: 2026-11-05T06:12:34Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

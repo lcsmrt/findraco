@@ -18,6 +18,7 @@ const signedInUser: User = {
   email: "ana@example.com",
   timeZone: "America/Sao_Paulo",
   timeZoneMode: "AUTOMATIC",
+  language: null,
 };
 
 function authValue(user: User | null): AuthContextValue {

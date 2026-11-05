@@ -4,10 +4,8 @@ import { getFirstName } from "@/utils/string/formatters";
 import type { MemberOption } from "../useOverviewMemberFilter";
 import type { MemberColorOf } from "@/utils/memberColors";
 import { MemberDot } from "@/components/memberDot/MemberDot";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/toggleGroup/base/ToggleGroup";
+import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
+import { useTranslation } from "react-i18next";
 
 /** Plans up to this size get chips; larger ones get a combobox. */
 const MAX_CHIPS = 4;
@@ -35,6 +33,8 @@ export function MemberFilterChips({
   colorOf,
   className,
 }: MemberFilterChipsProps) {
+  const { t } = useTranslation();
+
   if (members.length <= 1) return null;
 
   if (members.length > MAX_CHIPS) {
@@ -42,7 +42,7 @@ export function MemberFilterChips({
     return (
       <div className={cn("w-full sm:w-56", className)}>
         <label htmlFor="overview-member-filter" className="sr-only">
-          Filter by member
+          {t("overview.memberFilterChips.filterByMember")}
         </label>
         <StandardCombobox
           id="overview-member-filter"
@@ -56,7 +56,7 @@ export function MemberFilterChips({
               {m.name}
             </span>
           )}
-          placeholder="All members"
+          placeholder={t("overview.memberFilterChips.allMembers")}
           clearable
         />
       </div>
@@ -71,20 +71,16 @@ export function MemberFilterChips({
 
   return (
     <ToggleGroup
-      aria-label="Filter by member"
+      aria-label={t("overview.memberFilterChips.filterByMember")}
       variant="chip"
       spacing={1.5}
       value={[selectedId == null ? ALL : String(selectedId)]}
       onValueChange={handleValueChange}
       className={className}
     >
-      <ToggleGroupItem value={ALL}>All</ToggleGroupItem>
+      <ToggleGroupItem value={ALL}>{t("overview.memberFilterChips.all")}</ToggleGroupItem>
       {members.map((member) => (
-        <ToggleGroupItem
-          key={member.id}
-          value={String(member.id)}
-          title={member.name}
-        >
+        <ToggleGroupItem key={member.id} value={String(member.id)} title={member.name}>
           <MemberDot color={colorOf(member.id)} />
           {getFirstName(member.name)}
         </ToggleGroupItem>

@@ -11,7 +11,8 @@ import {
 } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
-import { addMonths, differenceInCalendarMonths, format } from "date-fns";
+import { addMonths, differenceInCalendarMonths } from "date-fns";
+import { toIsoDate } from "@/utils/dates";
 import { z } from "zod";
 import type { InlineSaveBody } from "./transactionColumns";
 
@@ -33,8 +34,8 @@ function centsOf(value: number | null | undefined): number {
 export const transactionFormSchema = z
   .object({
     type: z.enum(["DEBIT", "CREDIT"]),
-    description: z.string().min(1, "Description is required"),
-    amount: z.number().nullable().refine(isPositiveAmount, "Amount must be positive"),
+    description: z.string().min(1, "transactions.form.descriptionIsRequired"),
+    amount: z.number().nullable().refine(isPositiveAmount, "transactions.form.amountMustBePositive"),
     category: z
       .object({
         id: z.number(),
@@ -45,7 +46,7 @@ export const transactionFormSchema = z
       })
       .nullable()
       .optional(),
-    date: z.date({ required_error: "Date is required" }),
+    date: z.date({ required_error: "transactions.form.dateIsRequired" }),
     recurring: z.boolean(),
     seriesEdit: z.boolean(),
     recurrenceMode: z.enum(["INSTALLMENT", "RECURRING"]).optional(),
@@ -65,8 +66,8 @@ export const transactionFormSchema = z
     ),
     items: z.array(
       z.object({
-        description: z.string().min(1, "Description is required"),
-        amount: z.number().nullable().refine(isPositiveAmount, "Amount must be positive"),
+        description: z.string().min(1, "transactions.form.descriptionIsRequired"),
+        amount: z.number().nullable().refine(isPositiveAmount, "transactions.form.amountMustBePositive"),
         category: z
           .object({
             id: z.number(),
@@ -87,7 +88,7 @@ export const transactionFormSchema = z
       if (itemsCents > centsOf(values.amount)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Items cannot exceed the transaction total",
+          message: "transactions.form.itemsCannotExceedTheTransaction",
           path: ["items"],
         });
       }
@@ -106,7 +107,7 @@ export const transactionFormSchema = z
       if (sumCents !== centsOf(values.amount)) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Shares must add up to the total amount",
+          message: "transactions.form.sharesMustAddUpTo",
           path: ["participants"],
         });
       }
@@ -117,7 +118,7 @@ export const transactionFormSchema = z
         if ((values.parcelsNumber ?? 0) < 2) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "Enter at least 2 installments",
+            message: "transactions.form.enterAtLeast2Installments",
             path: ["parcelsNumber"],
           });
         }
@@ -129,7 +130,7 @@ export const transactionFormSchema = z
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "The end date must be after the start date",
+          message: "transactions.form.theEndDateMustBe",
           path: ["endDate"],
         });
       }
@@ -141,7 +142,7 @@ export const transactionFormSchema = z
     if (!values.recurrenceMode) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Select installment or recurring",
+        message: "transactions.form.selectInstallmentOrRecurring",
         path: ["recurrenceMode"],
       });
       return;
@@ -152,7 +153,7 @@ export const transactionFormSchema = z
       if (total < 2) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "Enter at least 2 installments",
+          message: "transactions.form.enterAtLeast2Installments",
           path: ["parcelsNumber"],
         });
       }
@@ -162,13 +163,13 @@ export const transactionFormSchema = z
         if (current < 1) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "The current installment must be at least 1",
+            message: "transactions.form.theCurrentInstallmentMustBe",
             path: ["currentParcel"],
           });
         } else if (total >= 2 && current > total) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
-            message: "The current installment cannot be greater than the total",
+            message: "transactions.form.theCurrentInstallmentCannotBe",
             path: ["currentParcel"],
           });
         }
@@ -179,7 +180,7 @@ export const transactionFormSchema = z
       if (values.endDate && values.endDate < values.date) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
-          message: "The end date must be after the start date",
+          message: "transactions.form.theEndDateMustBe",
           path: ["endDate"],
         });
       }
@@ -407,7 +408,7 @@ export function toPayload(
     description: values.description,
     amount: values.amount,
     categoryId: values.category?.id,
-    startDate: format(values.date, "yyyy-MM-dd"),
+    startDate: toIsoDate(values.date),
     parcelsNumber: stored?.parcelsNumber ?? undefined,
     endDate: datePart(stored?.endDate),
     splitMode,
@@ -476,7 +477,7 @@ export function toSeriesCreatePayload(
     amount: values.amount,
     categoryId: values.category?.id,
     mode: values.recurrenceMode!,
-    startDate: format(values.date, "yyyy-MM-dd"),
+    startDate: toIsoDate(values.date),
     parcelsNumber:
       values.recurrenceMode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
     currentParcel:
@@ -486,7 +487,7 @@ export function toSeriesCreatePayload(
     interval: values.recurrenceMode === "RECURRING" ? "MONTHLY" : undefined,
     endDate:
       values.recurrenceMode === "RECURRING" && values.endDate
-        ? format(values.endDate, "yyyy-MM-dd")
+        ? toIsoDate(values.endDate)
         : undefined,
     splitMode,
     participants,
@@ -522,7 +523,7 @@ export function toSeriesEditPayload(
       interval: definition.interval,
       endDate:
         definition.mode === "RECURRING" && values.endDate
-          ? format(values.endDate, "yyyy-MM-dd")
+          ? toIsoDate(values.endDate)
           : undefined,
       splitMode,
       participants,

@@ -17,7 +17,7 @@ describe("planNameSchema", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues[0].message).toBe(
-        "Enter a name for the plan",
+        "plans.nameForm.enterANameForThe",
       );
     }
   });

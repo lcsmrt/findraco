@@ -86,7 +86,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
       expect(
         result.error.issues.find((i) => i.path[0] === "parcelsNumber")
           ?.message,
-      ).toBe("Enter at least 2 installments");
+      ).toBe("transactions.form.enterAtLeast2Installments");
     }
   });
 
@@ -110,7 +110,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
 
     expect(result.success).toBe(false);
     expect(result.error?.issues.map((i) => [i.path[0], i.message])).toEqual([
-      ["currentParcel", "The current installment must be at least 1"],
+      ["currentParcel", "transactions.form.theCurrentInstallmentMustBe"],
     ]);
   });
 
@@ -124,7 +124,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
 
     expect(result.success).toBe(false);
     expect(result.error?.issues.map((i) => [i.path[0], i.message])).toEqual([
-      ["currentParcel", "The current installment cannot be greater than the total"],
+      ["currentParcel", "transactions.form.theCurrentInstallmentCannotBe"],
     ]);
   });
 
@@ -160,7 +160,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
       expect(
         result.error.issues.find((i) => i.path[0] === "parcelsNumber")
           ?.message,
-      ).toBe("Enter at least 2 installments");
+      ).toBe("transactions.form.enterAtLeast2Installments");
     }
   });
 
@@ -175,7 +175,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
     if (!result.success) {
       expect(
         result.error.issues.find((i) => i.path[0] === "endDate")?.message,
-      ).toBe("The end date must be after the start date");
+      ).toBe("transactions.form.theEndDateMustBe");
     }
   });
 
@@ -190,7 +190,7 @@ describe("transactionFormSchema — recurring (create) validation", () => {
       expect(
         result.error.issues.find((i) => i.path[0] === "recurrenceMode")
           ?.message,
-      ).toBe("Select installment or recurring");
+      ).toBe("transactions.form.selectInstallmentOrRecurring");
     }
   });
 });
@@ -210,7 +210,7 @@ describe("transactionFormSchema — series edit validation", () => {
       expect(
         result.error.issues.find((i) => i.path[0] === "parcelsNumber")
           ?.message,
-      ).toBe("Enter at least 2 installments");
+      ).toBe("transactions.form.enterAtLeast2Installments");
     }
   });
 
@@ -239,7 +239,7 @@ describe("transactionFormSchema — series edit validation", () => {
       expect(
         result.error.issues.find((i) => i.path[0] === "parcelsNumber")
           ?.message,
-      ).toBe("Enter at least 2 installments");
+      ).toBe("transactions.form.enterAtLeast2Installments");
     }
   });
 
@@ -256,7 +256,7 @@ describe("transactionFormSchema — series edit validation", () => {
     if (!result.success) {
       expect(
         result.error.issues.find((i) => i.path[0] === "endDate")?.message,
-      ).toBe("The end date must be after the start date");
+      ).toBe("transactions.form.theEndDateMustBe");
     }
   });
 

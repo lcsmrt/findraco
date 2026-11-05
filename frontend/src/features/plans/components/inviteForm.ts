@@ -12,7 +12,7 @@ export const inviteSchema = z
     if (values.type === "EMAIL" && !values.email?.trim()) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Enter an email address",
+        message: "plans.inviteForm.enterAnEmailAddress",
         path: ["email"],
       });
     }

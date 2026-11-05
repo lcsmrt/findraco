@@ -21,18 +21,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CopyIcon, SendIcon, XIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { ROLE_LABELS, ROLE_OPTIONS } from "../utils/planLabels";
+import { buildRoleLabels, ROLE_OPTIONS } from "../utils/planLabels";
 import {
   INVITE_FORM_DEFAULTS,
   type InviteFormOutput,
   type InviteFormValues,
   inviteSchema,
 } from "./inviteForm";
-
-const TYPE_LABELS: Record<InvitationType, string> = {
-  EMAIL: "Email",
-  LINK: "Link",
-};
+import { Trans, useTranslation } from "react-i18next";
 
 type InvitePlanDialogViewProps = {
   open: boolean;
@@ -55,11 +51,14 @@ export function InvitePlanDialogView({
   onCreate,
   onCopyLink,
 }: InvitePlanDialogViewProps) {
-  const { control, handleSubmit, reset } = useForm<
-    InviteFormValues,
-    unknown,
-    InviteFormOutput
-  >({
+  const { t } = useTranslation();
+  const typeLabels: Record<InvitationType, string> = {
+    EMAIL: t("plans.invitePlanDialogView.typeEmail"),
+    LINK: t("plans.invitePlanDialogView.typeLink"),
+  };
+  const roleLabels = buildRoleLabels(t);
+
+  const { control, handleSubmit, reset } = useForm<InviteFormValues, unknown, InviteFormOutput>({
     resolver: zodResolver(inviteSchema),
     defaultValues: INVITE_FORM_DEFAULTS,
   });
@@ -74,7 +73,7 @@ export function InvitePlanDialogView({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Invite to plan</DialogTitle>
+          <DialogTitle>{t("plans.invitePlanDialogView.inviteToPlan")}</DialogTitle>
         </DialogHeader>
 
         {createdInvitation ? (
@@ -82,12 +81,12 @@ export function InvitePlanDialogView({
             {createdInvitation.type === "LINK" ? (
               <>
                 <Text as="p" variant="secondary">
-                  Share this link to invite someone:
+                  {t("plans.invitePlanDialogView.shareThisLinkToInvite")}
                 </Text>
                 <div className="flex items-center gap-2">
                   <Input
                     readOnly
-                    aria-label="Invitation link"
+                    aria-label={t("plans.invitePlanDialogView.invitationLink")}
                     value={invitationLink ?? ""}
                     onFocus={(e) => e.target.select()}
                   />
@@ -95,7 +94,7 @@ export function InvitePlanDialogView({
                     type="button"
                     variant="outline"
                     size="icon"
-                    aria-label="Copy link"
+                    aria-label={t("plans.invitePlanDialogView.copyLink")}
                     onClick={onCopyLink}
                   >
                     <CopyIcon className="h-4 w-4" />
@@ -104,29 +103,29 @@ export function InvitePlanDialogView({
               </>
             ) : (
               <Text as="p" variant="secondary">
-                Invitation sent to{" "}
-                <Text variant="label" className="text-foreground">
-                  {createdInvitation.email}
-                </Text>
-                .
+                <Trans
+                  i18nKey="plans.invitePlanDialogView.sentTo"
+                  values={{ email: createdInvitation.email }}
+                  components={{ email: <Text variant="label" className="text-foreground" /> }}
+                />
               </Text>
             )}
 
             <DialogFooter>
               <Button type="button" onClick={() => onOpenChange(false)}>
-                Done
+                {t("plans.invitePlanDialogView.done")}
               </Button>
             </DialogFooter>
           </div>
         ) : (
           <>
-            <FormField control={control} name="type" label="Invitation type">
+            <FormField
+              control={control}
+              name="type"
+              label={t("plans.invitePlanDialogView.invitationType")}
+            >
               {(field) => (
-                <Select
-                  items={TYPE_LABELS}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
+                <Select items={typeLabels} value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger
                     id={field.id}
                     ref={field.ref}
@@ -137,20 +136,16 @@ export function InvitePlanDialogView({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="EMAIL">Email</SelectItem>
-                    <SelectItem value="LINK">Link</SelectItem>
+                    <SelectItem value="EMAIL">{t("common.email")}</SelectItem>
+                    <SelectItem value="LINK">{t("plans.invitePlanDialogView.link")}</SelectItem>
                   </SelectContent>
                 </Select>
               )}
             </FormField>
 
-            <FormField control={control} name="role" label="Role">
+            <FormField control={control} name="role" label={t("plans.invitePlanDialogView.role")}>
               {(field) => (
-                <Select
-                  items={ROLE_LABELS}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
+                <Select items={roleLabels} value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger
                     id={field.id}
                     ref={field.ref}
@@ -163,7 +158,7 @@ export function InvitePlanDialogView({
                   <SelectContent>
                     {ROLE_OPTIONS.map((option) => (
                       <SelectItem key={option} value={option}>
-                        {ROLE_LABELS[option]}
+                        {roleLabels[option]}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -172,12 +167,12 @@ export function InvitePlanDialogView({
             </FormField>
 
             {type === "EMAIL" && (
-              <FormField control={control} name="email" label="Email">
+              <FormField control={control} name="email" label={t("common.email")}>
                 {(field) => (
                   <Input
                     {...field}
                     type="email"
-                    placeholder="person@email.com"
+                    placeholder={t("plans.invitePlanDialogView.personEmailCom")}
                     disabled={isCreating}
                   />
                 )}
@@ -188,11 +183,9 @@ export function InvitePlanDialogView({
               <FormField
                 control={control}
                 name="expiresAt"
-                label="Expires at (optional)"
+                label={t("plans.invitePlanDialogView.expiresAtOptional")}
               >
-                {(field) => (
-                  <Input {...field} type="datetime-local" disabled={isCreating} />
-                )}
+                {(field) => <Input {...field} type="datetime-local" disabled={isCreating} />}
               </FormField>
             )}
 
@@ -204,15 +197,13 @@ export function InvitePlanDialogView({
                 onClick={() => onOpenChange(false)}
               >
                 <XIcon className="h-4 w-4" />
-                Cancel
+                {t("common.cancel")}
               </Button>
-              <Button
-                type="button"
-                isLoading={isCreating}
-                onClick={handleSubmit(onCreate)}
-              >
+              <Button type="button" isLoading={isCreating} onClick={handleSubmit(onCreate)}>
                 <SendIcon className="h-4 w-4" />
-                {type === "LINK" ? "Generate link" : "Send invitation"}
+                {type === "LINK"
+                  ? t("plans.invitePlanDialogView.generateLink")
+                  : t("plans.invitePlanDialogView.sendInvitation")}
               </Button>
             </DialogFooter>
           </>

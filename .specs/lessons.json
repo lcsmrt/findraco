@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 44,
+  "next_id": 47,
   "lessons": [
     {
       "id": "L-001",
@@ -778,6 +778,60 @@
       ],
       "created": "2026-11-05T02:53:07Z",
       "last_seen": "2026-11-05T02:53:07Z"
+    },
+    {
+      "id": "L-044",
+      "key": "ac_gap::locale logic gets a test per region family br us gb not only the two the spec names icu fallbacks differ by script and region",
+      "text": "Locale logic gets a test per region family (BR, US, GB), not only the two the spec names; ICU fallbacks differ by script and region.",
+      "signal": "ac_gap",
+      "scope": "frontend/utils",
+      "status": "candidate",
+      "features": [
+        "i18n"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "utils/dates.ts:28 / I18N-03 (frontend/utils)"
+      ],
+      "created": "2026-11-05T06:12:34Z",
+      "last_seen": "2026-11-05T06:12:34Z"
+    },
+    {
+      "id": "L-045",
+      "key": "weak_test::a lint rule s test includes text passed through jsx valued props render icon not only jsx children and string attributes",
+      "text": "A lint rule's test includes text passed through JSX-valued props (render=, icon=), not only JSX children and string attributes.",
+      "signal": "weak_test",
+      "scope": "frontend/lint",
+      "status": "candidate",
+      "features": [
+        "i18n"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C6 / no-literal-string (frontend/lint)"
+      ],
+      "created": "2026-11-05T06:12:34Z",
+      "last_seen": "2026-11-05T06:12:34Z"
+    },
+    {
+      "id": "L-046",
+      "key": "weak_test::a proof runs in the layer that owns the behaviour parsing done by the backend is proven by a backend test",
+      "text": "A proof runs in the layer that owns the behaviour: parsing done by the backend is proven by a backend test.",
+      "signal": "weak_test",
+      "scope": "proofs",
+      "status": "candidate",
+      "features": [
+        "i18n"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C28 (proofs)"
+      ],
+      "created": "2026-11-05T06:12:34Z",
+      "last_seen": "2026-11-05T06:12:34Z"
     }
   ]
 }

@@ -21,11 +21,12 @@ import { XIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import {
-  TIME_ZONE_MODE_LABELS,
+  TIME_ZONE_MODE_LABEL_KEYS,
   type TimeZoneFormOutput,
   type TimeZoneFormValues,
   timeZoneSchema,
 } from "./timeZoneForm";
+import { useTranslation } from "react-i18next";
 
 type TimeZoneDialogViewProps = {
   open: boolean;
@@ -46,14 +47,18 @@ export function TimeZoneDialogView({
   isSaving,
   onSave,
 }: TimeZoneDialogViewProps) {
-  const { control, handleSubmit, reset } = useForm<
-    TimeZoneFormValues,
-    unknown,
-    TimeZoneFormOutput
-  >({
-    resolver: zodResolver(timeZoneSchema),
-    defaultValues: initialValues,
-  });
+  const { t } = useTranslation();
+  const modeLabels = {
+    AUTOMATIC: t(TIME_ZONE_MODE_LABEL_KEYS.AUTOMATIC),
+    PINNED: t(TIME_ZONE_MODE_LABEL_KEYS.PINNED),
+  };
+
+  const { control, handleSubmit, reset } = useForm<TimeZoneFormValues, unknown, TimeZoneFormOutput>(
+    {
+      resolver: zodResolver(timeZoneSchema),
+      defaultValues: initialValues,
+    },
+  );
 
   useEffect(() => {
     reset(initialValues);
@@ -65,20 +70,19 @@ export function TimeZoneDialogView({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Time zone</DialogTitle>
+          <DialogTitle>{t("profile.timeZoneDialogView.timeZone")}</DialogTitle>
           <DialogDescription>
-            Decides which day is today. Automatic follows this device; pinning
-            keeps the zone you pick.
+            {t("profile.timeZoneDialogView.decidesWhichDayIsToday")}
           </DialogDescription>
         </DialogHeader>
 
-        <FormField control={control} name="mode" label="Time zone source">
+        <FormField
+          control={control}
+          name="mode"
+          label={t("profile.timeZoneDialogView.timeZoneSource")}
+        >
           {(field) => (
-            <Select
-              items={TIME_ZONE_MODE_LABELS}
-              value={field.value}
-              onValueChange={field.onChange}
-            >
+            <Select items={modeLabels} value={field.value} onValueChange={field.onChange}>
               <SelectTrigger
                 id={field.id}
                 ref={field.ref}
@@ -91,7 +95,7 @@ export function TimeZoneDialogView({
               <SelectContent>
                 {MODES.map((option) => (
                   <SelectItem key={option} value={option}>
-                    {TIME_ZONE_MODE_LABELS[option]}
+                    {modeLabels[option]}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -100,7 +104,7 @@ export function TimeZoneDialogView({
         </FormField>
 
         {mode === "PINNED" && (
-          <FormField control={control} name="zone" label="Time zone">
+          <FormField control={control} name="zone" label={t("profile.timeZoneDialogView.timeZone")}>
             {(field) => (
               <Select value={field.value} onValueChange={field.onChange}>
                 <SelectTrigger
@@ -110,7 +114,7 @@ export function TimeZoneDialogView({
                   aria-invalid={field["aria-invalid"]}
                   className="w-full"
                 >
-                  <SelectValue placeholder="Select a zone" />
+                  <SelectValue placeholder={t("profile.timeZoneDialogView.selectAZone")} />
                 </SelectTrigger>
                 <SelectContent>
                   {zones.map((zone) => (
@@ -132,14 +136,10 @@ export function TimeZoneDialogView({
             onClick={() => onOpenChange(false)}
           >
             <XIcon className="h-4 w-4" />
-            Cancel
+            {t("common.cancel")}
           </Button>
-          <Button
-            type="button"
-            isLoading={isSaving}
-            onClick={handleSubmit(onSave)}
-          >
-            Save
+          <Button type="button" isLoading={isSaving} onClick={handleSubmit(onSave)}>
+            {t("common.save")}
           </Button>
         </DialogFooter>
       </DialogContent>

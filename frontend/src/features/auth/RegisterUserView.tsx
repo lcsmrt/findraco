@@ -12,6 +12,7 @@ import {
 import { AuthCard } from "./components/AuthCard";
 import { PasswordInput } from "./components/PasswordInput";
 import { passwordSpacesHint } from "./utils/passwordSchema";
+import { Trans, useTranslation } from "react-i18next";
 
 type RegisterUserViewProps = {
   isSubmitting: boolean;
@@ -19,11 +20,9 @@ type RegisterUserViewProps = {
   onSignIn: () => void;
 };
 
-export function RegisterUserView({
-  isSubmitting,
-  onSubmit,
-  onSignIn,
-}: RegisterUserViewProps) {
+export function RegisterUserView({ isSubmitting, onSubmit, onSignIn }: RegisterUserViewProps) {
+  const { t } = useTranslation();
+
   const { control, handleSubmit } = useForm<
     RegisterUserFormValues,
     unknown,
@@ -40,7 +39,7 @@ export function RegisterUserView({
   const password = useWatch({ control, name: "password" });
 
   return (
-    <AuthCard title="Create your account">
+    <AuthCard title={t("auth.registerUserView.createYourAccount")}>
       <form
         id="register-user-form"
         className="flex flex-col items-center gap-5"
@@ -48,21 +47,21 @@ export function RegisterUserView({
         autoComplete="off"
       >
         <div className="flex w-full flex-col gap-3">
-          <FormField control={control} name="name" label="Name">
+          <FormField control={control} name="name" label={t("common.name")}>
             {(field) => (
               <Input
                 {...field}
-                placeholder="Full name"
+                placeholder={t("auth.registerUserView.fullName")}
                 className="bg-card/70"
                 autoComplete="off"
               />
             )}
           </FormField>
-          <FormField control={control} name="email" label="Email">
+          <FormField control={control} name="email" label={t("common.email")}>
             {(field) => (
               <Input
                 {...field}
-                placeholder="you@example.com"
+                placeholder={t("common.youExampleCom")}
                 className="bg-card/70"
                 autoComplete="off"
               />
@@ -71,40 +70,32 @@ export function RegisterUserView({
           <FormField
             control={control}
             name="password"
-            label="Password"
+            label={t("auth.registerUserView.password")}
             description={passwordSpacesHint(password)}
           >
             {(field) => (
-              <PasswordInput
-                {...field}
-                className="bg-card/70"
-                autoComplete="new-password"
-              />
+              <PasswordInput {...field} className="bg-card/70" autoComplete="new-password" />
             )}
           </FormField>
         </div>
 
         <Text as="p" variant="secondary" className="text-center">
-          By clicking Sign up, you agree to findraco’s{" "}
-          <strong>Terms of Service</strong> and acknowledge that you are subject
-          to our <strong>Privacy Policy</strong>.
+          <Trans
+            i18nKey="auth.registerUserView.consent"
+            components={{ terms: <strong />, privacy: <strong /> }}
+          />
         </Text>
 
         <Button className="w-full" type="submit" isLoading={isSubmitting}>
-          Sign up
+          {t("auth.registerUserView.signUp")}
         </Button>
 
         <div className="flex flex-col items-center">
           <Text as="p" variant="secondary">
-            Already have an account?
+            {t("auth.registerUserView.alreadyHaveAnAccount")}
           </Text>
-          <Button
-            type="button"
-            variant="link"
-            className="h-fit p-0"
-            onClick={onSignIn}
-          >
-            Sign in
+          <Button type="button" variant="link" className="h-fit p-0" onClick={onSignIn}>
+            {t("auth.registerUserView.signIn")}
           </Button>
         </div>
       </form>

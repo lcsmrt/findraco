@@ -2,6 +2,7 @@ import type { Invitation } from "@/api/dtos";
 import { useCreateInvitation } from "@/api/services/useInvitationService";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { i18n } from "@/i18n/i18n";
 import { type InviteFormOutput, toInvitePayload } from "./inviteForm";
 import { InvitePlanDialogView } from "./InvitePlanDialogView";
 
@@ -40,7 +41,7 @@ export function InvitePlanDialog({
   function copyLink() {
     if (!createdInvitation) return;
     navigator.clipboard.writeText(buildInvitationLink(createdInvitation));
-    toast.success("Link copied to clipboard.");
+    toast.success(i18n.t("plans.invitePlanDialog.linkCopied"));
   }
 
   return (

@@ -4,6 +4,7 @@ import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { flexRender, type Row, type Table } from "@tanstack/react-table";
 import { Fragment, type ReactNode } from "react";
 import { TableBodyBase, TableCellBase, TableRowBase } from "../base/TableParts";
+import { useTranslation } from "react-i18next";
 
 const SKELETON_ROWS = 5;
 
@@ -15,6 +16,8 @@ type TableBodyProps<TData> = {
 };
 
 export function TableBody<TData>({ table, renderSubComponent, emptyState, isLoading }: TableBodyProps<TData>) {
+  const { t } = useTranslation();
+
   function handleRowClick(row: Row<TData>) {
     if (!row.getCanExpand()) return;
     const isCurrentlyExpanded = row.getIsExpanded();
@@ -46,7 +49,7 @@ export function TableBody<TData>({ table, renderSubComponent, emptyState, isLoad
         <tr>
           <td colSpan={colSpan} className="py-12 text-center">
             <Text as="div" variant="secondary">
-              {emptyState ?? "No results."}
+              {emptyState ?? t("components.tableBody.noResults")}
             </Text>
           </td>
         </tr>

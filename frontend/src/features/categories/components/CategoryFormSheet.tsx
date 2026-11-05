@@ -2,10 +2,7 @@ import { Category } from "@/api/dtos";
 import type { PlanMember } from "@/api/dtos/plan";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
-import {
-  ALL_CATEGORIES_PAGE_SIZE,
-  useGetCategories,
-} from "@/api/services/useCategoryService";
+import { ALL_CATEGORIES_PAGE_SIZE, useGetCategories } from "@/api/services/useCategoryService";
 import { Button } from "@/components/button/base/Button";
 import {
   Field,
@@ -38,6 +35,7 @@ import {
 import type { CategoryFormDefaults } from "@/hooks/useCategoryFormSheet";
 import { DeleteCategoryDialog } from "./DeleteCategoryDialog";
 import { useCategoryFormSubmit } from "./useCategoryFormSubmit";
+import { useTranslation } from "react-i18next";
 
 const NO_MEMBERS: PlanMember[] = [];
 
@@ -63,6 +61,8 @@ export function CategoryFormSheet({
   onSuccess,
   onNewSubcategory,
 }: CategoryFormSheetProps) {
+  const { t } = useTranslation();
+
   const editing = mode === "edit" ? category : null;
 
   const { data: categoriesPage } = useGetCategories(
@@ -77,7 +77,10 @@ export function CategoryFormSheet({
   });
   const members = membersData ?? NO_MEMBERS;
 
-  const schema = useMemo(() => createCategoryFormSchema(categories, editing), [categories, editing]);
+  const schema = useMemo(
+    () => createCategoryFormSchema(categories, editing),
+    [categories, editing],
+  );
 
   const { control, handleSubmit, setValue, reset } = useForm<
     CategoryFormValues,
@@ -109,10 +112,14 @@ export function CategoryFormSheet({
       <FormSheet
         open={open}
         onOpenChange={onOpenChange}
-        title={editing ? "Edit Category" : "New Category"}
+        title={
+          editing
+            ? t("categories.categoryFormSheet.editCategory")
+            : t("categories.categoryFormSheet.newCategory")
+        }
         onSubmit={handleSubmit(submit)}
         isSubmitting={isPending}
-        submitLabel={editing ? "Save" : "Create"}
+        submitLabel={editing ? t("common.save") : t("common.create")}
         mobileActions={
           editing && (
             <>
@@ -127,7 +134,7 @@ export function CategoryFormSheet({
                 }}
               >
                 <Trash2Icon className="h-4 w-4" />
-                Delete
+                {t("common.delete")}
               </Button>
               {editing.parentId == null && onNewSubcategory && (
                 <Button
@@ -138,7 +145,7 @@ export function CategoryFormSheet({
                   onClick={() => onNewSubcategory(editing)}
                 >
                   <PlusIcon className="h-4 w-4" />
-                  New subcategory
+                  {t("categories.categoryFormSheet.newSubcategory")}
                 </Button>
               )}
             </>
@@ -148,11 +155,11 @@ export function CategoryFormSheet({
         <FieldGroup>
           <TypeField {...sectionProps} hasChildren={hasChildren} />
 
-          <FormField control={control} name="description" label="Name">
+          <FormField control={control} name="description" label={t("common.name")}>
             {(field) => (
               <Input
                 {...field}
-                placeholder="e.g., Food, Transport, Entertainment"
+                placeholder={t("categories.categoryFormSheet.eGFoodTransportEntertainment")}
                 disabled={isPending}
               />
             )}
@@ -182,7 +189,14 @@ type SectionProps = {
   disabled: boolean;
 };
 
-function TypeField({ control, setValue, disabled, hasChildren }: SectionProps & { hasChildren: boolean }) {
+function TypeField({
+  control,
+  setValue,
+  disabled,
+  hasChildren,
+}: SectionProps & { hasChildren: boolean }) {
+  const { t } = useTranslation();
+
   return (
     // The toggle group names itself, a layout FormField's label-for-input does not fit.
     <Controller
@@ -190,7 +204,7 @@ function TypeField({ control, setValue, disabled, hasChildren }: SectionProps & 
       name="type"
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
-          <FieldLabel>Type</FieldLabel>
+          <FieldLabel>{t("common.type")}</FieldLabel>
           <TransactionTypeToggle
             value={field.value}
             onChange={(type) => {
@@ -203,7 +217,7 @@ function TypeField({ control, setValue, disabled, hasChildren }: SectionProps & 
           />
           {hasChildren && (
             <FieldDescription>
-              A category with subcategories cannot change type.
+              {t("categories.typeField.aCategoryWithSubcategoriesCannot")}
             </FieldDescription>
           )}
           <FieldError errors={[fieldState.error]} />
@@ -218,7 +232,16 @@ type ParentFieldProps = SectionProps & {
   hasChildren: boolean;
 };
 
-function ParentField({ control, setValue, categories, disabled, editing, hasChildren }: ParentFieldProps) {
+function ParentField({
+  control,
+  setValue,
+  categories,
+  disabled,
+  editing,
+  hasChildren,
+}: ParentFieldProps) {
+  const { t } = useTranslation();
+
   const type = useWatch({ control, name: "type" });
   const options = parentOptions(categories, type, editing?.id);
 
@@ -228,10 +251,11 @@ function ParentField({ control, setValue, categories, disabled, editing, hasChil
       name="parentId"
       label={
         <>
-          Parent <Text variant="secondary">(optional)</Text>
+          {t("categories.parentField.parent")}{" "}
+          <Text variant="secondary">{t("common.optional")}</Text>
         </>
       }
-      description={hasChildren ? "A category with subcategories stays at the top level." : undefined}
+      description={hasChildren ? t("categories.parentField.staysTopLevel") : undefined}
     >
       {(field) => (
         <StandardCombobox
@@ -245,8 +269,8 @@ function ParentField({ control, setValue, categories, disabled, editing, hasChil
             if (parent) setValue("ownerId", null);
           }}
           itemLabel={(option) => option.description}
-          placeholder="None (top level)"
-          emptyMessage="No top-level categories"
+          placeholder={t("categories.parentField.noneTopLevel")}
+          emptyMessage={t("categories.parentField.noTopLevel")}
           disabled={disabled || hasChildren}
           clearable
         />
@@ -261,6 +285,8 @@ type OwnerFieldProps = SectionProps & {
 };
 
 function OwnerField({ control, setValue, disabled, editing, members }: OwnerFieldProps) {
+  const { t } = useTranslation();
+
   const parentId = useWatch({ control, name: "parentId" });
   const owners = ownerOptions(members, editing);
   if (parentId != null) return null;
@@ -271,10 +297,11 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
       name="ownerId"
       label={
         <>
-          Belongs to <Text variant="secondary">(optional)</Text>
+          {t("categories.ownerField.belongsTo")}{" "}
+          <Text variant="secondary">{t("common.optional")}</Text>
         </>
       }
-      description="Its spend and limit are this member's. Subcategories belong to the same member."
+      description={t("categories.ownerField.itsSpendAndLimitAre")}
     >
       {(field) => (
         <StandardCombobox
@@ -287,9 +314,11 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
             // per-member mode would still fail validation on save.
             if (owner) setValue("limitMode", "single");
           }}
-          itemLabel={(owner) => (owner.active ? owner.name : `${owner.name} (former member)`)}
-          placeholder="Shared (everyone)"
-          emptyMessage="No members"
+          itemLabel={(owner) =>
+            owner.active ? owner.name : `${owner.name} ${t("common.formerMember")}`
+          }
+          placeholder={t("categories.ownerField.sharedEveryone")}
+          emptyMessage={t("categories.ownerField.noMembers")}
           disabled={disabled}
           clearable
         />
@@ -299,6 +328,8 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
 }
 
 function LimitSection({ control, categories, disabled }: SectionProps) {
+  const { t } = useTranslation();
+
   const [type, parentId, ownerId] = useWatch({ control, name: ["type", "parentId", "ownerId"] });
   if (type !== "DEBIT") return null;
   const isOwned = effectiveOwnerId(parentId, ownerId, categories) != null;
@@ -306,9 +337,7 @@ function LimitSection({ control, categories, disabled }: SectionProps) {
   return (
     <CategoryLimitFields
       control={control}
-      perMemberDisabledReason={
-        isOwned ? "A category that belongs to one member has a single limit." : undefined
-      }
+      perMemberDisabledReason={isOwned ? t("categories.limitSection.ownedSingleLimit") : undefined}
       disabled={disabled}
     />
   );

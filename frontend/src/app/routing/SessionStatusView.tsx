@@ -1,6 +1,7 @@
 import { Button } from "@/components/button/base/Button";
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
+import { useTranslation } from "react-i18next";
 
 type SessionStatusViewProps = {
   status: "loading" | "unreachable";
@@ -8,6 +9,8 @@ type SessionStatusViewProps = {
 };
 
 export function SessionStatusView({ status, onRetry }: SessionStatusViewProps) {
+  const { t } = useTranslation();
+
   if (status === "loading") {
     return (
       <main className="bg-background flex min-h-dvh items-center justify-center">
@@ -19,9 +22,9 @@ export function SessionStatusView({ status, onRetry }: SessionStatusViewProps) {
   return (
     <main className="bg-background flex min-h-dvh flex-col items-center justify-center gap-4">
       <Text as="p" variant="secondary">
-        Can&apos;t reach findraco.
+        {t("app.sessionStatusView.canTReachFindraco")}
       </Text>
-      <Button onClick={onRetry}>Retry</Button>
+      <Button onClick={onRetry}>{t("app.sessionStatusView.retry")}</Button>
     </main>
   );
 }

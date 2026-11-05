@@ -19,6 +19,7 @@ import {
   deletePlanPermanentlySchema,
   matchesPlanName,
 } from "./deletePlanPermanentlyForm";
+import { useTranslation } from "react-i18next";
 
 type DeletePlanPermanentlyDialogViewProps = {
   open: boolean;
@@ -36,6 +37,8 @@ export function DeletePlanPermanentlyDialogView({
   isSubmitting,
   onSubmit,
 }: DeletePlanPermanentlyDialogViewProps) {
+  const { t } = useTranslation();
+
   const { control, handleSubmit, reset } = useForm<
     DeletePlanPermanentlyFormValues,
     unknown,
@@ -55,14 +58,17 @@ export function DeletePlanPermanentlyDialogView({
       <DialogContent className="sm:max-w-md">
         <form onSubmit={handleSubmit(() => onSubmit())} className="flex flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>Delete plan now</DialogTitle>
+            <DialogTitle>{t("plans.deletePlanPermanentlyDialogView.deletePlanNow")}</DialogTitle>
             <DialogDescription>
-              This permanently deletes the plan and everything in it: transactions, categories,
-              recurring series, members and invitations. It cannot be undone.
+              {t("plans.deletePlanPermanentlyDialogView.thisPermanentlyDeletesThePlan")}
             </DialogDescription>
           </DialogHeader>
 
-          <FormField control={control} name="confirmation" label={`Type "${planName}" to confirm`}>
+          <FormField
+            control={control}
+            name="confirmation"
+            label={t("plans.deletePlanPermanentlyDialogView.typeToConfirm", { name: planName })}
+          >
             {(field) => <Input {...field} autoComplete="off" disabled={isSubmitting} />}
           </FormField>
 
@@ -74,7 +80,7 @@ export function DeletePlanPermanentlyDialogView({
               onClick={() => onOpenChange(false)}
             >
               <XIcon className="h-4 w-4" />
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="submit"
@@ -83,7 +89,7 @@ export function DeletePlanPermanentlyDialogView({
               disabled={!matchesPlanName(confirmation, planName)}
             >
               <Trash2Icon className="h-4 w-4" />
-              Delete now
+              {t("plans.deletePlanPermanentlyDialogView.deleteNow")}
             </Button>
           </DialogFooter>
         </form>

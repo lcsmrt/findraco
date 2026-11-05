@@ -1,4 +1,5 @@
 import { Category } from "@/api/dtos";
+import { i18n } from "@/i18n/i18n";
 import { TransactionType } from "@/api/dtos/transaction";
 import {
   ALL_CATEGORIES_PAGE_SIZE,
@@ -56,7 +57,8 @@ export function CategoryCombobox({
 
   // A failure keeps the search and the picker as they are; the service shows the problem's copy.
   const { mutate: createCategory, isPending: isCreating } = useCreateCategory({
-    successMessage: (created) => `Category "${created.description}" created`,
+    successMessage: (created) =>
+      i18n.t("transactions.categoryCombobox.created", { name: created.description }),
     onSuccess: (created) => {
       onValueChange(created);
       setSearch("");

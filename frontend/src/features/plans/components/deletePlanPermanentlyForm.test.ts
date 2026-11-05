@@ -25,7 +25,7 @@ describe("deletePlanPermanentlySchema", () => {
     const wrong = schema.safeParse({ confirmation: "casa" });
     expect(wrong.success).toBe(false);
     if (!wrong.success) {
-      expect(wrong.error.issues[0].message).toBe("Type the plan name exactly as shown");
+      expect(wrong.error.issues[0].message).toBe("plans.deleteForm.typeThePlanNameExactly");
     }
   });
 });

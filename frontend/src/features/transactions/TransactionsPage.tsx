@@ -25,8 +25,11 @@ import { useCsvImport } from "./components/useCsvImport";
 import { useTransactionActions } from "./components/useTransactionActions";
 import { useTransactionSearch } from "./components/useTransactionSearch";
 import { TransactionsPageView } from "./TransactionsPageView";
+import { useTranslation } from "react-i18next";
 
 export function TransactionsPage() {
+  const { t } = useTranslation();
+
   const { transactions, updateTransactions, clearTransactions } =
     useTransactionFilters();
   const { chips, category, member, seedCategory } = useTransactionFilterChips();
@@ -76,6 +79,7 @@ export function TransactionsPage() {
   }
 
   const columns = buildTransactionColumns({
+    t,
     onDuplicate: actions.duplicate,
     onEdit: actions.edit,
     onDelete: actions.remove,

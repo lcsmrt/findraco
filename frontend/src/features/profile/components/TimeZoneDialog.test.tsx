@@ -14,6 +14,7 @@ const automatic: User = {
   email: "ana@example.com",
   timeZone: "America/Sao_Paulo",
   timeZoneMode: "AUTOMATIC",
+  language: null,
 };
 
 afterEach(cleanup);

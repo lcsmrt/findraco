@@ -1,5 +1,6 @@
 import type { TimeZoneMode, UpdateTimeZoneRequest, User } from "@/api/dtos";
 import { z } from "zod";
+import type { ParseKeys } from "i18next";
 
 export const timeZoneSchema = z
   .object({
@@ -10,7 +11,7 @@ export const timeZoneSchema = z
     if (values.mode === "PINNED" && !values.zone) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Pick a time zone",
+        message: "profile.timeZoneForm.pickATimeZone",
         path: ["zone"],
       });
     }
@@ -19,10 +20,10 @@ export const timeZoneSchema = z
 export type TimeZoneFormValues = z.input<typeof timeZoneSchema>;
 export type TimeZoneFormOutput = z.output<typeof timeZoneSchema>;
 
-export const TIME_ZONE_MODE_LABELS: Record<TimeZoneMode, string> = {
-  AUTOMATIC: "Automatic (this device)",
-  PINNED: "Pinned",
-};
+export const TIME_ZONE_MODE_LABEL_KEYS = {
+  AUTOMATIC: "profile.timeZoneForm.automatic",
+  PINNED: "profile.timeZoneForm.pinned",
+} as const satisfies Record<TimeZoneMode, ParseKeys>;
 
 /** The zones the browser knows, with the user's own first when the browser's list lacks it. */
 export function listTimeZones(current: string): string[] {

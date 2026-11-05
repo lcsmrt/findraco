@@ -66,7 +66,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
       expect(
         result.error.issues.find((i) => i.path[0] === "description")
           ?.message,
-      ).toBe("Description is required");
+      ).toBe("transactions.form.descriptionIsRequired");
     }
   });
 
@@ -80,7 +80,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
     if (!result.success) {
       expect(
         result.error.issues.find((i) => i.path[0] === "amount")?.message,
-      ).toBe("Amount must be positive");
+      ).toBe("transactions.form.amountMustBePositive");
     }
   });
 
@@ -90,7 +90,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues.find((i) => i.path[0] === "amount")?.message).toBe(
-        "Amount must be positive",
+        "transactions.form.amountMustBePositive",
       );
     }
   });
@@ -104,7 +104,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
     expect(result.success).toBe(false);
     if (!result.success) {
       expect(result.error.issues.find((i) => i.path.join(".") === "items.0.amount")?.message).toBe(
-        "Amount must be positive",
+        "transactions.form.amountMustBePositive",
       );
     }
   });
@@ -146,7 +146,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
     if (!result.success) {
       expect(
         result.error.issues.find((i) => i.path[0] === "date")?.message,
-      ).toBe("Date is required");
+      ).toBe("transactions.form.dateIsRequired");
     }
   });
 
@@ -164,7 +164,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
     if (!result.success) {
       expect(
         result.error.issues.find((i) => i.path[0] === "items")?.message,
-      ).toBe("Items cannot exceed the transaction total");
+      ).toBe("transactions.form.itemsCannotExceedTheTransaction");
     }
   });
 
@@ -185,7 +185,7 @@ describe("transactionFormSchema — plain transaction validation", () => {
       expect(
         result.error.issues.find((i) => i.path[0] === "participants")
           ?.message,
-      ).toBe("Shares must add up to the total amount");
+      ).toBe("transactions.form.sharesMustAddUpTo");
     }
   });
 });

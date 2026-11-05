@@ -4,21 +4,21 @@ import { newPasswordSchema } from "./utils/passwordSchema";
 // Sign in, sign up and the reset request all ask for the account email, so they share one rule.
 const emailField = z
   .string()
-  .min(1, "Please enter your email")
-  .email("Invalid email");
+  .min(1, "auth.form.pleaseEnterYourEmail")
+  .email("auth.form.invalidEmail");
 
 export const loginSchema = z.object({
   email: emailField,
-  password: z.string().min(1, "Please enter your password"),
+  password: z.string().min(1, "auth.form.pleaseEnterYourPassword"),
 });
 
 export type LoginFormValues = z.input<typeof loginSchema>;
 export type LoginFormOutput = z.output<typeof loginSchema>;
 
 export const registerUserSchema = z.object({
-  name: z.string().min(1, "Please enter your full name"),
+  name: z.string().min(1, "auth.form.pleaseEnterYourFullName"),
   email: emailField,
-  password: newPasswordSchema("Please enter your password"),
+  password: newPasswordSchema("auth.form.pleaseEnterYourPassword"),
 });
 
 export type RegisterUserFormValues = z.input<typeof registerUserSchema>;
@@ -33,11 +33,11 @@ export type ForgotPasswordFormOutput = z.output<typeof forgotPasswordSchema>;
 
 export const resetPasswordSchema = z
   .object({
-    password: newPasswordSchema("Please enter a new password"),
-    confirmPassword: z.string().min(1, "Please confirm the new password"),
+    password: newPasswordSchema("auth.form.pleaseEnterANewPassword"),
+    confirmPassword: z.string().min(1, "auth.form.pleaseConfirmTheNewPassword"),
   })
   .refine((values) => values.password === values.confirmPassword, {
-    message: "Passwords do not match",
+    message: "auth.form.passwordsDoNotMatch",
     path: ["confirmPassword"],
   });
 

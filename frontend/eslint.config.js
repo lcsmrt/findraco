@@ -1,5 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from "eslint-plugin-storybook";
+import i18next from 'eslint-plugin-i18next'
 
 import js from '@eslint/js'
 import { defineConfig } from 'eslint/config'
@@ -9,6 +10,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { componentLogicCap } from './eslint/rules/componentLogicCap.ts'
 import { noJsxIife } from './eslint/rules/noJsxIife.ts'
+import { noLiteralInJsxProps } from './eslint/rules/noLiteralInJsxProps.ts'
 
 // Rules we own, in TypeScript under eslint/rules/: Node's type stripping loads them, so they need
 // neither a build step nor a package.
@@ -16,6 +18,7 @@ const local = {
   rules: {
     'component-logic-cap': componentLogicCap,
     'no-jsx-iife': noJsxIife,
+    'no-literal-in-jsx-props': noLiteralInJsxProps,
   },
 }
 
@@ -208,4 +211,22 @@ syntaxLayer(
 ),
 syntaxLayer(['src/app/**/*.{ts,tsx}'], [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors]),
 syntaxLayer(['src/components/**/base/**/*.{ts,tsx}'], [...paletteSelectors]),
+// Interface texts live in src/i18n/*.json: a literal in a component's JSX or in a user-facing
+// attribute would stay English for every reader. Tests and stories assert and render copy as it is.
+{
+  files: ['src/**/*.tsx'],
+  ignores: ['**/*.test.tsx', '**/*.stories.tsx', 'src/test/**'],
+  plugins: { i18next, local },
+  rules: {
+    'local/no-literal-in-jsx-props': 'error',
+    'i18next/no-literal-string': [
+      'error',
+      {
+        mode: 'jsx-only',
+        'should-validate-template': true,
+        'jsx-attributes': { include: ['placeholder', 'title', 'aria-label', 'alt'], exclude: [] },
+      },
+    ],
+  },
+},
 storybook.configs["flat/recommended"]);

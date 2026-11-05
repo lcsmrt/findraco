@@ -13,6 +13,8 @@ import {
   EditableDateCell,
   ParticipantsCell,
 } from "./TransactionCells";
+import type { TFunction } from "i18next";
+import { i18n } from "@/i18n/i18n";
 
 export type InlineSaveBody = {
   description?: string;
@@ -32,6 +34,8 @@ type TransactionColumnHandlers = {
   showParticipantsColumn?: boolean;
   canEditParticipants?: boolean;
   members?: PlanMember[];
+  /** The translator in use, so the headers follow the language; stories omit it. */
+  t?: TFunction;
 }
 
 /**
@@ -47,12 +51,13 @@ export function buildTransactionColumns({
   showParticipantsColumn,
   canEditParticipants,
   members = [],
+  t = i18n.t,
 }: TransactionColumnHandlers): ColumnDef<Transaction>[] {
   return [
     {
       id: "description",
       accessorKey: "description",
-      header: "Description",
+      header: t("transactions.transactionColumns.description"),
       enableSorting: true,
       cell: ({ row }) =>
         createElement(DescriptionCell, { transaction: row.original, onSave }),
@@ -60,7 +65,7 @@ export function buildTransactionColumns({
     {
       id: "category",
       accessorKey: "category",
-      header: "Category",
+      header: t("transactions.transactionColumns.category"),
       enableSorting: true,
       cell: ({ row }) =>
         createElement(EditableCategoryCell, { transaction: row.original, onSave }),
@@ -68,7 +73,7 @@ export function buildTransactionColumns({
     {
       id: "amount",
       accessorKey: "amount",
-      header: "Amount",
+      header: t("transactions.transactionColumns.amount"),
       enableSorting: true,
       cell: ({ row }) =>
         createElement(EditableAmountCell, { transaction: row.original, onSave }),
@@ -76,7 +81,7 @@ export function buildTransactionColumns({
     {
       id: "startDate",
       accessorKey: "startDate",
-      header: "Date",
+      header: t("transactions.transactionColumns.date"),
       enableSorting: true,
       cell: ({ row }) =>
         createElement(EditableDateCell, { transaction: row.original, onSave }),
@@ -85,7 +90,7 @@ export function buildTransactionColumns({
       ? [
           {
             id: "participants",
-            header: "Attributed to",
+            header: t("transactions.transactionColumns.attributedTo"),
             enableSorting: true,
             cell: ({ row }: { row: { original: Transaction } }) =>
               createElement(ParticipantsCell, {
@@ -100,7 +105,7 @@ export function buildTransactionColumns({
     {
       id: "actions",
       // Visually empty, but a header cell needs a name for screen readers.
-      header: () => createElement("span", { className: "sr-only" }, "Actions"),
+      header: () => createElement("span", { className: "sr-only" }, t("transactions.transactionColumns.actions")),
       cell: ({ row }) =>
         createElement(ActionsCell, {
           transaction: row.original,

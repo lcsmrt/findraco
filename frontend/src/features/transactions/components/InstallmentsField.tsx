@@ -2,7 +2,7 @@ import type { RecurrenceDefinitionResponse } from "@/api/dtos/transaction";
 import { FormField } from "@/components/form/FormField";
 import { NumberField } from "@/components/input/base/NumberField";
 import { Text } from "@/components/typography/base/Text";
-import { format } from "date-fns";
+import { formatMonthYear } from "@/utils/dates";
 import { useWatch, type Control } from "react-hook-form";
 import {
   lastInstallment,
@@ -10,6 +10,7 @@ import {
   type TransactionFormOutput,
   type TransactionFormValues,
 } from "./transactionForm";
+import { useTranslation } from "react-i18next";
 
 type TransactionFormControl = Control<TransactionFormValues, unknown, TransactionFormOutput>;
 
@@ -26,6 +27,8 @@ type InstallmentsFieldProps = {
  * one; editing a series, it shows which parcel the edited occurrence is and warns that a new count changes it all.
  */
 export function InstallmentsField(props: InstallmentsFieldProps) {
+  const { t } = useTranslation();
+
   const { control, disabled } = props;
 
   return (
@@ -33,10 +36,13 @@ export function InstallmentsField(props: InstallmentsFieldProps) {
       <FormField
         control={control}
         name="parcelsNumber"
-        label="Number of installments"
+        label={t("transactions.installmentsField.numberOfInstallments")}
         description={
           props.mode === "seriesEdit"
-            ? `Currently: parcel ${props.occurrenceParcel} of ${props.definition.parcelsNumber}`
+            ? t("transactions.installmentsField.currently", {
+                parcel: props.occurrenceParcel,
+                total: props.definition.parcelsNumber,
+              })
             : undefined
         }
       >
@@ -50,7 +56,7 @@ export function InstallmentsField(props: InstallmentsFieldProps) {
             onValueChange={field.onChange}
             min={1}
             step={1}
-            placeholder="e.g., 12"
+            placeholder={t("transactions.installmentsField.eG12")}
             disabled={disabled}
           />
         )}
@@ -60,7 +66,11 @@ export function InstallmentsField(props: InstallmentsFieldProps) {
         <ParcelsChangedWarning control={control} definition={props.definition} />
       ) : (
         <>
-          <FormField control={control} name="currentParcel" label="Current installment">
+          <FormField
+            control={control}
+            name="currentParcel"
+            label={t("transactions.installmentsField.currentInstallment")}
+          >
             {(field) => (
               <NumberField
                 id={field.id}
@@ -89,11 +99,13 @@ type ParcelsChangedWarningProps = {
 };
 
 function ParcelsChangedWarning({ control, definition }: ParcelsChangedWarningProps) {
+  const { t } = useTranslation();
+
   const parcelsNumber = useWatch({ control, name: "parcelsNumber" });
   if (!seriesParcelsChanged(definition, parcelsNumber)) return null;
   return (
     <Text as="p" className="text-warning">
-      Changing the number of parcels updates the whole series.
+      {t("transactions.parcelsChangedWarning.changingTheNumberOfParcels")}
     </Text>
   );
 }
@@ -103,6 +115,8 @@ type LastInstallmentPreviewProps = {
 };
 
 function LastInstallmentPreview({ control }: LastInstallmentPreviewProps) {
+  const { t } = useTranslation();
+
   const [date, parcelsNumber, currentParcel] = useWatch({
     control,
     name: ["date", "parcelsNumber", "currentParcel"],
@@ -111,7 +125,10 @@ function LastInstallmentPreview({ control }: LastInstallmentPreviewProps) {
   if (!last) return null;
   return (
     <Text as="p" variant="secondary">
-      Last installment: {last.number}/{last.number} — {format(last.month, "MM/yyyy")}
+      {t("transactions.installmentsField.lastInstallment", {
+        number: last.number,
+        month: formatMonthYear(last.month),
+      })}
     </Text>
   );
 }

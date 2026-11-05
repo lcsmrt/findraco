@@ -1,7 +1,8 @@
+import { i18n } from "@/i18n/i18n";
 import type { ImportResultResponse } from "../dtos";
 
 function transactions(count: number) {
-  return count === 1 ? "1 transaction" : `${count} transactions`;
+  return i18n.t("api.importResult.transactions", { count });
 }
 
 /** The toast after an import: what was stored and what the plan already had. */
@@ -11,10 +12,13 @@ export function importResultMessage({
 }: ImportResultResponse): string {
   if (imported === 0) {
     return skippedDuplicates === 0
-      ? "The file has no transactions."
-      : `Nothing new to import: ${transactions(skippedDuplicates)} already in the plan.`;
+      ? i18n.t("api.importResult.empty")
+      : i18n.t("api.importResult.nothingNew", { transactions: transactions(skippedDuplicates) });
   }
   return skippedDuplicates === 0
-    ? `Imported ${transactions(imported)}.`
-    : `Imported ${transactions(imported)}; ${skippedDuplicates} already in the plan were skipped.`;
+    ? i18n.t("api.importResult.imported", { transactions: transactions(imported) })
+    : i18n.t("api.importResult.importedWithSkips", {
+        transactions: transactions(imported),
+        skipped: skippedDuplicates,
+      });
 }

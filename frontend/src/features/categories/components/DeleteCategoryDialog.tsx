@@ -1,8 +1,5 @@
 import { Category } from "@/api/dtos";
-import {
-  useDeleteCategory,
-  useGetCategoryUsage,
-} from "@/api/services/useCategoryService";
+import { useDeleteCategory, useGetCategoryUsage } from "@/api/services/useCategoryService";
 import { problemMessage, problemToast } from "@/api/utils/problems";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -22,11 +19,12 @@ import { toast } from "sonner";
 import {
   buildDeleteRequest,
   classifyDeleteError,
-  describeUsage,
+  describeDeletion,
   eligibleDeleteTargets,
   isCategoryInUse,
 } from "../utils/categoryDeletion";
 import { categoryHasChildren } from "./categoryForm";
+import { useTranslation } from "react-i18next";
 
 type DeleteCategoryDialogProps = {
   open: boolean;
@@ -41,6 +39,8 @@ export function DeleteCategoryDialog({
   category,
   categories,
 }: DeleteCategoryDialogProps) {
+  const { t } = useTranslation();
+
   const [targetId, setTargetId] = useState<number | null>(null);
   const [conflict, setConflict] = useState<string | null>(null);
 
@@ -55,25 +55,24 @@ export function DeleteCategoryDialog({
     refetch: refetchUsage,
   } = useGetCategoryUsage(category?.id ?? null, { enabled: open });
 
-  const { mutate: deleteCategory, isPending } =
-    useDeleteCategory({
-      showErrorToast: false,
-      onSuccess: () => onOpenChange(false),
-      onError: (error) => {
-        const kind = classifyDeleteError(error);
-        // The session-expired handler already told the user.
-        if (kind === "session-expired") return;
-        if (kind == null) {
-          const { message, description } = problemToast(error);
-          toast.error(message, description ? { description } : undefined);
-          return;
-        }
-        // The category changed since the dialog opened (a child or a reference
-        // was added): show why and reload the counts.
-        setConflict(problemMessage(error));
-        refetchUsage();
-      },
-    });
+  const { mutate: deleteCategory, isPending } = useDeleteCategory({
+    showErrorToast: false,
+    onSuccess: () => onOpenChange(false),
+    onError: (error) => {
+      const kind = classifyDeleteError(error);
+      // The session-expired handler already told the user.
+      if (kind === "session-expired") return;
+      if (kind == null) {
+        const { message, description } = problemToast(error);
+        toast.error(message, description ? { description } : undefined);
+        return;
+      }
+      // The category changed since the dialog opened (a child or a reference
+      // was added): show why and reload the counts.
+      setConflict(problemMessage(error));
+      refetchUsage();
+    },
+  });
 
   if (!category) return null;
 
@@ -91,17 +90,11 @@ export function DeleteCategoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete &ldquo;{category.description}&rdquo;</DialogTitle>
+          <DialogTitle>
+            {t("categories.deleteCategoryDialog.deleteCategory", { name: category.description })}
+          </DialogTitle>
           <DialogDescription>
-            {hasChildren
-              ? "This category has subcategories. Move them to another category or delete them before deleting it."
-              : usage == null
-                ? usageFailed
-                  ? "Could not check where this category is used. Close and try again."
-                  : "Checking where this category is used..."
-                : inUse
-                  ? `This category is used by ${describeUsage(usage)}. Choose a category to receive them; then it is deleted.`
-                  : "This category is not used by any transaction, item or recurrence definition. Are you sure you want to delete it? This action cannot be undone."}
+            {describeDeletion({ hasChildren, usage, usageFailed })}
           </DialogDescription>
         </DialogHeader>
 
@@ -113,15 +106,17 @@ export function DeleteCategoryDialog({
 
         {inUse && !hasChildren && (
           <Field>
-            <FieldLabel htmlFor="delete-category-target">Move to</FieldLabel>
+            <FieldLabel htmlFor="delete-category-target">
+              {t("categories.deleteCategoryDialog.moveTo")}
+            </FieldLabel>
             <StandardCombobox
               id="delete-category-target"
               items={targets}
               value={selectedTarget}
               onValueChange={(target) => setTargetId(target?.id ?? null)}
               itemLabel={(c) => c.description}
-              placeholder="Select a category..."
-              emptyMessage="No other category of this type"
+              placeholder={t("categories.deleteCategoryDialog.selectACategory")}
+              emptyMessage={t("categories.deleteCategoryDialog.noOtherCategory")}
               disabled={isPending}
             />
           </Field>
@@ -135,7 +130,7 @@ export function DeleteCategoryDialog({
             onClick={() => onOpenChange(false)}
           >
             <XIcon className="h-4 w-4" />
-            {hasChildren ? "Close" : "Cancel"}
+            {hasChildren ? t("common.close") : t("common.cancel")}
           </Button>
           {!hasChildren && (
             <Button
@@ -146,7 +141,7 @@ export function DeleteCategoryDialog({
               onClick={() => request && deleteCategory(request)}
             >
               <Trash2Icon className="h-4 w-4" />
-              {inUse ? "Move and delete" : "Delete"}
+              {inUse ? t("categories.deleteCategoryDialog.moveAndDelete") : t("common.delete")}
             </Button>
           )}
         </DialogFooter>

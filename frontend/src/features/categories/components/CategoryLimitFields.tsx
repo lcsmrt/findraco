@@ -2,10 +2,7 @@ import { Button } from "@/components/button/base/Button";
 import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/input/base/Field";
 import { FormField } from "@/components/form/FormField";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@/components/toggleGroup/base/ToggleGroup";
+import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { Trash2Icon } from "lucide-react";
@@ -22,6 +19,7 @@ import {
   type CategoryFormOutput,
   type CategoryFormValues,
 } from "./categoryForm";
+import { useTranslation } from "react-i18next";
 
 type CategoryLimitFieldsProps = {
   control: Control<CategoryFormValues, unknown, CategoryFormOutput>;
@@ -36,6 +34,8 @@ export function CategoryLimitFields({
   perMemberDisabledReason,
   disabled,
 }: CategoryLimitFieldsProps) {
+  const { t } = useTranslation();
+
   const { field: limitMode } = useController({ control, name: "limitMode" });
   const { fields, remove } = useFieldArray({ control, name: "memberLimits" });
   const shares = memberLimitShares(useWatch({ control, name: "memberLimits" }));
@@ -49,9 +49,9 @@ export function CategoryLimitFields({
   return (
     <>
       <Field>
-        <FieldLabel>Monthly limit</FieldLabel>
+        <FieldLabel>{t("categories.categoryLimitFields.monthlyLimit")}</FieldLabel>
         <ToggleGroup
-          aria-label="Monthly limit"
+          aria-label={t("categories.categoryLimitFields.monthlyLimit")}
           variant="outline"
           tone="primary"
           value={[isPerMember ? "perMember" : "single"]}
@@ -60,19 +60,13 @@ export function CategoryLimitFields({
           className="w-full flex-nowrap"
         >
           <ToggleGroupItem value="single" className="flex-1">
-            Single
+            {t("categories.categoryLimitFields.single")}
           </ToggleGroupItem>
-          <ToggleGroupItem
-            value="perMember"
-            disabled={!perMemberAllowed}
-            className="flex-1"
-          >
-            Per member
+          <ToggleGroupItem value="perMember" disabled={!perMemberAllowed} className="flex-1">
+            {t("categories.categoryLimitFields.perMember")}
           </ToggleGroupItem>
         </ToggleGroup>
-        {perMemberDisabledReason && (
-          <FieldDescription>{perMemberDisabledReason}</FieldDescription>
-        )}
+        {perMemberDisabledReason && <FieldDescription>{perMemberDisabledReason}</FieldDescription>}
         <FieldError errors={[errors.limitMode]} />
       </Field>
 
@@ -82,8 +76,8 @@ export function CategoryLimitFields({
           name="spendingLimit"
           label={
             <>
-              Amount{" "}
-              <Text variant="secondary">(optional)</Text>
+              {t("categories.categoryLimitFields.amount")}{" "}
+              <Text variant="secondary">{t("common.optional")}</Text>
             </>
           }
         >
@@ -91,7 +85,7 @@ export function CategoryLimitFields({
             <CurrencyInput
               {...field}
               onValueChange={field.onChange}
-              placeholder="R$ 0,00"
+              placeholder={t("common.r000")}
               disabled={disabled}
             />
           )}
@@ -100,23 +94,20 @@ export function CategoryLimitFields({
 
       {isPerMember && (
         <Field>
-          <FieldLabel>Limit per member</FieldLabel>
+          <FieldLabel>{t("categories.categoryLimitFields.limitPerMember")}</FieldLabel>
           <div className="flex flex-col gap-2">
             {fields.map((row, index) => {
               const share = shares.get(row.memberId);
               return (
                 <div
                   key={row.id}
-                  className={cn(
-                    "flex items-center gap-2",
-                    !row.active && "text-muted-foreground",
-                  )}
+                  className={cn("flex items-center gap-2", !row.active && "text-muted-foreground")}
                 >
                   <Text className="min-w-0 flex-1 truncate">
                     {row.memberName}
                     {!row.active && (
                       <Text variant="caption" className="ml-1">
-                        (former member)
+                        {t("categories.categoryLimitFields.formerMember")}
                       </Text>
                     )}
                   </Text>
@@ -128,9 +119,11 @@ export function CategoryLimitFields({
                       <CurrencyInput
                         {...field}
                         onValueChange={field.onChange}
-                        placeholder="No limit"
+                        placeholder={t("categories.categoryLimitFields.noLimit")}
                         className="w-32"
-                        aria-label={`Limit for ${row.memberName}`}
+                        aria-label={t("categories.categoryLimitFields.limitFor", {
+                          name: row.memberName,
+                        })}
                         disabled={disabled || !row.active}
                         aria-invalid={fieldState.invalid}
                       />
@@ -145,7 +138,9 @@ export function CategoryLimitFields({
                       variant="ghost"
                       size="icon"
                       disabled={disabled}
-                      aria-label={`Remove ${row.memberName}'s limit`}
+                      aria-label={t("categories.categoryLimitFields.removeLimit", {
+                        name: row.memberName,
+                      })}
                       onClick={() => remove(index)}
                     >
                       <Trash2Icon className="h-4 w-4" />
@@ -158,8 +153,7 @@ export function CategoryLimitFields({
             })}
           </div>
           <FieldDescription>
-            The category limit is the sum of the members' limits. A member left
-            empty has no limit of their own.
+            {t("categories.categoryLimitFields.theCategoryLimitIsThe")}
           </FieldDescription>
           <FieldError errors={rowErrors} />
         </Field>

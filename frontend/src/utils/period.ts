@@ -3,7 +3,6 @@ import {
   differenceInCalendarMonths,
   endOfMonth,
   endOfYear,
-  format,
   isSameDay,
   isSameMonth,
   isSameYear,
@@ -12,6 +11,7 @@ import {
   startOfYear,
   subMonths,
 } from "date-fns";
+import { formatPattern, toIsoDate } from "@/utils/dates";
 
 export type Period = "this-month" | "last-3m" | "last-6m" | "this-year";
 
@@ -22,7 +22,6 @@ export const DEFAULT_PERIOD: Period = "this-month";
 /** An inclusive `yyyy-MM-dd` date range. */
 export type PeriodRange = { startDate: string; endDate: string };
 
-const DATE_FORMAT = "yyyy-MM-dd";
 
 /** Whether the range starts on a month's first day and ends on a month's last day. */
 function isMonthAligned(start: Date, end: Date) {
@@ -40,16 +39,16 @@ export function periodLabel({ startDate, endDate }: PeriodRange): string {
   const sameYear = isSameYear(start, end);
 
   if (isMonthAligned(start, end)) {
-    if (countMonths(startDate, endDate) === 1) return format(start, "MMMM yyyy");
+    if (countMonths(startDate, endDate) === 1) return formatPattern(start, "MMMM yyyy");
     return sameYear
-      ? `${format(start, "MMM")} – ${format(end, "MMM yyyy")}`
-      : `${format(start, "MMM yyyy")} – ${format(end, "MMM yyyy")}`;
+      ? `${formatPattern(start, "MMM")} – ${formatPattern(end, "MMM yyyy")}`
+      : `${formatPattern(start, "MMM yyyy")} – ${formatPattern(end, "MMM yyyy")}`;
   }
-  if (isSameDay(start, end)) return format(start, "d MMM yyyy");
-  if (isSameMonth(start, end)) return `${format(start, "d")} – ${format(end, "d MMM yyyy")}`;
+  if (isSameDay(start, end)) return formatPattern(start, "d MMM yyyy");
+  if (isSameMonth(start, end)) return `${formatPattern(start, "d")} – ${formatPattern(end, "d MMM yyyy")}`;
   return sameYear
-    ? `${format(start, "d MMM")} – ${format(end, "d MMM yyyy")}`
-    : `${format(start, "d MMM yyyy")} – ${format(end, "d MMM yyyy")}`;
+    ? `${formatPattern(start, "d MMM")} – ${formatPattern(end, "d MMM yyyy")}`
+    : `${formatPattern(start, "d MMM yyyy")} – ${formatPattern(end, "d MMM yyyy")}`;
 }
 
 /**
@@ -65,8 +64,8 @@ export function shiftRange(range: PeriodRange, direction: 1 | -1): PeriodRange {
   const nextStart = addMonths(start, months);
   const nextEnd = addMonths(end, months);
   return {
-    startDate: format(aligned ? startOfMonth(nextStart) : nextStart, DATE_FORMAT),
-    endDate: format(aligned ? endOfMonth(nextEnd) : nextEnd, DATE_FORMAT),
+    startDate: toIsoDate(aligned ? startOfMonth(nextStart) : nextStart),
+    endDate: toIsoDate(aligned ? endOfMonth(nextEnd) : nextEnd),
   };
 }
 
@@ -78,7 +77,7 @@ export function countMonths(startDate: string, endDate: string): number {
 /** Resolves a preset token to an inclusive `yyyy-MM-dd` range relative to `now`. */
 export function resolvePeriodDates(period: Period, now: Date): PeriodRange {
   function fmt(d: Date) {
-    return format(d, DATE_FORMAT);
+    return toIsoDate(d);
   }
   switch (period) {
     case "this-month":

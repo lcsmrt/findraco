@@ -4,6 +4,7 @@ import { Field, FieldDescription, FieldError, FieldLabel } from "@/components/in
 import { useId } from "react";
 import { Controller, type Control } from "react-hook-form";
 import type { TransactionFormOutput, TransactionFormValues } from "./transactionForm";
+import { useTranslation } from "react-i18next";
 
 type EndDateFieldProps = {
   control: Control<TransactionFormValues, unknown, TransactionFormOutput>;
@@ -12,6 +13,8 @@ type EndDateFieldProps = {
 
 /** A recurring series' end date, empty for an ongoing series; used by create and series edit. */
 export function EndDateField({ control, disabled }: EndDateFieldProps) {
+  const { t } = useTranslation();
+
   const id = useId();
 
   return (
@@ -22,8 +25,10 @@ export function EndDateField({ control, disabled }: EndDateFieldProps) {
       render={({ field, fieldState }) => (
         <Field data-invalid={fieldState.invalid}>
           <div className="flex items-center justify-between">
-            <FieldLabel htmlFor={id}>End date</FieldLabel>
-            {!field.value && <Badge variant="secondary">Ongoing</Badge>}
+            <FieldLabel htmlFor={id}>{t("transactions.endDateField.endDate")}</FieldLabel>
+            {!field.value && (
+              <Badge variant="secondary">{t("transactions.endDateField.ongoing")}</Badge>
+            )}
           </div>
           <DatePicker
             id={id}
@@ -35,7 +40,7 @@ export function EndDateField({ control, disabled }: EndDateFieldProps) {
             className="w-full"
           />
           <FieldError errors={[fieldState.error]} />
-          <FieldDescription>Leave empty to keep this series ongoing, with no end date.</FieldDescription>
+          <FieldDescription>{t("transactions.endDateField.leaveEmptyToKeepThis")}</FieldDescription>
         </Field>
       )}
     />

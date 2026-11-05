@@ -10,15 +10,13 @@ import {
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { typographyVariants } from "@/components/typography/base/typographyVariants";
 import { cn } from "@/lib/mergeClasses";
-import { format } from "date-fns";
+import { formatPattern } from "@/utils/dates";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { formatMoney } from "@/utils/money";
 import type { TrendMonth } from "../utils/trendMonths";
+import { useTranslation } from "react-i18next";
 
-const chartConfig: ChartConfig = {
-  income: { label: "Income", color: "var(--success)" },
-  expenses: { label: "Expenses", color: "var(--destructive)" },
-};
+const SERIES_KEYS = ["income", "expenses"] as const;
 
 /** Months outside the selected period recede. */
 const OUT_OF_PERIOD_OPACITY = 0.3;
@@ -75,7 +73,7 @@ function MonthTick({ x = 0, y = 0, index = 0, months }: MonthTickProps) {
 function withTitles(months: TrendMonth[]) {
   return months.map((month) => ({
     ...month,
-    title: format(new Date(month.year, month.month - 1, 1), "MMMM yyyy"),
+    title: formatPattern(new Date(month.year, month.month - 1, 1), "MMMM yyyy"),
   }));
 }
 
@@ -86,10 +84,16 @@ type MonthlyTrendChartProps = {
 
 /** Income and Expenses as one line each across the months, the selected period highlighted. */
 export function MonthlyTrendChart({ months, isLoading }: MonthlyTrendChartProps) {
+  const { t } = useTranslation();
+  const chartConfig: ChartConfig = {
+    income: { label: t("overview.summaryCards.income"), color: "var(--success)" },
+    expenses: { label: t("overview.summaryCards.expenses"), color: "var(--destructive)" },
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monthly trend</CardTitle>
+        <CardTitle>{t("overview.monthlyTrendChart.monthlyTrend")}</CardTitle>
       </CardHeader>
       <CardContent className="px-2 sm:px-6">
         {isLoading || !months ? (
@@ -120,7 +124,7 @@ export function MonthlyTrendChart({ months, isLoading }: MonthlyTrendChartProps)
                 }
               />
               <ChartLegend content={<ChartLegendContent />} />
-              {(["income", "expenses"] as const).map((key) => (
+              {SERIES_KEYS.map((key) => (
                 <Line
                   key={key}
                   type="monotone"

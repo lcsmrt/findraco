@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const planNameSchema = z.object({
-  name: z.string().min(1, "Enter a name for the plan"),
+  name: z.string().min(1, "plans.nameForm.enterANameForThe"),
 });
 
 export type PlanNameFormValues = z.input<typeof planNameSchema>;

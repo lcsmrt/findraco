@@ -1,19 +1,3 @@
-import { format } from "date-fns";
-
-/**
- * Formats a date using a given format.
- * @param date Date object or ISO string.
- * @param dateFormat Format pattern (date-fns).
- * @returns Formatted date string.
- */
-export function formatDate(date: Date | string, dateFormat: string): string {
-  if (typeof date === "string") {
-    const [year, month, day] = date.split("T")[0].split("-").map(Number);
-    return format(new Date(year, month - 1, day), dateFormat);
-  }
-  return format(date, dateFormat);
-}
-
 /**
  * Receives a full name and returns the initials of the first and last names.
  * @param name Full name of a person.

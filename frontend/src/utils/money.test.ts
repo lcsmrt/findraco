@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { i18n } from "@/i18n/i18n";
 import { formatMoney, MONEY_CURRENCY, MONEY_LOCALE, toCents } from "./money";
 
 // pt-BR separates the symbol (and the compact suffix) with a non-breaking space, U+00A0.
@@ -12,6 +13,12 @@ describe("money locale and currency", () => {
 });
 
 describe("formatMoney", () => {
+  it("formats money the same in both languages", async () => {
+    expect(formatMoney(1234.56)).toBe(`R$${NBSP}1.234,56`);
+    await i18n.changeLanguage("pt-BR");
+    expect(formatMoney(1234.56)).toBe(`R$${NBSP}1.234,56`);
+  });
+
   it.each([
     [12.34, `R$${NBSP}12,34`],
     [0, `R$${NBSP}0,00`],

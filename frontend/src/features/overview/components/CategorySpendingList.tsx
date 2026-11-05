@@ -15,6 +15,7 @@ import type {
   SpendingRowsView,
   Usage,
 } from "../utils/spendingRows";
+import { useTranslation } from "react-i18next";
 
 const OVERFLOW_HATCH =
   "repeating-linear-gradient(135deg, color-mix(in srgb, var(--destructive) 75%, transparent) 0 3px, transparent 3px 6px)";
@@ -65,6 +66,8 @@ type StatusTextProps = {
 
 /** ok "remaining X" muted, warning "⚠ remaining X" amber, over "▲ over by X" red. */
 function StatusText({ usage, className }: StatusTextProps) {
+  const { t } = useTranslation();
+
   if (usage.status === "none") return null;
   return (
     <Text
@@ -79,8 +82,10 @@ function StatusText({ usage, className }: StatusTextProps) {
       {usage.status === "warning" && <TriangleAlertIcon className="size-3.5" />}
       {usage.status === "over" && <TriangleIcon className="size-3 fill-current" />}
       {usage.status === "over"
-        ? `over by ${formatMoney(usage.overBy ?? 0)}`
-        : `remaining ${formatMoney(usage.remaining ?? 0)}`}
+        ? t("overview.categorySpendingList.overBy", { amount: formatMoney(usage.overBy ?? 0) })
+        : t("overview.categorySpendingList.remaining", {
+            amount: formatMoney(usage.remaining ?? 0),
+          })}
       <span className="text-muted-foreground">· {usage.percent}%</span>
     </Text>
   );
@@ -95,13 +100,18 @@ type AmountProps = {
 };
 
 function Amount({ spent, limit, compact = false, className }: AmountProps) {
+  const { t } = useTranslation();
+
   return (
     <span className={cn("whitespace-nowrap tabular-nums", className)}>
       <Text variant={compact ? "caption" : "label"} className={cn(compact && "text-foreground")}>
         {formatMoney(spent)}
       </Text>
       {limit != null && (
-        <Text variant={compact ? "caption" : "secondary"}> of {formatMoney(limit)}</Text>
+        <Text variant={compact ? "caption" : "secondary"}>
+          {" "}
+          {t("overview.categorySpendingList.ofLimit", { amount: formatMoney(limit) })}
+        </Text>
       )}
     </span>
   );
@@ -138,12 +148,19 @@ type RowBodyProps = {
 
 /** The text and bar lines shared by roots and children. */
 function RowDetails({ row }: RowBodyProps) {
+  const { t } = useTranslation();
+
   const detail = row.focus ? (
     <Text variant="caption" className="inline-flex min-w-0 items-center gap-1.5 tabular-nums">
       <MemberDot color={row.focus.color} />
       <span className="min-w-0">
-        {getFirstName(row.focus.name)} {formatMoney(row.focus.spent)} of {formatMoney(row.focus.of)}
-        {row.focus.sharedLimit != null && ` · shared limit ${formatMoney(row.focus.sharedLimit)}`}
+        {t("overview.categorySpendingList.focus", {
+          name: getFirstName(row.focus.name),
+          spent: formatMoney(row.focus.spent),
+          limit: formatMoney(row.focus.of),
+        })}
+        {row.focus.sharedLimit != null &&
+          ` ${t("overview.categorySpendingList.sharedLimit", { amount: formatMoney(row.focus.sharedLimit) })}`}
       </span>
     </Text>
   ) : (
@@ -170,6 +187,8 @@ type RowHeaderProps = {
 };
 
 function RowHeader({ row, expandable, expanded }: RowHeaderProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-0.5">
       <span className="flex min-w-0 items-center gap-1.5">
@@ -193,7 +212,7 @@ function RowHeader({ row, expandable, expanded }: RowHeaderProps) {
           >
             <MemberDot color={row.owner.color} className="size-1.5" />
             <span title={row.owner.name}>{getFirstName(row.owner.name)}</span>
-            {!row.owner.active && " (former member)"}
+            {!row.owner.active && ` ${t("common.formerMember")}`}
           </Badge>
         )}
       </span>
@@ -208,6 +227,8 @@ type SubRowProps = {
 
 /** One member's spend against their own limit, always visible. */
 function SubRow({ sub }: SubRowProps) {
+  const { t } = useTranslation();
+
   return (
     <div className={cn("flex flex-col gap-1", !sub.active && "opacity-60")}>
       <div className="flex items-center justify-between gap-3">
@@ -215,7 +236,9 @@ function SubRow({ sub }: SubRowProps) {
           <MemberDot color={sub.color} />
           <Text variant="caption" className="text-foreground truncate" title={sub.name}>
             {getFirstName(sub.name)}
-            {!sub.active && <span className="text-muted-foreground"> (former member)</span>}
+            {!sub.active && (
+              <span className="text-muted-foreground"> {t("overview.subRow.formerMember")}</span>
+            )}
           </Text>
         </span>
         <span className="flex items-center gap-3">
@@ -234,12 +257,14 @@ type SubRowsProps = {
 };
 
 function SubRows({ rows }: SubRowsProps) {
-  return rows.length > 0 && (
-    <div className="border-border ml-2 flex flex-col gap-2.5 border-l-2 pl-4">
-      {rows.map((sub) => (
-        <SubRow key={sub.memberId} sub={sub} />
-      ))}
-    </div>
+  return (
+    rows.length > 0 && (
+      <div className="border-border ml-2 flex flex-col gap-2.5 border-l-2 pl-4">
+        {rows.map((sub) => (
+          <SubRow key={sub.memberId} sub={sub} />
+        ))}
+      </div>
+    )
   );
 }
 
@@ -300,6 +325,8 @@ type CategorySpendingListProps = {
  * toggle its children; roots with a child in trouble start open.
  */
 export function CategorySpendingList({ view, className }: CategorySpendingListProps) {
+  const { t } = useTranslation();
+
   // Manual toggles last until leaving the page; the defaults apply on first render.
   const [expanded, setExpanded] = useState(() => new Set(view.defaultExpandedIds));
 
@@ -315,12 +342,12 @@ export function CategorySpendingList({ view, className }: CategorySpendingListPr
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle>Spending by category</CardTitle>
+        <CardTitle>{t("overview.categorySpendingList.spendingByCategory")}</CardTitle>
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
         {view.rows.length === 0 ? (
           <Text as="p" variant="secondary" className="flex h-32 items-center justify-center">
-            No expense categories yet.
+            {t("overview.categorySpendingList.noExpenseCategoriesYet")}
           </Text>
         ) : (
           <ul className="divide-border flex flex-col divide-y">

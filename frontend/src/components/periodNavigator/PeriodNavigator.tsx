@@ -11,7 +11,8 @@ import {
 } from "@/components/dropdown/base/Dropdown";
 import { Popover, PopoverContent } from "@/components/popover/base/Popover";
 import { Text } from "@/components/typography/base/Text";
-import { format, isSameDay, parseISO } from "date-fns";
+import { isSameDay, parseISO } from "date-fns";
+import { dayPickerLocale, toIsoDate } from "@/utils/dates";
 import {
   CalendarRangeIcon,
   ChevronDownIcon,
@@ -21,13 +22,15 @@ import {
 import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { PERIODS, periodLabel, shiftRange, type Period, type PeriodRange } from "@/utils/period";
+import { useTranslation } from "react-i18next";
+import type { ParseKeys } from "i18next";
 
-const PRESET_LABELS: Record<Period, string> = {
-  "this-month": "This month",
-  "last-3m": "Last 3 months",
-  "last-6m": "Last 6 months",
-  "this-year": "This year",
-};
+const PRESET_LABEL_KEYS = {
+  "this-month": "components.periodNavigator.thisMonth",
+  "last-3m": "components.periodNavigator.last3Months",
+  "last-6m": "components.periodNavigator.last6Months",
+  "this-year": "components.periodNavigator.thisYear",
+} as const satisfies Record<Period, ParseKeys>;
 
 type CustomRange = { from: string; to: string };
 
@@ -60,6 +63,8 @@ export function PeriodNavigator({
   onPresetChange,
   onRangeChange,
 }: PeriodNavigatorProps) {
+  const { t } = useTranslation();
+
   const anchorRef = useRef<HTMLDivElement>(null);
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
@@ -75,8 +80,8 @@ export function PeriodNavigator({
     setDraft(next);
     if (next?.from && next.to && !isSameDay(next.from, next.to)) {
       onRangeChange({
-        from: format(next.from, "yyyy-MM-dd"),
-        to: format(next.to, "yyyy-MM-dd"),
+        from: toIsoDate(next.from),
+        to: toIsoDate(next.to),
       });
       setIsCalendarOpen(false);
     }
@@ -87,7 +92,7 @@ export function PeriodNavigator({
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Previous period"
+        aria-label={t("components.periodNavigator.previousPeriod")}
         onClick={() => onRangeChange(toCustom(shiftRange(range, -1)))}
       >
         <ChevronLeftIcon />
@@ -95,7 +100,7 @@ export function PeriodNavigator({
       <Button
         variant="ghost"
         className="min-w-36 tabular-nums sm:min-w-40"
-        aria-label={`Choose period, ${label}`}
+        aria-label={t("components.periodNavigator.choosePeriod", { period: label })}
         onClick={openCalendar}
       >
         <Text variant="title" aria-live="polite">
@@ -105,7 +110,7 @@ export function PeriodNavigator({
       <Button
         variant="ghost"
         size="icon"
-        aria-label="Next period"
+        aria-label={t("components.periodNavigator.nextPeriod")}
         onClick={() => onRangeChange(toCustom(shiftRange(range, 1)))}
       >
         <ChevronRightIcon />
@@ -115,7 +120,7 @@ export function PeriodNavigator({
         <DropdownMenuTrigger
           render={
             <Button variant="outline" size="sm" className="ml-1 gap-1">
-              Range
+              {t("components.periodNavigator.range")}
               <ChevronDownIcon className="text-muted-foreground" />
             </Button>
           }
@@ -130,14 +135,14 @@ export function PeriodNavigator({
           >
             {PERIODS.map((preset) => (
               <DropdownMenuRadioItem key={preset} value={preset}>
-                {PRESET_LABELS[preset]}
+                {t(PRESET_LABEL_KEYS[preset])}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={openCalendar}>
             <CalendarRangeIcon />
-            Custom…
+            {t("components.periodNavigator.custom")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -147,10 +152,11 @@ export function PeriodNavigator({
           className="w-auto p-0"
           align="start"
           anchor={anchorRef}
-          aria-label="Choose a period"
+          aria-label={t("components.periodNavigator.chooseAPeriod")}
         >
           <Calendar
             mode="range"
+            locale={dayPickerLocale()}
             resetOnSelect
             selected={draft}
             defaultMonth={draft?.from}

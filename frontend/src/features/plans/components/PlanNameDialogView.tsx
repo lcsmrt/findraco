@@ -12,23 +12,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SaveIcon, XIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {
-  type PlanNameFormOutput,
-  type PlanNameFormValues,
-  planNameSchema,
-} from "./planNameForm";
+import { type PlanNameFormOutput, type PlanNameFormValues, planNameSchema } from "./planNameForm";
+import { useTranslation } from "react-i18next";
 
 type PlanNameDialogMode = "create" | "rename";
 
-const TITLES: Record<PlanNameDialogMode, string> = {
-  create: "New plan",
-  rename: "Rename plan",
-};
+const TITLE_KEYS = {
+  create: "plans.planNameDialogView.newPlan",
+  rename: "plans.planNameDialogView.renamePlan",
+} as const;
 
-const SUBMIT_LABELS: Record<PlanNameDialogMode, string> = {
-  create: "Create",
-  rename: "Save",
-};
+const SUBMIT_LABEL_KEYS = {
+  create: "common.create",
+  rename: "common.save",
+} as const;
 
 type PlanNameDialogViewProps = {
   open: boolean;
@@ -49,14 +46,14 @@ export function PlanNameDialogView({
   isSubmitting,
   onSubmit,
 }: PlanNameDialogViewProps) {
-  const { control, handleSubmit, reset } = useForm<
-    PlanNameFormValues,
-    unknown,
-    PlanNameFormOutput
-  >({
-    resolver: zodResolver(planNameSchema),
-    defaultValues: { name: initialName },
-  });
+  const { t } = useTranslation();
+
+  const { control, handleSubmit, reset } = useForm<PlanNameFormValues, unknown, PlanNameFormOutput>(
+    {
+      resolver: zodResolver(planNameSchema),
+      defaultValues: { name: initialName },
+    },
+  );
 
   useEffect(() => {
     reset({ name: initialName });
@@ -67,14 +64,14 @@ export function PlanNameDialogView({
       <DialogContent className="sm:max-w-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>{TITLES[mode]}</DialogTitle>
+            <DialogTitle>{t(TITLE_KEYS[mode])}</DialogTitle>
           </DialogHeader>
 
-          <FormField control={control} name="name" label="Name">
+          <FormField control={control} name="name" label={t("common.name")}>
             {(field) => (
               <Input
                 {...field}
-                placeholder="e.g., Household finances"
+                placeholder={t("plans.planNameDialogView.eGHouseholdFinances")}
                 disabled={isSubmitting}
               />
             )}
@@ -88,11 +85,11 @@ export function PlanNameDialogView({
               onClick={() => onOpenChange(false)}
             >
               <XIcon className="h-4 w-4" />
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
               <SaveIcon className="h-4 w-4" />
-              {SUBMIT_LABELS[mode]}
+              {t(SUBMIT_LABEL_KEYS[mode])}
             </Button>
           </DialogFooter>
         </form>

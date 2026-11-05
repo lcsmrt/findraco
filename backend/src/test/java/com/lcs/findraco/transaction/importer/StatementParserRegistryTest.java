@@ -39,6 +39,14 @@ class StatementParserRegistryTest {
     }
 
     @Test
+    void ambiguousDateReadsDayFirst() {
+        ParseResult result = parse(HEADER + "04/11/2026,-50.00,nu-1,Uber trip\n");
+
+        assertThat(result.errors()).isEmpty();
+        assertThat(result.rows().get(0).date()).isEqualTo(LocalDate.of(2026, 11, 4));
+    }
+
+    @Test
     void badDateIsListedWithItsLine() {
         ParseResult result = parse(HEADER + "15/07/2026,-50.00,a,ok\n31/02/2026,-5.00,b,bad\n");
 

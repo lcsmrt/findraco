@@ -2,11 +2,9 @@ import { NumberField as NumberFieldPrimitive } from "@base-ui/react/number-field
 import { cn } from "@/lib/mergeClasses";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import type { FocusEventHandler, Ref } from "react";
+import { useTranslation } from "react-i18next";
 
-type NumberFieldProps = Omit<
-  NumberFieldPrimitive.Root.Props,
-  "onBlur" | "ref"
-> & {
+type NumberFieldProps = Omit<NumberFieldPrimitive.Root.Props, "onBlur" | "ref"> & {
   /** Reaches the input, so react-hook-form can focus the field on an error. */
   ref?: Ref<HTMLInputElement>;
   onBlur?: FocusEventHandler<HTMLInputElement>;
@@ -29,6 +27,8 @@ export function NumberField({
   "aria-invalid": ariaInvalid,
   ...props
 }: NumberFieldProps) {
+  const { t } = useTranslation();
+
   return (
     <NumberFieldPrimitive.Root
       data-slot="number-field"
@@ -46,7 +46,7 @@ export function NumberField({
         )}
       >
         <NumberFieldPrimitive.Decrement
-          aria-label="Decrease"
+          aria-label={t("components.numberField.decrease")}
           className={stepButtonClass}
         >
           <MinusIcon />
@@ -59,7 +59,7 @@ export function NumberField({
           className="placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-full min-w-0 flex-1 bg-transparent px-2 text-center text-base tabular-nums outline-none disabled:cursor-not-allowed md:text-sm"
         />
         <NumberFieldPrimitive.Increment
-          aria-label="Increase"
+          aria-label={t("components.numberField.increase")}
           className={stepButtonClass}
         >
           <PlusIcon />

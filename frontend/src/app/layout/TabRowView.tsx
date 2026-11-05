@@ -4,11 +4,12 @@ import { Button } from "@/components/button/base/Button";
 import { buttonVariants } from "@/components/button/base/buttonVariants";
 import { cn } from "@/lib/mergeClasses";
 import {
-  DESTINATION_LABELS,
+  DESTINATION_LABEL_KEYS,
   DESTINATION_PATHS,
   DESTINATIONS,
   type Destination,
 } from "./utils/navigation";
+import { useTranslation } from "react-i18next";
 
 type TabRowViewProps = {
   current: Destination;
@@ -18,9 +19,11 @@ type TabRowViewProps = {
 };
 
 export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
+  const { t } = useTranslation();
+
   return (
     <nav
-      aria-label="Destinations"
+      aria-label={t("app.tabRowView.destinations")}
       className={cn("hidden items-center gap-2 border-b px-4 sm:flex", className)}
     >
       <div className="flex flex-1">
@@ -37,7 +40,7 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
                 : "text-muted-foreground hover:text-foreground border-transparent",
             )}
           >
-            {DESTINATION_LABELS[destination]}
+            {t(DESTINATION_LABEL_KEYS[destination])}
           </Link>
         ))}
       </div>
@@ -45,7 +48,7 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
       {onAdd && (
         <Button onClick={onAdd}>
           <PlusIcon />
-          New Transaction
+          {t("app.tabRowView.newTransaction")}
         </Button>
       )}
     </nav>

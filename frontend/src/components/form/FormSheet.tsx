@@ -1,5 +1,11 @@
 import { Button } from "@/components/button/base/Button";
-import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/sheet/base/Drawer";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/sheet/base/Drawer";
 import {
   Sheet,
   SheetContent,
@@ -10,6 +16,10 @@ import {
 import { useIsNarrowScreen } from "@/hooks/useIsNarrowScreen";
 import { SaveIcon, XIcon } from "lucide-react";
 import { useId, type FormEvent, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+
+// The sheet slides in from the right on wide screens; a narrow one is a drawer and takes no side.
+const WIDE_SHEET_PROPS = { side: "right" } as const;
 
 type FormSheetProps = {
   open: boolean;
@@ -42,6 +52,8 @@ export function FormSheet({
   mobileActions,
   children,
 }: FormSheetProps) {
+  const { t } = useTranslation();
+
   const formId = useId();
 
   const isNarrow = useIsNarrowScreen();
@@ -58,7 +70,7 @@ export function FormSheet({
 
   return (
     <Root open={open} onOpenChange={handleOpenChange}>
-      <Content {...(isNarrow ? {} : { side: "right" as const })}>
+      <Content {...(isNarrow ? {} : WIDE_SHEET_PROPS)}>
         <Header>
           <Title>{title}</Title>
         </Header>
@@ -83,7 +95,7 @@ export function FormSheet({
               onClick={() => onOpenChange(false)}
             >
               <XIcon className="h-4 w-4" />
-              Cancel
+              {t("common.cancel")}
             </Button>
             {/* The footer sits outside the scrolling form, so the button reaches it through `form`. */}
             <Button

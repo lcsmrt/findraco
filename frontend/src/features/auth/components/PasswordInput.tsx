@@ -6,11 +6,14 @@ import {
 } from "@/components/input/base/InputGroup";
 import { Eye, EyeClosed } from "lucide-react";
 import { useState, type ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
 
 type PasswordInputProps = Omit<ComponentProps<"input">, "type">;
 
 /** A password input whose value the user can reveal; the toggle names its action for screen readers. */
 export function PasswordInput({ className, ...props }: PasswordInputProps) {
+  const { t } = useTranslation();
+
   const [isVisible, setIsVisible] = useState(false);
 
   return (
@@ -20,7 +23,7 @@ export function PasswordInput({ className, ...props }: PasswordInputProps) {
         <InputGroupButton
           size="icon-sm"
           className="rounded-full"
-          aria-label={isVisible ? "Hide password" : "Show password"}
+          aria-label={isVisible ? t("auth.passwordInput.hide") : t("auth.passwordInput.show")}
           onClick={() => setIsVisible((visible) => !visible)}
           disabled={props.disabled}
         >

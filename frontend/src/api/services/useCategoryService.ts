@@ -166,7 +166,7 @@ export function useCreateCategory(
   return useMutation({
     mutationFn: (payload: CreateCategoryRequest) =>
       createCategory(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Category created." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.categoryCreated" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateCategoryViews(queryClient);
@@ -199,7 +199,7 @@ export function useUpdateCategory(
   return useMutation({
     mutationFn: (payload: UpdateCategoryRequest) =>
       updateCategory(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Category updated." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.categoryUpdated" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateCategoryViews(queryClient);
@@ -230,7 +230,7 @@ export function useDeleteCategory(
   return useMutation({
     mutationFn: (payload: DeleteCategoryRequest) =>
       deleteCategory(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Category deleted." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.categoryDeleted" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateCategoryViews(queryClient);

@@ -10,13 +10,13 @@ function emailIssues(values: unknown) {
 describe("inviteSchema", () => {
   it("asks for an email address when the invitation goes by email", () => {
     expect(emailIssues({ ...INVITE_FORM_DEFAULTS, type: "EMAIL", email: "" })).toEqual([
-      "Enter an email address",
+      "plans.inviteForm.enterAnEmailAddress",
     ]);
   });
 
   it("treats a whitespace-only email address as missing", () => {
     expect(emailIssues({ ...INVITE_FORM_DEFAULTS, type: "EMAIL", email: "   " })).toEqual([
-      "Enter an email address",
+      "plans.inviteForm.enterAnEmailAddress",
     ]);
   });
 

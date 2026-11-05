@@ -3,10 +3,11 @@ import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
-import { format } from "date-fns";
+import { formatDateTime } from "@/utils/dates";
 import { Trash2Icon } from "lucide-react";
-import { ROLE_LABELS, STATUS_LABELS } from "../utils/planLabels";
+import { buildRoleLabels, buildStatusLabels } from "../utils/planLabels";
 import { invitationLabel } from "./invitationLabel";
+import { useTranslation } from "react-i18next";
 
 const STATUS_VARIANTS: Record<
   InvitationStatus,
@@ -29,6 +30,10 @@ export function PlanInvitationsListView({
   isLoading,
   onRevoke,
 }: PlanInvitationsListViewProps) {
+  const { t } = useTranslation();
+  const statusLabels = buildStatusLabels(t);
+  const roleLabels = buildRoleLabels(t);
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-6">
@@ -40,7 +45,7 @@ export function PlanInvitationsListView({
   if (invitations.length === 0) {
     return (
       <Text as="p" variant="secondary" className="py-6 text-center">
-        No invitations created for this plan yet.
+        {t("plans.planInvitationsListView.noInvitationsCreatedForThis")}
       </Text>
     );
   }
@@ -55,14 +60,15 @@ export function PlanInvitationsListView({
           <div className="flex flex-col gap-1">
             <Text variant="label">{invitationLabel(invitation)}</Text>
             <div className="flex flex-wrap items-center gap-1.5">
-              <Badge variant="outline">{ROLE_LABELS[invitation.role]}</Badge>
+              <Badge variant="outline">{roleLabels[invitation.role]}</Badge>
               <Badge variant={STATUS_VARIANTS[invitation.status]}>
-                {STATUS_LABELS[invitation.status]}
+                {statusLabels[invitation.status]}
               </Badge>
               {invitation.expiresAt && (
                 <Text variant="caption">
-                  Expires on{" "}
-                  {format(new Date(invitation.expiresAt), "dd/MM/yyyy HH:mm")}
+                  {t("plans.planInvitationsListView.expiresOn", {
+                    date: formatDateTime(new Date(invitation.expiresAt)),
+                  })}
                 </Text>
               )}
             </div>
@@ -74,7 +80,9 @@ export function PlanInvitationsListView({
               size="icon-sm"
               variant="ghost"
               className="text-muted-foreground hover:bg-accent hover:text-destructive rounded"
-              aria-label={`Revoke the invitation for ${invitationLabel(invitation)}`}
+              aria-label={t("plans.planInvitationsListView.revoke", {
+                name: invitationLabel(invitation),
+              })}
               onClick={() => onRevoke(invitation)}
             >
               <Trash2Icon className="h-4 w-4" />

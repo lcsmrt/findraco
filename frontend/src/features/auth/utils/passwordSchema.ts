@@ -1,11 +1,13 @@
 import { z } from "zod";
+import { i18n } from "@/i18n/i18n";
 
 /** The API's bounds (BST-15): characters are Unicode code points, counted after NFKC. */
 export const PASSWORD_MIN_LENGTH = 8;
 export const PASSWORD_MAX_LENGTH = 128;
 
-export const PASSWORD_LENGTH_MESSAGE = `Use ${PASSWORD_MIN_LENGTH} to ${PASSWORD_MAX_LENGTH} characters`;
-export const PASSWORD_CHARACTERS_MESSAGE = "Remove tabs, line breaks and invisible characters";
+// Translation keys, shown through FieldError; the bounds above are written into the texts.
+export const PASSWORD_LENGTH_MESSAGE = "auth.password.length";
+export const PASSWORD_CHARACTERS_MESSAGE = "auth.password.characters";
 
 // Control (Cc), format (Cf: zero-width space, BOM), line (Zl) and paragraph (Zp) separators: they arrive by
 // paste and make a password that looks right and never matches.
@@ -46,6 +48,6 @@ export function newPasswordSchema(emptyMessage: string) {
  */
 export function passwordSpacesHint(password: string): string | null {
   return password.length > 0 && password.trim() !== password
-    ? "This password starts or ends with a space. Keep it only if you meant to."
+    ? i18n.t("auth.password.spacesHint")
     : null;
 }

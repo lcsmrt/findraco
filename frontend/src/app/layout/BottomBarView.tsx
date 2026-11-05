@@ -4,7 +4,8 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/button/base/Button";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
-import { DESTINATION_LABELS, DESTINATION_PATHS, type Destination } from "./utils/navigation";
+import { DESTINATION_LABEL_KEYS, DESTINATION_PATHS, type Destination } from "./utils/navigation";
+import { useTranslation } from "react-i18next";
 
 const ICONS: Record<Destination, LucideIcon> = {
   overview: LayoutDashboard,
@@ -21,9 +22,11 @@ type BottomBarViewProps = {
 };
 
 export function BottomBarView({ current, onAdd, className }: BottomBarViewProps) {
+  const { t } = useTranslation();
+
   return (
     <nav
-      aria-label="Bottom bar"
+      aria-label={t("app.bottomBarView.bottomBar")}
       data-bottom-bar
       className={cn(
         "border-border bg-background fixed inset-x-0 bottom-0 z-20 border-t pb-[var(--bottom-bar-inset)] sm:hidden",
@@ -38,7 +41,7 @@ export function BottomBarView({ current, onAdd, className }: BottomBarViewProps)
             <Button
               size="icon-lg"
               className="size-12 rounded-full shadow-md"
-              aria-label="New Transaction"
+              aria-label={t("app.bottomBarView.newTransaction")}
               onClick={onAdd}
             >
               <Plus className="size-6" />
@@ -58,6 +61,8 @@ type BarItemProps = {
 };
 
 function BarItem({ destination, current }: BarItemProps) {
+  const { t } = useTranslation();
+
   const Icon = ICONS[destination];
   const active = destination === current;
 
@@ -73,7 +78,7 @@ function BarItem({ destination, current }: BarItemProps) {
     >
       <Icon className="size-5" aria-hidden />
       <Text variant="caption" className={active ? "text-primary-ink" : undefined}>
-        {DESTINATION_LABELS[destination]}
+        {t(DESTINATION_LABEL_KEYS[destination])}
       </Text>
     </Link>
   );

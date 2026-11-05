@@ -17,13 +17,12 @@ import { cn } from "@/lib/mergeClasses";
 import { PlusIcon, XIcon } from "lucide-react";
 import { useMemo } from "react";
 import type { CategoryOption } from "../utils/categoryOptions";
+import { useTranslation } from "react-i18next";
 
 type CategoryComboboxViewProps = {
   id?: string;
   value: Category | null | undefined;
-  onValueChange: (
-    value: Category | null | undefined,
-  ) => void;
+  onValueChange: (value: Category | null | undefined) => void;
   /** Grouped and already filtered by `search`. */
   options: CategoryOption[];
   isLoading: boolean;
@@ -53,6 +52,8 @@ export function CategoryComboboxView({
   open,
   onOpenChange,
 }: CategoryComboboxViewProps) {
+  const { t } = useTranslation();
+
   const anchor = useComboboxAnchor();
   const displayedItems = useMemo(() => options.map((o) => o.category), [options]);
   const childIds = useMemo(
@@ -90,14 +91,14 @@ export function CategoryComboboxView({
           }
         >
           <Text className={cn(!value && "text-muted-foreground")}>
-            {value ? value.description : "Select a category..."}
+            {value ? value.description : t("transactions.categoryComboboxView.selectCategory")}
           </Text>
         </ComboboxTrigger>
         {showClear && (
           <InputGroupButton
             type="button"
             tabIndex={-1}
-            aria-label="Clear category"
+            aria-label={t("transactions.categoryComboboxView.clearCategory")}
             className="text-muted-foreground absolute top-1/2 right-1 -translate-y-1/2"
             onClick={(e) => {
               e.stopPropagation();
@@ -109,10 +110,13 @@ export function CategoryComboboxView({
         )}
       </div>
 
-      <ComboboxContent anchor={anchor} aria-label="Categories">
+      <ComboboxContent
+        anchor={anchor}
+        aria-label={t("transactions.categoryComboboxView.categories")}
+      >
         <ComboboxInput
-          placeholder="Search..."
-          aria-label="Search categories"
+          placeholder={t("transactions.categoryComboboxView.search")}
+          aria-label={t("transactions.categoryComboboxView.searchCategories")}
           value={search}
           onChange={(e) => onSearchChange(e.currentTarget.value)}
           showTrigger={false}
@@ -123,7 +127,7 @@ export function CategoryComboboxView({
             <Spinner />
           </div>
         ) : (
-          <ComboboxEmpty>No results</ComboboxEmpty>
+          <ComboboxEmpty>{t("transactions.categoryComboboxView.noResults")}</ComboboxEmpty>
         )}
         <ComboboxList>
           {(cat: Category) => (
@@ -132,10 +136,7 @@ export function CategoryComboboxView({
               value={cat}
               className={cn("px-2", childIds.has(cat.id) && "pl-6")}
             >
-              <Text
-                variant={childIds.has(cat.id) ? "body" : "label"}
-                className="flex-1 truncate"
-              >
+              <Text variant={childIds.has(cat.id) ? "body" : "label"} className="flex-1 truncate">
                 {cat.description}
               </Text>
             </ComboboxItem>

@@ -84,7 +84,7 @@ public class AuthenticationController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PostMapping("/forgot-password")
     public ResponseEntity<Void> forgotPassword(@RequestBody @Valid ForgotPasswordRequest dto, @ClientIp String ip) {
-        passwordResetService.requestReset(dto.email(), ip);
+        passwordResetService.requestReset(dto.email(), dto.language(), ip);
 
         return ResponseEntity.noContent().build();
     }
