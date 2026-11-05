@@ -209,4 +209,4 @@ Proof: run unit | ✓ clears a quick-created category when the type changes
 
 **Settled mid-build:** none
 **Dispatched:** batch worker T1–T3 (Sonnet) at HEAD after the spec commit
-**Walked:** not yet
+**Walked:** FormSheet stories at 390x844 via Storybook (`iframe.html?id=form-formsheet--short`, `--long`, `--with-mobile-actions`, Playwright, touch enabled): C4 Short is 341px tall and ends at the window bottom with its content inside, Long's top edge sits at 42.2px (95% of 844 is 801.8, so 42.2 is the limit itself); C5 Long scrolled to its end (form scrollTop 1254), title stays at y=73.2 and footer at y=776; C6 a 48x6px handle centred at x=195 on the sheet's top edge; C7 a touch drag down from the handle closed Short (no dialog left; the submit button was never pressed); C10 Cancel (x16, w175) and Submit (x199, w175) on one row, equal width, Submit right; C11 Delete and Duplicate on a row above Cancel and Save; C12 Short's footer holds two buttons on one row. Screenshots in the session scratchpad `walk/`.

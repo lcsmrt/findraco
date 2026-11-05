@@ -3,6 +3,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CopyIcon, Trash2Icon } from "lucide-react";
+import { useState, type ComponentProps } from "react";
 import { expect, fn, screen } from "storybook/test";
 import { FormSheet } from "./FormSheet";
 
@@ -20,6 +21,22 @@ function DemoFields({ count = 2 }: DemoFieldsProps) {
         </Field>
       ))}
     </FieldGroup>
+  );
+}
+
+/** Holds the open flag like a real form does, so a swipe, Escape or Cancel really closes it. */
+function ClosableFormSheet({ onOpenChange, ...props }: ComponentProps<typeof FormSheet>) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <FormSheet
+      {...props}
+      open={open}
+      onOpenChange={(next) => {
+        setOpen(next);
+        onOpenChange(next);
+      }}
+    />
   );
 }
 
@@ -99,6 +116,7 @@ export const WithMobileActions: Story = {
 // stories in a 390px window.
 export const Short: Story = {
   tags: ["!test"],
+  render: (args) => <ClosableFormSheet {...args} />,
 };
 
 export const Long: Story = {
