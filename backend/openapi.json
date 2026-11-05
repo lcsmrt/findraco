@@ -465,6 +465,15 @@
       },
       "DashboardSummaryResponse" : {
         "properties" : {
+          "actualBalance" : {
+            "type" : "number"
+          },
+          "actualExpenses" : {
+            "type" : "number"
+          },
+          "actualIncome" : {
+            "type" : "number"
+          },
           "netBalance" : {
             "type" : "number"
           },
@@ -481,7 +490,7 @@
             "type" : "number"
           }
         },
-        "required" : [ "netBalance", "personBreakdown", "totalExpenses", "totalIncome" ],
+        "required" : [ "actualBalance", "actualExpenses", "actualIncome", "netBalance", "personBreakdown", "totalExpenses", "totalIncome" ],
         "type" : "object"
       },
       "FieldProblem" : {

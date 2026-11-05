@@ -159,7 +159,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] C27, C28, C29, C30 pass; full backend `./mvnw -B verify` green (phase gate)
+- [x] C27, C28, C29, C30 pass; full backend `./mvnw -B verify` green (phase gate)
 
 **Tests**: integration
 **Gate**: build

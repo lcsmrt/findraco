@@ -9,6 +9,7 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.SeriesHorizon;
+import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -25,16 +26,19 @@ public class DashboardService {
 
     private final DashboardReportRepository reportRepository;
     private final SeriesHorizon seriesHorizon;
+    private final UserService userService;
     private final TransactionTemplate readTransaction;
     private final EntityManager entityManager;
 
     public DashboardService(
             DashboardReportRepository reportRepository,
             SeriesHorizon seriesHorizon,
+            UserService userService,
             PlatformTransactionManager transactionManager,
             EntityManager entityManager) {
         this.reportRepository = reportRepository;
         this.seriesHorizon = seriesHorizon;
+        this.userService = userService;
         this.readTransaction = new TransactionTemplate(transactionManager);
         this.readTransaction.setReadOnly(true);
         this.entityManager = entityManager;
@@ -61,9 +65,22 @@ public class DashboardService {
 
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
 
+        LocalDate today = userService.today(ctx.userId());
+        BigDecimal actualIncome = reportRepository.sumActualByPlanAndTypeAndDateRange(
+                plan, TransactionType.CREDIT, startDate, endDate, memberId, today);
+        BigDecimal actualExpenses = reportRepository.sumActualByPlanAndTypeAndDateRange(
+                plan, TransactionType.DEBIT, startDate, endDate, memberId, today);
+
         List<PersonBreakdownResponse> personBreakdown = buildPersonBreakdown(plan, startDate, endDate, memberId);
 
-        return new DashboardSummaryResponse(totalIncome, totalExpenses, netBalance, personBreakdown);
+        return new DashboardSummaryResponse(
+                totalIncome,
+                totalExpenses,
+                netBalance,
+                actualIncome,
+                actualExpenses,
+                actualIncome.subtract(actualExpenses),
+                personBreakdown);
     }
 
     /** Income and expenses per calendar month of the range, optionally for one member's shares (UX-05 AC 7). */
