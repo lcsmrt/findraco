@@ -194,6 +194,14 @@
 - **Date**: 2026-11-05
 - **Status**: active
 
+### AD-025
+- **Decision**: Forecast vs actual is derived, never advanced by a job: each transaction stores `confirmation` (`BY_DATE`, `REQUIRED`, `CONFIRMED`); it is actual when `CONFIRMED`, or `BY_DATE` with its date on or before the reader's today (the user's saved time zone). A series' "Requires confirmation" flag (default on for new series) stamps its occurrences; toggling it rewrites only occurrences still forecast. A confirmed occurrence is a record: series edits leave it untouched, except the occurrence being edited. Answers the question AD-002 and the 2026-10-29 recurrence decision left open; materialised rows stay.
+- **Reason**: Variable bills need their real amount, and the month must show what happened apart from what is expected (user, 2026-11-05, `actual-vs-forecast/context.md`).
+- **Trade-off**: Every read that counts or labels needs the reader's today; series reconcile skips confirmed rows, so a rename does not reach them.
+- **Scope**: Transactions, series generation and edit, dashboard summary.
+- **Date**: 2026-11-05
+- **Status**: active
+
 ## Handoff
 
 - **Next**: UAT of `i18n` (PR, beta.29) by the user and his wife on her phone in Portuguese; then UAT of `plan-deletion` and the series-edit round, or the Recurrence v3 Discuss
