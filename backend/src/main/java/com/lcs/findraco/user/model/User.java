@@ -1,6 +1,9 @@
 package com.lcs.findraco.user.model;
 
 import jakarta.persistence.*;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "users")
@@ -57,6 +60,11 @@ public class User {
 
     public TimeZoneMode getTimeZoneMode() {
         return timeZoneMode;
+    }
+
+    /** The calendar day it is for this user: the instant of {@code clock} read in their saved time zone. */
+    public LocalDate today(Clock clock) {
+        return LocalDate.now(clock.withZone(ZoneId.of(timeZone)));
     }
 
     public String getLanguage() {

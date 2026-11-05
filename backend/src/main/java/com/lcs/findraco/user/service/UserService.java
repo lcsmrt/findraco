@@ -16,6 +16,8 @@ import com.lcs.findraco.user.request.UpdateLanguageRequest;
 import com.lcs.findraco.user.request.UpdateTimeZoneRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
 import com.lcs.findraco.user.response.UserResponse;
+import java.time.Clock;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -30,13 +32,25 @@ public class UserService {
     private final PlanService planService;
     private final RateLimiter rateLimiter;
     private final PasswordEncoder encoder;
+    private final Clock clock;
 
     public UserService(
-            UserRepository userRepository, PlanService planService, RateLimiter rateLimiter, PasswordEncoder encoder) {
+            UserRepository userRepository,
+            PlanService planService,
+            RateLimiter rateLimiter,
+            PasswordEncoder encoder,
+            Clock clock) {
         this.userRepository = userRepository;
         this.planService = planService;
         this.rateLimiter = rateLimiter;
         this.encoder = encoder;
+        this.clock = clock;
+    }
+
+    /** The reader's calendar day, in the time zone they saved; what "today" means for forecast and actual. */
+    @Transactional(readOnly = true)
+    public LocalDate today(long userId) {
+        return load(userId).today(clock);
     }
 
     @Transactional
