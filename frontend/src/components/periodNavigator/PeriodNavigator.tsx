@@ -12,7 +12,7 @@ import {
 import { Popover, PopoverContent } from "@/components/popover/base/Popover";
 import { Text } from "@/components/typography/base/Text";
 import { isSameDay, parseISO } from "date-fns";
-import { dateFnsLocale, toIsoDate } from "@/utils/dates";
+import { dayPickerLocale, toIsoDate } from "@/utils/dates";
 import {
   CalendarRangeIcon,
   ChevronDownIcon,
@@ -156,7 +156,7 @@ export function PeriodNavigator({
         >
           <Calendar
             mode="range"
-            locale={dateFnsLocale()}
+            locale={dayPickerLocale()}
             resetOnSelect
             selected={draft}
             defaultMonth={draft?.from}

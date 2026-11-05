@@ -78,6 +78,10 @@
       "destinations": "Seções",
       "newTransaction": "Nova transação"
     },
+    "toaster": {
+      "close": "Fechar notificação",
+      "notifications": "Notificações"
+    },
     "updateRequiredDialogView": {
       "aNewVersionOfFindraco": "É preciso ter uma nova versão do findraco para continuar.",
       "update": "Atualizar",

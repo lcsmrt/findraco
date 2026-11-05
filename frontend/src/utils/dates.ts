@@ -1,6 +1,7 @@
 import { format, parse } from "date-fns";
 import { enUS, ptBR } from "date-fns/locale";
 import type { Locale } from "date-fns";
+import { enUS as dayPickerEnUS, ptBR as dayPickerPtBR } from "react-day-picker/locale";
 import { i18n } from "@/i18n/i18n";
 import type { Language } from "@/i18n/languages";
 
@@ -15,6 +16,11 @@ const DATE_LOCALES: Record<Language, Locale> = { en: enUS, "pt-BR": ptBR };
 
 export function dateFnsLocale(language: string = i18n.language): Locale {
   return language === "pt-BR" ? DATE_LOCALES["pt-BR"] : DATE_LOCALES.en;
+}
+
+/** The calendar's locale: the date-fns one plus DayPicker's own screen-reader labels ("Go to the next month"). */
+export function dayPickerLocale(language: string = i18n.language) {
+  return language === "pt-BR" ? dayPickerPtBR : dayPickerEnUS;
 }
 
 // `Intl` has no data for a language-and-region pair like en-BR and falls back to plain `en`, so the

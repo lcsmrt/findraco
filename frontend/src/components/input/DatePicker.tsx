@@ -11,7 +11,7 @@ import {
   InputGroupInput,
 } from "@/components/input/base/InputGroup";
 import { cn } from "@/lib/mergeClasses";
-import { datePlaceholder, dateFnsLocale, formatDate, parseDate } from "@/utils/dates";
+import { datePlaceholder, dayPickerLocale, formatDate, parseDate } from "@/utils/dates";
 import { useTranslation } from "react-i18next";
 
 const CURRENT_YEAR = new Date().getFullYear();
@@ -126,7 +126,7 @@ export function DatePicker({
       >
         <Calendar
           mode="single"
-          locale={dateFnsLocale()}
+          locale={dayPickerLocale()}
           selected={value}
           defaultMonth={value}
           captionLayout="dropdown"
@@ -239,7 +239,7 @@ export function DateRangePicker({
       >
         <Calendar
           mode="range"
-          locale={dateFnsLocale()}
+          locale={dayPickerLocale()}
           selected={value}
           defaultMonth={value?.from ?? value?.to}
           captionLayout="dropdown"

@@ -78,6 +78,10 @@
       "destinations": "Destinations",
       "newTransaction": "New Transaction"
     },
+    "toaster": {
+      "close": "Close toast",
+      "notifications": "Notifications"
+    },
     "updateRequiredDialogView": {
       "aNewVersionOfFindraco": "A new version of findraco is needed to continue.",
       "update": "Update",
