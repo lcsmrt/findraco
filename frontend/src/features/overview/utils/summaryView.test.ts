@@ -17,7 +17,9 @@ const dashboard: DashboardSummaryResponse = {
     { userId: LIVIA, name: "Livia", income: 2414, expense: 2105, net: 309 },
     { userId: LUCAS, name: "Lucas", income: 2733, expense: 2345, net: 388 },
   ],
-  actualIncome: 0, actualExpenses: 0, actualBalance: 0,
+  actualIncome: 3000,
+  actualExpenses: 1200,
+  actualBalance: 1800,
 };
 
 describe("summaryView", () => {
@@ -36,6 +38,22 @@ describe("summaryView", () => {
       [LIVIA, 2105],
     ]);
     expect(view.income.segments.reduce((sum, s) => sum + s.widthPct, 0)).toBeCloseTo(100, 5);
+  });
+
+  it("pairs each plan total with its actual figure", () => {
+    const view = summaryView(dashboard, null, colorOf);
+
+    expect(view.income.actual).toBe(3000);
+    expect(view.expenses.actual).toBe(1200);
+    expect(view.balanceActual).toBe(1800);
+  });
+
+  it("has no actual figure for a selected member, who has forecast figures only", () => {
+    const view = summaryView(dashboard, LIVIA, colorOf);
+
+    expect(view.income.actual).toBeNull();
+    expect(view.expenses.actual).toBeNull();
+    expect(view.balanceActual).toBeNull();
   });
 
   it("shows the selected member's income, expense and balance, highlighting their segment (UX-05 AC 2)", () => {

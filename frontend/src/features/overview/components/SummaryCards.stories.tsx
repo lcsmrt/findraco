@@ -43,6 +43,32 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+// Part of the month's expenses is still ahead: R$ 800,00 happened of the R$ 5.147,50 forecast.
+const withForecast: DashboardSummaryResponse = {
+  ...couple,
+  actualIncome: 11000,
+  actualExpenses: 800,
+  actualBalance: 10200,
+};
+
+export const WithForecast: Story = {
+  args: { view: summaryView(withForecast, null, colorOf) },
+  play: async ({ canvas }) => {
+    await expect(visibleText(canvas, "R$ 800,00")).toBeVisible();
+    await expect(visibleText(canvas, "R$ 10.200,00")).toBeVisible();
+    await expect(visibleText(canvas, "Actual · Forecast R$ 5.147,50")).toBeVisible();
+    await expect(visibleText(canvas, "Actual · Forecast R$ 5.852,50")).toBeVisible();
+  },
+};
+
+// Nothing is ahead, so the forecast equals the actual figures.
+export const NoForecast: Story = {
+  play: async ({ canvas }) => {
+    await expect(visibleText(canvas, "R$ 5.852,50")).toBeVisible();
+    await expect(visibleText(canvas, "Actual · Forecast R$ 5.852,50")).toBeVisible();
+  },
+};
+
 export const PlanTotals: Story = {
   play: async ({ canvas }) => {
     await expect(visibleText(canvas, "R$ 11.000,00")).toBeVisible();

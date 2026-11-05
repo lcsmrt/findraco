@@ -14,6 +14,11 @@ export type SummarySegment = {
 export type SummaryFigure = {
   /** The plan's total, or the selected member's amount. */
   total: number;
+  /**
+   * The actual counterpart of `total`; `null` for a selected member, whose actual figures the
+   * dashboard does not break down.
+   */
+  actual: number | null;
   segments: SummarySegment[];
 };
 
@@ -21,6 +26,8 @@ export type SummaryView = {
   income: SummaryFigure;
   expenses: SummaryFigure;
   balance: number;
+  /** `null` for a selected member, as in the figures. */
+  balanceActual: number | null;
 };
 
 /**
@@ -39,10 +46,12 @@ export function summaryView(
 
   function figure(
     planTotal: number,
+    planActual: number,
     amountOf: (person: (typeof people)[number]) => number,
   ): SummaryFigure {
     return {
       total: memberId != null ? (selected ? amountOf(selected) : 0) : planTotal,
+      actual: memberId != null ? null : planActual,
       segments: people
         .filter((person) => amountOf(person) > 0)
         .map((person) => ({
@@ -57,8 +66,9 @@ export function summaryView(
   }
 
   return {
-    income: figure(data.totalIncome, (person) => person.income),
-    expenses: figure(data.totalExpenses, (person) => person.expense),
+    income: figure(data.totalIncome, data.actualIncome, (person) => person.income),
+    expenses: figure(data.totalExpenses, data.actualExpenses, (person) => person.expense),
     balance: memberId != null ? (selected?.net ?? 0) : data.netBalance,
+    balanceActual: memberId != null ? null : data.actualBalance,
   };
 }

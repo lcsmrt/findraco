@@ -249,7 +249,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] C42, C43 pass
+- [x] C42, C43 pass
 
 **Tests**: story
 **Gate**: quick
