@@ -411,7 +411,7 @@ Proof: walk - Storybook at 390×844 with `locale` pt-BR: summary cards, transact
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** batch A (T1–T6, Sonnet) at 92f2745
 **Walked:** none
 
 ---
