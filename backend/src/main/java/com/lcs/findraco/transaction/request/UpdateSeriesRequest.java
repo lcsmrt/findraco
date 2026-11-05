@@ -10,8 +10,8 @@ import org.jspecify.annotations.Nullable;
  *
  * @param pivotOccurrenceId required (validated at the service layer) for THIS_ONE and THIS_AND_FOLLOWING scopes.
  * @param series the series as the create request describes it.
- * @param pivotConfirmed for a one-occurrence edit, whether the occurrence is confirmed afterwards; omitted, it keeps
- *     its status. Ignored by the other scopes, and by an occurrence that needs no confirmation.
+ * @param pivotConfirmed whether the pivot occurrence is confirmed afterwards, in every scope; omitted, it keeps its
+ *     status. Ignored by an occurrence that needs no confirmation.
  * @param version the series definition's version the caller read; an edit of a version that changed since
  *     answers 409.
  */

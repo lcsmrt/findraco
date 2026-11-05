@@ -518,6 +518,17 @@ public class TransactionService {
         SeriesRegenerator.SeriesEditResult result =
                 seriesRegenerator.reconcile(definition, occurrences, split.shares(), dto.scope(), pivotSlot);
 
+        // The Status control shows the pivot's status in every scope, so it is applied after the regeneration,
+        // which may otherwise have left the pivot frozen as confirmed.
+        Long pivotOccurrenceId = dto.pivotOccurrenceId();
+        if (dto.pivotConfirmed() != null && pivotOccurrenceId != null) {
+            occurrences.stream()
+                    .filter(occurrence -> occurrence.getId().equals(pivotOccurrenceId))
+                    .filter(occurrence -> !result.toDelete().contains(occurrence))
+                    .findFirst()
+                    .ifPresent(occurrence -> occurrence.markConfirmed(dto.pivotConfirmed()));
+        }
+
         transactionRepository.saveAll(result.toUpdate());
         transactionRepository.saveAll(result.toCreate());
         transactionRepository.deleteAll(result.toDelete());

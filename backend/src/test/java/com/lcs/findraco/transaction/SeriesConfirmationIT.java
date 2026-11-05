@@ -102,6 +102,28 @@ class SeriesConfirmationIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void pivotStatusAppliesInEveryScope() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode created = createSeries(plan, owner, recurringBody());
+        String seriesId = created.get("seriesId").asString();
+        long second = created.get("occurrences").get(1).get("id").asLong();
+        long fourth = created.get("occurrences").get(3).get("id").asLong();
+
+        Map<String, Object> following = editRequest(seriesId, "THIS_AND_FOLLOWING", fourth, "250.00", true);
+        following.put("pivotConfirmed", true);
+        sendEdit(plan, owner, seriesId, following);
+
+        assertThat(confirmations()).containsExactly("REQUIRED", "REQUIRED", "REQUIRED", "CONFIRMED", "REQUIRED");
+
+        Map<String, Object> all = editRequest(seriesId, "ALL", second, "250.00", true);
+        all.put("pivotConfirmed", true);
+        sendEdit(plan, owner, seriesId, all);
+
+        assertThat(confirmations()).containsExactly("REQUIRED", "CONFIRMED", "REQUIRED", "CONFIRMED", "REQUIRED");
+    }
+
+    @Test
     void allEditKeepsConfirmedOccurrences() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
