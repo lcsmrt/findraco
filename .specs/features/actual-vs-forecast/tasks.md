@@ -141,7 +141,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] C17, C18, C19, C20, C26 pass; role matrix green; snapshot regenerated
+- [x] C17, C18, C19, C20, C26 pass; role matrix green; snapshot regenerated
 
 **Tests**: integration
 **Gate**: full

@@ -3,6 +3,7 @@ package com.lcs.findraco.transaction.controller;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.shared.web.PageResponse;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
+import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
@@ -71,6 +72,13 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> updateTransaction(
             @PathVariable Long id, @RequestBody @Valid UpdateTransactionRequest dto, PlanContext ctx) {
         return ResponseEntity.ok(transactionService.update(id, dto, ctx));
+    }
+
+    @Operation(summary = "Confirms an occurrence with the amount and date it was really charged")
+    @PostMapping("/{id}/confirm")
+    public ResponseEntity<TransactionResponse> confirmTransaction(
+            @PathVariable Long id, @RequestBody @Valid ConfirmTransactionRequest dto, PlanContext ctx) {
+        return ResponseEntity.ok(transactionService.confirm(id, dto, ctx));
     }
 
     @Operation(summary = "Imports transactions from a bank CSV file, all or nothing")

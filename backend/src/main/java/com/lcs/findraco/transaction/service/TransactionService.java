@@ -25,6 +25,7 @@ import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.repository.TransactionSpecification;
+import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
@@ -213,6 +214,26 @@ public class TransactionService {
                 dto.endDate(),
                 dto.parcelsNumber());
         transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
+
+        return response(transactionRepository.saveAndFlush(transaction), ctx);
+    }
+
+    /**
+     * Records what an occurrence really cost and when. A date that moves leaves its old date as an exception,
+     * so a later series edit does not refill it.
+     */
+    @Transactional
+    public TransactionResponse confirm(Long id, ConfirmTransactionRequest dto, PlanContext ctx) {
+        Transaction transaction = load(id, ctx);
+        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
+        claimVersion(transaction, transaction.getVersion(), dto.version());
+
+        LocalDate previousDate = transaction.getStartDate();
+        transaction.confirm(dto.amount(), dto.startDate());
+        RecurrenceDefinition definition = transaction.getRecurrenceDefinition();
+        if (definition != null && !previousDate.equals(dto.startDate())) {
+            definition.except(previousDate);
+        }
 
         return response(transactionRepository.saveAndFlush(transaction), ctx);
     }
