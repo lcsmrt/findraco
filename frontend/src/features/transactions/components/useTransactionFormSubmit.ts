@@ -17,6 +17,7 @@ import {
   type TransactionFormOutput,
 } from "./transactionForm";
 import type { SeriesScopeDialogContextValue } from "./useSeriesScope";
+import { useTranslation } from "react-i18next";
 
 type UseTransactionFormSubmitArgs = {
   mode: TransactionFormMode;
@@ -43,6 +44,8 @@ export function useTransactionFormSubmit({
   chooseScope,
   onDone,
 }: UseTransactionFormSubmitArgs) {
+  const { t } = useTranslation();
+
   const createTransaction = useCreateTransaction({ onSuccess: onDone });
   // A stale edit closes the form: the data it was opened on has been reloaded.
   const updateTransaction = useUpdateTransaction({ onSuccess: onDone, onStale: onDone });
@@ -59,7 +62,7 @@ export function useTransactionFormSubmit({
     if (!definition) return;
     const scope = seriesParcelsChanged(definition, values.parcelsNumber)
       ? "ALL"
-      : await chooseScope({ title: "Edit series" });
+      : await chooseScope({ title: t("transactions.seriesScopeDialog.editSeries") });
     if (!scope) return;
 
     updateSeries.mutate({

@@ -4,7 +4,7 @@ import { Button } from "@/components/button/base/Button";
 import { buttonVariants } from "@/components/button/base/buttonVariants";
 import { cn } from "@/lib/mergeClasses";
 import {
-  DESTINATION_LABELS,
+  DESTINATION_LABEL_KEYS,
   DESTINATION_PATHS,
   DESTINATIONS,
   type Destination,
@@ -40,7 +40,7 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
                 : "text-muted-foreground hover:text-foreground border-transparent",
             )}
           >
-            {DESTINATION_LABELS[destination]}
+            {t(DESTINATION_LABEL_KEYS[destination])}
           </Link>
         ))}
       </div>

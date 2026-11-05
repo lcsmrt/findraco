@@ -10,8 +10,8 @@ import {
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
 import { CheckIcon, XIcon } from "lucide-react";
-import { ROLE_LABELS } from "./utils/planLabels";
-import { useTranslation } from "react-i18next";
+import { buildRoleLabels } from "./utils/planLabels";
+import { Trans, useTranslation } from "react-i18next";
 
 type AcceptInvitationViewProps = {
   preview: InvitationPreview | undefined;
@@ -32,6 +32,7 @@ export function AcceptInvitationView({
   onGoHome,
 }: AcceptInvitationViewProps) {
   const { t } = useTranslation();
+  const roleLabels = buildRoleLabels(t);
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 p-4">
@@ -60,11 +61,15 @@ export function AcceptInvitationView({
             <CardHeader>
               <CardTitle>{t("plans.acceptInvitationView.youVeBeenInvited")}</CardTitle>
               <CardDescription>
-                {preview.invitedByName} invited you to the plan{" "}
-                <Text variant="label" className="text-foreground">
-                  {preview.planName}
-                </Text>{" "}
-                as {ROLE_LABELS[preview.role]}.
+                <Trans
+                  i18nKey="plans.acceptInvitationView.invitedYou"
+                  values={{
+                    inviter: preview.invitedByName,
+                    plan: preview.planName,
+                    role: roleLabels[preview.role],
+                  }}
+                  components={{ plan: <Text variant="label" className="text-foreground" /> }}
+                />
               </CardDescription>
             </CardHeader>
             <CardContent className="flex gap-2">

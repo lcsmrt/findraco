@@ -9,7 +9,7 @@ export function deletePlanPermanentlySchema(planName: string) {
   return z.object({
     confirmation: z
       .string()
-      .refine((typed) => matchesPlanName(typed, planName), "Type the plan name exactly as shown"),
+      .refine((typed) => matchesPlanName(typed, planName), "plans.deleteForm.typeThePlanNameExactly"),
   });
 }
 

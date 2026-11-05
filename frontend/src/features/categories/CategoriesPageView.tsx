@@ -10,7 +10,10 @@ import type { CategoryTreeRoot, CategoryTreeSection } from "./utils/categoryTree
 import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./components/CategoryTreeRow";
 import { useTranslation } from "react-i18next";
 
-const SECTION_TITLES = { DEBIT: "Expenses", CREDIT: "Income" } as const;
+const SECTION_TITLE_KEYS = {
+  DEBIT: "categories.categoriesPageView.expenses",
+  CREDIT: "categories.categoriesPageView.income",
+} as const;
 
 type CategorySectionProps = {
   title: string;
@@ -131,7 +134,7 @@ export function CategoriesPageView({
           {sections.map((section) => (
             <CategorySection
               key={section.type}
-              title={SECTION_TITLES[section.type]}
+              title={t(SECTION_TITLE_KEYS[section.type])}
               roots={section.roots}
               colorOf={colorOf}
               canManage={canManage}

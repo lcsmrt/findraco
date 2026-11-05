@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/button/base/Button";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
-import { DESTINATION_LABELS, DESTINATION_PATHS, type Destination } from "./utils/navigation";
+import { DESTINATION_LABEL_KEYS, DESTINATION_PATHS, type Destination } from "./utils/navigation";
 import { useTranslation } from "react-i18next";
 
 const ICONS: Record<Destination, LucideIcon> = {
@@ -61,6 +61,8 @@ type BarItemProps = {
 };
 
 function BarItem({ destination, current }: BarItemProps) {
+  const { t } = useTranslation();
+
   const Icon = ICONS[destination];
   const active = destination === current;
 
@@ -76,7 +78,7 @@ function BarItem({ destination, current }: BarItemProps) {
     >
       <Icon className="size-5" aria-hidden />
       <Text variant="caption" className={active ? "text-primary-ink" : undefined}>
-        {DESTINATION_LABELS[destination]}
+        {t(DESTINATION_LABEL_KEYS[destination])}
       </Text>
     </Link>
   );

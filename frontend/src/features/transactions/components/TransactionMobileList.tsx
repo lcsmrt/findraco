@@ -10,6 +10,8 @@ import { formatPattern } from "@/utils/dates";
 import { groupByDay } from "../utils/groupByDay";
 import { useTranslation } from "react-i18next";
 
+const DAY_HEADING_PATTERN = "EEE, d MMM yyyy";
+
 type TransactionMobileRowProps = {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;
@@ -82,7 +84,7 @@ export function TransactionMobileList({
         days.map((group) => (
           <section key={group.day}>
             <Heading level={3} variant="caption" className="bg-muted/50 border-b px-3 py-1.5">
-              {formatPattern(group.day, "EEE, d MMM yyyy")}
+              {formatPattern(group.day, DAY_HEADING_PATTERN)}
             </Heading>
             <div className="divide-y border-b">
               {group.transactions.map((transaction) => (

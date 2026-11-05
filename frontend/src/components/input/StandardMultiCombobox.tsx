@@ -14,6 +14,7 @@ import { useComboboxAnchor } from "@/components/input/base/useComboboxAnchor";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 type WithId = { id: number | string };
 
@@ -45,16 +46,21 @@ export function StandardMultiCombobox<T extends WithId>({
   value,
   onValueChange,
   itemLabel,
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
+  placeholder: placeholderProp,
+  searchPlaceholder: searchPlaceholderProp,
   searchValue: externalSearch,
   onSearchChange,
   isItemEqualToValue = defaultEqual,
-  emptyMessage = "No results",
+  emptyMessage: emptyMessageProp,
   disabled,
   className,
   maxVisibleChips = 3,
 }: StandardMultiCombobox<T>) {
+  const { t } = useTranslation();
+  const placeholder = placeholderProp ?? t("components.standardCombobox.select");
+  const searchPlaceholder = searchPlaceholderProp ?? t("components.standardCombobox.search");
+  const emptyMessage = emptyMessageProp ?? t("components.standardCombobox.noResults");
+
   const anchor = useComboboxAnchor();
   const [internalSearch, setInternalSearch] = React.useState("");
 

@@ -78,7 +78,7 @@ export function TablePagination({
 
       <div className="flex w-full items-center justify-end gap-4">
         <Text variant="secondary" className="hidden sm:block">
-          {start} – {end} of {totalElements}
+          {t("components.tablePagination.range", { start, end, total: totalElements })}
         </Text>
 
         <div className="flex items-center gap-2">
@@ -101,7 +101,7 @@ export function TablePagination({
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Text variant="secondary" className="whitespace-nowrap">
-            Page {page + 1} of {totalPages || 1}
+            {t("components.tablePagination.page", { page: page + 1, pages: totalPages || 1 })}
           </Text>
           <Button
             variant="ghost"

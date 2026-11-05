@@ -8,12 +8,15 @@ import { useAuth } from "@/app/providers/useAuth";
 import { useConfirm } from "@/components/dialog/useConfirm";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { PlanMembersListView } from "./PlanMembersListView";
+import { useTranslation } from "react-i18next";
 
 type PlanMembersListProps = {
   planId: number;
 };
 
 export function PlanMembersList({ planId }: PlanMembersListProps) {
+  const { t } = useTranslation();
+
   const { data: members = [], isLoading } = useGetPlanMembers(planId);
   const { user } = useAuth();
   const confirm = useConfirm();
@@ -40,10 +43,10 @@ export function PlanMembersList({ planId }: PlanMembersListProps) {
 
   async function handleRemove(member: PlanMember) {
     const confirmed = await confirm({
-      title: "Remove member",
-      description: `Are you sure you want to remove ${member.name} from this plan?`,
-      confirmLabel: "Remove",
-      cancelLabel: "Cancel",
+      title: t("plans.planMembersList.removeMember"),
+      description: t("plans.planMembersList.removeDescription", { name: member.name }),
+      confirmLabel: t("plans.planMembersList.remove"),
+      cancelLabel: t("common.cancel"),
       variant: "destructive",
     });
     if (confirmed) {

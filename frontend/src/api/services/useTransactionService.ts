@@ -87,7 +87,7 @@ export function useCreateTransaction(
   return useMutation({
     mutationFn: (payload: CreateTransactionRequest) =>
       createTransaction(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Transaction added." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.transactionAdded" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -120,7 +120,7 @@ export function useUpdateTransaction(
   return useMutation({
     mutationFn: (payload: UpdateTransactionRequest) =>
       updateTransaction(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Transaction updated." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.transactionUpdated" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -185,7 +185,7 @@ export function useCreateTransactionSeries(
   return useMutation({
     mutationFn: (payload: CreateTransactionSeriesRequest) =>
       createTransactionSeries(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Series created." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.seriesCreated" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -216,7 +216,7 @@ export function useDeleteTransactionSeries(
   return useMutation({
     mutationFn: (payload: DeleteTransactionSeriesRequest) =>
       deleteTransactionSeries(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Series deleted." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.seriesDeleted" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -280,7 +280,7 @@ export function useUpdateTransactionSeries(
   return useMutation({
     mutationFn: (payload: UpdateTransactionSeriesRequest) =>
       updateTransactionSeries(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "Series updated." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.seriesUpdated" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
@@ -307,7 +307,7 @@ export function useDeleteTransaction(
   const { activePlanId } = usePlanContext();
   return useMutation({
     mutationFn: (id: number) => deleteTransaction(activePlanId!, id),
-    ...buildMutationOptions({ successMessage: "Transaction deleted." }, {
+    ...buildMutationOptions({ successMessage: "api.toast.transactionDeleted" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);

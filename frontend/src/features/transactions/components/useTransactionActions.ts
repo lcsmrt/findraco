@@ -7,6 +7,7 @@ import { useConfirm } from "@/components/dialog/useConfirm";
 import { useState } from "react";
 import type { TransactionFormMode } from "./transactionForm";
 import { useSeriesScope } from "./useSeriesScope";
+import { useTranslation } from "react-i18next";
 
 type DrawerState =
   | { open: false }
@@ -34,6 +35,8 @@ function toDrawer(state: DrawerState): TransactionDrawer {
  * confirmation otherwise.
  */
 export function useTransactionActions() {
+  const { t } = useTranslation();
+
   const [drawerState, setDrawerState] = useState<DrawerState>({ open: false });
   const confirm = useConfirm();
   const chooseScope = useSeriesScope();
@@ -52,9 +55,9 @@ export function useTransactionActions() {
   async function remove(transaction: Transaction) {
     if (transaction.seriesId) {
       const scope = await chooseScope({
-        title: "Delete series",
-        description: "Choose which occurrences to delete.",
-        confirmLabel: "Delete",
+        title: t("transactions.useTransactionActions.deleteSeries"),
+        description: t("transactions.useTransactionActions.chooseOccurrences"),
+        confirmLabel: t("common.delete"),
         confirmVariant: "destructive",
       });
       if (!scope) return;
@@ -68,11 +71,10 @@ export function useTransactionActions() {
     }
 
     const confirmed = await confirm({
-      title: "Confirm Deletion",
-      description:
-        "Are you sure you want to delete this transaction? This action cannot be undone.",
-      confirmLabel: "Delete",
-      cancelLabel: "Cancel",
+      title: t("transactions.useTransactionActions.confirmDeletion"),
+      description: t("transactions.useTransactionActions.deleteDescription"),
+      confirmLabel: t("common.delete"),
+      cancelLabel: t("common.cancel"),
       variant: "destructive",
     });
     if (confirmed) deleteTransaction(transaction.id);

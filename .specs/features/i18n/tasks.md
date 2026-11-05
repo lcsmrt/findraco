@@ -162,7 +162,7 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] C5, C6 pass; `pnpm lint` green
+- [x] C5, C6 pass; `pnpm lint` green
 
 **Tests**: unit
 **Gate**: quick

@@ -4,6 +4,7 @@ import { MutationOptions } from "../types/mutationOptions";
 import { problemToast, problemType } from "./problems";
 import { resolveSuccessMessage } from "./resolveSuccessMessage";
 import { toast } from "sonner";
+import { i18n } from "@/i18n/i18n";
 
 type MutationDefaults<TData, TVariables> = Omit<
   MutationOptions<TData, TVariables>,
@@ -33,10 +34,11 @@ export function buildMutationOptions<TData, TVariables>(
       if (showSuccessToast) {
         toast.success(
           resolveSuccessMessage({
-            message: successMessage,
+            // Keys resolve here, when the toast fires, so it reads in the language in use now.
+            message: typeof successMessage === "string" ? i18n.t(successMessage) : successMessage,
             data,
             variables,
-            fallbackMessage: "Operation completed successfully.",
+            fallbackMessage: i18n.t("api.toast.operationCompleted"),
           }),
         );
       }
@@ -45,7 +47,7 @@ export function buildMutationOptions<TData, TVariables>(
     onError: (error, _variables, _onMutateResult, context) => {
       // A failed renewal already showed the session-expired message.
       if (showErrorToast && !(error instanceof SessionExpiredError)) {
-        const { message, description } = problemToast(error, errorMessage);
+        const { message, description } = problemToast(error, errorMessage && i18n.t(errorMessage));
         toast.error(message, description ? { description } : undefined);
       }
       if (problemType(error) === "stale-version") {

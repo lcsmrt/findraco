@@ -6,12 +6,15 @@ import {
 import { useConfirm } from "@/components/dialog/useConfirm";
 import { invitationLabel } from "./invitationLabel";
 import { PlanInvitationsListView } from "./PlanInvitationsListView";
+import { useTranslation } from "react-i18next";
 
 type PlanInvitationsListProps = {
   planId: number;
 };
 
 export function PlanInvitationsList({ planId }: PlanInvitationsListProps) {
+  const { t } = useTranslation();
+
   const { data: invitations = [], isLoading } =
     useGetPlanInvitations(planId);
   const confirm = useConfirm();
@@ -19,10 +22,10 @@ export function PlanInvitationsList({ planId }: PlanInvitationsListProps) {
 
   async function handleRevoke(invitation: Invitation) {
     const confirmed = await confirm({
-      title: "Revoke invitation",
-      description: `Are you sure you want to revoke the invitation for ${invitationLabel(invitation)}?`,
-      confirmLabel: "Revoke",
-      cancelLabel: "Cancel",
+      title: t("plans.planInvitationsList.revokeInvitation"),
+      description: t("plans.planInvitationsList.revokeDescription", { name: invitationLabel(invitation) }),
+      confirmLabel: t("plans.planInvitationsList.revoke"),
+      cancelLabel: t("common.cancel"),
       variant: "destructive",
     });
     if (confirmed) {

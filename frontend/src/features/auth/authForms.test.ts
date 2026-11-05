@@ -30,16 +30,16 @@ describe("loginSchema", () => {
       messages(loginSchema.safeParse({ email: "", password: "" })),
     ).toEqual([
       // Empty also fails the format check; the field shows the first issue, the missing email.
-      ["email", "Please enter your email"],
-      ["email", "Invalid email"],
-      ["password", "Please enter your password"],
+      ["email", "auth.form.pleaseEnterYourEmail"],
+      ["email", "auth.form.invalidEmail"],
+      ["password", "auth.form.pleaseEnterYourPassword"],
     ]);
   });
 
   it("rejects a malformed email (STD-06 AC 9)", () => {
     expect(
       messages(loginSchema.safeParse({ email: "ana", password: "secret" })),
-    ).toEqual([["email", "Invalid email"]]);
+    ).toEqual([["email", "auth.form.invalidEmail"]]);
   });
 });
 
@@ -60,11 +60,11 @@ describe("registerUserSchema", () => {
         registerUserSchema.safeParse({ name: "", email: "", password: "" }),
       ),
     ).toEqual([
-      ["name", "Please enter your full name"],
+      ["name", "auth.form.pleaseEnterYourFullName"],
       // Empty also fails the format check; the field shows the first issue, the missing email.
-      ["email", "Please enter your email"],
-      ["email", "Invalid email"],
-      ["password", "Please enter your password"],
+      ["email", "auth.form.pleaseEnterYourEmail"],
+      ["email", "auth.form.invalidEmail"],
+      ["password", "auth.form.pleaseEnterYourPassword"],
     ]);
   });
 
@@ -75,7 +75,7 @@ describe("registerUserSchema", () => {
       password: "short",
     });
 
-    expect(messages(result)).toEqual([["password", "Use 8 to 128 characters"]]);
+    expect(messages(result)).toEqual([["password", "auth.password.length"]]);
   });
 
   it("rejects a malformed email", () => {
@@ -85,7 +85,7 @@ describe("registerUserSchema", () => {
       password: "secret-pass",
     });
 
-    expect(messages(result)).toEqual([["email", "Invalid email"]]);
+    expect(messages(result)).toEqual([["email", "auth.form.invalidEmail"]]);
   });
 });
 
@@ -98,14 +98,14 @@ describe("forgotPasswordSchema", () => {
 
   it("asks for an empty email (STD-06 AC 9)", () => {
     expect(messages(forgotPasswordSchema.safeParse({ email: "" }))).toEqual([
-      ["email", "Please enter your email"],
-      ["email", "Invalid email"],
+      ["email", "auth.form.pleaseEnterYourEmail"],
+      ["email", "auth.form.invalidEmail"],
     ]);
   });
 
   it("rejects a malformed email", () => {
     expect(messages(forgotPasswordSchema.safeParse({ email: "ana" }))).toEqual([
-      ["email", "Invalid email"],
+      ["email", "auth.form.invalidEmail"],
     ]);
   });
 });
@@ -126,7 +126,7 @@ describe("resetPasswordSchema", () => {
       confirmPassword: "short",
     });
 
-    expect(messages(result)).toEqual([["password", "Use 8 to 128 characters"]]);
+    expect(messages(result)).toEqual([["password", "auth.password.length"]]);
   });
 
   it("flags the confirmation when the passwords differ", () => {
@@ -139,7 +139,7 @@ describe("resetPasswordSchema", () => {
     expect(result.error?.issues).toEqual([
       expect.objectContaining({
         path: ["confirmPassword"],
-        message: "Passwords do not match",
+        message: "auth.form.passwordsDoNotMatch",
       }),
     ]);
   });

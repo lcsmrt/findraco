@@ -58,7 +58,9 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
                 render={({ field, fieldState }) => (
                   <Input
                     {...field}
-                    aria-label={`Item ${index + 1} description`}
+                    aria-label={t("transactions.itemsField.itemDescriptionLabel", {
+                      number: index + 1,
+                    })}
                     aria-invalid={fieldState.invalid}
                     placeholder={t("transactions.itemsField.itemDescription")}
                     className="flex-1"
@@ -73,7 +75,7 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
                   <CurrencyInput
                     {...field}
                     onValueChange={field.onChange}
-                    aria-label={`Item ${index + 1} amount`}
+                    aria-label={t("transactions.itemsField.itemAmountLabel", { number: index + 1 })}
                     aria-invalid={fieldState.invalid}
                     placeholder={t("common.r000")}
                     className="w-28"
@@ -85,7 +87,7 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
                 type="button"
                 variant="ghost"
                 size="icon-sm"
-                aria-label={`Remove item ${index + 1}`}
+                aria-label={t("transactions.itemsField.removeItem", { number: index + 1 })}
                 disabled={disabled}
                 onClick={() => remove(index)}
               >
@@ -120,7 +122,7 @@ export function ItemsField({ control, renderCategory, disabled }: ItemsFieldProp
       </div>
       {fields.length > 0 && (
         <Text as="p" variant="secondary" className={cn(remainderCents < 0 && "text-destructive")}>
-          Remainder: {formatMoney(remainderCents / 100)}
+          {t("transactions.itemsField.remainder", { amount: formatMoney(remainderCents / 100) })}
         </Text>
       )}
       {/* With the item amounts registered as fields, the resolver files the list-level error under

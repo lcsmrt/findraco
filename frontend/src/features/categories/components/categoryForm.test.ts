@@ -85,14 +85,14 @@ describe("createCategoryFormSchema", () => {
   it("requires a name", () => {
     expect(
       issuesOf(createCategoryFormSchema(categories).safeParse(values({ description: "  " }))),
-    ).toEqual([{ path: "description", message: "Name is required" }]);
+    ).toEqual([{ path: "description", message: "categories.form.nameIsRequired" }]);
   });
 
   it("rejects a child as parent", () => {
     expect(
       issuesOf(createCategoryFormSchema(categories).safeParse(values({ parentId: 2 }))),
     ).toEqual([
-      { path: "parentId", message: "Choose a top-level category of the same type" },
+      { path: "parentId", message: "categories.form.chooseATopLevelCategory" },
     ]);
   });
 
@@ -100,7 +100,7 @@ describe("createCategoryFormSchema", () => {
     expect(
       issuesOf(createCategoryFormSchema(categories).safeParse(values({ parentId: 4 }))),
     ).toEqual([
-      { path: "parentId", message: "Choose a top-level category of the same type" },
+      { path: "parentId", message: "categories.form.chooseATopLevelCategory" },
     ]);
   });
 
@@ -108,7 +108,7 @@ describe("createCategoryFormSchema", () => {
     expect(
       issuesOf(createCategoryFormSchema(categories, rent).safeParse(values({ parentId: 5 }))),
     ).toEqual([
-      { path: "parentId", message: "Choose a top-level category of the same type" },
+      { path: "parentId", message: "categories.form.chooseATopLevelCategory" },
     ]);
   });
 
@@ -120,7 +120,7 @@ describe("createCategoryFormSchema", () => {
         ),
       ),
     ).toEqual([
-      { path: "type", message: "A category with subcategories cannot change type" },
+      { path: "type", message: "categories.form.aCategoryWithSubcategoriesCannot2" },
     ]);
   });
 
@@ -140,7 +140,7 @@ describe("createCategoryFormSchema", () => {
         ),
       ),
     ).toEqual([
-      { path: "parentId", message: "A category with subcategories cannot have a parent" },
+      { path: "parentId", message: "categories.form.aCategoryWithSubcategoriesCannot" },
     ]);
   });
 
@@ -374,13 +374,13 @@ describe("createCategoryFormSchema with per-member limits", () => {
           perMember([row(10, "Lucas", 1), row(10, "Lucas", 2)]),
         ),
       ),
-    ).toEqual([{ path: "memberLimits.1.memberId", message: "Each member can have only one limit" }]);
+    ).toEqual([{ path: "memberLimits.1.memberId", message: "categories.form.eachMemberCanHaveOnly" }]);
   });
 
   it("rejects a negative amount", () => {
     expect(
       issuesOf(createCategoryFormSchema(categories).safeParse(perMember([row(10, "Lucas", -1)]))),
-    ).toEqual([{ path: "memberLimits.0.amount", message: "Amount cannot be negative" }]);
+    ).toEqual([{ path: "memberLimits.0.amount", message: "categories.form.amountCannotBeNegative" }]);
   });
 
   it("is not allowed on a CREDIT category", () => {
@@ -390,13 +390,13 @@ describe("createCategoryFormSchema with per-member limits", () => {
           perMember([row(10, "Lucas", 1)], { type: "CREDIT" }),
         ),
       ),
-    ).toEqual([{ path: "limitMode", message: "Income categories cannot have per-member limits" }]);
+    ).toEqual([{ path: "limitMode", message: "categories.form.incomeCategoriesCannotHavePer" }]);
   });
 
   it("is not allowed on an owned category or a child of one", () => {
     const owned = cat(7, "Professional", { ownerId: 10 });
     const withOwned = [...categories, owned];
-    const message = "A category that belongs to one member cannot have per-member limits";
+    const message = "categories.form.aCategoryThatBelongsTo";
     expect(
       issuesOf(
         createCategoryFormSchema(withOwned, owned).safeParse(
@@ -502,11 +502,11 @@ describe("createCategoryFormSchema with an owner", () => {
   it("rejects an owner on a child", () => {
     expect(
       issuesOf(createCategoryFormSchema(categories).safeParse(values({ parentId: 1, ownerId: 10 }))),
-    ).toEqual([{ path: "ownerId", message: "A subcategory has its parent's owner" }]);
+    ).toEqual([{ path: "ownerId", message: "categories.form.aSubcategoryHasItsParent" }]);
   });
 
   it("makes the owner and per-member mode mutually exclusive", () => {
-    const message = "A category that belongs to one member cannot have per-member limits";
+    const message = "categories.form.aCategoryThatBelongsTo";
     expect(
       issuesOf(
         createCategoryFormSchema(categories).safeParse(

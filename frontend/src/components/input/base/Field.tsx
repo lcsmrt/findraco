@@ -3,6 +3,8 @@ import { Separator } from "@/components/separator/base/Separator";
 import { cn } from "@/lib/mergeClasses";
 import { cva, type VariantProps } from "class-variance-authority";
 import { useMemo } from "react";
+import { useTranslation } from "react-i18next";
+import { translateMessage } from "@/i18n/utils/translateMessage";
 
 function FieldSet({ className, ...props }: React.ComponentProps<"fieldset">) {
   return (
@@ -179,6 +181,7 @@ function FieldError({
 }: React.ComponentProps<"div"> & {
   errors?: Array<{ message?: string } | undefined>;
 }) {
+  const { t } = useTranslation();
   const content = useMemo(() => {
     if (children) {
       return children;
@@ -191,15 +194,15 @@ function FieldError({
     const uniqueErrors = [...new Map(errors.map((error) => [error?.message, error])).values()];
 
     if (uniqueErrors?.length == 1) {
-      return uniqueErrors[0]?.message;
+      return translateMessage(t, uniqueErrors[0]?.message ?? "");
     }
 
     return (
       <ul className="ml-4 flex list-disc flex-col gap-1">
-        {uniqueErrors.map((error, index) => error?.message && <li key={index}>{error.message}</li>)}
+        {uniqueErrors.map((error, index) => error?.message && <li key={index}>{translateMessage(t, error.message)}</li>)}
       </ul>
     );
-  }, [children, errors]);
+  }, [children, errors, t]);
 
   if (!content) {
     return null;

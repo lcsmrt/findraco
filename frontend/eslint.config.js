@@ -1,5 +1,6 @@
 // For more info, see https://github.com/storybookjs/eslint-plugin-storybook#configuration-flat-config-format
 import storybook from "eslint-plugin-storybook";
+import i18next from 'eslint-plugin-i18next'
 
 import js from '@eslint/js'
 import { defineConfig } from 'eslint/config'
@@ -208,4 +209,21 @@ syntaxLayer(
 ),
 syntaxLayer(['src/app/**/*.{ts,tsx}'], [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors]),
 syntaxLayer(['src/components/**/base/**/*.{ts,tsx}'], [...paletteSelectors]),
+// Interface texts live in src/i18n/*.json: a literal in a component's JSX or in a user-facing
+// attribute would stay English for every reader. Tests and stories assert and render copy as it is.
+{
+  files: ['src/**/*.tsx'],
+  ignores: ['**/*.test.tsx', '**/*.stories.tsx', 'src/test/**'],
+  plugins: { i18next },
+  rules: {
+    'i18next/no-literal-string': [
+      'error',
+      {
+        mode: 'jsx-only',
+        'should-validate-template': true,
+        'jsx-attributes': { include: ['placeholder', 'title', 'aria-label', 'alt'], exclude: [] },
+      },
+    ],
+  },
+},
 storybook.configs["flat/recommended"]);

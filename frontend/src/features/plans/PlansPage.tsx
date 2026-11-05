@@ -10,8 +10,11 @@ import { PlanInvitationsList } from "./components/PlanInvitationsList";
 import { PlanMembersList } from "./components/PlanMembersList";
 import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
 import { PlansPageView } from "./PlansPageView";
+import { useTranslation } from "react-i18next";
 
 export function PlansPage() {
+  const { t } = useTranslation();
+
   const { plans, activePlan, activePlanId, setActivePlanId, isLoading } =
     usePlanContext();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -27,10 +30,10 @@ export function PlansPage() {
   async function handleArchivePlan() {
     if (!activePlan) return;
     const confirmed = await confirm({
-      title: "Archive plan",
-      description: `Are you sure you want to archive the plan "${activePlan.name}"? You can restore it from "Archived plans" for 30 days; after that it is deleted permanently.`,
-      confirmLabel: "Archive",
-      cancelLabel: "Cancel",
+      title: t("plans.plansPage.archivePlan"),
+      description: t("plans.plansPage.archiveDescription", { name: activePlan.name }),
+      confirmLabel: t("plans.plansPage.archive"),
+      cancelLabel: t("common.cancel"),
       variant: "destructive",
     });
     if (confirmed) {
@@ -41,10 +44,10 @@ export function PlansPage() {
   async function handleLeavePlan() {
     if (!activePlan) return;
     const confirmed = await confirm({
-      title: "Leave plan",
-      description: `Are you sure you want to leave the plan "${activePlan.name}"?`,
-      confirmLabel: "Leave",
-      cancelLabel: "Cancel",
+      title: t("plans.plansPage.leavePlan"),
+      description: t("plans.plansPage.leaveDescription", { name: activePlan.name }),
+      confirmLabel: t("plans.plansPage.leave"),
+      cancelLabel: t("common.cancel"),
       variant: "destructive",
     });
     if (confirmed) {

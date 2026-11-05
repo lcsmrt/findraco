@@ -1,3 +1,4 @@
+import type { ParseKeys } from "i18next";
 import { PATHS } from "@/app/routing/paths";
 
 export type Destination = "overview" | "transactions" | "categories" | "plans";
@@ -17,12 +18,12 @@ export const DESTINATIONS: readonly Destination[] = [
   "plans",
 ];
 
-export const DESTINATION_LABELS: Record<Destination, string> = {
-  overview: "Overview",
-  transactions: "Transactions",
-  categories: "Categories",
-  plans: "Plans",
-};
+export const DESTINATION_LABEL_KEYS = {
+  overview: "app.navigation.overview",
+  transactions: "app.navigation.transactions",
+  categories: "app.navigation.categories",
+  plans: "app.navigation.plans",
+} as const satisfies Record<Destination, ParseKeys>;
 
 /** The destination a pathname belongs to (nested paths included), or null off the four. */
 export function currentDestination(pathname: string): Destination | null {

@@ -34,9 +34,9 @@ export function InstallInstructionsDialogView({
         <ol className="flex list-decimal flex-col gap-3 pl-5">
           <li>
             <Text className="inline-flex items-center gap-1.5">
-              Tap the Share icon
+              {t("app.installInstructionsDialogView.tapTheShareIcon")}
               <Share aria-hidden className="size-4" />
-              in the browser toolbar.
+              {t("app.installInstructionsDialogView.inTheBrowserToolbar")}
             </Text>
           </li>
           <li>

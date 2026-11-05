@@ -13,28 +13,29 @@ import { SeriesEditScope } from "@/api/dtos/transaction";
 import type { ScopeDialogOptions } from "./useSeriesScope";
 import { Text } from "@/components/typography/base/Text";
 import { useTranslation } from "react-i18next";
+import type { ParseKeys } from "i18next";
 
 type ScopeOption = {
   value: SeriesEditScope;
-  label: string;
-  helperText: string;
+  label: ParseKeys;
+  helperText: ParseKeys;
 };
 
 const SCOPE_OPTIONS: ScopeOption[] = [
   {
     value: "THIS_ONE",
-    label: "This one",
-    helperText: "Only this occurrence will be changed.",
+    label: "transactions.seriesScopeDialog.thisOne",
+    helperText: "transactions.seriesScopeDialog.thisOneHelp",
   },
   {
     value: "THIS_AND_FOLLOWING",
-    label: "This and following",
-    helperText: "This and all future occurrences will be changed. Past occurrences stay the same.",
+    label: "transactions.seriesScopeDialog.thisAndFollowing",
+    helperText: "transactions.seriesScopeDialog.thisAndFollowingHelp",
   },
   {
     value: "ALL",
-    label: "All",
-    helperText: "Every occurrence in the series will be changed, including past ones.",
+    label: "transactions.seriesScopeDialog.all",
+    helperText: "transactions.seriesScopeDialog.allHelp",
   },
 ];
 
@@ -61,9 +62,11 @@ export function SeriesScopeDialog({
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
       <DialogContent>
         <DialogHeader className="gap-4">
-          <DialogTitle>{options.title ?? "Edit series"}</DialogTitle>
+          <DialogTitle>
+            {options.title ?? t("transactions.seriesScopeDialog.editSeries")}
+          </DialogTitle>
           <DialogDescription>
-            {options.description ?? "Choose what to apply this change to."}
+            {options.description ?? t("transactions.seriesScopeDialog.chooseScope")}
           </DialogDescription>
         </DialogHeader>
         <RadioGroup value={scope} onValueChange={(value) => onScopeChange(value)}>
@@ -72,8 +75,8 @@ export function SeriesScopeDialog({
               <Field orientation="horizontal">
                 <RadioGroupItem id={option.value} value={option.value} />
                 <div className="flex flex-col gap-0.5">
-                  <Text variant="label">{option.label}</Text>
-                  <Text variant="secondary">{option.helperText}</Text>
+                  <Text variant="label">{t(option.label)}</Text>
+                  <Text variant="secondary">{t(option.helperText)}</Text>
                 </div>
               </Field>
             </FieldLabel>
@@ -84,7 +87,7 @@ export function SeriesScopeDialog({
             {t("common.cancel")}
           </Button>
           <Button variant={options.confirmVariant ?? "default"} onClick={onContinue}>
-            {options.confirmLabel ?? "Continue"}
+            {options.confirmLabel ?? t("transactions.seriesScopeDialog.continue")}
           </Button>
         </DialogFooter>
       </DialogContent>

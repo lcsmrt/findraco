@@ -17,15 +17,15 @@ import { useTranslation } from "react-i18next";
 
 type PlanNameDialogMode = "create" | "rename";
 
-const TITLES: Record<PlanNameDialogMode, string> = {
-  create: "New plan",
-  rename: "Rename plan",
-};
+const TITLE_KEYS = {
+  create: "plans.planNameDialogView.newPlan",
+  rename: "plans.planNameDialogView.renamePlan",
+} as const;
 
-const SUBMIT_LABELS: Record<PlanNameDialogMode, string> = {
-  create: "Create",
-  rename: "Save",
-};
+const SUBMIT_LABEL_KEYS = {
+  create: "common.create",
+  rename: "common.save",
+} as const;
 
 type PlanNameDialogViewProps = {
   open: boolean;
@@ -64,7 +64,7 @@ export function PlanNameDialogView({
       <DialogContent className="sm:max-w-sm">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <DialogHeader>
-            <DialogTitle>{TITLES[mode]}</DialogTitle>
+            <DialogTitle>{t(TITLE_KEYS[mode])}</DialogTitle>
           </DialogHeader>
 
           <FormField control={control} name="name" label={t("common.name")}>
@@ -89,7 +89,7 @@ export function PlanNameDialogView({
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
               <SaveIcon className="h-4 w-4" />
-              {SUBMIT_LABELS[mode]}
+              {t(SUBMIT_LABEL_KEYS[mode])}
             </Button>
           </DialogFooter>
         </form>

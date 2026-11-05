@@ -1,16 +1,18 @@
+import type { ParseKeys } from "i18next";
+
 /**
  * Options for customizing messages, toast and callbacks in mutation operations.
  */
 export type MutationOptions<TData = unknown, TVariables = unknown> = {
   /**
-   * Custom success message.
+   * Custom success message: a translation key, or a function that builds the text (already translated).
    */
-  successMessage?: string | ((data: TData, variables: TVariables) => string);
+  successMessage?: ParseKeys | ((data: TData, variables: TVariables) => string);
 
   /**
-   * Custom error message.
+   * Custom error message: a translation key.
    */
-  errorMessage?: string;
+  errorMessage?: ParseKeys;
 
   /**
    * Determines whether to show a success toast (default: true).

@@ -71,7 +71,7 @@ export function NavbarView({
                 className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
                 onClick={update.onUpdate}
               >
-                Update to {update.version}
+                {t("app.navbarView.updateTo", { version: update.version })}
                 <Download className="text-foreground" />
               </DropdownMenuItem>
             )}

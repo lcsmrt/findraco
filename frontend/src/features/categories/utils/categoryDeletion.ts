@@ -5,6 +5,7 @@ import {
   Category,
 } from "@/api/dtos";
 import { problemType } from "@/api/utils/problems";
+import { i18n } from "@/i18n/i18n";
 
 /** Categories that can receive a deleted category's references: same type, not itself, not its children. */
 export function eligibleDeleteTargets(
@@ -55,10 +56,30 @@ export function describeUsage({
   items,
   recurrenceDefinitions,
 }: CategoryUsage) {
-  function count(n: number, one: string, many: string) {
-    return `${n} ${n === 1 ? one : many}`;
+  return i18n.t("categories.usage.summary", {
+    transactions: i18n.t("categories.usage.transactions", { count: transactions }),
+    items: i18n.t("categories.usage.items", { count: items }),
+    recurrences: i18n.t("categories.usage.recurrences", { count: recurrenceDefinitions }),
+  });
+}
+
+/** What the delete dialog says about the category: why it cannot go yet, where it is used, or that it is free. */
+export function describeDeletion({
+  hasChildren,
+  usage,
+  usageFailed,
+}: {
+  hasChildren: boolean;
+  usage: CategoryUsage | null | undefined;
+  usageFailed: boolean;
+}) {
+  if (hasChildren) return i18n.t("categories.deletion.hasChildren");
+  if (usage == null) {
+    return i18n.t(usageFailed ? "categories.deletion.usageFailed" : "categories.deletion.checking");
   }
-  return `${count(transactions, "transaction", "transactions")}, ${count(items, "item", "items")} and ${count(recurrenceDefinitions, "recurrence definition", "recurrence definitions")}`;
+  return isCategoryInUse(usage)
+    ? i18n.t("categories.deletion.inUse", { usage: describeUsage(usage) })
+    : i18n.t("categories.deletion.unused");
 }
 
 /** Tells the two 409s of a category delete apart by problem type, never by wording. */

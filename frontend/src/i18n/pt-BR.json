@@ -1,8 +1,48 @@
 {
+  "api": {
+    "importResult": {
+      "empty": "O arquivo não tem transações.",
+      "imported": "Importação concluída: {{transactions}}.",
+      "importedWithSkips": "Importação concluída: {{transactions}}; {{skipped}} que já estavam no plano foram ignoradas.",
+      "nothingNew": "Nada novo para importar: {{transactions}} já no plano.",
+      "transactions_one": "{{count}} transação",
+      "transactions_other": "{{count}} transações"
+    },
+    "toast": {
+      "accountCreated": "Account created.",
+      "categoryCreated": "Category created.",
+      "categoryDeleted": "Category deleted.",
+      "categoryUpdated": "Category updated.",
+      "invitationCreated": "Invitation created.",
+      "invitationRevoked": "Invitation revoked.",
+      "memberRemoved": "Member removed.",
+      "operationCompleted": "Operation completed successfully.",
+      "ownershipTransferred": "Ownership transferred.",
+      "passwordUpdatedSignInWith": "Password updated. Sign in with your new password.",
+      "planArchived": "Plan archived.",
+      "planCreated": "Plan created.",
+      "planDeleted": "Plan deleted.",
+      "planRenamed": "Plan renamed.",
+      "planRestored": "Plan restored.",
+      "roleUpdated": "Role updated.",
+      "seriesCreated": "Series created.",
+      "seriesDeleted": "Series deleted.",
+      "seriesUpdated": "Series updated.",
+      "timeZoneSaved": "Time zone saved.",
+      "transactionAdded": "Transaction added.",
+      "transactionDeleted": "Transaction deleted.",
+      "transactionUpdated": "Transaction updated.",
+      "youJoinedThePlan": "You joined the plan.",
+      "youLeftThePlan": "You left the plan."
+    }
+  },
   "app": {
     "authLayoutView": {
       "findraco": "findraco",
       "n2026Findraco": "© 2026 findraco"
+    },
+    "authSession": {
+      "expired": "Your session expired. Please sign in again."
     },
     "bottomBarView": {
       "bottomBar": "Bottom bar",
@@ -11,14 +51,23 @@
     "installInstructionsDialogView": {
       "addFindracoToYourHome": "Add findraco to your home screen in two steps.",
       "chooseAddToHomeScreen": "Choose \"Add to Home Screen\".",
-      "installFindraco": "Install findraco"
+      "inTheBrowserToolbar": "in the browser toolbar.",
+      "installFindraco": "Install findraco",
+      "tapTheShareIcon": "Tap the Share icon"
     },
     "navbarView": {
       "findracoLogo": "findraco logo",
       "installApp": "Install app",
       "logout": "Logout",
       "timeZone": "Time zone",
-      "updateAvailable": "Update available"
+      "updateAvailable": "Update available",
+      "updateTo": "Update to {{version}}"
+    },
+    "navigation": {
+      "categories": "Categories",
+      "overview": "Overview",
+      "plans": "Plans",
+      "transactions": "Transactions"
     },
     "sessionStatusView": {
       "canTReachFindraco": "Can't reach findraco.",
@@ -38,7 +87,18 @@
     "forgotPasswordView": {
       "backToSignIn": "Back to sign in",
       "forgotPassword": "Forgot password",
-      "sendResetLink": "Send reset link"
+      "requestDescription": "Enter your account email and we’ll send you a link to choose a new password.",
+      "sendResetLink": "Send reset link",
+      "sentDescription": "If an account exists for that email, we sent a link to reset your password. It expires in 60 minutes."
+    },
+    "form": {
+      "invalidEmail": "Invalid email",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "pleaseConfirmTheNewPassword": "Please confirm the new password",
+      "pleaseEnterANewPassword": "Please enter a new password",
+      "pleaseEnterYourEmail": "Please enter your email",
+      "pleaseEnterYourFullName": "Please enter your full name",
+      "pleaseEnterYourPassword": "Please enter your password"
     },
     "invalidLink": {
       "requestANewLink": "Request a new link",
@@ -51,15 +111,23 @@
       "password": "Password",
       "signIn": "Sign in"
     },
+    "password": {
+      "characters": "Remove tabs, line breaks and invisible characters",
+      "length": "Use 8 to 128 characters",
+      "spacesHint": "This password starts or ends with a space. Keep it only if you meant to."
+    },
+    "passwordInput": {
+      "hide": "Hide password",
+      "show": "Show password"
+    },
     "registerUserView": {
       "alreadyHaveAnAccount": "Already have an account?",
+      "consent": "By clicking Sign up, you agree to findraco’s <terms>Terms of Service</terms> and acknowledge that you are subject to our <privacy>Privacy Policy</privacy>.",
       "createYourAccount": "Create your account",
       "fullName": "Full name",
       "password": "Password",
-      "privacyPolicy": "Privacy Policy",
       "signIn": "Sign in",
-      "signUp": "Sign up",
-      "termsOfService": "Terms of Service"
+      "signUp": "Sign up"
     },
     "resetPasswordView": {
       "backToSignIn": "Back to sign in",
@@ -72,18 +140,25 @@
   },
   "categories": {
     "categoriesPageView": {
+      "expenses": "Expenses",
+      "income": "Income",
       "newCategory": "New Category"
     },
     "categoryFormSheet": {
       "eGFoodTransportEntertainment": "e.g., Food, Transport, Entertainment",
+      "editCategory": "Edit Category",
+      "newCategory": "New Category",
       "newSubcategory": "New subcategory"
     },
     "categoryLimitFields": {
+      "amount": "Amount",
       "formerMember": "(former member)",
+      "limitFor": "Limit for {{name}}",
       "limitPerMember": "Limit per member",
       "monthlyLimit": "Monthly limit",
       "noLimit": "No limit",
       "perMember": "Per member",
+      "removeLimit": "Remove {{name}}'s limit",
       "single": "Single",
       "theCategoryLimitIsThe": "The category limit is the sum of the members' limits. A member left empty has no limit of their own."
     },
@@ -94,27 +169,73 @@
       "owner": "Owner",
       "perMember": "Per member"
     },
+    "categoryTreeRow": {
+      "delete": "Delete {{name}}",
+      "edit": "Edit {{name}}",
+      "newSubcategoryOf": "New subcategory of {{name}}"
+    },
     "deleteCategoryDialog": {
+      "deleteCategory": "Delete “{{name}}”",
+      "moveAndDelete": "Move and delete",
       "moveTo": "Move to",
+      "noOtherCategory": "No other category of this type",
       "selectACategory": "Select a category..."
     },
+    "deletion": {
+      "checking": "Checking where this category is used...",
+      "hasChildren": "This category has subcategories. Move them to another category or delete them before deleting it.",
+      "inUse": "This category is used by {{usage}}. Choose a category to receive them; then it is deleted.",
+      "unused": "This category is not used by any transaction, item or recurrence definition. Are you sure you want to delete it? This action cannot be undone.",
+      "usageFailed": "Could not check where this category is used. Close and try again."
+    },
+    "form": {
+      "aCategoryThatBelongsTo": "A category that belongs to one member cannot have per-member limits",
+      "aCategoryWithSubcategoriesCannot": "A category with subcategories cannot have a parent",
+      "aCategoryWithSubcategoriesCannot2": "A category with subcategories cannot change type",
+      "aSubcategoryHasItsParent": "A subcategory has its parent's owner",
+      "amountCannotBeNegative": "Amount cannot be negative",
+      "chooseATopLevelCategory": "Choose a top-level category of the same type",
+      "eachMemberCanHaveOnly": "Each member can have only one limit",
+      "incomeCategoriesCannotHavePer": "Income categories cannot have per-member limits",
+      "nameIsRequired": "Name is required"
+    },
+    "limitSection": {
+      "ownedSingleLimit": "A category that belongs to one member has a single limit."
+    },
     "ownerField": {
+      "belongsTo": "Belongs to",
       "itsSpendAndLimitAre": "Its spend and limit are this member's. Subcategories belong to the same member.",
+      "noMembers": "No members",
       "sharedEveryone": "Shared (everyone)"
     },
     "parentField": {
-      "noneTopLevel": "None (top level)"
+      "noTopLevel": "No top-level categories",
+      "noneTopLevel": "None (top level)",
+      "parent": "Parent",
+      "staysTopLevel": "A category with subcategories stays at the top level."
     },
     "typeField": {
       "aCategoryWithSubcategoriesCannot": "A category with subcategories cannot change type."
+    },
+    "usage": {
+      "items_one": "{{count}} item",
+      "items_other": "{{count}} itens",
+      "recurrences_one": "{{count}} recorrência",
+      "recurrences_other": "{{count}} recorrências",
+      "summary": "{{transactions}}, {{items}} e {{recurrences}}",
+      "transactions_one": "{{count}} transação",
+      "transactions_other": "{{count}} transações"
     }
   },
   "common": {
     "amount": "Amount",
     "cancel": "Cancelar",
     "close": "Fechar",
+    "confirm": "Confirm",
+    "create": "Create",
     "delete": "Delete",
     "email": "Email",
+    "formerMember": "(former member)",
     "name": "Name",
     "optional": "(optional)",
     "r000": "R$ 0,00",
@@ -123,6 +244,9 @@
     "youExampleCom": "you@example.com"
   },
   "components": {
+    "appVersion": {
+      "version": "v{{version}} - {{date}}"
+    },
     "comboboxChip": {
       "remove": "Remove"
     },
@@ -148,19 +272,31 @@
     },
     "periodNavigator": {
       "chooseAPeriod": "Choose a period",
+      "choosePeriod": "Choose period, {{period}}",
       "custom": "Custom…",
+      "last3Months": "Last 3 months",
+      "last6Months": "Last 6 months",
       "nextPeriod": "Next period",
       "previousPeriod": "Previous period",
-      "range": "Range"
+      "range": "Range",
+      "thisMonth": "This month",
+      "thisYear": "This year"
     },
     "spinner": {
       "loading": "Loading"
     },
     "standardCombobox": {
-      "clearSelection": "Clear selection"
+      "clearSelection": "Clear selection",
+      "createTerm": "Create “{{term}}”",
+      "noResults": "No results",
+      "search": "Search...",
+      "select": "Select..."
     },
     "tableActionsDropdown": {
       "rowActions": "Row actions"
+    },
+    "tableBody": {
+      "noResults": "No results."
     },
     "tablePagination": {
       "firstPage": "First page",
@@ -168,7 +304,9 @@
       "linesPerPage": "Lines per page:",
       "linesPerPage2": "Lines per page",
       "nextPage": "Next page",
-      "previousPage": "Previous page"
+      "page": "Page {{page}} of {{pages}}",
+      "previousPage": "Previous page",
+      "range": "{{start}} – {{end}} of {{total}}"
     },
     "tableRoot": {
       "expand": "Expand"
@@ -194,7 +332,12 @@
       "balance": "Balance"
     },
     "categorySpendingList": {
+      "focus": "{{name}} {{spent}} of {{limit}}",
       "noExpenseCategoriesYet": "No expense categories yet.",
+      "ofLimit": "of {{amount}}",
+      "overBy": "over by {{amount}}",
+      "remaining": "remaining {{amount}}",
+      "sharedLimit": "· shared limit {{amount}}",
       "spendingByCategory": "Spending by category"
     },
     "memberFilterChips": {
@@ -219,56 +362,118 @@
       "backToHome": "Back to home",
       "decline": "Decline",
       "invalidInvitation": "Invalid invitation",
+      "invitedYou": "{{inviter}} invited you to the plan <plan>{{plan}}</plan> as {{role}}.",
       "thisInvitationDoesnTExist": "This invitation doesn't exist or is no longer available.",
       "youVeBeenInvited": "You've been invited"
     },
     "archivedPlansListView": {
       "anArchivedPlanCanBe": "An archived plan can be restored until its deletion date.",
+      "archivedOn": "Archived on {{date}}",
       "archivedPlans": "Archived plans",
       "couldNotLoadYourArchived": "Could not load your archived plans. Try again later.",
       "deleteNow": "Delete now",
-      "restore": "Restore"
+      "deletePlanNow": "Delete {{name}} now",
+      "deletedOn": "Deleted permanently on {{date}}",
+      "restore": "Restore",
+      "restorePlan": "Restore {{name}}"
+    },
+    "deleteForm": {
+      "typeThePlanNameExactly": "Type the plan name exactly as shown"
     },
     "deletePlanPermanentlyDialogView": {
       "deleteNow": "Delete now",
       "deletePlanNow": "Delete plan now",
-      "thisPermanentlyDeletesThePlan": "This permanently deletes the plan and everything in it: transactions, categories, recurring series, members and invitations. It cannot be undone."
+      "thisPermanentlyDeletesThePlan": "This permanently deletes the plan and everything in it: transactions, categories, recurring series, members and invitations. It cannot be undone.",
+      "typeToConfirm": "Type \"{{name}}\" to confirm"
+    },
+    "invitationLabel": {
+      "email": "Email invitation",
+      "link": "Link invitation"
+    },
+    "invitationStatus": {
+      "accepted": "Accepted",
+      "expired": "Expired",
+      "pending": "Pending",
+      "revoked": "Revoked"
+    },
+    "inviteForm": {
+      "enterAnEmailAddress": "Enter an email address"
     },
     "invitePlanDialogView": {
       "copyLink": "Copy link",
       "done": "Done",
       "expiresAtOptional": "Expires at (optional)",
+      "generateLink": "Generate link",
       "invitationLink": "Invitation link",
       "invitationType": "Invitation type",
       "inviteToPlan": "Invite to plan",
       "link": "Link",
       "personEmailCom": "person@email.com",
       "role": "Role",
-      "shareThisLinkToInvite": "Share this link to invite someone:"
+      "sendInvitation": "Send invitation",
+      "sentTo": "Invitation sent to <email>{{email}}</email>.",
+      "shareThisLinkToInvite": "Share this link to invite someone:",
+      "typeEmail": "Email",
+      "typeLink": "Link"
+    },
+    "nameForm": {
+      "enterANameForThe": "Enter a name for the plan"
+    },
+    "planInvitationsList": {
+      "revoke": "Revoke",
+      "revokeDescription": "Are you sure you want to revoke the invitation for {{name}}?",
+      "revokeInvitation": "Revoke invitation"
     },
     "planInvitationsListView": {
-      "noInvitationsCreatedForThis": "No invitations created for this plan yet."
+      "expiresOn": "Expires on {{date}}",
+      "noInvitationsCreatedForThis": "No invitations created for this plan yet.",
+      "revoke": "Revoke the invitation for {{name}}"
+    },
+    "planMembersList": {
+      "remove": "Remove",
+      "removeDescription": "Are you sure you want to remove {{name}} from this plan?",
+      "removeMember": "Remove member"
     },
     "planMembersListView": {
-      "noMembersInThisPlan": "No members in this plan."
+      "noMembersInThisPlan": "No members in this plan.",
+      "remove": "Remove {{name}}",
+      "roleOf": "Role of {{name}}"
     },
     "planNameDialogView": {
-      "eGHouseholdFinances": "e.g., Household finances"
+      "eGHouseholdFinances": "e.g., Household finances",
+      "newPlan": "New plan",
+      "renamePlan": "Rename plan"
     },
     "planSwitcherView": {
       "newPlan": "New plan",
       "plans": "Plans"
     },
+    "plansPage": {
+      "archive": "Archive",
+      "archiveDescription": "Are you sure you want to archive the plan \"{{name}}\"? You can restore it from \"Archived plans\" for 30 days; after that it is deleted permanently.",
+      "archivePlan": "Archive plan",
+      "leave": "Leave",
+      "leaveDescription": "Are you sure you want to leave the plan \"{{name}}\"?",
+      "leavePlan": "Leave plan"
+    },
     "plansPageView": {
       "archivePlan": "Archive plan",
       "default": "Default",
+      "invitationsFor": "Invitations for {{name}}",
       "invite": "Invite",
       "leavePlan": "Leave plan",
       "manageYourPlansAndSwitch": "Manage your plans and switch between them.",
+      "membersOf": "Members of {{name}}",
       "newPlan": "New plan",
       "plans": "Plans",
       "renamePlan": "Rename plan",
       "transferOwnership": "Transfer ownership"
+    },
+    "roles": {
+      "contributor": "Contributor",
+      "editor": "Editor",
+      "owner": "Owner",
+      "viewer": "Viewer"
     },
     "transferOwnershipDialogView": {
       "newOwner": "New owner",
@@ -279,12 +484,130 @@
       "youWillBecomeAnEditor": "You will become an Editor of this plan."
     }
   },
+  "problems": {
+    "andMore": "...and {{remaining}} more",
+    "category-has-subcategories": "This category now has subcategories. Move or delete them before deleting it.",
+    "category-in-use": "This category is now in use. Choose a category to receive its transactions.",
+    "category-invalid-reassign-target": "Choose another category of the same type to receive them.",
+    "category-member-limit-duplicate": "Each member can have only one limit.",
+    "category-member-limit-not-member": "A per-member limit names someone who is not a member of the plan.",
+    "category-member-limits-on-income": "Income categories cannot have per-member limits.",
+    "category-member-limits-on-owned": "A category that belongs to one member cannot have per-member limits.",
+    "category-not-found": "This category no longer exists.",
+    "category-owner-not-member": "The owner must be a member of the plan.",
+    "category-owner-on-subcategory": "A subcategory belongs to its parent's owner.",
+    "category-parent-is-itself": "A category cannot be its own parent.",
+    "category-parent-is-subcategory": "A subcategory cannot be a parent.",
+    "category-parent-type-mismatch": "A subcategory must have the same type as its parent.",
+    "category-subcategories-block-parent": "A category with subcategories cannot be given a parent.",
+    "category-subcategories-block-type-change": "The type of a category with subcategories cannot change.",
+    "category-type-change-in-use": "This category is in use, so its type can't change. Move its transactions to another category first.",
+    "constraint": {
+      "DecimalMax": "is too large",
+      "DecimalMin": "is too small",
+      "Digits": "has too many digits",
+      "Email": "is not a valid e-mail",
+      "Max": "is too large",
+      "Min": "is too small",
+      "NarrowedEnum": "is not allowed here",
+      "NotBlank": "is required",
+      "NotEmpty": "is required",
+      "NotNull": "is required",
+      "PasswordCharacters": "cannot contain tabs, line breaks or invisible characters",
+      "PasswordLength": "must be 8 to 128 characters",
+      "Pattern": "has an invalid format",
+      "Positive": "must be greater than zero",
+      "PositiveOrZero": "cannot be negative",
+      "Size": "has the wrong length"
+    },
+    "csv-encoding-invalid": "The file is not UTF-8 text. Export it again as UTF-8 and try again.",
+    "csv-format-not-supported": "This looks like a card bill, which cannot be imported yet. Import the account statement.",
+    "csv-too-large": "The file is too large. Split it and import the parts.",
+    "csv-too-many-rows": "The file has too many rows. Split it and import the parts.",
+    "csv-unknown-format": "This file is not a supported bank statement. Check that you exported the account statement.",
+    "email-taken": "This e-mail is already in use.",
+    "exact-share-invalid": "Give every person in the split an amount of zero or more.",
+    "fieldInvalid": "{{field}} is invalid",
+    "forbidden": "You are not allowed to do this.",
+    "import-line-invalid": "The file has invalid lines, so nothing was imported. Fix them and try again.",
+    "insufficient-role": "Your role in this plan does not allow this.",
+    "internal": "Something went wrong on our side. Try again later.",
+    "invalid-credentials": "Invalid e-mail or password.",
+    "invitation-email-mismatch": "This invitation was sent to a different e-mail address.",
+    "invitation-email-required": "Enter the email address of the person you are inviting.",
+    "invitation-expired": "This invitation has expired.",
+    "invitation-not-found": "This invitation does not exist.",
+    "invitation-revoked": "This invitation has been revoked.",
+    "invitation-used": "This invitation has already been used.",
+    "item-category-type-mismatch": "An item's category does not match the transaction type.",
+    "item-invalid": "Every item needs a description and an amount greater than zero.",
+    "items-exceed-amount": "The items add up to more than the transaction amount.",
+    "last-owner": "The plan needs another owner first. Transfer ownership before this.",
+    "last-plan": "You cannot leave or delete your only plan.",
+    "line": {
+      "amount-invalid": "amount must be a number such as -12.50",
+      "amount-zero": "amount cannot be zero",
+      "blank": "has an empty description",
+      "column-count": "must have exactly 4 columns",
+      "date-invalid": "date must be a real date as dd/mm/yyyy",
+      "malformed": "has quotes that are not closed",
+      "too-long": "has a value that is too long"
+    },
+    "lineError": "Line {{line}}: {{reason}}",
+    "malformed-request": "The request could not be sent. Reload the page and try again.",
+    "member-not-found": "This person is no longer a member of the plan.",
+    "network": "Could not reach the server. Check your connection and try again.",
+    "not-found": "This item no longer exists.",
+    "not-transaction-creator": "You can only change transactions you created.",
+    "owner-role-needs-transfer": "To make someone the owner, transfer ownership.",
+    "ownership-transfer-to-self": "You already own this plan.",
+    "participant-duplicate": "A person is listed twice in the split.",
+    "participant-not-member": "The split names someone who is not a member of the plan.",
+    "participant-shares-mismatch": "The shares must add up to the transaction amount.",
+    "participants-required": "Choose at least one person for this transaction.",
+    "period-start-after-end": "The start date must not be after the end date.",
+    "plan-not-archived": "This plan is no longer archived.",
+    "plan-not-found": "This plan no longer exists or you are no longer a member.",
+    "rate-limited": "Too many attempts. Wait a few minutes and try again.",
+    "requestId": "Request id: {{id}}",
+    "reset-token-invalid": "This password reset link is invalid or has expired. Request a new one.",
+    "series-current-parcel-out-of-range": "The current installment must be between 1 and the number of installments.",
+    "series-interval-required": "Choose how often the transaction repeats.",
+    "series-not-found": "This series no longer exists.",
+    "series-parcels-change-needs-all": "The number of installments can only change for the whole series.",
+    "series-parcels-required": "Enter the number of installments.",
+    "series-pivot-not-found": "This occurrence is no longer part of the series.",
+    "series-too-many-occurrences": "This series would create too many occurrences. Shorten it.",
+    "serverError": "Something went wrong on our side. Try again later.",
+    "session-invalid": "Your session has ended. Sign in again.",
+    "stale-version": "Someone else changed this in the meantime. Reload it and try again.",
+    "status": {
+      "400": "The request could not be sent. Reload the page and try again.",
+      "401": "Your session has ended. Sign in again.",
+      "403": "You are not allowed to do this.",
+      "404": "This item no longer exists.",
+      "409": "This conflicts with a recent change. Reload and try again.",
+      "422": "Some values are invalid. Check them and try again.",
+      "429": "Too many attempts. Wait a few minutes and try again."
+    },
+    "transaction-category-type-mismatch": "The category does not match the transaction type.",
+    "transaction-not-found": "This transaction no longer exists.",
+    "unauthenticated": "Your session has ended. Sign in again.",
+    "unexpected": "An unexpected error occurred.",
+    "unsupported-request": "This action is not supported.",
+    "validation-failed": "Some fields are invalid."
+  },
   "profile": {
     "timeZoneDialogView": {
       "decidesWhichDayIsToday": "Decides which day is today. Automatic follows this device; pinning keeps the zone you pick.",
       "selectAZone": "Select a zone",
       "timeZone": "Time zone",
       "timeZoneSource": "Time zone source"
+    },
+    "timeZoneForm": {
+      "automatic": "Automatic (this device)",
+      "pickATimeZone": "Pick a time zone",
+      "pinned": "Pinned"
     }
   },
   "transactions": {
@@ -296,20 +619,32 @@
       "attributedTo": "Attributed to",
       "equal": "Equal",
       "exact": "Exact",
+      "me": "Me",
       "participants": "Participants",
       "person": "Person",
       "selectAPerson": "Select a person",
+      "share": "{{name}}'s share",
+      "someoneElse": "Someone else",
+      "split": "Split",
       "splitMode": "Split mode"
+    },
+    "categoryCombobox": {
+      "created": "Category \"{{name}}\" created"
     },
     "categoryComboboxView": {
       "categories": "Categories",
       "clearCategory": "Clear category",
       "noResults": "No results",
       "search": "Search...",
-      "searchCategories": "Search categories"
+      "searchCategories": "Search categories",
+      "selectCategory": "Select a category..."
     },
     "categoryField": {
       "category": "Category"
+    },
+    "categoryQuickCreate": {
+      "createExpense": "Create expense category \"{{name}}\"",
+      "createIncome": "Create income category \"{{name}}\""
     },
     "descriptionCell": {
       "series": "Series"
@@ -328,15 +663,33 @@
       "leaveEmptyToKeepThis": "Leave empty to keep this series ongoing, with no end date.",
       "ongoing": "Ongoing"
     },
+    "form": {
+      "amountMustBePositive": "Amount must be positive",
+      "dateIsRequired": "Date is required",
+      "descriptionIsRequired": "Description is required",
+      "enterAtLeast2Installments": "Enter at least 2 installments",
+      "itemsCannotExceedTheTransaction": "Items cannot exceed the transaction total",
+      "selectInstallmentOrRecurring": "Select installment or recurring",
+      "sharesMustAddUpTo": "Shares must add up to the total amount",
+      "theCurrentInstallmentCannotBe": "The current installment cannot be greater than the total",
+      "theCurrentInstallmentMustBe": "The current installment must be at least 1",
+      "theEndDateMustBe": "The end date must be after the start date"
+    },
     "installmentsField": {
       "currentInstallment": "Current installment",
+      "currently": "Currently: parcel {{parcel}} of {{total}}",
       "eG12": "e.g., 12",
+      "lastInstallment": "Last installment: {{number}}/{{number}} — {{month}}",
       "numberOfInstallments": "Number of installments"
     },
     "itemsField": {
       "addItem": "Add item",
+      "itemAmountLabel": "Item {{number}} amount",
       "itemDescription": "Item description",
-      "items": "Items"
+      "itemDescriptionLabel": "Item {{number}} description",
+      "items": "Items",
+      "remainder": "Remainder: {{amount}}",
+      "removeItem": "Remove item {{number}}"
     },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Changing the number of parcels updates the whole series."
@@ -346,6 +699,29 @@
       "mode": "Mode",
       "recurring": "Recurring",
       "repeatOrSplitIntoInstallments": "Repeat or split into installments?"
+    },
+    "seriesScopeDialog": {
+      "all": "All",
+      "allHelp": "Every occurrence in the series will be changed, including past ones.",
+      "chooseScope": "Choose what to apply this change to.",
+      "continue": "Continue",
+      "editSeries": "Edit series",
+      "thisAndFollowing": "This and following",
+      "thisAndFollowingHelp": "This and all future occurrences will be changed. Past occurrences stay the same.",
+      "thisOne": "This one",
+      "thisOneHelp": "Only this occurrence will be changed."
+    },
+    "transactionCells": {
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people"
+    },
+    "transactionColumns": {
+      "actions": "Actions",
+      "amount": "Amount",
+      "attributedTo": "Attributed to",
+      "category": "Category",
+      "date": "Date",
+      "description": "Description"
     },
     "transactionFilterPopoverView": {
       "all": "All",
@@ -359,22 +735,38 @@
       "filters": "Filters",
       "maximumAmount": "Maximum amount",
       "minimumAmount": "Minimum amount",
-      "reset": "Reset"
+      "reset": "Reset",
+      "typeAll": "All",
+      "typeCredit": "Credit",
+      "typeDebit": "Debit"
     },
     "transactionFormDrawer": {
       "date": "Date",
       "description": "Description",
       "duplicate": "Duplicate",
+      "duplicateTransaction": "Duplicate Transaction",
       "eGRentSalaryGroceries": "e.g., Rent, Salary, Groceries",
-      "loading": "Loading…"
+      "editSeries": "Edit series",
+      "editTransaction": "Edit Transaction",
+      "loading": "Loading…",
+      "newTransaction": "New Transaction"
     },
     "transactionMobileList": {
       "noTransactionsFound": "No transactions found."
     },
     "transactionsPageView": {
       "clearAll": "Clear all",
+      "importCsv": "Import CSV",
+      "importing": "Importing...",
+      "removeFilter": "Remove {{name}}",
       "searchTransactions": "Search transactions...",
       "searchTransactions2": "Search transactions"
+    },
+    "useTransactionActions": {
+      "chooseOccurrences": "Choose which occurrences to delete.",
+      "confirmDeletion": "Confirm Deletion",
+      "deleteDescription": "Are you sure you want to delete this transaction? This action cannot be undone.",
+      "deleteSeries": "Delete series"
     }
   }
 }

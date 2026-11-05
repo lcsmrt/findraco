@@ -9,12 +9,15 @@ import {
 } from "@/components/dialog/base/Dialog";
 import { Button } from "@/components/button/base/Button";
 import { ConfirmDialogContext, type ConfirmOptions } from "./useConfirm";
+import { useTranslation } from "react-i18next";
 
 export function ConfirmDialogProvider({
   children,
 }: {
   children: ReactNode;
 }) {
+  const { t } = useTranslation();
+
   const [isOpen, setIsOpen] = useState(false);
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [resolver, setResolver] = useState<((value: boolean) => void) | null>(
@@ -51,13 +54,13 @@ export function ConfirmDialogProvider({
             </DialogHeader>
             <DialogFooter>
               <Button variant="ghost" onClick={handleCancel}>
-                {options.cancelLabel || "Cancel"}
+                {options.cancelLabel || t("common.cancel")}
               </Button>
               <Button
                 variant={options.variant || "default"}
                 onClick={handleConfirm}
               >
-                {options.confirmLabel || "Confirm"}
+                {options.confirmLabel || t("common.confirm")}
               </Button>
             </DialogFooter>
           </DialogContent>

@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import {
   buildDeleteRequest,
   classifyDeleteError,
-  describeUsage,
+  describeDeletion,
   eligibleDeleteTargets,
   isCategoryInUse,
 } from "../utils/categoryDeletion";
@@ -90,17 +90,11 @@ export function DeleteCategoryDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Delete &ldquo;{category.description}&rdquo;</DialogTitle>
+          <DialogTitle>
+            {t("categories.deleteCategoryDialog.deleteCategory", { name: category.description })}
+          </DialogTitle>
           <DialogDescription>
-            {hasChildren
-              ? "This category has subcategories. Move them to another category or delete them before deleting it."
-              : usage == null
-                ? usageFailed
-                  ? "Could not check where this category is used. Close and try again."
-                  : "Checking where this category is used..."
-                : inUse
-                  ? `This category is used by ${describeUsage(usage)}. Choose a category to receive them; then it is deleted.`
-                  : "This category is not used by any transaction, item or recurrence definition. Are you sure you want to delete it? This action cannot be undone."}
+            {describeDeletion({ hasChildren, usage, usageFailed })}
           </DialogDescription>
         </DialogHeader>
 
@@ -122,7 +116,7 @@ export function DeleteCategoryDialog({
               onValueChange={(target) => setTargetId(target?.id ?? null)}
               itemLabel={(c) => c.description}
               placeholder={t("categories.deleteCategoryDialog.selectACategory")}
-              emptyMessage="No other category of this type"
+              emptyMessage={t("categories.deleteCategoryDialog.noOtherCategory")}
               disabled={isPending}
             />
           </Field>
@@ -136,7 +130,7 @@ export function DeleteCategoryDialog({
             onClick={() => onOpenChange(false)}
           >
             <XIcon className="h-4 w-4" />
-            {hasChildren ? "Close" : "Cancel"}
+            {hasChildren ? t("common.close") : t("common.cancel")}
           </Button>
           {!hasChildren && (
             <Button
@@ -147,7 +141,7 @@ export function DeleteCategoryDialog({
               onClick={() => request && deleteCategory(request)}
             >
               <Trash2Icon className="h-4 w-4" />
-              {inUse ? "Move and delete" : "Delete"}
+              {inUse ? t("categories.deleteCategoryDialog.moveAndDelete") : t("common.delete")}
             </Button>
           )}
         </DialogFooter>

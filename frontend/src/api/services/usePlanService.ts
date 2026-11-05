@@ -85,7 +85,7 @@ export function useCreatePlan(
   return useMutation({
     mutationFn: createPlan,
     ...buildMutationOptions(
-      { successMessage: "Plan created." },
+      { successMessage: "api.toast.planCreated" },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -114,7 +114,7 @@ export function useUpdateMemberRole(
   return useMutation({
     mutationFn: updateMemberRole,
     ...buildMutationOptions(
-      { successMessage: "Role updated." },
+      { successMessage: "api.toast.roleUpdated" },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -142,7 +142,7 @@ export function useRemoveMember(
   return useMutation({
     mutationFn: removeMember,
     ...buildMutationOptions(
-      { successMessage: "Member removed." },
+      { successMessage: "api.toast.memberRemoved" },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -172,7 +172,7 @@ export function useRenamePlan(
   return useMutation({
     mutationFn: renamePlan,
     ...buildMutationOptions(
-      { successMessage: "Plan renamed." },
+      { successMessage: "api.toast.planRenamed" },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -193,7 +193,7 @@ export function useDeletePlan(options?: MutationOptions<void, number>) {
   return useMutation({
     mutationFn: deletePlan,
     ...buildMutationOptions(
-      { successMessage: "Plan archived." },
+      { successMessage: "api.toast.planArchived" },
       {
         ...options,
         onSuccess: (data, planId) => {
@@ -216,7 +216,7 @@ export function useRestorePlan(options?: MutationOptions<Plan, number>) {
   return useMutation({
     mutationFn: restorePlan,
     ...buildMutationOptions(
-      { successMessage: "Plan restored." },
+      { successMessage: "api.toast.planRestored" },
       {
         ...options,
         onSuccess: (data, planId) => {
@@ -238,7 +238,7 @@ export function useDeletePlanPermanently(options?: MutationOptions<void, number>
   return useMutation({
     mutationFn: deletePlanPermanently,
     ...buildMutationOptions(
-      { successMessage: "Plan deleted." },
+      { successMessage: "api.toast.planDeleted" },
       {
         ...options,
         onSuccess: (data, planId) => {
@@ -264,7 +264,7 @@ export function useLeavePlan(options?: MutationOptions<void, number>) {
   return useMutation({
     mutationFn: leavePlan,
     ...buildMutationOptions(
-      { successMessage: "You left the plan." },
+      { successMessage: "api.toast.youLeftThePlan" },
       {
         ...options,
         onSuccess: (data, planId) => {
@@ -293,7 +293,7 @@ export function useTransferOwnership(
   return useMutation({
     mutationFn: transferOwnership,
     ...buildMutationOptions(
-      { successMessage: "Ownership transferred." },
+      { successMessage: "api.toast.ownershipTransferred" },
       {
         ...options,
         onSuccess: (data, variables) => {

@@ -13,6 +13,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { isAxiosError } from "axios";
 import { useCallback, useEffect, useMemo } from "react";
 import { useTransactionFilters } from "./filters/useTransactionFilters";
+import { useTranslation } from "react-i18next";
 
 type FilterKey = keyof PagedTransactionsFilter;
 
@@ -28,6 +29,8 @@ function isNotFound(error: unknown) {
  * category or member that no longer exists in the plan is dropped from the URL.
  */
 export function useTransactionFilterChips() {
+  const { t } = useTranslation();
+
   const { transactions, updateTransactions } = useTransactionFilters();
   const { activePlanId } = usePlanContext();
   const queryClient = useQueryClient();
@@ -86,7 +89,10 @@ export function useTransactionFilterChips() {
     if (filter.type) {
       result.push({
         key: "type",
-        label: filter.type === "CREDIT" ? "Credit" : "Debit",
+        label:
+          filter.type === "CREDIT"
+            ? t("transactions.transactionFilterPopoverView.typeCredit")
+            : t("transactions.transactionFilterPopoverView.typeDebit"),
         onRemove: () => removeFilters(["type"]),
       });
     }
@@ -123,7 +129,7 @@ export function useTransactionFilterChips() {
     }
 
     return result;
-  }, [filter, category, member, removeFilters]);
+  }, [filter, category, member, removeFilters, t]);
 
   return { chips, category, member, seedCategory };
 }

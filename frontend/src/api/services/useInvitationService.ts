@@ -27,7 +27,7 @@ export function useCreateInvitation(
   return useMutation({
     mutationFn: createInvitation,
     ...buildMutationOptions(
-      { successMessage: "Invitation created." },
+      { successMessage: "api.toast.invitationCreated" },
       options,
     ),
   });
@@ -89,7 +89,7 @@ export function useRevokeInvitation(
   return useMutation({
     mutationFn: revokeInvitation,
     ...buildMutationOptions(
-      { successMessage: "Invitation revoked." },
+      { successMessage: "api.toast.invitationRevoked" },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -119,7 +119,7 @@ export function useAcceptInvitation(
   return useMutation({
     mutationFn: acceptInvitation,
     ...buildMutationOptions(
-      { successMessage: "You joined the plan." },
+      { successMessage: "api.toast.youJoinedThePlan" },
       {
         ...options,
         onSuccess: (data, variables) => {

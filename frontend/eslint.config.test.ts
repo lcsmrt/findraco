@@ -249,6 +249,34 @@ describe("eslint.config.js", () => {
     });
   });
 
+  describe("interface texts", () => {
+    const rule = "i18next/no-literal-string";
+
+    it("reports literal interface texts in components", async () => {
+      const jsxText = await ruleIdsFor("export function Probe() {\n  return <p>Save your changes</p>;\n}\n");
+      expect(jsxText).toContain(rule);
+
+      for (const attribute of ["placeholder", "title", "aria-label", "alt"]) {
+        const ruleIds = await ruleIdsFor(
+          `export function Probe() {\n  return <input ${attribute}="Search transactions" />;\n}\n`,
+        );
+        expect(ruleIds, attribute).toContain(rule);
+      }
+
+      const translated = await ruleIdsFor(
+        'export function Probe() {\n  return <input placeholder={t("probe.search")} className="w-full" />;\n}\n',
+      );
+      expect(translated).not.toContain(rule);
+    });
+
+    it("leaves tests and stories to assert and render copy as it is", async () => {
+      const code = "export function Probe() {\n  return <p>Save your changes</p>;\n}\n";
+
+      expect(await ruleIdsFor(code, "src/components/Probe.test.tsx")).not.toContain(rule);
+      expect(await ruleIdsFor(code, "src/components/Probe.stories.tsx")).not.toContain(rule);
+    });
+  });
+
   describe("local rules", () => {
     it.each([
       [60, []],

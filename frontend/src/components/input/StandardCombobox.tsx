@@ -48,12 +48,12 @@ export function StandardCombobox<T extends WithId>({
   value,
   onValueChange,
   itemLabel,
-  placeholder = "Select...",
-  searchPlaceholder = "Search...",
+  placeholder: placeholderProp,
+  searchPlaceholder: searchPlaceholderProp,
   searchValue: externalSearch,
   onSearchChange,
   isItemEqualToValue = defaultEqual,
-  emptyMessage = "No results",
+  emptyMessage: emptyMessageProp,
   loading,
   disabled,
   className,
@@ -62,6 +62,9 @@ export function StandardCombobox<T extends WithId>({
   renderItem = itemLabel,
 }: StandardCombobox<T>) {
   const { t } = useTranslation();
+  const placeholder = placeholderProp ?? t("components.standardCombobox.select");
+  const searchPlaceholder = searchPlaceholderProp ?? t("components.standardCombobox.search");
+  const emptyMessage = emptyMessageProp ?? t("components.standardCombobox.noResults");
 
   const anchor = useComboboxAnchor();
   const [internalSearch, setInternalSearch] = React.useState("");
@@ -157,7 +160,7 @@ export function StandardCombobox<T extends WithId>({
               className="text-primary-ink hover:bg-accent flex w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5"
             >
               <PlusIcon className="h-3.5 w-3.5 shrink-0" />
-              <Text>Create &ldquo;{searchTerm}&rdquo;</Text>
+              <Text>{t("components.standardCombobox.createTerm", { term: searchTerm })}</Text>
             </button>
           </div>
         ) : (

@@ -90,7 +90,7 @@ export function useUpdateTimeZone(
   return useMutation({
     mutationFn: updateTimeZone,
     ...buildMutationOptions(
-      { successMessage: "Time zone saved." },
+      { successMessage: "api.toast.timeZoneSaved" },
       {
         ...options,
         onSuccess: (data, variables) => {
@@ -122,7 +122,7 @@ export function useRegisterUser(
   return useMutation({
     mutationFn: registerUser,
     ...buildMutationOptions(
-      { successMessage: "Account created." },
+      { successMessage: "api.toast.accountCreated" },
       options,
     ),
   });
@@ -199,7 +199,7 @@ export function useResetPassword(
   return useMutation({
     mutationFn: resetPassword,
     ...buildMutationOptions(
-      { successMessage: "Password updated. Sign in with your new password." },
+      { successMessage: "api.toast.passwordUpdatedSignInWith" },
       options,
     ),
   });

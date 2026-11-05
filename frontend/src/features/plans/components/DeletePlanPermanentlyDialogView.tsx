@@ -64,7 +64,11 @@ export function DeletePlanPermanentlyDialogView({
             </DialogDescription>
           </DialogHeader>
 
-          <FormField control={control} name="confirmation" label={`Type "${planName}" to confirm`}>
+          <FormField
+            control={control}
+            name="confirmation"
+            label={t("plans.deletePlanPermanentlyDialogView.typeToConfirm", { name: planName })}
+          >
             {(field) => <Input {...field} autoComplete="off" disabled={isSubmitting} />}
           </FormField>
 

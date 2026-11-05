@@ -21,7 +21,7 @@ import { XIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import {
-  TIME_ZONE_MODE_LABELS,
+  TIME_ZONE_MODE_LABEL_KEYS,
   type TimeZoneFormOutput,
   type TimeZoneFormValues,
   timeZoneSchema,
@@ -48,6 +48,10 @@ export function TimeZoneDialogView({
   onSave,
 }: TimeZoneDialogViewProps) {
   const { t } = useTranslation();
+  const modeLabels = {
+    AUTOMATIC: t(TIME_ZONE_MODE_LABEL_KEYS.AUTOMATIC),
+    PINNED: t(TIME_ZONE_MODE_LABEL_KEYS.PINNED),
+  };
 
   const { control, handleSubmit, reset } = useForm<TimeZoneFormValues, unknown, TimeZoneFormOutput>(
     {
@@ -78,11 +82,7 @@ export function TimeZoneDialogView({
           label={t("profile.timeZoneDialogView.timeZoneSource")}
         >
           {(field) => (
-            <Select
-              items={TIME_ZONE_MODE_LABELS}
-              value={field.value}
-              onValueChange={field.onChange}
-            >
+            <Select items={modeLabels} value={field.value} onValueChange={field.onChange}>
               <SelectTrigger
                 id={field.id}
                 ref={field.ref}
@@ -95,7 +95,7 @@ export function TimeZoneDialogView({
               <SelectContent>
                 {MODES.map((option) => (
                   <SelectItem key={option} value={option}>
-                    {TIME_ZONE_MODE_LABELS[option]}
+                    {modeLabels[option]}
                   </SelectItem>
                 ))}
               </SelectContent>

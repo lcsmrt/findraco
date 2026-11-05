@@ -48,11 +48,11 @@ import { useTranslation } from "react-i18next";
 type TransactionFormControl = Control<TransactionFormValues, unknown, TransactionFormOutput>;
 type TransactionFormSetValue = UseFormSetValue<TransactionFormValues>;
 
-const TITLES: Record<TransactionFormMode, string> = {
-  create: "New Transaction",
-  edit: "Edit Transaction",
-  duplicate: "Duplicate Transaction",
-};
+const TITLE_KEYS = {
+  create: "transactions.transactionFormDrawer.newTransaction",
+  edit: "transactions.transactionFormDrawer.editTransaction",
+  duplicate: "transactions.transactionFormDrawer.duplicateTransaction",
+} as const;
 
 type TransactionFormDrawerProps = {
   open: boolean;
@@ -133,10 +133,12 @@ export function TransactionFormDrawer({
     <FormSheet
       open={open}
       onOpenChange={onOpenChange}
-      title={isSeriesEdit ? "Edit series" : TITLES[mode]}
+      title={
+        isSeriesEdit ? t("transactions.transactionFormDrawer.editSeries") : t(TITLE_KEYS[mode])
+      }
       onSubmit={handleSubmit(submit)}
       isSubmitting={isPending}
-      submitLabel={mode === "edit" ? "Save" : "Create"}
+      submitLabel={mode === "edit" ? t("common.save") : t("common.create")}
       submitDisabled={isSeriesEdit && !definition}
       mobileActions={
         mode === "edit" &&

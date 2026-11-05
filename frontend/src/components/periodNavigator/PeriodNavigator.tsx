@@ -23,13 +23,14 @@ import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { PERIODS, periodLabel, shiftRange, type Period, type PeriodRange } from "@/utils/period";
 import { useTranslation } from "react-i18next";
+import type { ParseKeys } from "i18next";
 
-const PRESET_LABELS: Record<Period, string> = {
-  "this-month": "This month",
-  "last-3m": "Last 3 months",
-  "last-6m": "Last 6 months",
-  "this-year": "This year",
-};
+const PRESET_LABEL_KEYS = {
+  "this-month": "components.periodNavigator.thisMonth",
+  "last-3m": "components.periodNavigator.last3Months",
+  "last-6m": "components.periodNavigator.last6Months",
+  "this-year": "components.periodNavigator.thisYear",
+} as const satisfies Record<Period, ParseKeys>;
 
 type CustomRange = { from: string; to: string };
 
@@ -99,7 +100,7 @@ export function PeriodNavigator({
       <Button
         variant="ghost"
         className="min-w-36 tabular-nums sm:min-w-40"
-        aria-label={`Choose period, ${label}`}
+        aria-label={t("components.periodNavigator.choosePeriod", { period: label })}
         onClick={openCalendar}
       >
         <Text variant="title" aria-live="polite">
@@ -134,7 +135,7 @@ export function PeriodNavigator({
           >
             {PERIODS.map((preset) => (
               <DropdownMenuRadioItem key={preset} value={preset}>
-                {PRESET_LABELS[preset]}
+                {t(PRESET_LABEL_KEYS[preset])}
               </DropdownMenuRadioItem>
             ))}
           </DropdownMenuRadioGroup>

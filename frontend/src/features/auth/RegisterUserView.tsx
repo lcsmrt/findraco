@@ -12,7 +12,7 @@ import {
 import { AuthCard } from "./components/AuthCard";
 import { PasswordInput } from "./components/PasswordInput";
 import { passwordSpacesHint } from "./utils/passwordSchema";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 
 type RegisterUserViewProps = {
   isSubmitting: boolean;
@@ -80,9 +80,10 @@ export function RegisterUserView({ isSubmitting, onSubmit, onSignIn }: RegisterU
         </div>
 
         <Text as="p" variant="secondary" className="text-center">
-          By clicking Sign up, you agree to findraco’s{" "}
-          <strong>{t("auth.registerUserView.termsOfService")}</strong> and acknowledge that you are
-          subject to our <strong>{t("auth.registerUserView.privacyPolicy")}</strong>.
+          <Trans
+            i18nKey="auth.registerUserView.consent"
+            components={{ terms: <strong />, privacy: <strong /> }}
+          />
         </Text>
 
         <Button className="w-full" type="submit" isLoading={isSubmitting}>

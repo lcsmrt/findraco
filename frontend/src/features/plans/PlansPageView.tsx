@@ -16,7 +16,7 @@ import {
   PlusIcon,
   UserPlusIcon,
 } from "lucide-react";
-import { ROLE_LABELS } from "./utils/planLabels";
+import { buildRoleLabels } from "./utils/planLabels";
 import { useTranslation } from "react-i18next";
 
 type PlansPageViewProps = {
@@ -62,6 +62,7 @@ export function PlansPageView({
   archivedPlans,
 }: PlansPageViewProps) {
   const { t } = useTranslation();
+  const roleLabels = buildRoleLabels(t);
 
   return (
     // The layout gives the page its vertical spacing under the tab row, as for the other destinations.
@@ -100,7 +101,7 @@ export function PlansPageView({
                   {isActive && <CheckIcon className="text-primary-ink h-4 w-4" />}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="secondary">{ROLE_LABELS[plan.myRole]}</Badge>
+                  <Badge variant="secondary">{roleLabels[plan.myRole]}</Badge>
                   {plan.isDefault && (
                     <Badge variant="outline">{t("plans.plansPageView.default")}</Badge>
                   )}
@@ -114,7 +115,7 @@ export function PlansPageView({
       {activePlan && (
         <Card>
           <CardHeader>
-            <CardTitle>Members of {activePlan.name}</CardTitle>
+            <CardTitle>{t("plans.plansPageView.membersOf", { name: activePlan.name })}</CardTitle>
             <CardAction className="flex items-center gap-2">
               {canManagePlan ? (
                 <>
@@ -171,7 +172,9 @@ export function PlansPageView({
       {activePlan && canManagePlan && (
         <Card>
           <CardHeader>
-            <CardTitle>Invitations for {activePlan.name}</CardTitle>
+            <CardTitle>
+              {t("plans.plansPageView.invitationsFor", { name: activePlan.name })}
+            </CardTitle>
           </CardHeader>
           <CardContent>{invitationsList}</CardContent>
         </Card>

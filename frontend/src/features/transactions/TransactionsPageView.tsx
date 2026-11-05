@@ -55,6 +55,9 @@ export function TransactionsPageView({
   onEdit,
 }: TransactionsPageViewProps) {
   const { t } = useTranslation();
+  const importLabel = isImporting
+    ? t("transactions.transactionsPageView.importing")
+    : t("transactions.transactionsPageView.importCsv");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -101,12 +104,10 @@ export function TransactionsPageView({
               onClick={handleImportClick}
               disabled={isImporting}
               // The label hides below `sm`; the button keeps its name there.
-              aria-label={isImporting ? "Importing..." : "Import CSV"}
+              aria-label={importLabel}
             >
               <UploadIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">
-                {isImporting ? "Importing..." : "Import CSV"}
-              </span>
+              <span className="hidden sm:inline">{importLabel}</span>
             </Button>
             <input
               ref={fileInputRef}
@@ -128,7 +129,9 @@ export function TransactionsPageView({
                   variant="ghost"
                   size="icon"
                   className="h-4 w-4 rounded"
-                  aria-label={`Remove ${chip.label}`}
+                  aria-label={t("transactions.transactionsPageView.removeFilter", {
+                    name: chip.label,
+                  })}
                   onClick={chip.onRemove}
                 >
                   <XIcon className="h-3 w-3" />
@@ -172,7 +175,7 @@ export function TransactionsPageView({
                 table={table}
                 sorting={sorting}
                 onSortChange={onSortChange}
-                emptyState="No transactions found."
+                emptyState={t("transactions.transactionMobileList.noTransactionsFound")}
                 isLoading={isLoading}
               />
               <TablePagination

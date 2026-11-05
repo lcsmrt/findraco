@@ -16,9 +16,8 @@ import { z } from "zod";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { i18n } from "@/i18n/i18n";
 import type { AuthContextValue, AuthStatus } from "./useAuth";
-
-const SESSION_EXPIRED_MESSAGE = "Your session expired. Please sign in again.";
 
 // Written by the previous version, which kept the access token in localStorage.
 const LEGACY_ACCESS_TOKEN_KEY = "accessToken";
@@ -69,7 +68,7 @@ export function useAuthSession(): AuthContextValue {
     // At start-up the route guard redirects private pages itself, so a public
     // page (e.g. a reset-password link) is not taken away from the user.
     if (wasAuthenticated) {
-      toast.error(SESSION_EXPIRED_MESSAGE);
+      toast.error(i18n.t("app.authSession.expired"));
       navigate(PATHS.login, { replace: true, state: { from: location } });
     } else {
       startUpExpiryPathRef.current = location.pathname;
@@ -79,7 +78,7 @@ export function useAuthSession(): AuthContextValue {
   const announceSessionExpiry = useCallback(() => {
     if (startUpExpiryPathRef.current !== location.pathname) return;
     startUpExpiryPathRef.current = null;
-    toast.error(SESSION_EXPIRED_MESSAGE);
+    toast.error(i18n.t("app.authSession.expired"));
   }, [location.pathname]);
 
   useEffect(() => {

@@ -21,9 +21,9 @@ import {
 import { useTranslation } from "react-i18next";
 
 const ATTRIBUTION_OPTIONS = [
-  ["ME", "Me"],
-  ["SOMEONE", "Someone else"],
-  ["SPLIT", "Split"],
+  ["ME", "transactions.attributionFields.me"],
+  ["SOMEONE", "transactions.attributionFields.someoneElse"],
+  ["SPLIT", "transactions.attributionFields.split"],
 ] as const;
 
 type AttributionFieldsProps = {
@@ -89,7 +89,7 @@ export function AttributionFields({
         >
           {ATTRIBUTION_OPTIONS.map(([value, label]) => (
             <ToggleGroupItem key={value} value={value} className="flex-1">
-              {label}
+              {t(label)}
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
@@ -174,7 +174,9 @@ export function AttributionFields({
                               onEdit();
                               field.onChange(shareAmount);
                             }}
-                            aria-label={`${member.name}'s share`}
+                            aria-label={t("transactions.attributionFields.share", {
+                              name: member.name,
+                            })}
                             aria-invalid={fieldState.invalid}
                             placeholder={t("common.r000")}
                             className="h-8 w-28"

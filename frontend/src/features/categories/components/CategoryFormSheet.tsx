@@ -112,10 +112,14 @@ export function CategoryFormSheet({
       <FormSheet
         open={open}
         onOpenChange={onOpenChange}
-        title={editing ? "Edit Category" : "New Category"}
+        title={
+          editing
+            ? t("categories.categoryFormSheet.editCategory")
+            : t("categories.categoryFormSheet.newCategory")
+        }
         onSubmit={handleSubmit(submit)}
         isSubmitting={isPending}
-        submitLabel={editing ? "Save" : "Create"}
+        submitLabel={editing ? t("common.save") : t("common.create")}
         mobileActions={
           editing && (
             <>
@@ -247,12 +251,11 @@ function ParentField({
       name="parentId"
       label={
         <>
-          Parent <Text variant="secondary">{t("common.optional")}</Text>
+          {t("categories.parentField.parent")}{" "}
+          <Text variant="secondary">{t("common.optional")}</Text>
         </>
       }
-      description={
-        hasChildren ? "A category with subcategories stays at the top level." : undefined
-      }
+      description={hasChildren ? t("categories.parentField.staysTopLevel") : undefined}
     >
       {(field) => (
         <StandardCombobox
@@ -267,7 +270,7 @@ function ParentField({
           }}
           itemLabel={(option) => option.description}
           placeholder={t("categories.parentField.noneTopLevel")}
-          emptyMessage="No top-level categories"
+          emptyMessage={t("categories.parentField.noTopLevel")}
           disabled={disabled || hasChildren}
           clearable
         />
@@ -294,7 +297,8 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
       name="ownerId"
       label={
         <>
-          Belongs to <Text variant="secondary">{t("common.optional")}</Text>
+          {t("categories.ownerField.belongsTo")}{" "}
+          <Text variant="secondary">{t("common.optional")}</Text>
         </>
       }
       description={t("categories.ownerField.itsSpendAndLimitAre")}
@@ -310,9 +314,11 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
             // per-member mode would still fail validation on save.
             if (owner) setValue("limitMode", "single");
           }}
-          itemLabel={(owner) => (owner.active ? owner.name : `${owner.name} (former member)`)}
+          itemLabel={(owner) =>
+            owner.active ? owner.name : `${owner.name} ${t("common.formerMember")}`
+          }
           placeholder={t("categories.ownerField.sharedEveryone")}
-          emptyMessage="No members"
+          emptyMessage={t("categories.ownerField.noMembers")}
           disabled={disabled}
           clearable
         />
@@ -322,6 +328,8 @@ function OwnerField({ control, setValue, disabled, editing, members }: OwnerFiel
 }
 
 function LimitSection({ control, categories, disabled }: SectionProps) {
+  const { t } = useTranslation();
+
   const [type, parentId, ownerId] = useWatch({ control, name: ["type", "parentId", "ownerId"] });
   if (type !== "DEBIT") return null;
   const isOwned = effectiveOwnerId(parentId, ownerId, categories) != null;
@@ -329,9 +337,7 @@ function LimitSection({ control, categories, disabled }: SectionProps) {
   return (
     <CategoryLimitFields
       control={control}
-      perMemberDisabledReason={
-        isOwned ? "A category that belongs to one member has a single limit." : undefined
-      }
+      perMemberDisabledReason={isOwned ? t("categories.limitSection.ownedSingleLimit") : undefined}
       disabled={disabled}
     />
   );

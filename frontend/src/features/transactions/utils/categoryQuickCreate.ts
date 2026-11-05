@@ -1,13 +1,10 @@
 import type { Category } from "@/api/dtos";
 import type { TransactionType } from "@/api/dtos/transaction";
+import { i18n } from "@/i18n/i18n";
 
 /** The API bound on a category description. */
 const MAX_DESCRIPTION_LENGTH = 255;
 
-const TYPE_NAMES: Record<TransactionType, string> = {
-  DEBIT: "expense",
-  CREDIT: "income",
-};
 
 export type CategoryQuickCreateInput = {
   search: string;
@@ -44,5 +41,10 @@ export function categoryQuickCreate({
   );
   if (exists) return null;
 
-  return { description, label: `Create ${TYPE_NAMES[type]} category "${description}"` };
+  return { description, label: i18n.t(
+      type === "DEBIT"
+        ? "transactions.categoryQuickCreate.createExpense"
+        : "transactions.categoryQuickCreate.createIncome",
+      { name: description },
+    ) };
 }

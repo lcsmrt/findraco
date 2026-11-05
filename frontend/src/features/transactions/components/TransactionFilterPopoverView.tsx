@@ -28,12 +28,6 @@ import {
 } from "../utils/transactionFilterDraft";
 import { useTranslation } from "react-i18next";
 
-const TYPE_LABELS: Record<TransactionType | typeof TYPE_ALL, string> = {
-  ALL: "All",
-  CREDIT: "Credit",
-  DEBIT: "Debit",
-};
-
 function toMemberOption(member: PlanMember): MemberOption {
   return {
     id: member.userId,
@@ -58,6 +52,11 @@ export function TransactionFilterPopoverView({
   isLoadingCategories,
 }: TransactionFilterPopoverViewProps) {
   const { t } = useTranslation();
+  const typeLabels: Record<TransactionType | typeof TYPE_ALL, string> = {
+    ALL: t("transactions.transactionFilterPopoverView.typeAll"),
+    CREDIT: t("transactions.transactionFilterPopoverView.typeCredit"),
+    DEBIT: t("transactions.transactionFilterPopoverView.typeDebit"),
+  };
 
   const fieldId = useId();
   const [open, setOpen] = useState(false);
@@ -100,7 +99,7 @@ export function TransactionFilterPopoverView({
     <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger render={<Button type="button" variant="outline" />}>
         <SlidersHorizontalIcon className="h-4 w-4" />
-        Filters
+        {t("transactions.transactionFilterPopoverView.filters")}
         {activeCount > 0 && <Badge>{activeCount}</Badge>}
       </PopoverTrigger>
       <PopoverContent
@@ -113,7 +112,7 @@ export function TransactionFilterPopoverView({
             <FieldLabel htmlFor={`${fieldId}-type`}>{t("common.type")}</FieldLabel>
             <Select
               value={draft.type}
-              items={TYPE_LABELS}
+              items={typeLabels}
               onValueChange={(v) => {
                 if (v !== null) {
                   setDraft((d) => ({ ...d, type: v }));

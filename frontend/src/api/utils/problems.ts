@@ -1,126 +1,125 @@
 import { AxiosError } from "axios";
+import type { ParseKeys } from "i18next";
+import { i18n } from "@/i18n/i18n";
 import type { FieldProblem, LineProblem, Problem, ProblemType } from "../dtos";
 
 const PREFIX = "urn:findraco:problem:";
 
 /** The copy of each problem the API can answer. A new backend slug fails the build until it has copy. */
-const PROBLEM_COPY: Record<ProblemType, string> = {
-  "malformed-request": "The request could not be sent. Reload the page and try again.",
-  "unsupported-request": "This action is not supported.",
-  "validation-failed": "Some fields are invalid.",
-  unauthenticated: "Your session has ended. Sign in again.",
-  forbidden: "You are not allowed to do this.",
-  "not-found": "This item no longer exists.",
-  "stale-version": "Someone else changed this in the meantime. Reload it and try again.",
-  "rate-limited": "Too many attempts. Wait a few minutes and try again.",
-  internal: "Something went wrong on our side. Try again later.",
-  "invalid-credentials": "Invalid e-mail or password.",
-  "session-invalid": "Your session has ended. Sign in again.",
-  "reset-token-invalid": "This password reset link is invalid or has expired. Request a new one.",
-  "email-taken": "This e-mail is already in use.",
-  "plan-not-found": "This plan no longer exists or you are no longer a member.",
-  "member-not-found": "This person is no longer a member of the plan.",
-  "insufficient-role": "Your role in this plan does not allow this.",
-  "not-transaction-creator": "You can only change transactions you created.",
-  "plan-not-archived": "This plan is no longer archived.",
-  "last-plan": "You cannot leave or delete your only plan.",
-  "last-owner": "The plan needs another owner first. Transfer ownership before this.",
-  "owner-role-needs-transfer": "To make someone the owner, transfer ownership.",
-  "ownership-transfer-to-self": "You already own this plan.",
-  "invitation-not-found": "This invitation does not exist.",
-  "invitation-email-mismatch": "This invitation was sent to a different e-mail address.",
-  "invitation-revoked": "This invitation has been revoked.",
-  "invitation-used": "This invitation has already been used.",
-  "invitation-expired": "This invitation has expired.",
-  "invitation-email-required":
-    "Enter the email address of the person you are inviting.",
-  "category-not-found": "This category no longer exists.",
-  "category-parent-is-itself": "A category cannot be its own parent.",
-  "category-parent-is-subcategory": "A subcategory cannot be a parent.",
-  "category-parent-type-mismatch": "A subcategory must have the same type as its parent.",
-  "category-subcategories-block-parent": "A category with subcategories cannot be given a parent.",
-  "category-subcategories-block-type-change": "The type of a category with subcategories cannot change.",
-  "category-has-subcategories":
-    "This category now has subcategories. Move or delete them before deleting it.",
-  "category-in-use": "This category is now in use. Choose a category to receive its transactions.",
-  "category-type-change-in-use":
-    "This category is in use, so its type can't change. Move its transactions to another category first.",
-  "category-invalid-reassign-target": "Choose another category of the same type to receive them.",
-  "category-member-limits-on-income": "Income categories cannot have per-member limits.",
-  "category-member-limits-on-owned": "A category that belongs to one member cannot have per-member limits.",
-  "category-member-limit-duplicate": "Each member can have only one limit.",
-  "category-member-limit-not-member": "A per-member limit names someone who is not a member of the plan.",
-  "category-owner-on-subcategory": "A subcategory belongs to its parent's owner.",
-  "category-owner-not-member": "The owner must be a member of the plan.",
-  "transaction-not-found": "This transaction no longer exists.",
-  "series-not-found": "This series no longer exists.",
-  "transaction-category-type-mismatch": "The category does not match the transaction type.",
-  "item-category-type-mismatch": "An item's category does not match the transaction type.",
-  "items-exceed-amount": "The items add up to more than the transaction amount.",
-  "participant-shares-mismatch": "The shares must add up to the transaction amount.",
-  "participant-duplicate": "A person is listed twice in the split.",
-  "participant-not-member": "The split names someone who is not a member of the plan.",
-  "participants-required": "Choose at least one person for this transaction.",
-  "exact-share-invalid": "Give every person in the split an amount of zero or more.",
-  "item-invalid": "Every item needs a description and an amount greater than zero.",
-  "period-start-after-end": "The start date must not be after the end date.",
-  "series-parcels-required": "Enter the number of installments.",
-  "series-current-parcel-out-of-range": "The current installment must be between 1 and the number of installments.",
-  "series-interval-required": "Choose how often the transaction repeats.",
-  "series-pivot-not-found": "This occurrence is no longer part of the series.",
-  "series-parcels-change-needs-all": "The number of installments can only change for the whole series.",
-  "series-too-many-occurrences": "This series would create too many occurrences. Shorten it.",
-  "import-line-invalid": "The file has invalid lines, so nothing was imported. Fix them and try again.",
-  "csv-unknown-format": "This file is not a supported bank statement. Check that you exported the account statement.",
-  "csv-format-not-supported": "This looks like a card bill, which cannot be imported yet. Import the account statement.",
-  "csv-encoding-invalid": "The file is not UTF-8 text. Export it again as UTF-8 and try again.",
-  "csv-too-many-rows": "The file has too many rows. Split it and import the parts.",
-  "csv-too-large": "The file is too large. Split it and import the parts.",
-};
+const PROBLEM_COPY = {
+  "malformed-request": "problems.malformed-request",
+  "unsupported-request": "problems.unsupported-request",
+  "validation-failed": "problems.validation-failed",
+  unauthenticated: "problems.unauthenticated",
+  forbidden: "problems.forbidden",
+  "not-found": "problems.not-found",
+  "stale-version": "problems.stale-version",
+  "rate-limited": "problems.rate-limited",
+  internal: "problems.internal",
+  "invalid-credentials": "problems.invalid-credentials",
+  "session-invalid": "problems.session-invalid",
+  "reset-token-invalid": "problems.reset-token-invalid",
+  "email-taken": "problems.email-taken",
+  "plan-not-found": "problems.plan-not-found",
+  "member-not-found": "problems.member-not-found",
+  "insufficient-role": "problems.insufficient-role",
+  "not-transaction-creator": "problems.not-transaction-creator",
+  "plan-not-archived": "problems.plan-not-archived",
+  "last-plan": "problems.last-plan",
+  "last-owner": "problems.last-owner",
+  "owner-role-needs-transfer": "problems.owner-role-needs-transfer",
+  "ownership-transfer-to-self": "problems.ownership-transfer-to-self",
+  "invitation-not-found": "problems.invitation-not-found",
+  "invitation-email-mismatch": "problems.invitation-email-mismatch",
+  "invitation-revoked": "problems.invitation-revoked",
+  "invitation-used": "problems.invitation-used",
+  "invitation-expired": "problems.invitation-expired",
+  "invitation-email-required": "problems.invitation-email-required",
+  "category-not-found": "problems.category-not-found",
+  "category-parent-is-itself": "problems.category-parent-is-itself",
+  "category-parent-is-subcategory": "problems.category-parent-is-subcategory",
+  "category-parent-type-mismatch": "problems.category-parent-type-mismatch",
+  "category-subcategories-block-parent": "problems.category-subcategories-block-parent",
+  "category-subcategories-block-type-change": "problems.category-subcategories-block-type-change",
+  "category-has-subcategories": "problems.category-has-subcategories",
+  "category-in-use": "problems.category-in-use",
+  "category-type-change-in-use": "problems.category-type-change-in-use",
+  "category-invalid-reassign-target": "problems.category-invalid-reassign-target",
+  "category-member-limits-on-income": "problems.category-member-limits-on-income",
+  "category-member-limits-on-owned": "problems.category-member-limits-on-owned",
+  "category-member-limit-duplicate": "problems.category-member-limit-duplicate",
+  "category-member-limit-not-member": "problems.category-member-limit-not-member",
+  "category-owner-on-subcategory": "problems.category-owner-on-subcategory",
+  "category-owner-not-member": "problems.category-owner-not-member",
+  "transaction-not-found": "problems.transaction-not-found",
+  "series-not-found": "problems.series-not-found",
+  "transaction-category-type-mismatch": "problems.transaction-category-type-mismatch",
+  "item-category-type-mismatch": "problems.item-category-type-mismatch",
+  "items-exceed-amount": "problems.items-exceed-amount",
+  "participant-shares-mismatch": "problems.participant-shares-mismatch",
+  "participant-duplicate": "problems.participant-duplicate",
+  "participant-not-member": "problems.participant-not-member",
+  "participants-required": "problems.participants-required",
+  "exact-share-invalid": "problems.exact-share-invalid",
+  "item-invalid": "problems.item-invalid",
+  "period-start-after-end": "problems.period-start-after-end",
+  "series-parcels-required": "problems.series-parcels-required",
+  "series-current-parcel-out-of-range": "problems.series-current-parcel-out-of-range",
+  "series-interval-required": "problems.series-interval-required",
+  "series-pivot-not-found": "problems.series-pivot-not-found",
+  "series-parcels-change-needs-all": "problems.series-parcels-change-needs-all",
+  "series-too-many-occurrences": "problems.series-too-many-occurrences",
+  "import-line-invalid": "problems.import-line-invalid",
+  "csv-unknown-format": "problems.csv-unknown-format",
+  "csv-format-not-supported": "problems.csv-format-not-supported",
+  "csv-encoding-invalid": "problems.csv-encoding-invalid",
+  "csv-too-many-rows": "problems.csv-too-many-rows",
+  "csv-too-large": "problems.csv-too-large",
+} as const satisfies Record<ProblemType, ParseKeys>;
 
 /** Copy for a problem whose type this client does not know yet. */
-const STATUS_COPY: Record<number, string> = {
-  400: "The request could not be sent. Reload the page and try again.",
-  401: "Your session has ended. Sign in again.",
-  403: "You are not allowed to do this.",
-  404: "This item no longer exists.",
-  409: "This conflicts with a recent change. Reload and try again.",
-  422: "Some values are invalid. Check them and try again.",
-  429: "Too many attempts. Wait a few minutes and try again.",
+const STATUS_COPY: Record<number, ParseKeys | undefined> = {
+  "400": "problems.status.400",
+  "401": "problems.status.401",
+  "403": "problems.status.403",
+  "404": "problems.status.404",
+  "409": "problems.status.409",
+  "422": "problems.status.422",
+  "429": "problems.status.429",
 };
 
-const SERVER_ERROR_COPY = "Something went wrong on our side. Try again later.";
-const NETWORK_COPY = "Could not reach the server. Check your connection and try again.";
+const SERVER_ERROR_COPY = "problems.serverError";
+const NETWORK_COPY = "problems.network";
 
 /** How a field constraint reads after the field name. */
-const CONSTRAINT_COPY: Record<string, string> = {
-  NotBlank: "is required",
-  NotEmpty: "is required",
-  NotNull: "is required",
-  Size: "has the wrong length",
-  Positive: "must be greater than zero",
-  PositiveOrZero: "cannot be negative",
-  Min: "is too small",
-  DecimalMin: "is too small",
-  Max: "is too large",
-  DecimalMax: "is too large",
-  Digits: "has too many digits",
-  NarrowedEnum: "is not allowed here",
-  Email: "is not a valid e-mail",
-  Pattern: "has an invalid format",
-  PasswordLength: "must be 8 to 128 characters",
-  PasswordCharacters: "cannot contain tabs, line breaks or invisible characters",
+const CONSTRAINT_COPY: Record<string, ParseKeys | undefined> = {
+  NotBlank: "problems.constraint.NotBlank",
+  NotEmpty: "problems.constraint.NotEmpty",
+  NotNull: "problems.constraint.NotNull",
+  Size: "problems.constraint.Size",
+  Positive: "problems.constraint.Positive",
+  PositiveOrZero: "problems.constraint.PositiveOrZero",
+  Min: "problems.constraint.Min",
+  DecimalMin: "problems.constraint.DecimalMin",
+  Max: "problems.constraint.Max",
+  DecimalMax: "problems.constraint.DecimalMax",
+  Digits: "problems.constraint.Digits",
+  NarrowedEnum: "problems.constraint.NarrowedEnum",
+  Email: "problems.constraint.Email",
+  Pattern: "problems.constraint.Pattern",
+  PasswordLength: "problems.constraint.PasswordLength",
+  PasswordCharacters: "problems.constraint.PasswordCharacters",
 };
 
 /** Why a line of an imported file was refused, by the API's `code`. */
-const LINE_COPY: Record<string, string> = {
-  "date-invalid": "date must be a real date as dd/mm/yyyy",
-  "amount-invalid": "amount must be a number such as -12.50",
-  "amount-zero": "amount cannot be zero",
-  "column-count": "must have exactly 4 columns",
-  malformed: "has quotes that are not closed",
-  "too-long": "has a value that is too long",
-  blank: "has an empty description",
+const LINE_COPY: Record<string, ParseKeys | undefined> = {
+  "date-invalid": "problems.line.date-invalid",
+  "amount-invalid": "problems.line.amount-invalid",
+  "amount-zero": "problems.line.amount-zero",
+  "column-count": "problems.line.column-count",
+  malformed: "problems.line.malformed",
+  "too-long": "problems.line.too-long",
+  blank: "problems.line.blank",
 };
 
 /** Lines listed in a toast before the rest are summed up. */
@@ -160,19 +159,21 @@ export function problemType(error: unknown): ProblemType | null {
  */
 export function problemMessage(error: unknown, fallback?: string): string {
   const type = problemType(error);
-  if (type != null) return PROBLEM_COPY[type];
+  // Resolved at call time: this runs outside React, so the language in use now is the one that counts.
+  if (type != null) return i18n.t(PROBLEM_COPY[type]);
   if (fallback) return fallback;
-  if (!(error instanceof AxiosError)) return "An unexpected error occurred.";
+  if (!(error instanceof AxiosError)) return i18n.t("problems.unexpected");
   const status = error.response?.status;
-  if (status == null) return NETWORK_COPY;
-  return STATUS_COPY[status] ?? SERVER_ERROR_COPY;
+  if (status == null) return i18n.t(NETWORK_COPY);
+  return i18n.t(STATUS_COPY[status] ?? SERVER_ERROR_COPY);
 }
 
 /** The field errors of a 422 `validation-failed`, each as "field is required". */
 export function problemFieldErrors(error: unknown): { field: string | null; message: string }[] {
   const errors = (readProblem(error)?.errors ?? []).filter(isFieldProblem);
   return errors.map(({ field, code, message }) => {
-    const constraint = CONSTRAINT_COPY[code] ?? message;
+    const constraintKey = CONSTRAINT_COPY[code];
+    const constraint = constraintKey ? i18n.t(constraintKey) : message;
     return { field, message: field ? `${field} ${constraint}` : constraint };
   });
 }
@@ -181,16 +182,20 @@ export function problemFieldErrors(error: unknown): { field: string | null; mess
 export function problemLineErrors(error: unknown): string[] {
   const lines = (readProblem(error)?.errors ?? []).filter(isLineProblem);
   const shown = lines.slice(0, LINES_SHOWN).map(({ line, field, code }) => {
-    return `Line ${line}: ${LINE_COPY[code] ?? `${field} is invalid`}`;
+    const lineKey = LINE_COPY[code];
+    const reason = lineKey ? i18n.t(lineKey) : i18n.t("problems.fieldInvalid", { field });
+    return i18n.t("problems.lineError", { line, reason });
   });
-  return lines.length > LINES_SHOWN ? [...shown, `...and ${lines.length - LINES_SHOWN} more`] : shown;
+  return lines.length > LINES_SHOWN
+    ? [...shown, i18n.t("problems.andMore", { remaining: lines.length - LINES_SHOWN })]
+    : shown;
 }
 
 /** A toast for an error: the copy, plus the field or line errors and the request id to report. */
 export function problemToast(error: unknown, fallback?: string): { message: string; description?: string } {
   const lines = [...problemFieldErrors(error).map((fieldError) => fieldError.message), ...problemLineErrors(error)];
   const requestId = readProblem(error)?.requestId;
-  if (requestId) lines.push(`Request id: ${requestId}`);
+  if (requestId) lines.push(i18n.t("problems.requestId", { id: requestId }));
   return {
     message: problemMessage(error, fallback),
     ...(lines.length > 0 && { description: lines.join("\n") }),

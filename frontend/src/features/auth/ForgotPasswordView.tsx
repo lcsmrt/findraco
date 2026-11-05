@@ -43,8 +43,8 @@ export function ForgotPasswordView({
       title={t("auth.forgotPasswordView.forgotPassword")}
       description={
         isSubmitted
-          ? "If an account exists for that email, we sent a link to reset your password. It expires in 60 minutes."
-          : "Enter your account email and we’ll send you a link to choose a new password."
+          ? t("auth.forgotPasswordView.sentDescription")
+          : t("auth.forgotPasswordView.requestDescription")
       }
     >
       <form

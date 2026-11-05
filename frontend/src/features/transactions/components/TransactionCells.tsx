@@ -229,6 +229,8 @@ export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
 }
 
 function ParticipantsSummary({ participants }: { participants: ParticipantShare[] }) {
+  const { t } = useTranslation();
+
   if (participants.length === 0) {
     return (
       <Text variant="caption" className="text-muted-foreground/50">
@@ -252,7 +254,7 @@ function ParticipantsSummary({ participants }: { participants: ParticipantShare[
   return (
     <Badge variant="secondary" className="gap-1" title={participants.map((p) => p.name).join(", ")}>
       <UsersIcon className="h-3 w-3" />
-      {participants.length} people
+      {t("transactions.transactionCells.people", { count: participants.length })}
     </Badge>
   );
 }

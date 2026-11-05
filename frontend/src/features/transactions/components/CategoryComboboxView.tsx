@@ -91,7 +91,7 @@ export function CategoryComboboxView({
           }
         >
           <Text className={cn(!value && "text-muted-foreground")}>
-            {value ? value.description : "Select a category..."}
+            {value ? value.description : t("transactions.categoryComboboxView.selectCategory")}
           </Text>
         </ComboboxTrigger>
         {showClear && (

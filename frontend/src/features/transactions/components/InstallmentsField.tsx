@@ -39,7 +39,10 @@ export function InstallmentsField(props: InstallmentsFieldProps) {
         label={t("transactions.installmentsField.numberOfInstallments")}
         description={
           props.mode === "seriesEdit"
-            ? `Currently: parcel ${props.occurrenceParcel} of ${props.definition.parcelsNumber}`
+            ? t("transactions.installmentsField.currently", {
+                parcel: props.occurrenceParcel,
+                total: props.definition.parcelsNumber,
+              })
             : undefined
         }
       >
@@ -112,6 +115,8 @@ type LastInstallmentPreviewProps = {
 };
 
 function LastInstallmentPreview({ control }: LastInstallmentPreviewProps) {
+  const { t } = useTranslation();
+
   const [date, parcelsNumber, currentParcel] = useWatch({
     control,
     name: ["date", "parcelsNumber", "currentParcel"],
@@ -120,7 +125,10 @@ function LastInstallmentPreview({ control }: LastInstallmentPreviewProps) {
   if (!last) return null;
   return (
     <Text as="p" variant="secondary">
-      Last installment: {last.number}/{last.number} — {formatMonthYear(last.month)}
+      {t("transactions.installmentsField.lastInstallment", {
+        number: last.number,
+        month: formatMonthYear(last.month),
+      })}
     </Text>
   );
 }

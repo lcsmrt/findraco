@@ -6,6 +6,7 @@ import { formatMoney } from "@/utils/money";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import type { MemberColorOf } from "@/utils/memberColors";
 import { MemberDot } from "@/components/memberDot/MemberDot";
+import { useTranslation } from "react-i18next";
 
 const EMPTY = "—";
 
@@ -42,6 +43,8 @@ type OwnerLabelProps = {
 
 /** Owner name; a former member is greyed (muted colour only: fading it further breaks contrast). */
 function OwnerLabel({ category, colorOf }: OwnerLabelProps) {
+  const { t } = useTranslation();
+
   if (category.ownerId == null || !category.ownerName) return null;
   const former = category.ownerActive === false;
   return (
@@ -56,7 +59,7 @@ function OwnerLabel({ category, colorOf }: OwnerLabelProps) {
       />
       <span className="truncate">
         {category.ownerName}
-        {former && " (former member)"}
+        {former && ` ${t("common.formerMember")}`}
       </span>
     </span>
   );
@@ -69,6 +72,8 @@ type MemberLimitsProps = {
 
 /** Per-member limits as absolute amounts; former members greyed (muted colour only, for contrast). */
 function MemberLimits({ category, colorOf }: MemberLimitsProps) {
+  const { t } = useTranslation();
+
   const entries = category.memberLimits ?? [];
   if (entries.length === 0) return null;
   return (
@@ -87,7 +92,7 @@ function MemberLimits({ category, colorOf }: MemberLimitsProps) {
             }
           />
           {entry.memberName} {formatMoney(entry.amount)}
-          {!entry.active && " (former member)"}
+          {!entry.active && ` ${t("common.formerMember")}`}
         </span>
       ))}
     </span>
@@ -126,6 +131,8 @@ export function CategoryTreeRow({
   onAddChild,
   className,
 }: CategoryTreeRowProps) {
+  const { t } = useTranslation();
+
   const isChild = child != null;
   const limit = monthlyLimit(category);
   const hasOwner = category.ownerId != null && !!category.ownerName;
@@ -191,7 +198,7 @@ export function CategoryTreeRow({
                   type="button"
                   size="icon-sm"
                   variant="ghost"
-                  aria-label={`New subcategory of ${category.description}`}
+                  aria-label={t("categories.categoryTreeRow.newSubcategoryOf", { name: category.description })}
                   className="text-muted-foreground hover:text-foreground rounded"
                   onClick={() => onAddChild(category)}
                 >
@@ -202,7 +209,7 @@ export function CategoryTreeRow({
                 type="button"
                 size="icon-sm"
                 variant="ghost"
-                aria-label={`Edit ${category.description}`}
+                aria-label={t("categories.categoryTreeRow.edit", { name: category.description })}
                 className="text-muted-foreground hover:text-foreground rounded"
                 onClick={() => onEdit(category)}
               >
@@ -212,7 +219,7 @@ export function CategoryTreeRow({
                 type="button"
                 size="icon-sm"
                 variant="ghost"
-                aria-label={`Delete ${category.description}`}
+                aria-label={t("categories.categoryTreeRow.delete", { name: category.description })}
                 className="text-muted-foreground hover:text-destructive rounded"
                 onClick={() => onDelete(category)}
               >

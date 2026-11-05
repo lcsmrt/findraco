@@ -53,9 +53,15 @@ export function ArchivedPlansListView({
                   <Text variant="label" className="truncate">
                     {plan.name}
                   </Text>
-                  <Text variant="caption">Archived on {formatDate(new Date(plan.archivedAt))}</Text>
                   <Text variant="caption">
-                    Deleted permanently on {formatDate(new Date(plan.deletesAt))}
+                    {t("plans.archivedPlansListView.archivedOn", {
+                      date: formatDate(new Date(plan.archivedAt)),
+                    })}
+                  </Text>
+                  <Text variant="caption">
+                    {t("plans.archivedPlansListView.deletedOn", {
+                      date: formatDate(new Date(plan.deletesAt)),
+                    })}
                   </Text>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 *:flex-1 sm:*:flex-none">
@@ -63,7 +69,7 @@ export function ArchivedPlansListView({
                     type="button"
                     variant="outline"
                     size="sm"
-                    aria-label={`Restore ${plan.name}`}
+                    aria-label={t("plans.archivedPlansListView.restorePlan", { name: plan.name })}
                     isLoading={restoringPlanId === plan.id}
                     disabled={restoringPlanId !== null}
                     onClick={() => onRestore(plan)}
@@ -76,7 +82,7 @@ export function ArchivedPlansListView({
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground hover:bg-accent hover:text-destructive"
-                    aria-label={`Delete ${plan.name} now`}
+                    aria-label={t("plans.archivedPlansListView.deletePlanNow", { name: plan.name })}
                     disabled={restoringPlanId !== null}
                     onClick={() => onDelete(plan)}
                   >

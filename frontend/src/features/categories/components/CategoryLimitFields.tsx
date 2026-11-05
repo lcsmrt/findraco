@@ -76,7 +76,8 @@ export function CategoryLimitFields({
           name="spendingLimit"
           label={
             <>
-              Amount <Text variant="secondary">{t("common.optional")}</Text>
+              {t("categories.categoryLimitFields.amount")}{" "}
+              <Text variant="secondary">{t("common.optional")}</Text>
             </>
           }
         >
@@ -120,7 +121,9 @@ export function CategoryLimitFields({
                         onValueChange={field.onChange}
                         placeholder={t("categories.categoryLimitFields.noLimit")}
                         className="w-32"
-                        aria-label={`Limit for ${row.memberName}`}
+                        aria-label={t("categories.categoryLimitFields.limitFor", {
+                          name: row.memberName,
+                        })}
                         disabled={disabled || !row.active}
                         aria-invalid={fieldState.invalid}
                       />
@@ -135,7 +138,9 @@ export function CategoryLimitFields({
                       variant="ghost"
                       size="icon"
                       disabled={disabled}
-                      aria-label={`Remove ${row.memberName}'s limit`}
+                      aria-label={t("categories.categoryLimitFields.removeLimit", {
+                        name: row.memberName,
+                      })}
                       onClick={() => remove(index)}
                     >
                       <Trash2Icon className="h-4 w-4" />
