@@ -9,8 +9,8 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/actual-vs-forecast/design.md`
-**Status**: Draft
-**Approved**: [written when the user approves]
+**Status**: Approved
+**Approved**: 2026-11-05 - user: "Aprovo"
 **Build**: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true; cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 **Run unit**: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions src/features/overview src/api/services
 **Run stories**: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions src/features/overview
