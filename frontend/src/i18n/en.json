@@ -366,7 +366,8 @@
       "formerMember": "(former member)"
     },
     "summaryCards": {
-      "actualAndForecast": "Actual · Forecast {{amount}}",
+      "actual": "Actual",
+      "forecast": "Forecast {{amount}}",
       "expenses": "Expenses",
       "income": "Income"
     }

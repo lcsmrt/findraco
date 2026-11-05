@@ -1,19 +1,35 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ComponentProps } from "react";
+import { useTranslation } from "react-i18next";
 import { expect, fn, screen } from "storybook/test";
 import { ConfirmTransactionDialogView } from "./ConfirmTransactionDialogView";
 
+type ConfirmElectricityProps = Omit<ComponentProps<typeof ConfirmTransactionDialogView>, "description">;
+
+// The description is the container's real copy, translated at render, so it follows the toolbar language.
+function ConfirmElectricity(props: ConfirmElectricityProps) {
+  const { t } = useTranslation();
+  return (
+    <ConfirmTransactionDialogView
+      {...props}
+      description={t("transactions.confirmTransactionDialog.enterWhatWasReallyCharged", {
+        description: "Electricity",
+      })}
+    />
+  );
+}
+
 const meta = {
   title: "Transactions/ConfirmTransactionDialogView",
-  component: ConfirmTransactionDialogView,
+  component: ConfirmElectricity,
   args: {
     open: true,
     onOpenChange: fn(),
     initialValues: { amount: 200, date: new Date(2026, 9, 10) },
-    description: "Enter what was really charged for Electricity and when it was paid.",
     isSaving: false,
     onConfirm: fn(),
   },
-} satisfies Meta<typeof ConfirmTransactionDialogView>;
+} satisfies Meta<typeof ConfirmElectricity>;
 export default meta;
 
 type Story = StoryObj<typeof meta>;

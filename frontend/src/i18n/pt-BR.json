@@ -366,7 +366,8 @@
       "formerMember": "(ex-membro)"
     },
     "summaryCards": {
-      "actualAndForecast": "Realizado · Previsto {{amount}}",
+      "actual": "Realizado",
+      "forecast": "Previsto {{amount}}",
       "expenses": "Despesas",
       "income": "Receitas"
     }

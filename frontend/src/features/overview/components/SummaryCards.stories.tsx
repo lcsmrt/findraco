@@ -67,8 +67,10 @@ export const WithForecast: Story = {
   play: async ({ canvas }) => {
     await expect(visibleText(canvas, "R$ 800,00")).toBeVisible();
     await expect(visibleText(canvas, "R$ 10.200,00")).toBeVisible();
-    await expect(visibleText(canvas, "Actual · Forecast R$ 5.147,50")).toBeVisible();
-    await expect(visibleText(canvas, "Actual · Forecast R$ 5.852,50")).toBeVisible();
+    // The headline is the actual figure, named on its own line, apart from the forecast line.
+    await expect(visibleText(canvas, "Actual")).toBeVisible();
+    await expect(visibleText(canvas, "Forecast R$ 5.147,50")).toBeVisible();
+    await expect(visibleText(canvas, "Forecast R$ 5.852,50")).toBeVisible();
   },
 };
 
@@ -76,7 +78,7 @@ export const WithForecast: Story = {
 export const NoForecast: Story = {
   play: async ({ canvas }) => {
     await expect(visibleText(canvas, "R$ 5.852,50")).toBeVisible();
-    await expect(visibleText(canvas, "Actual · Forecast R$ 5.852,50")).toBeVisible();
+    await expect(visibleText(canvas, "Forecast R$ 5.852,50")).toBeVisible();
   },
 };
 
@@ -101,9 +103,9 @@ export const MemberSelected: Story = {
   play: async ({ canvas }) => {
     await expect(visibleText(canvas, "R$ 4.800,00")).toHaveClass("text-success");
     await expect(visibleText(canvas, "R$ 2.000,00")).toBeVisible();
-    await expect(visibleText(canvas, "Actual · Forecast R$ 2.414,10")).toBeVisible();
+    await expect(visibleText(canvas, "Forecast R$ 2.414,10")).toBeVisible();
     await expect(visibleText(canvas, "R$ 2.800,00")).toBeVisible();
-    await expect(visibleText(canvas, "Actual · Forecast R$ 2.385,90")).toBeVisible();
+    await expect(visibleText(canvas, "Forecast R$ 2.385,90")).toBeVisible();
   },
 };
 

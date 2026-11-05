@@ -64,14 +64,19 @@ type StatusCaptionProps = {
   forecast: number;
 };
 
-/** Says what the headline figure is: the actual one, beside the forecast. */
+/** Names the headline figure as the actual one, then gives the forecast on its own line. */
 function StatusCaption({ forecast }: StatusCaptionProps) {
   const { t } = useTranslation();
 
   return (
-    <Text as="p" variant="caption" className="tabular-nums">
-      {t("overview.summaryCards.actualAndForecast", { amount: formatMoney(forecast) })}
-    </Text>
+    <div className="flex flex-col gap-0.5">
+      <Text as="p" variant="caption">
+        {t("overview.summaryCards.actual")}
+      </Text>
+      <Text as="p" variant="caption" className="tabular-nums">
+        {t("overview.summaryCards.forecast", { amount: formatMoney(forecast) })}
+      </Text>
+    </div>
   );
 }
 
