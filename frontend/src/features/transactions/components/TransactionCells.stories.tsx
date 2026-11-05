@@ -2,7 +2,7 @@ import type { Transaction } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { TableBase, TableBodyBase, TableCellBase, TableRowBase } from "@/components/table/base/TableParts";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, screen } from "storybook/test";
+import { expect, fn, screen, within } from "storybook/test";
 import {
   ActionsCell,
   DescriptionCell,
@@ -152,6 +152,35 @@ export const Pending: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Pending")).toBeVisible();
     await expect(canvas.queryByText("Forecast")).toBeNull();
+  },
+};
+
+// One row per status, so a badge on the wrong row fails the story as surely as a missing one.
+export const StatusBadges: Story = {
+  render: (args) => (
+    <div className="flex flex-col gap-2">
+      <DemoRow
+        {...args}
+        transaction={{ ...groceries, id: 2, description: "Electricity", status: "FORECAST", requiresConfirmation: true }}
+      />
+      <DemoRow
+        {...args}
+        transaction={{ ...groceries, id: 3, description: "Water", status: "PENDING", requiresConfirmation: true }}
+      />
+      <DemoRow {...args} transaction={groceries} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const [forecast, pending, actual] = canvas.getAllByRole("row").map((row) => within(row));
+    await expect(forecast.getByText("Electricity")).toBeVisible();
+    await expect(forecast.getByText("Forecast")).toBeVisible();
+    await expect(forecast.queryByText("Pending")).toBeNull();
+    await expect(pending.getByText("Water")).toBeVisible();
+    await expect(pending.getByText("Pending")).toBeVisible();
+    await expect(pending.queryByText("Forecast")).toBeNull();
+    await expect(actual.getByText("Groceries")).toBeVisible();
+    await expect(actual.queryByText("Forecast")).toBeNull();
+    await expect(actual.queryByText("Pending")).toBeNull();
   },
 };
 

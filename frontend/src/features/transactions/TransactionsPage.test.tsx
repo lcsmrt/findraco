@@ -278,6 +278,37 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
   });
 });
 
+describe("TransactionsPage", () => {
+  const electricity: Transaction = {
+    ...rent,
+    id: 77,
+    version: 3,
+    seriesId: "s-9",
+    description: "Electricity",
+    amount: 200,
+    startDate: "2026-10-10",
+    endDate: "2026-10-10",
+    status: "PENDING",
+    requiresConfirmation: true,
+  };
+
+  it("confirm on a pending row opens the dialog prefilled", async () => {
+    const { user } = renderTab({ transactions: [electricity, rent] });
+    const row = await tableRow("Electricity");
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    await user.click(row.getByRole("button", { name: "Confirm" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Confirm transaction" });
+    // The currency mask separates the symbol with a no-break space.
+    expect((within(dialog).getByRole("textbox", { name: "Amount" }) as HTMLInputElement).value).toMatch(
+      /^R\$\s200,00$/,
+    );
+    expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
+    expect(within(dialog).getByText(/Electricity/)).toBeTruthy();
+  });
+});
+
 describe("TransactionsPage row permissions (BST-10 AC 10, 11)", () => {
   // A contributor's view: the server marks their own row editable and another member's row not.
   const dinnerByLivia: Transaction = {

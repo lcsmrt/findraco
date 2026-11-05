@@ -746,19 +746,19 @@ describe("TransactionFormDrawer", () => {
   it("status keeps its value when another field changes", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
-    await renderOccurrence(confirmedOccurrence);
+    await renderOccurrence({ ...confirmedOccurrence, status: "FORECAST" });
 
-    expect(screen.getByRole("button", { name: "Actual" }).getAttribute("aria-pressed")).toBe("true");
-    expect(screen.getByRole("button", { name: "Forecast" }).getAttribute("aria-pressed")).toBe("false");
+    expect(screen.getByRole("button", { name: "Forecast" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Actual" }).getAttribute("aria-pressed")).toBe("false");
     const amount = screen.getByLabelText("Amount");
     await user.clear(amount);
     await user.type(amount, "18740");
-    expect(screen.getByRole("button", { name: "Actual" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Forecast" }).getAttribute("aria-pressed")).toBe("true");
 
     expect(await saveThisOne(user, requests)).toMatchObject({
       scope: "THIS_ONE",
       series: { amount: 187.4 },
-      pivotConfirmed: true,
+      pivotConfirmed: false,
     });
   });
 
