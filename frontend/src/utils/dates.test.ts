@@ -49,7 +49,7 @@ describe("formatDate", () => {
 });
 
 describe("formatPattern", () => {
-  it("names months and weekdays in Portuguese", async () => {
+  it("names months and weekdays of the date helper in Portuguese", async () => {
     await i18n.changeLanguage("pt-BR");
 
     expect(formatPattern(NOVEMBER_4, "MMMM")).toBe("novembro");

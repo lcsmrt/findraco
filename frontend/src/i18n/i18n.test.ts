@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { importResultMessage } from "@/api/utils/importResultMessage";
 import { i18n } from "./i18n";
@@ -6,6 +8,11 @@ describe("the unit test setup", () => {
   it("starts the tests in English", () => {
     expect(i18n.language).toBe("en");
     expect(i18n.t("common.cancel")).toBe("Cancel");
+
+    // Storybook runs the stories as tests: its preview must start in English too.
+    const preview = readFileSync(join(process.cwd(), ".storybook/preview.tsx"), "utf-8");
+    expect(preview).toContain('initI18n("en")');
+    expect(preview).toContain('initialGlobals: { locale: "en" }');
   });
 });
 

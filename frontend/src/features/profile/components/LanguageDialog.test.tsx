@@ -22,7 +22,7 @@ const ana: User = {
 afterEach(cleanup);
 
 describe("LanguageDialog", () => {
-  it("offers English and Português (Brasil)", () => {
+  it("lists both languages in the dialog", () => {
     renderWithProviders(<LanguageDialog open onOpenChange={vi.fn()} />);
 
     expect(screen.getByText("Language / Idioma")).toBeTruthy();

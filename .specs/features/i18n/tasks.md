@@ -12,7 +12,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 **Status**: Approved
 **Approved**: 2026-11-05 - user: "Pode seguir"
 **Build**: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
-**Run unit**: cd frontend && pnpm exec vitest run --project=unit --project=tooling --reporter=verbose src/i18n src/utils/dates.test.ts src/utils/money.test.ts src/features/transactions/utils src/features/profile src/app/providers/AuthProvider.test.tsx src/features/auth src/features/transactions/components/TransactionFormDrawer.test.tsx scripts/translationParity.test.ts eslint.config.test.ts
+**Run unit**: cd frontend && pnpm exec vitest run --project=unit --project=tooling --reporter=verbose src/i18n src/app/layout/Navbar.test.tsx src/utils/dates.test.ts src/utils/money.test.ts src/features/transactions/utils src/features/profile src/app/providers/AuthProvider.test.tsx src/features/auth src/features/transactions/components/TransactionFormDrawer.test.tsx scripts/translationParity.test.ts eslint.config.test.ts
 
 ---
 
