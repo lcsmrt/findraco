@@ -371,13 +371,13 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 Proof: run unit | ✓ confirmTransaction > posts amount, date and version
 
 **C32** - A forecast row shows "Forecast" and a pending row "Pending"; an actual row neither (AVF-02, AC 4-5)
-Proof: run stories | ✓ TransactionCells.stories.tsx > Pending
+Proof: run stories | ✓ TransactionCells.stories.tsx > Status Badges
 
 **C33** - The mobile list shows the same badges (AVF-02, AC 4-5; AVF-04, AC 1)
 Proof: run stories | ✓ TransactionMobileList.stories.tsx > Forecast And Pending
 
-**C34** - "Confirm" on a pending row opens the dialog with its amount and date filled in (AVF-02, AC 6)
-Proof: run unit | ✓ ConfirmTransactionDialog > opens with the occurrence amount and date
+**C34** - Clicking "Confirm" on a pending row of the transactions page opens the dialog with its amount and date filled in (AVF-02, AC 6)
+Proof: run unit | ✓ TransactionsPage > confirm on a pending row opens the dialog prefilled
 
 **C35** - Submitting the dialog with 187,40 sends 187.4 and closes it (AVF-02, AC 7)
 Proof: run unit | ✓ ConfirmTransactionDialog > confirms with the edited amount
@@ -391,7 +391,7 @@ Proof: run unit | ✓ confirmTransactionForm > rejects an empty or zero amount
 **C38** - The series create form starts with "Requires confirmation" on (AVF-02, AC 1)
 Proof: run unit | ✓ TransactionFormDrawer > series starts requiring confirmation
 
-**C39** - Editing an occurrence that requires confirmation shows Status preset to its state, and saving after only an amount change sends `pivotConfirmed` unchanged (AVF-02, AC 8-9)
+**C39** - Editing a forecast occurrence that requires confirmation shows Status preset to "Forecast", and saving after only an amount change sends `pivotConfirmed: false` (AVF-02, AC 8-9)
 Proof: run unit | ✓ TransactionFormDrawer > status keeps its value when another field changes
 
 **C40** - Setting Status to "Forecast" on a confirmed occurrence sends `pivotConfirmed: false` (AVF-02, AC 10)
@@ -406,11 +406,29 @@ Proof: run stories | ✓ SummaryCards.stories.tsx > With Forecast
 **C43** - In `pt-BR` the new texts read "Realizado", "Previsto", "Pendente", "Confirmar", "Exige confirmação" and "Situação" (edge case 4)
 Proof: walk - Storybook at 390×844 with `locale` pt-BR: summary cards, transaction cells, mobile list, confirm dialog, transaction form
 
+**C44** - A "this and following" edit from a confirmed occurrence whose date was moved off the series dates keeps that occurrence, with the form's values (AVF-02, AC 12)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='SeriesConfirmationIT#followingEditFromMovedConfirmedPivotKeepsIt' -Dsurefire.skip=true
+
+**C45** - Confirming with a moved date, setting Status back to Forecast, then an "all" edit keeps the occurrence: it returns to its own series slot (AVF-02, AC 10)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='SeriesConfirmationIT#undoneMovedConfirmationSurvivesAllEdit' -Dsurefire.skip=true
+
+**C46** - Confirming an occurrence onto another occurrence's date, then an "all" edit, keeps both (AVF-02, AC 12)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='SeriesConfirmationIT#confirmOntoSiblingDateKeepsTheSibling' -Dsurefire.skip=true
+
+**C47** - A "this and following" or "all" edit with `pivotConfirmed: true` stores the pivot `CONFIRMED` (AVF-02, AC 9)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='SeriesConfirmationIT#pivotStatusAppliesInEveryScope' -Dsurefire.skip=true
+
+**C48** - On the mobile list, "Confirm" on a pending row opens the confirm dialog (AVF-02, AC 6)
+Proof: run unit | ✓ TransactionsPage > mobile confirm opens the dialog
+
+**C49** - With a member selected, the summary cards show that member's actual and forecast figures (AVF-01, AC 3)
+Proof: run unit | ✓ summaryView > member selected keeps actual figures
+
 ---
 
 ## Handoff
 
-**Settled mid-build:** repo names win over the design (orchestrator accepted, batch A): table `transactions` / `ck_transactions_confirmation` (V13 renamed it), route `POST /plan/{planId}/transaction/{id}/confirm`, `markConfirmed(boolean)` instead of `setConfirmed` (no public `set*` rule); problem copy landed in T1. Open: a THIS_AND_FOLLOWING/ALL edit whose pivot is a confirmed occurrence moved off the template dates deletes it - to fix in the Verifier pass
+**Settled mid-build:** repo names win over the design (orchestrator accepted, batch A): table `transactions` / `ck_transactions_confirmation` (V13 renamed it), route `POST /plan/{planId}/transaction/{id}/confirm`, `markConfirmed(boolean)` instead of `setConfirmed` (no public `set*` rule); problem copy landed in T1. Verifier round 1 FAIL (9 findings) → fix pass: occurrences carry their series slot (`scheduled_date`, iCalendar RECURRENCE-ID) and reconcile matches by it, so a moved confirmation never needs an exception (closes findings 1-3); C32, C34, C39 tightened, C44-C49 added (orchestrator)
 **Dispatched:** batch A (T1–T6, Sonnet) at 92f2745, returned at ca014ba; batch B (T7–T12, Sonnet) at ca014ba, returned at 5814209; Verifier (Opus) at 507ad8f
 **Walked:** 2026-11-05, Storybook at 390×844 with `locale` pt-BR (script and screenshots in the session scratchpad `walk-avf/`): SummaryCards WithForecast and MemberSelected, TransactionCells Forecast/Pending/Confirmable, TransactionMobileList ForecastAndPending, ConfirmTransactionDialogView Filled, ConfirmationFields RequiredForecast. C43: "Realizado", "Previsto", "Pendente", "Confirmar", "Exige confirmação", "Situação" all shown. Found: the confirm dialog description reads English in pt-BR ("Enter what was really charged…"); MemberSelected shows forecast only although the API's actual figures honour `memberId`; the mobile list has no Confirm action (desktop only); the summary caption "Realizado · Previsto R$ X" reads as one label. Reached in the app by: sign in, Transactions, a series created with Requires confirmation on and a date before today
 

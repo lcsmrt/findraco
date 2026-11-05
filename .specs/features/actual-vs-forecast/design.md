@@ -158,4 +158,5 @@ type DashboardSummaryResponse = { totalIncome; totalExpenses; netBalance; actual
 | Status storage | `confirmation` enum stored, `status` derived with today | Approach A above |
 | Today | User's saved time zone (`users.time_zone`, kept in sync by `TimeZoneInterceptor`) | The reader's calendar day, as the period navigator shows it |
 | Response field names | `totalIncome` etc. keep meaning "all" (= forecast); `actual*` added | Backwards-compatible contract; old clients keep working |
+| Series slot | Each occurrence stores `scheduled_date` (its series slot, iCalendar RECURRENCE-ID; V24, backfilled from `start_date`); `reconcile` matches by it, never by `start_date`; a confirm that moves the date keeps the slot and records no exception | Verifier round 1 findings 1-3: matching by `start_date` deleted moved confirmations and their siblings |
 | Project decision | Recorded as AD-025: forecast vs actual is derived from a stored `confirmation` per occurrence and the reader's today | Answers the question AD-002 and the 2026-10-29 decision left open |
