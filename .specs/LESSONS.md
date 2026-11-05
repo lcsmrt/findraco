@@ -290,6 +290,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C28 (proofs)
 - last seen: 2026-11-05T06:12:34Z
 
+### L-047 - When an occurrence's date can change, match series occurrences by a stored slot date, never by the current date.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backend/series` · harmful: 0
+- features: actual-vs-forecast
+- evidence: verification.md findings 1-3 (backend/series)
+- last seen: 2026-11-05T19:57:51Z
+
+### L-048 - Every row action a criterion names must exist on the mobile list too; the phone is the main path.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/mobile` · harmful: 0
+- features: actual-vs-forecast
+- evidence: verification.md finding 6 (frontend/mobile)
+- last seen: 2026-11-05T19:57:51Z
+
+### L-049 - A 'never changes as a side effect' test must start from the state the side effect would flip.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/forms` · harmful: 0
+- features: actual-vs-forecast
+- evidence: C39, verification.md finding 5 (frontend/forms)
+- last seen: 2026-11-05T19:57:51Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
