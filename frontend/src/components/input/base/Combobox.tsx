@@ -9,6 +9,7 @@ import { cn } from "@/lib/mergeClasses";
 import { Combobox as ComboboxPrimitive } from "@base-ui/react";
 import { CheckIcon, ChevronDownIcon, XIcon } from "lucide-react";
 import * as React from "react";
+import { useTranslation } from "react-i18next";
 
 const Combobox = ComboboxPrimitive.Root;
 
@@ -37,13 +38,19 @@ function ComboboxTrigger({
 }
 
 function ComboboxClear({ className, ...props }: ComboboxPrimitive.Clear.Props) {
+  const { t } = useTranslation();
+
   return (
     <ComboboxPrimitive.Clear
       data-slot="combobox-clear"
       className={cn(className)}
       {...props}
       render={
-        <InputGroupButton variant="ghost" size="icon-xs" aria-label="Clear">
+        <InputGroupButton
+          variant="ghost"
+          size="icon-xs"
+          aria-label={t("components.comboboxClear.clear")}
+        >
           <XIcon className="pointer-events-none" />
         </InputGroupButton>
       }
@@ -62,6 +69,8 @@ function ComboboxInput({
   showTrigger?: boolean;
   showClear?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <InputGroup className={cn("w-auto", className)}>
       <ComboboxPrimitive.Input render={<InputGroupInput disabled={disabled} />} {...props} />
@@ -73,7 +82,7 @@ function ComboboxInput({
           <InputGroupButton
             size="icon-xs"
             variant="ghost"
-            aria-label="Show options"
+            aria-label={t("components.comboboxInput.showOptions")}
             tabIndex={-1}
             data-slot="input-group-button"
             className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent"
@@ -230,6 +239,8 @@ function ComboboxChip({
 }: ComboboxPrimitive.Chip.Props & {
   showRemove?: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <ComboboxPrimitive.Chip
       data-slot="combobox-chip"
@@ -245,7 +256,7 @@ function ComboboxChip({
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
           render={
-            <Button variant="ghost" size="icon-xs" aria-label="Remove">
+            <Button variant="ghost" size="icon-xs" aria-label={t("components.comboboxChip.remove")}>
               <XIcon className="pointer-events-none" />
             </Button>
           }

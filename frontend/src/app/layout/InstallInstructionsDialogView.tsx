@@ -8,6 +8,7 @@ import {
   DialogTitle,
 } from "@/components/dialog/base/Dialog";
 import { Text } from "@/components/typography/base/Text";
+import { useTranslation } from "react-i18next";
 
 type InstallInstructionsDialogViewProps = {
   open: boolean;
@@ -19,12 +20,16 @@ export function InstallInstructionsDialogView({
   open,
   onOpenChange,
 }: InstallInstructionsDialogViewProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent showCloseButton={false}>
         <DialogHeader className="gap-4">
-          <DialogTitle>Install findraco</DialogTitle>
-          <DialogDescription>Add findraco to your home screen in two steps.</DialogDescription>
+          <DialogTitle>{t("app.installInstructionsDialogView.installFindraco")}</DialogTitle>
+          <DialogDescription>
+            {t("app.installInstructionsDialogView.addFindracoToYourHome")}
+          </DialogDescription>
         </DialogHeader>
         <ol className="flex list-decimal flex-col gap-3 pl-5">
           <li>
@@ -35,7 +40,7 @@ export function InstallInstructionsDialogView({
             </Text>
           </li>
           <li>
-            <Text>Choose &quot;Add to Home Screen&quot;.</Text>
+            <Text>{t("app.installInstructionsDialogView.chooseAddToHomeScreen")}</Text>
           </li>
         </ol>
         <DialogFooter showCloseButton />

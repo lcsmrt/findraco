@@ -8,6 +8,7 @@ import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatPattern } from "@/utils/dates";
 import { groupByDay } from "../utils/groupByDay";
+import { useTranslation } from "react-i18next";
 
 type TransactionMobileRowProps = {
   transaction: Transaction;
@@ -15,10 +16,7 @@ type TransactionMobileRowProps = {
 };
 
 /** Description, category and people on the left, signed amount on the right; tap edits when allowed. */
-function TransactionMobileRow({
-  transaction,
-  onEdit,
-}: TransactionMobileRowProps) {
+function TransactionMobileRow({ transaction, onEdit }: TransactionMobileRowProps) {
   const people = transaction.participants.map((p) => p.name).join(", ");
   const details = [transaction.category?.description, people].filter(Boolean);
   return (
@@ -65,14 +63,11 @@ export function TransactionMobileList({
   onEdit,
   className,
 }: TransactionMobileListProps) {
+  const { t } = useTranslation();
+
   const days = groupByDay(transactions);
   return (
-    <div
-      className={cn(
-        "bg-card mx-4 overflow-hidden rounded-lg border shadow-sm",
-        className,
-      )}
-    >
+    <div className={cn("bg-card mx-4 overflow-hidden rounded-lg border shadow-sm", className)}>
       {isLoading ? (
         <div className="flex flex-col gap-2 p-3">
           <Skeleton className="h-10" />
@@ -81,7 +76,7 @@ export function TransactionMobileList({
         </div>
       ) : days.length === 0 ? (
         <Text as="p" variant="secondary" className="flex h-24 items-center justify-center">
-          No transactions found.
+          {t("transactions.transactionMobileList.noTransactionsFound")}
         </Text>
       ) : (
         days.map((group) => (

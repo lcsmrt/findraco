@@ -5,6 +5,7 @@ import { formatMoney } from "@/utils/money";
 import { getFirstName } from "@/utils/string/formatters";
 import { MemberDot } from "@/components/memberDot/MemberDot";
 import type { SummaryFigure, SummaryView } from "../utils/summaryView";
+import { useTranslation } from "react-i18next";
 
 type MemberBarProps = {
   figure: SummaryFigure;
@@ -34,22 +35,28 @@ type MemberAmountsProps = {
 
 /** "● Lucas R$ 2.733 · ● Livia R$ 2.414". */
 function MemberAmounts({ figure, className }: MemberAmountsProps) {
-  return figure.segments.length > 0 && (
-    <Text as="div" variant="caption" className={cn("flex flex-wrap gap-x-3 gap-y-0.5", className)}>
-      {figure.segments.map((segment) => (
-        // Only the dot fades for the other members: faded text would fall below readable contrast.
-        <span
-          key={segment.memberId}
-          className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums"
-        >
-          <MemberDot color={segment.color} className={cn(segment.dimmed && "opacity-25")} />
-          <span className="min-w-0 truncate" title={segment.name}>
-            {getFirstName(segment.name)}
+  return (
+    figure.segments.length > 0 && (
+      <Text
+        as="div"
+        variant="caption"
+        className={cn("flex flex-wrap gap-x-3 gap-y-0.5", className)}
+      >
+        {figure.segments.map((segment) => (
+          // Only the dot fades for the other members: faded text would fall below readable contrast.
+          <span
+            key={segment.memberId}
+            className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums"
+          >
+            <MemberDot color={segment.color} className={cn(segment.dimmed && "opacity-25")} />
+            <span className="min-w-0 truncate" title={segment.name}>
+              {getFirstName(segment.name)}
+            </span>
+            <span className="shrink-0">{formatMoney(segment.amount)}</span>
           </span>
-          <span className="shrink-0">{formatMoney(segment.amount)}</span>
-        </span>
-      ))}
-    </Text>
+        ))}
+      </Text>
+    )
   );
 }
 
@@ -87,10 +94,12 @@ type BalanceProps = {
 };
 
 function Balance({ balance }: BalanceProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-2">
       <Text as="p" variant="secondary">
-        Balance
+        {t("overview.balance.balance")}
       </Text>
       <Text
         as="p"
@@ -112,14 +121,26 @@ type SummaryCardsProps = {
  * Balance on top below `sm`, three cards in a row from `sm`.
  */
 export function SummaryCards({ view }: SummaryCardsProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       <Card className="sm:hidden">
         <CardContent className="flex flex-col gap-5 px-4">
           <Balance balance={view.balance} />
           <div className="grid grid-cols-2 gap-4">
-            <FigureBlock label="Income" figure={view.income} tone="income" size="sm" />
-            <FigureBlock label="Expenses" figure={view.expenses} tone="expense" size="sm" />
+            <FigureBlock
+              label={t("overview.summaryCards.income")}
+              figure={view.income}
+              tone="income"
+              size="sm"
+            />
+            <FigureBlock
+              label={t("overview.summaryCards.expenses")}
+              figure={view.expenses}
+              tone="expense"
+              size="sm"
+            />
           </div>
         </CardContent>
       </Card>
@@ -127,12 +148,22 @@ export function SummaryCards({ view }: SummaryCardsProps) {
       <div className="hidden gap-4 sm:grid sm:grid-cols-3">
         <Card>
           <CardContent>
-            <FigureBlock label="Income" figure={view.income} tone="income" size="lg" />
+            <FigureBlock
+              label={t("overview.summaryCards.income")}
+              figure={view.income}
+              tone="income"
+              size="lg"
+            />
           </CardContent>
         </Card>
         <Card>
           <CardContent>
-            <FigureBlock label="Expenses" figure={view.expenses} tone="expense" size="lg" />
+            <FigureBlock
+              label={t("overview.summaryCards.expenses")}
+              figure={view.expenses}
+              tone="expense"
+              size="lg"
+            />
           </CardContent>
         </Card>
         <Card>

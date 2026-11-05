@@ -7,6 +7,7 @@ import { formatDateTime } from "@/utils/dates";
 import { Trash2Icon } from "lucide-react";
 import { ROLE_LABELS, STATUS_LABELS } from "../utils/planLabels";
 import { invitationLabel } from "./invitationLabel";
+import { useTranslation } from "react-i18next";
 
 const STATUS_VARIANTS: Record<
   InvitationStatus,
@@ -29,6 +30,8 @@ export function PlanInvitationsListView({
   isLoading,
   onRevoke,
 }: PlanInvitationsListViewProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-6">
@@ -40,7 +43,7 @@ export function PlanInvitationsListView({
   if (invitations.length === 0) {
     return (
       <Text as="p" variant="secondary" className="py-6 text-center">
-        No invitations created for this plan yet.
+        {t("plans.planInvitationsListView.noInvitationsCreatedForThis")}
       </Text>
     );
   }
@@ -61,8 +64,7 @@ export function PlanInvitationsListView({
               </Badge>
               {invitation.expiresAt && (
                 <Text variant="caption">
-                  Expires on{" "}
-                  {formatDateTime(new Date(invitation.expiresAt))}
+                  Expires on {formatDateTime(new Date(invitation.expiresAt))}
                 </Text>
               )}
             </div>

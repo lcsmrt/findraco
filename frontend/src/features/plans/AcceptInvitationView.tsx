@@ -11,6 +11,7 @@ import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
 import { CheckIcon, XIcon } from "lucide-react";
 import { ROLE_LABELS } from "./utils/planLabels";
+import { useTranslation } from "react-i18next";
 
 type AcceptInvitationViewProps = {
   preview: InvitationPreview | undefined;
@@ -30,6 +31,8 @@ export function AcceptInvitationView({
   onAccept,
   onGoHome,
 }: AcceptInvitationViewProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-6 p-4">
       <Card>
@@ -40,22 +43,22 @@ export function AcceptInvitationView({
         ) : isError || !preview ? (
           <>
             <CardHeader>
-              <CardTitle>Invalid invitation</CardTitle>
+              <CardTitle>{t("plans.acceptInvitationView.invalidInvitation")}</CardTitle>
               <CardDescription>
-                This invitation doesn't exist or is no longer available.
+                {t("plans.acceptInvitationView.thisInvitationDoesnTExist")}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <Button variant="outline" onClick={onGoHome}>
                 <XIcon className="h-4 w-4" />
-                Back to home
+                {t("plans.acceptInvitationView.backToHome")}
               </Button>
             </CardContent>
           </>
         ) : (
           <>
             <CardHeader>
-              <CardTitle>You've been invited</CardTitle>
+              <CardTitle>{t("plans.acceptInvitationView.youVeBeenInvited")}</CardTitle>
               <CardDescription>
                 {preview.invitedByName} invited you to the plan{" "}
                 <Text variant="label" className="text-foreground">
@@ -65,22 +68,13 @@ export function AcceptInvitationView({
               </CardDescription>
             </CardHeader>
             <CardContent className="flex gap-2">
-              <Button
-                variant="outline"
-                type="button"
-                disabled={isAccepting}
-                onClick={onGoHome}
-              >
+              <Button variant="outline" type="button" disabled={isAccepting} onClick={onGoHome}>
                 <XIcon className="h-4 w-4" />
-                Decline
+                {t("plans.acceptInvitationView.decline")}
               </Button>
-              <Button
-                type="button"
-                isLoading={isAccepting}
-                onClick={onAccept}
-              >
+              <Button type="button" isLoading={isAccepting} onClick={onAccept}>
                 <CheckIcon className="h-4 w-4" />
-                Accept invitation
+                {t("plans.acceptInvitationView.acceptInvitation")}
               </Button>
             </CardContent>
           </>

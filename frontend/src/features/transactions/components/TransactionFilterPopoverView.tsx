@@ -1,8 +1,4 @@
-import type {
-  Category,
-  TransactionType,
-  PlanMember,
-} from "@/api/dtos";
+import type { Category, TransactionType, PlanMember } from "@/api/dtos";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
@@ -15,11 +11,7 @@ import {
   SelectValue,
 } from "@/components/input/base/Select";
 import { StandardCombobox } from "@/components/input/StandardCombobox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/popover/base/Popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/popover/base/Popover";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import { countActiveFilters } from "../utils/activeFilterCount";
@@ -34,6 +26,7 @@ import {
   type FilterDraft,
   type MemberOption,
 } from "../utils/transactionFilterDraft";
+import { useTranslation } from "react-i18next";
 
 const TYPE_LABELS: Record<TransactionType | typeof TYPE_ALL, string> = {
   ALL: "All",
@@ -64,11 +57,11 @@ export function TransactionFilterPopoverView({
   categories: allCategories,
   isLoadingCategories,
 }: TransactionFilterPopoverViewProps) {
+  const { t } = useTranslation();
+
   const fieldId = useId();
   const [open, setOpen] = useState(false);
-  const [draft, setDraft] = useState<FilterDraft>(() =>
-    toDraft(appliedFilters),
-  );
+  const [draft, setDraft] = useState<FilterDraft>(() => toDraft(appliedFilters));
   const [categorySearch, setCategorySearch] = useState("");
 
   // Grouped like the transaction form's picker; children carry their parent's
@@ -78,9 +71,7 @@ export function TransactionFilterPopoverView({
     [allCategories, categorySearch],
   );
   const categories = categoryOptions.map((o) => o.category);
-  const parentNames = new Map(
-    allCategories.map((c) => [c.id, c.description]),
-  );
+  const parentNames = new Map(allCategories.map((c) => [c.id, c.description]));
   function categoryLabel(c: (typeof categories)[number]) {
     const parentName = c.parentId != null ? parentNames.get(c.parentId) : undefined;
     return parentName ? `${parentName} › ${c.description}` : c.description;
@@ -110,18 +101,16 @@ export function TransactionFilterPopoverView({
       <PopoverTrigger render={<Button type="button" variant="outline" />}>
         <SlidersHorizontalIcon className="h-4 w-4" />
         Filters
-        {activeCount > 0 && (
-          <Badge>{activeCount}</Badge>
-        )}
+        {activeCount > 0 && <Badge>{activeCount}</Badge>}
       </PopoverTrigger>
       <PopoverContent
         align="start"
-        aria-label="Filters"
+        aria-label={t("transactions.transactionFilterPopoverView.filters")}
         className="w-[min(20rem,calc(100vw-1rem))]"
       >
         <div className="flex flex-col gap-4 p-1">
           <Field>
-            <FieldLabel htmlFor={`${fieldId}-type`}>Type</FieldLabel>
+            <FieldLabel htmlFor={`${fieldId}-type`}>{t("common.type")}</FieldLabel>
             <Select
               value={draft.type}
               items={TYPE_LABELS}
@@ -135,22 +124,30 @@ export function TransactionFilterPopoverView({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value={TYPE_ALL}>All</SelectItem>
-                <SelectItem value="CREDIT">Credit</SelectItem>
-                <SelectItem value="DEBIT">Debit</SelectItem>
+                <SelectItem value={TYPE_ALL}>
+                  {t("transactions.transactionFilterPopoverView.all")}
+                </SelectItem>
+                <SelectItem value="CREDIT">
+                  {t("transactions.transactionFilterPopoverView.credit")}
+                </SelectItem>
+                <SelectItem value="DEBIT">
+                  {t("transactions.transactionFilterPopoverView.debit")}
+                </SelectItem>
               </SelectContent>
             </Select>
           </Field>
 
           <Field>
-            <FieldLabel htmlFor={`${fieldId}-category`}>Category</FieldLabel>
+            <FieldLabel htmlFor={`${fieldId}-category`}>
+              {t("transactions.transactionFilterPopoverView.category")}
+            </FieldLabel>
             <StandardCombobox
               id={`${fieldId}-category`}
               items={categories}
               value={draft.category}
               onValueChange={(v) => setDraft((d) => withDraftCategory(d, v))}
               itemLabel={categoryLabel}
-              placeholder="All categories"
+              placeholder={t("transactions.transactionFilterPopoverView.allCategories")}
               clearable
               searchValue={categorySearch}
               onSearchChange={setCategorySearch}
@@ -160,33 +157,35 @@ export function TransactionFilterPopoverView({
 
           {showMemberPicker && (
             <Field>
-              <FieldLabel htmlFor={`${fieldId}-member`}>Attributed to</FieldLabel>
+              <FieldLabel htmlFor={`${fieldId}-member`}>
+                {t("transactions.transactionFilterPopoverView.attributedTo")}
+              </FieldLabel>
               <StandardCombobox
                 id={`${fieldId}-member`}
                 items={members.map(toMemberOption)}
                 value={draft.member}
                 onValueChange={(v) => setDraft((d) => withDraftMember(d, v))}
                 itemLabel={(m) => m.name}
-                placeholder="All members"
+                placeholder={t("transactions.transactionFilterPopoverView.allMembers")}
                 clearable
               />
             </Field>
           )}
 
           <Field>
-            <FieldLabel htmlFor={`${fieldId}-amount-min`}>Amount</FieldLabel>
+            <FieldLabel htmlFor={`${fieldId}-amount-min`}>{t("common.amount")}</FieldLabel>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
               <CurrencyInput
                 id={`${fieldId}-amount-min`}
-                aria-label="Minimum amount"
-                placeholder="R$ 0,00"
+                aria-label={t("transactions.transactionFilterPopoverView.minimumAmount")}
+                placeholder={t("common.r000")}
                 value={draft.amountMin}
                 onValueChange={(amountMin) => setDraft((d) => ({ ...d, amountMin }))}
               />
               <span className="text-muted-foreground hidden shrink-0 sm:block">–</span>
               <CurrencyInput
-                aria-label="Maximum amount"
-                placeholder="R$ 0,00"
+                aria-label={t("transactions.transactionFilterPopoverView.maximumAmount")}
+                placeholder={t("common.r000")}
                 value={draft.amountMax}
                 onValueChange={(amountMax) => setDraft((d) => ({ ...d, amountMax }))}
               />
@@ -194,16 +193,11 @@ export function TransactionFilterPopoverView({
           </Field>
 
           <div className="flex items-center justify-between pt-1">
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={handleReset}
-            >
-              Reset
+            <Button type="button" variant="ghost" size="sm" onClick={handleReset}>
+              {t("transactions.transactionFilterPopoverView.reset")}
             </Button>
             <Button type="button" size="sm" onClick={handleApply}>
-              Apply
+              {t("transactions.transactionFilterPopoverView.apply")}
             </Button>
           </div>
         </div>

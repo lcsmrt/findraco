@@ -15,6 +15,7 @@ import { cn } from "@/lib/mergeClasses";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { Trash2Icon } from "lucide-react";
 import { ROLE_LABELS, ROLE_OPTIONS } from "../utils/planLabels";
+import { useTranslation } from "react-i18next";
 
 type PlanMembersListViewProps = {
   members: PlanMember[];
@@ -32,6 +33,8 @@ export function PlanMembersListView({
   onRoleChange,
   onRemove,
 }: PlanMembersListViewProps) {
+  const { t } = useTranslation();
+
   if (isLoading) {
     return (
       <div className="flex justify-center py-6">
@@ -43,7 +46,7 @@ export function PlanMembersListView({
   if (members.length === 0) {
     return (
       <Text as="p" variant="secondary" className="py-6 text-center">
-        No members in this plan.
+        {t("plans.planMembersListView.noMembersInThisPlan")}
       </Text>
     );
   }
@@ -61,9 +64,7 @@ export function PlanMembersListView({
         >
           <div className="flex min-w-0 items-center gap-3">
             <Avatar>
-              <AvatarFallback>
-                {getFirstAndLastInitials(member.name)}
-              </AvatarFallback>
+              <AvatarFallback>{getFirstAndLastInitials(member.name)}</AvatarFallback>
             </Avatar>
             <div className="flex min-w-0 flex-col">
               <Text variant="label" className="truncate">
@@ -86,10 +87,7 @@ export function PlanMembersListView({
                   }
                 }}
               >
-                <SelectTrigger
-                  className="h-8 w-[150px]"
-                  aria-label={`Role of ${member.name}`}
-                >
+                <SelectTrigger className="h-8 w-[150px]" aria-label={`Role of ${member.name}`}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

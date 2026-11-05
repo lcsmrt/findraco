@@ -12,11 +12,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { SaveIcon, XIcon } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {
-  type PlanNameFormOutput,
-  type PlanNameFormValues,
-  planNameSchema,
-} from "./planNameForm";
+import { type PlanNameFormOutput, type PlanNameFormValues, planNameSchema } from "./planNameForm";
+import { useTranslation } from "react-i18next";
 
 type PlanNameDialogMode = "create" | "rename";
 
@@ -49,14 +46,14 @@ export function PlanNameDialogView({
   isSubmitting,
   onSubmit,
 }: PlanNameDialogViewProps) {
-  const { control, handleSubmit, reset } = useForm<
-    PlanNameFormValues,
-    unknown,
-    PlanNameFormOutput
-  >({
-    resolver: zodResolver(planNameSchema),
-    defaultValues: { name: initialName },
-  });
+  const { t } = useTranslation();
+
+  const { control, handleSubmit, reset } = useForm<PlanNameFormValues, unknown, PlanNameFormOutput>(
+    {
+      resolver: zodResolver(planNameSchema),
+      defaultValues: { name: initialName },
+    },
+  );
 
   useEffect(() => {
     reset({ name: initialName });
@@ -70,11 +67,11 @@ export function PlanNameDialogView({
             <DialogTitle>{TITLES[mode]}</DialogTitle>
           </DialogHeader>
 
-          <FormField control={control} name="name" label="Name">
+          <FormField control={control} name="name" label={t("common.name")}>
             {(field) => (
               <Input
                 {...field}
-                placeholder="e.g., Household finances"
+                placeholder={t("plans.planNameDialogView.eGHouseholdFinances")}
                 disabled={isSubmitting}
               />
             )}
@@ -88,7 +85,7 @@ export function PlanNameDialogView({
               onClick={() => onOpenChange(false)}
             >
               <XIcon className="h-4 w-4" />
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button type="submit" isLoading={isSubmitting}>
               <SaveIcon className="h-4 w-4" />

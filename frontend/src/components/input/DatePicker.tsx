@@ -12,6 +12,7 @@ import {
 } from "@/components/input/base/InputGroup";
 import { cn } from "@/lib/mergeClasses";
 import { datePlaceholder, dateFnsLocale, formatDate, parseDate } from "@/utils/dates";
+import { useTranslation } from "react-i18next";
 
 const CURRENT_YEAR = new Date().getFullYear();
 
@@ -28,7 +29,7 @@ export type DatePickerProps = {
   /** The text input, so a form can focus the field on a validation error. */
   ref?: React.Ref<HTMLInputElement>;
   onBlur?: () => void;
-}
+};
 
 /**
  * Single date picker with an editable text input and a popover calendar.
@@ -47,10 +48,10 @@ export function DatePicker({
   ref,
   onBlur,
 }: DatePickerProps) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = React.useState(false);
-  const [inputValue, setInputValue] = React.useState(
-    value ? formatDate(value) : "",
-  );
+  const [inputValue, setInputValue] = React.useState(value ? formatDate(value) : "");
   const anchorRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -80,7 +81,7 @@ export function DatePicker({
           <InputGroupButton
             size="icon-xs"
             disabled={disabled}
-            aria-label="Open calendar"
+            aria-label={t("components.datePicker.openCalendar")}
             onClick={() => !disabled && setOpen((prev) => !prev)}
           >
             <CalendarIcon />
@@ -100,14 +101,13 @@ export function DatePicker({
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") e.currentTarget.blur();
-            if (e.key === "Escape")
-              setInputValue(value ? formatDate(value) : "");
+            if (e.key === "Escape") setInputValue(value ? formatDate(value) : "");
           }}
         />
         {value && !disabled && (
           <InputGroupAddon align="inline-end">
             <InputGroupButton
-              aria-label="Clear date"
+              aria-label={t("components.datePicker.clearDate")}
               onClick={() => {
                 onChange?.(undefined);
                 setInputValue("");
@@ -122,7 +122,7 @@ export function DatePicker({
         className="w-auto p-0"
         align="start"
         anchor={anchorRef}
-        aria-label="Choose a date"
+        aria-label={t("components.datePicker.chooseADate")}
       >
         <Calendar
           mode="single"
@@ -155,7 +155,7 @@ export type DateRangePickerProps = {
   numberOfMonths?: number;
   className?: string;
   id?: string;
-}
+};
 
 function formatRange(range?: DateRange): string {
   if (!range?.from) return "";
@@ -180,6 +180,8 @@ export function DateRangePicker({
   className,
   id,
 }: DateRangePickerProps) {
+  const { t } = useTranslation();
+
   const [open, setOpen] = React.useState(false);
   const anchorRef = React.useRef<HTMLDivElement>(null);
   const hasValue = !!(value?.from || value?.to);
@@ -193,15 +195,12 @@ export function DateRangePicker({
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <InputGroup
-        ref={anchorRef}
-        className={cn(numberOfMonths === 2 ? "w-68" : "w-44", className)}
-      >
+      <InputGroup ref={anchorRef} className={cn(numberOfMonths === 2 ? "w-68" : "w-44", className)}>
         <InputGroupAddon align="inline-start">
           <InputGroupButton
             size="icon-xs"
             disabled={disabled}
-            aria-label="Open calendar"
+            aria-label={t("components.dateRangePicker.openCalendar")}
             onClick={() => !disabled && setOpen((prev) => !prev)}
           >
             <CalendarIcon />
@@ -220,7 +219,7 @@ export function DateRangePicker({
         {hasValue && !disabled && (
           <InputGroupAddon align="inline-end">
             <InputGroupButton
-              aria-label="Clear range"
+              aria-label={t("components.dateRangePicker.clearRange")}
               onPointerDown={(e) => e.stopPropagation()}
               onClick={(e) => {
                 e.stopPropagation();
@@ -236,7 +235,7 @@ export function DateRangePicker({
         className="w-auto p-0"
         align="start"
         anchor={anchorRef}
-        aria-label="Choose a period"
+        aria-label={t("components.dateRangePicker.chooseAPeriod")}
       >
         <Calendar
           mode="range"

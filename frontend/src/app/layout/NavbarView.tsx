@@ -10,6 +10,7 @@ import {
 } from "@/components/dropdown/base/Dropdown";
 import { AppVersion } from "@/components/appVersion/AppVersion";
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
+import { useTranslation } from "react-i18next";
 
 type NavbarViewProps = {
   userName: string;
@@ -36,10 +37,16 @@ export function NavbarView({
   update,
   install,
 }: NavbarViewProps) {
+  const { t } = useTranslation();
+
   return (
     <nav className="border-border bg-background fixed z-20 flex h-[calc(4rem+env(safe-area-inset-top))] w-full items-center justify-between border-b px-4 pt-[env(safe-area-inset-top)]">
       <div className="flex items-center gap-4">
-        <img src={"/findraco-logo-128.png"} alt="findraco logo" className="h-8" />
+        <img
+          src={"/findraco-logo-128.png"}
+          alt={t("app.navbarView.findracoLogo")}
+          className="h-8"
+        />
         {planSwitcher}
       </div>
 
@@ -49,12 +56,10 @@ export function NavbarView({
         <DropdownMenu>
           <DropdownMenuTrigger className="hover:cursor-pointer focus:outline-none">
             <Avatar size="lg">
-              <AvatarFallback>
-                {getFirstAndLastInitials(userName)}
-              </AvatarFallback>
+              <AvatarFallback>{getFirstAndLastInitials(userName)}</AvatarFallback>
               {update && (
                 <AvatarBadge>
-                  <span className="sr-only">Update available</span>
+                  <span className="sr-only">{t("app.navbarView.updateAvailable")}</span>
                 </AvatarBadge>
               )}
             </Avatar>
@@ -75,7 +80,7 @@ export function NavbarView({
                 className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
                 onClick={install.onInstall}
               >
-                Install app
+                {t("app.navbarView.installApp")}
                 <Smartphone className="text-foreground" />
               </DropdownMenuItem>
             )}
@@ -83,14 +88,14 @@ export function NavbarView({
               className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
               onClick={onOpenTimeZone}
             >
-              Time zone
+              {t("app.navbarView.timeZone")}
               <Globe className="text-foreground" />
             </DropdownMenuItem>
             <DropdownMenuItem
               className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
               onClick={onSignOut}
             >
-              Logout
+              {t("app.navbarView.logout")}
               <LogOut className="text-foreground" />
             </DropdownMenuItem>
             <DropdownMenuSeparator />

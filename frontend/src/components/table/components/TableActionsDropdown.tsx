@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/dropdown/base/Dropdown";
 import { EllipsisVertical } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export type ColumnAction<T> = {
   label: string;
@@ -21,7 +22,13 @@ type ColumnActionDropdownProps<T> = {
   subtle?: boolean;
 };
 
-export function TableActionsDropdown<T>({ columnActions, row, subtle }: ColumnActionDropdownProps<T>) {
+export function TableActionsDropdown<T>({
+  columnActions,
+  row,
+  subtle,
+}: ColumnActionDropdownProps<T>) {
+  const { t } = useTranslation();
+
   const filteredActions = columnActions?.filter((action) => {
     if (!action.conditionalRenderingFunctions) return true;
     return action.conditionalRenderingFunctions.every((fn) => fn(row.original));
@@ -30,8 +37,9 @@ export function TableActionsDropdown<T>({ columnActions, row, subtle }: ColumnAc
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        aria-label="Row actions"
-        className="hover:bg-muted-foreground/10 flex h-7 w-7 items-center justify-center rounded-full">
+        aria-label={t("components.tableActionsDropdown.rowActions")}
+        className="hover:bg-muted-foreground/10 flex h-7 w-7 items-center justify-center rounded-full"
+      >
         <EllipsisVertical
           className={cn(
             "inline-block h-4 w-4",
@@ -41,10 +49,7 @@ export function TableActionsDropdown<T>({ columnActions, row, subtle }: ColumnAc
       </DropdownMenuTrigger>
       <DropdownMenuContent>
         {filteredActions?.map((action, index) => (
-          <DropdownMenuItem
-            key={index}
-            onClick={() => action.onClick(row)}
-          >
+          <DropdownMenuItem key={index} onClick={() => action.onClick(row)}>
             <div className="flex w-full items-center gap-2 hover:cursor-pointer">
               {action.icon}
               {action.label}

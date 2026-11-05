@@ -9,6 +9,7 @@ import {
   type ForgotPasswordFormValues,
 } from "./authForms";
 import { AuthCard } from "./components/AuthCard";
+import { useTranslation } from "react-i18next";
 
 type ForgotPasswordViewProps = {
   /** The link was requested: the form gives way to the confirmation. */
@@ -24,6 +25,8 @@ export function ForgotPasswordView({
   onSubmit,
   onBackToSignIn,
 }: ForgotPasswordViewProps) {
+  const { t } = useTranslation();
+
   const { control, handleSubmit } = useForm<
     ForgotPasswordFormValues,
     unknown,
@@ -37,7 +40,7 @@ export function ForgotPasswordView({
 
   return (
     <AuthCard
-      title="Forgot password"
+      title={t("auth.forgotPasswordView.forgotPassword")}
       description={
         isSubmitted
           ? "If an account exists for that email, we sent a link to reset your password. It expires in 60 minutes."
@@ -52,11 +55,11 @@ export function ForgotPasswordView({
         {!isSubmitted && (
           <>
             <div className="flex w-full flex-col gap-3">
-              <FormField control={control} name="email" label="Email">
+              <FormField control={control} name="email" label={t("common.email")}>
                 {(field) => (
                   <Input
                     {...field}
-                    placeholder="you@example.com"
+                    placeholder={t("common.youExampleCom")}
                     className="bg-card/70"
                   />
                 )}
@@ -64,18 +67,13 @@ export function ForgotPasswordView({
             </div>
 
             <Button className="w-full" type="submit" isLoading={isSubmitting}>
-              Send reset link
+              {t("auth.forgotPasswordView.sendResetLink")}
             </Button>
           </>
         )}
 
-        <Button
-          type="button"
-          variant="link"
-          className="h-fit p-0"
-          onClick={onBackToSignIn}
-        >
-          Back to sign in
+        <Button type="button" variant="link" className="h-fit p-0" onClick={onBackToSignIn}>
+          {t("auth.forgotPasswordView.backToSignIn")}
         </Button>
       </form>
     </AuthCard>

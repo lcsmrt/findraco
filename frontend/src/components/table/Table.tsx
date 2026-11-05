@@ -8,6 +8,7 @@ import {
 import { ChevronRight } from "lucide-react";
 import { type ReactNode, useMemo } from "react";
 import { cn } from "@/lib/mergeClasses";
+import { useTranslation } from "react-i18next";
 
 type TableProps<T> = {
   data: T[];
@@ -33,6 +34,8 @@ export function TableRoot<T>({
   border = "y",
   className,
 }: TableProps<T>) {
+  const { t } = useTranslation();
+
   const expandable = !!getRowCanExpand;
 
   const allColumns = useMemo(() => {
@@ -41,7 +44,7 @@ export function TableRoot<T>({
     const expanderColumn: ColumnDef<T> = {
       id: "__expander",
       // A column header needs text for screen readers even when it shows nothing.
-      header: () => <span className="sr-only">Expand</span>,
+      header: () => <span className="sr-only">{t("components.tableRoot.expand")}</span>,
       cell: ({ row }) => {
         if (!row.getCanExpand()) return null;
         return (
@@ -57,7 +60,7 @@ export function TableRoot<T>({
     };
 
     return [expanderColumn, ...columns];
-  }, [columns, expandable]);
+  }, [columns, expandable, t]);
 
   const table = useReactTable({
     data,

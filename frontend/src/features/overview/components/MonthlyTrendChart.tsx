@@ -14,6 +14,7 @@ import { formatPattern } from "@/utils/dates";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { formatMoney } from "@/utils/money";
 import type { TrendMonth } from "../utils/trendMonths";
+import { useTranslation } from "react-i18next";
 
 const chartConfig: ChartConfig = {
   income: { label: "Income", color: "var(--success)" },
@@ -86,10 +87,12 @@ type MonthlyTrendChartProps = {
 
 /** Income and Expenses as one line each across the months, the selected period highlighted. */
 export function MonthlyTrendChart({ months, isLoading }: MonthlyTrendChartProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Monthly trend</CardTitle>
+        <CardTitle>{t("overview.monthlyTrendChart.monthlyTrend")}</CardTitle>
       </CardHeader>
       <CardContent className="px-2 sm:px-6">
         {isLoading || !months ? (

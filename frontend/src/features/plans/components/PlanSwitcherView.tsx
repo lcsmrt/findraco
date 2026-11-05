@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/dropdown/base/Dropdown";
 import { ChevronsUpDownIcon, PlusIcon } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 type PlanSwitcherViewProps = {
   plans: Plan[];
@@ -28,18 +29,14 @@ export function PlanSwitcherView({
   onSelectPlan,
   onCreatePlan,
 }: PlanSwitcherViewProps) {
+  const { t } = useTranslation();
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button
-            variant="outline"
-            size="sm"
-            className="max-w-52 justify-between gap-2"
-          >
-            <span className="truncate">
-              {activePlanName ?? "Select plan"}
-            </span>
+          <Button variant="outline" size="sm" className="max-w-52 justify-between gap-2">
+            <span className="truncate">{activePlanName ?? "Select plan"}</span>
             <ChevronsUpDownIcon className="text-muted-foreground" />
           </Button>
         }
@@ -47,7 +44,7 @@ export function PlanSwitcherView({
 
       <DropdownMenuContent className="min-w-52" align="start">
         <DropdownMenuGroup>
-          <DropdownMenuLabel>Plans</DropdownMenuLabel>
+          <DropdownMenuLabel>{t("plans.planSwitcherView.plans")}</DropdownMenuLabel>
           <DropdownMenuRadioGroup
             value={activePlanId != null ? String(activePlanId) : ""}
             onValueChange={(value) => onSelectPlan(Number(value))}
@@ -64,7 +61,7 @@ export function PlanSwitcherView({
 
         <DropdownMenuItem onClick={onCreatePlan}>
           <PlusIcon />
-          New plan
+          {t("plans.planSwitcherView.newPlan")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

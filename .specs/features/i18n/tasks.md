@@ -143,8 +143,8 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] The full unit + storybook suite green, unchanged test files
-- [ ] A read sample of the diff shows no garbled text
+- [x] The full unit + storybook suite green, unchanged test files
+- [x] A read sample of the diff shows no garbled text
 
 **Tests**: none
 **Gate**: build

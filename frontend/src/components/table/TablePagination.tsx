@@ -1,11 +1,6 @@
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "../button/base/Button";
 import {
   Select,
@@ -14,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../input/base/Select";
+import { useTranslation } from "react-i18next";
 
 export type Pagination = {
   /** Current page index (0-based), mirrors the `number` field of ApiPaginatedResponse */
@@ -38,6 +34,8 @@ export function TablePagination({
   onPageSizeChange,
   isSticky = true,
 }: TablePaginationProps) {
+  const { t } = useTranslation();
+
   const {
     number: page = 0,
     size = 0,
@@ -59,21 +57,17 @@ export function TablePagination({
     >
       {onPageSizeChange && (
         <Text as="div" className="flex w-full items-center gap-2">
-          <span className="hidden sm:inline">Lines per page:</span>
-          <Select
-            value={String(size)}
-            onValueChange={(value) => onPageSizeChange(Number(value))}
-          >
-            <SelectTrigger className="h-8 w-20" aria-label="Lines per page">
+          <span className="hidden sm:inline">{t("components.tablePagination.linesPerPage")}</span>
+          <Select value={String(size)} onValueChange={(value) => onPageSizeChange(Number(value))}>
+            <SelectTrigger
+              className="h-8 w-20"
+              aria-label={t("components.tablePagination.linesPerPage2")}
+            >
               <SelectValue>{size}</SelectValue>
             </SelectTrigger>
             <SelectContent side="top">
               {[5, 10, 20, 50].map((s) => (
-                <SelectItem
-                  key={s}
-                  value={String(s)}
-                  className="hover:cursor-pointer"
-                >
+                <SelectItem key={s} value={String(s)} className="hover:cursor-pointer">
                   {s}
                 </SelectItem>
               ))}
@@ -92,7 +86,7 @@ export function TablePagination({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(0)}
-            aria-label="First page"
+            aria-label={t("components.tablePagination.firstPage")}
             disabled={first}
           >
             <ChevronsLeft className="h-4 w-4" />
@@ -101,7 +95,7 @@ export function TablePagination({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(Math.max(0, page - 1))}
-            aria-label="Previous page"
+            aria-label={t("components.tablePagination.previousPage")}
             disabled={first}
           >
             <ChevronLeft className="h-4 w-4" />
@@ -113,7 +107,7 @@ export function TablePagination({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
-            aria-label="Next page"
+            aria-label={t("components.tablePagination.nextPage")}
             disabled={last}
           >
             <ChevronRight className="h-4 w-4" />
@@ -122,7 +116,7 @@ export function TablePagination({
             variant="ghost"
             size="sm"
             onClick={() => onPageChange(totalPages - 1)}
-            aria-label="Last page"
+            aria-label={t("components.tablePagination.lastPage")}
             disabled={last}
           >
             <ChevronsRight className="h-4 w-4" />

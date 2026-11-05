@@ -11,6 +11,7 @@ import {
   type ResetPasswordFormOutput,
   type ResetPasswordFormValues,
 } from "./authForms";
+import { useTranslation } from "react-i18next";
 
 type ResetPasswordViewProps = {
   isValidating: boolean;
@@ -26,13 +27,15 @@ type InvalidLinkProps = {
 };
 
 function InvalidLink({ onRequestNewLink }: InvalidLinkProps) {
+  const { t } = useTranslation();
+
   return (
     <>
       <Text as="p" variant="secondary" className="text-center">
-        This link is invalid or has expired.
+        {t("auth.invalidLink.thisLinkIsInvalidOr")}
       </Text>
       <Button type="button" className="w-full" onClick={onRequestNewLink}>
-        Request a new link
+        {t("auth.invalidLink.requestANewLink")}
       </Button>
     </>
   );
@@ -46,6 +49,8 @@ export function ResetPasswordView({
   onRequestNewLink,
   onBackToSignIn,
 }: ResetPasswordViewProps) {
+  const { t } = useTranslation();
+
   const { control, handleSubmit } = useForm<
     ResetPasswordFormValues,
     unknown,
@@ -64,7 +69,7 @@ export function ResetPasswordView({
     if (isValidating) {
       return (
         <Text as="p" variant="secondary" className="text-center">
-          Checking your link…
+          {t("auth.resetPasswordView.checkingYourLink")}
         </Text>
       );
     }
@@ -79,7 +84,7 @@ export function ResetPasswordView({
           <FormField
             control={control}
             name="password"
-            label="New password"
+            label={t("auth.resetPasswordView.newPassword")}
             description={passwordSpacesHint(password)}
           >
             {(field) => <PasswordInput {...field} className="bg-card/70" />}
@@ -87,21 +92,21 @@ export function ResetPasswordView({
           <FormField
             control={control}
             name="confirmPassword"
-            label="Confirm new password"
+            label={t("auth.resetPasswordView.confirmNewPassword")}
           >
             {(field) => <PasswordInput {...field} className="bg-card/70" />}
           </FormField>
         </div>
 
         <Button className="w-full" type="submit" isLoading={isSubmitting}>
-          Set new password
+          {t("auth.resetPasswordView.setNewPassword")}
         </Button>
       </>
     );
   }
 
   return (
-    <AuthCard title="Reset password">
+    <AuthCard title={t("auth.resetPasswordView.resetPassword")}>
       <form
         id="reset-password-form"
         className="flex flex-col items-center gap-5"
@@ -109,13 +114,8 @@ export function ResetPasswordView({
       >
         {renderContent()}
 
-        <Button
-          type="button"
-          variant="link"
-          className="h-fit p-0"
-          onClick={onBackToSignIn}
-        >
-          Back to sign in
+        <Button type="button" variant="link" className="h-fit p-0" onClick={onBackToSignIn}>
+          {t("auth.resetPasswordView.backToSignIn")}
         </Button>
       </form>
     </AuthCard>

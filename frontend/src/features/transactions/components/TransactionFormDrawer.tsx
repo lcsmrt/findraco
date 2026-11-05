@@ -43,6 +43,7 @@ import {
 } from "./transactionForm";
 import { useSeriesScope } from "./useSeriesScope";
 import { useTransactionFormSubmit } from "./useTransactionFormSubmit";
+import { useTranslation } from "react-i18next";
 
 type TransactionFormControl = Control<TransactionFormValues, unknown, TransactionFormOutput>;
 type TransactionFormSetValue = UseFormSetValue<TransactionFormValues>;
@@ -71,6 +72,8 @@ export function TransactionFormDrawer({
   onDuplicate,
   onDelete,
 }: TransactionFormDrawerProps) {
+  const { t } = useTranslation();
+
   const isSeriesEdit = mode === "edit" && !!transaction?.seriesId;
   const { activePlanId } = usePlanContext();
   const currentUserId = useAuth().user?.id;
@@ -149,7 +152,7 @@ export function TransactionFormDrawer({
                 onClick={() => onDelete(transaction)}
               >
                 <Trash2Icon className="h-4 w-4" />
-                Delete
+                {t("common.delete")}
               </Button>
             )}
             {onDuplicate && (
@@ -161,7 +164,7 @@ export function TransactionFormDrawer({
                 onClick={() => onDuplicate(transaction)}
               >
                 <CopyIcon className="h-4 w-4" />
-                Duplicate
+                {t("transactions.transactionFormDrawer.duplicate")}
               </Button>
             )}
           </>
@@ -170,25 +173,33 @@ export function TransactionFormDrawer({
     >
       {isSeriesEdit && !definition && (
         <Text as="p" variant="secondary">
-          Loading…
+          {t("transactions.transactionFormDrawer.loading")}
         </Text>
       )}
 
       <FieldGroup>
         {!isSeriesEdit && <TypeField control={control} setValue={setValue} disabled={isPending} />}
 
-        <FormField control={control} name="description" label="Description">
+        <FormField
+          control={control}
+          name="description"
+          label={t("transactions.transactionFormDrawer.description")}
+        >
           {(field) => (
-            <Input {...field} placeholder="e.g., Rent, Salary, Groceries" disabled={isPending} />
+            <Input
+              {...field}
+              placeholder={t("transactions.transactionFormDrawer.eGRentSalaryGroceries")}
+              disabled={isPending}
+            />
           )}
         </FormField>
 
-        <FormField control={control} name="amount" label="Amount">
+        <FormField control={control} name="amount" label={t("common.amount")}>
           {(field) => (
             <CurrencyInput
               {...field}
               onValueChange={field.onChange}
-              placeholder="R$ 0,00"
+              placeholder={t("common.r000")}
               disabled={isPending}
             />
           )}
@@ -201,7 +212,11 @@ export function TransactionFormDrawer({
         />
 
         {!isSeriesEdit && (
-          <FormField control={control} name="date" label="Date">
+          <FormField
+            control={control}
+            name="date"
+            label={t("transactions.transactionFormDrawer.date")}
+          >
             {(field) => (
               <DatePicker
                 id={field.id}
@@ -274,6 +289,8 @@ type SectionProps = {
 };
 
 function TypeField({ control, setValue, disabled }: SectionProps) {
+  const { t } = useTranslation();
+
   return (
     // The toggle group names itself, a layout FormField's label-for-input does not fit.
     <Controller
@@ -281,7 +298,7 @@ function TypeField({ control, setValue, disabled }: SectionProps) {
       name="type"
       render={({ field }) => (
         <Field>
-          <FieldLabel>Type</FieldLabel>
+          <FieldLabel>{t("common.type")}</FieldLabel>
           <TransactionTypeToggle
             value={field.value}
             onChange={(type) => {
@@ -304,10 +321,12 @@ type CategoryFieldProps = {
 };
 
 function CategoryField({ control, onCategoryChange, disabled }: CategoryFieldProps) {
+  const { t } = useTranslation();
+
   const type = useWatch({ control, name: "type" });
 
   return (
-    <FormField control={control} name="category" label="Category">
+    <FormField control={control} name="category" label={t("transactions.categoryField.category")}>
       {(field) => (
         <CategoryCombobox
           id={field.id}
@@ -325,6 +344,8 @@ function CategoryField({ control, onCategoryChange, disabled }: CategoryFieldPro
 }
 
 function RecurrenceFields({ control, setValue, disabled }: SectionProps) {
+  const { t } = useTranslation();
+
   const [recurring, recurrenceMode] = useWatch({ control, name: ["recurring", "recurrenceMode"] });
 
   return (
@@ -349,7 +370,9 @@ function RecurrenceFields({ control, setValue, disabled }: SectionProps) {
               }}
               disabled={disabled}
             />
-            <FieldLabel htmlFor="transaction-recurring">Repeat or split into installments?</FieldLabel>
+            <FieldLabel htmlFor="transaction-recurring">
+              {t("transactions.recurrenceFields.repeatOrSplitIntoInstallments")}
+            </FieldLabel>
           </Field>
         )}
       />
@@ -361,9 +384,9 @@ function RecurrenceFields({ control, setValue, disabled }: SectionProps) {
           name="recurrenceMode"
           render={({ field, fieldState }) => (
             <Field data-invalid={fieldState.invalid}>
-              <FieldLabel>Mode</FieldLabel>
+              <FieldLabel>{t("transactions.recurrenceFields.mode")}</FieldLabel>
               <ToggleGroup
-                aria-label="Mode"
+                aria-label={t("transactions.recurrenceFields.mode")}
                 variant="outline"
                 tone="primary"
                 value={field.value ? [field.value] : []}
@@ -383,10 +406,10 @@ function RecurrenceFields({ control, setValue, disabled }: SectionProps) {
                 className="w-full flex-nowrap"
               >
                 <ToggleGroupItem value="INSTALLMENT" className="flex-1">
-                  Installments
+                  {t("transactions.recurrenceFields.installments")}
                 </ToggleGroupItem>
                 <ToggleGroupItem value="RECURRING" className="flex-1">
-                  Recurring
+                  {t("transactions.recurrenceFields.recurring")}
                 </ToggleGroupItem>
               </ToggleGroup>
               <FieldError errors={[fieldState.error]} />

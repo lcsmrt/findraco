@@ -7,11 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/dialog/base/Dialog";
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@/components/input/base/Field";
+import { Field, FieldDescription, FieldLabel } from "@/components/input/base/Field";
 import {
   Select,
   SelectContent,
@@ -23,6 +19,7 @@ import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
 import { ArrowRightLeftIcon, XIcon } from "lucide-react";
 import { useEffect, useId, useState } from "react";
+import { useTranslation } from "react-i18next";
 
 type TransferOwnershipDialogViewProps = {
   open: boolean;
@@ -42,6 +39,8 @@ export function TransferOwnershipDialogView({
   isTransferring,
   onTransfer,
 }: TransferOwnershipDialogViewProps) {
+  const { t } = useTranslation();
+
   const ownerFieldId = useId();
   const [selectedUserId, setSelectedUserId] = useState<string>("");
 
@@ -58,7 +57,7 @@ export function TransferOwnershipDialogView({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Transfer ownership</DialogTitle>
+          <DialogTitle>{t("plans.transferOwnershipDialogView.transferOwnership")}</DialogTitle>
         </DialogHeader>
 
         {isLoading ? (
@@ -67,31 +66,30 @@ export function TransferOwnershipDialogView({
           </div>
         ) : candidates.length === 0 ? (
           <Text as="p" variant="secondary" className="py-6 text-center">
-            There are no other members to transfer ownership to.
+            {t("plans.transferOwnershipDialogView.thereAreNoOtherMembers")}
           </Text>
         ) : (
           <Field>
-            <FieldLabel htmlFor={ownerFieldId}>New owner</FieldLabel>
+            <FieldLabel htmlFor={ownerFieldId}>
+              {t("plans.transferOwnershipDialogView.newOwner")}
+            </FieldLabel>
             <Select
               value={selectedUserId}
               onValueChange={(value) => setSelectedUserId(value ?? "")}
             >
               <SelectTrigger id={ownerFieldId} className="w-full">
-                <SelectValue placeholder="Select a member" />
+                <SelectValue placeholder={t("plans.transferOwnershipDialogView.selectAMember")} />
               </SelectTrigger>
               <SelectContent>
                 {candidates.map((member) => (
-                  <SelectItem
-                    key={member.userId}
-                    value={String(member.userId)}
-                  >
+                  <SelectItem key={member.userId} value={String(member.userId)}>
                     {member.name}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <FieldDescription>
-              You will become an Editor of this plan.
+              {t("plans.transferOwnershipDialogView.youWillBecomeAnEditor")}
             </FieldDescription>
           </Field>
         )}
@@ -104,7 +102,7 @@ export function TransferOwnershipDialogView({
             onClick={() => onOpenChange(false)}
           >
             <XIcon className="h-4 w-4" />
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             type="button"
@@ -113,7 +111,7 @@ export function TransferOwnershipDialogView({
             onClick={handleTransfer}
           >
             <ArrowRightLeftIcon className="h-4 w-4" />
-            Transfer
+            {t("plans.transferOwnershipDialogView.transfer")}
           </Button>
         </DialogFooter>
       </DialogContent>

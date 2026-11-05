@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/input/base/RadioGroup";
 import { SeriesEditScope } from "@/api/dtos/transaction";
 import type { ScopeDialogOptions } from "./useSeriesScope";
 import { Text } from "@/components/typography/base/Text";
+import { useTranslation } from "react-i18next";
 
 type ScopeOption = {
   value: SeriesEditScope;
@@ -28,8 +29,7 @@ const SCOPE_OPTIONS: ScopeOption[] = [
   {
     value: "THIS_AND_FOLLOWING",
     label: "This and following",
-    helperText:
-      "This and all future occurrences will be changed. Past occurrences stay the same.",
+    helperText: "This and all future occurrences will be changed. Past occurrences stay the same.",
   },
   {
     value: "ALL",
@@ -55,6 +55,8 @@ export function SeriesScopeDialog({
   onContinue,
   onCancel,
 }: SeriesScopeDialogProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
       <DialogContent>
@@ -64,10 +66,7 @@ export function SeriesScopeDialog({
             {options.description ?? "Choose what to apply this change to."}
           </DialogDescription>
         </DialogHeader>
-        <RadioGroup
-          value={scope}
-          onValueChange={(value) => onScopeChange(value)}
-        >
+        <RadioGroup value={scope} onValueChange={(value) => onScopeChange(value)}>
           {SCOPE_OPTIONS.map((option) => (
             <FieldLabel key={option.value} htmlFor={option.value}>
               <Field orientation="horizontal">
@@ -82,12 +81,9 @@ export function SeriesScopeDialog({
         </RadioGroup>
         <DialogFooter>
           <Button variant="ghost" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </Button>
-          <Button
-            variant={options.confirmVariant ?? "default"}
-            onClick={onContinue}
-          >
+          <Button variant={options.confirmVariant ?? "default"} onClick={onContinue}>
             {options.confirmLabel ?? "Continue"}
           </Button>
         </DialogFooter>

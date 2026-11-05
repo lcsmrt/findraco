@@ -9,6 +9,7 @@ import {
   DESTINATIONS,
   type Destination,
 } from "./utils/navigation";
+import { useTranslation } from "react-i18next";
 
 type TabRowViewProps = {
   current: Destination;
@@ -18,9 +19,11 @@ type TabRowViewProps = {
 };
 
 export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
+  const { t } = useTranslation();
+
   return (
     <nav
-      aria-label="Destinations"
+      aria-label={t("app.tabRowView.destinations")}
       className={cn("hidden items-center gap-2 border-b px-4 sm:flex", className)}
     >
       <div className="flex flex-1">
@@ -45,7 +48,7 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
       {onAdd && (
         <Button onClick={onAdd}>
           <PlusIcon />
-          New Transaction
+          {t("app.tabRowView.newTransaction")}
         </Button>
       )}
     </nav>

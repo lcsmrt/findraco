@@ -28,6 +28,7 @@ import {
   type InviteFormValues,
   inviteSchema,
 } from "./inviteForm";
+import { useTranslation } from "react-i18next";
 
 const TYPE_LABELS: Record<InvitationType, string> = {
   EMAIL: "Email",
@@ -55,11 +56,9 @@ export function InvitePlanDialogView({
   onCreate,
   onCopyLink,
 }: InvitePlanDialogViewProps) {
-  const { control, handleSubmit, reset } = useForm<
-    InviteFormValues,
-    unknown,
-    InviteFormOutput
-  >({
+  const { t } = useTranslation();
+
+  const { control, handleSubmit, reset } = useForm<InviteFormValues, unknown, InviteFormOutput>({
     resolver: zodResolver(inviteSchema),
     defaultValues: INVITE_FORM_DEFAULTS,
   });
@@ -74,7 +73,7 @@ export function InvitePlanDialogView({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>Invite to plan</DialogTitle>
+          <DialogTitle>{t("plans.invitePlanDialogView.inviteToPlan")}</DialogTitle>
         </DialogHeader>
 
         {createdInvitation ? (
@@ -82,12 +81,12 @@ export function InvitePlanDialogView({
             {createdInvitation.type === "LINK" ? (
               <>
                 <Text as="p" variant="secondary">
-                  Share this link to invite someone:
+                  {t("plans.invitePlanDialogView.shareThisLinkToInvite")}
                 </Text>
                 <div className="flex items-center gap-2">
                   <Input
                     readOnly
-                    aria-label="Invitation link"
+                    aria-label={t("plans.invitePlanDialogView.invitationLink")}
                     value={invitationLink ?? ""}
                     onFocus={(e) => e.target.select()}
                   />
@@ -95,7 +94,7 @@ export function InvitePlanDialogView({
                     type="button"
                     variant="outline"
                     size="icon"
-                    aria-label="Copy link"
+                    aria-label={t("plans.invitePlanDialogView.copyLink")}
                     onClick={onCopyLink}
                   >
                     <CopyIcon className="h-4 w-4" />
@@ -114,19 +113,19 @@ export function InvitePlanDialogView({
 
             <DialogFooter>
               <Button type="button" onClick={() => onOpenChange(false)}>
-                Done
+                {t("plans.invitePlanDialogView.done")}
               </Button>
             </DialogFooter>
           </div>
         ) : (
           <>
-            <FormField control={control} name="type" label="Invitation type">
+            <FormField
+              control={control}
+              name="type"
+              label={t("plans.invitePlanDialogView.invitationType")}
+            >
               {(field) => (
-                <Select
-                  items={TYPE_LABELS}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
+                <Select items={TYPE_LABELS} value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger
                     id={field.id}
                     ref={field.ref}
@@ -137,20 +136,16 @@ export function InvitePlanDialogView({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="EMAIL">Email</SelectItem>
-                    <SelectItem value="LINK">Link</SelectItem>
+                    <SelectItem value="EMAIL">{t("common.email")}</SelectItem>
+                    <SelectItem value="LINK">{t("plans.invitePlanDialogView.link")}</SelectItem>
                   </SelectContent>
                 </Select>
               )}
             </FormField>
 
-            <FormField control={control} name="role" label="Role">
+            <FormField control={control} name="role" label={t("plans.invitePlanDialogView.role")}>
               {(field) => (
-                <Select
-                  items={ROLE_LABELS}
-                  value={field.value}
-                  onValueChange={field.onChange}
-                >
+                <Select items={ROLE_LABELS} value={field.value} onValueChange={field.onChange}>
                   <SelectTrigger
                     id={field.id}
                     ref={field.ref}
@@ -172,12 +167,12 @@ export function InvitePlanDialogView({
             </FormField>
 
             {type === "EMAIL" && (
-              <FormField control={control} name="email" label="Email">
+              <FormField control={control} name="email" label={t("common.email")}>
                 {(field) => (
                   <Input
                     {...field}
                     type="email"
-                    placeholder="person@email.com"
+                    placeholder={t("plans.invitePlanDialogView.personEmailCom")}
                     disabled={isCreating}
                   />
                 )}
@@ -188,11 +183,9 @@ export function InvitePlanDialogView({
               <FormField
                 control={control}
                 name="expiresAt"
-                label="Expires at (optional)"
+                label={t("plans.invitePlanDialogView.expiresAtOptional")}
               >
-                {(field) => (
-                  <Input {...field} type="datetime-local" disabled={isCreating} />
-                )}
+                {(field) => <Input {...field} type="datetime-local" disabled={isCreating} />}
               </FormField>
             )}
 
@@ -204,13 +197,9 @@ export function InvitePlanDialogView({
                 onClick={() => onOpenChange(false)}
               >
                 <XIcon className="h-4 w-4" />
-                Cancel
+                {t("common.cancel")}
               </Button>
-              <Button
-                type="button"
-                isLoading={isCreating}
-                onClick={handleSubmit(onCreate)}
-              >
+              <Button type="button" isLoading={isCreating} onClick={handleSubmit(onCreate)}>
                 <SendIcon className="h-4 w-4" />
                 {type === "LINK" ? "Generate link" : "Send invitation"}
               </Button>

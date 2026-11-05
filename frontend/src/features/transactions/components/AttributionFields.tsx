@@ -18,6 +18,7 @@ import {
   type TransactionFormOutput,
   type TransactionFormValues,
 } from "./transactionForm";
+import { useTranslation } from "react-i18next";
 
 const ATTRIBUTION_OPTIONS = [
   ["ME", "Me"],
@@ -44,6 +45,8 @@ export function AttributionFields({
   currentUserId,
   disabled,
 }: AttributionFieldsProps) {
+  const { t } = useTranslation();
+
   const { field: attributionMode } = useController({ control, name: "attributionMode" });
   const { field: splitMode } = useController({ control, name: "splitMode" });
   const { errors } = useFormState({ control, name: "participants" });
@@ -74,9 +77,9 @@ export function AttributionFields({
   return (
     <>
       <Field>
-        <FieldLabel>Attributed to</FieldLabel>
+        <FieldLabel>{t("transactions.attributionFields.attributedTo")}</FieldLabel>
         <ToggleGroup
-          aria-label="Attributed to"
+          aria-label={t("transactions.attributionFields.attributedTo")}
           variant="outline"
           tone="primary"
           value={[attributionMode.value]}
@@ -94,17 +97,21 @@ export function AttributionFields({
 
       {attributionMode.value === "SOMEONE" && (
         <Field>
-          <FieldLabel htmlFor="transaction-attributed-person">Person</FieldLabel>
+          <FieldLabel htmlFor="transaction-attributed-person">
+            {t("transactions.attributionFields.person")}
+          </FieldLabel>
           <StandardCombobox
             id="transaction-attributed-person"
             items={otherMembers.map((member) => ({ id: member.userId, name: member.name }))}
             value={person ? { id: person.memberId, name: person.memberName } : null}
             onValueChange={(value) => {
               onEdit();
-              replace(value ? [{ memberId: value.id, memberName: value.name, shareAmount: null }] : []);
+              replace(
+                value ? [{ memberId: value.id, memberName: value.name, shareAmount: null }] : [],
+              );
             }}
             itemLabel={(member) => member.name}
-            placeholder="Select a person"
+            placeholder={t("transactions.attributionFields.selectAPerson")}
             disabled={disabled}
           />
           <FieldError errors={[participantsError]} />
@@ -114,9 +121,9 @@ export function AttributionFields({
       {attributionMode.value === "SPLIT" && (
         <>
           <Field>
-            <FieldLabel>Split mode</FieldLabel>
+            <FieldLabel>{t("transactions.attributionFields.splitMode")}</FieldLabel>
             <ToggleGroup
-              aria-label="Split mode"
+              aria-label={t("transactions.attributionFields.splitMode")}
               variant="outline"
               tone="primary"
               value={[splitMode.value]}
@@ -129,16 +136,16 @@ export function AttributionFields({
               className="w-full flex-nowrap"
             >
               <ToggleGroupItem value="EQUAL" className="flex-1">
-                Equal
+                {t("transactions.attributionFields.equal")}
               </ToggleGroupItem>
               <ToggleGroupItem value="EXACT" className="flex-1">
-                Exact
+                {t("transactions.attributionFields.exact")}
               </ToggleGroupItem>
             </ToggleGroup>
           </Field>
 
           <Field>
-            <FieldLabel>Participants</FieldLabel>
+            <FieldLabel>{t("transactions.attributionFields.participants")}</FieldLabel>
             <div className="flex flex-col gap-2">
               {members.map((member) => {
                 const index = fields.findIndex((field) => field.memberId === member.userId);
@@ -169,7 +176,7 @@ export function AttributionFields({
                             }}
                             aria-label={`${member.name}'s share`}
                             aria-invalid={fieldState.invalid}
-                            placeholder="R$ 0,00"
+                            placeholder={t("common.r000")}
                             className="h-8 w-28"
                             disabled={disabled}
                           />

@@ -1,18 +1,14 @@
 import type { Category } from "@/api/dtos";
 import { Text } from "@/components/typography/base/Text";
 import { Button } from "@/components/button/base/Button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/card/base/Card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { cn } from "@/lib/mergeClasses";
 import { PlusIcon } from "lucide-react";
 import type { MemberColorOf } from "@/utils/memberColors";
 import type { CategoryTreeRoot, CategoryTreeSection } from "./utils/categoryTree";
 import { CATEGORY_GRID_COLUMNS, CategoryTreeRow } from "./components/CategoryTreeRow";
+import { useTranslation } from "react-i18next";
 
 const SECTION_TITLES = { DEBIT: "Expenses", CREDIT: "Income" } as const;
 
@@ -35,6 +31,8 @@ function CategorySection({
   onDelete,
   onAddChild,
 }: CategorySectionProps) {
+  const { t } = useTranslation();
+
   return (
     <Card>
       <CardHeader>
@@ -43,7 +41,7 @@ function CategorySection({
       <CardContent>
         {roots.length === 0 ? (
           <Text as="p" variant="secondary" className="flex h-16 items-center justify-center">
-            No categories yet.
+            {t("categories.categorySection.noCategoriesYet")}
           </Text>
         ) : (
           <div className="flex flex-col">
@@ -52,11 +50,11 @@ function CategorySection({
               variant="caption"
               className={cn("hidden border-b pb-2", CATEGORY_GRID_COLUMNS)}
             >
-              <span>Name</span>
-              <span>Owner</span>
-              <span className="text-right">Monthly limit</span>
-              <span>Per member</span>
-              <span className="sr-only">Actions</span>
+              <span>{t("common.name")}</span>
+              <span>{t("categories.categorySection.owner")}</span>
+              <span className="text-right">{t("categories.categorySection.monthlyLimit")}</span>
+              <span>{t("categories.categorySection.perMember")}</span>
+              <span className="sr-only">{t("categories.categorySection.actions")}</span>
             </Text>
             {roots.map((root) => (
               <div key={root.category.id} className="border-b last:border-0">
@@ -110,13 +108,15 @@ export function CategoriesPageView({
   onDelete,
   onAddChild,
 }: CategoriesPageViewProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-6 px-4">
       {canManage && (
         <div className="flex flex-wrap items-center justify-end gap-2">
           <Button onClick={onCreate}>
             <PlusIcon className="h-4 w-4" />
-            New Category
+            {t("categories.categoriesPageView.newCategory")}
           </Button>
         </div>
       )}

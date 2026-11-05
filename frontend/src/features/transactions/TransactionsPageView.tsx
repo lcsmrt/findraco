@@ -3,11 +3,7 @@ import type { Transaction } from "@/api/dtos/transaction";
 import { Badge } from "@/components/badge/base/Badge";
 import { PeriodNavigator } from "@/components/periodNavigator/PeriodNavigator";
 import { Button } from "@/components/button/base/Button";
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupInput,
-} from "@/components/input/base/InputGroup";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/input/base/InputGroup";
 import { Table, TableContent, TablePagination } from "@/components/table";
 import type { Sorting } from "@/components/table/components/TableHeader";
 import type { Pagination } from "@/components/table/TablePagination";
@@ -16,6 +12,7 @@ import { SearchIcon, UploadIcon, XIcon } from "lucide-react";
 import { useRef } from "react";
 import type { FilterChip } from "./useTransactionFilterChips";
 import { TransactionMobileList } from "./components/TransactionMobileList";
+import { useTranslation } from "react-i18next";
 
 type TransactionsPageViewProps = {
   navigator: ComponentProps<typeof PeriodNavigator>;
@@ -57,6 +54,8 @@ export function TransactionsPageView({
   onSortChange,
   onEdit,
 }: TransactionsPageViewProps) {
+  const { t } = useTranslation();
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleImportClick() {
@@ -82,8 +81,8 @@ export function TransactionsPageView({
           <div className="flex flex-1 justify-between gap-2">
             <InputGroup className="flex-1 sm:max-w-sm">
               <InputGroupInput
-                placeholder="Search transactions..."
-                aria-label="Search transactions"
+                placeholder={t("transactions.transactionsPageView.searchTransactions")}
+                aria-label={t("transactions.transactionsPageView.searchTransactions2")}
                 value={search}
                 onChange={(e) => onSearchChange(e.target.value)}
                 className="w-full pl-9"
@@ -143,7 +142,7 @@ export function TransactionsPageView({
               className="text-muted-foreground h-auto p-0"
               onClick={onClearFilters}
             >
-              Clear all
+              {t("transactions.transactionsPageView.clearAll")}
             </Button>
           </div>
         )}
