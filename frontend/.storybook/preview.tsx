@@ -7,6 +7,9 @@ import "../src/index.css";
 // Stories assert English; the toolbar `locale` global switches the language to review a screen in Portuguese.
 initI18n("en");
 
+// Stories assert the Brazilian date layout (04/11/2026) whatever the browser running them reports.
+Object.defineProperty(window.navigator, "language", { value: "en-BR", configurable: true });
+
 const preview: Preview = {
   initialGlobals: { locale: "en" },
   globalTypes: {

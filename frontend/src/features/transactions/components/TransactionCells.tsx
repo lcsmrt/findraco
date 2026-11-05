@@ -18,9 +18,10 @@ import {
 } from "@/components/popover/base/Popover";
 import { Text } from "@/components/typography/base/Text";
 import { toCents } from "@/utils/money";
-import { formatDate, getFirstAndLastInitials } from "@/utils/string/formatters";
+import { datePlaceholder, formatDate, parseDate, toIsoDate } from "@/utils/dates";
+import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskDate } from "@/utils/string/masks";
-import { format, isValid, parse } from "date-fns";
+import { isValid } from "date-fns";
 import {
   CopyIcon,
   PencilIcon,
@@ -188,14 +189,14 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
 }
 
 export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
-  const displayDate = formatDate(transaction.startDate, "dd/MM/yyyy");
+  const displayDate = formatDate(transaction.startDate);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState("");
 
   function commit() {
-    const parsed = parse(draft, "dd/MM/yyyy", new Date());
+    const parsed = parseDate(draft);
     if (isValid(parsed)) {
-      const newStartDate = format(parsed, "yyyy-MM-dd");
+      const newStartDate = toIsoDate(parsed);
       if (newStartDate !== transaction.startDate.split("T")[0]) {
         onSave(transaction, { startDate: newStartDate });
       }
@@ -226,7 +227,7 @@ export function EditableDateCell({ transaction, onSave }: EditableCellProps) {
       autoFocus
       aria-label="Date"
       value={draft}
-      placeholder="dd/mm/yyyy"
+      placeholder={datePlaceholder()}
       onChange={(e) => setDraft(maskDate(e.target.value))}
       onBlur={commit}
       onKeyDown={(e) => {

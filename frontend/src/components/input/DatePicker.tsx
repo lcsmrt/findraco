@@ -1,5 +1,5 @@
 import * as React from "react";
-import { format, parse, isValid, isSameDay } from "date-fns";
+import { isValid, isSameDay } from "date-fns";
 import { CalendarIcon, XIcon } from "lucide-react";
 import type { DateRange, Matcher } from "react-day-picker";
 import { Calendar } from "@/components/calendar/base/Calendar";
@@ -11,8 +11,8 @@ import {
   InputGroupInput,
 } from "@/components/input/base/InputGroup";
 import { cn } from "@/lib/mergeClasses";
+import { datePlaceholder, dateFnsLocale, formatDate, parseDate } from "@/utils/dates";
 
-const DATE_FORMAT = "dd/MM/yyyy";
 const CURRENT_YEAR = new Date().getFullYear();
 
 export type DatePickerProps = {
@@ -37,7 +37,7 @@ export type DatePickerProps = {
 export function DatePicker({
   value,
   onChange,
-  placeholder = "dd/mm/yyyy",
+  placeholder = datePlaceholder(),
   disabled,
   disabledDates,
   fromYear = 1900,
@@ -49,12 +49,12 @@ export function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState(
-    value ? format(value, DATE_FORMAT) : "",
+    value ? formatDate(value) : "",
   );
   const anchorRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
-    setInputValue(value ? format(value, DATE_FORMAT) : "");
+    setInputValue(value ? formatDate(value) : "");
   }, [value]);
 
   function commitInput(raw: string) {
@@ -64,12 +64,12 @@ export function DatePicker({
       setInputValue("");
       return;
     }
-    const parsed = parse(trimmed, DATE_FORMAT, new Date());
+    const parsed = parseDate(trimmed);
     if (isValid(parsed)) {
       onChange?.(parsed);
-      setInputValue(format(parsed, DATE_FORMAT));
+      setInputValue(formatDate(parsed));
     } else {
-      setInputValue(value ? format(value, DATE_FORMAT) : "");
+      setInputValue(value ? formatDate(value) : "");
     }
   }
 
@@ -101,7 +101,7 @@ export function DatePicker({
           onKeyDown={(e) => {
             if (e.key === "Enter") e.currentTarget.blur();
             if (e.key === "Escape")
-              setInputValue(value ? format(value, DATE_FORMAT) : "");
+              setInputValue(value ? formatDate(value) : "");
           }}
         />
         {value && !disabled && (
@@ -126,6 +126,7 @@ export function DatePicker({
       >
         <Calendar
           mode="single"
+          locale={dateFnsLocale()}
           selected={value}
           defaultMonth={value}
           captionLayout="dropdown"
@@ -158,9 +159,9 @@ export type DateRangePickerProps = {
 
 function formatRange(range?: DateRange): string {
   if (!range?.from) return "";
-  const from = format(range.from, DATE_FORMAT);
+  const from = formatDate(range.from);
   if (!range.to) return from;
-  return `${from} – ${format(range.to, DATE_FORMAT)}`;
+  return `${from} – ${formatDate(range.to)}`;
 }
 
 /**
@@ -170,7 +171,7 @@ function formatRange(range?: DateRange): string {
 export function DateRangePicker({
   value,
   onChange,
-  placeholder = "dd/mm/yyyy – dd/mm/yyyy",
+  placeholder = `${datePlaceholder()} – ${datePlaceholder()}`,
   disabled,
   disabledDates,
   fromYear = 1900,
@@ -239,6 +240,7 @@ export function DateRangePicker({
       >
         <Calendar
           mode="range"
+          locale={dateFnsLocale()}
           selected={value}
           defaultMonth={value?.from ?? value?.to}
           captionLayout="dropdown"

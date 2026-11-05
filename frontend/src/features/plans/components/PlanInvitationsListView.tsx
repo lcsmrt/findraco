@@ -3,7 +3,7 @@ import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
-import { format } from "date-fns";
+import { formatDateTime } from "@/utils/dates";
 import { Trash2Icon } from "lucide-react";
 import { ROLE_LABELS, STATUS_LABELS } from "../utils/planLabels";
 import { invitationLabel } from "./invitationLabel";
@@ -62,7 +62,7 @@ export function PlanInvitationsListView({
               {invitation.expiresAt && (
                 <Text variant="caption">
                   Expires on{" "}
-                  {format(new Date(invitation.expiresAt), "dd/MM/yyyy HH:mm")}
+                  {formatDateTime(new Date(invitation.expiresAt))}
                 </Text>
               )}
             </div>

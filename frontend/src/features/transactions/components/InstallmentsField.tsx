@@ -2,7 +2,7 @@ import type { RecurrenceDefinitionResponse } from "@/api/dtos/transaction";
 import { FormField } from "@/components/form/FormField";
 import { NumberField } from "@/components/input/base/NumberField";
 import { Text } from "@/components/typography/base/Text";
-import { format } from "date-fns";
+import { formatMonthYear } from "@/utils/dates";
 import { useWatch, type Control } from "react-hook-form";
 import {
   lastInstallment,
@@ -111,7 +111,7 @@ function LastInstallmentPreview({ control }: LastInstallmentPreviewProps) {
   if (!last) return null;
   return (
     <Text as="p" variant="secondary">
-      Last installment: {last.number}/{last.number} — {format(last.month, "MM/yyyy")}
+      Last installment: {last.number}/{last.number} — {formatMonthYear(last.month)}
     </Text>
   );
 }

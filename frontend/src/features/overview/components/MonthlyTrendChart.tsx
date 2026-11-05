@@ -10,7 +10,7 @@ import {
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { typographyVariants } from "@/components/typography/base/typographyVariants";
 import { cn } from "@/lib/mergeClasses";
-import { format } from "date-fns";
+import { formatPattern } from "@/utils/dates";
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { formatMoney } from "@/utils/money";
 import type { TrendMonth } from "../utils/trendMonths";
@@ -75,7 +75,7 @@ function MonthTick({ x = 0, y = 0, index = 0, months }: MonthTickProps) {
 function withTitles(months: TrendMonth[]) {
   return months.map((month) => ({
     ...month,
-    title: format(new Date(month.year, month.month - 1, 1), "MMMM yyyy"),
+    title: formatPattern(new Date(month.year, month.month - 1, 1), "MMMM yyyy"),
   }));
 }
 

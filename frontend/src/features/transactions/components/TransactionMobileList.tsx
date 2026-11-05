@@ -6,7 +6,7 @@ import type { Pagination } from "@/components/table/TablePagination";
 import { Heading } from "@/components/typography/base/Heading";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
-import { formatDate } from "@/utils/string/formatters";
+import { formatPattern } from "@/utils/dates";
 import { groupByDay } from "../utils/groupByDay";
 
 type TransactionMobileRowProps = {
@@ -87,7 +87,7 @@ export function TransactionMobileList({
         days.map((group) => (
           <section key={group.day}>
             <Heading level={3} variant="caption" className="bg-muted/50 border-b px-3 py-1.5">
-              {formatDate(group.day, "EEE, d MMM yyyy")}
+              {formatPattern(group.day, "EEE, d MMM yyyy")}
             </Heading>
             <div className="divide-y border-b">
               {group.transactions.map((transaction) => (

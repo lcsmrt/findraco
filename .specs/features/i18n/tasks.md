@@ -124,8 +124,8 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] C3, C18, C19, C20, C23, C27, C28 pass
-- [ ] Build gate green (last task of Phase 1), backend Full gate green
+- [x] C3, C18, C19, C20, C23, C27, C28 pass
+- [x] Build gate green (last task of Phase 1), backend Full gate green
 
 **Tests**: unit
 **Gate**: build

@@ -8,10 +8,9 @@ import {
   CardTitle,
 } from "@/components/card/base/Card";
 import { Text } from "@/components/typography/base/Text";
-import { format } from "date-fns";
+import { formatDate } from "@/utils/dates";
 import { RotateCcwIcon, Trash2Icon } from "lucide-react";
 
-const DATE_FORMAT = "dd/MM/yyyy";
 
 type ArchivedPlansListViewProps = {
   plans: ArchivedPlan[];
@@ -55,11 +54,11 @@ export function ArchivedPlansListView({
                     {plan.name}
                   </Text>
                   <Text variant="caption">
-                    Archived on {format(new Date(plan.archivedAt), DATE_FORMAT)}
+                    Archived on {formatDate(new Date(plan.archivedAt))}
                   </Text>
                   <Text variant="caption">
                     Deleted permanently on{" "}
-                    {format(new Date(plan.deletesAt), DATE_FORMAT)}
+                    {formatDate(new Date(plan.deletesAt))}
                   </Text>
                 </div>
                 <div className="flex shrink-0 items-center gap-2 *:flex-1 sm:*:flex-none">

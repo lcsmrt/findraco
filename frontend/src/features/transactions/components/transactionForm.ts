@@ -11,7 +11,8 @@ import {
 } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
-import { addMonths, differenceInCalendarMonths, format } from "date-fns";
+import { addMonths, differenceInCalendarMonths } from "date-fns";
+import { toIsoDate } from "@/utils/dates";
 import { z } from "zod";
 import type { InlineSaveBody } from "./transactionColumns";
 
@@ -407,7 +408,7 @@ export function toPayload(
     description: values.description,
     amount: values.amount,
     categoryId: values.category?.id,
-    startDate: format(values.date, "yyyy-MM-dd"),
+    startDate: toIsoDate(values.date),
     parcelsNumber: stored?.parcelsNumber ?? undefined,
     endDate: datePart(stored?.endDate),
     splitMode,
@@ -476,7 +477,7 @@ export function toSeriesCreatePayload(
     amount: values.amount,
     categoryId: values.category?.id,
     mode: values.recurrenceMode!,
-    startDate: format(values.date, "yyyy-MM-dd"),
+    startDate: toIsoDate(values.date),
     parcelsNumber:
       values.recurrenceMode === "INSTALLMENT" ? (values.parcelsNumber ?? undefined) : undefined,
     currentParcel:
@@ -486,7 +487,7 @@ export function toSeriesCreatePayload(
     interval: values.recurrenceMode === "RECURRING" ? "MONTHLY" : undefined,
     endDate:
       values.recurrenceMode === "RECURRING" && values.endDate
-        ? format(values.endDate, "yyyy-MM-dd")
+        ? toIsoDate(values.endDate)
         : undefined,
     splitMode,
     participants,
@@ -522,7 +523,7 @@ export function toSeriesEditPayload(
       interval: definition.interval,
       endDate:
         definition.mode === "RECURRING" && values.endDate
-          ? format(values.endDate, "yyyy-MM-dd")
+          ? toIsoDate(values.endDate)
           : undefined,
       splitMode,
       participants,

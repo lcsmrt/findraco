@@ -2,17 +2,16 @@ import type { MonthlyTrend } from "@/api/dtos";
 import {
   addMonths,
   endOfMonth,
-  format,
   parseISO,
   startOfMonth,
   subMonths,
 } from "date-fns";
+import { formatPattern, toIsoDate } from "@/utils/dates";
 import { countMonths, type PeriodRange } from "@/utils/period";
 
 /** The trend shows at least this many months. */
 export const TREND_MONTHS = 6;
 
-const DATE_FORMAT = "yyyy-MM-dd";
 
 /**
  * The months the trend covers: the 6 calendar months ending at the
@@ -22,8 +21,8 @@ export function trendWindow(selected: PeriodRange): PeriodRange {
   const lastMonth = parseISO(selected.endDate);
   const months = Math.max(TREND_MONTHS, countMonths(selected.startDate, selected.endDate));
   return {
-    startDate: format(startOfMonth(subMonths(lastMonth, months - 1)), DATE_FORMAT),
-    endDate: format(endOfMonth(lastMonth), DATE_FORMAT),
+    startDate: toIsoDate(startOfMonth(subMonths(lastMonth, months - 1))),
+    endDate: toIsoDate(endOfMonth(lastMonth)),
   };
 }
 
@@ -59,7 +58,7 @@ export function fillTrendMonths(
       month,
       income: entry?.income ?? 0,
       expenses: entry?.expenses ?? 0,
-      label: format(date, "MMM"),
+      label: formatPattern(date, "MMM"),
       inPeriod: date >= selectedFrom && date <= selectedTo,
     };
   });

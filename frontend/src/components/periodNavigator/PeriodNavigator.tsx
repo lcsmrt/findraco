@@ -11,7 +11,8 @@ import {
 } from "@/components/dropdown/base/Dropdown";
 import { Popover, PopoverContent } from "@/components/popover/base/Popover";
 import { Text } from "@/components/typography/base/Text";
-import { format, isSameDay, parseISO } from "date-fns";
+import { isSameDay, parseISO } from "date-fns";
+import { dateFnsLocale, toIsoDate } from "@/utils/dates";
 import {
   CalendarRangeIcon,
   ChevronDownIcon,
@@ -75,8 +76,8 @@ export function PeriodNavigator({
     setDraft(next);
     if (next?.from && next.to && !isSameDay(next.from, next.to)) {
       onRangeChange({
-        from: format(next.from, "yyyy-MM-dd"),
-        to: format(next.to, "yyyy-MM-dd"),
+        from: toIsoDate(next.from),
+        to: toIsoDate(next.to),
       });
       setIsCalendarOpen(false);
     }
@@ -151,6 +152,7 @@ export function PeriodNavigator({
         >
           <Calendar
             mode="range"
+            locale={dateFnsLocale()}
             resetOnSelect
             selected={draft}
             defaultMonth={draft?.from}
