@@ -1,6 +1,6 @@
 # mobile-form-sheet proofs
 
-**HEAD**: 0673257
+**HEAD**: f11dc65
 **Tree**: clean
 **Shell**: /bin/sh
 **Result**: 25 pass, 0 fail
@@ -38,19 +38,19 @@
 `Run unit` - exit 0
 
 ```
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > shows the problem copy and keeps the search when creation fails 180ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > clears a quick-created category when the type changes 251ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > shows the problem copy and keeps the search when creation fails 182ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > clears a quick-created category when the type changes 256ms
  ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > offers no save while the series definition is loading 48ms
  ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This one of the series from the occurrence 136ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This and following of the series from the occurrence 145ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits All of the series from the occurrence 140ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits the whole series without asking when the number of installments changed 94ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This and following of the series from the occurrence 144ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits All of the series from the occurrence 142ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits the whole series without asking when the number of installments changed 113ms
  ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > sends nothing and stays open when the scope is cancelled 112ms
 
  Test Files  3 passed (3)
       Tests  30 passed (30)
-   Start at  22:33:32
-   Duration  6.17s (transform 342ms, setup 175ms, collect 2.15s, tests 3.54s, environment 1.12s, prepare 147ms)
+   Start at  23:51:39
+   Duration  6.16s (transform 392ms, setup 194ms, collect 2.15s, tests 3.52s, environment 1.13s, prepare 132ms)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
