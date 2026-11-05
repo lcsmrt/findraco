@@ -1,4 +1,5 @@
 import { Button } from "@/components/button/base/Button";
+import { Drawer, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle } from "@/components/sheet/base/Drawer";
 import {
   Sheet,
   SheetContent,
@@ -6,6 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/sheet/base/Sheet";
+import { useIsNarrowScreen } from "@/hooks/useIsNarrowScreen";
 import { SaveIcon, XIcon } from "lucide-react";
 import { useId, type FormEvent, type ReactNode } from "react";
 
@@ -42,12 +44,24 @@ export function FormSheet({
 }: FormSheetProps) {
   const formId = useId();
 
+  const isNarrow = useIsNarrowScreen();
+  const Root = isNarrow ? Drawer : Sheet;
+  const Content = isNarrow ? DrawerContent : SheetContent;
+  const Header = isNarrow ? DrawerHeader : SheetHeader;
+  const Title = isNarrow ? DrawerTitle : SheetTitle;
+  const Footer = isNarrow ? DrawerFooter : SheetFooter;
+
+  // The forms take the open flag only, not Base UI's event details.
+  function handleOpenChange(next: boolean) {
+    onOpenChange(next);
+  }
+
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right">
-        <SheetHeader>
-          <SheetTitle>{title}</SheetTitle>
-        </SheetHeader>
+    <Root open={open} onOpenChange={handleOpenChange}>
+      <Content {...(isNarrow ? {} : { side: "right" as const })}>
+        <Header>
+          <Title>{title}</Title>
+        </Header>
 
         <form
           id={formId}
@@ -57,24 +71,34 @@ export function FormSheet({
           {children}
         </form>
 
-        <SheetFooter>
+        <Footer>
           {mobileActions && <div className="flex gap-2 sm:hidden">{mobileActions}</div>}
-          <Button
-            variant="outline"
-            type="button"
-            disabled={isSubmitting}
-            onClick={() => onOpenChange(false)}
-          >
-            <XIcon className="h-4 w-4" />
-            Cancel
-          </Button>
-          {/* The footer sits outside the scrolling form, so the button reaches it through `form`. */}
-          <Button type="submit" form={formId} isLoading={isSubmitting} disabled={submitDisabled}>
-            <SaveIcon className="h-4 w-4" />
-            {submitLabel}
-          </Button>
-        </SheetFooter>
-      </SheetContent>
-    </Sheet>
+          {/* Side by side on the phone to save height; stacked in the side sheet. */}
+          <div className="flex gap-2 sm:flex-col">
+            <Button
+              variant="outline"
+              type="button"
+              className="flex-1 sm:flex-none"
+              disabled={isSubmitting}
+              onClick={() => onOpenChange(false)}
+            >
+              <XIcon className="h-4 w-4" />
+              Cancel
+            </Button>
+            {/* The footer sits outside the scrolling form, so the button reaches it through `form`. */}
+            <Button
+              type="submit"
+              form={formId}
+              className="flex-1 sm:flex-none"
+              isLoading={isSubmitting}
+              disabled={submitDisabled}
+            >
+              <SaveIcon className="h-4 w-4" />
+              {submitLabel}
+            </Button>
+          </div>
+        </Footer>
+      </Content>
+    </Root>
   );
 }

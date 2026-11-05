@@ -56,6 +56,13 @@ export const categoryHandlers = {
       Category
     >(base, () => HttpResponse.json(category, { status: 201 }));
   },
+  /** Answers the create only once `release` resolves, to observe the pending state. */
+  createAfter(category: Category, release: Promise<void>): HttpHandler {
+    return http.post<PlanParams, CreateCategoryRequest["body"], Category>(base, async () => {
+      await release;
+      return HttpResponse.json(category, { status: 201 });
+    });
+  },
   createRejected(status: number, type: ProblemType): HttpHandler {
     return http.post<PlanParams, CreateCategoryRequest["body"], Problem>(base, () =>
       HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),

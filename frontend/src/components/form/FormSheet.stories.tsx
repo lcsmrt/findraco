@@ -3,6 +3,7 @@ import { Field, FieldGroup, FieldLabel } from "@/components/input/base/Field";
 import { Input } from "@/components/input/base/Input";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { CopyIcon, Trash2Icon } from "lucide-react";
+import { useState, type ComponentProps } from "react";
 import { expect, fn, screen } from "storybook/test";
 import { FormSheet } from "./FormSheet";
 
@@ -20,6 +21,31 @@ function DemoFields({ count = 2 }: DemoFieldsProps) {
         </Field>
       ))}
     </FieldGroup>
+  );
+}
+
+/** Holds the open flag like a real form does, so a swipe, Escape or Cancel really closes it. */
+function ClosableFormSheet({ onOpenChange, onSubmit, ...props }: ComponentProps<typeof FormSheet>) {
+  const [open, setOpen] = useState(true);
+  const [submits, setSubmits] = useState(0);
+
+  return (
+    <>
+      {/* Shows what the submit spy saw, so a walk can read it from the page. */}
+      <output aria-label="Submit count">{submits}</output>
+      <FormSheet
+        {...props}
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          onOpenChange(next);
+        }}
+        onSubmit={(event) => {
+          setSubmits((count) => count + 1);
+          onSubmit(event);
+        }}
+      />
+    </>
   );
 }
 
@@ -89,14 +115,20 @@ export const WithMobileActions: Story = {
       </>
     ),
   },
-  globals: { viewport: { value: "mobile1" } },
   play: async () => {
     await expect(screen.getByRole("button", { name: "Delete" })).toBeVisible();
     await expect(screen.getByRole("button", { name: "Duplicate" })).toBeVisible();
   },
 };
 
-export const LongContentScrolls: Story = {
+// Below 640px the sheet rises from the bottom; the walk opens the Short, Long and WithMobileActions
+// stories in a 390px window.
+export const Short: Story = {
+  tags: ["!test"],
+  render: (args) => <ClosableFormSheet {...args} />,
+};
+
+export const Long: Story = {
   tags: ["!test"],
   args: { children: <DemoFields count={20} /> },
   play: async () => {
@@ -105,9 +137,4 @@ export const LongContentScrolls: Story = {
     // The footer stays reachable however long the form grows.
     await expect(screen.getByRole("button", { name: "Create" })).toBeVisible();
   },
-};
-
-export const Mobile: Story = {
-  tags: ["!test"],
-  globals: { viewport: { value: "mobile1" } },
 };
