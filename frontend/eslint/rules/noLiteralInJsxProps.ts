@@ -14,7 +14,7 @@ const SELECTORS = [
 ];
 
 function hasLetters(node: Rule.Node): boolean {
-  const value = node.type === "JSXText" || node.type === "Literal" ? node.value : null;
+  const value: unknown = "value" in node ? node.value : null;
   return typeof value === "string" && /\p{L}/u.test(value);
 }
 
