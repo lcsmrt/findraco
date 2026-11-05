@@ -451,7 +451,8 @@
     },
     "planSwitcherView": {
       "newPlan": "Novo plano",
-      "plans": "Planos"
+      "plans": "Planos",
+      "selectPlan": "Selecione um plano"
     },
     "plansPage": {
       "archive": "Arquivar",

@@ -451,7 +451,8 @@
     },
     "planSwitcherView": {
       "newPlan": "New plan",
-      "plans": "Plans"
+      "plans": "Plans",
+      "selectPlan": "Select plan"
     },
     "plansPage": {
       "archive": "Archive",

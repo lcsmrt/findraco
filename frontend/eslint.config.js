@@ -10,6 +10,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import tseslint from 'typescript-eslint'
 import { componentLogicCap } from './eslint/rules/componentLogicCap.ts'
 import { noJsxIife } from './eslint/rules/noJsxIife.ts'
+import { noLiteralInJsxProps } from './eslint/rules/noLiteralInJsxProps.ts'
 
 // Rules we own, in TypeScript under eslint/rules/: Node's type stripping loads them, so they need
 // neither a build step nor a package.
@@ -17,6 +18,7 @@ const local = {
   rules: {
     'component-logic-cap': componentLogicCap,
     'no-jsx-iife': noJsxIife,
+    'no-literal-in-jsx-props': noLiteralInJsxProps,
   },
 }
 
@@ -214,8 +216,9 @@ syntaxLayer(['src/components/**/base/**/*.{ts,tsx}'], [...paletteSelectors]),
 {
   files: ['src/**/*.tsx'],
   ignores: ['**/*.test.tsx', '**/*.stories.tsx', 'src/test/**'],
-  plugins: { i18next },
+  plugins: { i18next, local },
   rules: {
+    'local/no-literal-in-jsx-props': 'error',
     'i18next/no-literal-string': [
       'error',
       {

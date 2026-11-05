@@ -263,6 +263,11 @@ describe("eslint.config.js", () => {
         expect(ruleIds, attribute).toContain(rule);
       }
 
+      const inRender = await ruleIdsFor(
+        "export function Probe() {\n  return <Trigger render={<span>Select plan</span>} />;\n}\n",
+      );
+      expect(inRender).toContain("local/no-literal-in-jsx-props");
+
       const translated = await ruleIdsFor(
         'export function Probe() {\n  return <input placeholder={t("probe.search")} className="w-full" />;\n}\n',
       );

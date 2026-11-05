@@ -36,7 +36,7 @@ export function PlanSwitcherView({
       <DropdownMenuTrigger
         render={
           <Button variant="outline" size="sm" className="max-w-52 justify-between gap-2">
-            <span className="truncate">{activePlanName ?? "Select plan"}</span>
+            <span className="truncate">{activePlanName ?? t("plans.planSwitcherView.selectPlan")}</span>
             <ChevronsUpDownIcon className="text-muted-foreground" />
           </Button>
         }
