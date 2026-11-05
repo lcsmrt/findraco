@@ -6,7 +6,7 @@ function cat(id: number, description: string, type: Category["type"] = "DEBIT"):
   return { id, version: 0, description, type };
 }
 
-const categories = [cat(1, "Food"), cat(2, "Pet shop"), cat(3, "Salary", "CREDIT")];
+const categories = [cat(1, "Food"), cat(2, "Pet shop"), cat(3, "Salary", "CREDIT"), cat(4, " Fun ")];
 
 describe("categoryQuickCreate", () => {
   it("labels the create row with the transaction type, next to partial matches", () => {
@@ -22,7 +22,10 @@ describe("categoryQuickCreate", () => {
     // The same name under the other type is a different category.
     const otherType = categoryQuickCreate({ search: "Salary", type: "DEBIT", categories, canManageCategories: true });
 
+    const paddedStored = categoryQuickCreate({ search: "fun", type: "DEBIT", categories, canManageCategories: true });
+
     expect(same).toBeNull();
+    expect(paddedStored).toBeNull();
     expect(otherType?.description).toBe("Salary");
   });
 
