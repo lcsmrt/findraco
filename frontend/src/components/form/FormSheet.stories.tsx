@@ -25,18 +25,27 @@ function DemoFields({ count = 2 }: DemoFieldsProps) {
 }
 
 /** Holds the open flag like a real form does, so a swipe, Escape or Cancel really closes it. */
-function ClosableFormSheet({ onOpenChange, ...props }: ComponentProps<typeof FormSheet>) {
+function ClosableFormSheet({ onOpenChange, onSubmit, ...props }: ComponentProps<typeof FormSheet>) {
   const [open, setOpen] = useState(true);
+  const [submits, setSubmits] = useState(0);
 
   return (
-    <FormSheet
-      {...props}
-      open={open}
-      onOpenChange={(next) => {
-        setOpen(next);
-        onOpenChange(next);
-      }}
-    />
+    <>
+      {/* Shows what the submit spy saw, so a walk can read it from the page. */}
+      <output aria-label="Submit count">{submits}</output>
+      <FormSheet
+        {...props}
+        open={open}
+        onOpenChange={(next) => {
+          setOpen(next);
+          onOpenChange(next);
+        }}
+        onSubmit={(event) => {
+          setSubmits((count) => count + 1);
+          onSubmit(event);
+        }}
+      />
+    </>
   );
 }
 
