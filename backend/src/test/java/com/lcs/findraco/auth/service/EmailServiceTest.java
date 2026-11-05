@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lcs.findraco.auth.config.MailProperties;
 import com.lcs.findraco.support.CapturedLogs;
+import com.lcs.findraco.user.model.Language;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.support.StaticListableBeanFactory;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -25,7 +26,7 @@ class EmailServiceTest {
     @Test
     void withoutSmtpTheLinkIsLoggedOnlyUnderTheLocalProfile() {
         try (CapturedLogs logs = CapturedLogs.of(EmailService.class)) {
-            withoutSmtp("local").sendPasswordResetEmail("person@example.test", LINK);
+            withoutSmtp("local").sendPasswordResetEmail("person@example.test", LINK, Language.EN);
 
             assertThat(logs.lines()).anyMatch(line -> line.contains(LINK));
             assertThat(logs.lines()).noneMatch(line -> line.contains("person@example.test"));
@@ -35,7 +36,7 @@ class EmailServiceTest {
     @Test
     void withoutSmtpOutsideLocalNeitherTheLinkNorTheAddressIsLogged() {
         try (CapturedLogs logs = CapturedLogs.of(EmailService.class)) {
-            withoutSmtp("prod").sendPasswordResetEmail("person@example.test", LINK);
+            withoutSmtp("prod").sendPasswordResetEmail("person@example.test", LINK, Language.EN);
 
             assertThat(logs.lines()).isNotEmpty();
             assertThat(logs.lines()).noneMatch(line -> line.contains("live-token") || line.contains("person@"));

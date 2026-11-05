@@ -8,6 +8,7 @@ import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimit;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.lcs.findraco.shared.security.EmailNormalizer;
+import com.lcs.findraco.user.model.Language;
 import com.lcs.findraco.user.service.UserService;
 import java.time.Clock;
 import java.time.Duration;
@@ -49,10 +50,10 @@ public class PasswordResetService {
      * Issues a reset link for the account, if one exists. Unknown emails are a silent no-op so
      * the response never reveals whether an account exists. Older links of the account stop
      * working: only the latest one is valid. Limited per e-mail (no inbox bombing) and per client address.
-     * The e-mail is queued and the call returns at once, so the response never waits on the mail server.
+     * The e-mail is in the account's saved language, else the language of the page that asked, else English. It is queued and the call returns at once, so the response never waits on the mail server.
      */
     @Transactional
-    public void requestReset(String email, String ip) {
+    public void requestReset(String email, String requestLanguage, String ip) {
         rateLimiter.consume(RateLimit.FORGOT_IP, ip);
         rateLimiter.consume(RateLimit.FORGOT_EMAIL, EmailNormalizer.normalize(email));
         userService.findByEmail(email).ifPresent(user -> {
@@ -65,7 +66,10 @@ public class PasswordResetService {
             resetToken.setExpiresAt(clock.instant().plus(TOKEN_TTL));
             tokenRepository.save(resetToken);
 
-            emailService.sendPasswordResetEmail(user.getEmail(), appUrl + "/reset-password?token=" + token);
+            Language language = Language.fromTag(user.getLanguage())
+                    .or(() -> Language.fromTag(requestLanguage))
+                    .orElse(Language.EN);
+            emailService.sendPasswordResetEmail(user.getEmail(), appUrl + "/reset-password?token=" + token, language);
         });
     }
 

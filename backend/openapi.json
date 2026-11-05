@@ -486,6 +486,11 @@
             "maxLength" : 255,
             "minLength" : 0,
             "type" : "string"
+          },
+          "language" : {
+            "maxLength" : 10,
+            "minLength" : 0,
+            "type" : "string"
           }
         },
         "required" : [ "email" ],
