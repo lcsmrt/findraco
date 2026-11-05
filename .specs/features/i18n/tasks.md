@@ -106,7 +106,7 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] C7, C8, C12, C17 pass
+- [x] C7, C8, C12, C17 pass
 
 **Tests**: unit
 **Gate**: quick

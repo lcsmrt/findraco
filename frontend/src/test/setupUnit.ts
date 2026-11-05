@@ -1,7 +1,11 @@
 import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
+import { initI18n } from "../i18n/i18n";
 import { stubScreenWidth } from "./screenWidth";
 import { server } from "./server";
 import { createUnhandledRequestRecorder } from "./unhandledRequests";
+
+// Every test asserts English copy; the device language of the runner must never leak in.
+initI18n("en");
 
 const unhandledRequests = createUnhandledRequestRecorder();
 
