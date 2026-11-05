@@ -756,10 +756,7 @@
       "filters": "Filters",
       "maximumAmount": "Maximum amount",
       "minimumAmount": "Minimum amount",
-      "reset": "Reset",
-      "typeAll": "All",
-      "typeCredit": "Credit",
-      "typeDebit": "Debit"
+      "reset": "Reset"
     },
     "transactionFormDrawer": {
       "date": "Date",
