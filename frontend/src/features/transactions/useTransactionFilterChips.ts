@@ -91,8 +91,8 @@ export function useTransactionFilterChips() {
         key: "type",
         label:
           filter.type === "CREDIT"
-            ? t("transactions.transactionFilterPopoverView.typeCredit")
-            : t("transactions.transactionFilterPopoverView.typeDebit"),
+            ? t("transactions.transactionFilterPopoverView.credit")
+            : t("transactions.transactionFilterPopoverView.debit"),
         onRemove: () => removeFilters(["type"]),
       });
     }

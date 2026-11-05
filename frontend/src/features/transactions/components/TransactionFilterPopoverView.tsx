@@ -53,9 +53,9 @@ export function TransactionFilterPopoverView({
 }: TransactionFilterPopoverViewProps) {
   const { t } = useTranslation();
   const typeLabels: Record<TransactionType | typeof TYPE_ALL, string> = {
-    ALL: t("transactions.transactionFilterPopoverView.typeAll"),
-    CREDIT: t("transactions.transactionFilterPopoverView.typeCredit"),
-    DEBIT: t("transactions.transactionFilterPopoverView.typeDebit"),
+    ALL: t("transactions.transactionFilterPopoverView.all"),
+    CREDIT: t("transactions.transactionFilterPopoverView.credit"),
+    DEBIT: t("transactions.transactionFilterPopoverView.debit"),
   };
 
   const fieldId = useId();

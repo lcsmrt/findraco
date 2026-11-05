@@ -180,7 +180,7 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] C1, C4, C8 pass
+- [x] C1, C4, C8 pass (C1 by the walk recorded after T8)
 
 **Tests**: unit
 **Gate**: quick

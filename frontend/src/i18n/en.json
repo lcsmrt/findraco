@@ -220,11 +220,14 @@
     "usage": {
       "items_one": "{{count}} item",
       "items_other": "{{count}} items",
+      "items_zero": "{{count}} items",
       "recurrences_one": "{{count}} recurrence definition",
       "recurrences_other": "{{count}} recurrence definitions",
+      "recurrences_zero": "{{count}} recurrence definitions",
       "summary": "{{transactions}}, {{items}} and {{recurrences}}",
       "transactions_one": "{{count}} transaction",
-      "transactions_other": "{{count}} transactions"
+      "transactions_other": "{{count}} transactions",
+      "transactions_zero": "{{count}} transactions"
     }
   },
   "common": {
@@ -735,10 +738,7 @@
       "filters": "Filters",
       "maximumAmount": "Maximum amount",
       "minimumAmount": "Minimum amount",
-      "reset": "Reset",
-      "typeAll": "All",
-      "typeCredit": "Credit",
-      "typeDebit": "Debit"
+      "reset": "Reset"
     },
     "transactionFormDrawer": {
       "date": "Date",

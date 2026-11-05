@@ -9,31 +9,31 @@
       "transactions_other": "{{count}} transações"
     },
     "toast": {
-      "accountCreated": "Account created.",
-      "categoryCreated": "Category created.",
-      "categoryDeleted": "Category deleted.",
-      "categoryUpdated": "Category updated.",
-      "invitationCreated": "Invitation created.",
-      "invitationRevoked": "Invitation revoked.",
-      "memberRemoved": "Member removed.",
-      "operationCompleted": "Operation completed successfully.",
-      "ownershipTransferred": "Ownership transferred.",
-      "passwordUpdatedSignInWith": "Password updated. Sign in with your new password.",
-      "planArchived": "Plan archived.",
-      "planCreated": "Plan created.",
-      "planDeleted": "Plan deleted.",
-      "planRenamed": "Plan renamed.",
-      "planRestored": "Plan restored.",
-      "roleUpdated": "Role updated.",
-      "seriesCreated": "Series created.",
-      "seriesDeleted": "Series deleted.",
-      "seriesUpdated": "Series updated.",
-      "timeZoneSaved": "Time zone saved.",
-      "transactionAdded": "Transaction added.",
-      "transactionDeleted": "Transaction deleted.",
-      "transactionUpdated": "Transaction updated.",
-      "youJoinedThePlan": "You joined the plan.",
-      "youLeftThePlan": "You left the plan."
+      "accountCreated": "Conta criada.",
+      "categoryCreated": "Categoria criada.",
+      "categoryDeleted": "Categoria excluída.",
+      "categoryUpdated": "Categoria atualizada.",
+      "invitationCreated": "Convite criado.",
+      "invitationRevoked": "Convite revogado.",
+      "memberRemoved": "Membro removido.",
+      "operationCompleted": "Operação concluída com sucesso.",
+      "ownershipTransferred": "Propriedade transferida.",
+      "passwordUpdatedSignInWith": "Senha atualizada. Entre com a nova senha.",
+      "planArchived": "Plano arquivado.",
+      "planCreated": "Plano criado.",
+      "planDeleted": "Plano excluído.",
+      "planRenamed": "Plano renomeado.",
+      "planRestored": "Plano restaurado.",
+      "roleUpdated": "Papel atualizado.",
+      "seriesCreated": "Série criada.",
+      "seriesDeleted": "Série excluída.",
+      "seriesUpdated": "Série atualizada.",
+      "timeZoneSaved": "Fuso horário salvo.",
+      "transactionAdded": "Transação adicionada.",
+      "transactionDeleted": "Transação excluída.",
+      "transactionUpdated": "Transação atualizada.",
+      "youJoinedThePlan": "Você entrou no plano.",
+      "youLeftThePlan": "Você saiu do plano."
     }
   },
   "app": {
@@ -42,731 +42,731 @@
       "n2026Findraco": "© 2026 findraco"
     },
     "authSession": {
-      "expired": "Your session expired. Please sign in again."
+      "expired": "Sua sessão expirou. Entre novamente."
     },
     "bottomBarView": {
-      "bottomBar": "Bottom bar",
-      "newTransaction": "New Transaction"
+      "bottomBar": "Barra inferior",
+      "newTransaction": "Nova transação"
     },
     "installInstructionsDialogView": {
-      "addFindracoToYourHome": "Add findraco to your home screen in two steps.",
-      "chooseAddToHomeScreen": "Choose \"Add to Home Screen\".",
-      "inTheBrowserToolbar": "in the browser toolbar.",
-      "installFindraco": "Install findraco",
-      "tapTheShareIcon": "Tap the Share icon"
+      "addFindracoToYourHome": "Adicione o findraco à tela inicial em dois passos.",
+      "chooseAddToHomeScreen": "Escolha \"Adicionar à Tela de Início\".",
+      "inTheBrowserToolbar": "na barra de ferramentas do navegador.",
+      "installFindraco": "Instalar o findraco",
+      "tapTheShareIcon": "Toque no ícone de compartilhar"
     },
     "navbarView": {
-      "findracoLogo": "findraco logo",
-      "installApp": "Install app",
-      "logout": "Logout",
-      "timeZone": "Time zone",
-      "updateAvailable": "Update available",
-      "updateTo": "Update to {{version}}"
+      "findracoLogo": "Logo do findraco",
+      "installApp": "Instalar o app",
+      "logout": "Sair",
+      "timeZone": "Fuso horário",
+      "updateAvailable": "Atualização disponível",
+      "updateTo": "Atualizar para {{version}}"
     },
     "navigation": {
-      "categories": "Categories",
-      "overview": "Overview",
-      "plans": "Plans",
-      "transactions": "Transactions"
+      "categories": "Categorias",
+      "overview": "Visão geral",
+      "plans": "Planos",
+      "transactions": "Transações"
     },
     "sessionStatusView": {
-      "canTReachFindraco": "Can't reach findraco.",
-      "retry": "Retry"
+      "canTReachFindraco": "Não foi possível acessar o findraco.",
+      "retry": "Tentar novamente"
     },
     "tabRowView": {
-      "destinations": "Destinations",
-      "newTransaction": "New Transaction"
+      "destinations": "Seções",
+      "newTransaction": "Nova transação"
     },
     "updateRequiredDialogView": {
-      "aNewVersionOfFindraco": "A new version of findraco is needed to continue.",
-      "update": "Update",
-      "updateRequired": "Update required"
+      "aNewVersionOfFindraco": "É preciso ter uma nova versão do findraco para continuar.",
+      "update": "Atualizar",
+      "updateRequired": "Atualização necessária"
     }
   },
   "auth": {
     "forgotPasswordView": {
-      "backToSignIn": "Back to sign in",
-      "forgotPassword": "Forgot password",
-      "requestDescription": "Enter your account email and we’ll send you a link to choose a new password.",
-      "sendResetLink": "Send reset link",
-      "sentDescription": "If an account exists for that email, we sent a link to reset your password. It expires in 60 minutes."
+      "backToSignIn": "Voltar para entrar",
+      "forgotPassword": "Esqueci a senha",
+      "requestDescription": "Informe o e-mail da sua conta e enviaremos um link para você escolher uma nova senha.",
+      "sendResetLink": "Enviar link de redefinição",
+      "sentDescription": "Se existir uma conta com esse e-mail, enviamos um link para redefinir a senha. Ele expira em 60 minutos."
     },
     "form": {
-      "invalidEmail": "Invalid email",
-      "passwordsDoNotMatch": "Passwords do not match",
-      "pleaseConfirmTheNewPassword": "Please confirm the new password",
-      "pleaseEnterANewPassword": "Please enter a new password",
-      "pleaseEnterYourEmail": "Please enter your email",
-      "pleaseEnterYourFullName": "Please enter your full name",
-      "pleaseEnterYourPassword": "Please enter your password"
+      "invalidEmail": "E-mail inválido",
+      "passwordsDoNotMatch": "As senhas não coincidem",
+      "pleaseConfirmTheNewPassword": "Confirme a nova senha",
+      "pleaseEnterANewPassword": "Informe uma nova senha",
+      "pleaseEnterYourEmail": "Informe seu e-mail",
+      "pleaseEnterYourFullName": "Informe seu nome completo",
+      "pleaseEnterYourPassword": "Informe sua senha"
     },
     "invalidLink": {
-      "requestANewLink": "Request a new link",
-      "thisLinkIsInvalidOr": "This link is invalid or has expired."
+      "requestANewLink": "Solicitar um novo link",
+      "thisLinkIsInvalidOr": "Este link é inválido ou expirou."
     },
     "loginView": {
-      "createOneNow": "Create one now",
-      "donTHaveAnAccount": "Don’t have an account?",
-      "forgotPassword": "Forgot password?",
-      "password": "Password",
-      "signIn": "Sign in"
+      "createOneNow": "Crie uma agora",
+      "donTHaveAnAccount": "Não tem uma conta?",
+      "forgotPassword": "Esqueceu a senha?",
+      "password": "Senha",
+      "signIn": "Entrar"
     },
     "password": {
-      "characters": "Remove tabs, line breaks and invisible characters",
-      "length": "Use 8 to 128 characters",
-      "spacesHint": "This password starts or ends with a space. Keep it only if you meant to."
+      "characters": "Remova tabulações, quebras de linha e caracteres invisíveis",
+      "length": "Use de 8 a 128 caracteres",
+      "spacesHint": "Esta senha começa ou termina com um espaço. Mantenha-o só se foi de propósito."
     },
     "passwordInput": {
-      "hide": "Hide password",
-      "show": "Show password"
+      "hide": "Ocultar senha",
+      "show": "Mostrar senha"
     },
     "registerUserView": {
-      "alreadyHaveAnAccount": "Already have an account?",
-      "consent": "By clicking Sign up, you agree to findraco’s <terms>Terms of Service</terms> and acknowledge that you are subject to our <privacy>Privacy Policy</privacy>.",
-      "createYourAccount": "Create your account",
-      "fullName": "Full name",
-      "password": "Password",
-      "signIn": "Sign in",
-      "signUp": "Sign up"
+      "alreadyHaveAnAccount": "Já tem uma conta?",
+      "consent": "Ao clicar em Cadastrar, você concorda com os <terms>Termos de Serviço</terms> do findraco e reconhece que está sujeito à nossa <privacy>Política de Privacidade</privacy>.",
+      "createYourAccount": "Crie sua conta",
+      "fullName": "Nome completo",
+      "password": "Senha",
+      "signIn": "Entrar",
+      "signUp": "Cadastrar"
     },
     "resetPasswordView": {
-      "backToSignIn": "Back to sign in",
-      "checkingYourLink": "Checking your link…",
-      "confirmNewPassword": "Confirm new password",
-      "newPassword": "New password",
-      "resetPassword": "Reset password",
-      "setNewPassword": "Set new password"
+      "backToSignIn": "Voltar para entrar",
+      "checkingYourLink": "Verificando seu link…",
+      "confirmNewPassword": "Confirmar nova senha",
+      "newPassword": "Nova senha",
+      "resetPassword": "Redefinir senha",
+      "setNewPassword": "Definir nova senha"
     }
   },
   "categories": {
     "categoriesPageView": {
-      "expenses": "Expenses",
-      "income": "Income",
-      "newCategory": "New Category"
+      "expenses": "Despesas",
+      "income": "Receitas",
+      "newCategory": "Nova categoria"
     },
     "categoryFormSheet": {
-      "eGFoodTransportEntertainment": "e.g., Food, Transport, Entertainment",
-      "editCategory": "Edit Category",
-      "newCategory": "New Category",
-      "newSubcategory": "New subcategory"
+      "eGFoodTransportEntertainment": "ex.: Alimentação, Transporte, Lazer",
+      "editCategory": "Editar categoria",
+      "newCategory": "Nova categoria",
+      "newSubcategory": "Nova subcategoria"
     },
     "categoryLimitFields": {
-      "amount": "Amount",
-      "formerMember": "(former member)",
-      "limitFor": "Limit for {{name}}",
-      "limitPerMember": "Limit per member",
-      "monthlyLimit": "Monthly limit",
-      "noLimit": "No limit",
-      "perMember": "Per member",
-      "removeLimit": "Remove {{name}}'s limit",
-      "single": "Single",
-      "theCategoryLimitIsThe": "The category limit is the sum of the members' limits. A member left empty has no limit of their own."
+      "amount": "Valor",
+      "formerMember": "(ex-membro)",
+      "limitFor": "Limite de {{name}}",
+      "limitPerMember": "Limite por membro",
+      "monthlyLimit": "Limite mensal",
+      "noLimit": "Sem limite",
+      "perMember": "Por membro",
+      "removeLimit": "Remover o limite de {{name}}",
+      "single": "Único",
+      "theCategoryLimitIsThe": "O limite da categoria é a soma dos limites dos membros. Um membro deixado em branco não tem limite próprio."
     },
     "categorySection": {
-      "actions": "Actions",
-      "monthlyLimit": "Monthly limit",
-      "noCategoriesYet": "No categories yet.",
-      "owner": "Owner",
-      "perMember": "Per member"
+      "actions": "Ações",
+      "monthlyLimit": "Limite mensal",
+      "noCategoriesYet": "Nenhuma categoria ainda.",
+      "owner": "Dono",
+      "perMember": "Por membro"
     },
     "categoryTreeRow": {
-      "delete": "Delete {{name}}",
-      "edit": "Edit {{name}}",
-      "newSubcategoryOf": "New subcategory of {{name}}"
+      "delete": "Excluir {{name}}",
+      "edit": "Editar {{name}}",
+      "newSubcategoryOf": "Nova subcategoria de {{name}}"
     },
     "deleteCategoryDialog": {
-      "deleteCategory": "Delete “{{name}}”",
-      "moveAndDelete": "Move and delete",
-      "moveTo": "Move to",
-      "noOtherCategory": "No other category of this type",
-      "selectACategory": "Select a category..."
+      "deleteCategory": "Excluir “{{name}}”",
+      "moveAndDelete": "Mover e excluir",
+      "moveTo": "Mover para",
+      "noOtherCategory": "Nenhuma outra categoria deste tipo",
+      "selectACategory": "Selecione uma categoria..."
     },
     "deletion": {
-      "checking": "Checking where this category is used...",
-      "hasChildren": "This category has subcategories. Move them to another category or delete them before deleting it.",
-      "inUse": "This category is used by {{usage}}. Choose a category to receive them; then it is deleted.",
-      "unused": "This category is not used by any transaction, item or recurrence definition. Are you sure you want to delete it? This action cannot be undone.",
-      "usageFailed": "Could not check where this category is used. Close and try again."
+      "checking": "Verificando onde esta categoria é usada...",
+      "hasChildren": "Esta categoria tem subcategorias. Mova-as para outra categoria ou exclua-as antes de excluir esta.",
+      "inUse": "Esta categoria é usada por {{usage}}. Escolha uma categoria para receber esses registros; depois esta será excluída.",
+      "unused": "Esta categoria não é usada por nenhuma transação, item ou recorrência. Tem certeza de que quer excluí-la? Esta ação não pode ser desfeita.",
+      "usageFailed": "Não foi possível verificar onde esta categoria é usada. Feche e tente novamente."
     },
     "form": {
-      "aCategoryThatBelongsTo": "A category that belongs to one member cannot have per-member limits",
-      "aCategoryWithSubcategoriesCannot": "A category with subcategories cannot have a parent",
-      "aCategoryWithSubcategoriesCannot2": "A category with subcategories cannot change type",
-      "aSubcategoryHasItsParent": "A subcategory has its parent's owner",
-      "amountCannotBeNegative": "Amount cannot be negative",
-      "chooseATopLevelCategory": "Choose a top-level category of the same type",
-      "eachMemberCanHaveOnly": "Each member can have only one limit",
-      "incomeCategoriesCannotHavePer": "Income categories cannot have per-member limits",
-      "nameIsRequired": "Name is required"
+      "aCategoryThatBelongsTo": "Uma categoria que pertence a um membro não pode ter limites por membro",
+      "aCategoryWithSubcategoriesCannot": "Uma categoria com subcategorias não pode ter categoria pai",
+      "aCategoryWithSubcategoriesCannot2": "Uma categoria com subcategorias não pode mudar de tipo",
+      "aSubcategoryHasItsParent": "Uma subcategoria tem o mesmo dono da categoria pai",
+      "amountCannotBeNegative": "O valor não pode ser negativo",
+      "chooseATopLevelCategory": "Escolha uma categoria de nível superior do mesmo tipo",
+      "eachMemberCanHaveOnly": "Cada membro pode ter apenas um limite",
+      "incomeCategoriesCannotHavePer": "Categorias de receita não podem ter limites por membro",
+      "nameIsRequired": "O nome é obrigatório"
     },
     "limitSection": {
-      "ownedSingleLimit": "A category that belongs to one member has a single limit."
+      "ownedSingleLimit": "Uma categoria que pertence a um membro tem um único limite."
     },
     "ownerField": {
-      "belongsTo": "Belongs to",
-      "itsSpendAndLimitAre": "Its spend and limit are this member's. Subcategories belong to the same member.",
-      "noMembers": "No members",
-      "sharedEveryone": "Shared (everyone)"
+      "belongsTo": "Pertence a",
+      "itsSpendAndLimitAre": "Os gastos e o limite são deste membro. As subcategorias pertencem ao mesmo membro.",
+      "noMembers": "Nenhum membro",
+      "sharedEveryone": "Compartilhada (todos)"
     },
     "parentField": {
-      "noTopLevel": "No top-level categories",
-      "noneTopLevel": "None (top level)",
-      "parent": "Parent",
-      "staysTopLevel": "A category with subcategories stays at the top level."
+      "noTopLevel": "Nenhuma categoria de nível superior",
+      "noneTopLevel": "Nenhuma (nível superior)",
+      "parent": "Categoria pai",
+      "staysTopLevel": "Uma categoria com subcategorias fica no nível superior."
     },
     "typeField": {
-      "aCategoryWithSubcategoriesCannot": "A category with subcategories cannot change type."
+      "aCategoryWithSubcategoriesCannot": "Uma categoria com subcategorias não pode mudar de tipo."
     },
     "usage": {
       "items_one": "{{count}} item",
       "items_other": "{{count}} itens",
+      "items_zero": "{{count}} itens",
       "recurrences_one": "{{count}} recorrência",
       "recurrences_other": "{{count}} recorrências",
+      "recurrences_zero": "{{count}} recorrências",
       "summary": "{{transactions}}, {{items}} e {{recurrences}}",
       "transactions_one": "{{count}} transação",
-      "transactions_other": "{{count}} transações"
+      "transactions_other": "{{count}} transações",
+      "transactions_zero": "{{count}} transações"
     }
   },
   "common": {
-    "amount": "Amount",
+    "amount": "Valor",
     "cancel": "Cancelar",
     "close": "Fechar",
-    "confirm": "Confirm",
-    "create": "Create",
-    "delete": "Delete",
-    "email": "Email",
-    "formerMember": "(former member)",
-    "name": "Name",
-    "optional": "(optional)",
+    "confirm": "Confirmar",
+    "create": "Criar",
+    "delete": "Excluir",
+    "email": "E-mail",
+    "formerMember": "(ex-membro)",
+    "name": "Nome",
+    "optional": "(opcional)",
     "r000": "R$ 0,00",
     "save": "Salvar",
-    "type": "Type",
-    "youExampleCom": "you@example.com"
+    "type": "Tipo",
+    "youExampleCom": "voce@exemplo.com"
   },
   "components": {
     "appVersion": {
       "version": "v{{version}} - {{date}}"
     },
     "comboboxChip": {
-      "remove": "Remove"
+      "remove": "Remover"
     },
     "comboboxClear": {
-      "clear": "Clear"
+      "clear": "Limpar"
     },
     "comboboxInput": {
-      "showOptions": "Show options"
+      "showOptions": "Mostrar opções"
     },
     "datePicker": {
-      "chooseADate": "Choose a date",
-      "clearDate": "Clear date",
-      "openCalendar": "Open calendar"
+      "chooseADate": "Escolha uma data",
+      "clearDate": "Limpar data",
+      "openCalendar": "Abrir calendário"
     },
     "dateRangePicker": {
-      "chooseAPeriod": "Choose a period",
-      "clearRange": "Clear range",
-      "openCalendar": "Open calendar"
+      "chooseAPeriod": "Escolha um período",
+      "clearRange": "Limpar intervalo",
+      "openCalendar": "Abrir calendário"
     },
     "numberField": {
-      "decrease": "Decrease",
-      "increase": "Increase"
+      "decrease": "Diminuir",
+      "increase": "Aumentar"
     },
     "periodNavigator": {
-      "chooseAPeriod": "Choose a period",
-      "choosePeriod": "Choose period, {{period}}",
-      "custom": "Custom…",
-      "last3Months": "Last 3 months",
-      "last6Months": "Last 6 months",
-      "nextPeriod": "Next period",
-      "previousPeriod": "Previous period",
-      "range": "Range",
-      "thisMonth": "This month",
-      "thisYear": "This year"
+      "chooseAPeriod": "Escolha um período",
+      "choosePeriod": "Escolher período, {{period}}",
+      "custom": "Personalizado…",
+      "last3Months": "Últimos 3 meses",
+      "last6Months": "Últimos 6 meses",
+      "nextPeriod": "Próximo período",
+      "previousPeriod": "Período anterior",
+      "range": "Intervalo",
+      "thisMonth": "Este mês",
+      "thisYear": "Este ano"
     },
     "spinner": {
-      "loading": "Loading"
+      "loading": "Carregando"
     },
     "standardCombobox": {
-      "clearSelection": "Clear selection",
-      "createTerm": "Create “{{term}}”",
-      "noResults": "No results",
-      "search": "Search...",
-      "select": "Select..."
+      "clearSelection": "Limpar seleção",
+      "createTerm": "Criar “{{term}}”",
+      "noResults": "Nenhum resultado",
+      "search": "Buscar...",
+      "select": "Selecione..."
     },
     "tableActionsDropdown": {
-      "rowActions": "Row actions"
+      "rowActions": "Ações da linha"
     },
     "tableBody": {
-      "noResults": "No results."
+      "noResults": "Nenhum resultado."
     },
     "tablePagination": {
-      "firstPage": "First page",
-      "lastPage": "Last page",
-      "linesPerPage": "Lines per page:",
-      "linesPerPage2": "Lines per page",
-      "nextPage": "Next page",
-      "page": "Page {{page}} of {{pages}}",
-      "previousPage": "Previous page",
-      "range": "{{start}} – {{end}} of {{total}}"
+      "firstPage": "Primeira página",
+      "lastPage": "Última página",
+      "linesPerPage": "Linhas por página:",
+      "linesPerPage2": "Linhas por página",
+      "nextPage": "Próxima página",
+      "page": "Página {{page}} de {{pages}}",
+      "previousPage": "Página anterior",
+      "range": "{{start}} – {{end}} de {{total}}"
     },
     "tableRoot": {
-      "expand": "Expand"
+      "expand": "Expandir"
     },
     "themeToggleView": {
-      "toggleTheme": "Toggle theme"
+      "toggleTheme": "Alternar tema"
     },
     "transactionTypeToggle": {
-      "credit": "Credit",
-      "debit": "Debit",
-      "transactionType": "Transaction type"
+      "credit": "Crédito",
+      "debit": "Débito",
+      "transactionType": "Tipo de transação"
     }
   },
   "notFound": {
     "notFoundView": {
-      "backToTheHoard": "Back to the hoard",
-      "notInTheHoard": "Not in the hoard",
-      "theDragonSearchedEveryPile": "The dragon searched every pile of gold and couldn't find this page."
+      "backToTheHoard": "Voltar ao tesouro",
+      "notInTheHoard": "Não está no tesouro",
+      "theDragonSearchedEveryPile": "O dragão vasculhou cada pilha de ouro e não encontrou esta página."
     }
   },
   "overview": {
     "balance": {
-      "balance": "Balance"
+      "balance": "Saldo"
     },
     "categorySpendingList": {
-      "focus": "{{name}} {{spent}} of {{limit}}",
-      "noExpenseCategoriesYet": "No expense categories yet.",
-      "ofLimit": "of {{amount}}",
-      "overBy": "over by {{amount}}",
-      "remaining": "remaining {{amount}}",
-      "sharedLimit": "· shared limit {{amount}}",
-      "spendingByCategory": "Spending by category"
+      "focus": "{{name}} {{spent}} de {{limit}}",
+      "noExpenseCategoriesYet": "Nenhuma categoria de despesa ainda.",
+      "ofLimit": "de {{amount}}",
+      "overBy": "acima em {{amount}}",
+      "remaining": "restam {{amount}}",
+      "sharedLimit": "· limite compartilhado {{amount}}",
+      "spendingByCategory": "Gastos por categoria"
     },
     "memberFilterChips": {
-      "all": "All",
-      "allMembers": "All members",
-      "filterByMember": "Filter by member"
+      "all": "Todos",
+      "allMembers": "Todos os membros",
+      "filterByMember": "Filtrar por membro"
     },
     "monthlyTrendChart": {
-      "monthlyTrend": "Monthly trend"
+      "monthlyTrend": "Tendência mensal"
     },
     "subRow": {
-      "formerMember": "(former member)"
+      "formerMember": "(ex-membro)"
     },
     "summaryCards": {
-      "expenses": "Expenses",
-      "income": "Income"
+      "expenses": "Despesas",
+      "income": "Receitas"
     }
   },
   "plans": {
     "acceptInvitationView": {
-      "acceptInvitation": "Accept invitation",
-      "backToHome": "Back to home",
-      "decline": "Decline",
-      "invalidInvitation": "Invalid invitation",
-      "invitedYou": "{{inviter}} invited you to the plan <plan>{{plan}}</plan> as {{role}}.",
-      "thisInvitationDoesnTExist": "This invitation doesn't exist or is no longer available.",
-      "youVeBeenInvited": "You've been invited"
+      "acceptInvitation": "Aceitar convite",
+      "backToHome": "Voltar ao início",
+      "decline": "Recusar",
+      "invalidInvitation": "Convite inválido",
+      "invitedYou": "{{inviter}} convidou você para o plano <plan>{{plan}}</plan> como {{role}}.",
+      "thisInvitationDoesnTExist": "Este convite não existe ou não está mais disponível.",
+      "youVeBeenInvited": "Você foi convidado"
     },
     "archivedPlansListView": {
-      "anArchivedPlanCanBe": "An archived plan can be restored until its deletion date.",
-      "archivedOn": "Archived on {{date}}",
-      "archivedPlans": "Archived plans",
-      "couldNotLoadYourArchived": "Could not load your archived plans. Try again later.",
-      "deleteNow": "Delete now",
-      "deletePlanNow": "Delete {{name}} now",
-      "deletedOn": "Deleted permanently on {{date}}",
-      "restore": "Restore",
-      "restorePlan": "Restore {{name}}"
+      "anArchivedPlanCanBe": "Um plano arquivado pode ser restaurado até a data de exclusão.",
+      "archivedOn": "Arquivado em {{date}}",
+      "archivedPlans": "Planos arquivados",
+      "couldNotLoadYourArchived": "Não foi possível carregar seus planos arquivados. Tente novamente mais tarde.",
+      "deleteNow": "Excluir agora",
+      "deletePlanNow": "Excluir {{name}} agora",
+      "deletedOn": "Exclusão definitiva em {{date}}",
+      "restore": "Restaurar",
+      "restorePlan": "Restaurar {{name}}"
     },
     "deleteForm": {
-      "typeThePlanNameExactly": "Type the plan name exactly as shown"
+      "typeThePlanNameExactly": "Digite o nome do plano exatamente como aparece"
     },
     "deletePlanPermanentlyDialogView": {
-      "deleteNow": "Delete now",
-      "deletePlanNow": "Delete plan now",
-      "thisPermanentlyDeletesThePlan": "This permanently deletes the plan and everything in it: transactions, categories, recurring series, members and invitations. It cannot be undone.",
-      "typeToConfirm": "Type \"{{name}}\" to confirm"
+      "deleteNow": "Excluir agora",
+      "deletePlanNow": "Excluir o plano agora",
+      "thisPermanentlyDeletesThePlan": "Isto exclui o plano e tudo o que há nele de forma definitiva: transações, categorias, séries recorrentes, membros e convites. Não pode ser desfeito.",
+      "typeToConfirm": "Digite \"{{name}}\" para confirmar"
     },
     "invitationLabel": {
-      "email": "Email invitation",
-      "link": "Link invitation"
+      "email": "Convite por e-mail",
+      "link": "Convite por link"
     },
     "invitationStatus": {
-      "accepted": "Accepted",
-      "expired": "Expired",
-      "pending": "Pending",
-      "revoked": "Revoked"
+      "accepted": "Aceito",
+      "expired": "Expirado",
+      "pending": "Pendente",
+      "revoked": "Revogado"
     },
     "inviteForm": {
-      "enterAnEmailAddress": "Enter an email address"
+      "enterAnEmailAddress": "Informe um e-mail"
     },
     "invitePlanDialogView": {
-      "copyLink": "Copy link",
-      "done": "Done",
-      "expiresAtOptional": "Expires at (optional)",
-      "generateLink": "Generate link",
-      "invitationLink": "Invitation link",
-      "invitationType": "Invitation type",
-      "inviteToPlan": "Invite to plan",
+      "copyLink": "Copiar link",
+      "done": "Concluir",
+      "expiresAtOptional": "Expira em (opcional)",
+      "generateLink": "Gerar link",
+      "invitationLink": "Link do convite",
+      "invitationType": "Tipo de convite",
+      "inviteToPlan": "Convidar para o plano",
       "link": "Link",
-      "personEmailCom": "person@email.com",
-      "role": "Role",
-      "sendInvitation": "Send invitation",
-      "sentTo": "Invitation sent to <email>{{email}}</email>.",
-      "shareThisLinkToInvite": "Share this link to invite someone:",
-      "typeEmail": "Email",
+      "personEmailCom": "pessoa@email.com",
+      "role": "Papel",
+      "sendInvitation": "Enviar convite",
+      "sentTo": "Convite enviado para <email>{{email}}</email>.",
+      "shareThisLinkToInvite": "Compartilhe este link para convidar alguém:",
+      "typeEmail": "E-mail",
       "typeLink": "Link"
     },
     "nameForm": {
-      "enterANameForThe": "Enter a name for the plan"
+      "enterANameForThe": "Informe um nome para o plano"
     },
     "planInvitationsList": {
-      "revoke": "Revoke",
-      "revokeDescription": "Are you sure you want to revoke the invitation for {{name}}?",
-      "revokeInvitation": "Revoke invitation"
+      "revoke": "Revogar",
+      "revokeDescription": "Tem certeza de que quer revogar o convite de {{name}}?",
+      "revokeInvitation": "Revogar convite"
     },
     "planInvitationsListView": {
-      "expiresOn": "Expires on {{date}}",
-      "noInvitationsCreatedForThis": "No invitations created for this plan yet.",
-      "revoke": "Revoke the invitation for {{name}}"
+      "expiresOn": "Expira em {{date}}",
+      "noInvitationsCreatedForThis": "Nenhum convite criado para este plano ainda.",
+      "revoke": "Revogar o convite de {{name}}"
     },
     "planMembersList": {
-      "remove": "Remove",
-      "removeDescription": "Are you sure you want to remove {{name}} from this plan?",
-      "removeMember": "Remove member"
+      "remove": "Remover",
+      "removeDescription": "Tem certeza de que quer remover {{name}} deste plano?",
+      "removeMember": "Remover membro"
     },
     "planMembersListView": {
-      "noMembersInThisPlan": "No members in this plan.",
-      "remove": "Remove {{name}}",
-      "roleOf": "Role of {{name}}"
+      "noMembersInThisPlan": "Nenhum membro neste plano.",
+      "remove": "Remover {{name}}",
+      "roleOf": "Papel de {{name}}"
     },
     "planNameDialogView": {
-      "eGHouseholdFinances": "e.g., Household finances",
-      "newPlan": "New plan",
-      "renamePlan": "Rename plan"
+      "eGHouseholdFinances": "ex.: Finanças da casa",
+      "newPlan": "Novo plano",
+      "renamePlan": "Renomear plano"
     },
     "planSwitcherView": {
-      "newPlan": "New plan",
-      "plans": "Plans"
+      "newPlan": "Novo plano",
+      "plans": "Planos"
     },
     "plansPage": {
-      "archive": "Archive",
-      "archiveDescription": "Are you sure you want to archive the plan \"{{name}}\"? You can restore it from \"Archived plans\" for 30 days; after that it is deleted permanently.",
-      "archivePlan": "Archive plan",
-      "leave": "Leave",
-      "leaveDescription": "Are you sure you want to leave the plan \"{{name}}\"?",
-      "leavePlan": "Leave plan"
+      "archive": "Arquivar",
+      "archiveDescription": "Tem certeza de que quer arquivar o plano \"{{name}}\"? Você pode restaurá-lo em \"Planos arquivados\" por 30 dias; depois disso ele é excluído definitivamente.",
+      "archivePlan": "Arquivar plano",
+      "leave": "Sair",
+      "leaveDescription": "Tem certeza de que quer sair do plano \"{{name}}\"?",
+      "leavePlan": "Sair do plano"
     },
     "plansPageView": {
-      "archivePlan": "Archive plan",
-      "default": "Default",
-      "invitationsFor": "Invitations for {{name}}",
-      "invite": "Invite",
-      "leavePlan": "Leave plan",
-      "manageYourPlansAndSwitch": "Manage your plans and switch between them.",
-      "membersOf": "Members of {{name}}",
-      "newPlan": "New plan",
-      "plans": "Plans",
-      "renamePlan": "Rename plan",
-      "transferOwnership": "Transfer ownership"
+      "archivePlan": "Arquivar plano",
+      "default": "Padrão",
+      "invitationsFor": "Convites de {{name}}",
+      "invite": "Convidar",
+      "leavePlan": "Sair do plano",
+      "manageYourPlansAndSwitch": "Gerencie seus planos e alterne entre eles.",
+      "membersOf": "Membros de {{name}}",
+      "newPlan": "Novo plano",
+      "plans": "Planos",
+      "renamePlan": "Renomear plano",
+      "transferOwnership": "Transferir propriedade"
     },
     "roles": {
-      "contributor": "Contributor",
+      "contributor": "Colaborador",
       "editor": "Editor",
-      "owner": "Owner",
-      "viewer": "Viewer"
+      "owner": "Dono",
+      "viewer": "Leitor"
     },
     "transferOwnershipDialogView": {
-      "newOwner": "New owner",
-      "selectAMember": "Select a member",
-      "thereAreNoOtherMembers": "There are no other members to transfer ownership to.",
-      "transfer": "Transfer",
-      "transferOwnership": "Transfer ownership",
-      "youWillBecomeAnEditor": "You will become an Editor of this plan."
+      "newOwner": "Novo dono",
+      "selectAMember": "Selecione um membro",
+      "thereAreNoOtherMembers": "Não há outros membros para receber a propriedade.",
+      "transfer": "Transferir",
+      "transferOwnership": "Transferir propriedade",
+      "youWillBecomeAnEditor": "Você passará a ser Editor deste plano."
     }
   },
   "problems": {
-    "andMore": "...and {{remaining}} more",
-    "category-has-subcategories": "This category now has subcategories. Move or delete them before deleting it.",
-    "category-in-use": "This category is now in use. Choose a category to receive its transactions.",
-    "category-invalid-reassign-target": "Choose another category of the same type to receive them.",
-    "category-member-limit-duplicate": "Each member can have only one limit.",
-    "category-member-limit-not-member": "A per-member limit names someone who is not a member of the plan.",
-    "category-member-limits-on-income": "Income categories cannot have per-member limits.",
-    "category-member-limits-on-owned": "A category that belongs to one member cannot have per-member limits.",
-    "category-not-found": "This category no longer exists.",
-    "category-owner-not-member": "The owner must be a member of the plan.",
-    "category-owner-on-subcategory": "A subcategory belongs to its parent's owner.",
-    "category-parent-is-itself": "A category cannot be its own parent.",
-    "category-parent-is-subcategory": "A subcategory cannot be a parent.",
-    "category-parent-type-mismatch": "A subcategory must have the same type as its parent.",
-    "category-subcategories-block-parent": "A category with subcategories cannot be given a parent.",
-    "category-subcategories-block-type-change": "The type of a category with subcategories cannot change.",
-    "category-type-change-in-use": "This category is in use, so its type can't change. Move its transactions to another category first.",
+    "andMore": "...e mais {{remaining}}",
+    "category-has-subcategories": "Esta categoria agora tem subcategorias. Mova-as ou exclua-as antes de excluir esta.",
+    "category-in-use": "Esta categoria agora está em uso. Escolha uma categoria para receber as transações dela.",
+    "category-invalid-reassign-target": "Escolha outra categoria do mesmo tipo para receber os registros.",
+    "category-member-limit-duplicate": "Cada membro pode ter apenas um limite.",
+    "category-member-limit-not-member": "Um limite por membro cita alguém que não é membro do plano.",
+    "category-member-limits-on-income": "Categorias de receita não podem ter limites por membro.",
+    "category-member-limits-on-owned": "Uma categoria que pertence a um membro não pode ter limites por membro.",
+    "category-not-found": "Esta categoria não existe mais.",
+    "category-owner-not-member": "O dono precisa ser membro do plano.",
+    "category-owner-on-subcategory": "Uma subcategoria pertence ao dono da categoria pai.",
+    "category-parent-is-itself": "Uma categoria não pode ser a própria categoria pai.",
+    "category-parent-is-subcategory": "Uma subcategoria não pode ser categoria pai.",
+    "category-parent-type-mismatch": "Uma subcategoria precisa ter o mesmo tipo da categoria pai.",
+    "category-subcategories-block-parent": "Uma categoria com subcategorias não pode ter categoria pai.",
+    "category-subcategories-block-type-change": "O tipo de uma categoria com subcategorias não pode mudar.",
+    "category-type-change-in-use": "Esta categoria está em uso, então o tipo dela não pode mudar. Mova as transações dela para outra categoria primeiro.",
     "constraint": {
-      "DecimalMax": "is too large",
-      "DecimalMin": "is too small",
-      "Digits": "has too many digits",
-      "Email": "is not a valid e-mail",
-      "Max": "is too large",
-      "Min": "is too small",
-      "NarrowedEnum": "is not allowed here",
-      "NotBlank": "is required",
-      "NotEmpty": "is required",
-      "NotNull": "is required",
-      "PasswordCharacters": "cannot contain tabs, line breaks or invisible characters",
-      "PasswordLength": "must be 8 to 128 characters",
-      "Pattern": "has an invalid format",
-      "Positive": "must be greater than zero",
-      "PositiveOrZero": "cannot be negative",
-      "Size": "has the wrong length"
+      "DecimalMax": "é grande demais",
+      "DecimalMin": "é pequeno demais",
+      "Digits": "tem dígitos demais",
+      "Email": "não é um e-mail válido",
+      "Max": "é grande demais",
+      "Min": "é pequeno demais",
+      "NarrowedEnum": "não é permitido aqui",
+      "NotBlank": "é obrigatório",
+      "NotEmpty": "é obrigatório",
+      "NotNull": "é obrigatório",
+      "PasswordCharacters": "não pode conter tabulações, quebras de linha ou caracteres invisíveis",
+      "PasswordLength": "deve ter de 8 a 128 caracteres",
+      "Pattern": "tem um formato inválido",
+      "Positive": "deve ser maior que zero",
+      "PositiveOrZero": "não pode ser negativo",
+      "Size": "tem o tamanho errado"
     },
-    "csv-encoding-invalid": "The file is not UTF-8 text. Export it again as UTF-8 and try again.",
-    "csv-format-not-supported": "This looks like a card bill, which cannot be imported yet. Import the account statement.",
-    "csv-too-large": "The file is too large. Split it and import the parts.",
-    "csv-too-many-rows": "The file has too many rows. Split it and import the parts.",
-    "csv-unknown-format": "This file is not a supported bank statement. Check that you exported the account statement.",
-    "email-taken": "This e-mail is already in use.",
-    "exact-share-invalid": "Give every person in the split an amount of zero or more.",
-    "fieldInvalid": "{{field}} is invalid",
-    "forbidden": "You are not allowed to do this.",
-    "import-line-invalid": "The file has invalid lines, so nothing was imported. Fix them and try again.",
-    "insufficient-role": "Your role in this plan does not allow this.",
-    "internal": "Something went wrong on our side. Try again later.",
-    "invalid-credentials": "Invalid e-mail or password.",
-    "invitation-email-mismatch": "This invitation was sent to a different e-mail address.",
-    "invitation-email-required": "Enter the email address of the person you are inviting.",
-    "invitation-expired": "This invitation has expired.",
-    "invitation-not-found": "This invitation does not exist.",
-    "invitation-revoked": "This invitation has been revoked.",
-    "invitation-used": "This invitation has already been used.",
-    "item-category-type-mismatch": "An item's category does not match the transaction type.",
-    "item-invalid": "Every item needs a description and an amount greater than zero.",
-    "items-exceed-amount": "The items add up to more than the transaction amount.",
-    "last-owner": "The plan needs another owner first. Transfer ownership before this.",
-    "last-plan": "You cannot leave or delete your only plan.",
+    "csv-encoding-invalid": "O arquivo não é um texto UTF-8. Exporte-o novamente em UTF-8 e tente de novo.",
+    "csv-format-not-supported": "Isto parece ser uma fatura de cartão, que ainda não pode ser importada. Importe o extrato da conta.",
+    "csv-too-large": "O arquivo é grande demais. Divida-o e importe as partes.",
+    "csv-too-many-rows": "O arquivo tem linhas demais. Divida-o e importe as partes.",
+    "csv-unknown-format": "Este arquivo não é um extrato bancário compatível. Confira se você exportou o extrato da conta.",
+    "email-taken": "Este e-mail já está em uso.",
+    "exact-share-invalid": "Dê a cada pessoa da divisão um valor igual ou maior que zero.",
+    "fieldInvalid": "{{field}} é inválido",
+    "forbidden": "Você não tem permissão para fazer isto.",
+    "import-line-invalid": "O arquivo tem linhas inválidas, então nada foi importado. Corrija-as e tente novamente.",
+    "insufficient-role": "Seu papel neste plano não permite isto.",
+    "internal": "Algo deu errado do nosso lado. Tente novamente mais tarde.",
+    "invalid-credentials": "E-mail ou senha inválidos.",
+    "invitation-email-mismatch": "Este convite foi enviado para outro e-mail.",
+    "invitation-email-required": "Informe o e-mail da pessoa que você está convidando.",
+    "invitation-expired": "Este convite expirou.",
+    "invitation-not-found": "Este convite não existe.",
+    "invitation-revoked": "Este convite foi revogado.",
+    "invitation-used": "Este convite já foi usado.",
+    "item-category-type-mismatch": "A categoria de um item não corresponde ao tipo da transação.",
+    "item-invalid": "Todo item precisa de uma descrição e de um valor maior que zero.",
+    "items-exceed-amount": "Os itens somam mais que o valor da transação.",
+    "last-owner": "O plano precisa de outro dono antes. Transfira a propriedade primeiro.",
+    "last-plan": "Você não pode sair do seu único plano nem excluí-lo.",
     "line": {
-      "amount-invalid": "amount must be a number such as -12.50",
-      "amount-zero": "amount cannot be zero",
-      "blank": "has an empty description",
-      "column-count": "must have exactly 4 columns",
-      "date-invalid": "date must be a real date as dd/mm/yyyy",
-      "malformed": "has quotes that are not closed",
-      "too-long": "has a value that is too long"
+      "amount-invalid": "o valor deve ser um número, como -12.50",
+      "amount-zero": "o valor não pode ser zero",
+      "blank": "tem uma descrição vazia",
+      "column-count": "deve ter exatamente 4 colunas",
+      "date-invalid": "a data deve ser uma data real no formato dd/mm/aaaa",
+      "malformed": "tem aspas que não foram fechadas",
+      "too-long": "tem um valor longo demais"
     },
-    "lineError": "Line {{line}}: {{reason}}",
-    "malformed-request": "The request could not be sent. Reload the page and try again.",
-    "member-not-found": "This person is no longer a member of the plan.",
-    "network": "Could not reach the server. Check your connection and try again.",
-    "not-found": "This item no longer exists.",
-    "not-transaction-creator": "You can only change transactions you created.",
-    "owner-role-needs-transfer": "To make someone the owner, transfer ownership.",
-    "ownership-transfer-to-self": "You already own this plan.",
-    "participant-duplicate": "A person is listed twice in the split.",
-    "participant-not-member": "The split names someone who is not a member of the plan.",
-    "participant-shares-mismatch": "The shares must add up to the transaction amount.",
-    "participants-required": "Choose at least one person for this transaction.",
-    "period-start-after-end": "The start date must not be after the end date.",
-    "plan-not-archived": "This plan is no longer archived.",
-    "plan-not-found": "This plan no longer exists or you are no longer a member.",
-    "rate-limited": "Too many attempts. Wait a few minutes and try again.",
-    "requestId": "Request id: {{id}}",
-    "reset-token-invalid": "This password reset link is invalid or has expired. Request a new one.",
-    "series-current-parcel-out-of-range": "The current installment must be between 1 and the number of installments.",
-    "series-interval-required": "Choose how often the transaction repeats.",
-    "series-not-found": "This series no longer exists.",
-    "series-parcels-change-needs-all": "The number of installments can only change for the whole series.",
-    "series-parcels-required": "Enter the number of installments.",
-    "series-pivot-not-found": "This occurrence is no longer part of the series.",
-    "series-too-many-occurrences": "This series would create too many occurrences. Shorten it.",
-    "serverError": "Something went wrong on our side. Try again later.",
-    "session-invalid": "Your session has ended. Sign in again.",
-    "stale-version": "Someone else changed this in the meantime. Reload it and try again.",
+    "lineError": "Linha {{line}}: {{reason}}",
+    "malformed-request": "Não foi possível enviar a solicitação. Recarregue a página e tente novamente.",
+    "member-not-found": "Esta pessoa não é mais membro do plano.",
+    "network": "Não foi possível acessar o servidor. Verifique sua conexão e tente novamente.",
+    "not-found": "Este item não existe mais.",
+    "not-transaction-creator": "Você só pode alterar transações que você criou.",
+    "owner-role-needs-transfer": "Para tornar alguém dono, transfira a propriedade.",
+    "ownership-transfer-to-self": "Você já é dono deste plano.",
+    "participant-duplicate": "Uma pessoa aparece duas vezes na divisão.",
+    "participant-not-member": "A divisão cita alguém que não é membro do plano.",
+    "participant-shares-mismatch": "As partes devem somar o valor da transação.",
+    "participants-required": "Escolha pelo menos uma pessoa para esta transação.",
+    "period-start-after-end": "A data de início não pode ser depois da data de término.",
+    "plan-not-archived": "Este plano não está mais arquivado.",
+    "plan-not-found": "Este plano não existe mais ou você não é mais membro dele.",
+    "rate-limited": "Muitas tentativas. Aguarde alguns minutos e tente novamente.",
+    "requestId": "ID da solicitação: {{id}}",
+    "reset-token-invalid": "Este link de redefinição de senha é inválido ou expirou. Solicite um novo.",
+    "series-current-parcel-out-of-range": "A parcela atual deve estar entre 1 e o número de parcelas.",
+    "series-interval-required": "Escolha com que frequência a transação se repete.",
+    "series-not-found": "Esta série não existe mais.",
+    "series-parcels-change-needs-all": "O número de parcelas só pode mudar para a série inteira.",
+    "series-parcels-required": "Informe o número de parcelas.",
+    "series-pivot-not-found": "Esta ocorrência não faz mais parte da série.",
+    "series-too-many-occurrences": "Esta série criaria ocorrências demais. Reduza-a.",
+    "serverError": "Algo deu errado do nosso lado. Tente novamente mais tarde.",
+    "session-invalid": "Sua sessão terminou. Entre novamente.",
+    "stale-version": "Outra pessoa alterou isto enquanto isso. Recarregue e tente novamente.",
     "status": {
-      "400": "The request could not be sent. Reload the page and try again.",
-      "401": "Your session has ended. Sign in again.",
-      "403": "You are not allowed to do this.",
-      "404": "This item no longer exists.",
-      "409": "This conflicts with a recent change. Reload and try again.",
-      "422": "Some values are invalid. Check them and try again.",
-      "429": "Too many attempts. Wait a few minutes and try again."
+      "400": "Não foi possível enviar a solicitação. Recarregue a página e tente novamente.",
+      "401": "Sua sessão terminou. Entre novamente.",
+      "403": "Você não tem permissão para fazer isto.",
+      "404": "Este item não existe mais.",
+      "409": "Isto entra em conflito com uma alteração recente. Recarregue e tente novamente.",
+      "422": "Alguns valores são inválidos. Confira-os e tente novamente.",
+      "429": "Muitas tentativas. Aguarde alguns minutos e tente novamente."
     },
-    "transaction-category-type-mismatch": "The category does not match the transaction type.",
-    "transaction-not-found": "This transaction no longer exists.",
-    "unauthenticated": "Your session has ended. Sign in again.",
-    "unexpected": "An unexpected error occurred.",
-    "unsupported-request": "This action is not supported.",
-    "validation-failed": "Some fields are invalid."
+    "transaction-category-type-mismatch": "A categoria não corresponde ao tipo da transação.",
+    "transaction-not-found": "Esta transação não existe mais.",
+    "unauthenticated": "Sua sessão terminou. Entre novamente.",
+    "unexpected": "Ocorreu um erro inesperado.",
+    "unsupported-request": "Esta ação não é compatível.",
+    "validation-failed": "Alguns campos são inválidos."
   },
   "profile": {
     "timeZoneDialogView": {
-      "decidesWhichDayIsToday": "Decides which day is today. Automatic follows this device; pinning keeps the zone you pick.",
-      "selectAZone": "Select a zone",
-      "timeZone": "Time zone",
-      "timeZoneSource": "Time zone source"
+      "decidesWhichDayIsToday": "Define qual é o dia de hoje. O automático segue este dispositivo; fixar mantém o fuso que você escolher.",
+      "selectAZone": "Selecione um fuso",
+      "timeZone": "Fuso horário",
+      "timeZoneSource": "Origem do fuso horário"
     },
     "timeZoneForm": {
-      "automatic": "Automatic (this device)",
-      "pickATimeZone": "Pick a time zone",
-      "pinned": "Pinned"
+      "automatic": "Automático (este dispositivo)",
+      "pickATimeZone": "Escolha um fuso horário",
+      "pinned": "Fixo"
     }
   },
   "transactions": {
     "actionsCell": {
-      "duplicate": "Duplicate",
-      "edit": "Edit"
+      "duplicate": "Duplicar",
+      "edit": "Editar"
     },
     "attributionFields": {
-      "attributedTo": "Attributed to",
-      "equal": "Equal",
-      "exact": "Exact",
-      "me": "Me",
-      "participants": "Participants",
-      "person": "Person",
-      "selectAPerson": "Select a person",
-      "share": "{{name}}'s share",
-      "someoneElse": "Someone else",
-      "split": "Split",
-      "splitMode": "Split mode"
+      "attributedTo": "Atribuído a",
+      "equal": "Igual",
+      "exact": "Exato",
+      "me": "Eu",
+      "participants": "Participantes",
+      "person": "Pessoa",
+      "selectAPerson": "Selecione uma pessoa",
+      "share": "Parte de {{name}}",
+      "someoneElse": "Outra pessoa",
+      "split": "Dividir",
+      "splitMode": "Modo de divisão"
     },
     "categoryCombobox": {
-      "created": "Category \"{{name}}\" created"
+      "created": "Categoria \"{{name}}\" criada"
     },
     "categoryComboboxView": {
-      "categories": "Categories",
-      "clearCategory": "Clear category",
-      "noResults": "No results",
-      "search": "Search...",
-      "searchCategories": "Search categories",
-      "selectCategory": "Select a category..."
+      "categories": "Categorias",
+      "clearCategory": "Limpar categoria",
+      "noResults": "Nenhum resultado",
+      "search": "Buscar...",
+      "searchCategories": "Buscar categorias",
+      "selectCategory": "Selecione uma categoria..."
     },
     "categoryField": {
-      "category": "Category"
+      "category": "Categoria"
     },
     "categoryQuickCreate": {
-      "createExpense": "Create expense category \"{{name}}\"",
-      "createIncome": "Create income category \"{{name}}\""
+      "createExpense": "Criar categoria de despesa \"{{name}}\"",
+      "createIncome": "Criar categoria de receita \"{{name}}\""
     },
     "descriptionCell": {
-      "series": "Series"
+      "series": "Série"
     },
     "editableDateCell": {
-      "date": "Date"
+      "date": "Data"
     },
     "editableDescriptionCell": {
-      "description": "Description"
+      "description": "Descrição"
     },
     "editableParticipantsCell": {
-      "participants": "Participants"
+      "participants": "Participantes"
     },
     "endDateField": {
-      "endDate": "End date",
-      "leaveEmptyToKeepThis": "Leave empty to keep this series ongoing, with no end date.",
-      "ongoing": "Ongoing"
+      "endDate": "Data de término",
+      "leaveEmptyToKeepThis": "Deixe em branco para manter esta série em andamento, sem data de término.",
+      "ongoing": "Em andamento"
     },
     "form": {
-      "amountMustBePositive": "Amount must be positive",
-      "dateIsRequired": "Date is required",
-      "descriptionIsRequired": "Description is required",
-      "enterAtLeast2Installments": "Enter at least 2 installments",
-      "itemsCannotExceedTheTransaction": "Items cannot exceed the transaction total",
-      "selectInstallmentOrRecurring": "Select installment or recurring",
-      "sharesMustAddUpTo": "Shares must add up to the total amount",
-      "theCurrentInstallmentCannotBe": "The current installment cannot be greater than the total",
-      "theCurrentInstallmentMustBe": "The current installment must be at least 1",
-      "theEndDateMustBe": "The end date must be after the start date"
+      "amountMustBePositive": "O valor deve ser positivo",
+      "dateIsRequired": "A data é obrigatória",
+      "descriptionIsRequired": "A descrição é obrigatória",
+      "enterAtLeast2Installments": "Informe pelo menos 2 parcelas",
+      "itemsCannotExceedTheTransaction": "Os itens não podem passar do total da transação",
+      "selectInstallmentOrRecurring": "Selecione parcelada ou recorrente",
+      "sharesMustAddUpTo": "As partes devem somar o valor total",
+      "theCurrentInstallmentCannotBe": "A parcela atual não pode ser maior que o total",
+      "theCurrentInstallmentMustBe": "A parcela atual deve ser pelo menos 1",
+      "theEndDateMustBe": "A data de término deve ser depois da data de início"
     },
     "installmentsField": {
-      "currentInstallment": "Current installment",
-      "currently": "Currently: parcel {{parcel}} of {{total}}",
-      "eG12": "e.g., 12",
-      "lastInstallment": "Last installment: {{number}}/{{number}} — {{month}}",
-      "numberOfInstallments": "Number of installments"
+      "currentInstallment": "Parcela atual",
+      "currently": "Atualmente: parcela {{parcel}} de {{total}}",
+      "eG12": "ex.: 12",
+      "lastInstallment": "Última parcela: {{number}}/{{number}} — {{month}}",
+      "numberOfInstallments": "Número de parcelas"
     },
     "itemsField": {
-      "addItem": "Add item",
-      "itemAmountLabel": "Item {{number}} amount",
-      "itemDescription": "Item description",
-      "itemDescriptionLabel": "Item {{number}} description",
-      "items": "Items",
-      "remainder": "Remainder: {{amount}}",
-      "removeItem": "Remove item {{number}}"
+      "addItem": "Adicionar item",
+      "itemAmountLabel": "Valor do item {{number}}",
+      "itemDescription": "Descrição do item",
+      "itemDescriptionLabel": "Descrição do item {{number}}",
+      "items": "Itens",
+      "remainder": "Restante: {{amount}}",
+      "removeItem": "Remover o item {{number}}"
     },
     "parcelsChangedWarning": {
-      "changingTheNumberOfParcels": "Changing the number of parcels updates the whole series."
+      "changingTheNumberOfParcels": "Mudar o número de parcelas atualiza a série inteira."
     },
     "recurrenceFields": {
-      "installments": "Installments",
-      "mode": "Mode",
-      "recurring": "Recurring",
-      "repeatOrSplitIntoInstallments": "Repeat or split into installments?"
+      "installments": "Parcelada",
+      "mode": "Modo",
+      "recurring": "Recorrente",
+      "repeatOrSplitIntoInstallments": "Repetir ou dividir em parcelas?"
     },
     "seriesScopeDialog": {
-      "all": "All",
-      "allHelp": "Every occurrence in the series will be changed, including past ones.",
-      "chooseScope": "Choose what to apply this change to.",
-      "continue": "Continue",
-      "editSeries": "Edit series",
-      "thisAndFollowing": "This and following",
-      "thisAndFollowingHelp": "This and all future occurrences will be changed. Past occurrences stay the same.",
-      "thisOne": "This one",
-      "thisOneHelp": "Only this occurrence will be changed."
+      "all": "Todas",
+      "allHelp": "Todas as ocorrências da série serão alteradas, inclusive as passadas.",
+      "chooseScope": "Escolha a que aplicar esta alteração.",
+      "continue": "Continuar",
+      "editSeries": "Editar série",
+      "thisAndFollowing": "Esta e as seguintes",
+      "thisAndFollowingHelp": "Esta e todas as ocorrências futuras serão alteradas. As ocorrências passadas ficam como estão.",
+      "thisOne": "Só esta",
+      "thisOneHelp": "Somente esta ocorrência será alterada."
     },
     "transactionCells": {
-      "people_one": "{{count}} person",
-      "people_other": "{{count}} people"
+      "people_one": "{{count}} pessoa",
+      "people_other": "{{count}} pessoas"
     },
     "transactionColumns": {
-      "actions": "Actions",
-      "amount": "Amount",
-      "attributedTo": "Attributed to",
-      "category": "Category",
-      "date": "Date",
-      "description": "Description"
+      "actions": "Ações",
+      "amount": "Valor",
+      "attributedTo": "Atribuído a",
+      "category": "Categoria",
+      "date": "Data",
+      "description": "Descrição"
     },
     "transactionFilterPopoverView": {
-      "all": "All",
-      "allCategories": "All categories",
-      "allMembers": "All members",
-      "apply": "Apply",
-      "attributedTo": "Attributed to",
-      "category": "Category",
-      "credit": "Credit",
-      "debit": "Debit",
-      "filters": "Filters",
-      "maximumAmount": "Maximum amount",
-      "minimumAmount": "Minimum amount",
-      "reset": "Reset",
-      "typeAll": "All",
-      "typeCredit": "Credit",
-      "typeDebit": "Debit"
+      "all": "Todos",
+      "allCategories": "Todas as categorias",
+      "allMembers": "Todos os membros",
+      "apply": "Aplicar",
+      "attributedTo": "Atribuído a",
+      "category": "Categoria",
+      "credit": "Crédito",
+      "debit": "Débito",
+      "filters": "Filtros",
+      "maximumAmount": "Valor máximo",
+      "minimumAmount": "Valor mínimo",
+      "reset": "Redefinir"
     },
     "transactionFormDrawer": {
-      "date": "Date",
-      "description": "Description",
-      "duplicate": "Duplicate",
-      "duplicateTransaction": "Duplicate Transaction",
-      "eGRentSalaryGroceries": "e.g., Rent, Salary, Groceries",
-      "editSeries": "Edit series",
-      "editTransaction": "Edit Transaction",
-      "loading": "Loading…",
-      "newTransaction": "New Transaction"
+      "date": "Data",
+      "description": "Descrição",
+      "duplicate": "Duplicar",
+      "duplicateTransaction": "Duplicar transação",
+      "eGRentSalaryGroceries": "ex.: Aluguel, Salário, Mercado",
+      "editSeries": "Editar série",
+      "editTransaction": "Editar transação",
+      "loading": "Carregando…",
+      "newTransaction": "Nova transação"
     },
     "transactionMobileList": {
-      "noTransactionsFound": "No transactions found."
+      "noTransactionsFound": "Nenhuma transação encontrada."
     },
     "transactionsPageView": {
-      "clearAll": "Clear all",
-      "importCsv": "Import CSV",
-      "importing": "Importing...",
-      "removeFilter": "Remove {{name}}",
-      "searchTransactions": "Search transactions...",
-      "searchTransactions2": "Search transactions"
+      "clearAll": "Limpar tudo",
+      "importCsv": "Importar CSV",
+      "importing": "Importando...",
+      "removeFilter": "Remover {{name}}",
+      "searchTransactions": "Buscar transações...",
+      "searchTransactions2": "Buscar transações"
     },
     "useTransactionActions": {
-      "chooseOccurrences": "Choose which occurrences to delete.",
-      "confirmDeletion": "Confirm Deletion",
-      "deleteDescription": "Are you sure you want to delete this transaction? This action cannot be undone.",
-      "deleteSeries": "Delete series"
+      "chooseOccurrences": "Escolha quais ocorrências excluir.",
+      "confirmDeletion": "Confirmar exclusão",
+      "deleteDescription": "Tem certeza de que quer excluir esta transação? Esta ação não pode ser desfeita.",
+      "deleteSeries": "Excluir série"
     }
   }
 }

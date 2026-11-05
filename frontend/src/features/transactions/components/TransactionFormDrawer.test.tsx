@@ -11,6 +11,7 @@ import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
+import { i18n } from "@/i18n/i18n";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { stubScreenWidth } from "@/test/screenWidth";
@@ -638,5 +639,24 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
     await waitFor(() => expect(screen.queryByRole("radio", { name: /^This one/ })).toBeNull());
     expect(writes(requests)).toEqual([]);
     expect(onOpenChange).not.toHaveBeenCalledWith(false);
+  });
+});
+
+describe("TransactionFormDrawer language", () => {
+  afterEach(cleanup);
+
+  it("shows user data as typed in Portuguese", async () => {
+    await i18n.changeLanguage("pt-BR");
+    const groceries: Category = { id: 3, version: 0, type: "DEBIT", description: "Groceries" };
+    renderDrawer({
+      mode: "edit",
+      transaction: { ...savedTransaction, description: "Monthly rent", category: groceries },
+      members: [lucas],
+      categories: [groceries],
+    });
+
+    expect(screen.getByText("Editar transação")).toBeDefined();
+    expect(screen.getByLabelText<HTMLInputElement>("Descrição").value).toBe("Monthly rent");
+    expect(screen.getByLabelText("Categoria").textContent).toContain("Groceries");
   });
 });
