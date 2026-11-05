@@ -9,9 +9,9 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/i18n/design.md`
-**Status**: Draft
-**Approved**: pending
-**Build**: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts; cd frontend && node scripts/translationParity.ts
+**Status**: Approved
+**Approved**: 2026-11-05 - user: "Pode seguir"
+**Build**: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 **Run unit**: cd frontend && pnpm exec vitest run --project=unit --project=tooling --reporter=verbose src/i18n src/utils/dates.test.ts src/utils/money.test.ts src/features/transactions/utils src/features/profile src/app/providers/AuthProvider.test.tsx src/features/auth src/features/transactions/components/TransactionFormDrawer.test.tsx scripts/translationParity.test.ts eslint.config.test.ts
 
 ---
@@ -180,7 +180,7 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] C1, C4 pass; `node scripts/translationParity.ts` exits 0
+- [ ] C1, C4, C8 pass
 
 **Tests**: unit
 **Gate**: quick
@@ -316,5 +316,5 @@ Proof: run unit | ✓ reads CSV dates as dd/mm/yyyy in both languages
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** batch A (T1–T4, Sonnet) at HEAD after the approval commit
 **Walked:** not yet
