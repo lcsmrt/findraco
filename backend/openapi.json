@@ -708,6 +708,15 @@
       },
       "PersonBreakdownResponse" : {
         "properties" : {
+          "actualExpense" : {
+            "type" : "number"
+          },
+          "actualIncome" : {
+            "type" : "number"
+          },
+          "actualNet" : {
+            "type" : "number"
+          },
           "expense" : {
             "type" : "number"
           },
@@ -725,7 +734,7 @@
             "type" : "integer"
           }
         },
-        "required" : [ "expense", "income", "name", "net", "userId" ],
+        "required" : [ "actualExpense", "actualIncome", "actualNet", "expense", "income", "name", "net", "userId" ],
         "type" : "object"
       },
       "PlanMemberResponse" : {

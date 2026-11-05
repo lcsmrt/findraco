@@ -368,7 +368,6 @@
     "summaryCards": {
       "actualAndForecast": "Realizado · Previsto {{amount}}",
       "expenses": "Despesas",
-      "forecastOnly": "Previsto",
       "income": "Receitas"
     }
   },

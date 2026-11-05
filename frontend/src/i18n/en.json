@@ -368,7 +368,6 @@
     "summaryCards": {
       "actualAndForecast": "Actual · Forecast {{amount}}",
       "expenses": "Expenses",
-      "forecastOnly": "Forecast",
       "income": "Income"
     }
   },

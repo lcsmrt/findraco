@@ -71,7 +71,7 @@ public class DashboardService {
         BigDecimal actualExpenses = reportRepository.sumActualByPlanAndTypeAndDateRange(
                 plan, TransactionType.DEBIT, startDate, endDate, memberId, today);
 
-        List<PersonBreakdownResponse> personBreakdown = buildPersonBreakdown(plan, startDate, endDate, memberId);
+        List<PersonBreakdownResponse> personBreakdown = buildPersonBreakdown(plan, startDate, endDate, memberId, today);
 
         return new DashboardSummaryResponse(
                 totalIncome,
@@ -123,32 +123,33 @@ public class DashboardService {
     }
 
     private List<PersonBreakdownResponse> buildPersonBreakdown(
-            Plan plan, LocalDate startDate, LocalDate endDate, Long memberId) {
-        List<Object[]> rows = reportRepository.findPersonBreakdown(plan, startDate, endDate, memberId);
+            Plan plan, LocalDate startDate, LocalDate endDate, Long memberId, LocalDate today) {
+        List<Object[]> rows = reportRepository.findPersonBreakdown(plan, startDate, endDate, memberId, today);
 
         Map<Long, String> namesByUserId = new LinkedHashMap<>();
+        // Per member: income, expense, actual income, actual expense.
         Map<Long, BigDecimal[]> amountsByUserId = new LinkedHashMap<>();
         for (Object[] row : rows) {
             Long userId = ((Number) row[0]).longValue();
             String name = (String) row[1];
             TransactionType type = (TransactionType) row[2];
             BigDecimal amount = (BigDecimal) row[3];
+            BigDecimal actual = (BigDecimal) row[4];
 
             namesByUserId.putIfAbsent(userId, name);
-            BigDecimal[] incomeAndExpense =
-                    amountsByUserId.computeIfAbsent(userId, k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO});
-            if (type == TransactionType.CREDIT) {
-                incomeAndExpense[0] = amount;
-            } else {
-                incomeAndExpense[1] = amount;
-            }
+            BigDecimal[] amounts = amountsByUserId.computeIfAbsent(
+                    userId, k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO});
+            int offset = type == TransactionType.CREDIT ? 0 : 1;
+            amounts[offset] = amount;
+            amounts[offset + 2] = actual;
         }
 
         List<PersonBreakdownResponse> breakdown = new ArrayList<>();
         for (Map.Entry<Long, BigDecimal[]> entry : amountsByUserId.entrySet()) {
             Long userId = entry.getKey();
+            BigDecimal[] amounts = entry.getValue();
             breakdown.add(PersonBreakdownResponse.of(
-                    userId, namesByUserId.get(userId), entry.getValue()[0], entry.getValue()[1]));
+                    userId, namesByUserId.get(userId), amounts[0], amounts[1], amounts[2], amounts[3]));
         }
         return breakdown;
     }

@@ -12,13 +12,10 @@ export type SummarySegment = {
 };
 
 export type SummaryFigure = {
-  /** The plan's total, or the selected member's amount. */
+  /** The plan's total, or the selected member's amount; it counts the forecast too. */
   total: number;
-  /**
-   * The actual counterpart of `total`; `null` for a selected member, whose actual figures the
-   * dashboard does not break down.
-   */
-  actual: number | null;
+  /** The actual counterpart of `total`. */
+  actual: number;
   segments: SummarySegment[];
 };
 
@@ -26,8 +23,7 @@ export type SummaryView = {
   income: SummaryFigure;
   expenses: SummaryFigure;
   balance: number;
-  /** `null` for a selected member, as in the figures. */
-  balanceActual: number | null;
+  balanceActual: number;
 };
 
 /**
@@ -48,10 +44,11 @@ export function summaryView(
     planTotal: number,
     planActual: number,
     amountOf: (person: (typeof people)[number]) => number,
+    actualOf: (person: (typeof people)[number]) => number,
   ): SummaryFigure {
     return {
       total: memberId != null ? (selected ? amountOf(selected) : 0) : planTotal,
-      actual: memberId != null ? null : planActual,
+      actual: memberId != null ? (selected ? actualOf(selected) : 0) : planActual,
       segments: people
         .filter((person) => amountOf(person) > 0)
         .map((person) => ({
@@ -66,9 +63,19 @@ export function summaryView(
   }
 
   return {
-    income: figure(data.totalIncome, data.actualIncome, (person) => person.income),
-    expenses: figure(data.totalExpenses, data.actualExpenses, (person) => person.expense),
+    income: figure(
+      data.totalIncome,
+      data.actualIncome,
+      (person) => person.income,
+      (person) => person.actualIncome,
+    ),
+    expenses: figure(
+      data.totalExpenses,
+      data.actualExpenses,
+      (person) => person.expense,
+      (person) => person.actualExpense,
+    ),
     balance: memberId != null ? (selected?.net ?? 0) : data.netBalance,
-    balanceActual: memberId != null ? null : data.actualBalance,
+    balanceActual: memberId != null ? (selected?.actualNet ?? 0) : data.actualBalance,
   };
 }

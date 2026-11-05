@@ -61,20 +61,16 @@ function MemberAmounts({ figure, className }: MemberAmountsProps) {
 }
 
 type StatusCaptionProps = {
-  /** The actual figure; `null` when only the forecast is known. */
-  actual: number | null;
   forecast: number;
 };
 
-/** Says what the headline figure is: the actual one, beside the forecast, or the forecast alone. */
-function StatusCaption({ actual, forecast }: StatusCaptionProps) {
+/** Says what the headline figure is: the actual one, beside the forecast. */
+function StatusCaption({ forecast }: StatusCaptionProps) {
   const { t } = useTranslation();
 
   return (
     <Text as="p" variant="caption" className="tabular-nums">
-      {actual === null
-        ? t("overview.summaryCards.forecastOnly")
-        : t("overview.summaryCards.actualAndForecast", { amount: formatMoney(forecast) })}
+      {t("overview.summaryCards.actualAndForecast", { amount: formatMoney(forecast) })}
     </Text>
   );
 }
@@ -97,9 +93,9 @@ function FigureBlock({ label, figure, tone, size }: FigureBlockProps) {
         variant={size === "lg" ? "headline" : "title"}
         className={cn("tabular-nums", tone === "income" ? "text-success" : "text-destructive")}
       >
-        {formatMoney(figure.actual ?? figure.total)}
+        {formatMoney(figure.actual)}
       </Text>
-      <StatusCaption actual={figure.actual} forecast={figure.total} />
+      <StatusCaption forecast={figure.total} />
       <MemberBar figure={figure} />
       <MemberAmounts
         figure={figure}
@@ -111,13 +107,12 @@ function FigureBlock({ label, figure, tone, size }: FigureBlockProps) {
 
 type BalanceProps = {
   balance: number;
-  actual: number | null;
+  actual: number;
 };
 
 function Balance({ balance, actual }: BalanceProps) {
   const { t } = useTranslation();
 
-  const shown = actual ?? balance;
   return (
     <div className="flex flex-col gap-2">
       <Text as="p" variant="secondary">
@@ -126,11 +121,11 @@ function Balance({ balance, actual }: BalanceProps) {
       <Text
         as="p"
         variant="headline"
-        className={cn("tabular-nums", shown >= 0 ? "text-success" : "text-destructive")}
+        className={cn("tabular-nums", actual >= 0 ? "text-success" : "text-destructive")}
       >
-        {formatMoney(shown)}
+        {formatMoney(actual)}
       </Text>
-      <StatusCaption actual={actual} forecast={balance} />
+      <StatusCaption forecast={balance} />
     </div>
   );
 }

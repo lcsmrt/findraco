@@ -14,7 +14,13 @@ function colorOf(memberId: number) {
   return MEMBER_PALETTE[(memberId - 1) % MEMBER_PALETTE.length];
 }
 
-function summary(people: DashboardSummaryResponse["personBreakdown"]): DashboardSummaryResponse {
+type Person = Omit<
+  DashboardSummaryResponse["personBreakdown"][number],
+  "actualIncome" | "actualExpense" | "actualNet"
+>;
+
+/** A summary whose actual figures equal the totals: nothing is ahead. */
+function summary(people: Person[]): DashboardSummaryResponse {
   const totalIncome = people.reduce((sum, person) => sum + person.income, 0);
   const totalExpenses = people.reduce((sum, person) => sum + person.expense, 0);
   return {
@@ -24,7 +30,12 @@ function summary(people: DashboardSummaryResponse["personBreakdown"]): Dashboard
     actualIncome: totalIncome,
     actualExpenses: totalExpenses,
     actualBalance: totalIncome - totalExpenses,
-    personBreakdown: people,
+    personBreakdown: people.map((person) => ({
+      ...person,
+      actualIncome: person.income,
+      actualExpense: person.expense,
+      actualNet: person.net,
+    })),
   };
 }
 
@@ -76,12 +87,23 @@ export const PlanTotals: Story = {
   },
 };
 
-// With a member selected, the figures are theirs and the others' segments recede.
+// With a member selected, the figures are theirs, actual and forecast, and the others' segments recede.
+// Livia has R$ 414,10 of her R$ 2.414,10 expenses still ahead.
+const liviaAhead: DashboardSummaryResponse = {
+  ...couple,
+  personBreakdown: couple.personBreakdown.map((person) =>
+    person.userId === 2 ? { ...person, actualExpense: 2000, actualNet: 2800 } : person,
+  ),
+};
+
 export const MemberSelected: Story = {
-  tags: ["!test"],
-  args: { view: summaryView(couple, 2, colorOf) },
+  args: { view: summaryView(liviaAhead, 2, colorOf) },
   play: async ({ canvas }) => {
     await expect(visibleText(canvas, "R$ 4.800,00")).toHaveClass("text-success");
+    await expect(visibleText(canvas, "R$ 2.000,00")).toBeVisible();
+    await expect(visibleText(canvas, "Actual · Forecast R$ 2.414,10")).toBeVisible();
+    await expect(visibleText(canvas, "R$ 2.800,00")).toBeVisible();
+    await expect(visibleText(canvas, "Actual · Forecast R$ 2.385,90")).toBeVisible();
   },
 };
 

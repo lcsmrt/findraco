@@ -94,6 +94,25 @@ class DashboardActualIT extends AbstractIntegrationTest {
         assertThat(summary.get("actualExpenses").decimalValue()).isEqualByComparingTo("0");
     }
 
+    @Test
+    void personBreakdownSplitsActualFromForecast() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        aTransaction(plan, owner, TransactionType.CREDIT, "5000.00", today().minusDays(4));
+        aTransaction(plan, owner, TransactionType.DEBIT, "300.00", today().minusDays(2));
+        aTransaction(plan, owner, TransactionType.DEBIT, "2000.00", today().plusDays(15));
+        aPendingOccurrence(plan, owner, "200.00", today().minusDays(10));
+
+        JsonNode person = summary(plan, owner).get("personBreakdown").get(0);
+
+        assertThat(person.get("income").decimalValue()).isEqualByComparingTo("5000.00");
+        assertThat(person.get("expense").decimalValue()).isEqualByComparingTo("2500.00");
+        assertThat(person.get("net").decimalValue()).isEqualByComparingTo("2500.00");
+        assertThat(person.get("actualIncome").decimalValue()).isEqualByComparingTo("5000.00");
+        assertThat(person.get("actualExpense").decimalValue()).isEqualByComparingTo("300.00");
+        assertThat(person.get("actualNet").decimalValue()).isEqualByComparingTo("4700.00");
+    }
+
     private void aTransaction(Plan plan, User owner, TransactionType type, String amount, LocalDate date) {
         fixtures.aTransaction(new TransactionDraft(
                 plan,
