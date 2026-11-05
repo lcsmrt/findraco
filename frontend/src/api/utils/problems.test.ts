@@ -1,5 +1,6 @@
 import { AxiosError, AxiosHeaders } from "axios";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
+import { i18n } from "@/i18n/i18n";
 import { problemError } from "@/test/problems";
 import { problemFieldErrors, problemLineErrors, problemMessage, problemToast, problemType } from "./problems";
 
@@ -60,6 +61,25 @@ describe("problemMessage", () => {
       "Could not reach the server. Check your connection and try again.",
     );
     expect(problemMessage(new Error("Boom"))).toBe("An unexpected error occurred.");
+  });
+});
+
+describe("problemFieldErrors in Portuguese", () => {
+  afterEach(() => i18n.changeLanguage("en"));
+
+  it("names the field in Portuguese instead of the API's English name", async () => {
+    await i18n.changeLanguage("pt-BR");
+    const error = problemError(422, "validation-failed", {
+      errors: [
+        { field: "description", code: "NotBlank", message: "Description cannot be blank." },
+        { field: "weirdField", code: "Positive", message: "must be greater than 0" },
+      ],
+    });
+
+    expect(problemFieldErrors(error).map((fieldError) => fieldError.message)).toEqual([
+      "descrição: campo obrigatório",
+      "weirdField: deve ser maior que zero",
+    ]);
   });
 });
 

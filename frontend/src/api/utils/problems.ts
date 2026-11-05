@@ -168,13 +168,20 @@ export function problemMessage(error: unknown, fallback?: string): string {
   return i18n.t(STATUS_COPY[status] ?? SERVER_ERROR_COPY);
 }
 
+/** The field's name in the language in use; a name this client has no copy for shows as the API wrote it. */
+function fieldName(field: string): string {
+  const key = `problems.fieldName.${field}`;
+  // The key is built from the API's field name, so it is checked at run time, not by the type.
+  return i18n.exists(key) ? i18n.t(key as ParseKeys) : field;
+}
+
 /** The field errors of a 422 `validation-failed`, each as "field is required". */
 export function problemFieldErrors(error: unknown): { field: string | null; message: string }[] {
   const errors = (readProblem(error)?.errors ?? []).filter(isFieldProblem);
   return errors.map(({ field, code, message }) => {
     const constraintKey = CONSTRAINT_COPY[code];
     const constraint = constraintKey ? i18n.t(constraintKey) : message;
-    return { field, message: field ? `${field} ${constraint}` : constraint };
+    return { field, message: field ? i18n.t("problems.fieldError", { field: fieldName(field), constraint }) : constraint };
   });
 }
 
@@ -183,7 +190,7 @@ export function problemLineErrors(error: unknown): string[] {
   const lines = (readProblem(error)?.errors ?? []).filter(isLineProblem);
   const shown = lines.slice(0, LINES_SHOWN).map(({ line, field, code }) => {
     const lineKey = LINE_COPY[code];
-    const reason = lineKey ? i18n.t(lineKey) : i18n.t("problems.fieldInvalid", { field });
+    const reason = lineKey ? i18n.t(lineKey) : i18n.t("problems.fieldInvalid", { field: fieldName(field) });
     return i18n.t("problems.lineError", { line, reason });
   });
   return lines.length > LINES_SHOWN
