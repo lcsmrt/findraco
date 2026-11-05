@@ -687,6 +687,13 @@
       "createExpense": "Criar categoria de despesa \"{{name}}\"",
       "createIncome": "Criar categoria de receita \"{{name}}\""
     },
+    "confirmationFields": {
+      "actual": "Realizado",
+      "forecast": "Previsto",
+      "requiresConfirmation": "Exige confirmação",
+      "staysForecastUntilConfirmed": "Fica previsto até um membro confirmar com o valor real.",
+      "status": "Situação"
+    },
     "confirmTransactionDialog": {
       "enterWhatWasReallyCharged": "Informe o valor realmente cobrado de {{description}} e quando foi pago."
     },

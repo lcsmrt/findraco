@@ -22,6 +22,8 @@ const validValues: TransactionFormOutput = {
   date: new Date(2026, 6, 1),
   recurring: false,
   seriesEdit: false,
+  requiresConfirmation: true,
+  confirmed: false,
   attributionMode: "ME",
   splitMode: "EQUAL",
   participants: [],
@@ -721,5 +723,22 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       { memberId: 1, shareAmount: 200 },
       { memberId: 2, shareAmount: 100 },
     ]);
+  });
+});
+
+describe("buildDefaultValues — confirmation", () => {
+  it("starts a new series requiring confirmation and not confirmed", () => {
+    const defaults = buildDefaultValues(undefined, 7, undefined);
+
+    expect(defaults.requiresConfirmation).toBe(true);
+    expect(defaults.confirmed).toBe(false);
+  });
+
+  it("presets Status to the occurrence's state: actual is Actual, forecast and pending are Forecast", () => {
+    const required = { ...baseTransaction, requiresConfirmation: true };
+
+    expect(buildDefaultValues({ ...required, status: "ACTUAL" }, 7).confirmed).toBe(true);
+    expect(buildDefaultValues({ ...required, status: "FORECAST" }, 7).confirmed).toBe(false);
+    expect(buildDefaultValues({ ...required, status: "PENDING" }, 7).confirmed).toBe(false);
   });
 });

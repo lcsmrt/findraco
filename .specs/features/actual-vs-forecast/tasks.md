@@ -231,7 +231,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] C38, C39, C40, C41 pass
+- [x] C38, C39, C40, C41 pass
 
 **Tests**: unit
 **Gate**: quick

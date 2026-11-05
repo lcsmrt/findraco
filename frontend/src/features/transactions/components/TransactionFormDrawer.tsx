@@ -28,6 +28,7 @@ import {
   type UseFormSetValue,
 } from "react-hook-form";
 import { AttributionFields } from "./AttributionFields";
+import { RequiresConfirmationField, StatusField } from "./ConfirmationFields";
 import { CategoryCombobox } from "./CategoryCombobox";
 import { EndDateField } from "./EndDateField";
 import { InstallmentsField } from "./InstallmentsField";
@@ -276,6 +277,14 @@ export function TransactionFormDrawer({
           <EndDateField control={control} disabled={isPending} />
         )}
 
+        {isSeriesEdit && definition && (
+          <RequiresConfirmationField control={control} disabled={isPending} />
+        )}
+
+        {mode === "edit" && transaction?.requiresConfirmation && (
+          <StatusField control={control} disabled={isPending} />
+        )}
+
         {mode === "create" && (
           <RecurrenceFields control={control} setValue={setValue} disabled={isPending} />
         )}
@@ -419,6 +428,8 @@ function RecurrenceFields({ control, setValue, disabled }: SectionProps) {
           )}
         />
       )}
+
+      {recurring && <RequiresConfirmationField control={control} disabled={disabled} />}
 
       {recurring && recurrenceMode === "INSTALLMENT" && (
         <InstallmentsField mode="create" control={control} disabled={disabled} />

@@ -687,6 +687,13 @@
       "createExpense": "Create expense category \"{{name}}\"",
       "createIncome": "Create income category \"{{name}}\""
     },
+    "confirmationFields": {
+      "actual": "Actual",
+      "forecast": "Forecast",
+      "requiresConfirmation": "Requires confirmation",
+      "staysForecastUntilConfirmed": "Stays forecast until a member confirms it with the real amount.",
+      "status": "Status"
+    },
     "confirmTransactionDialog": {
       "enterWhatWasReallyCharged": "Enter what was really charged for {{description}} and when it was paid."
     },
