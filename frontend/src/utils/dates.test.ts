@@ -37,6 +37,12 @@ describe("formatDate", () => {
     expect(formatDate(NOVEMBER_4)).toBe("11/04/2026");
   });
 
+  it("writes 04/11/2026 in English on a British device", () => {
+    stubDeviceLanguage("en-GB");
+
+    expect(formatDate(NOVEMBER_4)).toBe("04/11/2026");
+  });
+
   it("reads a stored date by its calendar day, ignoring the time and the time zone", () => {
     expect(formatDate("2026-10-31T23:30:00.000Z")).toBe("31/10/2026");
   });

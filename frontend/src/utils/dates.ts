@@ -23,9 +23,10 @@ function layoutLocale(): Intl.Locale {
   const language = new Intl.Locale(i18n.language);
   if (language.region !== undefined) return language;
   const region = new Intl.Locale(navigator.language).maximize().region;
-  return region === undefined
-    ? language
-    : new Intl.Locale(`und-${region}`).maximize();
+  if (region === undefined) return language;
+  // Without the script: ICU resolves en-Latn-GB to plain `en` and loses the British layout.
+  const regional = new Intl.Locale(`und-${region}`).maximize();
+  return new Intl.Locale(`${regional.language}-${region}`);
 }
 
 // A stored date is a calendar day: reading it in the viewer's time zone would move it a day.
