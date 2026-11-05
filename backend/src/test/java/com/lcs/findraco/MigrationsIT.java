@@ -502,6 +502,19 @@ class MigrationsIT extends AbstractIntegrationTest {
         });
     }
 
+    @Test
+    void v24SlotsExistingOccurrencesOnTheirDate() {
+        String oneOff = "INSERT INTO transactions (id, plan_id, created_by, amount, description, type, start_date, "
+                + "split_mode) VALUES (3, 1, 1, 50.00, 'Dentist', 'DEBIT', '2026-02-03', 'EQUAL');";
+        migrateScratchDatabase(
+                "22",
+                V22_SEED + oneOff,
+                scratch -> assertThat(scratch.queryForList(
+                                "SELECT coalesce(scheduled_date::text, 'none') FROM transactions ORDER BY id",
+                                String.class))
+                        .containsExactly("2026-01-20", "2999-01-20", "none"));
+    }
+
     /**
      * Builds a scratch database up to V12, applies {@code tamper}, then runs the rest of the chain.
      * The scratch database lives in the same container and is dropped afterwards.

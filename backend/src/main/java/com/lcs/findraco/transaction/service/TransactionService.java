@@ -219,8 +219,8 @@ public class TransactionService {
     }
 
     /**
-     * Records what an occurrence really cost and when. A date that moves leaves its old date as an exception,
-     * so a later series edit does not refill it.
+     * Records what an occurrence really cost and when. A moved date keeps the occurrence's series slot, so a
+     * later series edit neither refills the old date nor loses the occurrence.
      */
     @Transactional
     public TransactionResponse confirm(Long id, ConfirmTransactionRequest dto, PlanContext ctx) {
@@ -228,12 +228,7 @@ public class TransactionService {
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
         claimVersion(transaction, transaction.getVersion(), dto.version());
 
-        LocalDate previousDate = transaction.getStartDate();
         transaction.confirm(dto.amount(), dto.startDate());
-        RecurrenceDefinition definition = transaction.getRecurrenceDefinition();
-        if (definition != null && !previousDate.equals(dto.startDate())) {
-            definition.except(previousDate);
-        }
 
         return response(transactionRepository.saveAndFlush(transaction), ctx);
     }
@@ -383,7 +378,7 @@ public class TransactionService {
         }
 
         if (scope == SeriesEditScope.THIS_ONE && definition != null) {
-            definition.except(pivot.getStartDate());
+            definition.except(pivot.getScheduledDate());
         }
         transactionRepository.deleteAll(inScope);
 
@@ -468,9 +463,9 @@ public class TransactionService {
         switch (dto.scope()) {
             case THIS_ONE -> inScope = List.of(pivot);
             case THIS_AND_FOLLOWING -> {
-                LocalDate pivotStartDate = pivot.getStartDate();
+                LocalDate pivotSlot = pivot.getScheduledDate();
                 inScope = occurrences.stream()
-                        .filter(occurrence -> !occurrence.getStartDate().isBefore(pivotStartDate))
+                        .filter(occurrence -> !occurrence.getScheduledDate().isBefore(pivotSlot))
                         .toList();
             }
             case ALL -> inScope = occurrences;
@@ -518,10 +513,10 @@ public class TransactionService {
                 split.mode(),
                 split.shares()));
 
-        LocalDate pivotDate = dto.scope() == SeriesEditScope.ALL ? null : pivot.getStartDate();
+        LocalDate pivotSlot = dto.scope() == SeriesEditScope.ALL ? null : pivot.getScheduledDate();
 
         SeriesRegenerator.SeriesEditResult result =
-                seriesRegenerator.reconcile(definition, occurrences, split.shares(), dto.scope(), pivotDate);
+                seriesRegenerator.reconcile(definition, occurrences, split.shares(), dto.scope(), pivotSlot);
 
         transactionRepository.saveAll(result.toUpdate());
         transactionRepository.saveAll(result.toCreate());
@@ -539,7 +534,7 @@ public class TransactionService {
             LocalDate generatedThrough = definition.getEndDate() != null
                     ? definition.getEndDate()
                     : combined.stream()
-                            .map(Transaction::getStartDate)
+                            .map(Transaction::getScheduledDate)
                             .max(LocalDate::compareTo)
                             .orElse(definition.getGeneratedThrough());
             definition.markGeneratedThrough(generatedThrough);

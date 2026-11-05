@@ -59,6 +59,10 @@ public class Transaction {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    /** The series slot this occurrence fills; it stays when a confirmation moves the date. Null on a one-off. */
+    @Column(updatable = false)
+    private LocalDate scheduledDate;
+
     @Enumerated(EnumType.STRING)
     private Confirmation confirmation = Confirmation.BY_DATE;
 
@@ -88,6 +92,7 @@ public class Transaction {
             transaction.seriesId = draft.series().getSeriesId();
             transaction.confirmation =
                     draft.series().isRequiresConfirmation() ? Confirmation.REQUIRED : Confirmation.BY_DATE;
+            transaction.scheduledDate = draft.details().startDate();
         }
         transaction.edit(draft.details(), draft.splitMode(), draft.participants(), draft.items());
         return transaction;
@@ -318,6 +323,10 @@ public class Transaction {
 
     public LocalDate getStartDate() {
         return startDate;
+    }
+
+    public LocalDate getScheduledDate() {
+        return scheduledDate;
     }
 
     public Confirmation getConfirmation() {

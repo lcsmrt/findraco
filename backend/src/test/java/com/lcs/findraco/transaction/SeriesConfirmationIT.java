@@ -136,6 +136,63 @@ class SeriesConfirmationIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void followingEditFromMovedConfirmedPivotKeepsIt() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode created = createSeries(plan, owner, recurringBody());
+        String seriesId = created.get("seriesId").asString();
+        JsonNode third = created.get("occurrences").get(2);
+        long thirdId = third.get("id").asLong();
+        LocalDate paidOn = LocalDate.parse(third.get("startDate").asString()).plusDays(2);
+        confirm(plan, owner, thirdId, "187.40", paidOn);
+
+        editSeries(plan, owner, seriesId, "THIS_AND_FOLLOWING", thirdId, "250.00", true);
+
+        assertThat(row(thirdId)).isEqualTo("250.00 " + paidOn + " CONFIRMED");
+        assertThat(amounts()).containsExactly("200.00", "200.00", "250.00", "250.00", "250.00");
+        assertThat(dates()).hasSize(5).contains(paidOn);
+    }
+
+    @Test
+    void undoneMovedConfirmationSurvivesAllEdit() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode created = createSeries(plan, owner, recurringBody());
+        String seriesId = created.get("seriesId").asString();
+        JsonNode third = created.get("occurrences").get(2);
+        long thirdId = third.get("id").asLong();
+        LocalDate slot = LocalDate.parse(third.get("startDate").asString());
+        List<LocalDate> datesBefore = dates();
+        confirm(plan, owner, thirdId, "187.40", slot.plusDays(2));
+        editOne(plan, owner, seriesId, thirdId, "187.40", false);
+
+        editSeries(plan, owner, seriesId, "ALL", null, "250.00", true);
+
+        assertThat(row(thirdId)).isEqualTo("250.00 " + slot + " REQUIRED");
+        assertThat(dates()).isEqualTo(datesBefore);
+        assertThat(amounts()).containsExactly("250.00", "250.00", "250.00", "250.00", "250.00");
+    }
+
+    @Test
+    void confirmOntoSiblingDateKeepsTheSibling() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode created = createSeries(plan, owner, recurringBody());
+        String seriesId = created.get("seriesId").asString();
+        long thirdId = created.get("occurrences").get(2).get("id").asLong();
+        JsonNode fourth = created.get("occurrences").get(3);
+        long fourthId = fourth.get("id").asLong();
+        LocalDate siblingDate = LocalDate.parse(fourth.get("startDate").asString());
+        confirm(plan, owner, thirdId, "187.40", siblingDate);
+
+        editSeries(plan, owner, seriesId, "ALL", null, "250.00", true);
+
+        assertThat(row(thirdId)).isEqualTo("187.40 " + siblingDate + " CONFIRMED");
+        assertThat(row(fourthId)).isEqualTo("250.00 " + siblingDate + " REQUIRED");
+        assertThat(dates()).hasSize(5);
+    }
+
+    @Test
     void topUpStampsTheFlag() {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
@@ -160,6 +217,25 @@ class SeriesConfirmationIT extends AbstractIntegrationTest {
         topUpService.topUp(plan.getId(), topUpDay);
 
         assertThat(confirmations()).isNotEmpty().containsOnly("REQUIRED");
+    }
+
+    private String row(long id) {
+        return jdbc.queryForObject(
+                "SELECT amount::text || ' ' || start_date || ' ' || confirmation FROM transactions WHERE id = ?",
+                String.class,
+                id);
+    }
+
+    private void confirm(Plan plan, User asUser, long id, String amount, LocalDate date) throws Exception {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("amount", new BigDecimal(amount));
+        body.put("startDate", date.toString());
+        body.put("version", fixtures.transactionVersion(id));
+        mockMvc.perform(post(TransactionRoutes.TRANSACTION + "/{id}/confirm", plan.getId(), id)
+                        .with(testAuthHelper.asUser(asUser))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk());
     }
 
     private List<String> confirmations() {
