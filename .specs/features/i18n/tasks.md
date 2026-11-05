@@ -263,7 +263,7 @@ Proof: run unit | ✓ offers English and Português (Brasil)
 **C12** - The document `lang` follows the language in use (I18N-02, AC 8)
 Proof: run unit | ✓ sets the document lang to the language in use
 
-**C13** - Picking a language switches the screen without a reload and sends `PATCH /user/language` with it (I18N-02, AC 3)
+**C13** - Picking a language switches the screen without a reload and sends `PATCH /user/me/language` with it (I18N-02, AC 3)
 Proof: run unit | ✓ switches the texts at once and saves the language
 
 **C14** - A saved language applies at sign-in over the device language (I18N-02, AC 4)
@@ -287,7 +287,7 @@ Proof: run unit | ✓ writes 04/11/2026 in English on a Brazilian device
 **C20** - `en` with region US writes `11/04/2026` (I18N-03, AC 4)
 Proof: run unit | ✓ writes 11/04/2026 in English on a US device
 
-**C21** - `PATCH /user/language` with `pt-BR` stores it and `/user` returns it (I18N-02, AC 3 and 4)
+**C21** - `PATCH /user/me/language` with `pt-BR` stores it and `/user` returns it (I18N-02, AC 3 and 4)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='UserLanguageIT#storesTheLanguageAndReturnsIt' -Dsurefire.skip=true
 
 **C22** - An unknown language answers 422 `validation-failed` (I18N-02, AC 6)
@@ -315,6 +315,6 @@ Proof: run unit | ✓ reads CSV dates as dd/mm/yyyy in both languages
 
 ## Handoff
 
-**Settled mid-build:** none
-**Dispatched:** batch A (T1–T4, Sonnet) at HEAD after the approval commit
+**Settled mid-build:** route is `PATCH /user/me/language`, following `/user/me/time-zone` (batch A, orchestrator accepted); `en` with a Brazilian device takes the date layout of the device region locale (`pt-BR`), because ICU has no `en-BR` data; tests and Storybook stub the device as `en-BR`
+**Dispatched:** batch A (T1–T4, Sonnet) at fd0347b, returned at 0ab7962; batch B (T5–T9, Sonnet) at the commit recording this
 **Walked:** not yet
