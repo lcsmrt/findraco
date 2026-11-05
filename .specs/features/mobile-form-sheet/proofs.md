@@ -1,7 +1,7 @@
 # mobile-form-sheet proofs
 
-**HEAD**: a3fc971
-**Tree**: dirty - .claude/skills/tlc-spec-driven/scripts/__pycache__/
+**HEAD**: 0673257
+**Tree**: clean
 **Shell**: /bin/sh
 **Result**: 25 pass, 0 fail
 
@@ -21,7 +21,7 @@
 | C12 | `walk - FormSheet story Short at 390×844: a single footer row` | pass (Walked) |
 | C13 | `run unit / ✓ labels the create row with the transaction type, next to partial matches` | pass |
 | C14 | `run unit / ✓ offers no create row when a category of that type has the same name` | pass |
-| C15 | `run unit / ✓ offers no create row without the manage-categories permission` | pass |
+| C15 | `run unit / ✓ hides the create row without the manage-categories permission` | pass |
 | C16 | `run unit / ✓ offers no create row for a blank search or one over 255 characters` | pass |
 | C17 | `run unit / ✓ creates the typed category with the transaction type and nothing else` | pass |
 | C18 | `run unit / ✓ selects the created category, keeps the other values and opens no other sheet` | pass |
@@ -38,19 +38,19 @@
 `Run unit` - exit 0
 
 ```
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > shows the problem copy and keeps the search when creation fails 182ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > clears a quick-created category when the type changes 253ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > shows the problem copy and keeps the search when creation fails 180ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer category quick-create > clears a quick-created category when the type changes 251ms
  ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > offers no save while the series definition is loading 48ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This one of the series from the occurrence 134ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This and following of the series from the occurrence 137ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This one of the series from the occurrence 136ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This and following of the series from the occurrence 145ms
  ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits All of the series from the occurrence 140ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits the whole series without asking when the number of installments changed 111ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > sends nothing and stays open when the scope is cancelled 109ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits the whole series without asking when the number of installments changed 94ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > sends nothing and stays open when the scope is cancelled 112ms
 
  Test Files  3 passed (3)
-      Tests  29 passed (29)
-   Start at  22:25:39
-   Duration  5.97s (transform 358ms, setup 186ms, collect 2.12s, tests 3.38s, environment 1.12s, prepare 124ms)
+      Tests  30 passed (30)
+   Start at  22:33:32
+   Duration  6.17s (transform 342ms, setup 175ms, collect 2.15s, tests 3.54s, environment 1.12s, prepare 147ms)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
