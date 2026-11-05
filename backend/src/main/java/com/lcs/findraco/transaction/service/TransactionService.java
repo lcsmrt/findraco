@@ -112,7 +112,11 @@ public class TransactionService {
     }
 
     private TransactionResponse response(Transaction transaction, PlanContext ctx) {
-        return TransactionResponse.from(transaction, permissions(transaction, ctx));
+        return response(transaction, ctx, userService.today(ctx.userId()));
+    }
+
+    private TransactionResponse response(Transaction transaction, PlanContext ctx, LocalDate today) {
+        return TransactionResponse.from(transaction, permissions(transaction, ctx), today);
     }
 
     /** Edit and delete follow the same rule: the caller's role and, for a contributor, who created the row. */
@@ -170,7 +174,8 @@ public class TransactionService {
             transactionRepository.fetchParticipants(page.getContent());
             transactionRepository.fetchItems(page.getContent());
         }
-        return page.map(transaction -> response(transaction, ctx));
+        LocalDate today = userService.today(ctx.userId());
+        return page.map(transaction -> response(transaction, ctx, today));
     }
 
     @Transactional
@@ -304,7 +309,9 @@ public class TransactionService {
         }
 
         return TransactionSeriesResponse.from(
-                transactionRepository.saveAll(occurrences), transaction -> permissions(transaction, ctx));
+                transactionRepository.saveAll(occurrences),
+                transaction -> permissions(transaction, ctx),
+                userService.today(ctx.userId()));
     }
 
     /**
@@ -467,7 +474,8 @@ public class TransactionService {
                     split.shares());
 
             transactionRepository.saveAndFlush(pivot);
-            return TransactionSeriesResponse.from(List.of(pivot), transaction -> permissions(transaction, ctx));
+            return TransactionSeriesResponse.from(
+                    List.of(pivot), transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));
         }
 
         definition.editPattern(new SeriesPattern(
@@ -511,6 +519,7 @@ public class TransactionService {
         }
         recurrenceDefinitionRepository.saveAndFlush(definition);
 
-        return TransactionSeriesResponse.from(combined, transaction -> permissions(transaction, ctx));
+        return TransactionSeriesResponse.from(
+                combined, transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));
     }
 }

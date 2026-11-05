@@ -1073,6 +1073,9 @@
           "permissions" : {
             "$ref" : "#/components/schemas/TransactionPermissionsResponse"
           },
+          "requiresConfirmation" : {
+            "type" : "boolean"
+          },
           "seriesId" : {
             "type" : [ "string", "null" ]
           },
@@ -1083,6 +1086,9 @@
             "format" : "date",
             "type" : "string"
           },
+          "status" : {
+            "$ref" : "#/components/schemas/TransactionStatus"
+          },
           "type" : {
             "$ref" : "#/components/schemas/TransactionType"
           },
@@ -1091,7 +1097,7 @@
             "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "id", "items", "participants", "permissions", "splitMode", "startDate", "type", "version" ],
+        "required" : [ "amount", "description", "id", "items", "participants", "permissions", "requiresConfirmation", "splitMode", "startDate", "status", "type", "version" ],
         "type" : "object"
       },
       "TransactionSeriesResponse" : {
@@ -1115,6 +1121,10 @@
       },
       "TransactionSortField" : {
         "enum" : [ "startDate", "endDate", "amount", "description", "category", "attributedTo" ],
+        "type" : "string"
+      },
+      "TransactionStatus" : {
+        "enum" : [ "ACTUAL", "FORECAST", "PENDING" ],
         "type" : "string"
       },
       "TransactionType" : {
