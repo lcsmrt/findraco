@@ -267,7 +267,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Phase gate green (Build line + unit, tooling and storybook projects)
+- [x] Phase gate green (Build line + unit, tooling and storybook projects)
 
 **Tests**: none
 **Gate**: build
