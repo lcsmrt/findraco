@@ -217,7 +217,7 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] Build gate green (last task of Phase 2)
+- [x] Build gate green (last task of Phase 2)
 
 **Tests**: none
 **Gate**: build
