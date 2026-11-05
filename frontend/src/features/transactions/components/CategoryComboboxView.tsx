@@ -29,11 +29,13 @@ type CategoryComboboxViewProps = {
   isLoading: boolean;
   search: string;
   onSearchChange: (search: string) => void;
+  /** The create row, or null when the search offers none. */
+  quickCreate: { label: string; disabled: boolean } | null;
   onCreate: () => void;
   onClear: () => void;
   disabled?: boolean;
-  defaultOpen?: boolean;
-  onOpenChange?: (open: boolean) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 };
 
 export function CategoryComboboxView({
@@ -44,10 +46,11 @@ export function CategoryComboboxView({
   isLoading,
   search,
   onSearchChange,
+  quickCreate,
   onCreate,
   onClear,
   disabled,
-  defaultOpen,
+  open,
   onOpenChange,
 }: CategoryComboboxViewProps) {
   const anchor = useComboboxAnchor();
@@ -69,7 +72,7 @@ export function CategoryComboboxView({
       value={value}
       onValueChange={onValueChange}
       itemToStringLabel={(cat) => cat.description}
-      defaultOpen={defaultOpen}
+      open={open}
       onOpenChange={onOpenChange}
     >
       <div ref={anchor} className="relative">
@@ -119,18 +122,6 @@ export function CategoryComboboxView({
           <div className="text-muted-foreground flex items-center justify-center py-4">
             <Spinner />
           </div>
-        ) : displayedItems.length === 0 && search.trim() ? (
-          <div className="p-1">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onCreate}
-              className="text-primary-ink hover:bg-accent flex h-7 w-full cursor-pointer items-center gap-1.5 rounded-md px-2 py-1.5"
-            >
-              <PlusIcon className="size-3.5 shrink-0" />
-              Create &ldquo;{search}&rdquo;
-            </Button>
-          </div>
         ) : (
           <ComboboxEmpty>No results</ComboboxEmpty>
         )}
@@ -150,6 +141,20 @@ export function CategoryComboboxView({
             </ComboboxItem>
           )}
         </ComboboxList>
+        {!isLoading && quickCreate && (
+          <div className="p-1">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={onCreate}
+              disabled={quickCreate.disabled}
+              className="text-primary-ink hover:bg-accent flex h-auto min-h-7 w-full cursor-pointer items-center justify-start gap-1.5 rounded-md px-2 py-1.5 text-left whitespace-normal"
+            >
+              <PlusIcon className="size-3.5 shrink-0" />
+              {quickCreate.label}
+            </Button>
+          </div>
+        )}
       </ComboboxContent>
     </Combobox>
   );

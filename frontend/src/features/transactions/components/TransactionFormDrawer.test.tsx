@@ -11,17 +11,14 @@ import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
 import type { AuthContextValue } from "@/app/providers/useAuth";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
-import {
-  CategoryFormSheetContext,
-  type CategoryFormSheetContextValue,
-} from "@/hooks/useCategoryFormSheet";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { stubScreenWidth } from "@/test/screenWidth";
 import { server } from "@/test/server";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { toast } from "sonner";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SeriesScopeDialogProvider } from "./SeriesScopeDialogProvider";
 import { TransactionFormDrawer } from "./TransactionFormDrawer";
 import type { TransactionFormMode } from "./transactionForm";
@@ -83,11 +80,6 @@ function planValue(): PlanContextValue {
   };
 }
 
-const categorySheet: CategoryFormSheetContextValue = {
-  openCreate: vi.fn(),
-  openEdit: vi.fn(),
-};
-
 type RenderDrawerOptions = {
   mode?: TransactionFormMode;
   transaction?: Transaction;
@@ -119,18 +111,16 @@ function renderDrawer({
   );
   const onOpenChange = vi.fn();
   renderWithProviders(
-    <CategoryFormSheetContext.Provider value={categorySheet}>
-      <SeriesScopeDialogProvider>
-        <TransactionFormDrawer
-          open
-          onOpenChange={onOpenChange}
-          mode={mode}
-          transaction={transaction}
-          onDelete={onDelete}
-          onDuplicate={onDuplicate}
-        />
-      </SeriesScopeDialogProvider>
-    </CategoryFormSheetContext.Provider>,
+    <SeriesScopeDialogProvider>
+      <TransactionFormDrawer
+        open
+        onOpenChange={onOpenChange}
+        mode={mode}
+        transaction={transaction}
+        onDelete={onDelete}
+        onDuplicate={onDuplicate}
+      />
+    </SeriesScopeDialogProvider>,
     { auth: authValue(), plan: planValue() },
   );
   return { onOpenChange };
@@ -390,6 +380,135 @@ describe("TransactionFormDrawer owned-category attribution", () => {
     expect(body.categoryId).toBe(9);
     expect(body.splitMode).toBe("EQUAL");
     expect(body.participants).toEqual([{ memberId: 1 }, { memberId: 2 }]);
+  });
+});
+
+describe("TransactionFormDrawer category quick-create", () => {
+  const food: Category = { id: 1, version: 0, type: "DEBIT", description: "Food" };
+  const pet: Category = { id: 77, version: 0, type: "DEBIT", description: "Pet" };
+
+  function page(content: Category[]) {
+    return { content, page: 0, size: 1000, totalElements: content.length, totalPages: 0, last: true };
+  }
+
+  function createRow() {
+    return screen.findByRole("button", { name: 'Create expense category "Pet"' });
+  }
+
+  async function searchFor(user: ReturnType<typeof userEvent.setup>, text: string) {
+    await user.click(screen.getByLabelText("Category"));
+    await user.type(await screen.findByLabelText("Search categories"), text);
+  }
+
+  beforeEach(() => {
+    vi.spyOn(toast, "success");
+    vi.spyOn(toast, "error");
+  });
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  it("creates the typed category with the transaction type and nothing else", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(categoryHandlers.create(pet));
+    renderDrawer({ members: [lucas], categories: [food] });
+
+    await searchFor(user, "  Pet ");
+    await user.click(await createRow());
+
+    expect(await sentBody(requests, "POST")).toEqual({ type: "DEBIT", description: "Pet" });
+  });
+
+  it("selects the created category, keeps the other values and opens no other sheet", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(categoryHandlers.create(pet), transactionHandlers.create(savedTransaction));
+    renderDrawer({ members: [lucas], categories: [food] });
+
+    await user.type(screen.getByLabelText("Description"), "Vet visit");
+    await user.type(screen.getByLabelText("Amount"), "9990");
+    await searchFor(user, "Pet");
+    await user.click(await createRow());
+
+    await waitFor(() => expect(screen.getByLabelText("Category").textContent).toBe("Pet"));
+    expect(screen.getByLabelText<HTMLInputElement>("Description").value).toBe("Vet visit");
+    expect(screen.getByLabelText<HTMLInputElement>("Amount").value).toBe("R$\u00a099,90");
+    expect(screen.getAllByRole("dialog")).toHaveLength(1);
+
+    await user.click(screen.getByRole("button", { name: "Create" }));
+    await waitFor(() =>
+      expect(requests.filter((request) => request.method === "POST")).toHaveLength(2),
+    );
+    const transaction = requests.filter((request) => request.method === "POST")[1];
+    expect(await transaction.json()).toMatchObject({ categoryId: 77, description: "Vet visit" });
+  });
+
+  it("shows the created toast", async () => {
+    const user = userEvent.setup();
+    server.use(categoryHandlers.create(pet));
+    renderDrawer({ members: [lucas], categories: [food] });
+
+    await searchFor(user, "Pet");
+    await user.click(await createRow());
+
+    await waitFor(() => expect(toast.success).toHaveBeenCalledWith('Category "Pet" created'));
+    expect(toast.success).toHaveBeenCalledTimes(1);
+  });
+
+  it("disables the create row while the request is pending", async () => {
+    const user = userEvent.setup();
+    let release: (() => void) | undefined;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    server.use(categoryHandlers.createAfter(pet, gate));
+    renderDrawer({ members: [lucas], categories: [food] });
+
+    await searchFor(user, "Pet");
+    await user.click(await createRow());
+
+    await waitFor(() => expect(screen.getByRole("button", { name: 'Create expense category "Pet"' })).toHaveProperty("disabled", true));
+    release?.();
+    await waitFor(() => expect(screen.getByLabelText("Category").textContent).toBe("Pet"));
+  });
+
+  it("shows the problem copy and keeps the search when creation fails", async () => {
+    const user = userEvent.setup();
+    server.use(categoryHandlers.createRejected(422, "validation-failed"));
+    renderDrawer({ members: [lucas], categories: [food] });
+
+    await user.type(screen.getByLabelText("Description"), "Vet visit");
+    await searchFor(user, "Pet");
+    await user.click(await createRow());
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith("Some fields are invalid.", undefined));
+    expect(toast.success).not.toHaveBeenCalled();
+    expect(screen.getByLabelText<HTMLInputElement>("Search categories").value).toBe("Pet");
+    expect(screen.getByLabelText("Category").textContent).toBe("Select a category...");
+    expect(screen.getByLabelText<HTMLInputElement>("Description").value).toBe("Vet visit");
+  });
+
+  it("clears a quick-created category when the type changes", async () => {
+    const user = userEvent.setup();
+    server.use(categoryHandlers.create(pet));
+    renderDrawer({ members: [lucas], categories: [food] });
+
+    await searchFor(user, "Pet");
+    await user.click(await createRow());
+    await waitFor(() => expect(screen.getByLabelText("Category").textContent).toBe("Pet"));
+
+    // The refetch after the creation now lists it, as the API would.
+    server.use(categoryHandlers.list(page([food, pet])));
+    await user.click(screen.getByRole("button", { name: "Credit" }));
+    await waitFor(() =>
+      expect(screen.getByLabelText("Category").textContent).toBe("Select a category..."),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Debit" }));
+    await user.click(screen.getByLabelText("Category"));
+    expect(await screen.findByRole("option", { name: "Pet" })).toBeTruthy();
   });
 });
 

@@ -116,7 +116,7 @@ On the phone, the transaction and category forms open as a side sheet built for 
 | -------------- | ----- | ----- | ------ |
 | MFS-01 | P1: Form sheets fit the phone | Execute | Implementing |
 | MFS-02 | P1: Compact footer on the phone | Execute | Implementing |
-| MFS-03 | P1: Create a category without leaving the transaction form | Execute | Pending |
+| MFS-03 | P1: Create a category without leaving the transaction form | Execute | Implementing |
 
 **Coverage:** 3 total, 0 mapped to tasks, 3 unmapped ⚠️
 

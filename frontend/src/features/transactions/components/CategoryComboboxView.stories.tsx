@@ -4,6 +4,7 @@ import { useState } from "react";
 import { expect, fn, screen } from "storybook/test";
 import { FieldLabel } from "@/components/input/base/Field";
 import { groupCategoryOptions } from "../utils/categoryOptions";
+import { categoryQuickCreate } from "../utils/categoryQuickCreate";
 import { CategoryComboboxView } from "./CategoryComboboxView";
 
 const categories: Category[] = [
@@ -21,6 +22,9 @@ type DemoProps = {
   isLoading?: boolean;
   disabled?: boolean;
   defaultOpen?: boolean;
+  canManageCategories?: boolean;
+  /** Disables the create row, as while the request is pending. */
+  creating?: boolean;
   onCreate?: () => void;
 };
 
@@ -32,11 +36,15 @@ function Demo({
   initialValue = null,
   isLoading = false,
   disabled,
-  defaultOpen,
+  defaultOpen = false,
+  canManageCategories = true,
+  creating = false,
   onCreate = () => {},
 }: DemoProps) {
+  const [open, setOpen] = useState(defaultOpen);
   const [search, setSearch] = useState(initialSearch);
   const [value, setValue] = useState<Category | null | undefined>(initialValue);
+  const quickCreate = categoryQuickCreate({ search, type: "DEBIT", categories: all, canManageCategories });
 
   return (
     <div className="flex w-72 flex-col gap-2">
@@ -49,10 +57,12 @@ function Demo({
         isLoading={isLoading}
         search={search}
         onSearchChange={setSearch}
+        quickCreate={quickCreate && { label: quickCreate.label, disabled: creating }}
         onCreate={onCreate}
         onClear={() => setValue(null)}
         disabled={disabled}
-        defaultOpen={defaultOpen}
+        open={open}
+        onOpenChange={setOpen}
       />
     </div>
   );
@@ -100,8 +110,40 @@ export const NoCategories: Story = {
 export const CreateFromSearch: Story = {
   args: { defaultOpen: true, initialSearch: "Pets" },
   play: async ({ args, userEvent }) => {
-    await userEvent.click(await screen.findByRole("button", { name: "Create “Pets”" }));
+    await userEvent.click(await screen.findByRole("button", { name: 'Create expense category "Pets"' }));
     await expect(args.onCreate).toHaveBeenCalledTimes(1);
+  },
+};
+
+// A partial match ("Food" for "Foo") still offers the row.
+export const CreateNextToMatches: Story = {
+  args: { defaultOpen: true, initialSearch: "Foo" },
+  play: async () => {
+    await expect(await screen.findByRole("option", { name: "Food" })).toBeVisible();
+    await expect(screen.getByRole("button", { name: 'Create expense category "Foo"' })).toBeVisible();
+  },
+};
+
+export const CreateExistingName: Story = {
+  args: { defaultOpen: true, initialSearch: "housing" },
+  play: async () => {
+    await expect(await screen.findByRole("option", { name: "Housing" })).toBeVisible();
+    await expect(screen.queryByRole("button", { name: /^Create/ })).toBeNull();
+  },
+};
+
+export const CreatePending: Story = {
+  args: { defaultOpen: true, initialSearch: "Pets", creating: true },
+  play: async () => {
+    await expect(await screen.findByRole("button", { name: 'Create expense category "Pets"' })).toBeDisabled();
+  },
+};
+
+export const CreateNotAllowed: Story = {
+  args: { defaultOpen: true, initialSearch: "Pets", canManageCategories: false },
+  play: async () => {
+    await expect(await screen.findByText("No results")).toBeVisible();
+    await expect(screen.queryByRole("button", { name: /^Create/ })).toBeNull();
   },
 };
 
