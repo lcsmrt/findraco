@@ -20,6 +20,16 @@ updates:
       npm:
         patterns: ["*"]
         update-types: ["minor", "patch"]
+      # Packages released in lockstep only work at the same major, so their majors come together.
+      storybook-major:
+        patterns: ["storybook", "@storybook/*", "eslint-plugin-storybook", "@chromatic-com/storybook"]
+        update-types: ["major"]
+      vitest-major:
+        patterns: ["vitest", "@vitest/*"]
+        update-types: ["major"]
+      eslint-major:
+        patterns: ["eslint", "@eslint/*"]
+        update-types: ["major"]
     ignore:
       # The types follow the Node major CI and production run (24), not the latest one.
       - dependency-name: "@types/node"
@@ -27,6 +37,10 @@ updates:
       # typescript-eslint does not support TypeScript 7 yet; lift once it does.
       - dependency-name: "typescript"
         versions: [">=7"]
+      # 2.0.8 breaks the AuthProvider toast tests (a toast seen where none or one is expected); hold it
+      # until it is known whether that is a real duplicate toast or state leaking between tests.
+      - dependency-name: "sonner"
+        versions: ["2.0.8"]
 
   - package-ecosystem: github-actions
     directory: /
