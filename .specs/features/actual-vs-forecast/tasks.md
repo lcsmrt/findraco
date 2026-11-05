@@ -412,7 +412,7 @@ Proof: walk - Storybook at 390×844 with `locale` pt-BR: summary cards, transact
 
 **Settled mid-build:** repo names win over the design (orchestrator accepted, batch A): table `transactions` / `ck_transactions_confirmation` (V13 renamed it), route `POST /plan/{planId}/transaction/{id}/confirm`, `markConfirmed(boolean)` instead of `setConfirmed` (no public `set*` rule); problem copy landed in T1. Open: a THIS_AND_FOLLOWING/ALL edit whose pivot is a confirmed occurrence moved off the template dates deletes it - to fix in the Verifier pass
 **Dispatched:** batch A (T1–T6, Sonnet) at 92f2745, returned at ca014ba; batch B (T7–T12, Sonnet) at ca014ba
-**Walked:** none
+**Walked:** 2026-11-05, Storybook at 390×844 with `locale` pt-BR (script and screenshots in the session scratchpad `walk-avf/`): SummaryCards WithForecast and MemberSelected, TransactionCells Forecast/Pending/Confirmable, TransactionMobileList ForecastAndPending, ConfirmTransactionDialogView Filled, ConfirmationFields RequiredForecast. C43: "Realizado", "Previsto", "Pendente", "Confirmar", "Exige confirmação", "Situação" all shown. Found: the confirm dialog description reads English in pt-BR ("Enter what was really charged…"); MemberSelected shows forecast only although the API's actual figures honour `memberId`; the mobile list has no Confirm action (desktop only); the summary caption "Realizado · Previsto R$ X" reads as one label. Reached in the app by: sign in, Transactions, a series created with Requires confirmation on and a date before today
 
 ---
 
