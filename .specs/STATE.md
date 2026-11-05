@@ -196,8 +196,8 @@
 
 ## Handoff
 
-- **Next**: UAT of `plan-deletion` (beta.26: Archived plans list, Restore, Delete now), then the series-edit validation round; or the next roadmap item (Recurrence v3 Discuss recommended, 2026-11-04)
-- **Last delivered**: `mobile-form-sheet` (2026-11-04, PR #19, beta.27, UAT OK on the iPhone): Base UI `Drawer` below 640px (`useIsNarrowScreen`), compact footer, inline category quick-create replacing the nested category sheet. Verifier FAIL (3 test gaps, C9 unwalked) → closed; gate `validate_verification` green. Before: tlc-spec-driven 4.1.0 + tlc-spec-lean 2.2.0 vendored; Dependabot split so majors arrive one per PR (#13)
+- **Next**: UAT of `i18n` (PR, beta.29) by the user and his wife on her phone in Portuguese; then UAT of `plan-deletion` and the series-edit round, or the Recurrence v3 Discuss
+- **Last delivered**: `i18n` (M5-10, 2026-11-05, not merged): `en` + `pt-BR` via i18next, device language until one is saved (`PATCH /user/me/language`, V22), dates by language + device region, money unchanged, reset e-mail by saved/page language; one-off codemod moved 259 texts (220 keys), lint bans literals (plugin + local `no-literal-in-jsx-props`), parity script. Verifier FAIL (9 findings: en-GB dates, lint hole through JSX props, toasts, DayPicker labels, C28 in the wrong layer, weak tests, stray keys, long tag 422, English field names) → all closed; gate green. Before: `mobile-form-sheet` (beta.27), archived card on phone (beta.28)
 - **Dependabot**: #14 (minor group) fails 8 tests (AuthProvider session end, CSV import), not investigated; #15 vitest coverage and #18 storybook fail alone (need family groups for majors); #16 react-day-picker 10 breaks `Calendar`/`DatePicker` types; #17 lucide 1.x green. 0.x minors (`eslint-plugin-react-refresh`, `prettier-plugin-tailwindcss`) ride the minor group though semver-breaking
 - **Verifier lesson**: never a git worktree with `pnpm exec` here (pnpm 11 rewrites `frontend/node_modules`); mutate file copies in place, run `node frontend/node_modules/vitest/vitest.mjs run …`, restore and `cmp`. Skill scripts run without `-I` (it drops their own dir from `sys.path`)
 - **Pending decisions (user)**: explain flow test vs E2E with a concrete example when E2E starts; the declared serif font is not loaded, but nothing uses it
@@ -206,4 +206,4 @@
 - **1.0 criteria**: draft at the top of the ROADMAP; only the trial period remains
 - **Low notes**: editing a series with scope ALL keeps the old start date; `buildMutationOptions` keeps an unreachable fallback; one Storybook duplicate-React flake; the two `setupUnit.test.ts` cases depend on their order; Vitest `--changed` EISDIR on the tooling project
 - **Queue**: Recurrence v3 (actual vs forecast, own Discuss), M5-05 Claude MCP connector, M5-10 i18n, local Docker DB quick task, round-2 UX topics; open todo: rotate the prod DB password
-- **Blockers**: none. **Branch**: `main` (beta.27 deployed). API/Vite not running
+- **Blockers**: none. **Branch**: `i18n` (main at beta.28). API/Vite not running

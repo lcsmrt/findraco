@@ -1,6 +1,6 @@
 # i18n proofs
 
-**HEAD**: ac05729
+**HEAD**: 85f40f3
 **Tree**: clean
 **Shell**: /bin/sh
 **Result**: 31 pass, 0 fail
@@ -34,7 +34,7 @@
 | C25 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='PasswordResetLanguageIT#usesTh` | pass |
 | C26 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='PasswordResetLanguageIT#fallsB` | pass |
 | C27 | `run unit / ✓ formats money the same in both languages` | pass |
-| C28 | `run unit / ✓ reads CSV dates as dd/mm/yyyy in both languages` | pass |
+| C28 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='StatementParserRegistryTest#ambiguo` | pass |
 | Build | `cd frontend && pnpm lint` | pass |
 | Build | `cd frontend && pnpm build` | pass |
 | Build | `cd frontend && node scripts/check-siblings.ts` | pass |
@@ -44,19 +44,19 @@
 `Run unit` - exit 0
 
 ```
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > offers no save while the series definition is loading 45ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This one of the series from the occurrence 139ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This and following of the series from the occurrence 151ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits All of the series from the occurrence 135ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits the whole series without asking when the number of installments changed 93ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > sends nothing and stays open when the scope is cancelled 111ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer language > keeps typed values when the language changes 102ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer language > shows user data as typed in Portuguese 35ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > local rules > with 61 lines of logic before the return reports ["local/component-logic-cap"] (STD-12 AC 3) 5ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > local rules > reports an IIFE in a component's JSX (STD-12 AC 4) 2ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits This and following of the series from the occurrence 156ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits All of the series from the occurrence 159ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > edits the whole series without asking when the number of installments changed 91ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer series edit (STD-07 AC 2) > sends nothing and stays open when the scope is cancelled 110ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer language > keeps typed values when the language changes 101ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer language > shows user data as typed in Portuguese 32ms
 
- Test Files  25 passed (25)
-      Tests  203 passed (203)
-   Start at  02:44:36
-   Duration  7.79s (transform 772ms, setup 1.84s, collect 7.34s, tests 8.96s, environment 10.34s, prepare 1.22s)
+ Test Files  27 passed (27)
+      Tests  205 passed (205)
+   Start at  03:09:18
+   Duration  8.70s (transform 875ms, setup 2.09s, collect 12.22s, tests 9.85s, environment 11.26s, prepare 1.32s)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
@@ -84,41 +84,41 @@ The width(0) and height(0) of chart should be greater than 0,
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='UserLanguageIT#storesTheLangua` - exit 0
 
 ```
-2026-11-05T02:45:42.779-03:00  INFO 440939 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-11-05T02:45:42.780-03:00  WARN 440939 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-11-05T02:45:43.922-03:00  INFO 440939 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-05T02:45:43.922-03:00  INFO 440939 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-05T02:45:43.924-03:00  INFO 440939 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-05T02:45:44.001-03:00  INFO 440939 --- [           main] [] com.lcs.findraco.user.UserLanguageIT     : Started UserLanguageIT in 10.665 seconds (process running for 11.946)
+2026-11-05T03:10:30.428-03:00  INFO 467584 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-11-05T03:10:30.428-03:00  WARN 467584 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-11-05T03:10:31.523-03:00  INFO 467584 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-05T03:10:31.523-03:00  INFO 467584 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-05T03:10:31.524-03:00  INFO 467584 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-05T03:10:31.597-03:00  INFO 467584 --- [           main] [] com.lcs.findraco.user.UserLanguageIT     : Started UserLanguageIT in 8.946 seconds (process running for 10.21)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-05T02:45:44.584-03:00  INFO 440939 --- [           main] [d0813d31-fdbd-4810-ab2a-daf3339a1562] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/user/me 200 119ms userId=1 planId=-
-2026-11-05T02:45:44.660-03:00  INFO 440939 --- [           main] [415a6de1-1cdb-42b8-a2df-ea1b4e041cd1] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 200 43ms userId=1 planId=-
-2026-11-05T02:45:44.735-03:00  INFO 440939 --- [           main] [f4071641-e16a-4d8c-a08c-ae9cdd449e2f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/user/me 200 7ms userId=1 planId=-
+2026-11-05T03:10:32.182-03:00  INFO 467584 --- [           main] [1065ab40-1273-47ca-8a7f-a1e1904b4734] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/user/me 200 138ms userId=1 planId=-
+2026-11-05T03:10:32.261-03:00  INFO 467584 --- [           main] [da55afb7-11c0-4c3e-a994-873c3b3902f9] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 200 46ms userId=1 planId=-
+2026-11-05T03:10:32.328-03:00  INFO 467584 --- [           main] [350e12d9-7bd7-4f12-948d-e352487699b2] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/user/me 200 8ms userId=1 planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='UserLanguageIT#rejectsAnUnknow` - exit 0
 
 ```
-2026-11-05T02:46:04.522-03:00  INFO 441501 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-11-05T02:46:04.523-03:00  WARN 441501 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-11-05T02:46:05.670-03:00  INFO 441501 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-05T02:46:05.670-03:00  INFO 441501 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-05T02:46:05.672-03:00  INFO 441501 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-05T02:46:05.724-03:00  INFO 441501 --- [           main] [] com.lcs.findraco.user.UserLanguageIT     : Started UserLanguageIT in 8.348 seconds (process running for 9.486)
+2026-11-05T03:10:51.515-03:00  INFO 468142 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-11-05T03:10:51.516-03:00  WARN 468142 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-11-05T03:10:52.590-03:00  INFO 468142 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-05T03:10:52.591-03:00  INFO 468142 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-05T03:10:52.592-03:00  INFO 468142 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-05T03:10:52.648-03:00  INFO 468142 --- [           main] [] com.lcs.findraco.user.UserLanguageIT     : Started UserLanguageIT in 8.157 seconds (process running for 9.354)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-05T02:46:06.324-03:00  INFO 441501 --- [           main] [d396ccce-ef67-4e6a-82c9-04bdf907eb6d] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 200 139ms userId=1 planId=-
-2026-11-05T02:46:06.361-03:00  INFO 441501 --- [           main] [af6ab2f7-ec1b-45bf-91da-538f98322bc7] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 422 30ms userId=1 planId=-
-2026-11-05T02:46:06.395-03:00  INFO 441501 --- [           main] [0581f511-1d7b-45c5-92b8-c402029bb6e9] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 422 6ms userId=1 planId=-
+2026-11-05T03:10:53.245-03:00  INFO 468142 --- [           main] [78f1b118-6361-472e-bb7b-2a53ad0e3ddc] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 200 170ms userId=1 planId=-
+2026-11-05T03:10:53.279-03:00  INFO 468142 --- [           main] [c19fbdcf-b352-4275-afc6-959b8b36bce2] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 422 28ms userId=1 planId=-
+2026-11-05T03:10:53.314-03:00  INFO 468142 --- [           main] [57f4ffe2-2f3e-4861-b218-07aae49dc986] c.l.f.shared.web.RequestLogFilter        : PATCH /api/findraco/user/me/language 422 5ms userId=1 planId=-
 ```
 
 `cd frontend && test -z "$(grep -rlE 'import \{[^}]*\bformat\b[^}]*\} from "date-fns"' src --include='*.ts' --i` - exit 0
@@ -130,59 +130,65 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='PasswordResetLanguageIT#usesTh` - exit 0
 
 ```
-2026-11-05T02:46:25.079-03:00  INFO 442014 --- [           main] [] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-11-05T02:46:25.164-03:00  INFO 442014 --- [           main] [] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-11-05T02:46:25.887-03:00  INFO 442014 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-11-05T02:46:25.887-03:00  WARN 442014 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-11-05T02:46:26.967-03:00  INFO 442014 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-05T02:46:26.967-03:00  INFO 442014 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-05T02:46:26.968-03:00  INFO 442014 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-05T02:46:27.020-03:00  INFO 442014 --- [           main] [] c.l.f.auth.PasswordResetLanguageIT       : Started PasswordResetLanguageIT in 8.612 seconds (process running for 9.824)
+2026-11-05T03:11:11.680-03:00  INFO 468668 --- [           main] [] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-05T03:11:11.768-03:00  INFO 468668 --- [           main] [] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-05T03:11:12.494-03:00  INFO 468668 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-11-05T03:11:12.495-03:00  WARN 468668 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-11-05T03:11:13.644-03:00  INFO 468668 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-05T03:11:13.644-03:00  INFO 468668 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-05T03:11:13.646-03:00  INFO 468668 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-05T03:11:13.704-03:00  INFO 468668 --- [           main] [] c.l.f.auth.PasswordResetLanguageIT       : Started PasswordResetLanguageIT in 8.261 seconds (process running for 9.44)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-05T02:46:27.632-03:00  INFO 442014 --- [           main] [f4d18851-481a-4607-b9a5-e368dc5715cd] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 170ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-05T03:11:14.253-03:00  INFO 468668 --- [           main] [eb9c5d81-acf9-4c36-a377-25a49194e036] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 174ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='PasswordResetLanguageIT#usesTh` - exit 0
 
 ```
-2026-11-05T02:46:46.372-03:00  INFO 442546 --- [           main] [] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2026-11-05T02:46:46.465-03:00  INFO 442546 --- [           main] [] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-11-05T02:46:47.217-03:00  INFO 442546 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-11-05T02:46:47.217-03:00  WARN 442546 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-11-05T02:46:48.292-03:00  INFO 442546 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-05T02:46:48.292-03:00  INFO 442546 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-05T02:46:48.293-03:00  INFO 442546 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-05T02:46:48.347-03:00  INFO 442546 --- [           main] [] c.l.f.auth.PasswordResetLanguageIT       : Started PasswordResetLanguageIT in 8.196 seconds (process running for 9.343)
+2026-11-05T03:11:32.602-03:00  INFO 469187 --- [           main] [] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-11-05T03:11:32.694-03:00  INFO 469187 --- [           main] [] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-11-05T03:11:33.471-03:00  INFO 469187 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-11-05T03:11:33.471-03:00  WARN 469187 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-11-05T03:11:34.541-03:00  INFO 469187 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-05T03:11:34.542-03:00  INFO 469187 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-05T03:11:34.543-03:00  INFO 469187 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-05T03:11:34.596-03:00  INFO 469187 --- [           main] [] c.l.f.auth.PasswordResetLanguageIT       : Started PasswordResetLanguageIT in 8.032 seconds (process running for 9.187)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-05T02:46:48.914-03:00  INFO 442546 --- [           main] [97a0411c-fdc9-4103-9631-d2d60cc7fe5d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 176ms userId=- planId=-
+2026-11-05T03:11:35.162-03:00  INFO 469187 --- [           main] [1376b1cb-e8da-432f-9cd7-5397b07b73a2] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 188ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='PasswordResetLanguageIT#fallsB` - exit 0
 
 ```
-2026-11-05T02:47:07.133-03:00  INFO 443058 --- [           main] [] o.s.d.j.r.query.QueryEnhancerFactories   : Hibernate is in classpath; If applicable, HQL parser will be used.
-2026-11-05T02:47:07.852-03:00  INFO 443058 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
-2026-11-05T02:47:07.853-03:00  WARN 443058 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
-2026-11-05T02:47:08.942-03:00  INFO 443058 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-05T02:47:08.943-03:00  INFO 443058 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-05T02:47:08.944-03:00  INFO 443058 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-05T02:47:09.009-03:00  INFO 443058 --- [           main] [] c.l.f.auth.PasswordResetLanguageIT       : Started PasswordResetLanguageIT in 8.126 seconds (process running for 9.27)
+2026-11-05T03:11:54.575-03:00  INFO 469714 --- [           main] [] eAuthenticationProviderManagerConfigurer : Global AuthenticationManager configured with AuthenticationProvider bean with name authenticationProvider
+2026-11-05T03:11:54.575-03:00  WARN 469714 --- [           main] [] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with an AuthenticationProvider bean. UserDetailsService beans will not be used by Spring Security for automatically configuring username/password login. Consider removing the AuthenticationProvider bean. Alternatively, consider using the UserDetailsService in a manually instantiated DaoAuthenticationProvider. If the current configuration is intentional, to turn off this warning, increase the logging level of 'org.springframework.security.config.annotation.authentication.configuration.InitializeUserDetailsBeanManagerConfigurer' to ERROR
+2026-11-05T03:11:55.642-03:00  INFO 469714 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-05T03:11:55.643-03:00  INFO 469714 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-05T03:11:55.644-03:00  INFO 469714 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-05T03:11:55.697-03:00  INFO 469714 --- [           main] [] c.l.f.auth.PasswordResetLanguageIT       : Started PasswordResetLanguageIT in 8.131 seconds (process running for 9.251)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-05T02:47:09.561-03:00  INFO 443058 --- [           main] [e6a21d55-5430-49b2-863f-52c657c5d22a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 179ms userId=- planId=-
-2026-11-05T02:47:09.578-03:00  INFO 443058 --- [           main] [c4b904b1-85ea-4731-9fda-3b10123164aa] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 12ms userId=- planId=-
+2026-11-05T03:11:56.256-03:00  INFO 469714 --- [           main] [463671d7-8d7a-472d-9171-95c4857c9b7c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 166ms userId=- planId=-
+2026-11-05T03:11:56.273-03:00  INFO 469714 --- [           main] [0c7e5953-6381-4089-ae01-7e09886eb2d4] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 11ms userId=- planId=-
+2026-11-05T03:11:56.282-03:00  INFO 469714 --- [           main] [adf9bd2d-193f-4e4d-a6ad-24e60de6f6e6] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/forgot-password 204 8ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='StatementParserRegistryTest#ambiguo` - exit 0
+
+```
+(no output)
 ```
