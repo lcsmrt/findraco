@@ -10,7 +10,7 @@ Personal-finance app: Spring Boot API (`backend`) + React/TS SPA (`frontend`).
 
 ## General
 
-- **English only** — code, UI, comments, specs. Never leak Portuguese into artifacts.
+- **English only** — code, comments, specs and translation keys. Interface copy lives in `frontend/src/i18n/en.json` (source) and `pt-BR.json`; a literal text in a component fails lint and a key missing in one file fails the parity check (AD-024).
 - Follow the written standard; if a rule is missing, **ask — don't infer**.
 - Research how it's usually solved before reinventing; prefer established patterns.
 - Consistency and clarity over cleverness. No premature abstraction, no junk.
