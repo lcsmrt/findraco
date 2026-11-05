@@ -63,13 +63,13 @@ function authValue(): AuthContextValue {
   };
 }
 
-function planValue(): PlanContextValue {
+function planValue(manageCategories: boolean): PlanContextValue {
   const plan: Plan = {
     id: PLAN_ID,
     name: "Home",
     isDefault: true,
     myRole: "OWNER",
-    permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true },
+    permissions: { createTransactions: true, attributeToOthers: true, manageCategories, managePlan: true },
   };
   return {
     activePlanId: PLAN_ID,
@@ -88,6 +88,7 @@ type RenderDrawerOptions = {
   categories?: Category[];
   onDelete?: (transaction: Transaction) => void;
   onDuplicate?: (transaction: Transaction) => void;
+  manageCategories?: boolean;
 };
 
 function renderDrawer({
@@ -97,6 +98,7 @@ function renderDrawer({
   categories = [],
   onDelete,
   onDuplicate,
+  manageCategories = true,
 }: RenderDrawerOptions) {
   server.use(
     planHandlers.members(members),
@@ -121,7 +123,7 @@ function renderDrawer({
         onDuplicate={onDuplicate}
       />
     </SeriesScopeDialogProvider>,
-    { auth: authValue(), plan: planValue() },
+    { auth: authValue(), plan: planValue(manageCategories) },
   );
   return { onOpenChange };
 }
@@ -443,6 +445,16 @@ describe("TransactionFormDrawer category quick-create", () => {
     );
     const transaction = requests.filter((request) => request.method === "POST")[1];
     expect(await transaction.json()).toMatchObject({ categoryId: 77, description: "Vet visit" });
+  });
+
+  it("hides the create row without the manage-categories permission", async () => {
+    const user = userEvent.setup();
+    renderDrawer({ members: [lucas], categories: [food], manageCategories: false });
+
+    await searchFor(user, "Pet");
+
+    expect(await screen.findByText("No results")).toBeTruthy();
+    expect(screen.queryByRole("button", { name: 'Create expense category "Pet"' })).toBeNull();
   });
 
   it("shows the created toast", async () => {

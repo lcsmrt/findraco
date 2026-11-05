@@ -180,7 +180,7 @@ Proof: run unit | ✓ labels the create row with the transaction type, next to p
 Proof: run unit | ✓ offers no create row when a category of that type has the same name
 
 **C15** - Without the manage-categories permission there is no create row (MFS-03, AC 3)
-Proof: run unit | ✓ offers no create row without the manage-categories permission
+Proof: run unit | ✓ hides the create row without the manage-categories permission
 
 **C16** - A trimmed search over 255 characters, or of spaces only, shows no create row (MFS-03, AC 4; edge case 1)
 Proof: run unit | ✓ offers no create row for a blank search or one over 255 characters
