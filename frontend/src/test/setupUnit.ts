@@ -1,4 +1,5 @@
-import { afterAll, afterEach, beforeAll } from "vitest";
+import { afterAll, afterEach, beforeAll, beforeEach } from "vitest";
+import { stubScreenWidth } from "./screenWidth";
 import { server } from "./server";
 import { createUnhandledRequestRecorder } from "./unhandledRequests";
 
@@ -10,6 +11,11 @@ beforeAll(() => {
       unhandledRequests.record(request);
     },
   });
+});
+
+// jsdom has no matchMedia; a test of the phone layout stubs a narrower width itself.
+beforeEach(() => {
+  stubScreenWidth(1024);
 });
 
 afterEach(() => {

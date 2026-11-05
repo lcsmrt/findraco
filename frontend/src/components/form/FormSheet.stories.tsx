@@ -89,14 +89,19 @@ export const WithMobileActions: Story = {
       </>
     ),
   },
-  globals: { viewport: { value: "mobile1" } },
   play: async () => {
     await expect(screen.getByRole("button", { name: "Delete" })).toBeVisible();
     await expect(screen.getByRole("button", { name: "Duplicate" })).toBeVisible();
   },
 };
 
-export const LongContentScrolls: Story = {
+// Below 640px the sheet rises from the bottom; the walk opens the Short, Long and WithMobileActions
+// stories in a 390px window.
+export const Short: Story = {
+  tags: ["!test"],
+};
+
+export const Long: Story = {
   tags: ["!test"],
   args: { children: <DemoFields count={20} /> },
   play: async () => {
@@ -105,9 +110,4 @@ export const LongContentScrolls: Story = {
     // The footer stays reachable however long the form grows.
     await expect(screen.getByRole("button", { name: "Create" })).toBeVisible();
   },
-};
-
-export const Mobile: Story = {
-  tags: ["!test"],
-  globals: { viewport: { value: "mobile1" } },
 };

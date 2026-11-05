@@ -17,6 +17,7 @@ import {
 } from "@/hooks/useCategoryFormSheet";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
+import { stubScreenWidth } from "@/test/screenWidth";
 import { server } from "@/test/server";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -253,6 +254,43 @@ describe("TransactionFormDrawer skeleton", () => {
 
     expect(screen.queryByRole("button", { name: "Delete" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Duplicate" })).toBeNull();
+  });
+});
+
+describe("TransactionFormDrawer container", () => {
+  afterEach(cleanup);
+
+  it("opens as a bottom sheet on a narrow screen", () => {
+    stubScreenWidth(390);
+    renderDrawer({ members: [lucas] });
+
+    expect(screen.getByRole("dialog").getAttribute("data-side")).toBe("bottom");
+  });
+
+  it("opens on the right on a wide screen", () => {
+    stubScreenWidth(1024);
+    renderDrawer({ members: [lucas] });
+
+    expect(screen.getByRole("dialog").getAttribute("data-side")).toBe("right");
+  });
+
+  it("closes without saving on Escape or a backdrop tap", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    stubScreenWidth(390);
+    const { onOpenChange } = renderDrawer({ members: [lucas] });
+
+    await user.type(screen.getByLabelText("Description"), "Rent");
+    await user.keyboard("{Escape}");
+    expect(onOpenChange).toHaveBeenCalledTimes(1);
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+
+    const backdrop = document.querySelector("[data-slot='drawer-overlay']");
+    if (!backdrop) throw new Error("No backdrop");
+    await user.click(backdrop);
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledTimes(2));
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(requests.filter((request) => request.method !== "GET")).toEqual([]);
   });
 });
 
