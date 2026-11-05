@@ -79,15 +79,15 @@ public class OpenEndedSeriesTopUpService {
                 recurringTransactionGenerator.generateForwardWindow(definition, afterExclusive, through, shares);
 
         if (!candidates.isEmpty()) {
-            Set<LocalDate> existingDates =
+            Set<LocalDate> existingSlots =
                     transactionRepository
                             .findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId())
                             .stream()
-                            .map(Transaction::getStartDate)
+                            .map(Transaction::getScheduledDate)
                             .collect(Collectors.toSet());
 
             List<Transaction> toPersist = candidates.stream()
-                    .filter(occurrence -> !existingDates.contains(occurrence.getStartDate()))
+                    .filter(occurrence -> !existingSlots.contains(occurrence.getScheduledDate()))
                     .toList();
             if (!toPersist.isEmpty()) {
                 transactionRepository.saveAll(toPersist);

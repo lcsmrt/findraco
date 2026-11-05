@@ -1,5 +1,6 @@
 import type { Transaction } from "@/api/dtos/transaction";
 import { Amount } from "@/components/amount/Amount";
+import { Button } from "@/components/button/base/Button";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { TablePagination } from "@/components/table";
 import type { Pagination } from "@/components/table/TablePagination";
@@ -7,7 +8,9 @@ import { Heading } from "@/components/typography/base/Heading";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatPattern } from "@/utils/dates";
+import { TransactionStatusBadge } from "./TransactionCells";
 import { groupByDay } from "../utils/groupByDay";
+import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 const DAY_HEADING_PATTERN = "EEE, d MMM yyyy";
@@ -15,33 +18,56 @@ const DAY_HEADING_PATTERN = "EEE, d MMM yyyy";
 type TransactionMobileRowProps = {
   transaction: Transaction;
   onEdit: (transaction: Transaction) => void;
+  /** Present only for a row the member may confirm. */
+  onConfirm?: (transaction: Transaction) => void;
 };
 
-/** Description, category and people on the left, signed amount on the right; tap edits when allowed. */
-function TransactionMobileRow({ transaction, onEdit }: TransactionMobileRowProps) {
+/**
+ * Description, category and people on the left, signed amount on the right; tap edits when allowed.
+ * Confirm sits beside the row, not inside it, so a tap on it never opens the edit drawer.
+ */
+function TransactionMobileRow({ transaction, onEdit, onConfirm }: TransactionMobileRowProps) {
+  const { t } = useTranslation();
   const people = transaction.participants.map((p) => p.name).join(", ");
   const details = [transaction.category?.description, people].filter(Boolean);
   return (
-    <button
-      type="button"
-      disabled={!transaction.permissions.edit}
-      onClick={() => onEdit(transaction)}
-      className="active:bg-muted/60 flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
-    >
-      <span className="flex min-w-0 flex-col gap-0.5">
-        <Text variant="label" className="truncate">
-          {transaction.description}
+    <div className="flex items-center">
+      <button
+        type="button"
+        disabled={!transaction.permissions.edit}
+        onClick={() => onEdit(transaction)}
+        className="active:bg-muted/60 flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
+      >
+        <span className="flex min-w-0 flex-col gap-0.5">
+          <span className="flex items-center gap-1.5">
+            <Text variant="label" className="truncate">
+              {transaction.description}
+            </Text>
+            <TransactionStatusBadge status={transaction.status} />
+          </span>
+          {details.length > 0 && (
+            <Text variant="caption" className="truncate">
+              {details.join(" · ")}
+            </Text>
+          )}
+        </span>
+        <Text className="shrink-0 whitespace-nowrap">
+          <Amount value={transaction.amount} type={transaction.type} />
         </Text>
-        {details.length > 0 && (
-          <Text variant="caption" className="truncate">
-            {details.join(" · ")}
-          </Text>
-        )}
-      </span>
-      <Text className="shrink-0 whitespace-nowrap">
-        <Amount value={transaction.amount} type={transaction.type} />
-      </Text>
-    </button>
+      </button>
+      {onConfirm && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="text-muted-foreground mr-1 shrink-0"
+          aria-label={t("common.confirm")}
+          onClick={() => onConfirm(transaction)}
+        >
+          <CheckIcon className="h-4 w-4" />
+        </Button>
+      )}
+    </div>
   );
 }
 
@@ -52,6 +78,9 @@ type TransactionMobileListProps = {
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
   onEdit: (transaction: Transaction) => void;
+  onConfirm: (transaction: Transaction) => void;
+  /** The same rule as the table's Confirm action. */
+  canConfirm: (transaction: Transaction) => boolean;
   className?: string;
 };
 
@@ -63,6 +92,8 @@ export function TransactionMobileList({
   onPageChange,
   onPageSizeChange,
   onEdit,
+  onConfirm,
+  canConfirm,
   className,
 }: TransactionMobileListProps) {
   const { t } = useTranslation();
@@ -92,6 +123,7 @@ export function TransactionMobileList({
                   key={transaction.id}
                   transaction={transaction}
                   onEdit={onEdit}
+                  onConfirm={canConfirm(transaction) ? onConfirm : undefined}
                 />
               ))}
             </div>

@@ -6,6 +6,7 @@ import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -58,6 +59,13 @@ public class Transaction {
     private LocalDate startDate;
     private LocalDate endDate;
 
+    /** The series slot this occurrence fills; it stays when a confirmation moves the date. Null on a one-off. */
+    @Column(updatable = false)
+    private LocalDate scheduledDate;
+
+    @Enumerated(EnumType.STRING)
+    private Confirmation confirmation = Confirmation.BY_DATE;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "split_mode")
     private SplitMode splitMode = SplitMode.EQUAL;
@@ -82,6 +90,9 @@ public class Transaction {
         if (draft.series() != null) {
             transaction.recurrenceDefinition = draft.series();
             transaction.seriesId = draft.series().getSeriesId();
+            transaction.confirmation =
+                    draft.series().isRequiresConfirmation() ? Confirmation.REQUIRED : Confirmation.BY_DATE;
+            transaction.scheduledDate = draft.details().startDate();
         }
         transaction.edit(draft.details(), draft.splitMode(), draft.participants(), draft.items());
         return transaction;
@@ -119,6 +130,75 @@ public class Transaction {
         requireItemsFit(newItems, type, amount);
         items.clear();
         newItems.forEach(item -> items.add(new TransactionItem(this, item)));
+    }
+
+    /** Actual from its date, unless it waits for a confirmation; a confirmed one is actual whatever its date. */
+    public TransactionStatus status(LocalDate today) {
+        return switch (confirmation) {
+            case CONFIRMED -> TransactionStatus.ACTUAL;
+            case BY_DATE -> startDate.isAfter(today) ? TransactionStatus.FORECAST : TransactionStatus.ACTUAL;
+            case REQUIRED -> startDate.isBefore(today) ? TransactionStatus.PENDING : TransactionStatus.FORECAST;
+        };
+    }
+
+    /**
+     * Records what was really charged: the amount and the date, and the transaction becomes actual. The
+     * split follows the new amount, and the items must still fit it.
+     */
+    public void confirm(BigDecimal confirmedAmount, LocalDate confirmedDate) {
+        if (confirmation != Confirmation.REQUIRED) {
+            throw new TransactionExceptions.TransactionNotAwaitingConfirmationException();
+        }
+        requireItemsFit(currentItems(), type, confirmedAmount);
+        if (confirmedAmount.compareTo(amount) != 0) {
+            applySplit(splitMode, SPLIT_RESOLVER.split(confirmedAmount, splitMode, rescaledShares(confirmedAmount)));
+        }
+        amount = confirmedAmount;
+        startDate = confirmedDate;
+        confirmation = Confirmation.CONFIRMED;
+    }
+
+    /** The Status control of the edit form: confirmed or forecast again. A transaction due by date has no status to set. */
+    public void markConfirmed(boolean confirmed) {
+        if (confirmation != Confirmation.BY_DATE) {
+            confirmation = confirmed ? Confirmation.CONFIRMED : Confirmation.REQUIRED;
+        }
+    }
+
+    /** Applies the series flag to this occurrence when it is still forecast; see {@link RecurrenceDefinition}. */
+    void followSeriesFlag(boolean required, LocalDate today) {
+        if (required && confirmation == Confirmation.BY_DATE && startDate.isAfter(today)) {
+            confirmation = Confirmation.REQUIRED;
+        } else if (!required && confirmation == Confirmation.REQUIRED) {
+            confirmation = Confirmation.BY_DATE;
+        }
+    }
+
+    /**
+     * The current shares for a new amount: an EQUAL split is recomputed from the members alone, an EXACT
+     * one keeps each member's proportion, the cents left over going to the first members.
+     */
+    private List<Share> rescaledShares(BigDecimal newAmount) {
+        if (splitMode == SplitMode.EQUAL) {
+            return participants.stream()
+                    .map(participant -> new Share(participant.getMember(), null))
+                    .toList();
+        }
+        BigDecimal oldTotal = amount;
+        List<BigDecimal> scaled = participants.stream()
+                .map(participant ->
+                        participant.getShareAmount().multiply(newAmount).divide(oldTotal, 2, RoundingMode.DOWN))
+                .toList();
+        long leftCents = newAmount
+                .subtract(scaled.stream().reduce(BigDecimal.ZERO, BigDecimal::add))
+                .movePointRight(2)
+                .longValueExact();
+        List<Share> shares = new ArrayList<>();
+        for (int i = 0; i < scaled.size(); i++) {
+            BigDecimal extra = i < leftCents ? new BigDecimal("0.01") : BigDecimal.ZERO;
+            shares.add(new Share(participants.get(i).getMember(), scaled.get(i).add(extra)));
+        }
+        return shares;
     }
 
     private static void requireValid(TransactionDetails details) {
@@ -243,6 +323,14 @@ public class Transaction {
 
     public LocalDate getStartDate() {
         return startDate;
+    }
+
+    public LocalDate getScheduledDate() {
+        return scheduledDate;
+    }
+
+    public Confirmation getConfirmation() {
+        return confirmation;
     }
 
     public LocalDate getEndDate() {

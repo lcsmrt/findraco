@@ -317,6 +317,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             User caller,
             User target,
             Transaction row,
+            long occurrenceId,
+            long occurrenceVersion,
             Category category,
             String seriesId,
             long seriesVersion,
@@ -503,6 +505,22 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         s -> put(TX + "/{id}", s.cast().plan().getId(), s.row().getId())
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(editJson()),
+                        200,
+                        200,
+                        403,
+                        403),
+                // The first occurrence of a series the owner created, which waits for its confirmation.
+                new Row(
+                        "POST " + TX + "/{id}/confirm",
+                        s -> post(TX + "/{id}/confirm", s.cast().plan().getId(), s.occurrenceId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json(Map.of(
+                                        "amount",
+                                        new BigDecimal("95.00"),
+                                        "startDate",
+                                        TODAY.toString(),
+                                        "version",
+                                        s.occurrenceVersion()))),
                         200,
                         200,
                         403,
@@ -694,17 +712,17 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("50.00"), TransactionType.DEBIT);
         Category category = fixtures.aCategory(cast.plan(), TransactionType.DEBIT, "Matrix");
 
-        String seriesId = objectMapper
-                .readTree(mockMvc.perform(post(TX + "/series", cast.plan().getId())
+        JsonNode series = objectMapper.readTree(
+                mockMvc.perform(post(TX + "/series", cast.plan().getId())
                                 .with(testAuthHelper.asUser(cast.owner()))
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content(json(installment())))
                         .andExpect(status().isCreated())
                         .andReturn()
                         .getResponse()
-                        .getContentAsString())
-                .get("seriesId")
-                .asString();
+                        .getContentAsString());
+        String seriesId = series.get("seriesId").asString();
+        long occurrenceId = series.get("occurrences").get(0).get("id").asLong();
         long invitationId = objectMapper
                 .readTree(mockMvc.perform(
                                 post(PlanRoutes.PLAN_INVITATION, cast.plan().getId())
@@ -726,7 +744,17 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                     case VIEWER -> cast.viewer();
                     case NON_MEMBER -> cast.nonMember();
                 };
-        return new Scene(cast, caller, target, row, category, seriesId, fixtures.seriesVersion(seriesId), invitationId);
+        return new Scene(
+                cast,
+                caller,
+                target,
+                row,
+                occurrenceId,
+                fixtures.transactionVersion(occurrenceId),
+                category,
+                seriesId,
+                fixtures.seriesVersion(seriesId),
+                invitationId);
     }
 
     private static Map<String, Object> editSeriesBody(Scene scene) {

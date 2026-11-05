@@ -1,8 +1,10 @@
 package com.lcs.findraco.transaction.response;
 
 import com.lcs.findraco.category.response.CategoryResponse;
+import com.lcs.findraco.transaction.model.Confirmation;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -24,9 +26,13 @@ public record TransactionResponse(
         SplitMode splitMode,
         List<TransactionParticipantResponse> participants,
         List<TransactionItemResponse> items,
+        TransactionStatus status,
+        boolean requiresConfirmation,
         TransactionPermissionsResponse permissions) {
 
-    public static TransactionResponse from(Transaction transaction, TransactionPermissionsResponse permissions) {
+    /** The response for a reader whose calendar day is {@code today}, which decides whether it is actual yet. */
+    public static TransactionResponse from(
+            Transaction transaction, TransactionPermissionsResponse permissions, LocalDate today) {
         return new TransactionResponse(
                 transaction.getId(),
                 transaction.getVersion(),
@@ -46,6 +52,8 @@ public record TransactionResponse(
                 transaction.getItems().stream()
                         .map(TransactionItemResponse::from)
                         .toList(),
+                transaction.status(today),
+                transaction.getConfirmation() != Confirmation.BY_DATE,
                 permissions);
     }
 }

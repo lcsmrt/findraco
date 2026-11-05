@@ -60,6 +60,26 @@ function MemberAmounts({ figure, className }: MemberAmountsProps) {
   );
 }
 
+type StatusCaptionProps = {
+  forecast: number;
+};
+
+/** Names the headline figure as the actual one, then gives the forecast on its own line. */
+function StatusCaption({ forecast }: StatusCaptionProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Text as="p" variant="caption">
+        {t("overview.summaryCards.actual")}
+      </Text>
+      <Text as="p" variant="caption" className="tabular-nums">
+        {t("overview.summaryCards.forecast", { amount: formatMoney(forecast) })}
+      </Text>
+    </div>
+  );
+}
+
 type FigureBlockProps = {
   label: string;
   figure: SummaryFigure;
@@ -78,8 +98,9 @@ function FigureBlock({ label, figure, tone, size }: FigureBlockProps) {
         variant={size === "lg" ? "headline" : "title"}
         className={cn("tabular-nums", tone === "income" ? "text-success" : "text-destructive")}
       >
-        {formatMoney(figure.total)}
+        {formatMoney(figure.actual)}
       </Text>
+      <StatusCaption forecast={figure.total} />
       <MemberBar figure={figure} />
       <MemberAmounts
         figure={figure}
@@ -91,9 +112,10 @@ function FigureBlock({ label, figure, tone, size }: FigureBlockProps) {
 
 type BalanceProps = {
   balance: number;
+  actual: number;
 };
 
-function Balance({ balance }: BalanceProps) {
+function Balance({ balance, actual }: BalanceProps) {
   const { t } = useTranslation();
 
   return (
@@ -104,10 +126,11 @@ function Balance({ balance }: BalanceProps) {
       <Text
         as="p"
         variant="headline"
-        className={cn("tabular-nums", balance >= 0 ? "text-success" : "text-destructive")}
+        className={cn("tabular-nums", actual >= 0 ? "text-success" : "text-destructive")}
       >
-        {formatMoney(balance)}
+        {formatMoney(actual)}
       </Text>
+      <StatusCaption forecast={balance} />
     </div>
   );
 }
@@ -127,7 +150,7 @@ export function SummaryCards({ view }: SummaryCardsProps) {
     <>
       <Card className="sm:hidden">
         <CardContent className="flex flex-col gap-5 px-4">
-          <Balance balance={view.balance} />
+          <Balance balance={view.balance} actual={view.balanceActual} />
           <div className="grid grid-cols-2 gap-4">
             <FigureBlock
               label={t("overview.summaryCards.income")}
@@ -168,7 +191,7 @@ export function SummaryCards({ view }: SummaryCardsProps) {
         </Card>
         <Card>
           <CardContent>
-            <Balance balance={view.balance} />
+            <Balance balance={view.balance} actual={view.balanceActual} />
           </CardContent>
         </Card>
       </div>

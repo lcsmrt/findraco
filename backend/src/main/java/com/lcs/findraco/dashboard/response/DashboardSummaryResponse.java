@@ -7,4 +7,7 @@ public record DashboardSummaryResponse(
         BigDecimal totalIncome,
         BigDecimal totalExpenses,
         BigDecimal netBalance,
+        BigDecimal actualIncome,
+        BigDecimal actualExpenses,
+        BigDecimal actualBalance,
         List<PersonBreakdownResponse> personBreakdown) {}

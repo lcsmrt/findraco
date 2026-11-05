@@ -71,6 +71,9 @@ public class RecurrenceDefinition {
     @Column(name = "split_mode")
     private SplitMode splitMode = SplitMode.EQUAL;
 
+    @Column(name = "requires_confirmation")
+    private boolean requiresConfirmation;
+
     @Column(name = "generated_through")
     private LocalDate generatedThrough;
 
@@ -106,6 +109,7 @@ public class RecurrenceDefinition {
         definition.mode = draft.mode();
         definition.recurrenceInterval = draft.interval();
         definition.startDate = draft.startDate();
+        definition.requiresConfirmation = draft.requiresConfirmation();
         definition.firstParcel = draft.mode() == RecurrenceMode.INSTALLMENT
                 ? (draft.currentParcel() != null ? draft.currentParcel() : 1)
                 : null;
@@ -164,6 +168,16 @@ public class RecurrenceDefinition {
     /** Skips one date for good: neither generation nor a later edit produces an occurrence on it. */
     public void except(LocalDate date) {
         exceptions.add(date);
+    }
+
+    /**
+     * Sets whether occurrences wait for a confirmation and applies it to the {@code occurrences} still
+     * forecast: turned off, an unconfirmed one becomes due on its date; turned on, one dated after
+     * {@code today} waits for a confirmation. Past and confirmed occurrences keep what they are.
+     */
+    public void changeRequiresConfirmation(boolean required, List<Transaction> occurrences, LocalDate today) {
+        requiresConfirmation = required;
+        occurrences.forEach(occurrence -> occurrence.followSeriesFlag(required, today));
     }
 
     private static void requireParcels(Integer parcelsNumber) {
@@ -255,6 +269,10 @@ public class RecurrenceDefinition {
 
     public SplitMode getSplitMode() {
         return splitMode;
+    }
+
+    public boolean isRequiresConfirmation() {
+        return requiresConfirmation;
     }
 
     public LocalDate getGeneratedThrough() {

@@ -22,6 +22,8 @@ function transaction(
     splitMode: "EQUAL",
     participants: [{ id: 1, name: "Lucas Martins", shareAmount: 100 }],
     items: [],
+    status: "ACTUAL",
+    requiresConfirmation: false,
     ...overrides,
   };
 }
@@ -40,6 +42,11 @@ const week: Transaction[] = [
   }),
 ];
 
+/** The page's rule, minus the permission every row here has: a row still waiting is confirmable. */
+function isConfirmable(transaction: Transaction) {
+  return transaction.status !== "ACTUAL";
+}
+
 const meta = {
   title: "Transactions/TransactionMobileList",
   component: TransactionMobileList,
@@ -50,6 +57,8 @@ const meta = {
     onPageChange: fn(),
     onPageSizeChange: fn(),
     onEdit: fn(),
+    onConfirm: fn(),
+    canConfirm: isConfirmable,
   },
   // The list is the narrow-screen layout, so every story shows it at phone width.
   globals: { viewport: { value: "mobile1" } },
@@ -63,6 +72,38 @@ export const GroupedByDay: Story = {
     await expect(canvas.getAllByRole("heading", { level: 3 })).toHaveLength(2);
     await userEvent.click(canvas.getByRole("button", { name: /Groceries/ }));
     await expect(args.onEdit).toHaveBeenCalledWith(week[0]);
+  },
+};
+
+export const ForecastAndPending: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Gym", "2026-10-20", { status: "FORECAST", requiresConfirmation: true }),
+      transaction(2, "Rent", "2026-10-02", { status: "PENDING", requiresConfirmation: true }),
+      transaction(3, "Groceries", "2026-10-01"),
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByText("Forecast")).toHaveLength(1);
+    await expect(canvas.getAllByText("Pending")).toHaveLength(1);
+  },
+};
+
+// A tap on Confirm reaches the dialog without opening the edit drawer; a row the member may not
+// confirm shows no Confirm.
+export const Confirmable: Story = {
+  args: {
+    transactions: [
+      transaction(2, "Rent", "2026-10-02", { status: "PENDING", requiresConfirmation: true }),
+      transaction(3, "Groceries", "2026-10-01"),
+    ],
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    const confirms = canvas.getAllByRole("button", { name: "Confirm" });
+    await expect(confirms).toHaveLength(1);
+    await userEvent.click(confirms[0]);
+    await expect(args.onConfirm).toHaveBeenCalledWith(args.transactions[0]);
+    await expect(args.onEdit).not.toHaveBeenCalled();
   },
 };
 

@@ -50,6 +50,7 @@ const savedTransaction: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 function authValue(): AuthContextValue {
@@ -547,6 +548,7 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
     startDate: "2026-05-01",
     splitMode: "EQUAL",
     participants: [],
+    requiresConfirmation: false,
   };
   const updatedSeries = { seriesId: "s-1", count: 12, occurrences: [occurrence] };
 
@@ -672,5 +674,108 @@ describe("TransactionFormDrawer language", () => {
     expect(screen.getByText("Editar transação")).toBeDefined();
     expect(screen.getByLabelText<HTMLInputElement>("Descrição").value).toBe("Monthly rent");
     expect(screen.getByLabelText("Categoria").textContent).toContain("Groceries");
+  });
+});
+
+describe("TransactionFormDrawer", () => {
+  afterEach(cleanup);
+
+  const confirmedOccurrence: Transaction = {
+    ...savedTransaction,
+    id: 55,
+    seriesId: "s-1",
+    description: "Electricity",
+    status: "ACTUAL",
+    requiresConfirmation: true,
+  };
+  const definition: RecurrenceDefinitionResponse = {
+    id: 9,
+    version: 2,
+    seriesId: "s-1",
+    type: "DEBIT",
+    amount: 150.5,
+    description: "Electricity",
+    mode: "RECURRING",
+    interval: "MONTHLY",
+    startDate: "2026-05-01",
+    splitMode: "EQUAL",
+    participants: [],
+    requiresConfirmation: true,
+  };
+
+  /** Edits one occurrence ("This one") and returns the PUT body. */
+  async function saveThisOne(user: ReturnType<typeof userEvent.setup>, requests: Request[]) {
+    await user.click(screen.getByRole("button", { name: "Save" }));
+    const radio = await screen.findByRole("radio", { name: /^This one/ });
+    const dialog = within(radio.closest<HTMLElement>("[role='dialog']")!);
+    await user.click(dialog.getByRole("radio", { name: /^This one/ }));
+    await user.click(dialog.getByRole("button", { name: "Continue" }));
+    return sentBody(requests, "PUT");
+  }
+
+  async function renderOccurrence(transaction: Transaction) {
+    server.use(
+      transactionHandlers.series(definition),
+      transactionHandlers.updateSeries({ seriesId: "s-1", count: 1, occurrences: [transaction] }),
+    );
+    renderDrawer({ mode: "edit", transaction, members: [lucas] });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Save" })).toHaveProperty("disabled", false),
+    );
+  }
+
+  it("series starts requiring confirmation", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(
+      transactionHandlers.createSeries({ seriesId: "s-1", count: 1, occurrences: [confirmedOccurrence] }),
+    );
+    renderDrawer({ members: [lucas] });
+
+    await user.type(screen.getByLabelText("Description"), "Electricity");
+    await user.type(screen.getByLabelText("Amount"), "20000");
+    await user.click(screen.getByRole("checkbox", { name: "Repeat or split into installments?" }));
+    await user.click(screen.getByRole("button", { name: "Recurring" }));
+
+    expect(screen.getByRole("switch", { name: "Requires confirmation" }).getAttribute("aria-checked")).toBe("true");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    expect(await sentBody(requests, "POST")).toMatchObject({ mode: "RECURRING", requiresConfirmation: true });
+  });
+
+  it("status keeps its value when another field changes", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    await renderOccurrence({ ...confirmedOccurrence, status: "FORECAST" });
+
+    expect(screen.getByRole("button", { name: "Forecast" }).getAttribute("aria-pressed")).toBe("true");
+    expect(screen.getByRole("button", { name: "Actual" }).getAttribute("aria-pressed")).toBe("false");
+    const amount = screen.getByLabelText("Amount");
+    await user.clear(amount);
+    await user.type(amount, "18740");
+    expect(screen.getByRole("button", { name: "Forecast" }).getAttribute("aria-pressed")).toBe("true");
+
+    expect(await saveThisOne(user, requests)).toMatchObject({
+      scope: "THIS_ONE",
+      series: { amount: 187.4 },
+      pivotConfirmed: false,
+    });
+  });
+
+  it("status forecast unconfirms", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    await renderOccurrence(confirmedOccurrence);
+
+    await user.click(screen.getByRole("button", { name: "Forecast" }));
+
+    expect(await saveThisOne(user, requests)).toMatchObject({ scope: "THIS_ONE", pivotConfirmed: false });
+  });
+
+  it("one-off shows no confirmation controls", () => {
+    renderDrawer({ mode: "edit", transaction: savedTransaction, members: [lucas] });
+
+    expect(screen.queryByRole("switch", { name: "Requires confirmation" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Forecast" })).toBeNull();
   });
 });

@@ -11,12 +11,20 @@ export type PersonBreakdown = {
   income: number;
   expense: number;
   net: number;
+  /** The same figures counting only actual transactions; the three above count the forecast too. */
+  actualIncome: number;
+  actualExpense: number;
+  actualNet: number;
 };
 
 export type DashboardSummaryResponse = {
   totalIncome: number;
   totalExpenses: number;
   netBalance: number;
+  /** The same figures counting only actual transactions; the three above are the forecast. */
+  actualIncome: number;
+  actualExpenses: number;
+  actualBalance: number;
   personBreakdown: PersonBreakdown[];
 };
 

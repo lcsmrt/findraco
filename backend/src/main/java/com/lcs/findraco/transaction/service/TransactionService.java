@@ -25,6 +25,7 @@ import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.repository.TransactionSpecification;
+import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
@@ -112,7 +113,11 @@ public class TransactionService {
     }
 
     private TransactionResponse response(Transaction transaction, PlanContext ctx) {
-        return TransactionResponse.from(transaction, permissions(transaction, ctx));
+        return response(transaction, ctx, userService.today(ctx.userId()));
+    }
+
+    private TransactionResponse response(Transaction transaction, PlanContext ctx, LocalDate today) {
+        return TransactionResponse.from(transaction, permissions(transaction, ctx), today);
     }
 
     /** Edit and delete follow the same rule: the caller's role and, for a contributor, who created the row. */
@@ -170,7 +175,8 @@ public class TransactionService {
             transactionRepository.fetchParticipants(page.getContent());
             transactionRepository.fetchItems(page.getContent());
         }
-        return page.map(transaction -> response(transaction, ctx));
+        LocalDate today = userService.today(ctx.userId());
+        return page.map(transaction -> response(transaction, ctx, today));
     }
 
     @Transactional
@@ -208,6 +214,21 @@ public class TransactionService {
                 dto.endDate(),
                 dto.parcelsNumber());
         transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
+
+        return response(transactionRepository.saveAndFlush(transaction), ctx);
+    }
+
+    /**
+     * Records what an occurrence really cost and when. A moved date keeps the occurrence's series slot, so a
+     * later series edit neither refills the old date nor loses the occurrence.
+     */
+    @Transactional
+    public TransactionResponse confirm(Long id, ConfirmTransactionRequest dto, PlanContext ctx) {
+        Transaction transaction = load(id, ctx);
+        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
+        claimVersion(transaction, transaction.getVersion(), dto.version());
+
+        transaction.confirm(dto.amount(), dto.startDate());
 
         return response(transactionRepository.saveAndFlush(transaction), ctx);
     }
@@ -293,7 +314,8 @@ public class TransactionService {
                         dto.startDate(),
                         dto.endDate(),
                         split.mode(),
-                        split.shares())));
+                        split.shares(),
+                        dto.requiresConfirmation() == null || dto.requiresConfirmation())));
 
         List<Transaction> occurrences = recurringTransactionGenerator.generate(dto, definition, split.shares());
         if (dto.mode() == RecurrenceMode.RECURRING && !occurrences.isEmpty()) {
@@ -304,7 +326,9 @@ public class TransactionService {
         }
 
         return TransactionSeriesResponse.from(
-                transactionRepository.saveAll(occurrences), transaction -> permissions(transaction, ctx));
+                transactionRepository.saveAll(occurrences),
+                transaction -> permissions(transaction, ctx),
+                userService.today(ctx.userId()));
     }
 
     /**
@@ -354,7 +378,7 @@ public class TransactionService {
         }
 
         if (scope == SeriesEditScope.THIS_ONE && definition != null) {
-            definition.except(pivot.getStartDate());
+            definition.except(pivot.getScheduledDate());
         }
         transactionRepository.deleteAll(inScope);
 
@@ -439,9 +463,9 @@ public class TransactionService {
         switch (dto.scope()) {
             case THIS_ONE -> inScope = List.of(pivot);
             case THIS_AND_FOLLOWING -> {
-                LocalDate pivotStartDate = pivot.getStartDate();
+                LocalDate pivotSlot = pivot.getScheduledDate();
                 inScope = occurrences.stream()
-                        .filter(occurrence -> !occurrence.getStartDate().isBefore(pivotStartDate))
+                        .filter(occurrence -> !occurrence.getScheduledDate().isBefore(pivotSlot))
                         .toList();
             }
             case ALL -> inScope = occurrences;
@@ -465,11 +489,21 @@ public class TransactionService {
                             pivot.getParcelsNumber()),
                     split.mode(),
                     split.shares());
+            if (dto.pivotConfirmed() != null) {
+                pivot.markConfirmed(dto.pivotConfirmed());
+            }
 
             transactionRepository.saveAndFlush(pivot);
-            return TransactionSeriesResponse.from(List.of(pivot), transaction -> permissions(transaction, ctx));
+            return TransactionSeriesResponse.from(
+                    List.of(pivot), transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));
         }
 
+        // The flag goes first: occurrences created by the regeneration below take it from the definition.
+        if (series.requiresConfirmation() != null
+                && series.requiresConfirmation() != definition.isRequiresConfirmation()) {
+            definition.changeRequiresConfirmation(
+                    series.requiresConfirmation(), inScope, userService.today(ctx.userId()));
+        }
         definition.editPattern(new SeriesPattern(
                 category,
                 series.amount(),
@@ -479,10 +513,21 @@ public class TransactionService {
                 split.mode(),
                 split.shares()));
 
-        LocalDate pivotDate = dto.scope() == SeriesEditScope.ALL ? null : pivot.getStartDate();
+        LocalDate pivotSlot = dto.scope() == SeriesEditScope.ALL ? null : pivot.getScheduledDate();
 
         SeriesRegenerator.SeriesEditResult result =
-                seriesRegenerator.reconcile(definition, occurrences, split.shares(), dto.scope(), pivotDate);
+                seriesRegenerator.reconcile(definition, occurrences, split.shares(), dto.scope(), pivotSlot);
+
+        // The Status control shows the pivot's status in every scope, so it is applied after the regeneration,
+        // which may otherwise have left the pivot frozen as confirmed.
+        Long pivotOccurrenceId = dto.pivotOccurrenceId();
+        if (dto.pivotConfirmed() != null && pivotOccurrenceId != null) {
+            occurrences.stream()
+                    .filter(occurrence -> occurrence.getId().equals(pivotOccurrenceId))
+                    .filter(occurrence -> !result.toDelete().contains(occurrence))
+                    .findFirst()
+                    .ifPresent(occurrence -> occurrence.markConfirmed(dto.pivotConfirmed()));
+        }
 
         transactionRepository.saveAll(result.toUpdate());
         transactionRepository.saveAll(result.toCreate());
@@ -500,7 +545,7 @@ public class TransactionService {
             LocalDate generatedThrough = definition.getEndDate() != null
                     ? definition.getEndDate()
                     : combined.stream()
-                            .map(Transaction::getStartDate)
+                            .map(Transaction::getScheduledDate)
                             .max(LocalDate::compareTo)
                             .orElse(definition.getGeneratedThrough());
             definition.markGeneratedThrough(generatedThrough);
@@ -511,6 +556,7 @@ public class TransactionService {
         }
         recurrenceDefinitionRepository.saveAndFlush(definition);
 
-        return TransactionSeriesResponse.from(combined, transaction -> permissions(transaction, ctx));
+        return TransactionSeriesResponse.from(
+                combined, transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));
     }
 }

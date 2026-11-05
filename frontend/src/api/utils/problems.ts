@@ -53,6 +53,7 @@ const PROBLEM_COPY = {
   "category-owner-not-member": "problems.category-owner-not-member",
   "transaction-not-found": "problems.transaction-not-found",
   "series-not-found": "problems.series-not-found",
+  "transaction-not-awaiting-confirmation": "problems.transaction-not-awaiting-confirmation",
   "transaction-category-type-mismatch": "problems.transaction-category-type-mismatch",
   "item-category-type-mismatch": "problems.item-category-type-mismatch",
   "items-exceed-amount": "problems.items-exceed-amount",

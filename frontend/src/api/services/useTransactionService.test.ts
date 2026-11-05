@@ -3,6 +3,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
+  ConfirmTransactionRequest,
   CreateTransactionRequest,
   Transaction,
   TransactionSeriesResponse,
@@ -16,6 +17,7 @@ import { renderHookWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
 import { transactionHandlers as handlers } from "./transaction.handlers";
 import {
+  useConfirmTransaction,
   useCreateTransaction,
   useCreateTransactionSeries,
   useDeleteTransaction,
@@ -46,6 +48,8 @@ const transaction: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL",
+  requiresConfirmation: false,
 };
 
 const body: CreateTransactionRequest["body"] = {
@@ -69,6 +73,7 @@ const definition: RecurrenceDefinitionResponse = {
   startDate: "2026-01-05",
   splitMode: "EQUAL",
   participants: [],
+  requiresConfirmation: false,
 };
 
 function sent(request: Request) {
@@ -228,6 +233,33 @@ describe("transaction mutations", () => {
     expect(requests.map(sent)).toEqual([["POST", `${path}/import`, {}]]);
     expect(result.current.data).toEqual({ imported: 12, skippedDuplicates: 3 });
     expect(onSuccess).toHaveBeenCalledWith({ imported: 12, skippedDuplicates: 3 }, file);
+  });
+});
+
+describe("confirmTransaction", () => {
+  it("posts amount, date and version", async () => {
+    const confirmed: Transaction = { ...transaction, amount: 187.4, startDate: "2026-10-12", status: "ACTUAL" };
+    server.use(handlers.confirm(confirmed));
+    const requests = recordRequests();
+    const onSuccess = vi.fn();
+    const request: ConfirmTransactionRequest = {
+      params: { id: 40 },
+      body: { amount: 187.4, startDate: "2026-10-12", version: 3 },
+    };
+
+    const { result, queryClient } = renderHookWithProviders(() => useConfirmTransaction({ onSuccess }), {
+      plan: plan5,
+      seed: seedLists,
+    });
+    result.current.mutate(request);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests.map(sent)).toEqual([["POST", `${path}/40/confirm`, {}]]);
+    expect(await requests[0].json()).toEqual({ amount: 187.4, startDate: "2026-10-12", version: 3 });
+    expect(result.current.data).toEqual(confirmed);
+    expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Transaction confirmed.");
+    expect(onSuccess).toHaveBeenCalledWith(confirmed, request);
   });
 });
 

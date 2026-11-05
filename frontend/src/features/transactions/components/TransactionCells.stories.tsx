@@ -2,7 +2,7 @@ import type { Transaction } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { TableBase, TableBodyBase, TableCellBase, TableRowBase } from "@/components/table/base/TableParts";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, screen } from "storybook/test";
+import { expect, fn, screen, within } from "storybook/test";
 import {
   ActionsCell,
   DescriptionCell,
@@ -34,6 +34,7 @@ const groceries: Transaction = {
     { id: 2, name: "Livia Souza", shareAmount: 160 },
   ],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 type DemoRowProps = {
@@ -44,6 +45,7 @@ type DemoRowProps = {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onConfirm?: () => void;
 };
 
 // The cells live in table rows, so the story renders one row the way the transactions table does.
@@ -57,6 +59,7 @@ function DemoRow({
   onEdit,
   onDuplicate,
   onDelete,
+  onConfirm,
 }: DemoRowProps) {
   return (
     <TableBase className="w-full max-w-4xl">
@@ -89,6 +92,7 @@ function DemoRow({
               onEdit={onEdit}
               onDuplicate={onDuplicate}
               onDelete={onDelete}
+              onConfirm={onConfirm}
             />
           </TableCellBase>
         </TableRowBase>
@@ -134,6 +138,69 @@ export const Income: Story = {
 };
 
 export const Series: Story = { args: { transaction: { ...groceries, seriesId: "series-1" } } };
+
+export const Forecast: Story = {
+  args: { transaction: { ...groceries, status: "FORECAST", requiresConfirmation: true } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Forecast")).toBeVisible();
+    await expect(canvas.queryByText("Pending")).toBeNull();
+  },
+};
+
+export const Pending: Story = {
+  args: { transaction: { ...groceries, status: "PENDING", requiresConfirmation: true } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Pending")).toBeVisible();
+    await expect(canvas.queryByText("Forecast")).toBeNull();
+  },
+};
+
+// One row per status, so a badge on the wrong row fails the story as surely as a missing one.
+export const StatusBadges: Story = {
+  render: (args) => (
+    <div className="flex flex-col gap-2">
+      <DemoRow
+        {...args}
+        transaction={{ ...groceries, id: 2, description: "Electricity", status: "FORECAST", requiresConfirmation: true }}
+      />
+      <DemoRow
+        {...args}
+        transaction={{ ...groceries, id: 3, description: "Water", status: "PENDING", requiresConfirmation: true }}
+      />
+      <DemoRow {...args} transaction={groceries} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const [forecast, pending, actual] = canvas.getAllByRole("row").map((row) => within(row));
+    await expect(forecast.getByText("Electricity")).toBeVisible();
+    await expect(forecast.getByText("Forecast")).toBeVisible();
+    await expect(forecast.queryByText("Pending")).toBeNull();
+    await expect(pending.getByText("Water")).toBeVisible();
+    await expect(pending.getByText("Pending")).toBeVisible();
+    await expect(pending.queryByText("Forecast")).toBeNull();
+    await expect(actual.getByText("Groceries")).toBeVisible();
+    await expect(actual.queryByText("Forecast")).toBeNull();
+    await expect(actual.queryByText("Pending")).toBeNull();
+  },
+};
+
+export const Confirmable: Story = {
+  args: {
+    transaction: { ...groceries, status: "PENDING", requiresConfirmation: true },
+    onConfirm: fn(),
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Confirm" }));
+    await expect(args.onConfirm).toHaveBeenCalledTimes(1);
+  },
+};
+
+export const Actual: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByText("Forecast")).toBeNull();
+    await expect(canvas.queryByText("Pending")).toBeNull();
+  },
+};
 
 export const NoCategoryNoParticipants: Story = {
   args: { transaction: { ...groceries, category: undefined, participants: [] } },

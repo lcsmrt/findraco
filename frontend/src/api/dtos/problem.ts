@@ -49,6 +49,7 @@ export type ProblemType =
   | "category-owner-not-member"
   | "transaction-not-found"
   | "series-not-found"
+  | "transaction-not-awaiting-confirmation"
   | "transaction-category-type-mismatch"
   | "item-category-type-mismatch"
   | "items-exceed-amount"

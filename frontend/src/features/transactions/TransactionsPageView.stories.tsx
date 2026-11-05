@@ -30,6 +30,8 @@ function transaction(id: number, overrides: Partial<Transaction> = {}): Transact
       { id: 2, name: "Livia Souza", shareAmount: (120 + id) / 2 },
     ],
     items: [],
+    status: "ACTUAL",
+    requiresConfirmation: false,
     ...overrides,
   };
 }
@@ -45,6 +47,8 @@ function columns(sharedPlan: boolean) {
     onDuplicate: fn(),
     onEdit: fn(),
     onDelete: fn(),
+    onConfirm: fn(),
+    canConfirm: () => false,
     onSave: fn(),
     showParticipantsColumn: sharedPlan,
     canEditParticipants: sharedPlan,
@@ -80,6 +84,8 @@ const meta = {
     sorting: [],
     onSortChange: fn(),
     onEdit: fn(),
+    onConfirm: fn(),
+    canConfirm: () => false,
   },
 } satisfies Meta<typeof TransactionsPageView>;
 export default meta;

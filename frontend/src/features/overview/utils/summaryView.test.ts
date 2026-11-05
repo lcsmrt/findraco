@@ -14,9 +14,12 @@ const dashboard: DashboardSummaryResponse = {
   netBalance: 697,
   // Unsorted on purpose: segments follow member id order.
   personBreakdown: [
-    { userId: LIVIA, name: "Livia", income: 2414, expense: 2105, net: 309 },
-    { userId: LUCAS, name: "Lucas", income: 2733, expense: 2345, net: 388 },
+    { userId: LIVIA, name: "Livia", income: 2414, expense: 2105, net: 309, actualIncome: 1400, actualExpense: 600, actualNet: 800 },
+    { userId: LUCAS, name: "Lucas", income: 2733, expense: 2345, net: 388, actualIncome: 1600, actualExpense: 600, actualNet: 1000 },
   ],
+  actualIncome: 3000,
+  actualExpenses: 1200,
+  actualBalance: 1800,
 };
 
 describe("summaryView", () => {
@@ -35,6 +38,23 @@ describe("summaryView", () => {
       [LIVIA, 2105],
     ]);
     expect(view.income.segments.reduce((sum, s) => sum + s.widthPct, 0)).toBeCloseTo(100, 5);
+  });
+
+  it("pairs each plan total with its actual figure", () => {
+    const view = summaryView(dashboard, null, colorOf);
+
+    expect(view.income.actual).toBe(3000);
+    expect(view.expenses.actual).toBe(1200);
+    expect(view.balanceActual).toBe(1800);
+  });
+
+  it("member selected keeps actual figures", () => {
+    const view = summaryView(dashboard, LIVIA, colorOf);
+
+    expect(view.income).toMatchObject({ actual: 1400, total: 2414 });
+    expect(view.expenses).toMatchObject({ actual: 600, total: 2105 });
+    expect(view.balanceActual).toBe(800);
+    expect(view.balance).toBe(309);
   });
 
   it("shows the selected member's income, expense and balance, highlighting their segment (UX-05 AC 2)", () => {
@@ -56,12 +76,17 @@ describe("summaryView", () => {
   it("shows zeros for a selected member without transactions", () => {
     const view = summaryView(dashboard, 99, colorOf);
 
-    expect(view).toMatchObject({ income: { total: 0 }, expenses: { total: 0 }, balance: 0 });
+    expect(view).toMatchObject({
+      income: { total: 0, actual: 0 },
+      expenses: { total: 0, actual: 0 },
+      balance: 0,
+      balanceActual: 0,
+    });
   });
 
   it("leaves out members with no amount and handles an empty period", () => {
     const view = summaryView(
-      { ...dashboard, totalIncome: 0, personBreakdown: [{ userId: LUCAS, name: "Lucas", income: 0, expense: 10, net: -10 }] },
+      { ...dashboard, totalIncome: 0, personBreakdown: [{ userId: LUCAS, name: "Lucas", income: 0, expense: 10, net: -10, actualIncome: 0, actualExpense: 10, actualNet: -10 }] },
       null,
       colorOf,
     );

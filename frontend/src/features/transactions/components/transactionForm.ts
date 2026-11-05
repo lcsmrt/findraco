@@ -49,6 +49,10 @@ export const transactionFormSchema = z
     date: z.date({ required_error: "transactions.form.dateIsRequired" }),
     recurring: z.boolean(),
     seriesEdit: z.boolean(),
+    /** A series' flag: its occurrences stay forecast until confirmed. Only series forms send it. */
+    requiresConfirmation: z.boolean(),
+    /** The Status control of an occurrence that requires confirmation: true is Actual. */
+    confirmed: z.boolean(),
     recurrenceMode: z.enum(["INSTALLMENT", "RECURRING"]).optional(),
     /** Whole count; `null` or unset when empty. */
     parcelsNumber: z.number().nullable().optional(),
@@ -491,6 +495,7 @@ export function toSeriesCreatePayload(
         : undefined,
     splitMode,
     participants,
+    requiresConfirmation: values.requiresConfirmation,
   };
 }
 
@@ -527,8 +532,12 @@ export function toSeriesEditPayload(
           : undefined,
       splitMode,
       participants,
+      requiresConfirmation: values.requiresConfirmation,
     },
     version: definition.version,
+    // Only an occurrence that requires confirmation shows the Status control; for any other the
+    // field is not the user's answer, so nothing is sent and the server leaves it as it is.
+    pivotConfirmed: transaction.requiresConfirmation ? values.confirmed : undefined,
   };
 }
 
@@ -553,6 +562,8 @@ export function buildDefaultValues(
       date: parseLocalDate(transaction.startDate),
       recurring: false,
       seriesEdit: isSeriesEdit,
+      requiresConfirmation: definition?.requiresConfirmation ?? true,
+      confirmed: transaction.status === "ACTUAL",
       recurrenceMode: isSeriesEdit ? definition.mode : undefined,
       parcelsNumber:
         isSeriesEdit && definition.mode === "INSTALLMENT"
@@ -589,6 +600,8 @@ export function buildDefaultValues(
     date: new Date(),
     recurring: false,
     seriesEdit: false,
+    requiresConfirmation: true,
+    confirmed: false,
     attributionMode: "ME",
     splitMode: "EQUAL",
     participants: [],

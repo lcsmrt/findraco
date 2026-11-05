@@ -30,6 +30,7 @@
       "seriesUpdated": "Série atualizada.",
       "timeZoneSaved": "Fuso horário salvo.",
       "transactionAdded": "Transação adicionada.",
+      "transactionConfirmed": "Transação confirmada.",
       "transactionDeleted": "Transação excluída.",
       "transactionUpdated": "Transação atualizada.",
       "youJoinedThePlan": "Você entrou no plano.",
@@ -365,6 +366,8 @@
       "formerMember": "(ex-membro)"
     },
     "summaryCards": {
+      "actual": "Realizado",
+      "forecast": "Previsto {{amount}}",
       "expenses": "Despesas",
       "income": "Receitas"
     }
@@ -626,6 +629,7 @@
       "429": "Muitas tentativas. Aguarde alguns minutos e tente novamente."
     },
     "transaction-category-type-mismatch": "A categoria não corresponde ao tipo da transação.",
+    "transaction-not-awaiting-confirmation": "Esta transação não está aguardando confirmação.",
     "transaction-not-found": "Esta transação não existe mais.",
     "unauthenticated": "Sua sessão terminou. Entre novamente.",
     "unexpected": "Ocorreu um erro inesperado.",
@@ -684,6 +688,19 @@
     "categoryQuickCreate": {
       "createExpense": "Criar categoria de despesa \"{{name}}\"",
       "createIncome": "Criar categoria de receita \"{{name}}\""
+    },
+    "confirmationFields": {
+      "actual": "Realizado",
+      "forecast": "Previsto",
+      "requiresConfirmation": "Exige confirmação",
+      "staysForecastUntilConfirmed": "Fica previsto até um membro confirmar com o valor real.",
+      "status": "Situação"
+    },
+    "confirmTransactionDialog": {
+      "enterWhatWasReallyCharged": "Informe o valor realmente cobrado de {{description}} e quando foi pago."
+    },
+    "confirmTransactionDialogView": {
+      "confirmTransaction": "Confirmar transação"
     },
     "descriptionCell": {
       "series": "Série"
@@ -789,6 +806,10 @@
     },
     "transactionMobileList": {
       "noTransactionsFound": "Nenhuma transação encontrada."
+    },
+    "transactionStatusBadge": {
+      "forecast": "Previsto",
+      "pending": "Pendente"
     },
     "transactionsPageView": {
       "clearAll": "Limpar tudo",

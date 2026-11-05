@@ -4,6 +4,7 @@ import type {
   LineProblem,
   Problem,
   ProblemType,
+  ConfirmTransactionRequest,
   CreateTransactionRequest,
   CreateTransactionSeriesRequest,
   Transaction,
@@ -70,6 +71,18 @@ export const transactionHandlers = {
       UpdateTransactionRequest["body"],
       Transaction
     >(`${base}/:id`, () => HttpResponse.json(transaction));
+  },
+  confirm(transaction: Transaction): HttpHandler {
+    return http.post<
+      TransactionParams,
+      ConfirmTransactionRequest["body"],
+      Transaction
+    >(`${base}/:id/confirm`, () => HttpResponse.json(transaction));
+  },
+  confirmRejected(status: number, type: ProblemType): HttpHandler {
+    return http.post<TransactionParams, ConfirmTransactionRequest["body"], Problem>(`${base}/:id/confirm`, () =>
+      HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),
+    );
   },
   updateRejected(status: number, type: ProblemType): HttpHandler {
     return http.put<TransactionParams, UpdateTransactionRequest["body"], Problem>(`${base}/:id`, () =>

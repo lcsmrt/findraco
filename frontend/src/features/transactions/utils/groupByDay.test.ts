@@ -15,6 +15,8 @@ function tx(id: number, startDate: string): Transaction {
     splitMode: "EQUAL",
     participants: [],
     items: [],
+    status: "ACTUAL",
+    requiresConfirmation: false,
   };
 }
 

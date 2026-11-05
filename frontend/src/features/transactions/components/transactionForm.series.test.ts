@@ -22,6 +22,8 @@ const baseValues: TransactionFormOutput = {
   date: new Date(2026, 6, 1),
   recurring: true,
   seriesEdit: false,
+  requiresConfirmation: true,
+  confirmed: false,
   attributionMode: "ME",
   splitMode: "EQUAL",
   participants: [],
@@ -41,6 +43,7 @@ const installmentTransaction: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 const installmentDefinition: RecurrenceDefinitionResponse = {
@@ -56,6 +59,7 @@ const installmentDefinition: RecurrenceDefinitionResponse = {
   startDate: "2026-05-01",
   splitMode: "EQUAL",
   participants: [],
+  requiresConfirmation: false,
 };
 
 const recurringDefinition: RecurrenceDefinitionResponse = {
@@ -71,6 +75,7 @@ const recurringDefinition: RecurrenceDefinitionResponse = {
   endDate: "2026-12-01",
   splitMode: "EQUAL",
   participants: [],
+  requiresConfirmation: false,
 };
 
 describe("transactionFormSchema — recurring (create) validation", () => {
@@ -335,6 +340,7 @@ describe("toSeriesCreatePayload", () => {
       endDate: undefined,
       splitMode: undefined,
       participants: undefined,
+      requiresConfirmation: true,
     });
   });
 
@@ -376,6 +382,7 @@ describe("toSeriesCreatePayload", () => {
       endDate: "2026-12-01",
       splitMode: undefined,
       participants: undefined,
+      requiresConfirmation: true,
     });
   });
 
@@ -427,9 +434,22 @@ describe("toSeriesEditPayload", () => {
         endDate: undefined,
         splitMode: undefined,
         participants: undefined,
+        requiresConfirmation: true,
       },
       version: 6,
     });
+  });
+
+  it("sends the flag the form shows and the Status only for an occurrence that requires confirmation", () => {
+    const form = { ...baseValues, seriesEdit: true, recurring: false, requiresConfirmation: false, confirmed: true };
+    const required = { ...installmentTransaction, requiresConfirmation: true, status: "ACTUAL" as const };
+
+    const asked = toSeriesEditPayload(form, required, installmentDefinition, "THIS_ONE", false, undefined);
+    const notAsked = toSeriesEditPayload(form, installmentTransaction, installmentDefinition, "THIS_ONE", false, undefined);
+
+    expect(asked.series.requiresConfirmation).toBe(false);
+    expect(asked.pivotConfirmed).toBe(true);
+    expect(notAsked.pivotConfirmed).toBeUndefined();
   });
 
   it("uses the definition's start date, not the form's date field", () => {

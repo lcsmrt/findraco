@@ -18,6 +18,7 @@ import {
 } from "@/hooks/useCategoryFormSheet";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
+import { stubScreenWidth } from "@/test/screenWidth";
 import { server } from "@/test/server";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -44,6 +45,7 @@ const rent: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 const gym: Transaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
 
@@ -274,6 +276,53 @@ describe("TransactionsPage (STD-12 AC 1, 2)", () => {
     await waitFor(() =>
       expect(requests.some((r) => r.method === "DELETE" && new URL(r.url).pathname === `${API}/42`)).toBe(true),
     );
+  });
+});
+
+describe("TransactionsPage", () => {
+  const electricity: Transaction = {
+    ...rent,
+    id: 77,
+    version: 3,
+    seriesId: "s-9",
+    description: "Electricity",
+    amount: 200,
+    startDate: "2026-10-10",
+    endDate: "2026-10-10",
+    status: "PENDING",
+    requiresConfirmation: true,
+  };
+
+  it("confirm on a pending row opens the dialog prefilled", async () => {
+    const { user } = renderTab({ transactions: [electricity, rent] });
+    const row = await tableRow("Electricity");
+    expect(screen.queryByRole("dialog")).toBeNull();
+
+    await user.click(row.getByRole("button", { name: "Confirm" }));
+
+    const dialog = await screen.findByRole("dialog", { name: "Confirm transaction" });
+    // The currency mask separates the symbol with a no-break space.
+    expect((within(dialog).getByRole("textbox", { name: "Amount" }) as HTMLInputElement).value).toMatch(
+      /^R\$\s200,00$/,
+    );
+    expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
+    expect(within(dialog).getByText(/Electricity/)).toBeTruthy();
+  });
+
+  it("mobile confirm opens the dialog", async () => {
+    stubScreenWidth(390);
+    const { user } = renderTab({ transactions: [electricity, rent] });
+    // jsdom applies no CSS, so both layouts render: the phone list's Confirm is the one outside the table.
+    const mobileConfirms = (await screen.findAllByRole("button", { name: "Confirm" })).filter(
+      (button) => !button.closest("table"),
+    );
+    expect(mobileConfirms).toHaveLength(1);
+
+    await user.click(mobileConfirms[0]);
+
+    const dialog = await screen.findByRole("dialog", { name: "Confirm transaction" });
+    expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
+    expect(screen.queryByRole("dialog", { name: "Edit Transaction" })).toBeNull();
   });
 });
 

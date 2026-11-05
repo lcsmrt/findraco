@@ -19,6 +19,15 @@ public class TransactionExceptions {
         }
     }
 
+    public static class TransactionNotAwaitingConfirmationException extends DomainException {
+        public TransactionNotAwaitingConfirmationException() {
+            super(
+                    ProblemType.TRANSACTION_NOT_AWAITING_CONFIRMATION,
+                    HttpStatus.CONFLICT,
+                    "This transaction is not awaiting confirmation.");
+        }
+    }
+
     public static class CategoryTypeMismatchException extends DomainException {
         public CategoryTypeMismatchException() {
             super(
