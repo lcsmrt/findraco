@@ -7,6 +7,7 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.user.model.User;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Arrays;
@@ -167,6 +168,7 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "ck_transactions_amount_positive",
                         "ck_transactions_parcels_number",
                         "ck_transactions_split_mode",
+                        "ck_transactions_confirmation",
                         "fk_transactions_plans",
                         "fk_transactions_created_by",
                         "fk_transactions_categories",
@@ -437,8 +439,8 @@ class MigrationsIT extends AbstractIntegrationTest {
 
         assertThatThrownBy(() -> new JdbcTemplate(dataSource)
                         .update(
-                                "INSERT INTO transactions (plan_id, created_by, amount, description, type, start_date, split_mode) "
-                                        + "VALUES (?, ?, 5.00, 'T', 'DEBIT', '2026-01-01', 'PERCENT')",
+                                "INSERT INTO transactions (plan_id, created_by, amount, description, type, start_date, split_mode, confirmation) "
+                                        + "VALUES (?, ?, 5.00, 'T', 'DEBIT', '2026-01-01', 'PERCENT', 'BY_DATE')",
                                 plan.getId(),
                                 owner.getId()))
                 .isInstanceOf(DataIntegrityViolationException.class);
@@ -458,6 +460,46 @@ class MigrationsIT extends AbstractIntegrationTest {
                 .isInstanceOf(FlywayException.class)
                 .hasMessageContaining(
                         "V13 precondition failed: financial_transactions and financial_transaction_categories must exist");
+    }
+
+    private static final String V22_SEED =
+            "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
+                    + "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);"
+                    + "INSERT INTO recurrence_definitions (id, plan_id, created_by, series_id, type, amount, description, "
+                    + "mode, recurrence_interval, start_date) "
+                    + "VALUES (1, 1, 1, 'series-1', 'DEBIT', 200.00, 'Rent', 'RECURRING', 'MONTHLY', '2026-01-20');"
+                    + "INSERT INTO categories (id, plan_id, type, description) VALUES (1, 1, 'DEBIT', 'Housing');"
+                    + "INSERT INTO transactions (id, plan_id, created_by, category_id, amount, description, type, "
+                    + "start_date, split_mode, series_id, recurrence_definition_id) VALUES "
+                    + "(1, 1, 1, 1, 200.00, 'Rent', 'DEBIT', '2026-01-20', 'EQUAL', 'series-1', 1), "
+                    + "(2, 1, 1, 1, 200.00, 'Rent', 'DEBIT', '2999-01-20', 'EQUAL', 'series-1', 1);"
+                    + "INSERT INTO transaction_participants (transaction_id, member_user_id, share_amount) "
+                    + "VALUES (1, 1, 200.00), (2, 1, 200.00);";
+
+    @Test
+    void v23LeavesExistingDataByDate() {
+        migrateScratchDatabase("22", V22_SEED, scratch -> {
+            assertThat(scratch.queryForList("SELECT requires_confirmation FROM recurrence_definitions", Boolean.class))
+                    .containsExactly(false);
+            assertThat(scratch.queryForList("SELECT confirmation FROM transactions ORDER BY id", String.class))
+                    .containsExactly("BY_DATE", "BY_DATE");
+        });
+    }
+
+    @Test
+    void v23KeepsExistingValues() {
+        migrateScratchDatabase("22", V22_SEED, scratch -> {
+            Map<String, Object> first = scratch.queryForMap(
+                    "SELECT amount, start_date::text AS start_date, category_id FROM transactions WHERE id = 1");
+            assertThat(first)
+                    .containsEntry("amount", new BigDecimal("200.00"))
+                    .containsEntry("start_date", "2026-01-20")
+                    .containsEntry("category_id", 1L);
+            assertThat(scratch.queryForList(
+                            "SELECT share_amount FROM transaction_participants ORDER BY transaction_id",
+                            BigDecimal.class))
+                    .containsExactly(new BigDecimal("200.00"), new BigDecimal("200.00"));
+        });
     }
 
     /**
@@ -531,8 +573,8 @@ class MigrationsIT extends AbstractIntegrationTest {
 
     private static void insertTransaction(JdbcTemplate jdbc, Plan plan, User owner, String amount, String sourceRef) {
         jdbc.update(
-                "INSERT INTO transactions (plan_id, created_by, amount, description, type, start_date, source_ref) "
-                        + "VALUES (?, ?, ?::numeric, 'T', 'DEBIT', '2026-01-01', ?)",
+                "INSERT INTO transactions (plan_id, created_by, amount, description, type, start_date, source_ref, confirmation) "
+                        + "VALUES (?, ?, ?::numeric, 'T', 'DEBIT', '2026-01-01', ?, 'BY_DATE')",
                 plan.getId(),
                 owner.getId(),
                 amount,

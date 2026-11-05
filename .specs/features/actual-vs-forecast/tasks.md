@@ -69,7 +69,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] C1, C2, C3, C4, C9, C10, C11, C12, C13, C21, C22 pass
+- [x] C1, C2, C3, C4, C9, C10, C11, C12, C13, C21, C22 pass
 
 **Tests**: unit
 **Gate**: quick

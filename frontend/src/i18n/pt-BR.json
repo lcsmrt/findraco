@@ -626,6 +626,7 @@
       "429": "Muitas tentativas. Aguarde alguns minutos e tente novamente."
     },
     "transaction-category-type-mismatch": "A categoria não corresponde ao tipo da transação.",
+    "transaction-not-awaiting-confirmation": "Esta transação não está aguardando confirmação.",
     "transaction-not-found": "Esta transação não existe mais.",
     "unauthenticated": "Sua sessão terminou. Entre novamente.",
     "unexpected": "Ocorreu um erro inesperado.",
