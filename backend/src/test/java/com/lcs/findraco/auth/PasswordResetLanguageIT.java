@@ -69,11 +69,13 @@ class PasswordResetLanguageIT extends AbstractIntegrationTest {
     void fallsBackToEnglish() throws Exception {
         User withoutLanguage = fixtures.aUser();
         User withUnknownLanguage = fixtures.aUser();
+        User withLongLanguage = fixtures.aUser();
 
         forgotPassword(withoutLanguage.getEmail(), null);
         forgotPassword(withUnknownLanguage.getEmail(), "fr");
+        forgotPassword(withLongLanguage.getEmail(), "x-" + "a".repeat(33));
 
-        for (User user : new User[] {withoutLanguage, withUnknownLanguage}) {
+        for (User user : new User[] {withoutLanguage, withUnknownLanguage, withLongLanguage}) {
             SimpleMailMessage message = theOnlyMessageTo(user);
             assertThat(message.getSubject()).isEqualTo(ENGLISH_SUBJECT);
             assertThat(message.getText()).contains("You asked to reset your findraco password.");

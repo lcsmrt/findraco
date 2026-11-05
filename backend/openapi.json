@@ -488,7 +488,7 @@
             "type" : "string"
           },
           "language" : {
-            "maxLength" : 10,
+            "maxLength" : 35,
             "minLength" : 0,
             "type" : "string"
           }
