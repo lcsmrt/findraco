@@ -1,7 +1,8 @@
 # Internationalisation (M5-10) Design
 
 **Spec**: `.specs/features/i18n/spec.md`
-**Status**: Draft
+**Status**: Approved
+**Approved**: 2026-11-05 - user: "Pode seguir"
 
 ---
 

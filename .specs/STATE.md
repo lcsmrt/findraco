@@ -186,6 +186,14 @@
 - **Date**: 2026-11-03
 - **Status**: active
 
+### AD-024
+- **Decision**: The interface has two languages, `en` (source) and `pt-BR`, through i18next + react-i18next with bundled, typed resource files (`frontend/src/i18n/*.json`). "English only" covers code, specs and translation keys; interface copy lives in the resource files. A literal interface text in a component fails lint (`i18next/no-literal-string`), a key missing in one language fails the parity script. The language is the device's until the user saves one on the account; dates format with the language and the device region, money stays `R$ 1.234,56`.
+- **Reason**: A plan member does not read English (user, 2026-11-05); mechanical gates keep a new text from shipping in one language.
+- **Trade-off**: Every new text costs a key in two files; generated keys from the one-off codemod read mechanically.
+- **Scope**: Frontend copy, dates, `CLAUDE.md` General rule, `users.language`, the reset e-mail.
+- **Date**: 2026-11-05
+- **Status**: active
+
 ## Handoff
 
 - **Next**: UAT of `plan-deletion` (beta.26: Archived plans list, Restore, Delete now), then the series-edit validation round; or the next roadmap item (Recurrence v3 Discuss recommended, 2026-11-04)
