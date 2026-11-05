@@ -410,8 +410,8 @@ Proof: walk - Storybook at 390×844 with `locale` pt-BR: summary cards, transact
 
 ## Handoff
 
-**Settled mid-build:** none
-**Dispatched:** batch A (T1–T6, Sonnet) at 92f2745
+**Settled mid-build:** repo names win over the design (orchestrator accepted, batch A): table `transactions` / `ck_transactions_confirmation` (V13 renamed it), route `POST /plan/{planId}/transaction/{id}/confirm`, `markConfirmed(boolean)` instead of `setConfirmed` (no public `set*` rule); problem copy landed in T1. Open: a THIS_AND_FOLLOWING/ALL edit whose pivot is a confirmed occurrence moved off the template dates deletes it - to fix in the Verifier pass
+**Dispatched:** batch A (T1–T6, Sonnet) at 92f2745, returned at ca014ba; batch B (T7–T12, Sonnet) at ca014ba
 **Walked:** none
 
 ---
