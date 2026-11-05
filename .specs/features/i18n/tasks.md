@@ -69,8 +69,8 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] C21, C22 pass
-- [ ] `OpenApiSnapshotIT` green with the regenerated snapshot
+- [x] C21, C22 pass
+- [x] `OpenApiSnapshotIT` green with the regenerated snapshot
 
 **Tests**: integration
 **Gate**: full

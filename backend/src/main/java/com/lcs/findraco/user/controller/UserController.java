@@ -4,6 +4,7 @@ import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
 import com.lcs.findraco.shared.web.ClientIp;
 import com.lcs.findraco.user.request.CreateUserRequest;
+import com.lcs.findraco.user.request.UpdateLanguageRequest;
 import com.lcs.findraco.user.request.UpdateTimeZoneRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
 import com.lcs.findraco.user.response.UserResponse;
@@ -53,5 +54,12 @@ public class UserController {
     public ResponseEntity<UserResponse> updateTimeZone(
             @RequestBody @Valid UpdateTimeZoneRequest dto, @CurrentUser AuthenticatedUser user) {
         return ResponseEntity.ok(userService.updateTimeZone(dto, user.id()));
+    }
+
+    @Operation(summary = "Saves the language the user picked; it applies on every device at sign-in")
+    @PatchMapping("/me/language")
+    public ResponseEntity<UserResponse> updateLanguage(
+            @RequestBody @Valid UpdateLanguageRequest dto, @CurrentUser AuthenticatedUser user) {
+        return ResponseEntity.ok(userService.updateLanguage(dto, user.id()));
     }
 }

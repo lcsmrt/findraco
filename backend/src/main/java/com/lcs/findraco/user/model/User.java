@@ -19,6 +19,8 @@ public class User {
     @Enumerated(EnumType.STRING)
     private TimeZoneMode timeZoneMode = TimeZoneMode.AUTOMATIC;
 
+    private String language;
+
     public User() {}
 
     public Long getId() {
@@ -55,6 +57,14 @@ public class User {
 
     public TimeZoneMode getTimeZoneMode() {
         return timeZoneMode;
+    }
+
+    public String getLanguage() {
+        return language;
+    }
+
+    public void chooseLanguage(Language language) {
+        this.language = language.tag();
     }
 
     public void useDeviceTimeZone(String zone) {

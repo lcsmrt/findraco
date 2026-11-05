@@ -7,10 +7,12 @@ import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.lcs.findraco.shared.security.EmailNormalizer;
 import com.lcs.findraco.shared.security.PasswordNormalizer;
 import com.lcs.findraco.user.exception.UserExceptions;
+import com.lcs.findraco.user.model.Language;
 import com.lcs.findraco.user.model.TimeZoneMode;
 import com.lcs.findraco.user.model.User;
 import com.lcs.findraco.user.repository.UserRepository;
 import com.lcs.findraco.user.request.CreateUserRequest;
+import com.lcs.findraco.user.request.UpdateLanguageRequest;
 import com.lcs.findraco.user.request.UpdateTimeZoneRequest;
 import com.lcs.findraco.user.request.UpdateUserRequest;
 import com.lcs.findraco.user.response.UserResponse;
@@ -123,6 +125,13 @@ public class UserService {
         } else {
             user.followDeviceTimeZone();
         }
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    @Transactional
+    public UserResponse updateLanguage(UpdateLanguageRequest dto, long userId) {
+        User user = load(userId);
+        user.chooseLanguage(Language.fromTag(dto.language()).orElseThrow());
         return UserResponse.from(userRepository.save(user));
     }
 

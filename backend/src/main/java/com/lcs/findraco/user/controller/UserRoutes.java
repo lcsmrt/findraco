@@ -7,5 +7,7 @@ public final class UserRoutes {
 
     public static final String TIME_ZONE = USER + "/me/time-zone";
 
+    public static final String LANGUAGE = USER + "/me/language";
+
     private UserRoutes() {}
 }
