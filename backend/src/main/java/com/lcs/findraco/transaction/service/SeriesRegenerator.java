@@ -2,6 +2,7 @@ package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
+import com.lcs.findraco.transaction.model.Confirmation;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
@@ -16,6 +17,8 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 
 /**
@@ -58,9 +61,18 @@ public class SeriesRegenerator {
 
         boolean filterByPivot = scope != SeriesEditScope.ALL;
 
+        // A confirmed occurrence is a record of what happened, so an edit leaves it alone: it is neither
+        // updated nor deleted, and its date is not refilled. Only the pivot takes the form's values.
+        Set<LocalDate> confirmedDates = existing.stream()
+                .filter(tx -> tx.getConfirmation() == Confirmation.CONFIRMED)
+                .filter(tx -> !(filterByPivot && tx.getStartDate().equals(pivotDate)))
+                .map(Transaction::getStartDate)
+                .collect(Collectors.toSet());
+
         List<TargetOccurrence> inScopeTargets = fullTargets.stream()
                 .filter(t -> !filterByPivot || !t.date().isBefore(pivotDate))
                 .filter(t -> !def.getExceptions().contains(t.date()))
+                .filter(t -> !confirmedDates.contains(t.date()))
                 .toList();
 
         // Occurrences are matched to their slot by date, never by position: a date the member deleted
@@ -71,6 +83,8 @@ public class SeriesRegenerator {
         List<Transaction> toDelete = new ArrayList<>();
 
         existing.stream()
+                .filter(tx ->
+                        tx.getConfirmation() != Confirmation.CONFIRMED || !confirmedDates.contains(tx.getStartDate()))
                 .filter(tx -> !filterByPivot || !tx.getStartDate().isBefore(pivotDate))
                 .sorted(Comparator.comparing(Transaction::getStartDate))
                 .forEach(tx -> {

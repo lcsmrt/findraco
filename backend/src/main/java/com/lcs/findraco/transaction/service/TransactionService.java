@@ -298,7 +298,8 @@ public class TransactionService {
                         dto.startDate(),
                         dto.endDate(),
                         split.mode(),
-                        split.shares())));
+                        split.shares(),
+                        dto.requiresConfirmation() == null || dto.requiresConfirmation())));
 
         List<Transaction> occurrences = recurringTransactionGenerator.generate(dto, definition, split.shares());
         if (dto.mode() == RecurrenceMode.RECURRING && !occurrences.isEmpty()) {
@@ -472,12 +473,21 @@ public class TransactionService {
                             pivot.getParcelsNumber()),
                     split.mode(),
                     split.shares());
+            if (dto.pivotConfirmed() != null) {
+                pivot.markConfirmed(dto.pivotConfirmed());
+            }
 
             transactionRepository.saveAndFlush(pivot);
             return TransactionSeriesResponse.from(
                     List.of(pivot), transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));
         }
 
+        // The flag goes first: occurrences created by the regeneration below take it from the definition.
+        if (series.requiresConfirmation() != null
+                && series.requiresConfirmation() != definition.isRequiresConfirmation()) {
+            definition.changeRequiresConfirmation(
+                    series.requiresConfirmation(), inScope, userService.today(ctx.userId()));
+        }
         definition.editPattern(new SeriesPattern(
                 category,
                 series.amount(),

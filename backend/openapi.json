@@ -352,6 +352,9 @@
             "minItems" : 0,
             "type" : "array"
           },
+          "requiresConfirmation" : {
+            "type" : "boolean"
+          },
           "splitMode" : {
             "$ref" : "#/components/schemas/SplitMode"
           },
@@ -863,6 +866,9 @@
             },
             "type" : "array"
           },
+          "requiresConfirmation" : {
+            "type" : "boolean"
+          },
           "seriesId" : {
             "type" : "string"
           },
@@ -881,7 +887,7 @@
             "type" : "integer"
           }
         },
-        "required" : [ "amount", "description", "id", "mode", "participants", "seriesId", "splitMode", "startDate", "type", "version" ],
+        "required" : [ "amount", "description", "id", "mode", "participants", "requiresConfirmation", "seriesId", "splitMode", "startDate", "type", "version" ],
         "type" : "object"
       },
       "RecurrenceInterval" : {
@@ -1220,6 +1226,9 @@
       },
       "UpdateSeriesRequest" : {
         "properties" : {
+          "pivotConfirmed" : {
+            "type" : "boolean"
+          },
           "pivotOccurrenceId" : {
             "format" : "int64",
             "type" : "integer"

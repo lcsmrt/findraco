@@ -123,7 +123,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] C7, C8, C14, C15, C16, C25 pass; snapshot regenerated
+- [x] C7, C8, C14, C15, C16, C25 pass; snapshot regenerated
 
 **Tests**: integration
 **Gate**: full

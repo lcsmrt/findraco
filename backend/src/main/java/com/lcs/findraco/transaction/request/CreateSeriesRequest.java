@@ -15,6 +15,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The body of a new installment or recurring series.
@@ -23,6 +24,8 @@ import java.util.List;
  *     the first occurrence.
  * @param currentParcel the first parcel to generate (1-based, default 1); generation produces parcels
  *     currentParcel..parcelsNumber.
+ * @param requiresConfirmation whether each occurrence stays forecast until a member confirms it; omitted, a new
+ *     series requires confirmation and an edit leaves the series as it is. A one-occurrence edit ignores it.
  */
 public record CreateSeriesRequest(
         @NotNull(message = "Transaction type cannot be null.")
@@ -56,4 +59,37 @@ public record CreateSeriesRequest(
         SplitMode splitMode,
 
         @Valid @Size(max = 50, message = "A transaction takes at most 50 participants.")
-        List<TransactionParticipantRequest> participants) {}
+        List<TransactionParticipantRequest> participants,
+
+        @Nullable Boolean requiresConfirmation) {
+
+    /** A request that leaves the confirmation to its default. */
+    public CreateSeriesRequest(
+            TransactionType type,
+            BigDecimal amount,
+            String description,
+            Long categoryId,
+            RecurrenceMode mode,
+            LocalDate startDate,
+            Integer parcelsNumber,
+            Integer currentParcel,
+            RecurrenceInterval interval,
+            LocalDate endDate,
+            SplitMode splitMode,
+            List<TransactionParticipantRequest> participants) {
+        this(
+                type,
+                amount,
+                description,
+                categoryId,
+                mode,
+                startDate,
+                parcelsNumber,
+                currentParcel,
+                interval,
+                endDate,
+                splitMode,
+                participants,
+                null);
+    }
+}

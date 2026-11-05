@@ -25,6 +25,7 @@ public record RecurrenceDefinitionResponse(
         LocalDate startDate,
         @Nullable LocalDate endDate,
         SplitMode splitMode,
+        boolean requiresConfirmation,
         List<RecurrenceDefinitionParticipantResponse> participants) {
 
     public static RecurrenceDefinitionResponse from(RecurrenceDefinition def) {
@@ -43,6 +44,7 @@ public record RecurrenceDefinitionResponse(
                 def.getStartDate(),
                 def.getEndDate(),
                 def.getSplitMode(),
+                def.isRequiresConfirmation(),
                 def.getParticipants().stream()
                         .map(RecurrenceDefinitionParticipantResponse::from)
                         .toList());
