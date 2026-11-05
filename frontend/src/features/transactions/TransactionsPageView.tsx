@@ -33,6 +33,8 @@ type TransactionsPageViewProps = {
   sorting: Sorting[];
   onSortChange: (next: Sorting[]) => void;
   onEdit: (transaction: Transaction) => void;
+  onConfirm: (transaction: Transaction) => void;
+  canConfirm: (transaction: Transaction) => boolean;
 };
 
 export function TransactionsPageView({
@@ -53,6 +55,8 @@ export function TransactionsPageView({
   sorting,
   onSortChange,
   onEdit,
+  onConfirm,
+  canConfirm,
 }: TransactionsPageViewProps) {
   const { t } = useTranslation();
   const importLabel = isImporting
@@ -159,6 +163,8 @@ export function TransactionsPageView({
         onPageChange={onPageChange}
         onPageSizeChange={onPageSizeChange}
         onEdit={onEdit}
+        onConfirm={onConfirm}
+        canConfirm={canConfirm}
       />
 
       <div className="hidden sm:block">

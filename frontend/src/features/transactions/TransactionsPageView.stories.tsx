@@ -84,6 +84,8 @@ const meta = {
     sorting: [],
     onSortChange: fn(),
     onEdit: fn(),
+    onConfirm: fn(),
+    canConfirm: () => false,
   },
 } satisfies Meta<typeof TransactionsPageView>;
 export default meta;

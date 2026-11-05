@@ -18,6 +18,7 @@ import {
 } from "@/hooks/useCategoryFormSheet";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
+import { stubScreenWidth } from "@/test/screenWidth";
 import { server } from "@/test/server";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -306,6 +307,22 @@ describe("TransactionsPage", () => {
     );
     expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
     expect(within(dialog).getByText(/Electricity/)).toBeTruthy();
+  });
+
+  it("mobile confirm opens the dialog", async () => {
+    stubScreenWidth(390);
+    const { user } = renderTab({ transactions: [electricity, rent] });
+    // jsdom applies no CSS, so both layouts render: the phone list's Confirm is the one outside the table.
+    const mobileConfirms = (await screen.findAllByRole("button", { name: "Confirm" })).filter(
+      (button) => !button.closest("table"),
+    );
+    expect(mobileConfirms).toHaveLength(1);
+
+    await user.click(mobileConfirms[0]);
+
+    const dialog = await screen.findByRole("dialog", { name: "Confirm transaction" });
+    expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
+    expect(screen.queryByRole("dialog", { name: "Edit Transaction" })).toBeNull();
   });
 });
 

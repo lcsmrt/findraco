@@ -119,6 +119,8 @@ export function TransactionsPage() {
         sorting={sorting}
         onSortChange={onSortChange}
         onEdit={actions.edit}
+        onConfirm={actions.confirmOccurrence}
+        canConfirm={actions.canConfirm}
       />
 
       <TransactionFormDrawer
