@@ -13,3 +13,5 @@ dist/
 
 # Claude Code local overrides
 .claude/settings.local.json
+
+__pycache__/
