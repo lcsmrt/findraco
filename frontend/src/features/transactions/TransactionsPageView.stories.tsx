@@ -47,6 +47,8 @@ function columns(sharedPlan: boolean) {
     onDuplicate: fn(),
     onEdit: fn(),
     onDelete: fn(),
+    onConfirm: fn(),
+    canConfirm: () => false,
     onSave: fn(),
     showParticipantsColumn: sharedPlan,
     canEditParticipants: sharedPlan,

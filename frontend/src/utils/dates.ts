@@ -36,7 +36,7 @@ function layoutLocale(): Intl.Locale {
 }
 
 // A stored date is a calendar day: reading it in the viewer's time zone would move it a day.
-function toLocalDate(date: Date | string): Date {
+export function toLocalDate(date: Date | string): Date {
   if (typeof date !== "string") return date;
   const [year, month, day] = date.split("T")[0].split("-").map(Number);
   return new Date(year, month - 1, day);

@@ -687,6 +687,12 @@
       "createExpense": "Criar categoria de despesa \"{{name}}\"",
       "createIncome": "Criar categoria de receita \"{{name}}\""
     },
+    "confirmTransactionDialog": {
+      "enterWhatWasReallyCharged": "Informe o valor realmente cobrado de {{description}} e quando foi pago."
+    },
+    "confirmTransactionDialogView": {
+      "confirmTransaction": "Confirmar transação"
+    },
     "descriptionCell": {
       "series": "Série"
     },

@@ -29,6 +29,15 @@ function toDrawer(state: DrawerState): TransactionDrawer {
   return { open: true, mode: state.mode, transaction: state.transaction };
 }
 
+/** Confirm is offered while the occurrence waits for its real amount and the member may edit it. */
+function canConfirm(transaction: Transaction) {
+  return (
+    transaction.requiresConfirmation &&
+    transaction.status !== "ACTUAL" &&
+    transaction.permissions.edit
+  );
+}
+
 /**
  * A transaction's row actions and the drawer they open: edit, duplicate, and delete, which
  * asks for the occurrences to delete when the transaction belongs to a series and for a plain
@@ -38,6 +47,7 @@ export function useTransactionActions() {
   const { t } = useTranslation();
 
   const [drawerState, setDrawerState] = useState<DrawerState>({ open: false });
+  const [confirming, setConfirming] = useState<Transaction | null>(null);
   const confirm = useConfirm();
   const chooseScope = useSeriesScope();
   const { mutate: deleteTransaction, isPending: isDeleting } =
@@ -50,6 +60,14 @@ export function useTransactionActions() {
 
   function duplicate(transaction: Transaction) {
     setDrawerState({ open: true, mode: "duplicate", transaction });
+  }
+
+  function confirmOccurrence(transaction: Transaction) {
+    setConfirming(transaction);
+  }
+
+  function closeConfirm() {
+    setConfirming(null);
   }
 
   async function remove(transaction: Transaction) {
@@ -98,6 +116,10 @@ export function useTransactionActions() {
     remove,
     closeDrawer,
     removeFromDrawer,
+    confirming,
+    canConfirm,
+    confirmOccurrence,
+    closeConfirm,
     isDeleting,
   };
 }

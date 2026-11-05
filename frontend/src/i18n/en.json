@@ -687,6 +687,12 @@
       "createExpense": "Create expense category \"{{name}}\"",
       "createIncome": "Create income category \"{{name}}\""
     },
+    "confirmTransactionDialog": {
+      "enterWhatWasReallyCharged": "Enter what was really charged for {{description}} and when it was paid."
+    },
+    "confirmTransactionDialogView": {
+      "confirmTransaction": "Confirm transaction"
+    },
     "descriptionCell": {
       "series": "Series"
     },

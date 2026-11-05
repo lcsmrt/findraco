@@ -17,6 +17,7 @@ import {
   AppliedFilters,
   TransactionFilterPopover,
 } from "./components/TransactionFilterPopover";
+import { ConfirmTransactionDialog } from "./components/ConfirmTransactionDialog";
 import { TransactionFormDrawer } from "./components/TransactionFormDrawer";
 import { buildTransactionColumns, InlineSaveBody } from "./components/transactionColumns";
 import { toInlineSavePayload } from "./components/transactionForm";
@@ -83,6 +84,8 @@ export function TransactionsPage() {
     onDuplicate: actions.duplicate,
     onEdit: actions.edit,
     onDelete: actions.remove,
+    onConfirm: actions.confirmOccurrence,
+    canConfirm: actions.canConfirm,
     onSave: onInlineSave,
     isDeleting: actions.isDeleting,
     showParticipantsColumn: members.length > 1,
@@ -126,6 +129,8 @@ export function TransactionsPage() {
         onDuplicate={actions.duplicate}
         onDelete={actions.removeFromDrawer}
       />
+
+      <ConfirmTransactionDialog transaction={actions.confirming} onClose={actions.closeConfirm} />
     </>
   );
 }

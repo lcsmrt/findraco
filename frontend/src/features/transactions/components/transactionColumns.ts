@@ -29,6 +29,8 @@ type TransactionColumnHandlers = {
   onDuplicate: (transaction: Transaction) => void;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
+  onConfirm: (transaction: Transaction) => void;
+  canConfirm: (transaction: Transaction) => boolean;
   onSave: (transaction: Transaction, body: InlineSaveBody) => void;
   isDeleting?: boolean;
   showParticipantsColumn?: boolean;
@@ -46,6 +48,8 @@ export function buildTransactionColumns({
   onDuplicate,
   onEdit,
   onDelete,
+  onConfirm,
+  canConfirm,
   onSave,
   isDeleting,
   showParticipantsColumn,
@@ -113,6 +117,7 @@ export function buildTransactionColumns({
           onDuplicate,
           onEdit,
           onDelete,
+          onConfirm: canConfirm(row.original) ? onConfirm : undefined,
         }),
     },
   ];

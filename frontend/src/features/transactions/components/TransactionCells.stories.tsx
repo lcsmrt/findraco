@@ -45,6 +45,7 @@ type DemoRowProps = {
   onEdit: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
+  onConfirm?: () => void;
 };
 
 // The cells live in table rows, so the story renders one row the way the transactions table does.
@@ -58,6 +59,7 @@ function DemoRow({
   onEdit,
   onDuplicate,
   onDelete,
+  onConfirm,
 }: DemoRowProps) {
   return (
     <TableBase className="w-full max-w-4xl">
@@ -90,6 +92,7 @@ function DemoRow({
               onEdit={onEdit}
               onDuplicate={onDuplicate}
               onDelete={onDelete}
+              onConfirm={onConfirm}
             />
           </TableCellBase>
         </TableRowBase>
@@ -149,6 +152,17 @@ export const Pending: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Pending")).toBeVisible();
     await expect(canvas.queryByText("Forecast")).toBeNull();
+  },
+};
+
+export const Confirmable: Story = {
+  args: {
+    transaction: { ...groceries, status: "PENDING", requiresConfirmation: true },
+    onConfirm: fn(),
+  },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Confirm" }));
+    await expect(args.onConfirm).toHaveBeenCalledTimes(1);
   },
 };
 

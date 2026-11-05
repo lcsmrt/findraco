@@ -15,7 +15,7 @@ import { datePlaceholder, formatDate, parseDate, toIsoDate } from "@/utils/dates
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskDate } from "@/utils/string/masks";
 import { isValid } from "date-fns";
-import { CopyIcon, PencilIcon, RepeatIcon, Trash2Icon, UsersIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, PencilIcon, RepeatIcon, Trash2Icon, UsersIcon } from "lucide-react";
 import { useState } from "react";
 import { CategoryCombobox } from "./CategoryCombobox";
 import type { InlineSaveBody } from "./transactionColumns";
@@ -390,6 +390,8 @@ type ActionsCellProps = {
   onDuplicate: (transaction: Transaction) => void;
   onEdit: (transaction: Transaction) => void;
   onDelete: (transaction: Transaction) => void;
+  /** Present only for a row the member may confirm. */
+  onConfirm?: (transaction: Transaction) => void;
 };
 
 export function ActionsCell({
@@ -398,11 +400,24 @@ export function ActionsCell({
   onDuplicate,
   onEdit,
   onDelete,
+  onConfirm,
 }: ActionsCellProps) {
   const { t } = useTranslation();
 
   return (
     <div className="flex items-center justify-end gap-1 opacity-100 transition-opacity sm:opacity-0 sm:group-focus-within/row:opacity-100 sm:group-hover/row:opacity-100">
+      {onConfirm && (
+        <Button
+          type="button"
+          size="icon"
+          variant="ghost"
+          className="text-muted-foreground hover:bg-accent hover:text-foreground rounded p-1"
+          aria-label={t("common.confirm")}
+          onClick={() => onConfirm(transaction)}
+        >
+          <CheckIcon className="h-4 w-4" />
+        </Button>
+      )}
       <Button
         type="button"
         size="icon"
