@@ -83,17 +83,6 @@ describe("the other numeric layouts", () => {
   });
 });
 
-describe("typed dates with a fixed layout", () => {
-  // The Nubank file is read by the API (day first, whatever the viewer's language); the app never
-  // parses it. This guards the layout helper such a reader would use against following the language.
-  it("reads CSV dates as dd/mm/yyyy in both languages", async () => {
-    expect(parseDate("04/11/2026", "dd/MM/yyyy")).toEqual(NOVEMBER_4);
-    await i18n.changeLanguage("pt-BR");
-    stubDeviceLanguage("en-US");
-    expect(parseDate("04/11/2026", "dd/MM/yyyy")).toEqual(NOVEMBER_4);
-  });
-});
-
 describe("toIsoDate", () => {
   it("writes the API's yyyy-MM-dd in every language", async () => {
     expect(toIsoDate(NOVEMBER_4)).toBe("2026-11-04");

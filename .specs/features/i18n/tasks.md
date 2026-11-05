@@ -309,12 +309,12 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 Proof: run unit | ✓ formats money the same in both languages
 
 **C28** - The CSV import reads `dd/mm/yyyy` in both languages (I18N-03, AC 6)
-Proof: run unit | ✓ reads CSV dates as dd/mm/yyyy in both languages
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='StatementParserRegistryTest#ambiguousDateReadsDayFirst' -Dsurefire.failIfNoSpecifiedTests=true
 
 ---
 
 ## Handoff
 
-**Settled mid-build:** route is `PATCH /user/me/language`, following `/user/me/time-zone` (batch A, orchestrator accepted); `en` with a Brazilian device takes the date layout of the device region locale (`pt-BR`), because ICU has no `en-BR` data; tests and Storybook stub the device as `en-BR`
+**Settled mid-build:** route is `PATCH /user/me/language`, following `/user/me/time-zone` (batch A, orchestrator accepted); `en` with a Brazilian device takes the date layout of the device region locale (`pt-BR`), because ICU has no `en-BR` data; tests and Storybook stub the device as `en-BR`; C28 proof repointed to the backend parser per Verifier finding 5
 **Dispatched:** batch A (T1–T4, Sonnet) at fd0347b, returned at 0ab7962; batch B (T5–T9, Sonnet) at e516f0f, returned at 6727362; Verifier (Opus) at the commit recording this
 **Walked:** 2026-11-05, Storybook at 390×844 with `locale` pt-BR (screenshots in the session scratchpad `walk-i18n/`): Overview, Transactions (list, active filters, filter popover, items, installments, attribution, end date, category picker), Categories (page, form sheet), Plans (page, archived list, invite, transfer, delete), profile menu, auth pages, 404. C1: no English app text left; what still reads English is data a story passes in (category and plan names, the story's own `Filters` button and filter chips, table headers and chart month labels built at story load). Found and fixed: the date field hint (`aaaa` in pt-BR) and the chart month labels, which now rebuild on a language switch. C2: `pnpm exec vitest run --project=unit --project=storybook` green in English (1051 tests with tooling).
