@@ -82,6 +82,10 @@
       "aNewVersionOfFindraco": "É preciso ter uma nova versão do findraco para continuar.",
       "update": "Atualizar",
       "updateRequired": "Atualização necessária"
+    },
+    "updateToast": {
+      "available": "Nova versão disponível",
+      "update": "Atualizar"
     }
   },
   "auth": {
@@ -403,6 +407,9 @@
     },
     "inviteForm": {
       "enterAnEmailAddress": "Informe um e-mail"
+    },
+    "invitePlanDialog": {
+      "linkCopied": "Link copiado para a área de transferência."
     },
     "invitePlanDialogView": {
       "copyLink": "Copiar link",

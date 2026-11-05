@@ -82,6 +82,10 @@
       "aNewVersionOfFindraco": "A new version of findraco is needed to continue.",
       "update": "Update",
       "updateRequired": "Update required"
+    },
+    "updateToast": {
+      "available": "New version available",
+      "update": "Update"
     }
   },
   "auth": {
@@ -403,6 +407,9 @@
     },
     "inviteForm": {
       "enterAnEmailAddress": "Enter an email address"
+    },
+    "invitePlanDialog": {
+      "linkCopied": "Link copied to clipboard."
     },
     "invitePlanDialogView": {
       "copyLink": "Copy link",

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { toast } from "sonner";
+import { i18n } from "@/i18n/i18n";
 import type { UpdateState } from "./utils/appUpdate";
 
 /**
@@ -16,10 +17,10 @@ export function useUpdateToast(
 
   useEffect(() => {
     if (version === null) return;
-    toast("New version available", {
+    toast(i18n.t("app.updateToast.available"), {
       id: "app-update",
       duration: Infinity,
-      action: { label: "Update", onClick: update },
+      action: { label: i18n.t("app.updateToast.update"), onClick: update },
       onDismiss: () => onDismiss(version),
     });
   }, [version, update, onDismiss]);
