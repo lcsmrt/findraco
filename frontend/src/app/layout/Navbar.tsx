@@ -2,6 +2,7 @@ import { useAppUpdate } from "@/app/providers/useAppUpdate";
 import { useAuth } from "@/app/providers/useAuth";
 import { useInstallApp } from "@/app/providers/useInstallApp";
 import { ThemeToggle } from "@/components/themeToggle/ThemeToggle";
+import { LanguageDialog } from "@/features/profile/components/LanguageDialog";
 import { TimeZoneDialog } from "@/features/profile/components/TimeZoneDialog";
 import { PlanSwitcher } from "@/features/plans/components/PlanSwitcher";
 import { useState } from "react";
@@ -13,6 +14,7 @@ export function Navbar() {
   const { state, update } = useAppUpdate();
   const { mode, install, instructionsOpen, closeInstructions } = useInstallApp();
   const [timeZoneOpen, setTimeZoneOpen] = useState(false);
+  const [languageOpen, setLanguageOpen] = useState(false);
 
   return (
     <>
@@ -20,9 +22,11 @@ export function Navbar() {
         userName={user?.name ?? ""}
         onSignOut={signOut}
         onOpenTimeZone={() => setTimeZoneOpen(true)}
+        onOpenLanguage={() => setLanguageOpen(true)}
         timeZoneDialog={
           <TimeZoneDialog open={timeZoneOpen} onOpenChange={setTimeZoneOpen} />
         }
+        languageDialog={<LanguageDialog open={languageOpen} onOpenChange={setLanguageOpen} />}
         planSwitcher={<PlanSwitcher />}
         themeToggle={<ThemeToggle />}
         update={state.kind === "available" ? { version: state.version, onUpdate: update } : undefined}

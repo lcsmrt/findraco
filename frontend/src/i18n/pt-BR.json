@@ -58,6 +58,7 @@
     "navbarView": {
       "findracoLogo": "Logo do findraco",
       "installApp": "Instalar o app",
+      "language": "Language / Idioma",
       "logout": "Sair",
       "timeZone": "Fuso horário",
       "updateAvailable": "Atualização disponível",
@@ -244,6 +245,7 @@
     "r000": "R$ 0,00",
     "save": "Salvar",
     "type": "Tipo",
+    "yearPlaceholder": "aaaa",
     "youExampleCom": "voce@exemplo.com"
   },
   "components": {
@@ -601,6 +603,10 @@
     "validation-failed": "Alguns campos são inválidos."
   },
   "profile": {
+    "languageDialogView": {
+      "description": "Escolha o idioma em que você lê o app.",
+      "title": "Language / Idioma"
+    },
     "timeZoneDialogView": {
       "decidesWhichDayIsToday": "Define qual é o dia de hoje. O automático segue este dispositivo; fixar mantém o fuso que você escolher.",
       "selectAZone": "Selecione um fuso",
@@ -738,7 +744,10 @@
       "filters": "Filtros",
       "maximumAmount": "Valor máximo",
       "minimumAmount": "Valor mínimo",
-      "reset": "Redefinir"
+      "reset": "Redefinir",
+      "typeAll": "All",
+      "typeCredit": "Credit",
+      "typeDebit": "Debit"
     },
     "transactionFormDrawer": {
       "date": "Data",

@@ -17,6 +17,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { i18n } from "@/i18n/i18n";
+import { resolveDeviceLanguage } from "@/i18n/utils/resolveDeviceLanguage";
 import type { AuthContextValue, AuthStatus } from "./useAuth";
 
 // Written by the previous version, which kept the access token in localStorage.
@@ -50,6 +51,8 @@ export function useAuthSession(): AuthContextValue {
       queryKey: ["profile"],
       queryFn: getUserProfile,
     });
+    // The saved language wins over the device's from the first screen after sign-in.
+    if (profile.language) await i18n.changeLanguage(profile.language);
     setUser(profile);
     setStatus("authenticated");
   }, [queryClient, setStatus]);
@@ -58,6 +61,8 @@ export function useAuthSession(): AuthContextValue {
     setAccessToken(null);
     queryClient.clear();
     clearSessionStorage();
+    // Public pages read in the device language, whoever signed in before.
+    void i18n.changeLanguage(resolveDeviceLanguage(navigator.languages));
     setUser(null);
     setStatus("anonymous");
   }, [queryClient, setStatus]);

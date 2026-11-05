@@ -14,6 +14,7 @@ import { getAccessToken, setAccessToken } from "@/api/clients/accessToken";
 import { renewSession } from "@/api/clients/findracoApi";
 import type { User } from "@/api/dtos";
 import { authHandlers } from "@/api/services/auth.handlers";
+import { i18n } from "@/i18n/i18n";
 import { PrivateRoute } from "@/app/routing/PrivateRoute";
 import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
@@ -28,6 +29,7 @@ const PROFILE: User = {
   email: "ana@example.com",
   timeZone: "America/Sao_Paulo",
   timeZoneMode: "AUTOMATIC",
+  language: null,
 };
 const API_PATH = "/api/findraco";
 
@@ -224,6 +226,42 @@ describe("AuthProvider signIn", () => {
     expect(requests[0].headers.get("Authorization")).toBe("Bearer login-token");
     expect(status()).toBe("authenticated");
     expect(screen.getByTestId("user").textContent).toBe("Ana Lima");
+  });
+});
+
+describe("AuthProvider language", () => {
+  const deviceLanguages = Object.getOwnPropertyDescriptor(window.navigator, "languages");
+
+  function stubDeviceLanguages(languages: string[]) {
+    Object.defineProperty(window.navigator, "languages", { value: languages, configurable: true });
+  }
+
+  afterEach(() => {
+    // jsdom defines `languages` on the prototype; dropping the own property restores it.
+    if (deviceLanguages) Object.defineProperty(window.navigator, "languages", deviceLanguages);
+    else Reflect.deleteProperty(window.navigator, "languages");
+  });
+
+  it("applies the saved language at sign-in", async () => {
+    server.use(authHandlers.me({ ...PROFILE, language: "pt-BR" }));
+    renderProvider("/login");
+    expect(i18n.language).toBe("en");
+
+    await act(() => auth.signIn("login-token"));
+
+    expect(i18n.language).toBe("pt-BR");
+  });
+
+  it("uses the device language when signed out", async () => {
+    stubDeviceLanguages(["pt-BR", "en"]);
+    server.use(authHandlers.me({ ...PROFILE, language: "en" }), authHandlers.logout());
+    renderProvider("/login");
+    await act(() => auth.signIn("login-token"));
+    expect(i18n.language).toBe("en");
+
+    await act(() => auth.signOut());
+
+    expect(i18n.language).toBe("pt-BR");
   });
 });
 

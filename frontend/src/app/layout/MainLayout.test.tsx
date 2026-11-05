@@ -68,6 +68,7 @@ function authValue(): AuthContextValue {
       email: ana.email,
       timeZone: "America/Sao_Paulo",
       timeZoneMode: "AUTOMATIC",
+      language: null,
     },
     setUser: vi.fn(),
     status: "authenticated",

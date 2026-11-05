@@ -198,7 +198,7 @@ T5 → T6 → T7 → T8 → T9
 
 **Done when**:
 
-- [ ] C9, C10, C11, C13, C14, C15, C16 pass
+- [x] C9, C10, C11, C13, C14, C15, C16 pass
 - [ ] Walk recorded (C1, C2)
 
 **Tests**: unit

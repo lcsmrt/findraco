@@ -12,6 +12,8 @@ export type LoginResponse = {
 export type ForgotPasswordRequest = {
   body: {
     email: string;
+    /** The language of the page that asked: the reset e-mail follows it when the account has none saved. */
+    language?: string;
   };
 }
 

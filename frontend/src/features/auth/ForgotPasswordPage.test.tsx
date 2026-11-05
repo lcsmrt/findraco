@@ -5,6 +5,7 @@ import { server } from "@/test/server";
 import { cleanup, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it } from "vitest";
+import { i18n } from "@/i18n/i18n";
 import { ForgotPassword } from "./ForgotPasswordPage";
 
 afterEach(cleanup);
@@ -27,7 +28,21 @@ describe("ForgotPassword", () => {
     expect(requests).toHaveLength(1);
     expect(requests[0].method).toBe("POST");
     expect(requests[0].url).toMatch(/\/auth\/forgot-password$/);
-    expect(await requests[0].json()).toEqual({ email: "ana@example.com" });
+    expect(await requests[0].json()).toEqual({ email: "ana@example.com", language: "en" });
     expect(screen.queryByLabelText("Email")).toBeNull();
+  });
+
+  it("sends the language of the page with the request", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(authHandlers.forgotPassword());
+    await i18n.changeLanguage("pt-BR");
+    renderWithProviders(<ForgotPassword />, { route: "/forgot-password" });
+
+    await user.type(screen.getByLabelText("E-mail"), "ana@example.com");
+    await user.click(screen.getByRole("button", { name: "Enviar link de redefinição" }));
+
+    await screen.findByText(/enviamos um link para redefinir a senha/);
+    expect(await requests[0].json()).toEqual({ email: "ana@example.com", language: "pt-BR" });
   });
 });

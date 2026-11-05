@@ -42,7 +42,7 @@ function deferred() {
 }
 
 const auth: AuthContextValue = {
-  user: { id: 1, name: "Ana", email: "ana@example.com", timeZone: "UTC", timeZoneMode: "AUTOMATIC" },
+  user: { id: 1, name: "Ana", email: "ana@example.com", timeZone: "UTC", timeZoneMode: "AUTOMATIC", language: null },
   setUser: vi.fn(),
   status: "authenticated",
   signIn: vi.fn(),

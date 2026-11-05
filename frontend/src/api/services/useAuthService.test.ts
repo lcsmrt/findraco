@@ -13,6 +13,7 @@ import {
   useLogin,
   useRegisterUser,
   useResetPassword,
+  useUpdateLanguage,
   useUpdateTimeZone,
   useValidatePasswordResetToken,
 } from "./useAuthService";
@@ -23,6 +24,7 @@ const user: User = {
   email: "ana@example.com",
   timeZone: "America/Sao_Paulo",
   timeZoneMode: "AUTOMATIC",
+  language: null,
 };
 
 // The toast is the user-visible outcome of a mutation; sonner is a third-party module.
@@ -144,6 +146,24 @@ describe("useResetPassword", () => {
     expect(new URL(requests[0].url).pathname).toBe("/api/findraco/auth/reset-password");
     expect(await requests[0].json()).toEqual({ token: "abc", password: "new-secret" });
     expect(toast.success).toHaveBeenCalledWith("Password updated. Sign in with your new password.");
+  });
+});
+
+describe("useUpdateLanguage", () => {
+  it("PATCHes the language to /user/me/language, keeps the profile cache current and shows no toast", async () => {
+    const saved = { ...user, language: "pt-BR" as const };
+    server.use(authHandlers.updateLanguage(saved));
+    const requests = recordRequests();
+
+    const { result } = renderHookWithProviders(() => useUpdateLanguage());
+    result.current.mutate({ body: { language: "pt-BR" } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests[0].method).toBe("PATCH");
+    expect(new URL(requests[0].url).pathname).toBe("/api/findraco/user/me/language");
+    expect(await requests[0].json()).toEqual({ language: "pt-BR" });
+    expect(result.current.data).toEqual(saved);
+    expect(toast.success).not.toHaveBeenCalled();
   });
 });
 

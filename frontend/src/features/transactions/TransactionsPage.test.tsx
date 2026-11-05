@@ -61,7 +61,7 @@ function pageOf(content: Transaction[], page = 0): PagedResponse<Transaction> {
 
 function authValue(): AuthContextValue {
   return {
-    user: { id: lucas.userId, name: lucas.name, email: lucas.email, timeZone: "America/Sao_Paulo", timeZoneMode: "AUTOMATIC" },
+    user: { id: lucas.userId, name: lucas.name, email: lucas.email, timeZone: "America/Sao_Paulo", timeZoneMode: "AUTOMATIC", language: null },
     setUser: vi.fn(),
     status: "authenticated",
     signIn: vi.fn(),

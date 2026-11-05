@@ -12,7 +12,9 @@ const meta = {
     userName: "Ada Lovelace",
     onSignOut: fn(),
     onOpenTimeZone: fn(),
+    onOpenLanguage: fn(),
     timeZoneDialog: null,
+    languageDialog: null,
     planSwitcher: (
       <Button variant="ghost">
         Household
@@ -77,6 +79,7 @@ export const UpdateWaitingAndInstallable: Story = {
       "Update to 1.0.0-beta.99",
       "Install app",
       "Time zone",
+      "Language / Idioma",
       "Logout",
     ]);
   },
@@ -89,6 +92,15 @@ export const OpenTimeZone: Story = {
       await screen.findByRole("menuitem", { name: "Time zone" }),
     );
     await expect(args.onOpenTimeZone).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+export const OpenLanguage: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByText("AL"));
+    await userEvent.click(await screen.findByRole("menuitem", { name: "Language / Idioma" }));
+    await expect(args.onOpenLanguage).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   },
 };

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { Download, Globe, LogOut, Smartphone } from "lucide-react";
+import { Download, Globe, Languages, LogOut, Smartphone } from "lucide-react";
 import { Avatar, AvatarBadge, AvatarFallback } from "@/components/avatar/base/Avatar";
 import {
   DropdownMenu,
@@ -16,11 +16,13 @@ type NavbarViewProps = {
   userName: string;
   onSignOut: () => void;
   onOpenTimeZone: () => void;
+  onOpenLanguage: () => void;
   // Slots, so the plan switcher and theme toggle (which read context) stay in the container.
   planSwitcher: ReactNode;
   themeToggle: ReactNode;
   // Slot: the dialog reads the profile, so its container stays outside the view.
   timeZoneDialog: ReactNode;
+  languageDialog: ReactNode;
   /** Set while a newer version waits: adds the menu item and the dot on the avatar. */
   update?: { version: string; onUpdate: () => void };
   /** Set while the app can be installed from here: adds the menu item. */
@@ -31,9 +33,11 @@ export function NavbarView({
   userName,
   onSignOut,
   onOpenTimeZone,
+  onOpenLanguage,
   planSwitcher,
   themeToggle,
   timeZoneDialog,
+  languageDialog,
   update,
   install,
 }: NavbarViewProps) {
@@ -93,6 +97,13 @@ export function NavbarView({
             </DropdownMenuItem>
             <DropdownMenuItem
               className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
+              onClick={onOpenLanguage}
+            >
+              {t("app.navbarView.language")}
+              <Languages className="text-foreground" />
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className="hover:bg-muted flex h-full w-full items-center justify-between gap-2 hover:cursor-pointer"
               onClick={onSignOut}
             >
               {t("app.navbarView.logout")}
@@ -107,6 +118,7 @@ export function NavbarView({
       </div>
 
       {timeZoneDialog}
+      {languageDialog}
     </nav>
   );
 }

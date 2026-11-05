@@ -58,6 +58,7 @@
     "navbarView": {
       "findracoLogo": "findraco logo",
       "installApp": "Install app",
+      "language": "Language / Idioma",
       "logout": "Logout",
       "timeZone": "Time zone",
       "updateAvailable": "Update available",
@@ -244,6 +245,7 @@
     "r000": "R$ 0,00",
     "save": "Save",
     "type": "Type",
+    "yearPlaceholder": "yyyy",
     "youExampleCom": "you@example.com"
   },
   "components": {
@@ -601,6 +603,10 @@
     "validation-failed": "Some fields are invalid."
   },
   "profile": {
+    "languageDialogView": {
+      "description": "Pick the language you read the app in.",
+      "title": "Language / Idioma"
+    },
     "timeZoneDialogView": {
       "decidesWhichDayIsToday": "Decides which day is today. Automatic follows this device; pinning keeps the zone you pick.",
       "selectAZone": "Select a zone",
@@ -738,7 +744,10 @@
       "filters": "Filters",
       "maximumAmount": "Maximum amount",
       "minimumAmount": "Minimum amount",
-      "reset": "Reset"
+      "reset": "Reset",
+      "typeAll": "All",
+      "typeCredit": "Credit",
+      "typeDebit": "Debit"
     },
     "transactionFormDrawer": {
       "date": "Date",

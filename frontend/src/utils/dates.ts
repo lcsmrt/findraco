@@ -96,9 +96,9 @@ function layoutAs(tokens: {
     .join("");
 }
 
-/** The hint for a date field, in the viewer's order: "dd/mm/yyyy" or "mm/dd/yyyy". */
+/** The hint for a date field, in the viewer's order and language: "dd/mm/yyyy", "mm/dd/yyyy" or "dd/mm/aaaa". */
 export function datePlaceholder(): string {
-  return layoutAs({ day: "dd", month: "mm", year: "yyyy" });
+  return layoutAs({ day: "dd", month: "mm", year: i18n.t("common.yearPlaceholder") });
 }
 
 /** Reads what a viewer typed in the layout `formatDate` writes; an invalid date is `Invalid Date`. */

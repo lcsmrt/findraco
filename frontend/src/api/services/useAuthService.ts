@@ -5,7 +5,7 @@ import {
   UseQueryOptions,
 } from "@tanstack/react-query";
 import { findracoApi } from "../clients/findracoApi";
-import { RegisterUserRequest, UpdateTimeZoneRequest, User } from "../dtos/user";
+import { RegisterUserRequest, UpdateLanguageRequest, UpdateTimeZoneRequest, User } from "../dtos/user";
 import { MutationOptions } from "../types/mutationOptions";
 import { buildMutationOptions } from "../utils/buildMutationOptions";
 import {
@@ -91,6 +91,40 @@ export function useUpdateTimeZone(
     mutationFn: updateTimeZone,
     ...buildMutationOptions(
       { successMessage: "api.toast.timeZoneSaved" },
+      {
+        ...options,
+        onSuccess: (data, variables) => {
+          queryClient.setQueryData(["profile"], data);
+          options?.onSuccess?.(data, variables);
+        },
+      },
+    ),
+  });
+}
+
+/**
+ * Saves the language the user picked, so it applies at every sign-in on any device.
+ * @param params The picked language.
+ * @returns The updated user.
+ */
+async function updateLanguage(params: UpdateLanguageRequest): Promise<User> {
+  const { body } = params;
+  const { data } = await findracoApi.patch("/user/me/language", body);
+  return data;
+}
+
+/**
+ * Hook for saving the user's language. The screen already switched when the pick was made, so a
+ * success toast would say nothing new; a failure shows the problem copy.
+ */
+export function useUpdateLanguage(
+  options?: MutationOptions<User, UpdateLanguageRequest>,
+) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: updateLanguage,
+    ...buildMutationOptions(
+      { showSuccessToast: false },
       {
         ...options,
         onSuccess: (data, variables) => {
