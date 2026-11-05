@@ -68,6 +68,20 @@ export const GroupedByDay: Story = {
   },
 };
 
+export const ForecastAndPending: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Gym", "2026-10-20", { status: "FORECAST", requiresConfirmation: true }),
+      transaction(2, "Rent", "2026-10-02", { status: "PENDING", requiresConfirmation: true }),
+      transaction(3, "Groceries", "2026-10-01"),
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByText("Forecast")).toHaveLength(1);
+    await expect(canvas.getAllByText("Pending")).toHaveLength(1);
+  },
+};
+
 export const Loading: Story = { args: { transactions: [], isLoading: true, pagination: undefined } };
 
 export const Empty: Story = {

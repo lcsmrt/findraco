@@ -7,6 +7,7 @@ import { Heading } from "@/components/typography/base/Heading";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatPattern } from "@/utils/dates";
+import { TransactionStatusBadge } from "./TransactionCells";
 import { groupByDay } from "../utils/groupByDay";
 import { useTranslation } from "react-i18next";
 
@@ -29,9 +30,12 @@ function TransactionMobileRow({ transaction, onEdit }: TransactionMobileRowProps
       className="active:bg-muted/60 flex w-full cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
     >
       <span className="flex min-w-0 flex-col gap-0.5">
-        <Text variant="label" className="truncate">
-          {transaction.description}
-        </Text>
+        <span className="flex items-center gap-1.5">
+          <Text variant="label" className="truncate">
+            {transaction.description}
+          </Text>
+          <TransactionStatusBadge status={transaction.status} />
+        </span>
         {details.length > 0 && (
           <Text variant="caption" className="truncate">
             {details.join(" · ")}

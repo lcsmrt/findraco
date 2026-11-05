@@ -792,6 +792,10 @@
     "transactionMobileList": {
       "noTransactionsFound": "No transactions found."
     },
+    "transactionStatusBadge": {
+      "forecast": "Forecast",
+      "pending": "Pending"
+    },
     "transactionsPageView": {
       "clearAll": "Clear all",
       "importCsv": "Import CSV",

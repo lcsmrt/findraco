@@ -195,7 +195,7 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] C32, C33 pass
+- [x] C32, C33 pass
 
 **Tests**: story
 **Gate**: quick

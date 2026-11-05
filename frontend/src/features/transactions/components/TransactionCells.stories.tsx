@@ -136,6 +136,29 @@ export const Income: Story = {
 
 export const Series: Story = { args: { transaction: { ...groceries, seriesId: "series-1" } } };
 
+export const Forecast: Story = {
+  args: { transaction: { ...groceries, status: "FORECAST", requiresConfirmation: true } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Forecast")).toBeVisible();
+    await expect(canvas.queryByText("Pending")).toBeNull();
+  },
+};
+
+export const Pending: Story = {
+  args: { transaction: { ...groceries, status: "PENDING", requiresConfirmation: true } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Pending")).toBeVisible();
+    await expect(canvas.queryByText("Forecast")).toBeNull();
+  },
+};
+
+export const Actual: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByText("Forecast")).toBeNull();
+    await expect(canvas.queryByText("Pending")).toBeNull();
+  },
+};
+
 export const NoCategoryNoParticipants: Story = {
   args: { transaction: { ...groceries, category: undefined, participants: [] } },
 };

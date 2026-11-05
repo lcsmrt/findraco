@@ -332,6 +332,25 @@ function EditableParticipantsCell({
   );
 }
 
+type TransactionStatusBadgeProps = {
+  status: Transaction["status"];
+};
+
+/** An actual row carries no badge: only what has not happened yet, or is overdue, is marked. */
+export function TransactionStatusBadge({ status }: TransactionStatusBadgeProps) {
+  const { t } = useTranslation();
+
+  if (status === "ACTUAL") return null;
+  if (status === "PENDING") {
+    return (
+      <Badge variant="outline" className="border-warning/30 bg-warning/10 text-warning">
+        {t("transactions.transactionStatusBadge.pending")}
+      </Badge>
+    );
+  }
+  return <Badge variant="outline">{t("transactions.transactionStatusBadge.forecast")}</Badge>;
+}
+
 type DescriptionCellProps = EditableCellProps;
 
 export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
@@ -346,6 +365,7 @@ export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
           {t("transactions.descriptionCell.series")}
         </Badge>
       )}
+      <TransactionStatusBadge status={transaction.status} />
     </div>
   );
 }
