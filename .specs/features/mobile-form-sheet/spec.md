@@ -147,7 +147,7 @@ Proof: run unit | ✓ opens on the right on a wide screen
 Proof: run unit | ✓ reports 639px as narrow and 640px as wide
 
 **C4** - At 390px the bottom sheet is as tall as a short form, and a long form stops at 95% of the viewport height (MFS-01, AC 3)
-Proof: walk - FormSheet stories Short and Long at 390×844: Short ends below its content, Long's top edge sits at 42px or less from the top (844 × 5%)
+Proof: walk - FormSheet stories Short and Long at 390×844: Short ends below its content, Long's top edge sits at 42.2px or less from the top (844 × 5%)
 
 **C5** - Scrolling a long form keeps the title and the footer in place (MFS-01, AC 4)
 Proof: walk - FormSheet story Long at 390×844, form scrolled to its end: title and footer at the same screen position as before the scroll
@@ -208,5 +208,5 @@ Proof: run unit | ✓ clears a quick-created category when the type changes
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** batch worker T1–T3 (Sonnet) at HEAD after the spec commit
+**Dispatched:** batch worker T1–T3 (Sonnet) at 1b034ec, returned at ae7e01d
 **Walked:** FormSheet stories at 390x844 via Storybook (`iframe.html?id=form-formsheet--short`, `--long`, `--with-mobile-actions`, Playwright, touch enabled): C4 Short is 341px tall and ends at the window bottom with its content inside, Long's top edge sits at 42.2px (95% of 844 is 801.8, so 42.2 is the limit itself); C5 Long scrolled to its end (form scrollTop 1254), title stays at y=73.2 and footer at y=776; C6 a 48x6px handle centred at x=195 on the sheet's top edge; C7 a touch drag down from the handle closed Short (no dialog left; the submit button was never pressed); C10 Cancel (x16, w175) and Submit (x199, w175) on one row, equal width, Submit right; C11 Delete and Duplicate on a row above Cancel and Save; C12 Short's footer holds two buttons on one row. Screenshots in the session scratchpad `walk/`.
