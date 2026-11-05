@@ -48,7 +48,7 @@ export function ArchivedPlansListView({
             {plans.map((plan) => (
               <li
                 key={plan.id}
-                className="border-border flex items-center justify-between gap-3 rounded-lg border p-3"
+                className="border-border flex flex-col gap-3 rounded-lg border p-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex min-w-0 flex-col gap-1">
                   <Text variant="label" className="truncate">
@@ -62,7 +62,7 @@ export function ArchivedPlansListView({
                     {format(new Date(plan.deletesAt), DATE_FORMAT)}
                   </Text>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 items-center gap-2 *:flex-1 sm:*:flex-none">
                   <Button
                     type="button"
                     variant="outline"
