@@ -30,6 +30,8 @@ function transaction(id: number, overrides: Partial<Transaction> = {}): Transact
       { id: 2, name: "Livia Souza", shareAmount: (120 + id) / 2 },
     ],
     items: [],
+    status: "ACTUAL",
+    requiresConfirmation: false,
     ...overrides,
   };
 }

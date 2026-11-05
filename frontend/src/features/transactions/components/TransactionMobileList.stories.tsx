@@ -22,6 +22,8 @@ function transaction(
     splitMode: "EQUAL",
     participants: [{ id: 1, name: "Lucas Martins", shareAmount: 100 }],
     items: [],
+    status: "ACTUAL",
+    requiresConfirmation: false,
     ...overrides,
   };
 }

@@ -50,6 +50,7 @@ const savedTransaction: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 function authValue(): AuthContextValue {
@@ -547,6 +548,7 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
     startDate: "2026-05-01",
     splitMode: "EQUAL",
     participants: [],
+    requiresConfirmation: false,
   };
   const updatedSeries = { seriesId: "s-1", count: 12, occurrences: [occurrence] };
 

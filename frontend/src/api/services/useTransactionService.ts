@@ -14,6 +14,7 @@ import {
   DeleteTransactionSeriesRequest,
   UpdateTransactionSeriesRequest,
   UpdateTransactionRequest,
+  ConfirmTransactionRequest,
 } from "../dtos";
 import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
@@ -121,6 +122,35 @@ export function useUpdateTransaction(
     mutationFn: (payload: UpdateTransactionRequest) =>
       updateTransaction(activePlanId!, payload),
     ...buildMutationOptions({ successMessage: "api.toast.transactionUpdated" }, {
+      ...options,
+      onSuccess: (data, variables) => {
+        invalidateTransactionData(queryClient);
+        options?.onSuccess?.(data, variables);
+      },
+    }),
+  });
+}
+
+async function confirmTransaction(
+  planId: number,
+  { params, body }: ConfirmTransactionRequest,
+): Promise<Transaction> {
+  const { data } = await findracoApi.post(
+    `/plan/${planId}/transaction/${params.id}/confirm`,
+    body,
+  );
+  return data;
+}
+
+export function useConfirmTransaction(
+  options?: MutationOptions<Transaction, ConfirmTransactionRequest>,
+) {
+  const queryClient = useQueryClient();
+  const { activePlanId } = usePlanContext();
+  return useMutation({
+    mutationFn: (payload: ConfirmTransactionRequest) =>
+      confirmTransaction(activePlanId!, payload),
+    ...buildMutationOptions({ successMessage: "api.toast.transactionConfirmed" }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);

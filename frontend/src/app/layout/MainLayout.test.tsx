@@ -40,6 +40,7 @@ const emptySummary: DashboardSummaryResponse = {
   totalExpenses: 0,
   netBalance: 0,
   personBreakdown: [],
+  actualIncome: 0, actualExpenses: 0, actualBalance: 0,
 };
 
 const created: Transaction = {
@@ -54,6 +55,7 @@ const created: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 function emptyPage<T>(): PagedResponse<T> {

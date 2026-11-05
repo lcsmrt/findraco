@@ -18,6 +18,9 @@ export type TransactionItem = {
   category?: Category;
 };
 
+/** `PENDING` is a forecast whose date has passed without a confirmation. */
+export type TransactionStatus = "ACTUAL" | "FORECAST" | "PENDING";
+
 export type Transaction = {
   id: number;
   /** Sent back on edit; an edit of a version that changed since answers 409 `stale-version`. */
@@ -37,6 +40,10 @@ export type Transaction = {
   splitMode: SplitMode;
   participants: ParticipantShare[];
   items: TransactionItem[];
+  /** Computed by the server from the reader's today. */
+  status: TransactionStatus;
+  /** True for an occurrence of a series that needs a confirmation to become actual. */
+  requiresConfirmation: boolean;
   /** What the current member may do with this row, as the server decides it. */
   permissions: TransactionPermissions;
 };
@@ -119,6 +126,8 @@ export type CreateTransactionSeriesRequest = {
     endDate?: string;
     splitMode?: SplitMode;
     participants?: ParticipantInput[];
+    /** Omitted means required: the server stamps a new series as requiring confirmation. */
+    requiresConfirmation?: boolean;
   };
 };
 
@@ -152,6 +161,7 @@ export type RecurrenceDefinitionResponse = {
   endDate?: string;
   splitMode: SplitMode;
   participants: RecurrenceDefinitionParticipantTemplate[];
+  requiresConfirmation: boolean;
 };
 
 export type DeleteTransactionSeriesRequest = {
@@ -168,7 +178,14 @@ export type UpdateTransactionSeriesRequest = {
     /** The series as the create request describes it. */
     series: CreateTransactionSeriesRequest["body"];
     version: number;
+    /** Omitted leaves the pivot's confirmation as it is. */
+    pivotConfirmed?: boolean;
   };
+};
+
+export type ConfirmTransactionRequest = {
+  params: { id: number };
+  body: { amount: number; startDate: string; version: number };
 };
 
 /** What an import did: rows stored, and rows skipped because the bank's id was already stored. */

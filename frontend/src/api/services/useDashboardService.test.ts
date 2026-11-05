@@ -19,6 +19,9 @@ describe("useGetDashboardSummary", () => {
       totalIncome: 1000,
       totalExpenses: 250,
       netBalance: 750,
+      actualIncome: 1000,
+      actualExpenses: 250,
+      actualBalance: 750,
       personBreakdown: [],
     };
     server.use(dashboardHandlers.summary(summary));

@@ -47,6 +47,7 @@ const baseTransaction: Transaction = {
       quantity: 1,
     },
   ],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 describe("transactionFormSchema — plain transaction validation", () => {
@@ -650,6 +651,7 @@ describe("toInlineSavePayload — a table cell edit (STD-12 AC 1)", () => {
       },
       { id: 32, description: "Tip", amount: 20, quantity: 1 },
     ],
+    status: "ACTUAL", requiresConfirmation: false,
   };
   const unchanged = {
     type: "CREDIT",

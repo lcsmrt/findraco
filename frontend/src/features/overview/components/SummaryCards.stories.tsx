@@ -21,6 +21,9 @@ function summary(people: DashboardSummaryResponse["personBreakdown"]): Dashboard
     totalIncome,
     totalExpenses,
     netBalance: totalIncome - totalExpenses,
+    actualIncome: totalIncome,
+    actualExpenses: totalExpenses,
+    actualBalance: totalIncome - totalExpenses,
     personBreakdown: people,
   };
 }

@@ -17,6 +17,7 @@ const dashboard: DashboardSummaryResponse = {
     { userId: LIVIA, name: "Livia", income: 2414, expense: 2105, net: 309 },
     { userId: LUCAS, name: "Lucas", income: 2733, expense: 2345, net: 388 },
   ],
+  actualIncome: 0, actualExpenses: 0, actualBalance: 0,
 };
 
 describe("summaryView", () => {

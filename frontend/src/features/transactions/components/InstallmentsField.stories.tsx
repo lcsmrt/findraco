@@ -22,6 +22,7 @@ const definition: RecurrenceDefinitionResponse = {
   startDate: "2026-05-01",
   splitMode: "EQUAL",
   participants: [],
+  requiresConfirmation: false,
 };
 
 type DemoFormProps = {

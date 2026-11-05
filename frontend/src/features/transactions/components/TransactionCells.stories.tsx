@@ -34,6 +34,7 @@ const groceries: Transaction = {
     { id: 2, name: "Livia Souza", shareAmount: 160 },
   ],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 type DemoRowProps = {

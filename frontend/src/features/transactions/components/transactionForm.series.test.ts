@@ -41,6 +41,7 @@ const installmentTransaction: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 
 const installmentDefinition: RecurrenceDefinitionResponse = {
@@ -56,6 +57,7 @@ const installmentDefinition: RecurrenceDefinitionResponse = {
   startDate: "2026-05-01",
   splitMode: "EQUAL",
   participants: [],
+  requiresConfirmation: false,
 };
 
 const recurringDefinition: RecurrenceDefinitionResponse = {
@@ -71,6 +73,7 @@ const recurringDefinition: RecurrenceDefinitionResponse = {
   endDate: "2026-12-01",
   splitMode: "EQUAL",
   participants: [],
+  requiresConfirmation: false,
 };
 
 describe("transactionFormSchema — recurring (create) validation", () => {

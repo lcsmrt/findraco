@@ -44,6 +44,7 @@ const rent: Transaction = {
   splitMode: "EQUAL",
   participants: [],
   items: [],
+  status: "ACTUAL", requiresConfirmation: false,
 };
 const gym: Transaction = { ...rent, id: 55, seriesId: "s-1", description: "Gym (3/12)" };
 
