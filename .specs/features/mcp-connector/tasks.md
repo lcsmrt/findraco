@@ -466,6 +466,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C71** - A client that registers `http://localhost/callback` is met on any port; another path, `https`, userinfo or `localhost.evil.example` is a 400 with no redirect (MCP-02, Connect 8)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#loopbackRedirectAnyPort' -Dsurefire.skip=true
 
+**C72** - Changing the description of an installment keeps its `(k/N)` suffix; a description that already ends in one is kept as given (MCP-08, Edit 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='McpUpdateCopyTest#keepsInstallmentSuffix' -Dsurefire.failIfNoSpecifiedTests=true
+
 ---
 
 ## Handoff

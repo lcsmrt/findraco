@@ -27,13 +27,17 @@ class McpUpdateCopyTest {
 
     /** A transaction with every editable field set to something that is not a default. */
     private static TransactionResponse stored() {
+        return stored("Electricity");
+    }
+
+    private static TransactionResponse stored(String description) {
         return new TransactionResponse(
                 11L,
                 9L,
                 category(7L, "Home"),
                 TransactionType.DEBIT,
                 new BigDecimal("100.00"),
-                "Electricity",
+                description,
                 "series-1",
                 3,
                 LocalDate.of(2026, 3, 10),
@@ -83,5 +87,19 @@ class McpUpdateCopyTest {
         assertThat(amountOnly)
                 .isEqualTo(unchangedExcept(new BigDecimal("120.00"), "Electricity", LocalDate.of(2026, 3, 10)));
         assertThat(everything).isEqualTo(unchangedExcept(new BigDecimal("120.00"), "Power", LocalDate.of(2026, 3, 12)));
+    }
+
+    @Test
+    void keepsInstallmentSuffix() {
+        TransactionResponse installment = stored("Phone (2/3)");
+
+        assertThat(McpUpdateCopy.of(installment, null, null, "Handset").description())
+                .isEqualTo("Handset (2/3)");
+        assertThat(McpUpdateCopy.of(installment, null, null, "Handset (2/3)").description())
+                .isEqualTo("Handset (2/3)");
+        assertThat(McpUpdateCopy.of(installment, null, null, null).description())
+                .isEqualTo("Phone (2/3)");
+        assertThat(McpUpdateCopy.of(stored(), null, null, "Power").description())
+                .isEqualTo("Power");
     }
 }

@@ -6,6 +6,8 @@ import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -15,7 +17,17 @@ import org.jspecify.annotations.Nullable;
  */
 public final class McpUpdateCopy {
 
+    private static final Pattern INSTALLMENT_SUFFIX = Pattern.compile("\\(\\d+/\\d+\\)$");
+
     private McpUpdateCopy() {}
+
+    /** An installment keeps its "(k/N)" when the description changes, as the app's own edit of one occurrence does. */
+    private static String withInstallmentSuffix(String description, String stored) {
+        Matcher suffix = INSTALLMENT_SUFFIX.matcher(stored);
+        return suffix.find() && !INSTALLMENT_SUFFIX.matcher(description).find()
+                ? description + " " + suffix.group()
+                : description;
+    }
 
     public static UpdateTransactionRequest of(
             TransactionResponse stored,
@@ -26,7 +38,7 @@ public final class McpUpdateCopy {
                 stored.category() == null ? null : stored.category().id(),
                 stored.type(),
                 amount != null ? amount : stored.amount(),
-                description != null ? description : stored.description(),
+                description != null ? withInstallmentSuffix(description, stored.description()) : stored.description(),
                 stored.parcelsNumber(),
                 date != null ? date : stored.startDate(),
                 stored.endDate(),

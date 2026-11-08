@@ -166,7 +166,8 @@ public class McpTransactionTools {
             name = "update_transaction",
             title = "Update transaction",
             description = "Corrects the amount, the date or the description of one transaction; everything else "
-                    + "stays as stored. For an occurrence of a series only that occurrence changes. A transaction "
+                    + "stays as stored. For an occurrence of a series only that occurrence changes (a later edit of "
+                    + "the whole series in the app may reset it to the series values). A transaction "
                     + "split by fixed amounts cannot change its amount here. Pass at least one of amount, date and "
                     + "description. Find the id with list_transactions.",
             annotations =
