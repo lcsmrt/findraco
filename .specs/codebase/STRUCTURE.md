@@ -57,7 +57,8 @@ findraco/
         transactions/              incl. filters/ (transaction params + useTransactionFilters)
         categories/
         plans/
-        auth/                      Login, RegisterUser, ForgotPassword, ResetPassword pages; components/AuthCard, PasswordInput
+        auth/                      Login, RegisterUser, ForgotPassword, ResetPassword pages
+        oauth/                     OAuthLoginPage, OAuthConsentPage (connector sign-in and consent)
         notFound/
       hooks/                       Hooks used by 2+ features: usePlanPermissions, useSearchParamGroup, useDebounce
       lib/                         Adapters around a library or browser API: mergeClasses, storage

@@ -222,7 +222,7 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C61–C66 pass
+- [x] C61–C66 pass
 
 **Tests**: unit
 **Gate**: quick
@@ -459,7 +459,7 @@ Proof: cd frontend && grep -q "oauth2" vite.config.ts && grep -q "well-known" vi
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** worker A (Phase 1, T1–T4, Opus) at d066ce3, returned (4d08e64); worker B (Phase 2, T5–T8, Sonnet) at 4d08e64
+**Dispatched:** worker A (Phase 1, T1–T4, Opus) at d066ce3, returned (4d08e64); worker B (Phase 2, T5–T8, Sonnet) at 4d08e64, returned (17d5dce4); worker C (Phase 3, T9–T10, Sonnet) at 17d5dce4
 **Walked:** none
 
 ---

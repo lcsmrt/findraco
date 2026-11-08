@@ -3,8 +3,8 @@ import { FormField } from "@/components/form/FormField";
 import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useWatch } from "react-hook-form";
-import { AuthCard } from "./components/AuthCard";
-import { PasswordInput } from "./components/PasswordInput";
+import { AuthCard } from "@/components/authCard/AuthCard";
+import { PasswordInput } from "@/components/passwordInput/PasswordInput";
 import { passwordSpacesHint } from "./utils/passwordSchema";
 import {
   resetPasswordSchema,

@@ -6,3 +6,4 @@ export * from "./paged";
 export * from "./plan";
 export * from "./problem";
 export * from "./user";
+export * from "./oauth";

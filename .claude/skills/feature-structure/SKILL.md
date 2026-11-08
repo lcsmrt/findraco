@@ -34,7 +34,8 @@ frontend/
       transactions/         filters/ (transaction params + useTransactionFilters), components/, …
       categories/
       plans/
-      auth/                 LoginPage, RegisterUserPage, ForgotPasswordPage, ResetPasswordPage; components/AuthCard, PasswordInput
+      auth/                 LoginPage, RegisterUserPage, ForgotPasswordPage, ResetPasswordPage
+      oauth/                OAuthLoginPage, OAuthConsentPage (the connector's sign-in and consent)
       notFound/
     hooks/                  hooks used by 2+ features (usePlanPermissions, useSearchParamGroup, useDebounce)
     lib/                    adapters around a library or browser API (mergeClasses, storage)
@@ -50,8 +51,9 @@ frontend/
   `PlansPage`), with its view `XxxPageView`.
 - The navigation (tab row, bottom bar, global add) lives in `MainLayout`, which derives the current
   destination from the pathname (`utils/navigation.ts`); screens render content only.
-- `auth` is one feature with four pages. `AuthCard` (on `Card`) and `PasswordInput` (on `InputGroup`)
-  live in `auth/components/`, which states their real scope.
+- `auth` is one feature with four pages; `oauth` holds the two pages of the connector's sign-in and
+  consent. `AuthCard` (on `Card`) and `PasswordInput` (on `InputGroup`) serve both, so they live in
+  `src/components/`.
 - `notFound` uses `ThemeToggle`, which is why `ThemeToggle` stays in `src/components/` and not in the
   shell.
 

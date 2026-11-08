@@ -3,6 +3,8 @@ export const PATHS = {
   registerUser: "/register-user",
   forgotPassword: "/forgot-password",
   resetPassword: "/reset-password",
+  oauthLogin: "/oauth/login",
+  oauthConsent: "/oauth/consent",
   home: "/",
   overview: "/overview",
   transactions: "/transactions",

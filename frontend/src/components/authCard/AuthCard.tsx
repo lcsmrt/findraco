@@ -6,7 +6,7 @@ import type { ReactNode } from "react";
 type AuthCardProps = {
   title: string;
   description?: ReactNode;
-  children: ReactNode;
+  children?: ReactNode;
   className?: string;
 };
 
