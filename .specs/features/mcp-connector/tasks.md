@@ -478,6 +478,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C75** - The shipped `app.rate-limit.mcp-user` rule is 60 calls per `PT1M` (MCP-09, Edge 1)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='ConfigurationPropertiesTest#mcpRateLimitDefaultIsSixtyPerMinute' -Dsurefire.failIfNoSpecifiedTests=true
 
+**C76** - The sign-in page shows the wrong-credentials message for a bare `?error` in the URL, as the server redirects a failed sign-in (MCP-02, Connect 4)
+Proof: run unit | ✓ OAuthLoginPage > shows the wrong-credentials message for a bare ?error
+
 ---
 
 ## Handoff

@@ -18,9 +18,14 @@ describe("OAuthLoginPage", () => {
     const user = userEvent.setup();
     renderWithProviders(<OAuthLoginPage />, { route: "/oauth/login" });
     await user.type(screen.getByLabelText("Email"), "ana@example.com");
-    await user.type(screen.getByLabelText("Password", { selector: "input" }), "s3cret-pass");
+    await user.type(
+      screen.getByLabelText("Password", { selector: "input" }),
+      "s3cret-pass",
+    );
 
-    const form = screen.getByRole("button", { name: "Sign in" }).closest("form")!;
+    const form = screen
+      .getByRole("button", { name: "Sign in" })
+      .closest("form")!;
     const submitted = new Promise<FormData>((resolve) => {
       form.addEventListener("submit", (event) => {
         event.preventDefault();
@@ -38,9 +43,21 @@ describe("OAuthLoginPage", () => {
     });
   });
 
-  it("shows the rate-limit message for ?error=rate-limited", () => {
-    renderWithProviders(<OAuthLoginPage />, { route: "/oauth/login?error=rate-limited" });
+  it("shows the wrong-credentials message for a bare ?error", () => {
+    renderWithProviders(<OAuthLoginPage />, { route: "/oauth/login?error" });
 
-    expect(screen.getByRole("alert").textContent).toBe("Too many attempts. Wait a few minutes and try again.");
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Invalid e-mail or password.",
+    );
+  });
+
+  it("shows the rate-limit message for ?error=rate-limited", () => {
+    renderWithProviders(<OAuthLoginPage />, {
+      route: "/oauth/login?error=rate-limited",
+    });
+
+    expect(screen.getByRole("alert").textContent).toBe(
+      "Too many attempts. Wait a few minutes and try again.",
+    );
   });
 });
