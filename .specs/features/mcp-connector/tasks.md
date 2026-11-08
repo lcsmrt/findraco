@@ -185,7 +185,7 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C41–C52 pass
+- [x] C41–C52 pass
 
 **Tests**: integration
 **Gate**: quick

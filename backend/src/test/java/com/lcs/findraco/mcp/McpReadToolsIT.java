@@ -9,17 +9,12 @@ import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.support.AbstractMcpIntegrationTest;
 import com.lcs.findraco.support.McpClient;
-import com.lcs.findraco.transaction.model.Share;
-import com.lcs.findraco.transaction.model.SplitMode;
-import com.lcs.findraco.transaction.model.TransactionDetails;
-import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,25 +28,6 @@ class McpReadToolsIT extends AbstractMcpIntegrationTest {
 
     @Autowired
     private ObjectMapper objectMapper;
-
-    private void transaction(
-            Plan plan,
-            User user,
-            String description,
-            String amount,
-            TransactionType type,
-            LocalDate date,
-            Category category) {
-        fixtures.aTransaction(new TransactionDraft(
-                plan,
-                user,
-                new TransactionDetails(category, type, new BigDecimal(amount), description, date, null, null),
-                SplitMode.EQUAL,
-                List.of(new Share(user, null)),
-                List.of(),
-                null,
-                null));
-    }
 
     private static List<String> descriptions(JsonNode page) {
         List<String> descriptions = new ArrayList<>();
@@ -216,11 +192,7 @@ class McpReadToolsIT extends AbstractMcpIntegrationTest {
 
     @Test
     void todayFollowsSavedTimeZone() throws Exception {
-        // Of two zones a day apart, at least one is on another calendar day than UTC right now.
-        ZoneId zone = List.of(ZoneId.of("Pacific/Kiritimati"), ZoneId.of("Etc/GMT+12")).stream()
-                .filter(candidate -> !LocalDate.now(candidate).equals(LocalDate.now(ZoneOffset.UTC)))
-                .findFirst()
-                .orElseThrow();
+        ZoneId zone = zoneOnAnotherDay();
         LocalDate userToday = LocalDate.now(zone);
         User user = userIn(zone.getId());
         Plan plan = plan(user, "Home", true);
