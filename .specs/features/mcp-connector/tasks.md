@@ -463,6 +463,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C70** - A wrong-type or wrong-enum argument returns `isError` naming the parameter, worded in English whatever the machine locale (MCP-09, Edge 2, Assumptions)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#wrongTypeAndEnumErrorsAreEnglish' -Dsurefire.skip=true
 
+**C71** - A client that registers `http://localhost/callback` is met on any port; another path, `https`, userinfo or `localhost.evil.example` is a 400 with no redirect (MCP-02, Connect 8)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#loopbackRedirectAnyPort' -Dsurefire.skip=true
+
 ---
 
 ## Handoff

@@ -127,6 +127,48 @@ class AuthorizationServerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void loopbackRedirectAnyPort() throws Exception {
+        MockHttpSession session = flow.signIn(fixtures.aUser());
+        String loopback = "http://127.0.0.1:1/oauth/loopback-client";
+
+        // The registered http://localhost/callback is met on whatever port the client's listener got (RFC 8252).
+        MultiValueMap<String, String> anyPort = authorizeParams();
+        anyPort.set("client_id", loopback);
+        anyPort.set("redirect_uri", "http://localhost:54321/callback");
+        String consent = mockMvc.perform(authorizeRequest(anyPort).session(session))
+                .andExpect(status().isFound())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+        String callback = mockMvc.perform(post("/oauth2/authorize")
+                        .session(session)
+                        .param("client_id", loopback)
+                        .param("state", queryParam(consent, "state"))
+                        .param("scope", SCOPE)
+                        .param("consent_action", "allow"))
+                .andExpect(status().isFound())
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+        assertThat(callback).startsWith("http://localhost:54321/callback?");
+        assertThat(queryParam(callback, "code")).isNotBlank();
+
+        // Anything else than the port differing is not the registered URI: a 400 page, never a redirect.
+        for (String refused : List.of(
+                "http://localhost:1/other",
+                "https://localhost:1/callback",
+                "http://user@localhost:1/callback",
+                "http://localhost.evil.example:1/callback")) {
+            MultiValueMap<String, String> params = authorizeParams();
+            params.set("client_id", loopback);
+            params.set("redirect_uri", refused);
+            mockMvc.perform(authorizeRequest(params).session(session))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(redirectedUrl(null));
+        }
+    }
+
+    @Test
     void signedInAuthorizeRedirectsToConsent() throws Exception {
         MockHttpSession session = flow.signIn(fixtures.aUser());
 
