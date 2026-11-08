@@ -7,6 +7,7 @@ import com.lcs.findraco.shared.config.OAuthProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Clock;
 import java.time.Duration;
@@ -59,10 +60,13 @@ import org.springframework.security.oauth2.server.authorization.web.authenticati
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationConverter;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.ExceptionMappingAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
+import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.util.StringUtils;
@@ -106,15 +110,18 @@ public class AuthorizationServerConfig {
             OAuthProperties properties)
             throws Exception {
         String mcpResource = properties.mcpResource().toString();
+        // Every redirect this chain issues lands on the issuer's origin, never one rebuilt from the request: behind
+        // a TLS-terminating proxy the request's own scheme and host are the proxy's hop, not the user's.
+        URI issuer = properties.issuer();
 
         // Only this chain's own providers sign in here; the app's global manager stays out of the chain.
         http.getSharedObject(AuthenticationManagerBuilder.class).parentAuthenticationManager(null);
 
         ExceptionMappingAuthenticationFailureHandler loginFailure = new ExceptionMappingAuthenticationFailureHandler();
-        loginFailure.setDefaultFailureUrl(LOGIN_PAGE + "?error");
+        loginFailure.setDefaultFailureUrl(issuerUrl(issuer, LOGIN_PAGE, "error"));
         loginFailure.setExceptionMappings(Map.of(
                 OAuthLoginAuthenticationProvider.LoginRateLimitedException.class.getName(),
-                LOGIN_PAGE + "?error=rate-limited"));
+                issuerUrl(issuer, LOGIN_PAGE, "error=rate-limited")));
 
         // The SPA posts the cookie's value as a plain form field, so the token is not masked per request; and it is
         // loaded on every request, so its cookie is set by the redirect that leads to the sign-in page.
@@ -160,7 +167,7 @@ public class AuthorizationServerConfig {
                                                     .INTROSPECTION_ENDPOINT_AUTH_METHODS_SUPPORTED);
                                 })))
                         .authorizationEndpoint(authorization -> authorization
-                                .consentPage(CONSENT_PAGE)
+                                .consentPage(issuerUrl(issuer, CONSENT_PAGE, null))
                                 .errorResponseHandler(authorizationErrors(clients))
                                 .authorizationRequestConverters(converters -> converters.replaceAll(converter ->
                                         converter instanceof OAuth2AuthorizationConsentAuthenticationConverter
@@ -180,15 +187,15 @@ public class AuthorizationServerConfig {
                         // Nothing else lives under /oauth2: an unknown path answers 404, not a sign-in redirect.
                         .anyRequest()
                         .permitAll())
-                // A browser opening the authorization endpoint unsigned goes to the sign-in page, whatever it accepts.
-                .exceptionHandling(exceptions -> exceptions.defaultAuthenticationEntryPointFor(
-                        new LoginUrlAuthenticationEntryPoint(LOGIN_PAGE),
-                        PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.GET, OAuthRoutes.AUTHORIZE)))
+                // Anything unsigned goes to the sign-in page (the SPA route), on the issuer's origin.
+                .exceptionHandling(exceptions -> exceptions.authenticationEntryPoint(
+                        new LoginUrlAuthenticationEntryPoint(issuerUrl(issuer, LOGIN_PAGE, null))))
                 .authenticationProvider(new OAuthLoginAuthenticationProvider(authenticationProvider, rateLimiter))
                 .formLogin(form -> form.loginPage(LOGIN_PAGE)
                         .loginProcessingUrl(OAuthRoutes.LOGIN)
                         .usernameParameter("email")
                         .passwordParameter("password")
+                        .successHandler(backToSavedRequest(issuer))
                         .failureHandler(loginFailure))
                 // SPEC_DEVIATION: design.md scopes the CSRF cookie to /oauth2; it is on the root path.
                 // Reason: the sign-in page at /oauth/login must read it, and a cookie scoped to /oauth2 is
@@ -198,6 +205,34 @@ public class AuthorizationServerConfig {
                         .requireCsrfProtectionMatcher(
                                 PathPatternRequestMatcher.withDefaults().matcher(HttpMethod.POST, OAuthRoutes.LOGIN)))
                 .build();
+    }
+
+    /** An absolute URL on the issuer's origin; {@code query} may be null. */
+    private static String issuerUrl(URI issuer, String path, String query) {
+        return UriComponentsBuilder.fromUri(issuer)
+                .replacePath(path)
+                .replaceQuery(query)
+                .build()
+                .toUriString();
+    }
+
+    /**
+     * After signing in, back to the authorization request the browser was sent from, on the issuer's origin: Spring's
+     * own handler redirects to the URL the request arrived at, which behind a proxy is not the user's.
+     */
+    private static AuthenticationSuccessHandler backToSavedRequest(URI issuer) {
+        HttpSessionRequestCache requests = new HttpSessionRequestCache();
+        return (request, response, authentication) -> {
+            SavedRequest saved = requests.getRequest(request, response);
+            requests.removeRequest(request, response);
+            UriComponents target = saved == null
+                    ? null
+                    : UriComponentsBuilder.fromUriString(saved.getRedirectUrl()).build();
+            response.sendRedirect(
+                    target == null
+                            ? issuerUrl(issuer, "/", null)
+                            : issuerUrl(issuer, target.getPath(), target.getQuery()));
+        };
     }
 
     @Bean

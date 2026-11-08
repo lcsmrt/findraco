@@ -22,7 +22,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.support.OAuthClientFlow;
 import com.lcs.findraco.user.model.User;
+import jakarta.servlet.http.Cookie;
 import java.util.List;
+import java.util.function.Function;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +32,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.mock.web.MockHttpSession;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.util.UriComponentsBuilder;
 import tools.jackson.databind.JsonNode;
@@ -72,7 +76,54 @@ class AuthorizationServerIT extends AbstractIntegrationTest {
 
     @Test
     void anonymousAuthorizeRedirectsToLogin() throws Exception {
-        mockMvc.perform(authorizeRequest()).andExpect(status().isFound()).andExpect(redirectedUrl("/oauth/login"));
+        mockMvc.perform(authorizeRequest())
+                .andExpect(status().isFound())
+                .andExpect(redirectedUrl("http://localhost/oauth/login"));
+    }
+
+    @Test
+    void forwardedHttpsRedirectsStayHttps() throws Exception {
+        // What the user's browser reaches through a TLS-terminating proxy: the proxy's own hop is http on another host.
+        Function<MockHttpServletRequestBuilder, MockHttpServletRequestBuilder> viaProxy =
+                request -> request.header("X-Forwarded-Proto", "https")
+                        .header("X-Forwarded-Port", "443")
+                        .header("Host", "findraco.example");
+        User user = fixtures.aUser();
+
+        MvcResult toLogin = mockMvc.perform(viaProxy.apply(authorizeRequest())).andReturn();
+        MockHttpSession session = (MockHttpSession) toLogin.getRequest().getSession(false);
+        Cookie csrf = toLogin.getResponse().getCookie("XSRF-TOKEN");
+        String login = toLogin.getResponse().getRedirectedUrl();
+
+        String failure = mockMvc.perform(viaProxy.apply(post("/oauth2/login")
+                        .session(session)
+                        .cookie(csrf)
+                        .param("email", user.getEmail())
+                        .param("password", "wrong")
+                        .param("_csrf", csrf.getValue())))
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+        String afterLogin = mockMvc.perform(viaProxy.apply(post("/oauth2/login")
+                        .session(session)
+                        .cookie(csrf)
+                        .param("email", user.getEmail())
+                        .param("password", "password")
+                        .param("_csrf", csrf.getValue())))
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+        String consent = mockMvc.perform(viaProxy.apply(authorizeRequest().session(session)))
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        // The issuer is http://localhost in tests; a redirect built from the request would be https://findraco.example.
+        assertThat(login).isEqualTo("http://localhost/oauth/login");
+        assertThat(failure).isEqualTo("http://localhost/oauth/login?error");
+        assertThat(afterLogin).startsWith("http://localhost/oauth2/authorize?");
+        assertThat(queryParam(afterLogin, "client_id")).isEqualTo(CLIENT_ID);
+        assertThat(consent).startsWith("http://localhost/oauth/consent?");
     }
 
     @Test

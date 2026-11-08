@@ -454,6 +454,9 @@ Proof: run unit | ✓ OAuthConsentPage > posts the decision to the authorization
 **C67** - The service worker never answers navigations to `/oauth2/`, `/mcp` or `/.well-known/` (MCP-01, design Risks)
 Proof: cd frontend && grep -q "oauth2" vite.config.ts && grep -q "well-known" vite.config.ts && grep -q "\\\\/mcp" vite.config.ts
 
+**C68** - Behind a TLS-terminating proxy (`X-Forwarded-Proto: https`, another `Host`) every redirect of the connect flow (authorize to login, login failure, login to authorize, authorize to consent) stays on the issuer origin (MCP-02, Connect 4, design Risks)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#forwardedHttpsRedirectsStayHttps' -Dsurefire.skip=true
+
 ---
 
 ## Handoff
