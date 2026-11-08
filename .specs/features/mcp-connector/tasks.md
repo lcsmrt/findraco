@@ -130,8 +130,8 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C18–C22 pass
-- [ ] Build gate green (end of Phase 1)
+- [x] C18–C22 pass
+- [x] Build gate green (end of Phase 1)
 
 **Tests**: integration
 **Gate**: build

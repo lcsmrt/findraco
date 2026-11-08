@@ -91,7 +91,8 @@ class ConfigurationPropertiesTest {
             Map.entry("app.oauth.mcp-resource", "https://findraco.app/mcp"),
             Map.entry("app.oauth.signing-key", "/run/secrets/oauth-signing-key.pem"),
             Map.entry("app.oauth.cimd.allowed-clients", "https://claude.ai/oauth/mcp-oauth-client-metadata"),
-            Map.entry("app.oauth.cimd.cache-ttl", "PT24H"));
+            Map.entry("app.oauth.cimd.cache-ttl", "PT24H"),
+            Map.entry("app.oauth.grant-purge-cron", "0 15 4 * * *"));
 
     private static final Map<String, String> VALID_MAIL_STRINGS =
             Map.of("app.mail.smtp-host", "", "app.mail.smtp-username", "", "app.mail.smtp-password", "");

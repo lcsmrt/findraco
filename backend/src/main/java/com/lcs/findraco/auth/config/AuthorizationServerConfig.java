@@ -2,6 +2,7 @@ package com.lcs.findraco.auth.config;
 
 import com.lcs.findraco.auth.controller.OAuthRoutes;
 import com.lcs.findraco.auth.service.CimdRegisteredClientRepository;
+import com.lcs.findraco.auth.service.ReplayRevokingAuthorizationService;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
@@ -126,6 +127,11 @@ public class AuthorizationServerConfig {
                         .authorizationService(authorizationService)
                         .authorizationConsentService(consentService)
                         .tokenGenerator(tokenGenerator)
+                        .clientAuthentication(clientAuthentication -> clientAuthentication
+                                .authenticationConverters(converters ->
+                                        converters.addFirst(new PublicClientRefreshAuthenticationConverter()))
+                                .authenticationProviders(providers ->
+                                        providers.addFirst(new PublicClientRefreshAuthenticationProvider(clients))))
                         .authorizationServerMetadataEndpoint(metadata ->
                                 metadata.authorizationServerMetadataCustomizer(builder -> builder.claims(claims -> {
                                     claims.put(
@@ -219,7 +225,7 @@ public class AuthorizationServerConfig {
 
     @Bean
     public OAuth2AuthorizationService authorizationService(JdbcOperations jdbc, RegisteredClientRepository clients) {
-        return new JdbcOAuth2AuthorizationService(jdbc, clients);
+        return new ReplayRevokingAuthorizationService(new JdbcOAuth2AuthorizationService(jdbc, clients), jdbc);
     }
 
     @Bean
