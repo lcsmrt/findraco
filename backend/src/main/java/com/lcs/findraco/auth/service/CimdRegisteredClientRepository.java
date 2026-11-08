@@ -1,6 +1,6 @@
 package com.lcs.findraco.auth.service;
 
-import com.lcs.findraco.auth.config.CimdProperties;
+import com.lcs.findraco.shared.config.CimdProperties;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;

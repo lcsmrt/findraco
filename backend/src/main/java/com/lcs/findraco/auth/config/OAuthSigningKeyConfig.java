@@ -1,5 +1,6 @@
 package com.lcs.findraco.auth.config;
 
+import com.lcs.findraco.shared.config.OAuthProperties;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;

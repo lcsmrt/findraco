@@ -2,7 +2,7 @@ package com.lcs.findraco.auth.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.lcs.findraco.auth.config.CimdProperties;
+import com.lcs.findraco.shared.config.CimdProperties;
 import com.sun.net.httpserver.HttpServer;
 import java.io.IOException;
 import java.io.OutputStream;

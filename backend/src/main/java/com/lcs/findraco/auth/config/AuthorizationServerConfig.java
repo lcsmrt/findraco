@@ -3,6 +3,7 @@ package com.lcs.findraco.auth.config;
 import com.lcs.findraco.auth.controller.OAuthRoutes;
 import com.lcs.findraco.auth.service.CimdRegisteredClientRepository;
 import com.lcs.findraco.auth.service.ReplayRevokingAuthorizationService;
+import com.lcs.findraco.shared.config.OAuthProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimiter;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;

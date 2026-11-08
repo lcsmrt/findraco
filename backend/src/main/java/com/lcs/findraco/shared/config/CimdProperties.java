@@ -1,4 +1,4 @@
-package com.lcs.findraco.auth.config;
+package com.lcs.findraco.shared.config;
 
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;

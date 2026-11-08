@@ -129,10 +129,19 @@ class ArchitectureTest {
      */
     private static final Set<String> CROSS_FEATURE_LAYERS = Set.of("service", "model");
 
+    /**
+     * The {@code mcp} feature adapts the other features to Claude's tools, as their controllers adapt them to HTTP:
+     * it builds their requests and reads their responses, so it reaches those layers too (never a repository, a
+     * controller or an exception).
+     */
+    private static final Set<String> ADAPTER_LAYERS = Set.of("service", "model", "request", "response");
+
+    private static final String ADAPTER_FEATURE = "mcp";
+
     private static final String RESPONSE_LAYER = "response";
 
     private static final Pattern FEATURE_LAYER = Pattern.compile(
-            Pattern.quote(ROOT) + "\\.(auth|user|plan|category|transaction|dashboard)\\.([a-z]+)(\\..*)?");
+            Pattern.quote(ROOT) + "\\.(auth|user|plan|category|transaction|dashboard|mcp)\\.([a-z]+)(\\..*)?");
 
     @ArchTest
     static final ArchRule packagesFollowTheFeatureLayout = classes()
@@ -140,15 +149,16 @@ class ArchitectureTest {
             .resideInAnyPackage(
                     ROOT,
                     ROOT + ".shared.[config|error|openapi|security|web|ratelimit]",
-                    ROOT + ".[auth|user|plan|category|transaction|dashboard]"
+                    ROOT + ".[auth|user|plan|category|transaction|dashboard|mcp]"
                             + ".[controller|service|repository|model|request|response|exception|config]",
-                    ROOT + ".transaction.importer")
+                    ROOT + ".transaction.importer",
+                    ROOT + ".mcp.tool")
             .because("every feature uses the same layer sub-packages, and only the ones it needs");
 
     @ArchTest
     static final ArchRule featuresMeetThroughTheirServicesAndModels = classes()
             .that()
-            .resideInAnyPackage(ROOT + ".[auth|user|plan|category|transaction|dashboard]..")
+            .resideInAnyPackage(ROOT + ".[auth|user|plan|category|transaction|dashboard|mcp]..")
             .should(onlyReachOtherFeaturesThrough(CROSS_FEATURE_LAYERS))
             .because("a feature's controllers, requests, exceptions and configuration are its own, and its "
                     + "responses are embedded only by other responses");
@@ -159,7 +169,7 @@ class ArchitectureTest {
             .resideInAPackage(ROOT + ".shared..")
             .should()
             .dependOnClassesThat()
-            .resideInAnyPackage(ROOT + ".[auth|user|plan|category|transaction|dashboard]..")
+            .resideInAnyPackage(ROOT + ".[auth|user|plan|category|transaction|dashboard|mcp]..")
             .because("every feature builds on shared, so shared cannot know any of them");
 
     @ArchTest
@@ -380,12 +390,13 @@ class ArchitectureTest {
                 }
                 String originFeature = originMatcher.group(1);
                 boolean fromResponse = RESPONSE_LAYER.equals(originMatcher.group(2));
+                Set<String> reachable = originFeature.equals(ADAPTER_FEATURE) ? ADAPTER_LAYERS : layers;
                 for (Dependency dependency : origin.getDirectDependenciesFromSelf()) {
                     Matcher target =
                             FEATURE_LAYER.matcher(dependency.getTargetClass().getPackageName());
                     if (target.matches()
                             && !target.group(1).equals(originFeature)
-                            && !layers.contains(target.group(2))
+                            && !reachable.contains(target.group(2))
                             && !(fromResponse && RESPONSE_LAYER.equals(target.group(2)))) {
                         events.add(SimpleConditionEvent.violated(dependency, dependency.getDescription()));
                     }
