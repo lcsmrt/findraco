@@ -51,7 +51,11 @@ export function OAuthConsentView({
       title={t("oauth.consent.title", { name: client.name })}
       description={t("oauth.consent.description", { name: client.name })}
     >
-      <form method="post" action="/oauth2/authorize" className="flex flex-col gap-5">
+      <form
+        method="post"
+        action="/oauth2/authorize"
+        className="flex flex-col gap-5"
+      >
         <input type="hidden" name="client_id" value={clientId} />
         <input type="hidden" name="state" value={state} />
         <input type="hidden" name="scope" value={scope} />
@@ -66,13 +70,26 @@ export function OAuthConsentView({
               <Text>{t("oauth.consent.writeTransactions")}</Text>
             </li>
           </ul>
-          <Text variant="secondary">{t("oauth.consent.redirectsTo", { host: client.redirectHost })}</Text>
+          <Text variant="secondary">
+            {t("oauth.consent.redirectsTo", { host: client.redirectHost })}
+          </Text>
         </div>
         <div className="flex gap-3">
-          <Button type="submit" name="consent_action" value="deny" variant="outline" className="flex-1">
+          <Button
+            type="submit"
+            name="consent_action"
+            value="deny"
+            variant="outline"
+            className="flex-1"
+          >
             {t("oauth.consent.deny")}
           </Button>
-          <Button type="submit" name="consent_action" value="allow" className="flex-1">
+          <Button
+            type="submit"
+            name="consent_action"
+            value="allow"
+            className="flex-1"
+          >
             {t("oauth.consent.allow")}
           </Button>
         </div>

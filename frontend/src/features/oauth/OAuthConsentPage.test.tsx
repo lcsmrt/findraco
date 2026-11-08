@@ -1,4 +1,5 @@
 import { oauthHandlers } from "@/api/services/oauth.handlers";
+import { recordRequests } from "@/test/recordRequests";
 import { renderWithProviders } from "@/test/renderWithProviders";
 import { server } from "@/test/server";
 import { cleanup, screen } from "@testing-library/react";
@@ -33,7 +34,9 @@ async function decide(label: "Allow" | "Deny") {
 
 describe("OAuthConsentPage", () => {
   it("posts the decision to the authorization server", async () => {
-    server.use(oauthHandlers.clientInfo({ name: "Claude", redirectHost: "claude.ai" }));
+    server.use(
+      oauthHandlers.clientInfo({ name: "Claude", redirectHost: "claude.ai" }),
+    );
     renderWithProviders(<OAuthConsentPage />, { route: ROUTE });
 
     const allow = await decide("Allow");
@@ -47,14 +50,34 @@ describe("OAuthConsentPage", () => {
       consent_action: "allow",
     });
 
-    expect((await decide("Deny")).decision).toMatchObject({ consent_action: "deny" });
+    expect((await decide("Deny")).decision).toMatchObject({
+      consent_action: "deny",
+    });
+  });
+
+  it("asks which host the pending request redirects to", async () => {
+    const requests = recordRequests();
+    server.use(
+      oauthHandlers.clientInfo({ name: "Claude", redirectHost: "localhost" }),
+    );
+    renderWithProviders(<OAuthConsentPage />, { route: ROUTE });
+
+    await screen.findByRole("button", { name: "Allow" });
+    expect(new URL(requests[0].url).searchParams.get("state")).toBe(
+      "state-xyz",
+    );
   });
 
   it("offers no decision when the app is unknown", async () => {
     server.use(oauthHandlers.clientNotFound());
     renderWithProviders(<OAuthConsentPage />, { route: ROUTE });
 
-    expect(await screen.findByRole("heading", { level: 1, name: "App not recognized" })).toBeTruthy();
+    expect(
+      await screen.findByRole("heading", {
+        level: 1,
+        name: "App not recognized",
+      }),
+    ).toBeTruthy();
     expect(screen.queryByRole("button")).toBeNull();
   });
 });

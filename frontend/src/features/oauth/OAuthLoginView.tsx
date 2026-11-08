@@ -24,8 +24,15 @@ export function OAuthLoginView({ error, csrfToken }: OAuthLoginViewProps) {
   const passwordId = useId();
 
   return (
-    <AuthCard title={t("auth.loginView.signIn")} description={t("oauth.login.description")}>
-      <form method="post" action="/oauth2/login" className="flex flex-col gap-5">
+    <AuthCard
+      title={t("auth.loginView.signIn")}
+      description={t("oauth.login.description")}
+    >
+      <form
+        method="post"
+        action="/oauth2/login"
+        className="flex flex-col gap-5"
+      >
         <input type="hidden" name="_csrf" value={csrfToken} />
         <div className="flex w-full flex-col gap-3">
           <Field>
@@ -41,7 +48,9 @@ export function OAuthLoginView({ error, csrfToken }: OAuthLoginViewProps) {
             />
           </Field>
           <Field>
-            <FieldLabel htmlFor={passwordId}>{t("auth.loginView.password")}</FieldLabel>
+            <FieldLabel htmlFor={passwordId}>
+              {t("auth.loginView.password")}
+            </FieldLabel>
             <PasswordInput
               id={passwordId}
               name="password"
@@ -52,7 +61,9 @@ export function OAuthLoginView({ error, csrfToken }: OAuthLoginViewProps) {
           </Field>
           {error && (
             <Text as="p" role="alert" className="text-destructive">
-              {error === "rate-limited" ? t("problems.rate-limited") : t("problems.invalid-credentials")}
+              {error === "rate-limited"
+                ? t("problems.rate-limited")
+                : t("problems.invalid-credentials")}
             </Text>
           )}
         </div>

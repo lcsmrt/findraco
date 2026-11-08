@@ -5,6 +5,8 @@ const COOKIE_NAME = "XSRF-TOKEN";
  * post cannot add a header, so the page copies the raw cookie value into the `_csrf` field.
  */
 export function readCsrfToken(cookies: string): string {
-  const entry = cookies.split("; ").find((cookie) => cookie.startsWith(`${COOKIE_NAME}=`));
+  const entry = cookies
+    .split("; ")
+    .find((cookie) => cookie.startsWith(`${COOKIE_NAME}=`));
   return entry ? entry.slice(COOKIE_NAME.length + 1) : "";
 }

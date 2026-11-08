@@ -7,7 +7,9 @@ export function OAuthConsentPage() {
   const [params] = useSearchParams();
   const clientId = params.get("client_id") ?? undefined;
 
-  const { data: client, isLoading } = useGetOAuthClientInfo(clientId);
+  const state = params.get("state") ?? undefined;
+
+  const { data: client, isLoading } = useGetOAuthClientInfo(clientId, state);
 
   return (
     <OAuthConsentView
@@ -15,7 +17,7 @@ export function OAuthConsentPage() {
       client={client}
       clientId={clientId ?? ""}
       scope={params.get("scope") ?? ""}
-      state={params.get("state") ?? ""}
+      state={state ?? ""}
       csrfToken={readCsrfToken(document.cookie)}
     />
   );

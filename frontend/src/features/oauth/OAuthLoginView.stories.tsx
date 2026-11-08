@@ -13,7 +13,9 @@ type Story = StoryObj<typeof meta>;
 
 export const SignIn: Story = {
   play: async ({ canvas }) => {
-    const form = canvas.getByRole("button", { name: "Sign in" }).closest("form");
+    const form = canvas
+      .getByRole("button", { name: "Sign in" })
+      .closest("form");
     await expect(form).toHaveAttribute("action", "/oauth2/login");
     await expect(form).toHaveAttribute("method", "post");
     await expect(canvas.getByRole("textbox", { name: "Email" })).toBeVisible();
@@ -24,7 +26,9 @@ export const SignIn: Story = {
 export const WrongCredentials: Story = {
   args: { error: "wrong-credentials" },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("alert")).toHaveTextContent("Invalid e-mail or password.");
+    await expect(canvas.getByRole("alert")).toHaveTextContent(
+      "Invalid e-mail or password.",
+    );
   },
 };
 

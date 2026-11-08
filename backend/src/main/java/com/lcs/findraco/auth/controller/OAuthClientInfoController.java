@@ -20,10 +20,13 @@ public class OAuthClientInfoController {
         this.clientService = clientService;
     }
 
-    @Operation(summary = "Names an OAuth client for the consent page; 404 for a client outside the allowlist")
+    @Operation(
+            summary =
+                    "Names an OAuth client and the host of the redirect its pending request asked for; 404 for a client outside the allowlist")
     @SecurityRequirements
     @GetMapping(OAuthRoutes.CLIENT_INFO)
-    public ResponseEntity<OAuthClientInfoResponse> clientInfo(@RequestParam("client_id") String clientId) {
-        return ResponseEntity.ok(clientService.clientInfo(clientId));
+    public ResponseEntity<OAuthClientInfoResponse> clientInfo(
+            @RequestParam("client_id") String clientId, @RequestParam(value = "state", required = false) String state) {
+        return ResponseEntity.ok(clientService.clientInfo(clientId, state));
     }
 }

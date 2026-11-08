@@ -196,6 +196,33 @@ class AuthorizationServerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void clientInfoNamesRequestedRedirectHost() throws Exception {
+        MockHttpSession session = flow.signIn(fixtures.aUser());
+        String loopback = "http://127.0.0.1:1/oauth/loopback-client";
+        MultiValueMap<String, String> params = authorizeParams();
+        params.set("client_id", loopback);
+        params.set("redirect_uri", "http://localhost:54321/callback");
+        String consent = mockMvc.perform(authorizeRequest(params).session(session))
+                .andReturn()
+                .getResponse()
+                .getRedirectedUrl();
+
+        // The client registers 127.0.0.1 and localhost; the consent names the one this request redirects to.
+        mockMvc.perform(get("/oauth2/client-info")
+                        .param("client_id", loopback)
+                        .param("state", queryParam(consent, "state")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.redirectHost").value("localhost"));
+        // With no pending request, or one that is not this client's, it falls back to a registered host.
+        mockMvc.perform(get("/oauth2/client-info").param("client_id", loopback).param("state", "unknown"))
+                .andExpect(jsonPath("$.redirectHost").value("127.0.0.1"));
+        mockMvc.perform(get("/oauth2/client-info")
+                        .param("client_id", CLIENT_ID)
+                        .param("state", queryParam(consent, "state")))
+                .andExpect(jsonPath("$.redirectHost").value("client.example"));
+    }
+
+    @Test
     void allowIssuesSingleUseCode() throws Exception {
         MockHttpSession session = flow.signIn(fixtures.aUser());
 

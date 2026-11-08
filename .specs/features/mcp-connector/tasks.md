@@ -481,6 +481,15 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest
 **C76** - The sign-in page shows the wrong-credentials message for a bare `?error` in the URL, as the server redirects a failed sign-in (MCP-02, Connect 4)
 Proof: run unit | ✓ OAuthLoginPage > shows the wrong-credentials message for a bare ?error
 
+**C77** - The consent page names the host of the redirect URI this request asked for (found by the consent `state`), not the document's first host; with no pending request it falls back to a registered host (MCP-02, Connect 5)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#clientInfoNamesRequestedRedirectHost' -Dsurefire.skip=true
+
+**C78** - The client-info request carries the consent `state` when there is one (MCP-02, Connect 5)
+Proof: run unit | ✓ getOAuthClientInfo > sends the consent state so the pending redirect is named
+
+**C79** - The consent page passes the URL's `state` to the client-info request (MCP-02, Connect 5)
+Proof: run unit | ✓ OAuthConsentPage > asks which host the pending request redirects to
+
 ---
 
 ## Handoff

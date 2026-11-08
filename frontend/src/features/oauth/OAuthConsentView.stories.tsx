@@ -20,10 +20,21 @@ type Story = StoryObj<typeof meta>;
 
 export const Ready: Story = {
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { level: 1, name: "Connect Claude to findraco" })).toBeVisible();
-    await expect(canvas.getByText("After you choose, you return to claude.ai.")).toBeVisible();
-    await expect(canvas.getByText("Read your plans, categories and transactions")).toBeVisible();
-    await expect(canvas.getByText("Create, confirm and edit transactions")).toBeVisible();
+    await expect(
+      canvas.getByRole("heading", {
+        level: 1,
+        name: "Connect Claude to findraco",
+      }),
+    ).toBeVisible();
+    await expect(
+      canvas.getByText("After you choose, you return to claude.ai."),
+    ).toBeVisible();
+    await expect(
+      canvas.getByText("Read your plans, categories and transactions"),
+    ).toBeVisible();
+    await expect(
+      canvas.getByText("Create, confirm and edit transactions"),
+    ).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Allow" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Deny" })).toBeVisible();
   },
@@ -32,7 +43,9 @@ export const Ready: Story = {
 export const UnknownClient: Story = {
   args: { client: undefined },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("heading", { level: 1, name: "App not recognized" })).toBeVisible();
+    await expect(
+      canvas.getByRole("heading", { level: 1, name: "App not recognized" }),
+    ).toBeVisible();
     await expect(canvas.queryByRole("button")).toBeNull();
   },
 };
