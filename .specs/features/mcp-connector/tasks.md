@@ -112,7 +112,7 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C8–C17 pass
+- [x] C8–C17 pass
 
 **Tests**: integration
 **Gate**: quick

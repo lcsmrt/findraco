@@ -364,7 +364,9 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             "GET /api/findraco/user/me",
             "PUT /api/findraco/user",
             "PATCH /api/findraco/user/me/time-zone",
-            "PATCH /api/findraco/user/me/language");
+            "PATCH /api/findraco/user/me/language",
+            // The consent page names an OAuth client; public, about no plan.
+            "GET /oauth2/client-info");
 
     private static List<Row> rows() {
         return List.of(

@@ -56,7 +56,7 @@ public class CimdRegisteredClientRepository implements RegisteredClientRepositor
     static final int MAX_DOCUMENT_BYTES = 64 * 1024;
 
     private static final Logger log = LoggerFactory.getLogger(CimdRegisteredClientRepository.class);
-    private static final String PINNED_LOCATION = "classpath:oauth/cimd/*.json";
+    private static final String PINNED_LOCATION = "classpath*:oauth/cimd/*.json";
     private static final Set<String> LOOPBACK_HOSTS = Set.of("localhost", "127.0.0.1", "[::1]");
 
     private final Set<String> allowedClients;

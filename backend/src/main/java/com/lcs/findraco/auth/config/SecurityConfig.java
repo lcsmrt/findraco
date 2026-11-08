@@ -10,6 +10,8 @@ import com.lcs.findraco.shared.web.RequestIdFilter;
 import java.util.List;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -54,7 +56,12 @@ public class SecurityConfig {
         this.featurePublicEndpoints = List.copyOf(featurePublicEndpoints);
     }
 
+    /**
+     * The app's chain, and the catch-all: the authorization server's and the MCP endpoint's chains claim their own
+     * paths first, and every other path, known or not, is the app's (authenticated unless public).
+     */
     @Bean
+    @Order(Ordered.LOWEST_PRECEDENCE)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         return http.csrf(AbstractHttpConfigurer::disable)
