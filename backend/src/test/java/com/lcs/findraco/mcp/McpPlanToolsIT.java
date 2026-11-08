@@ -7,33 +7,23 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import com.lcs.findraco.mcp.service.McpToolRunner;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
-import com.lcs.findraco.support.AbstractIntegrationTest;
+import com.lcs.findraco.support.AbstractMcpIntegrationTest;
 import com.lcs.findraco.support.CapturedLogs;
 import com.lcs.findraco.support.McpClient;
 import com.lcs.findraco.user.model.User;
-import com.nimbusds.jose.jwk.source.JWKSource;
-import com.nimbusds.jose.proc.SecurityContext;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
-import org.springframework.jdbc.core.JdbcTemplate;
 import tools.jackson.databind.JsonNode;
 
 /** {@code list_plans}, how a tool finds its plan, and what every tool call does around its body. */
 @Import(McpPlanToolsIT.ProbeToolsConfig.class)
-class McpPlanToolsIT extends AbstractIntegrationTest {
-
-    @Autowired
-    private JWKSource<SecurityContext> jwkSource;
-
-    @Autowired
-    private JdbcTemplate jdbc;
+class McpPlanToolsIT extends AbstractMcpIntegrationTest {
 
     /** Tools only this test knows: one that names the plan it resolved, one that fails the way a bug would. */
     @TestConfiguration
@@ -69,16 +59,6 @@ class McpPlanToolsIT extends AbstractIntegrationTest {
         }
     }
 
-    private McpClient clientOf(User user) {
-        return new McpClient(mockMvc, McpClient.token(jwkSource, user));
-    }
-
-    private Plan plan(User owner, String name, boolean isDefault) {
-        Plan plan = fixtures.aPlan(owner);
-        jdbc.update("UPDATE plans SET name = ?, is_default = ? WHERE id = ?", name, isDefault, plan.getId());
-        return plan;
-    }
-
     private static JsonNode row(JsonNode rows, String name) {
         for (JsonNode row : rows) {
             if (row.path("name").asString().equals(name)) {
@@ -86,13 +66,6 @@ class McpPlanToolsIT extends AbstractIntegrationTest {
             }
         }
         throw new AssertionError("no row named " + name + " in " + rows);
-    }
-
-    private static String errorText(JsonNode result) {
-        assertThat(result.path("isError").asBoolean())
-                .as("isError of %s", result)
-                .isTrue();
-        return result.path("content").path(0).path("text").asString();
     }
 
     @Test

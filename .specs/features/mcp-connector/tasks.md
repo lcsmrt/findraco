@@ -167,7 +167,7 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C34–C40 pass
+- [x] C34–C40 pass
 
 **Tests**: integration
 **Gate**: quick
