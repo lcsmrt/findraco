@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 50,
+  "next_id": 53,
   "lessons": [
     {
       "id": "L-001",
@@ -886,6 +886,60 @@
       ],
       "created": "2026-11-05T19:57:51Z",
       "last_seen": "2026-11-05T19:57:51Z"
+    },
+    {
+      "id": "L-050",
+      "key": "ac_gap::any redirect a backend builds behind nginx needs an it with forwarded host proto headers build absolute redirects from configured origins never the request",
+      "text": "Any redirect a backend builds behind nginx needs an IT with forwarded Host/Proto headers; build absolute redirects from configured origins, never the request.",
+      "signal": "ac_gap",
+      "scope": "backend/security",
+      "status": "candidate",
+      "features": [
+        "mcp-connector"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md W1 (backend/security)"
+      ],
+      "created": "2026-11-08T23:26:38Z",
+      "last_seen": "2026-11-08T23:26:38Z"
+    },
+    {
+      "id": "L-051",
+      "key": "weak_test::a test must not write the state it claims to verify expiry limits or accept any error message assert the configured value and the specific error",
+      "text": "A test must not write the state it claims to verify (expiry, limits) or accept any error message; assert the configured value and the specific error.",
+      "signal": "weak_test",
+      "scope": "backend/tests",
+      "status": "candidate",
+      "features": [
+        "mcp-connector"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "C13, C50, C31 (backend/tests)"
+      ],
+      "created": "2026-11-08T23:26:38Z",
+      "last_seen": "2026-11-08T23:26:38Z"
+    },
+    {
+      "id": "L-052",
+      "key": "ac_gap::mcp tool schemas must refuse unknown arguments or a misspelled optional parameter silently falls back to a default",
+      "text": "MCP tool schemas must refuse unknown arguments, or a misspelled optional parameter silently falls back to a default.",
+      "signal": "ac_gap",
+      "scope": "mcp",
+      "status": "candidate",
+      "features": [
+        "mcp-connector"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md Edge 2 (mcp)"
+      ],
+      "created": "2026-11-08T23:26:38Z",
+      "last_seen": "2026-11-08T23:26:38Z"
     }
   ]
 }

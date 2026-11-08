@@ -9,7 +9,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 ---
 
 **Design**: `.specs/features/mcp-connector/design.md`
-**Status**: Approved
+**Status**: Done
 **Approved**: 2026-11-08 - user: "Manda bala pae"
 **Build**: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true; cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 **Run unit**: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/oauth src/api/services
@@ -501,7 +501,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** worker A (Phase 1, T1–T4, Opus) at d066ce3, returned (4d08e64); worker B (Phase 2, T5–T8, Sonnet) at 4d08e64, returned (17d5dce4); worker C (Phase 3, T9–T10, Sonnet) at 17d5dce4, returned (8112379c); Verifier (Opus) at 6a6f39fd, returned FAIL (11 findings); fix worker (Sonnet) at 6a6f39fd
+**Dispatched:** worker A (Phase 1, T1–T4, Opus) at d066ce3, returned (4d08e64); worker B (Phase 2, T5–T8, Sonnet) at 4d08e64, returned (17d5dce4); worker C (Phase 3, T9–T10, Sonnet) at 17d5dce4, returned (8112379c); Verifier (Opus) at 6a6f39fd, returned FAIL (11 findings); fix worker (Sonnet) at 6a6f39fd, returned (43ab576f); Verifier round 2 (same agent) at 43ab576f, returned (1 new Low, closed 5c27b6f7)
 **Walked:** 2026-11-08, local stack (backend `local` profile on a throwaway Postgres, built SPA behind `frontend/nginx.conf` in nginx:1.27, Playwright, Claude Code's real CIMD document fetched from claude.ai). Connect: `/oauth2/authorize` → `/oauth/login` (`walk/login.png`); wrong password → `?error` "E-mail ou senha inválidos." (`walk/login-error.png`); 6th try in a minute → `?error=rate-limited`; right password → `/oauth/consent` naming Claude Code, capabilities, Negar/Permitir (`walk/consent.png`); unknown client → "app not recognized", no buttons (`walk/consent-unknown.png`); Permitir → 302 to `http://localhost:9999/callback?code&state`; second connect with stored consent skips the page. Token: 200, 899 s, refresh issued, `aud` = `/mcp`. MCP: initialize, 8 tools listed; `list_plans` default plan; `create_transaction` "Posto" 42 DEBIT → ACTUAL today in plan "My plan"; `list_transactions` shows it; unknown plan → isError listing plans. Refresh rotates; replaying the old one → `invalid_grant` and the new one dies too. Found: (W1) behind nginx the AS builds absolute redirects from forwarded headers: `proxy_set_header Host $host` drops the port and Tomcat takes the port from `X-Forwarded-Proto`, so `/oauth2/authorize` redirected to `http://localhost/oauth/login` (walk used `$http_host` + `X-Forwarded-Port`); prod depends on its TLS topology. (W2) consent says "você volta para 127.0.0.1" while the request's redirect is `localhost`: it shows the document's first redirect URI, not the requested one. (W3) a tool input-schema error comes in the JVM locale (Portuguese) while other tool errors are English.
 
 ---

@@ -1,7 +1,7 @@
 # Claude MCP Connector verification
 
 **Verdict**: FAIL
-**Proofs**: `proofs.md` at 8112379c (diff range d066ce3..6a6f39fd, read at HEAD 6a6f39fd)
+**Proofs**: `proofs.md` at 43ab576f (round 1 read d066ce3..6a6f39fd; round 2 read the fix commits 6a6f39fd..43ab576f)
 **Verifier**: independent sub-agent (author != verifier)
 
 ## Checks
@@ -75,6 +75,20 @@
 | C65 | `OAuthLoginView.stories.tsx` `Wrong Credentials` | no - the story passes `error` directly; the page's bare `?error` mapping (`OAuthLoginPage.tsx` `readError`) has no test |
 | C66 | `OAuthConsentPage.test.tsx` `OAuthConsentPage > posts the decision to the authorization server` | yes |
 | C67 | `grep` on `vite.config.ts` `navigateFallbackDenylist` | yes |
+| C68 | `AuthorizationServerIT` `forwardedHttpsRedirectsStayHttps` | yes - the forwarded `Host` differs from the issuer's, so any redirect built from the request fails it; mutation probes (consent page back to relative, post-login back to `saved.getRedirectUrl()`) each turned it red. It proves "on the issuer origin", not "https": https in prod follows from `OAUTH_ISSUER=https://...`, which is what the fix relies on |
+| C69 | `McpPlanToolsIT` `unknownArgumentIsToolError` | yes - mutation `additionalProperties: true` turned it red; the misspelled `plano` creates nothing |
+| C70 | `McpPlanToolsIT` `wrongTypeAndEnumErrorsAreEnglish` | yes - discriminates on a non-English JVM (this machine is pt_BR, where the unpinned message was Portuguese); on an English CI JVM it cannot fail; the enum case asserts the parameter only |
+| C71 | `AuthorizationServerIT` `loopbackRedirectAnyPort` | yes - any port issues a code to that URI; other path, https, userinfo, look-alike host are 400 with no redirect |
+| C72 | `McpUpdateCopyTest` `keepsInstallmentSuffix` | yes - for what it states; see the new finding on one-off rows |
+| C73 | `AuthorizationServerIT` `codeLivesSixtySeconds` | yes - stored expires-issued = 60 s |
+| C74 | `McpCaptureToolsIT` `roleMatrixForWrites` | yes - exact message, row unchanged |
+| C75 | `ConfigurationPropertiesTest` `mcpRateLimitDefaultIsSixtyPerMinute` | yes - binds the shipped file |
+| C76 | `OAuthLoginPage.test.tsx` `OAuthLoginPage > shows the wrong-credentials message for a bare ?error` | yes |
+| C77 | `AuthorizationServerIT` `clientInfoNamesRequestedRedirectHost` | yes - requested `localhost` vs fallback `127.0.0.1`, and another client's state is ignored |
+| C78 | `useOAuthService.test.ts` `getOAuthClientInfo > sends the consent state so the pending redirect is named` | yes |
+| C79 | `OAuthConsentPage.test.tsx` `OAuthConsentPage > asks which host the pending request redirects to` | yes |
+| C80 | `McpPlanToolsIT` `archivedDefaultPlanAsksForPlan` | yes - exact messages |
+| C81 | `McpPlanToolsIT` `memberRemovedAfterConnectingIsRefused` | yes - by name and by id, never named |
 
 ## Findings
 
@@ -91,3 +105,4 @@
 | Low - (W2) The consent page names the alphabetically first host among the document's redirects, not the host of the redirect_uri in this request. Claude Code shows "127.0.0.1" while redirecting to `localhost`. Spec Connect 5 says "its redirect host". | `OAuthClientService.java:24-28` (`sorted().findFirst()`) | Pass the pending request's redirect host to the consent page: look up the authorization by its consent `state` (`OAuth2AuthorizationService.findByToken(state, STATE)`) in `client-info`, or show every registered host | 97799578 |
 | Low - (W3) Schema-validation errors come in the JVM locale (Portuguese on the dev machine), while every other tool error is in English. Spec Assumptions: messages in English. | Own example: `/amount: string encontrado, number esperado` | Pin the validator's locale to English (or `-Duser.language=en` in the image) and add a wrong-type case to the Edge 2 IT | 09a6a486 |
 | Low - Spec Edge 3 (archived or missing default plan) and Edge 4 (a member removed after connecting) have no check. Both behave correctly, but with no active plan the message reads "Your plans: ." | Own example: archived default → "You have no default plan. Pass the plan argument. Your plans: ."; removed member → plan unknown | Add checks for Edge 3/4; word the empty case ("You have no active plan") | a45c3b0e |
+| Low - (round 2, from a15dee7f) `update_transaction` re-appends a `(k/N)` suffix to any transaction whose stored description ends in one, series or not: a one-off "Pizza (1/2)" renamed to "Pizza" is stored as "Pizza (1/2)", so the description is not the one given (Edit 1). The app's THIS_ONE path only does this for series occurrences. | `McpUpdateCopy.java:25-41` - `withInstallmentSuffix` checks only the text, never `seriesId`/`parcelsNumber` | Apply the suffix only when the stored row is an installment occurrence (`seriesId != null && parcelsNumber != null`); add a one-off case to `keepsInstallmentSuffix` | 5c27b6f7 |

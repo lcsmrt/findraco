@@ -1,9 +1,9 @@
 # mcp-connector proofs
 
-**HEAD**: 8112379c
+**HEAD**: 5c27b6f7
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 71 pass, 0 fail
+**Result**: 85 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -74,6 +74,20 @@
 | C65 | `run stories / ✓ OAuthLoginView.stories.tsx > Wrong Credentials` | pass |
 | C66 | `run unit / ✓ OAuthConsentPage > posts the decision to the authorization server` | pass |
 | C67 | `cd frontend && grep -q "oauth2" vite.config.ts && grep -q "well-known" vite.config.ts && grep -q "\\\\/mcp" vi` | pass |
+| C68 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#forwarde` | pass |
+| C69 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#unknownArgument` | pass |
+| C70 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#wrongTypeAndEnu` | pass |
+| C71 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#loopback` | pass |
+| C72 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='McpUpdateCopyTest#keepsInstallmentS` | pass |
+| C73 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#codeLive` | pass |
+| C74 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#roleMatrixFo` | pass |
+| C75 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='ConfigurationPropertiesTest#mcpRate` | pass |
+| C76 | `run unit / ✓ OAuthLoginPage > shows the wrong-credentials message for a bare ?error` | pass |
+| C77 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#clientIn` | pass |
+| C78 | `run unit / ✓ getOAuthClientInfo > sends the consent state so the pending redirect is named` | pass |
+| C79 | `run unit / ✓ OAuthConsentPage > asks which host the pending request redirects to` | pass |
+| C80 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#archivedDefault` | pass |
+| C81 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#memberRemovedAf` | pass |
 | Build | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true` | pass |
 | Build | `cd frontend && pnpm lint` | pass |
 | Build | `cd frontend && pnpm build` | pass |
@@ -84,19 +98,19 @@
 `Run unit` - exit 0
 
 ```
- ✓ |unit| src/api/services/useInvitationService.test.ts > invitation mutations show their short success message > create shows "Invitation created." (NAV-05 AC 1, 2) 72ms
- ✓ |unit| src/features/oauth/OAuthConsentPage.test.tsx > OAuthConsentPage > posts the decision to the authorization server 195ms
- ✓ |unit| src/features/oauth/OAuthConsentPage.test.tsx > OAuthConsentPage > offers no decision when the app is unknown 22ms
- ✓ |unit| src/api/services/useInvitationService.test.ts > invitation mutations show their short success message > revoke shows "Invitation revoked." (NAV-05 AC 1, 2) 53ms
- ✓ |unit| src/api/services/useInvitationService.test.ts > invitation mutations show their short success message > accept shows "You joined the plan." (NAV-05 AC 1, 2) 53ms
- ✓ |unit| src/api/services/useOAuthService.test.ts > getOAuthClientInfo > requests the client by id 69ms
+ ✓ |unit| src/features/oauth/OAuthLoginPage.test.tsx > OAuthLoginPage > shows the wrong-credentials message for a bare ?error 9ms
+ ✓ |unit| src/features/oauth/OAuthLoginPage.test.tsx > OAuthLoginPage > shows the rate-limit message for ?error=rate-limited 7ms
+ ✓ |unit| src/api/services/useInvitationService.test.ts > invitation mutations show their short success message > revoke shows "Invitation revoked." (NAV-05 AC 1, 2) 55ms
+ ✓ |unit| src/api/services/useInvitationService.test.ts > invitation mutations show their short success message > accept shows "You joined the plan." (NAV-05 AC 1, 2) 54ms
  ✓ |unit| src/features/oauth/utils/csrfToken.test.ts > readCsrfToken > returns the raw value of the XSRF-TOKEN cookie among others 1ms
  ✓ |unit| src/features/oauth/utils/csrfToken.test.ts > readCsrfToken > returns an empty string when the cookie is absent 0ms
+ ✓ |unit| src/api/services/useOAuthService.test.ts > getOAuthClientInfo > requests the client by id 68ms
+ ✓ |unit| src/api/services/useOAuthService.test.ts > getOAuthClientInfo > sends the consent state so the pending redirect is named 54ms
 
  Test Files  10 passed (10)
-      Tests  53 passed (53)
-   Start at  16:10:25
-   Duration  2.55s (transform 397ms, setup 910ms, collect 2.59s, tests 3.04s, environment 4.26s, prepare 459ms)
+      Tests  56 passed (56)
+   Start at  20:00:32
+   Duration  2.59s (transform 414ms, setup 854ms, collect 2.62s, tests 3.14s, environment 4.33s, prepare 440ms)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
@@ -108,15 +122,15 @@ info Using tsconfig paths for react-docgen
 info Using tsconfig paths for react-docgen
 info Using tsconfig paths for react-docgen
  ✓ |storybook (chromium)| src/features/oauth/OAuthConsentView.stories.tsx > Ready 249ms
- ✓ |storybook (chromium)| src/features/oauth/OAuthConsentView.stories.tsx > Unknown Client 38ms
- ✓ |storybook (chromium)| src/features/oauth/OAuthLoginView.stories.tsx > Sign In 246ms
- ✓ |storybook (chromium)| src/features/oauth/OAuthLoginView.stories.tsx > Wrong Credentials 46ms
- ✓ |storybook (chromium)| src/features/oauth/OAuthLoginView.stories.tsx > Rate Limited 27ms
+ ✓ |storybook (chromium)| src/features/oauth/OAuthConsentView.stories.tsx > Unknown Client 28ms
+ ✓ |storybook (chromium)| src/features/oauth/OAuthLoginView.stories.tsx > Sign In 245ms
+ ✓ |storybook (chromium)| src/features/oauth/OAuthLoginView.stories.tsx > Wrong Credentials 41ms
+ ✓ |storybook (chromium)| src/features/oauth/OAuthLoginView.stories.tsx > Rate Limited 41ms
 
  Test Files  2 passed (2)
       Tests  5 passed (5)
-   Start at  16:10:30
-   Duration  1.79s (transform 0ms, setup 822ms, collect 241ms, tests 610ms, environment 0ms, prepare 4.22s)
+   Start at  20:00:36
+   Duration  1.69s (transform 0ms, setup 798ms, collect 218ms, tests 607ms, environment 0ms, prepare 4.14s)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
@@ -124,22 +138,22 @@ No story files found for the specified pattern: src/**/*.mdx
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='ConfigurationPropertiesTest#oauthRe` - exit 0
 
 ```
-16:10:36.968 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 9.1.5.Final
-16:10:37.347 [main] WARN org.springframework.context.annotation.AnnotationConfigApplicationContext -- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.boot.context.properties.ConfigurationPropertiesBindException: Error creating bean with name 'app.oauth-com.lcs.findraco.shared.config.OAuthProperties': Could not bind properties to 'OAuthProperties' : prefix=app.oauth, ignoreInvalidFields=false, ignoreUnknownFields=true
+20:00:43.319 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 9.1.5.Final
+20:00:43.717 [main] WARN org.springframework.context.annotation.AnnotationConfigApplicationContext -- Exception encountered during context initialization - cancelling refresh attempt: org.springframework.boot.context.properties.ConfigurationPropertiesBindException: Error creating bean with name 'app.oauth-com.lcs.findraco.shared.config.OAuthProperties': Could not bind properties to 'OAuthProperties' : prefix=app.oauth, ignoreInvalidFields=false, ignoreUnknownFields=true
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='MigrationsIT#oauthTablesExist'` - exit 0
 
 ```
-2026-11-08T16:11:00.262-03:00  INFO 1207570 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 8
-2026-11-08T16:11:00.262-03:00  INFO 1207570 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
-2026-11-08T16:11:00.264-03:00  INFO 1207570 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:11:00.265-03:00  INFO 1207570 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:11:00.266-03:00  INFO 1207570 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:11:00.393-03:00  INFO 1207570 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:11:00.393-03:00  INFO 1207570 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:11:00.394-03:00  INFO 1207570 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:11:00.455-03:00  INFO 1207570 --- [           main] [] com.lcs.findraco.MigrationsIT            : Started MigrationsIT in 12.145 seconds (process running for 13.276)
+2026-11-08T20:01:02.413-03:00  INFO 1322723 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 8
+2026-11-08T20:01:02.413-03:00  INFO 1322723 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
+2026-11-08T20:01:02.415-03:00  INFO 1322723 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:01:02.415-03:00  INFO 1322723 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:01:02.416-03:00  INFO 1322723 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:01:02.549-03:00  INFO 1322723 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:01:02.550-03:00  INFO 1322723 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:01:02.551-03:00  INFO 1322723 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:01:02.608-03:00  INFO 1322723 --- [           main] [] com.lcs.findraco.MigrationsIT            : Started MigrationsIT in 8.719 seconds (process running for 9.918)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -163,10 +177,10 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='CimdRegisteredClientRepositoryTest#` - exit 0
 
 ```
-16:11:20.568 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:33551/other-id refused: client_id names another client
-16:11:20.607 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:33551/secret refused: token_endpoint_auth_method is not none
-16:11:20.610 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:33551/no-code refused: grant_types lacks authorization_code
-16:11:20.612 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:33551/plain-http refused: a redirect URI is neither https nor loopback
+20:01:22.666 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:35597/other-id refused: client_id names another client
+20:01:22.710 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:35597/secret refused: token_endpoint_auth_method is not none
+20:01:22.713 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:35597/no-code refused: grant_types lacks authorization_code
+20:01:22.715 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:35597/plain-http refused: a redirect URI is neither https nor loopback
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='CimdRegisteredClientRepositoryTest#` - exit 0
@@ -178,109 +192,109 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='CimdRegisteredClientRepositoryTest#` - exit 0
 
 ```
-16:11:31.088 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:42763/oauth/client could not be fetched: UncheckedIOException
-16:11:31.095 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:42763/oauth/client could not be fetched: UncheckedIOException
-16:11:31.100 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:42763/oauth/client could not be fetched: UncheckedIOException
+20:01:32.925 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:37217/oauth/client could not be fetched: UncheckedIOException
+20:01:32.931 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:37217/oauth/client could not be fetched: UncheckedIOException
+20:01:32.935 [main] WARN com.lcs.findraco.auth.service.CimdRegisteredClientRepository -- Client metadata document http://127.0.0.1:37217/oauth/client could not be fetched: UncheckedIOException
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#metadata` - exit 0
 
 ```
-2026-11-08T16:11:51.081-03:00  INFO 1209749 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
-2026-11-08T16:11:51.083-03:00  INFO 1209749 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:11:51.083-03:00  INFO 1209749 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:11:51.084-03:00  INFO 1209749 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:11:51.210-03:00  INFO 1209749 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:11:51.210-03:00  INFO 1209749 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:11:51.212-03:00  INFO 1209749 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:11:51.277-03:00  INFO 1209749 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 9.167 seconds (process running for 10.317)
+2026-11-08T20:01:51.942-03:00  INFO 1324798 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
+2026-11-08T20:01:51.943-03:00  INFO 1324798 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:01:51.944-03:00  INFO 1324798 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:01:51.945-03:00  INFO 1324798 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:01:52.071-03:00  INFO 1324798 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:01:52.072-03:00  INFO 1324798 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:01:52.073-03:00  INFO 1324798 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:01:52.128-03:00  INFO 1324798 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.872 seconds (process running for 10.126)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:11:51.615-03:00  INFO 1209749 --- [           main] [19506c99-9a67-4160-ab06-41dc5898d894] c.l.f.shared.web.RequestLogFilter        : GET - 200 16ms userId=- planId=-
+2026-11-08T20:01:52.457-03:00  INFO 1324798 --- [           main] [9a06b030-d0b5-4808-8595-fb04348e6f2b] c.l.f.shared.web.RequestLogFilter        : GET - 200 16ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#noRegist` - exit 0
 
 ```
-2026-11-08T16:12:15.129-03:00  INFO 1210313 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
-2026-11-08T16:12:15.131-03:00  INFO 1210313 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:12:15.131-03:00  INFO 1210313 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:12:15.132-03:00  INFO 1210313 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:12:15.268-03:00  INFO 1210313 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:12:15.268-03:00  INFO 1210313 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:12:15.270-03:00  INFO 1210313 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:12:15.326-03:00  INFO 1210313 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 9.206 seconds (process running for 10.504)
+2026-11-08T20:02:16.072-03:00  INFO 1325341 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
+2026-11-08T20:02:16.073-03:00  INFO 1325341 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:02:16.074-03:00  INFO 1325341 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:02:16.075-03:00  INFO 1325341 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:02:16.212-03:00  INFO 1325341 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:02:16.213-03:00  INFO 1325341 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:02:16.214-03:00  INFO 1325341 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:02:16.269-03:00  INFO 1325341 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.826 seconds (process running for 10.028)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:12:15.680-03:00  INFO 1210313 --- [           main] [dba4e41f-6259-46c4-807c-22b5268dd42b] c.l.f.shared.web.RequestLogFilter        : POST /** 404 36ms userId=- planId=-
+2026-11-08T20:02:16.622-03:00  INFO 1325341 --- [           main] [aacfff9f-b491-4f2f-9b1e-9f1b94c36a7d] c.l.f.shared.web.RequestLogFilter        : POST /** 404 37ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#anonymou` - exit 0
 
 ```
-2026-11-08T16:12:38.178-03:00  INFO 1210870 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:12:38.178-03:00  INFO 1210870 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:12:38.179-03:00  INFO 1210870 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:12:38.311-03:00  INFO 1210870 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:12:38.312-03:00  INFO 1210870 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:12:38.313-03:00  INFO 1210870 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:12:38.369-03:00  INFO 1210870 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.916 seconds (process running for 10.161)
+2026-11-08T20:02:39.622-03:00  INFO 1325886 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:02:39.622-03:00  INFO 1325886 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:02:39.624-03:00  INFO 1325886 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:02:39.751-03:00  INFO 1325886 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:02:39.751-03:00  INFO 1325886 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:02:39.753-03:00  INFO 1325886 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:02:39.817-03:00  INFO 1325886 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.943 seconds (process running for 10.076)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:12:38.724-03:00  WARN 1210870 --- [           main] [caf19ac3-b2ea-40e0-9be5-617b3873ddf1] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:12:38.730-03:00  INFO 1210870 --- [           main] [caf19ac3-b2ea-40e0-9be5-617b3873ddf1] c.l.f.shared.web.RequestLogFilter        : GET - 302 46ms userId=- planId=-
+2026-11-08T20:02:40.176-03:00  WARN 1325886 --- [           main] [1e979360-9ff0-43b3-aebe-4a2e7b832036] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:02:40.183-03:00  INFO 1325886 --- [           main] [1e979360-9ff0-43b3-aebe-4a2e7b832036] c.l.f.shared.web.RequestLogFilter        : GET - 302 45ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#signedIn` - exit 0
 
 ```
-2026-11-08T16:13:01.551-03:00  INFO 1211439 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:13:01.676-03:00  INFO 1211439 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:13:01.677-03:00  INFO 1211439 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:13:01.678-03:00  INFO 1211439 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:13:01.742-03:00  INFO 1211439 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.912 seconds (process running for 10.112)
+2026-11-08T20:03:03.457-03:00  INFO 1326430 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:03:03.596-03:00  INFO 1326430 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:03:03.596-03:00  INFO 1326430 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:03:03.597-03:00  INFO 1326430 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:03:03.653-03:00  INFO 1326430 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.827 seconds (process running for 9.978)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:13:02.146-03:00  WARN 1211439 --- [           main] [3b43c9c8-3293-4f43-9d1f-995b2f5c0db6] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:13:02.153-03:00  INFO 1211439 --- [           main] [3b43c9c8-3293-4f43-9d1f-995b2f5c0db6] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
-2026-11-08T16:13:02.411-03:00  INFO 1211439 --- [           main] [1e0adb3d-7fa0-4c0b-8ef1-074f83176c4a] c.l.f.shared.web.RequestLogFilter        : POST - 302 254ms userId=- planId=-
-2026-11-08T16:13:02.445-03:00  INFO 1211439 --- [           main] [2645e26c-92a8-4af9-903d-34cc576d3ca0] c.l.f.shared.web.RequestLogFilter        : GET - 302 33ms userId=- planId=-
+2026-11-08T20:03:04.055-03:00  WARN 1326430 --- [           main] [ddae0ec6-a193-4a31-8fe4-2b05cf65cc07] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:03:04.061-03:00  INFO 1326430 --- [           main] [ddae0ec6-a193-4a31-8fe4-2b05cf65cc07] c.l.f.shared.web.RequestLogFilter        : GET - 302 41ms userId=- planId=-
+2026-11-08T20:03:04.327-03:00  INFO 1326430 --- [           main] [7ce092e8-c6df-44e9-8905-731bc4f20cc8] c.l.f.shared.web.RequestLogFilter        : POST - 302 262ms userId=- planId=-
+2026-11-08T20:03:04.362-03:00  INFO 1326430 --- [           main] [208ac2e1-05de-45cb-8846-7b7e27cbe7d9] c.l.f.shared.web.RequestLogFilter        : GET - 302 33ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#clientIn` - exit 0
 
 ```
-2026-11-08T16:13:25.658-03:00  INFO 1212008 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:13:25.659-03:00  INFO 1212008 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:13:25.785-03:00  INFO 1212008 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:13:25.785-03:00  INFO 1212008 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:13:25.787-03:00  INFO 1212008 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:13:25.846-03:00  INFO 1212008 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 9.027 seconds (process running for 10.207)
+2026-11-08T20:03:27.891-03:00  INFO 1326980 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:03:27.892-03:00  INFO 1326980 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:03:28.024-03:00  INFO 1326980 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:03:28.024-03:00  INFO 1326980 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:03:28.026-03:00  INFO 1326980 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:03:28.102-03:00  INFO 1326980 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.887 seconds (process running for 10.116)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:13:26.225-03:00  WARN 1212008 --- [           main] [d8094c29-14f6-4a1e-bf63-bc4cb54d0b0f] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:13:26.237-03:00  INFO 1212008 --- [           main] [d8094c29-14f6-4a1e-bf63-bc4cb54d0b0f] c.l.f.shared.web.RequestLogFilter        : GET /oauth2/client-info 200 65ms userId=- planId=-
-2026-11-08T16:13:26.271-03:00  INFO 1212008 --- [           main] [2498d16a-aafd-4c69-be8f-1069b61888c7] c.l.f.shared.web.RequestLogFilter        : GET /oauth2/client-info 404 6ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:03:28.480-03:00  WARN 1326980 --- [           main] [f96524b7-3b8f-4c80-bf04-d3bbd66cf45b] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:03:28.493-03:00  INFO 1326980 --- [           main] [f96524b7-3b8f-4c80-bf04-d3bbd66cf45b] c.l.f.shared.web.RequestLogFilter        : GET /oauth2/client-info 200 72ms userId=- planId=-
+2026-11-08T20:03:28.524-03:00  INFO 1326980 --- [           main] [13dfdbf4-d8d0-477d-829f-e787882bbbd1] c.l.f.shared.web.RequestLogFilter        : GET /oauth2/client-info 404 7ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#allowIss` - exit 0
@@ -288,239 +302,239 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 ```
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:13:49.957-03:00  WARN 1212560 --- [           main] [280eb38e-43ef-4f26-9978-70cfe3f7613b] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:13:49.964-03:00  INFO 1212560 --- [           main] [280eb38e-43ef-4f26-9978-70cfe3f7613b] c.l.f.shared.web.RequestLogFilter        : GET - 302 50ms userId=- planId=-
-2026-11-08T16:13:50.195-03:00  INFO 1212560 --- [           main] [fedf83e8-dc97-4e0c-ae9f-4478f3f7c82f] c.l.f.shared.web.RequestLogFilter        : POST - 302 228ms userId=- planId=-
-2026-11-08T16:13:50.229-03:00  INFO 1212560 --- [           main] [dc48c9ee-31c0-47a5-8df4-26209f1e2d6a] c.l.f.shared.web.RequestLogFilter        : GET - 302 32ms userId=- planId=-
-2026-11-08T16:13:50.289-03:00  INFO 1212560 --- [           main] [827537c4-fa01-4c78-90aa-877a9bfab65d] c.l.f.shared.web.RequestLogFilter        : POST - 302 58ms userId=- planId=-
-2026-11-08T16:13:50.393-03:00  INFO 1212560 --- [           main] [5a7c3c7c-77e1-4d3c-bb38-2c7c67dde89c] c.l.f.shared.web.RequestLogFilter        : POST - 200 50ms userId=- planId=-
-2026-11-08T16:13:50.416-03:00  WARN 1212560 --- [           main] [1b4b9202-d40c-4508-a636-228f5224db74] 2AuthorizationCodeAuthenticationProvider : Invalidated authorization token(s) previously issued to registered client 'http://127.0.0.1:1/oauth/test-client'
-2026-11-08T16:13:50.417-03:00  INFO 1212560 --- [           main] [1b4b9202-d40c-4508-a636-228f5224db74] c.l.f.shared.web.RequestLogFilter        : POST - 400 24ms userId=- planId=-
-2026-11-08T16:13:50.445-03:00  INFO 1212560 --- [           main] [7deee657-0810-422b-97c9-cd23123d3d35] c.l.f.shared.web.RequestLogFilter        : GET - 302 0ms userId=- planId=-
-2026-11-08T16:13:50.476-03:00  INFO 1212560 --- [           main] [9362e4fa-9a00-4e70-a7b9-4df7082c8a8f] c.l.f.shared.web.RequestLogFilter        : POST - 302 30ms userId=- planId=-
-2026-11-08T16:13:50.481-03:00  INFO 1212560 --- [           main] [240bdb98-31ad-478f-8b1e-48c80054d0fc] c.l.f.shared.web.RequestLogFilter        : GET - 302 4ms userId=- planId=-
-2026-11-08T16:13:50.496-03:00  INFO 1212560 --- [           main] [6a25e61a-30cc-4b46-8d4a-02fde84006f7] c.l.f.shared.web.RequestLogFilter        : POST - 302 13ms userId=- planId=-
-2026-11-08T16:13:50.503-03:00  INFO 1212560 --- [           main] [57d878ca-4013-4ce0-891c-d67b30f52158] c.l.f.shared.web.RequestLogFilter        : POST - 400 5ms userId=- planId=-
+2026-11-08T20:03:52.664-03:00  WARN 1327506 --- [           main] [068be9a3-1b2f-44b1-881a-7eaaf4d2bf89] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:03:52.671-03:00  INFO 1327506 --- [           main] [068be9a3-1b2f-44b1-881a-7eaaf4d2bf89] c.l.f.shared.web.RequestLogFilter        : GET - 302 48ms userId=- planId=-
+2026-11-08T20:03:52.925-03:00  INFO 1327506 --- [           main] [371232d2-fce2-4abc-8a35-91d659283f42] c.l.f.shared.web.RequestLogFilter        : POST - 302 250ms userId=- planId=-
+2026-11-08T20:03:52.956-03:00  INFO 1327506 --- [           main] [40fa6b06-161e-458b-aafb-6b70e5cfe48c] c.l.f.shared.web.RequestLogFilter        : GET - 302 30ms userId=- planId=-
+2026-11-08T20:03:53.015-03:00  INFO 1327506 --- [           main] [6c9c6cad-e5ad-4e53-9cfd-e725242c8b6e] c.l.f.shared.web.RequestLogFilter        : POST - 302 58ms userId=- planId=-
+2026-11-08T20:03:53.119-03:00  INFO 1327506 --- [           main] [53579f50-7823-4b6b-8f20-002c19df4ca8] c.l.f.shared.web.RequestLogFilter        : POST - 200 49ms userId=- planId=-
+2026-11-08T20:03:53.146-03:00  WARN 1327506 --- [           main] [fe244717-b74c-4e30-8711-6ecb974caa9b] 2AuthorizationCodeAuthenticationProvider : Invalidated authorization token(s) previously issued to registered client 'http://127.0.0.1:1/oauth/test-client'
+2026-11-08T20:03:53.147-03:00  INFO 1327506 --- [           main] [fe244717-b74c-4e30-8711-6ecb974caa9b] c.l.f.shared.web.RequestLogFilter        : POST - 400 26ms userId=- planId=-
+2026-11-08T20:03:53.176-03:00  INFO 1327506 --- [           main] [dd9c4c03-f78e-488b-9f60-f87c3d37485c] c.l.f.shared.web.RequestLogFilter        : GET - 302 0ms userId=- planId=-
+2026-11-08T20:03:53.208-03:00  INFO 1327506 --- [           main] [cb604831-e543-41d7-ad90-5a6887c4717e] c.l.f.shared.web.RequestLogFilter        : POST - 302 31ms userId=- planId=-
+2026-11-08T20:03:53.213-03:00  INFO 1327506 --- [           main] [11b98fcc-ca88-48ed-927b-7beb2d0a434a] c.l.f.shared.web.RequestLogFilter        : GET - 302 4ms userId=- planId=-
+2026-11-08T20:03:53.230-03:00  INFO 1327506 --- [           main] [358040d9-afeb-4719-b47d-e752d551eb8d] c.l.f.shared.web.RequestLogFilter        : POST - 302 15ms userId=- planId=-
+2026-11-08T20:03:53.244-03:00  INFO 1327506 --- [           main] [6ad0e002-7a7d-4d3b-a2c3-87def563103c] c.l.f.shared.web.RequestLogFilter        : POST - 400 11ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#denyRetu` - exit 0
 
 ```
-2026-11-08T16:14:13.840-03:00  INFO 1213104 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:14:13.841-03:00  INFO 1213104 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:14:13.842-03:00  INFO 1213104 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:14:13.898-03:00  INFO 1213104 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.924 seconds (process running for 10.183)
+2026-11-08T20:04:16.723-03:00  INFO 1328055 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:04:16.723-03:00  INFO 1328055 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:04:16.725-03:00  INFO 1328055 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-08T20:04:16.782-03:00  INFO 1328055 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.878 seconds (process running for 10.032)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:14:14.307-03:00  WARN 1213104 --- [           main] [3fa78cb1-7d58-425e-a6b4-37e0341f1750] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:14:14.313-03:00  INFO 1213104 --- [           main] [3fa78cb1-7d58-425e-a6b4-37e0341f1750] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
-2026-11-08T16:14:14.562-03:00  INFO 1213104 --- [           main] [7683f387-3ba8-4ffc-b3db-2adfee9193dc] c.l.f.shared.web.RequestLogFilter        : POST - 302 245ms userId=- planId=-
-2026-11-08T16:14:14.594-03:00  INFO 1213104 --- [           main] [18dea435-7133-43bf-ada3-c16f1c6769b0] c.l.f.shared.web.RequestLogFilter        : GET - 302 30ms userId=- planId=-
-2026-11-08T16:14:14.633-03:00  INFO 1213104 --- [           main] [0add3751-3007-4eae-8ae7-0df72d6f0525] c.l.f.shared.web.RequestLogFilter        : POST - 302 37ms userId=- planId=-
+2026-11-08T20:04:17.196-03:00  WARN 1328055 --- [           main] [576432b2-2391-42cb-be42-4a0013ff03b6] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:04:17.202-03:00  INFO 1328055 --- [           main] [576432b2-2391-42cb-be42-4a0013ff03b6] c.l.f.shared.web.RequestLogFilter        : GET - 302 52ms userId=- planId=-
+2026-11-08T20:04:17.449-03:00  INFO 1328055 --- [           main] [b7b83a45-c6cb-4188-9486-cb95c071fb6d] c.l.f.shared.web.RequestLogFilter        : POST - 302 243ms userId=- planId=-
+2026-11-08T20:04:17.480-03:00  INFO 1328055 --- [           main] [a5038224-5321-454f-b5fe-26745da347e3] c.l.f.shared.web.RequestLogFilter        : GET - 302 29ms userId=- planId=-
+2026-11-08T20:04:17.515-03:00  INFO 1328055 --- [           main] [8139fc09-16b6-408f-84cf-63a04caec9a5] c.l.f.shared.web.RequestLogFilter        : POST - 302 34ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#missingP` - exit 0
 
 ```
-2026-11-08T16:14:38.088-03:00  INFO 1213684 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:14:38.090-03:00  INFO 1213684 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:14:38.214-03:00  INFO 1213684 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:14:38.214-03:00  INFO 1213684 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:14:38.216-03:00  INFO 1213684 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:14:38.273-03:00  INFO 1213684 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 9.072 seconds (process running for 10.211)
+2026-11-08T20:04:41.097-03:00  INFO 1328582 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:04:41.099-03:00  INFO 1328582 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:04:41.231-03:00  INFO 1328582 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:04:41.231-03:00  INFO 1328582 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:04:41.232-03:00  INFO 1328582 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:04:41.291-03:00  INFO 1328582 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.892 seconds (process running for 10.137)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:14:38.635-03:00  WARN 1213684 --- [           main] [bda65e97-4031-487e-b3f1-dae773544b98] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:14:38.639-03:00  INFO 1213684 --- [           main] [bda65e97-4031-487e-b3f1-dae773544b98] c.l.f.shared.web.RequestLogFilter        : GET - 302 39ms userId=- planId=-
-2026-11-08T16:14:38.683-03:00  INFO 1213684 --- [           main] [057fe261-f0d7-4089-91d8-2ed285510b1b] c.l.f.shared.web.RequestLogFilter        : GET - 302 0ms userId=- planId=-
+2026-11-08T20:04:41.656-03:00  WARN 1328582 --- [           main] [2a71016a-9643-4841-a074-c13df3ae82fe] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:04:41.660-03:00  INFO 1328582 --- [           main] [2a71016a-9643-4841-a074-c13df3ae82fe] c.l.f.shared.web.RequestLogFilter        : GET - 302 49ms userId=- planId=-
+2026-11-08T20:04:41.705-03:00  INFO 1328582 --- [           main] [620db4e1-e2a2-4e0b-95ea-54581c842007] c.l.f.shared.web.RequestLogFilter        : GET - 302 0ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#codeExch` - exit 0
 
 ```
-2026-11-08T16:15:01.577-03:00  INFO 1214230 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:15:01.578-03:00  INFO 1214230 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:15:01.641-03:00  INFO 1214230 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.963 seconds (process running for 10.092)
+2026-11-08T20:05:04.970-03:00  INFO 1329111 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:05:04.971-03:00  INFO 1329111 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:05:05.025-03:00  INFO 1329111 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.753 seconds (process running for 9.954)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:15:02.050-03:00  WARN 1214230 --- [           main] [4227f6c4-9695-4628-8fdb-4dc21af6309c] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:15:02.056-03:00  INFO 1214230 --- [           main] [4227f6c4-9695-4628-8fdb-4dc21af6309c] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
-2026-11-08T16:15:02.305-03:00  INFO 1214230 --- [           main] [f52e11e7-ddda-44a6-b830-0980681d8373] c.l.f.shared.web.RequestLogFilter        : POST - 302 245ms userId=- planId=-
-2026-11-08T16:15:02.341-03:00  INFO 1214230 --- [           main] [a4449d9d-1060-46d1-aa63-fd71bda776ec] c.l.f.shared.web.RequestLogFilter        : GET - 302 34ms userId=- planId=-
-2026-11-08T16:15:02.394-03:00  INFO 1214230 --- [           main] [ded21c50-ab4e-41f2-8cdc-74fda401bf13] c.l.f.shared.web.RequestLogFilter        : POST - 302 52ms userId=- planId=-
-2026-11-08T16:15:02.449-03:00  INFO 1214230 --- [           main] [d0bb5e4d-b11e-4444-9cb4-b6e6945746e6] c.l.f.shared.web.RequestLogFilter        : POST - 200 53ms userId=- planId=-
+2026-11-08T20:05:05.427-03:00  WARN 1329111 --- [           main] [c21a7ac7-c2a4-4327-81e3-10da4bc908a2] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:05:05.434-03:00  INFO 1329111 --- [           main] [c21a7ac7-c2a4-4327-81e3-10da4bc908a2] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
+2026-11-08T20:05:05.708-03:00  INFO 1329111 --- [           main] [057dfd0b-8495-4e76-bdc6-e5f0c332fa97] c.l.f.shared.web.RequestLogFilter        : POST - 302 271ms userId=- planId=-
+2026-11-08T20:05:05.746-03:00  INFO 1329111 --- [           main] [60081d87-ad3c-437d-8795-37267495549d] c.l.f.shared.web.RequestLogFilter        : GET - 302 37ms userId=- planId=-
+2026-11-08T20:05:05.793-03:00  INFO 1329111 --- [           main] [88b8d621-bcb9-40c1-87f3-8a2d63330c20] c.l.f.shared.web.RequestLogFilter        : POST - 302 45ms userId=- planId=-
+2026-11-08T20:05:05.841-03:00  INFO 1329111 --- [           main] [83bf161b-144a-4386-9ab8-3d500062eeee] c.l.f.shared.web.RequestLogFilter        : POST - 200 47ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#unlisted` - exit 0
 
 ```
-2026-11-08T16:15:25.210-03:00  INFO 1214809 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
-2026-11-08T16:15:25.211-03:00  INFO 1214809 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:15:25.212-03:00  INFO 1214809 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:15:25.213-03:00  INFO 1214809 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:15:25.337-03:00  INFO 1214809 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:15:25.337-03:00  INFO 1214809 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:15:25.339-03:00  INFO 1214809 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:15:25.417-03:00  INFO 1214809 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.949 seconds (process running for 10.17)
+2026-11-08T20:05:29.236-03:00  INFO 1329673 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
+2026-11-08T20:05:29.238-03:00  INFO 1329673 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:05:29.238-03:00  INFO 1329673 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:05:29.240-03:00  INFO 1329673 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:05:29.370-03:00  INFO 1329673 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:05:29.370-03:00  INFO 1329673 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:05:29.372-03:00  INFO 1329673 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:05:29.434-03:00  INFO 1329673 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.974 seconds (process running for 10.143)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:15:25.739-03:00  INFO 1214809 --- [           main] [bce8d754-00c0-4432-8ae6-99870a94cc15] c.l.f.shared.web.RequestLogFilter        : GET - 400 10ms userId=- planId=-
+2026-11-08T20:05:29.779-03:00  INFO 1329673 --- [           main] [1adcf2b3-43ab-456c-94f8-a752108de71e] c.l.f.shared.web.RequestLogFilter        : GET - 400 10ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='OAuthRefreshIT#refreshRotates'` - exit 0
 
 ```
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:15:49.405-03:00  WARN 1215360 --- [           main] [d1cd75fb-ac24-422f-9bfb-aa4a9c98cac4] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:15:49.412-03:00  INFO 1215360 --- [           main] [d1cd75fb-ac24-422f-9bfb-aa4a9c98cac4] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
-2026-11-08T16:15:49.667-03:00  INFO 1215360 --- [           main] [c16891c7-d36c-483d-880b-e0f9370b65fd] c.l.f.shared.web.RequestLogFilter        : POST - 302 251ms userId=- planId=-
-2026-11-08T16:15:49.702-03:00  INFO 1215360 --- [           main] [c0f750bc-2182-4d44-8e8c-006f1a2b79d9] c.l.f.shared.web.RequestLogFilter        : GET - 302 34ms userId=- planId=-
-2026-11-08T16:15:49.751-03:00  INFO 1215360 --- [           main] [d2a5a175-8fb7-4898-a7d3-bba94c816120] c.l.f.shared.web.RequestLogFilter        : POST - 302 47ms userId=- planId=-
-2026-11-08T16:15:49.805-03:00  INFO 1215360 --- [           main] [9bcfdd8d-e612-4ab8-be64-9f765d74fb69] c.l.f.shared.web.RequestLogFilter        : POST - 200 53ms userId=- planId=-
-2026-11-08T16:15:49.839-03:00  INFO 1215360 --- [           main] [04803639-7fa0-484d-9013-69b9854d3054] c.l.f.shared.web.RequestLogFilter        : POST - 200 33ms userId=- planId=-
-2026-11-08T16:15:49.901-03:00  WARN 1215360 --- [           main] [21645906-6a30-49ce-b56c-73273e97e3b8] f.a.s.ReplayRevokingAuthorizationService : Refresh token replay detected; revoked grant 22e9e031-5b41-41af-9aed-de86f6b46845 of user 1
-2026-11-08T16:15:49.903-03:00  INFO 1215360 --- [           main] [21645906-6a30-49ce-b56c-73273e97e3b8] c.l.f.shared.web.RequestLogFilter        : POST - 400 9ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:05:54.804-03:00  WARN 1330188 --- [           main] [421506d2-c0bf-4540-8a69-cdbc44346062] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:05:54.811-03:00  INFO 1330188 --- [           main] [421506d2-c0bf-4540-8a69-cdbc44346062] c.l.f.shared.web.RequestLogFilter        : GET - 302 43ms userId=- planId=-
+2026-11-08T20:05:55.079-03:00  INFO 1330188 --- [           main] [454b21ca-f02c-4fb1-9c72-a68322dd6b7a] c.l.f.shared.web.RequestLogFilter        : POST - 302 264ms userId=- planId=-
+2026-11-08T20:05:55.110-03:00  INFO 1330188 --- [           main] [cee14f97-74c8-4a46-b4e6-6a08a506b408] c.l.f.shared.web.RequestLogFilter        : GET - 302 29ms userId=- planId=-
+2026-11-08T20:05:55.158-03:00  INFO 1330188 --- [           main] [7bf0494d-1806-41de-9866-0638f985ffee] c.l.f.shared.web.RequestLogFilter        : POST - 302 47ms userId=- planId=-
+2026-11-08T20:05:55.208-03:00  INFO 1330188 --- [           main] [f7c42180-3e61-4c6f-b07f-44476211b8ff] c.l.f.shared.web.RequestLogFilter        : POST - 200 48ms userId=- planId=-
+2026-11-08T20:05:55.238-03:00  INFO 1330188 --- [           main] [1f4c152b-ba91-4e08-a03d-a3a71254541b] c.l.f.shared.web.RequestLogFilter        : POST - 200 29ms userId=- planId=-
+2026-11-08T20:05:55.291-03:00  WARN 1330188 --- [           main] [c25218c0-e2d5-4f2b-a010-b80384dccf23] f.a.s.ReplayRevokingAuthorizationService : Refresh token replay detected; revoked grant 4e81f814-7e8f-4223-93d7-b9b7844c102d of user 1
+2026-11-08T20:05:55.292-03:00  INFO 1330188 --- [           main] [c25218c0-e2d5-4f2b-a010-b80384dccf23] c.l.f.shared.web.RequestLogFilter        : POST - 400 8ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='OAuthRefreshIT#idleRefreshExpi` - exit 0
 
 ```
-2026-11-08T16:16:12.725-03:00  INFO 1215920 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:16:12.791-03:00  INFO 1215920 --- [           main] [] com.lcs.findraco.auth.OAuthRefreshIT     : Started OAuthRefreshIT in 8.903 seconds (process running for 10.062)
+2026-11-08T20:06:18.792-03:00  INFO 1330727 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-08T20:06:18.850-03:00  INFO 1330727 --- [           main] [] com.lcs.findraco.auth.OAuthRefreshIT     : Started OAuthRefreshIT in 8.841 seconds (process running for 9.953)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:16:13.227-03:00  WARN 1215920 --- [           main] [ee9ae346-3202-41e1-b10f-f08e3e153c17] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:16:13.233-03:00  INFO 1215920 --- [           main] [ee9ae346-3202-41e1-b10f-f08e3e153c17] c.l.f.shared.web.RequestLogFilter        : GET - 302 44ms userId=- planId=-
-2026-11-08T16:16:13.483-03:00  INFO 1215920 --- [           main] [fa53bda9-ba06-4acf-bd88-f7bab02dda3d] c.l.f.shared.web.RequestLogFilter        : POST - 302 245ms userId=- planId=-
-2026-11-08T16:16:13.516-03:00  INFO 1215920 --- [           main] [ce4afe45-74fd-4972-9dbf-d423dd3e1e4f] c.l.f.shared.web.RequestLogFilter        : GET - 302 32ms userId=- planId=-
-2026-11-08T16:16:13.566-03:00  INFO 1215920 --- [           main] [44bca699-1e90-4558-8077-957ea3c39fa1] c.l.f.shared.web.RequestLogFilter        : POST - 302 48ms userId=- planId=-
-2026-11-08T16:16:13.614-03:00  INFO 1215920 --- [           main] [538d8ecc-9ba1-4f9b-b704-9fdf2dbfb8f5] c.l.f.shared.web.RequestLogFilter        : POST - 200 47ms userId=- planId=-
-2026-11-08T16:16:13.680-03:00  INFO 1215920 --- [           main] [f0aea72e-33e1-4fe8-9607-e172c16a729b] c.l.f.shared.web.RequestLogFilter        : POST - 400 13ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:06:19.264-03:00  WARN 1330727 --- [           main] [945db2f2-88a9-48c0-b730-775427fc78bf] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:06:19.272-03:00  INFO 1330727 --- [           main] [945db2f2-88a9-48c0-b730-775427fc78bf] c.l.f.shared.web.RequestLogFilter        : GET - 302 44ms userId=- planId=-
+2026-11-08T20:06:19.542-03:00  INFO 1330727 --- [           main] [64f1fd82-ab74-4ad6-9fb7-bc582d732c5d] c.l.f.shared.web.RequestLogFilter        : POST - 302 266ms userId=- planId=-
+2026-11-08T20:06:19.573-03:00  INFO 1330727 --- [           main] [00eb17b3-8610-4037-ae80-a564b1c66134] c.l.f.shared.web.RequestLogFilter        : GET - 302 30ms userId=- planId=-
+2026-11-08T20:06:19.628-03:00  INFO 1330727 --- [           main] [1a75053e-d2c4-4aca-99d2-73d18a17e5d2] c.l.f.shared.web.RequestLogFilter        : POST - 302 53ms userId=- planId=-
+2026-11-08T20:06:19.678-03:00  INFO 1330727 --- [           main] [6c782766-b4f3-48dc-8c7e-ae596b313e52] c.l.f.shared.web.RequestLogFilter        : POST - 200 49ms userId=- planId=-
+2026-11-08T20:06:19.743-03:00  INFO 1330727 --- [           main] [3136cb54-4a3f-4fd7-ad07-e190fad1bef0] c.l.f.shared.web.RequestLogFilter        : POST - 400 12ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='OAuthRefreshIT#replayRevokesGr` - exit 0
 
 ```
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:16:37.248-03:00  WARN 1216491 --- [           main] [27bdd99b-ec66-4f17-ad9c-83d0b0e5304b] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:16:37.255-03:00  INFO 1216491 --- [           main] [27bdd99b-ec66-4f17-ad9c-83d0b0e5304b] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
-2026-11-08T16:16:37.513-03:00  INFO 1216491 --- [           main] [d298a064-1225-4eb9-b4dd-777f94475e61] c.l.f.shared.web.RequestLogFilter        : POST - 302 254ms userId=- planId=-
-2026-11-08T16:16:37.546-03:00  INFO 1216491 --- [           main] [2e955f1a-73d0-46e1-8f6a-d933c99f97c4] c.l.f.shared.web.RequestLogFilter        : GET - 302 31ms userId=- planId=-
-2026-11-08T16:16:37.594-03:00  INFO 1216491 --- [           main] [330574d7-4b5c-430f-a723-923f39927354] c.l.f.shared.web.RequestLogFilter        : POST - 302 47ms userId=- planId=-
-2026-11-08T16:16:37.641-03:00  INFO 1216491 --- [           main] [5df1c069-14e0-4f6e-bac9-ebdcca059590] c.l.f.shared.web.RequestLogFilter        : POST - 200 46ms userId=- planId=-
-2026-11-08T16:16:37.673-03:00  INFO 1216491 --- [           main] [f1de4558-2a71-45e0-90ec-f152a34f544a] c.l.f.shared.web.RequestLogFilter        : POST - 200 30ms userId=- planId=-
-2026-11-08T16:16:37.681-03:00  WARN 1216491 --- [           main] [d3683908-55c5-4e98-a580-930d99842363] f.a.s.ReplayRevokingAuthorizationService : Refresh token replay detected; revoked grant ae0f7cb2-9977-48c1-955b-a8803e00feb4 of user 1
-2026-11-08T16:16:37.682-03:00  INFO 1216491 --- [           main] [d3683908-55c5-4e98-a580-930d99842363] c.l.f.shared.web.RequestLogFilter        : POST - 400 7ms userId=- planId=-
-2026-11-08T16:16:37.708-03:00  INFO 1216491 --- [           main] [a0b88e1e-2f5f-45b9-88f3-a9a10ae46499] c.l.f.shared.web.RequestLogFilter        : POST - 400 2ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:06:43.929-03:00  WARN 1331249 --- [           main] [8e00fb63-f824-49d1-b697-6e87be94d281] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:06:43.936-03:00  INFO 1331249 --- [           main] [8e00fb63-f824-49d1-b697-6e87be94d281] c.l.f.shared.web.RequestLogFilter        : GET - 302 43ms userId=- planId=-
+2026-11-08T20:06:44.176-03:00  INFO 1331249 --- [           main] [ab1dee9c-98c3-4fcf-9004-ae1c841178e8] c.l.f.shared.web.RequestLogFilter        : POST - 302 237ms userId=- planId=-
+2026-11-08T20:06:44.208-03:00  INFO 1331249 --- [           main] [6546b3d0-89e6-46bf-be14-3c2b8f83e6d6] c.l.f.shared.web.RequestLogFilter        : GET - 302 30ms userId=- planId=-
+2026-11-08T20:06:44.260-03:00  INFO 1331249 --- [           main] [bead405e-7394-4ea9-bcd1-432a06563dac] c.l.f.shared.web.RequestLogFilter        : POST - 302 51ms userId=- planId=-
+2026-11-08T20:06:44.311-03:00  INFO 1331249 --- [           main] [543b3553-4f8f-4ffe-bb17-849b99be40a1] c.l.f.shared.web.RequestLogFilter        : POST - 200 50ms userId=- planId=-
+2026-11-08T20:06:44.344-03:00  INFO 1331249 --- [           main] [90621e62-7eec-477a-9a42-0da4afdffcc8] c.l.f.shared.web.RequestLogFilter        : POST - 200 32ms userId=- planId=-
+2026-11-08T20:06:44.356-03:00  WARN 1331249 --- [           main] [5b7c43af-916f-402d-bb95-138d6392826d] f.a.s.ReplayRevokingAuthorizationService : Refresh token replay detected; revoked grant ec5535b4-2106-4b53-b051-408f6dd3a0e9 of user 1
+2026-11-08T20:06:44.358-03:00  INFO 1331249 --- [           main] [5b7c43af-916f-402d-bb95-138d6392826d] c.l.f.shared.web.RequestLogFilter        : POST - 400 9ms userId=- planId=-
+2026-11-08T20:06:44.389-03:00  INFO 1331249 --- [           main] [f4689dd1-e2f1-4b32-9d66-3a5e2681694d] c.l.f.shared.web.RequestLogFilter        : POST - 400 4ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='OAuthRefreshIT#passwordResetRe` - exit 0
 
 ```
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:17:01.328-03:00  WARN 1217051 --- [           main] [45d036f9-91b1-4560-90da-a7bc06af148d] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:17:01.335-03:00  INFO 1217051 --- [           main] [45d036f9-91b1-4560-90da-a7bc06af148d] c.l.f.shared.web.RequestLogFilter        : GET - 302 43ms userId=- planId=-
-2026-11-08T16:17:01.578-03:00  INFO 1217051 --- [           main] [b4042a8e-21a7-4d05-8dc1-a77b23665903] c.l.f.shared.web.RequestLogFilter        : POST - 302 240ms userId=- planId=-
-2026-11-08T16:17:01.609-03:00  INFO 1217051 --- [           main] [1a79557a-b505-4d40-800e-4d413342c86d] c.l.f.shared.web.RequestLogFilter        : GET - 302 30ms userId=- planId=-
-2026-11-08T16:17:01.661-03:00  INFO 1217051 --- [           main] [24420d94-cf5f-4fe5-8441-1bc9fcdf781b] c.l.f.shared.web.RequestLogFilter        : POST - 302 50ms userId=- planId=-
-2026-11-08T16:17:01.713-03:00  INFO 1217051 --- [           main] [22e0348a-af97-4677-9086-8962a82f8893] c.l.f.shared.web.RequestLogFilter        : POST - 200 51ms userId=- planId=-
-2026-11-08T16:17:01.715-03:00  INFO 1217051 --- [           main] [789d3cd9-62cb-4b55-8e4c-a40f6241cc84] c.l.f.shared.web.RequestLogFilter        : GET - 302 0ms userId=- planId=-
-2026-11-08T16:17:01.746-03:00  INFO 1217051 --- [           main] [feff94c2-e648-4e77-aa36-096d0635d628] c.l.f.shared.web.RequestLogFilter        : POST - 302 30ms userId=- planId=-
-2026-11-08T16:17:01.751-03:00  INFO 1217051 --- [           main] [d2b50c4b-7416-4100-8d36-81c6751b01ee] c.l.f.shared.web.RequestLogFilter        : GET - 302 4ms userId=- planId=-
-2026-11-08T16:17:01.762-03:00  INFO 1217051 --- [           main] [24715e06-d0ae-46e8-b147-ca211adc682d] c.l.f.shared.web.RequestLogFilter        : POST - 302 10ms userId=- planId=-
-2026-11-08T16:17:01.795-03:00  INFO 1217051 --- [           main] [0dbaa839-be2e-415f-acda-842b35604769] c.l.f.shared.web.RequestLogFilter        : POST - 200 31ms userId=- planId=-
-2026-11-08T16:17:01.886-03:00  INFO 1217051 --- [           main] [a510fa41-a058-4a11-8532-17f1f36093b8] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/reset-password 204 87ms userId=- planId=-
-2026-11-08T16:17:01.938-03:00  INFO 1217051 --- [           main] [41d4bd86-f825-41ff-a52e-5b33056c8231] c.l.f.shared.web.RequestLogFilter        : POST - 400 5ms userId=- planId=-
-2026-11-08T16:17:01.987-03:00  INFO 1217051 --- [           main] [66c2c2c7-2c74-497a-a36c-763fbb9b4cbf] c.l.f.shared.web.RequestLogFilter        : POST - 200 26ms userId=- planId=-
+2026-11-08T20:07:08.429-03:00  WARN 1331777 --- [           main] [9f3f2e3a-2296-4dba-8990-17da7a30776a] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:07:08.435-03:00  INFO 1331777 --- [           main] [9f3f2e3a-2296-4dba-8990-17da7a30776a] c.l.f.shared.web.RequestLogFilter        : GET - 302 43ms userId=- planId=-
+2026-11-08T20:07:08.693-03:00  INFO 1331777 --- [           main] [8aaa3876-5369-43ca-bbf8-cf4f5ea3c908] c.l.f.shared.web.RequestLogFilter        : POST - 302 254ms userId=- planId=-
+2026-11-08T20:07:08.723-03:00  INFO 1331777 --- [           main] [8b9d1dc1-7ea9-4b90-94c2-181628f73aac] c.l.f.shared.web.RequestLogFilter        : GET - 302 28ms userId=- planId=-
+2026-11-08T20:07:08.770-03:00  INFO 1331777 --- [           main] [fc926ef6-3c55-40a9-92ce-8db6c44165d3] c.l.f.shared.web.RequestLogFilter        : POST - 302 46ms userId=- planId=-
+2026-11-08T20:07:08.818-03:00  INFO 1331777 --- [           main] [b10e7caf-f48d-4bed-85c7-e7191cf2eca2] c.l.f.shared.web.RequestLogFilter        : POST - 200 47ms userId=- planId=-
+2026-11-08T20:07:08.820-03:00  INFO 1331777 --- [           main] [d109e437-f4a0-4b2c-8a7f-63f132c8fa49] c.l.f.shared.web.RequestLogFilter        : GET - 302 0ms userId=- planId=-
+2026-11-08T20:07:08.857-03:00  INFO 1331777 --- [           main] [e2546e91-4ede-4b13-85c1-502de2f2a3e4] c.l.f.shared.web.RequestLogFilter        : POST - 302 36ms userId=- planId=-
+2026-11-08T20:07:08.862-03:00  INFO 1331777 --- [           main] [2d269866-ce1e-4efd-8020-d26bbc993f5a] c.l.f.shared.web.RequestLogFilter        : GET - 302 4ms userId=- planId=-
+2026-11-08T20:07:08.877-03:00  INFO 1331777 --- [           main] [de57ba9e-fb19-452c-bcbe-e8b4d385f3d1] c.l.f.shared.web.RequestLogFilter        : POST - 302 14ms userId=- planId=-
+2026-11-08T20:07:08.897-03:00  INFO 1331777 --- [           main] [fd107380-0250-490e-94f7-bbd3f46454c0] c.l.f.shared.web.RequestLogFilter        : POST - 200 19ms userId=- planId=-
+2026-11-08T20:07:08.981-03:00  INFO 1331777 --- [           main] [455d0ff7-daeb-4596-9b53-761d8a9d934e] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/auth/reset-password 204 80ms userId=- planId=-
+2026-11-08T20:07:09.040-03:00  INFO 1331777 --- [           main] [60c0a6f7-75b8-4ecd-b851-460c31e6ec6f] c.l.f.shared.web.RequestLogFilter        : POST - 400 5ms userId=- planId=-
+2026-11-08T20:07:09.103-03:00  INFO 1331777 --- [           main] [fa042f15-5a88-4b95-a35c-d6acd00244f9] c.l.f.shared.web.RequestLogFilter        : POST - 200 33ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='OAuthRefreshIT#unlistedClientC` - exit 0
 
 ```
-2026-11-08T16:17:24.973-03:00  INFO 1217612 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:17:25.035-03:00  INFO 1217612 --- [           main] [] com.lcs.findraco.auth.OAuthRefreshIT     : Started OAuthRefreshIT in 8.94 seconds (process running for 10.142)
+2026-11-08T20:07:32.548-03:00  INFO 1332304 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:07:32.625-03:00  INFO 1332304 --- [           main] [] com.lcs.findraco.auth.OAuthRefreshIT     : Started OAuthRefreshIT in 8.999 seconds (process running for 10.182)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:17:25.439-03:00  WARN 1217612 --- [           main] [60b79208-c98a-4f69-82cd-3aa9a7118420] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:17:25.446-03:00  INFO 1217612 --- [           main] [60b79208-c98a-4f69-82cd-3aa9a7118420] c.l.f.shared.web.RequestLogFilter        : GET - 302 43ms userId=- planId=-
-2026-11-08T16:17:25.703-03:00  INFO 1217612 --- [           main] [5d9b182c-1dcf-4ce5-8bb5-9be48b4e39a6] c.l.f.shared.web.RequestLogFilter        : POST - 302 253ms userId=- planId=-
-2026-11-08T16:17:25.739-03:00  INFO 1217612 --- [           main] [33920e40-0210-48a1-94c6-f618df8c5eb5] c.l.f.shared.web.RequestLogFilter        : GET - 302 34ms userId=- planId=-
-2026-11-08T16:17:25.787-03:00  INFO 1217612 --- [           main] [42bfd331-844b-4cd5-a03f-baea66ee7feb] c.l.f.shared.web.RequestLogFilter        : POST - 302 47ms userId=- planId=-
-2026-11-08T16:17:25.842-03:00  INFO 1217612 --- [           main] [2bab6118-2f41-4a50-9213-45ddebf2bde2] c.l.f.shared.web.RequestLogFilter        : POST - 200 53ms userId=- planId=-
-2026-11-08T16:17:25.844-03:00  INFO 1217612 --- [           main] [f1dcb4ea-63e5-43f7-b28f-de6479df8622] c.l.f.shared.web.RequestLogFilter        : POST - 401 1ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:07:33.030-03:00  WARN 1332304 --- [           main] [fcf7e7a0-a101-40a0-a649-925074f7ecd6] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:07:33.037-03:00  INFO 1332304 --- [           main] [fcf7e7a0-a101-40a0-a649-925074f7ecd6] c.l.f.shared.web.RequestLogFilter        : GET - 302 43ms userId=- planId=-
+2026-11-08T20:07:33.285-03:00  INFO 1332304 --- [           main] [f6e17829-316e-493b-a345-172421c5cd4d] c.l.f.shared.web.RequestLogFilter        : POST - 302 244ms userId=- planId=-
+2026-11-08T20:07:33.318-03:00  INFO 1332304 --- [           main] [7260331a-379c-4f4f-a85b-c262e9080773] c.l.f.shared.web.RequestLogFilter        : GET - 302 31ms userId=- planId=-
+2026-11-08T20:07:33.364-03:00  INFO 1332304 --- [           main] [8c2a1e33-9e2d-4d0c-85f4-0a90c361405d] c.l.f.shared.web.RequestLogFilter        : POST - 302 45ms userId=- planId=-
+2026-11-08T20:07:33.411-03:00  INFO 1332304 --- [           main] [28244007-3fea-4169-9efe-1843ba768fed] c.l.f.shared.web.RequestLogFilter        : POST - 200 46ms userId=- planId=-
+2026-11-08T20:07:33.413-03:00  INFO 1332304 --- [           main] [338376e6-1a53-4251-baf9-97808d0255b4] c.l.f.shared.web.RequestLogFilter        : POST - 401 1ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpSecurityIT#anonymousGetsRes` - exit 0
 
 ```
-2026-11-08T16:17:48.367-03:00  INFO 1218178 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:17:48.368-03:00  INFO 1218178 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:17:48.369-03:00  INFO 1218178 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:17:48.490-03:00  INFO 1218178 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:17:48.490-03:00  INFO 1218178 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:17:48.492-03:00  INFO 1218178 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:17:48.566-03:00  INFO 1218178 --- [           main] [] com.lcs.findraco.mcp.McpSecurityIT       : Started McpSecurityIT in 8.84 seconds (process running for 10.008)
+2026-11-08T20:07:56.647-03:00  INFO 1332835 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:07:56.648-03:00  INFO 1332835 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:07:56.649-03:00  INFO 1332835 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:07:56.786-03:00  INFO 1332835 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:07:56.786-03:00  INFO 1332835 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:07:56.788-03:00  INFO 1332835 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-08T20:07:56.857-03:00  INFO 1332835 --- [           main] [] com.lcs.findraco.mcp.McpSecurityIT       : Started McpSecurityIT in 9.019 seconds (process running for 10.132)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:17:48.879-03:00  INFO 1218178 --- [           main] [2df8be56-8db5-47c9-8eaf-fc471091e0b0] c.l.f.shared.web.RequestLogFilter        : POST - 401 8ms userId=- planId=-
-2026-11-08T16:17:48.887-03:00  INFO 1218178 --- [           main] [ec52dc9c-5e71-4af9-a866-590127fd7bca] c.l.f.shared.web.RequestLogFilter        : POST - 401 1ms userId=- planId=-
+2026-11-08T20:07:57.178-03:00  INFO 1332835 --- [           main] [52b8fcd9-0923-4878-8c3c-f4d0d117cb69] c.l.f.shared.web.RequestLogFilter        : POST - 401 8ms userId=- planId=-
+2026-11-08T20:07:57.186-03:00  INFO 1332835 --- [           main] [6b0cfd40-aa35-4a50-8570-0dcad89fe125] c.l.f.shared.web.RequestLogFilter        : POST - 401 2ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpSecurityIT#protectedResourc` - exit 0
 
 ```
-2026-11-08T16:18:12.010-03:00  INFO 1218729 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:18:12.011-03:00  INFO 1218729 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:18:12.012-03:00  INFO 1218729 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:18:12.147-03:00  INFO 1218729 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:18:12.148-03:00  INFO 1218729 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:18:12.150-03:00  INFO 1218729 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:18:12.205-03:00  INFO 1218729 --- [           main] [] com.lcs.findraco.mcp.McpSecurityIT       : Started McpSecurityIT in 8.923 seconds (process running for 10.167)
+2026-11-08T20:08:20.335-03:00  INFO 1333353 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:08:20.336-03:00  INFO 1333353 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:08:20.337-03:00  INFO 1333353 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:08:20.474-03:00  INFO 1333353 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:08:20.474-03:00  INFO 1333353 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:08:20.476-03:00  INFO 1333353 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:08:20.532-03:00  INFO 1333353 --- [           main] [] com.lcs.findraco.mcp.McpSecurityIT       : Started McpSecurityIT in 8.868 seconds (process running for 10.017)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-2026-11-08T16:18:12.531-03:00  INFO 1218729 --- [           main] [159c1a4e-1133-4b47-9788-636b3ca33475] c.l.f.shared.web.RequestLogFilter        : GET - 200 11ms userId=- planId=-
-2026-11-08T16:18:12.559-03:00  INFO 1218729 --- [           main] [35a9eab9-85d3-41d5-a4a8-d665d5ccb71f] c.l.f.shared.web.RequestLogFilter        : GET - 200 0ms userId=- planId=-
+2026-11-08T20:08:20.843-03:00  INFO 1333353 --- [           main] [23b0ce59-ba02-418e-9642-26576fd63f9d] c.l.f.shared.web.RequestLogFilter        : GET - 200 11ms userId=- planId=-
+2026-11-08T20:08:20.871-03:00  INFO 1333353 --- [           main] [3b779d16-962e-406e-9f1e-305549c99c27] c.l.f.shared.web.RequestLogFilter        : GET - 200 0ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpSecurityIT#tokensDoNotCross` - exit 0
@@ -530,57 +544,57 @@ WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:18:36.129-03:00  WARN 1219290 --- [           main] [de4b9a40-7a26-458c-b726-8da132d7cc01] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
-2026-11-08T16:18:36.136-03:00  INFO 1219290 --- [           main] [de4b9a40-7a26-458c-b726-8da132d7cc01] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
-2026-11-08T16:18:36.384-03:00  INFO 1219290 --- [           main] [2a92adeb-946a-4e9f-a266-5d97ac40d385] c.l.f.shared.web.RequestLogFilter        : POST - 302 244ms userId=- planId=-
-2026-11-08T16:18:36.418-03:00  INFO 1219290 --- [           main] [a2aaa772-1d00-4e52-8dd6-9d80afd5c38b] c.l.f.shared.web.RequestLogFilter        : GET - 302 33ms userId=- planId=-
-2026-11-08T16:18:36.468-03:00  INFO 1219290 --- [           main] [ccf0b207-baca-48d6-9790-56c78071ca86] c.l.f.shared.web.RequestLogFilter        : POST - 302 48ms userId=- planId=-
-2026-11-08T16:18:36.515-03:00  INFO 1219290 --- [           main] [00ed9cfc-1d13-47ac-abd2-95ff3026414c] c.l.f.shared.web.RequestLogFilter        : POST - 200 46ms userId=- planId=-
-2026-11-08T16:18:36.587-03:00  INFO 1219290 --- [           main] [570613c7-3740-4c21-aef8-0525f5010eda] c.l.f.shared.web.RequestLogFilter        : GET - 401 70ms userId=- planId=-
-2026-11-08T16:18:36.621-03:00  INFO 1219290 --- [           main] [d7fbdc07-508f-4f57-b2a0-2d2276d36ac2] c.l.f.shared.web.RequestLogFilter        : POST - 401 4ms userId=- planId=-
-2026-11-08T16:18:36.661-03:00  INFO 1219290 --- [           main] [bcfad770-1f8a-4b7d-a48e-5879ba57ec06] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:18:36.677-03:00  INFO 1219290 --- [           main] [bcfad770-1f8a-4b7d-a48e-5879ba57ec06] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 53ms userId=- planId=-
-2026-11-08T16:18:36.687-03:00  INFO 1219290 --- [           main] [44fd3bcd-e213-43e7-b5c1-a5d94ed7afef] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:08:44.859-03:00  WARN 1333871 --- [           main] [b0f2f345-164d-42b4-a06e-5fdb3ca9cdb5] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:08:44.866-03:00  INFO 1333871 --- [           main] [b0f2f345-164d-42b4-a06e-5fdb3ca9cdb5] c.l.f.shared.web.RequestLogFilter        : GET - 302 48ms userId=- planId=-
+2026-11-08T20:08:45.125-03:00  INFO 1333871 --- [           main] [b221b5be-cdee-46e4-a0f8-461f83c5e597] c.l.f.shared.web.RequestLogFilter        : POST - 302 255ms userId=- planId=-
+2026-11-08T20:08:45.156-03:00  INFO 1333871 --- [           main] [99ddf56c-4354-4cdd-bb68-7588fc77b327] c.l.f.shared.web.RequestLogFilter        : GET - 302 29ms userId=- planId=-
+2026-11-08T20:08:45.204-03:00  INFO 1333871 --- [           main] [c1ce8bae-2f5c-400c-a0e6-87b7f1589e42] c.l.f.shared.web.RequestLogFilter        : POST - 302 47ms userId=- planId=-
+2026-11-08T20:08:45.251-03:00  INFO 1333871 --- [           main] [070a9bee-ad62-49ed-9862-c65c21903f58] c.l.f.shared.web.RequestLogFilter        : POST - 200 46ms userId=- planId=-
+2026-11-08T20:08:45.328-03:00  INFO 1333871 --- [           main] [ac99bfa1-7a50-40ef-b5a0-a19d38bff751] c.l.f.shared.web.RequestLogFilter        : GET - 401 76ms userId=- planId=-
+2026-11-08T20:08:45.366-03:00  INFO 1333871 --- [           main] [9b0a3c52-1a9d-4df7-9504-771f994c376c] c.l.f.shared.web.RequestLogFilter        : POST - 401 5ms userId=- planId=-
+2026-11-08T20:08:45.407-03:00  INFO 1333871 --- [           main] [d22cbf0f-5d5d-4c42-987d-1845cda56da4] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:08:45.424-03:00  INFO 1333871 --- [           main] [d22cbf0f-5d5d-4c42-987d-1845cda56da4] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 55ms userId=- planId=-
+2026-11-08T20:08:45.432-03:00  INFO 1333871 --- [           main] [1b49f8d8-269a-40e6-bc8e-52ebc9ec77be] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpSecurityIT#wrongAudienceOrS` - exit 0
 
 ```
-2026-11-08T16:18:59.775-03:00  INFO 1219838 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-08T16:18:59.776-03:00  INFO 1219838 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-08T16:18:59.777-03:00  INFO 1219838 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:18:59.901-03:00  INFO 1219838 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:18:59.901-03:00  INFO 1219838 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:18:59.903-03:00  INFO 1219838 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:18:59.959-03:00  INFO 1219838 --- [           main] [] com.lcs.findraco.mcp.McpSecurityIT       : Started McpSecurityIT in 8.785 seconds (process running for 10.126)
+2026-11-08T20:09:08.870-03:00  INFO 1334403 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-08T20:09:08.871-03:00  INFO 1334403 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-08T20:09:08.872-03:00  INFO 1334403 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:09:09.005-03:00  INFO 1334403 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:09:09.005-03:00  INFO 1334403 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:09:09.006-03:00  INFO 1334403 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:09:09.062-03:00  INFO 1334403 --- [           main] [] com.lcs.findraco.mcp.McpSecurityIT       : Started McpSecurityIT in 8.955 seconds (process running for 10.072)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:19:00.366-03:00  INFO 1219838 --- [           main] [feaf73c2-1c60-4033-85c0-664f7962e456] c.l.f.shared.web.RequestLogFilter        : POST - 401 13ms userId=- planId=-
-2026-11-08T16:19:00.371-03:00  INFO 1219838 --- [           main] [7486177b-c1be-4cf8-9802-7103667fbd89] c.l.f.shared.web.RequestLogFilter        : POST - 401 1ms userId=- planId=-
+2026-11-08T20:09:09.461-03:00  INFO 1334403 --- [           main] [3720fa82-54fd-489a-9baf-1db0a89f6a3d] c.l.f.shared.web.RequestLogFilter        : POST - 401 12ms userId=- planId=-
+2026-11-08T20:09:09.467-03:00  INFO 1334403 --- [           main] [56a1f091-6a71-4f41-8c9b-1472f1a89079] c.l.f.shared.web.RequestLogFilter        : POST - 401 1ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#listPlansShowsA` - exit 0
 
 ```
-2026-11-08T16:19:23.184-03:00  INFO 1220389 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:19:23.184-03:00  INFO 1220389 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:19:23.185-03:00  INFO 1220389 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:19:23.240-03:00  INFO 1220389 --- [           main] [] com.lcs.findraco.mcp.McpPlanToolsIT      : Started McpPlanToolsIT in 8.825 seconds (process running for 10.006)
+2026-11-08T20:09:32.965-03:00  INFO 1334920 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:09:32.966-03:00  INFO 1334920 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:09:32.967-03:00  INFO 1334920 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:09:33.024-03:00  INFO 1334920 --- [           main] [] com.lcs.findraco.mcp.McpPlanToolsIT      : Started McpPlanToolsIT in 8.876 seconds (process running for 10.106)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:19:23.779-03:00  INFO 1220389 --- [           main] [f5f88d36-409a-43fd-9faa-bb91ca4d39c6] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:19:23.798-03:00  INFO 1220389 --- [           main] [f5f88d36-409a-43fd-9faa-bb91ca4d39c6] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 142ms userId=- planId=-
-2026-11-08T16:19:23.809-03:00  INFO 1220389 --- [           main] [aa942791-2ccb-4a42-bf47-9fa0304578b1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:19:23.911-03:00  INFO 1220389 --- [           main] [7de8dbc1-b167-4d26-a237-bf6b4cc3a6de] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=ok durationMs=87
-2026-11-08T16:19:23.925-03:00  INFO 1220389 --- [           main] [7de8dbc1-b167-4d26-a237-bf6b4cc3a6de] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 114ms userId=- planId=-
+2026-11-08T20:09:33.547-03:00  INFO 1334920 --- [           main] [6943d191-4860-492f-9cf6-b3798d7ff1e6] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:09:33.567-03:00  INFO 1334920 --- [           main] [6943d191-4860-492f-9cf6-b3798d7ff1e6] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 130ms userId=- planId=-
+2026-11-08T20:09:33.578-03:00  INFO 1334920 --- [           main] [f5532e0d-1862-407f-af58-c07c8b1852c3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:09:33.687-03:00  INFO 1334920 --- [           main] [be4f8d2f-6e68-4f66-a5de-868ace4fc7ea] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=ok durationMs=96
+2026-11-08T20:09:33.699-03:00  INFO 1334920 --- [           main] [be4f8d2f-6e68-4f66-a5de-868ace4fc7ea] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 121ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#planResolvesByD` - exit 0
@@ -592,15 +606,15 @@ WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:19:47.415-03:00  INFO 1220952 --- [           main] [601d55ea-5c29-4d6e-8455-1bd467987a53] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:19:47.436-03:00  INFO 1220952 --- [           main] [601d55ea-5c29-4d6e-8455-1bd467987a53] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 131ms userId=- planId=-
-2026-11-08T16:19:47.448-03:00  INFO 1220952 --- [           main] [391930cb-e8ae-4de9-b1c6-d07326f7d305] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:19:47.582-03:00  INFO 1220952 --- [           main] [78304774-cc16-49be-921e-8fbde3cff6f0] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=1 outcome=ok durationMs=120
-2026-11-08T16:19:47.597-03:00  INFO 1220952 --- [           main] [78304774-cc16-49be-921e-8fbde3cff6f0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 148ms userId=- planId=-
-2026-11-08T16:19:47.652-03:00  INFO 1220952 --- [           main] [b1d99a0b-f289-48f8-bfeb-87ffab5bb097] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=2 outcome=ok durationMs=11
-2026-11-08T16:19:47.653-03:00  INFO 1220952 --- [           main] [b1d99a0b-f289-48f8-bfeb-87ffab5bb097] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 15ms userId=- planId=-
-2026-11-08T16:19:47.663-03:00  INFO 1220952 --- [           main] [a59b2d44-7747-478c-8f79-eefb411ef4e3] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=2 outcome=ok durationMs=7
-2026-11-08T16:19:47.664-03:00  INFO 1220952 --- [           main] [a59b2d44-7747-478c-8f79-eefb411ef4e3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 10ms userId=- planId=-
+2026-11-08T20:09:57.489-03:00  INFO 1335465 --- [           main] [a2a9c6c1-fadb-4f39-bf98-5dbc62086177] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:09:57.511-03:00  INFO 1335465 --- [           main] [a2a9c6c1-fadb-4f39-bf98-5dbc62086177] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 151ms userId=- planId=-
+2026-11-08T20:09:57.522-03:00  INFO 1335465 --- [           main] [bf62dabb-c3ff-4359-a52a-f1d8dc54a392] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:09:57.645-03:00  INFO 1335465 --- [           main] [2e4244f2-0217-4c90-80c4-7997ac26584e] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=1 outcome=ok durationMs=110
+2026-11-08T20:09:57.659-03:00  INFO 1335465 --- [           main] [2e4244f2-0217-4c90-80c4-7997ac26584e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 136ms userId=- planId=-
+2026-11-08T20:09:57.717-03:00  INFO 1335465 --- [           main] [247575a0-51d7-4362-9926-23bfb189cdf8] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=2 outcome=ok durationMs=13
+2026-11-08T20:09:57.717-03:00  INFO 1335465 --- [           main] [247575a0-51d7-4362-9926-23bfb189cdf8] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 17ms userId=- planId=-
+2026-11-08T20:09:57.726-03:00  INFO 1335465 --- [           main] [d52cb31d-c6e6-448e-a344-f3cf58efa205] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=2 outcome=ok durationMs=5
+2026-11-08T20:09:57.726-03:00  INFO 1335465 --- [           main] [d52cb31d-c6e6-448e-a344-f3cf58efa205] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 8ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='McpNamesTest#matchesIgnoringCaseAnd` - exit 0
@@ -612,41 +626,41 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#unknownOrAmbigu` - exit 0
 
 ```
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-2026-11-08T16:20:16.281-03:00  INFO 1221804 --- [           main] [06c3d9ce-41b8-4c5d-9af3-ac57abe09136] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:20:16.300-03:00  INFO 1221804 --- [           main] [06c3d9ce-41b8-4c5d-9af3-ac57abe09136] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 138ms userId=- planId=-
-2026-11-08T16:20:16.311-03:00  INFO 1221804 --- [           main] [f90129aa-55b6-4f03-a788-ab07a612e907] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:20:16.406-03:00  INFO 1221804 --- [           main] [d2f31631-3196-4bbc-b6e9-135d49cc57e1] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=82
-2026-11-08T16:20:16.421-03:00  INFO 1221804 --- [           main] [d2f31631-3196-4bbc-b6e9-135d49cc57e1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 108ms userId=- planId=-
-2026-11-08T16:20:16.472-03:00  INFO 1221804 --- [           main] [9fc041d8-1c88-4829-945b-43dba0833aeb] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=6
-2026-11-08T16:20:16.473-03:00  INFO 1221804 --- [           main] [9fc041d8-1c88-4829-945b-43dba0833aeb] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 10ms userId=- planId=-
-2026-11-08T16:20:16.480-03:00  INFO 1221804 --- [           main] [7443feaa-8217-4e6c-a43d-88d0ee7a9b1e] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=3
-2026-11-08T16:20:16.481-03:00  INFO 1221804 --- [           main] [7443feaa-8217-4e6c-a43d-88d0ee7a9b1e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 6ms userId=- planId=-
-2026-11-08T16:20:16.487-03:00  INFO 1221804 --- [           main] [ea2a454c-05ff-43b0-8f78-4a5f51004ff4] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=3
-2026-11-08T16:20:16.487-03:00  INFO 1221804 --- [           main] [ea2a454c-05ff-43b0-8f78-4a5f51004ff4] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 6ms userId=- planId=-
+2026-11-08T20:10:25.950-03:00  INFO 1336261 --- [           main] [ac97552b-5710-446e-9e01-155d68c813e7] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:10:25.972-03:00  INFO 1336261 --- [           main] [ac97552b-5710-446e-9e01-155d68c813e7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 142ms userId=- planId=-
+2026-11-08T20:10:25.983-03:00  INFO 1336261 --- [           main] [aaead7b2-05f4-4dac-b519-8941a03de14b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:10:26.079-03:00  INFO 1336261 --- [           main] [5802a9e8-f6b7-4d94-8886-e3f3c88b90f5] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=83
+2026-11-08T20:10:26.092-03:00  INFO 1336261 --- [           main] [5802a9e8-f6b7-4d94-8886-e3f3c88b90f5] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 108ms userId=- planId=-
+2026-11-08T20:10:26.164-03:00  INFO 1336261 --- [           main] [4708021f-7eaa-4305-9eed-0eb5548db2a1] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=7
+2026-11-08T20:10:26.164-03:00  INFO 1336261 --- [           main] [4708021f-7eaa-4305-9eed-0eb5548db2a1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 11ms userId=- planId=-
+2026-11-08T20:10:26.172-03:00  INFO 1336261 --- [           main] [7ee482f0-f2dc-420f-b21a-e71ca6729530] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=4
+2026-11-08T20:10:26.172-03:00  INFO 1336261 --- [           main] [7ee482f0-f2dc-420f-b21a-e71ca6729530] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 6ms userId=- planId=-
+2026-11-08T20:10:26.178-03:00  INFO 1336261 --- [           main] [f1d09a58-619a-43cd-acd5-dc82de9d909c] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=3
+2026-11-08T20:10:26.179-03:00  INFO 1336261 --- [           main] [f1d09a58-619a-43cd-acd5-dc82de9d909c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 5ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpSecurityIT#rateLimitIsToolE` - exit 0
 
 ```
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-2026-11-08T16:20:40.246-03:00  INFO 1222368 --- [           main] [ac25d8a4-9ff0-40d6-82c6-4f651bb77a3a] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:20:40.266-03:00  INFO 1222368 --- [           main] [ac25d8a4-9ff0-40d6-82c6-4f651bb77a3a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 129ms userId=- planId=-
-2026-11-08T16:20:40.277-03:00  INFO 1222368 --- [           main] [b9a3a0bc-4806-4564-88ef-da11a8ce2485] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:20:40.378-03:00  INFO 1222368 --- [           main] [fbc19d73-6737-4e53-bdd9-9b93fa6b87f3] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=ok durationMs=86
-2026-11-08T16:20:40.391-03:00  INFO 1222368 --- [           main] [fbc19d73-6737-4e53-bdd9-9b93fa6b87f3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 113ms userId=- planId=-
-2026-11-08T16:20:40.460-03:00  INFO 1222368 --- [           main] [540f0546-3d71-4b44-ae4d-f5073cf0e9a4] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=ok durationMs=6
-2026-11-08T16:20:40.460-03:00  INFO 1222368 --- [           main] [540f0546-3d71-4b44-ae4d-f5073cf0e9a4] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 10ms userId=- planId=-
-2026-11-08T16:20:40.464-03:00  WARN 1222368 --- [           main] [b84392bb-3e14-4deb-8631-e24c86b2078d] c.l.f.shared.ratelimit.RateLimiter       : Rate limit MCP_USER exceeded; retry in 3600s
-2026-11-08T16:20:40.464-03:00  INFO 1222368 --- [           main] [b84392bb-3e14-4deb-8631-e24c86b2078d] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=rate-limited durationMs=0
-2026-11-08T16:20:40.465-03:00  INFO 1222368 --- [           main] [b84392bb-3e14-4deb-8631-e24c86b2078d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 3ms userId=- planId=-
+2026-11-08T20:10:49.767-03:00  INFO 1336790 --- [           main] [12966f95-d74a-4e76-b18f-149762221105] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:10:49.787-03:00  INFO 1336790 --- [           main] [12966f95-d74a-4e76-b18f-149762221105] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 150ms userId=- planId=-
+2026-11-08T20:10:49.798-03:00  INFO 1336790 --- [           main] [b586abc2-ca48-44d6-9791-6aa68d00a845] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:10:49.906-03:00  INFO 1336790 --- [           main] [33c4a610-2fc7-4150-a2dd-d55e628f3dcd] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=ok durationMs=95
+2026-11-08T20:10:49.920-03:00  INFO 1336790 --- [           main] [33c4a610-2fc7-4150-a2dd-d55e628f3dcd] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 121ms userId=- planId=-
+2026-11-08T20:10:49.968-03:00  INFO 1336790 --- [           main] [b3703314-3c3d-444d-99ac-f0e33a53dd71] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=ok durationMs=6
+2026-11-08T20:10:49.969-03:00  INFO 1336790 --- [           main] [b3703314-3c3d-444d-99ac-f0e33a53dd71] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 9ms userId=- planId=-
+2026-11-08T20:10:49.973-03:00  WARN 1336790 --- [           main] [77071796-8857-4c04-87ab-bd28a1c79292] c.l.f.shared.ratelimit.RateLimiter       : Rate limit MCP_USER exceeded; retry in 3600s
+2026-11-08T20:10:49.973-03:00  INFO 1336790 --- [           main] [77071796-8857-4c04-87ab-bd28a1c79292] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_plans user=1 plan=null outcome=rate-limited durationMs=0
+2026-11-08T20:10:49.973-03:00  INFO 1336790 --- [           main] [77071796-8857-4c04-87ab-bd28a1c79292] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 3ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#unexpectedFailu` - exit 0
@@ -665,48 +679,48 @@ OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader clas
 	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
 
-2026-11-08T16:21:04.590-03:00  INFO 1222919 --- [           main] [6c083355-8d56-4007-a9ab-7ecf9207c08e] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=break_down user=1 plan=null outcome=failed durationMs=14
-2026-11-08T16:21:04.603-03:00  INFO 1222919 --- [           main] [6c083355-8d56-4007-a9ab-7ecf9207c08e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 39ms userId=- planId=-
+2026-11-08T20:11:13.966-03:00  INFO 1337313 --- [           main] [b84e8ac1-dd8f-457e-aed4-fde4d1d293a8] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=break_down user=1 plan=null outcome=failed durationMs=13
+2026-11-08T20:11:13.988-03:00  INFO 1337313 --- [           main] [b84e8ac1-dd8f-457e-aed4-fde4d1d293a8] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 47ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#callLogOmitsArg` - exit 0
 
 ```
-2026-11-08T16:21:27.773-03:00  INFO 1223486 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:21:27.773-03:00  INFO 1223486 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:21:27.775-03:00  INFO 1223486 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:21:27.833-03:00  INFO 1223486 --- [           main] [] com.lcs.findraco.mcp.McpPlanToolsIT      : Started McpPlanToolsIT in 9.049 seconds (process running for 10.303)
+2026-11-08T20:11:37.351-03:00  INFO 1337846 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:11:37.351-03:00  INFO 1337846 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:11:37.353-03:00  INFO 1337846 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-08T20:11:37.415-03:00  INFO 1337846 --- [           main] [] com.lcs.findraco.mcp.McpPlanToolsIT      : Started McpPlanToolsIT in 8.853 seconds (process running for 9.951)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:21:28.355-03:00  INFO 1223486 --- [           main] [1cc4a043-a9ae-412a-a816-6a4c36923069] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:21:28.375-03:00  INFO 1223486 --- [           main] [1cc4a043-a9ae-412a-a816-6a4c36923069] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 128ms userId=- planId=-
-2026-11-08T16:21:28.385-03:00  INFO 1223486 --- [           main] [945b7fd6-6665-4279-86a5-fd0cf6a40027] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:21:28.514-03:00  INFO 1223486 --- [           main] [9b719060-8112-4d24-826e-17c0be42ce11] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=1 outcome=ok durationMs=115
-2026-11-08T16:21:28.527-03:00  INFO 1223486 --- [           main] [9b719060-8112-4d24-826e-17c0be42ce11] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 140ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:11:37.945-03:00  INFO 1337846 --- [           main] [bafd2d80-5c0d-41d8-82ef-8989981ef9db] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:11:37.965-03:00  INFO 1337846 --- [           main] [bafd2d80-5c0d-41d8-82ef-8989981ef9db] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 132ms userId=- planId=-
+2026-11-08T20:11:37.976-03:00  INFO 1337846 --- [           main] [f49f2455-f783-4bda-928e-2caa54250992] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:11:38.121-03:00  INFO 1337846 --- [           main] [864c63e3-e7c5-49d1-bcf1-06ef7a2dc832] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=1 outcome=ok durationMs=131
+2026-11-08T20:11:38.135-03:00  INFO 1337846 --- [           main] [864c63e3-e7c5-49d1-bcf1-06ef7a2dc832] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 157ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpReadToolsIT#listCategories'` - exit 0
 
 ```
-2026-11-08T16:21:51.312-03:00  INFO 1224037 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:21:51.312-03:00  INFO 1224037 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:21:51.314-03:00  INFO 1224037 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:21:51.370-03:00  INFO 1224037 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.942 seconds (process running for 10.155)
+2026-11-08T20:12:01.775-03:00  INFO 1338367 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:12:01.776-03:00  INFO 1338367 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:12:01.777-03:00  INFO 1338367 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:12:01.836-03:00  INFO 1338367 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.792 seconds (process running for 9.915)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:21:51.949-03:00  INFO 1224037 --- [           main] [aad8e180-b723-4a78-93b5-5c8bdee5fa75] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:21:51.969-03:00  INFO 1224037 --- [           main] [aad8e180-b723-4a78-93b5-5c8bdee5fa75] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 129ms userId=- planId=-
-2026-11-08T16:21:51.981-03:00  INFO 1224037 --- [           main] [19e296d9-3886-4a95-9b10-bb94d17ebd1d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:21:52.167-03:00  INFO 1224037 --- [           main] [140ce0c7-01b3-4103-b085-902f7c68b1fa] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_categories user=1 plan=1 outcome=ok durationMs=172
-2026-11-08T16:21:52.181-03:00  INFO 1224037 --- [           main] [140ce0c7-01b3-4103-b085-902f7c68b1fa] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 199ms userId=- planId=-
+2026-11-08T20:12:02.374-03:00  INFO 1338367 --- [           main] [0fde3ee7-ba34-41fc-8186-0a92e2c95dab] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:12:02.395-03:00  INFO 1338367 --- [           main] [0fde3ee7-ba34-41fc-8186-0a92e2c95dab] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 147ms userId=- planId=-
+2026-11-08T20:12:02.406-03:00  INFO 1338367 --- [           main] [c85aab00-d81c-4cb8-b2be-b25479c2992e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:12:02.594-03:00  INFO 1338367 --- [           main] [9782cf8d-7bc3-4a0e-bccc-6c4d2d83d194] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_categories user=1 plan=1 outcome=ok durationMs=175
+2026-11-08T20:12:02.609-03:00  INFO 1338367 --- [           main] [9782cf8d-7bc3-4a0e-bccc-6c4d2d83d194] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 202ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpReadToolsIT#listTransaction` - exit 0
@@ -714,79 +728,79 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 ```
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:22:15.821-03:00  INFO 1224579 --- [           main] [16147751-041f-4cb6-b2c0-64ef391d74d3] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:22:15.842-03:00  INFO 1224579 --- [           main] [16147751-041f-4cb6-b2c0-64ef391d74d3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 131ms userId=- planId=-
-2026-11-08T16:22:15.855-03:00  INFO 1224579 --- [           main] [b6371100-670c-4a8e-bff2-e525d66022df] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 8ms userId=- planId=-
-2026-11-08T16:22:16.058-03:00  INFO 1224579 --- [           main] [53d2b105-d450-442e-90fe-251cbf58c24b] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=188
-2026-11-08T16:22:16.076-03:00  INFO 1224579 --- [           main] [53d2b105-d450-442e-90fe-251cbf58c24b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 220ms userId=- planId=-
-2026-11-08T16:22:16.167-03:00  INFO 1224579 --- [           main] [31abf14a-f949-4211-8aa8-d6b3bbcef685] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=36
-2026-11-08T16:22:16.167-03:00  INFO 1224579 --- [           main] [31abf14a-f949-4211-8aa8-d6b3bbcef685] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 39ms userId=- planId=-
-2026-11-08T16:22:16.213-03:00  INFO 1224579 --- [           main] [80732314-7762-41e5-b2c0-d2b5b159cacf] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=42
-2026-11-08T16:22:16.214-03:00  INFO 1224579 --- [           main] [80732314-7762-41e5-b2c0-d2b5b159cacf] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 45ms userId=- planId=-
-2026-11-08T16:22:16.245-03:00  INFO 1224579 --- [           main] [b07c5b1c-60a3-4876-98b6-1b4a54edd273] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=23
-2026-11-08T16:22:16.245-03:00  INFO 1224579 --- [           main] [b07c5b1c-60a3-4876-98b6-1b4a54edd273] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 29ms userId=- planId=-
-2026-11-08T16:22:16.274-03:00  INFO 1224579 --- [           main] [b63e0bb4-e943-4b98-a647-f65de7ee29ff] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=22
-2026-11-08T16:22:16.275-03:00  INFO 1224579 --- [           main] [b63e0bb4-e943-4b98-a647-f65de7ee29ff] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 28ms userId=- planId=-
+2026-11-08T20:12:26.837-03:00  INFO 1338894 --- [           main] [a3980d9f-7ec4-47e5-a071-0bd3d1db3245] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:12:26.857-03:00  INFO 1338894 --- [           main] [a3980d9f-7ec4-47e5-a071-0bd3d1db3245] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 136ms userId=- planId=-
+2026-11-08T20:12:26.868-03:00  INFO 1338894 --- [           main] [cc84da71-8f26-4931-ae15-7e7acec2a07d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:12:27.073-03:00  INFO 1338894 --- [           main] [8ebb9895-cfd1-4ef4-a527-7e76d6fbd25b] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=190
+2026-11-08T20:12:27.088-03:00  INFO 1338894 --- [           main] [8ebb9895-cfd1-4ef4-a527-7e76d6fbd25b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 219ms userId=- planId=-
+2026-11-08T20:12:27.179-03:00  INFO 1338894 --- [           main] [ed46edd3-12aa-4cad-9343-ec3167eac3b3] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=35
+2026-11-08T20:12:27.179-03:00  INFO 1338894 --- [           main] [ed46edd3-12aa-4cad-9343-ec3167eac3b3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 39ms userId=- planId=-
+2026-11-08T20:12:27.221-03:00  INFO 1338894 --- [           main] [ced75108-6cab-430e-a924-29420f689ee5] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=38
+2026-11-08T20:12:27.222-03:00  INFO 1338894 --- [           main] [ced75108-6cab-430e-a924-29420f689ee5] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 41ms userId=- planId=-
+2026-11-08T20:12:27.246-03:00  INFO 1338894 --- [           main] [130f910e-1e86-425d-a0d2-68540cba5a7d] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=18
+2026-11-08T20:12:27.247-03:00  INFO 1338894 --- [           main] [130f910e-1e86-425d-a0d2-68540cba5a7d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 23ms userId=- planId=-
+2026-11-08T20:12:27.274-03:00  INFO 1338894 --- [           main] [6af9a6c2-d06a-48a3-be5c-5bd3631b1ed6] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=22
+2026-11-08T20:12:27.274-03:00  INFO 1338894 --- [           main] [6af9a6c2-d06a-48a3-be5c-5bd3631b1ed6] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 26ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpReadToolsIT#listTransaction` - exit 0
 
 ```
-2026-11-08T16:22:40.162-03:00  INFO 1225138 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:22:40.221-03:00  INFO 1225138 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 9.273 seconds (process running for 10.476)
+2026-11-08T20:12:50.599-03:00  INFO 1339426 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:12:50.674-03:00  INFO 1339426 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.731 seconds (process running for 9.88)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:22:40.969-03:00  INFO 1225138 --- [           main] [cb4ede4c-d20d-40e6-943b-8b4375e71e9f] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:22:40.989-03:00  INFO 1225138 --- [           main] [cb4ede4c-d20d-40e6-943b-8b4375e71e9f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 131ms userId=- planId=-
-2026-11-08T16:22:41.000-03:00  INFO 1225138 --- [           main] [f4b14bc2-630a-49d7-8e3d-31e5b1d36181] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:22:41.227-03:00  INFO 1225138 --- [           main] [d7c66ee7-4d97-4abf-9646-aef06ed87302] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=213
-2026-11-08T16:22:41.243-03:00  INFO 1225138 --- [           main] [d7c66ee7-4d97-4abf-9646-aef06ed87302] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 241ms userId=- planId=-
-2026-11-08T16:22:41.326-03:00  INFO 1225138 --- [           main] [e41c0f74-84f0-436a-9779-00110efcf71c] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=26
-2026-11-08T16:22:41.327-03:00  INFO 1225138 --- [           main] [e41c0f74-84f0-436a-9779-00110efcf71c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 31ms userId=- planId=-
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:12:51.408-03:00  INFO 1339426 --- [           main] [bae1b134-0099-4aa4-92db-de31370a5a2d] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:12:51.428-03:00  INFO 1339426 --- [           main] [bae1b134-0099-4aa4-92db-de31370a5a2d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 136ms userId=- planId=-
+2026-11-08T20:12:51.439-03:00  INFO 1339426 --- [           main] [34e0e16f-ef2d-4a4c-b5b3-46d368a81148] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:12:51.646-03:00  INFO 1339426 --- [           main] [09ef68e2-724b-49bd-a445-5583f1b49850] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=191
+2026-11-08T20:12:51.660-03:00  INFO 1339426 --- [           main] [09ef68e2-724b-49bd-a445-5583f1b49850] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 220ms userId=- planId=-
+2026-11-08T20:12:51.750-03:00  INFO 1339426 --- [           main] [d478509b-3575-4739-8130-e07299e4c193] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=21
+2026-11-08T20:12:51.750-03:00  INFO 1339426 --- [           main] [d478509b-3575-4739-8130-e07299e4c193] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 26ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpReadToolsIT#monthSummaryMat` - exit 0
 
 ```
-2026-11-08T16:23:04.569-03:00  INFO 1225690 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.771 seconds (process running for 9.963)
+2026-11-08T20:13:15.281-03:00  INFO 1339946 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.818 seconds (process running for 9.979)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:23:05.352-03:00  INFO 1225690 --- [           main] [f1263ba1-fa6a-4cd4-964e-ea0a1c47c943] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 271ms userId=1 planId=1
-2026-11-08T16:23:05.410-03:00  INFO 1225690 --- [           main] [8128e20b-befc-4b6d-9c66-ec2f0eceb267] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:23:05.429-03:00  INFO 1225690 --- [           main] [8128e20b-befc-4b6d-9c66-ec2f0eceb267] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 56ms userId=- planId=-
-2026-11-08T16:23:05.439-03:00  INFO 1225690 --- [           main] [7fc356c5-8fd3-4c1f-a3d6-639aa50ad642] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 8ms userId=- planId=-
-2026-11-08T16:23:05.510-03:00  INFO 1225690 --- [           main] [10d56215-3ba6-48b2-a0fe-7ab4eae9a08d] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_month_summary user=1 plan=1 outcome=ok durationMs=53
-2026-11-08T16:23:05.529-03:00  INFO 1225690 --- [           main] [10d56215-3ba6-48b2-a0fe-7ab4eae9a08d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 88ms userId=- planId=-
-2026-11-08T16:23:05.564-03:00  INFO 1225690 --- [           main] [376f9b57-b2a5-4cdd-8b72-980727493ee1] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_month_summary user=1 plan=1 outcome=ok durationMs=30
-2026-11-08T16:23:05.564-03:00  INFO 1225690 --- [           main] [376f9b57-b2a5-4cdd-8b72-980727493ee1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 34ms userId=- planId=-
+2026-11-08T20:13:16.016-03:00  INFO 1339946 --- [           main] [e430057b-a0cd-46c4-a287-5347feba0675] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 248ms userId=1 planId=1
+2026-11-08T20:13:16.062-03:00  INFO 1339946 --- [           main] [d084d74e-e004-47da-ba34-8129a18b3bae] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:13:16.080-03:00  INFO 1339946 --- [           main] [d084d74e-e004-47da-ba34-8129a18b3bae] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 53ms userId=- planId=-
+2026-11-08T20:13:16.089-03:00  INFO 1339946 --- [           main] [fc33024a-a89b-488e-a3aa-e8172d339c3e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:13:16.152-03:00  INFO 1339946 --- [           main] [e21170b4-e5cf-4e26-aa1d-577702263383] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_month_summary user=1 plan=1 outcome=ok durationMs=47
+2026-11-08T20:13:16.168-03:00  INFO 1339946 --- [           main] [e21170b4-e5cf-4e26-aa1d-577702263383] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 77ms userId=- planId=-
+2026-11-08T20:13:16.200-03:00  INFO 1339946 --- [           main] [da72a085-c1eb-4be7-95a0-376ff1991407] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_month_summary user=1 plan=1 outcome=ok durationMs=27
+2026-11-08T20:13:16.201-03:00  INFO 1339946 --- [           main] [da72a085-c1eb-4be7-95a0-376ff1991407] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 31ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpReadToolsIT#categorySpendin` - exit 0
 
 ```
-2026-11-08T16:23:28.240-03:00  INFO 1226256 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:23:28.242-03:00  INFO 1226256 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:23:28.305-03:00  INFO 1226256 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.792 seconds (process running for 10.028)
+2026-11-08T20:13:39.700-03:00  INFO 1340486 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:13:39.704-03:00  INFO 1340486 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-11-08T20:13:39.763-03:00  INFO 1340486 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.922 seconds (process running for 10.095)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:23:29.048-03:00  INFO 1226256 --- [           main] [bb36a680-11fb-421a-97b0-b4e5f6dde63d] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/category/spending 200 276ms userId=1 planId=1
-2026-11-08T16:23:29.118-03:00  INFO 1226256 --- [           main] [8e6ab789-110a-4117-9b41-59ecf1b96be0] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:23:29.137-03:00  INFO 1226256 --- [           main] [8e6ab789-110a-4117-9b41-59ecf1b96be0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 55ms userId=- planId=-
-2026-11-08T16:23:29.146-03:00  INFO 1226256 --- [           main] [ec70c51a-f25c-499e-8e93-9ab3ed83d231] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 8ms userId=- planId=-
-2026-11-08T16:23:29.208-03:00  INFO 1226256 --- [           main] [25c08fe0-1080-4702-8818-b471a2904be3] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_category_spending user=1 plan=1 outcome=ok durationMs=44
-2026-11-08T16:23:29.225-03:00  INFO 1226256 --- [           main] [25c08fe0-1080-4702-8818-b471a2904be3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 77ms userId=- planId=-
+2026-11-08T20:13:40.528-03:00  INFO 1340486 --- [           main] [8bae7410-9c7c-4313-8776-dc07398e11fa] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/category/spending 200 268ms userId=1 planId=1
+2026-11-08T20:13:40.601-03:00  INFO 1340486 --- [           main] [52c27ceb-8391-40f6-94a2-a8ebafb18c16] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:13:40.623-03:00  INFO 1340486 --- [           main] [52c27ceb-8391-40f6-94a2-a8ebafb18c16] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 62ms userId=- planId=-
+2026-11-08T20:13:40.634-03:00  INFO 1340486 --- [           main] [39216525-7b94-45ef-8099-5da203619348] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 9ms userId=- planId=-
+2026-11-08T20:13:40.705-03:00  INFO 1340486 --- [           main] [72e0e687-93b1-400c-8ee5-6b0079251a68] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_category_spending user=1 plan=1 outcome=ok durationMs=53
+2026-11-08T20:13:40.721-03:00  INFO 1340486 --- [           main] [72e0e687-93b1-400c-8ee5-6b0079251a68] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 85ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpReadToolsIT#todayFollowsSav` - exit 0
@@ -797,36 +811,36 @@ WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:23:52.503-03:00  INFO 1226805 --- [           main] [d597bc09-4875-4045-9c27-a517562c70fe] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:23:52.524-03:00  INFO 1226805 --- [           main] [d597bc09-4875-4045-9c27-a517562c70fe] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 131ms userId=- planId=-
-2026-11-08T16:23:52.535-03:00  INFO 1226805 --- [           main] [c3d31c6f-8236-442a-8acb-f85af3dbe4ff] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:23:52.740-03:00  INFO 1226805 --- [           main] [dc1f51e2-0169-4cc4-86bb-1874ab711684] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=191
-2026-11-08T16:23:52.754-03:00  INFO 1226805 --- [           main] [dc1f51e2-0169-4cc4-86bb-1874ab711684] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 218ms userId=- planId=-
-2026-11-08T16:23:52.768-03:00  INFO 1226805 --- [           main] [f4bad085-117b-4bcb-9150-12b3a1fd333d] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:23:52.769-03:00  INFO 1226805 --- [           main] [f4bad085-117b-4bcb-9150-12b3a1fd333d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
-2026-11-08T16:23:52.771-03:00  INFO 1226805 --- [           main] [8b1e48ad-b3e4-4ef2-9a98-188dc3e9e142] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
-2026-11-08T16:23:52.831-03:00  INFO 1226805 --- [           main] [eff1d3ac-75bc-4134-a360-37740bbfc86a] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_month_summary user=1 plan=1 outcome=ok durationMs=56
-2026-11-08T16:23:52.831-03:00  INFO 1226805 --- [           main] [eff1d3ac-75bc-4134-a360-37740bbfc86a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 59ms userId=- planId=-
+2026-11-08T20:14:04.619-03:00  INFO 1341009 --- [           main] [95597dcc-6c2a-460e-9e3d-6fb8891b6f45] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:14:04.640-03:00  INFO 1341009 --- [           main] [95597dcc-6c2a-460e-9e3d-6fb8891b6f45] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 131ms userId=- planId=-
+2026-11-08T20:14:04.650-03:00  INFO 1341009 --- [           main] [a37734b8-7d52-4020-baaf-76436f229e4f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:14:04.838-03:00  INFO 1341009 --- [           main] [acc1fbb1-9ecd-440a-8f71-fc6ecde2b585] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=173
+2026-11-08T20:14:04.852-03:00  INFO 1341009 --- [           main] [acc1fbb1-9ecd-440a-8f71-fc6ecde2b585] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 200ms userId=- planId=-
+2026-11-08T20:14:04.866-03:00  INFO 1341009 --- [           main] [26e9905b-8121-40d1-bc65-2cae243df87a] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:14:04.867-03:00  INFO 1341009 --- [           main] [26e9905b-8121-40d1-bc65-2cae243df87a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
+2026-11-08T20:14:04.869-03:00  INFO 1341009 --- [           main] [ec20f5f2-ae4b-408f-ac30-864162dfdfbf] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
+2026-11-08T20:14:04.926-03:00  INFO 1341009 --- [           main] [1b7f3966-0120-41a4-be45-cbf308b75ab2] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=get_month_summary user=1 plan=1 outcome=ok durationMs=53
+2026-11-08T20:14:04.926-03:00  INFO 1341009 --- [           main] [1b7f3966-0120-41a4-be45-cbf308b75ab2] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 56ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpReadToolsIT#readToolsAreRea` - exit 0
 
 ```
-2026-11-08T16:24:15.785-03:00  INFO 1227369 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:24:15.909-03:00  INFO 1227369 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:24:15.910-03:00  INFO 1227369 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:24:15.911-03:00  INFO 1227369 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:24:15.980-03:00  INFO 1227369 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.832 seconds (process running for 10.086)
+2026-11-08T20:14:28.155-03:00  INFO 1341559 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:14:28.308-03:00  INFO 1341559 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:14:28.309-03:00  INFO 1341559 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:14:28.310-03:00  INFO 1341559 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:14:28.368-03:00  INFO 1341559 --- [           main] [] com.lcs.findraco.mcp.McpReadToolsIT      : Started McpReadToolsIT in 8.854 seconds (process running for 10.004)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:24:16.482-03:00  INFO 1227369 --- [           main] [cdced31a-10b6-4d83-96d0-9fd6b33b027f] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:24:16.501-03:00  INFO 1227369 --- [           main] [cdced31a-10b6-4d83-96d0-9fd6b33b027f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 130ms userId=- planId=-
-2026-11-08T16:24:16.512-03:00  INFO 1227369 --- [           main] [ec99f4ca-ebe1-4134-aedb-10c2ee49f7cd] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:24:16.536-03:00  INFO 1227369 --- [           main] [b581c7be-5328-437e-ab01-ee66323319ae] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 23ms userId=- planId=-
+2026-11-08T20:14:28.868-03:00  INFO 1341559 --- [           main] [42edae27-fff8-4a4b-94a8-970ad2c046be] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:14:28.887-03:00  INFO 1341559 --- [           main] [42edae27-fff8-4a4b-94a8-970ad2c046be] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 136ms userId=- planId=-
+2026-11-08T20:14:28.898-03:00  INFO 1341559 --- [           main] [0dcccdc7-1ea6-4212-9fa2-51b45adce306] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 6ms userId=- planId=-
+2026-11-08T20:14:28.920-03:00  INFO 1341559 --- [           main] [ce3ca879-6be9-43c3-bfd9-82b3b97b053a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 21ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#createPaidBy` - exit 0
@@ -835,78 +849,78 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:24:39.813-03:00  INFO 1227920 --- [           main] [c4bd37e6-f720-4f3f-bef0-db29427b36b7] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:24:39.832-03:00  INFO 1227920 --- [           main] [c4bd37e6-f720-4f3f-bef0-db29427b36b7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 138ms userId=- planId=-
-2026-11-08T16:24:39.843-03:00  INFO 1227920 --- [           main] [1b7cba58-fa51-4ea9-8d1d-cca3f429f038] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:24:39.992-03:00  WARN 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-08T16:24:39.995-03:00  WARN 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:24:39.995-03:00  WARN 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:24:39.995-03:00  WARN 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:24:39.995-03:00  WARN 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:24:39.995-03:00  WARN 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-08T16:24:40.029-03:00  INFO 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=163
-2026-11-08T16:24:40.042-03:00  INFO 1227920 --- [           main] [7dbb4646-4466-4981-a553-93d83fd0b626] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 198ms userId=- planId=-
-2026-11-08T16:24:40.192-03:00  INFO 1227920 --- [           main] [b2e53879-b585-4fef-ac44-c4353e2720ad] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 59ms userId=1 planId=1
+2026-11-08T20:14:52.850-03:00  INFO 1342092 --- [           main] [601afb5c-99a8-4f5b-a569-40f12b19e3ee] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:14:52.871-03:00  INFO 1342092 --- [           main] [601afb5c-99a8-4f5b-a569-40f12b19e3ee] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 133ms userId=- planId=-
+2026-11-08T20:14:52.882-03:00  INFO 1342092 --- [           main] [83d7020f-eb9b-45e7-a4bd-5c6bb73d9713] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:14:53.026-03:00  WARN 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:14:53.029-03:00  WARN 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:14:53.029-03:00  WARN 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-08T20:14:53.029-03:00  WARN 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:14:53.030-03:00  WARN 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-08T20:14:53.030-03:00  WARN 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:14:53.064-03:00  INFO 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=164
+2026-11-08T20:14:53.077-03:00  INFO 1342092 --- [           main] [b43de268-f68c-4200-8d6a-6701dc0dffa9] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 194ms userId=- planId=-
+2026-11-08T20:14:53.207-03:00  INFO 1342092 --- [           main] [c926a41c-0ed5-4120-b3ca-408db07efa22] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 56ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#createDefaul` - exit 0
 
 ```
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
-2026-11-08T16:25:03.484-03:00  INFO 1228471 --- [           main] [d6cbcfd0-d90d-46fe-a5f9-67b8b044fa1d] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:25:03.504-03:00  INFO 1228471 --- [           main] [d6cbcfd0-d90d-46fe-a5f9-67b8b044fa1d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 138ms userId=- planId=-
-2026-11-08T16:25:03.515-03:00  INFO 1228471 --- [           main] [5ecc0ca2-5072-41bf-a0db-e68c7cfc063f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:25:03.649-03:00  WARN 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-08T16:25:03.652-03:00  WARN 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:25:03.652-03:00  WARN 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-08T16:25:03.652-03:00  WARN 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:25:03.652-03:00  WARN 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:25:03.652-03:00  WARN 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:25:03.687-03:00  INFO 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=154
-2026-11-08T16:25:03.701-03:00  INFO 1228471 --- [           main] [89ba0aa8-1a46-447a-9ee7-b7025771d07a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 185ms userId=- planId=-
-2026-11-08T16:25:03.783-03:00  INFO 1228471 --- [           main] [941d6a58-dab5-49e7-accd-bb2f4253f26f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 49ms userId=1 planId=1
+2026-11-08T20:15:17.285-03:00  INFO 1342639 --- [           main] [b89defa2-f38e-4d90-88eb-a199b3688499] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:15:17.307-03:00  INFO 1342639 --- [           main] [b89defa2-f38e-4d90-88eb-a199b3688499] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 154ms userId=- planId=-
+2026-11-08T20:15:17.321-03:00  INFO 1342639 --- [           main] [3cfbeff3-6312-4785-876a-a823d720cc0b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 10ms userId=- planId=-
+2026-11-08T20:15:17.459-03:00  WARN 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:15:17.462-03:00  WARN 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:15:17.463-03:00  WARN 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-08T20:15:17.463-03:00  WARN 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-08T20:15:17.463-03:00  WARN 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:15:17.464-03:00  WARN 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:15:17.500-03:00  INFO 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=161
+2026-11-08T20:15:17.514-03:00  INFO 1342639 --- [           main] [3f3ee658-d436-4f46-863d-61a511923101] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 191ms userId=- planId=-
+2026-11-08T20:15:17.598-03:00  INFO 1342639 --- [           main] [39cc8add-afe1-4317-b0b7-2b46234f62d1] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 51ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#createResolv` - exit 0
 
 ```
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:25:27.805-03:00  INFO 1229027 --- [           main] [af75fa1f-fe0e-4506-80ee-bccba63577ea] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:25:27.830-03:00  INFO 1229027 --- [           main] [af75fa1f-fe0e-4506-80ee-bccba63577ea] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 156ms userId=- planId=-
-2026-11-08T16:25:27.842-03:00  INFO 1229027 --- [           main] [5021b672-ce12-44d8-9988-9a20ef829a52] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:25:28.022-03:00  WARN 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:25:28.025-03:00  WARN 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:25:28.026-03:00  WARN 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:25:28.026-03:00  WARN 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-08T16:25:28.026-03:00  WARN 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-08T16:25:28.026-03:00  WARN 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:25:28.054-03:00  INFO 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=193
-2026-11-08T16:25:28.067-03:00  INFO 1229027 --- [           main] [9c06c503-4612-4bf5-a893-7cbdc83a604d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 224ms userId=- planId=-
-2026-11-08T16:25:28.147-03:00  INFO 1229027 --- [           main] [5b9b575d-2b61-43c2-a503-7831c5025416] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 47ms userId=1 planId=1
-2026-11-08T16:25:28.240-03:00  INFO 1229027 --- [           main] [2a6f9fec-e2ab-4252-bbd6-2761c513853b] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=24
-2026-11-08T16:25:28.241-03:00  INFO 1229027 --- [           main] [2a6f9fec-e2ab-4252-bbd6-2761c513853b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 27ms userId=- planId=-
+2026-11-08T20:15:41.595-03:00  INFO 1343149 --- [           main] [53ef131d-0e31-4f42-8329-f93c6dc3c133] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:15:41.614-03:00  INFO 1343149 --- [           main] [53ef131d-0e31-4f42-8329-f93c6dc3c133] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 143ms userId=- planId=-
+2026-11-08T20:15:41.626-03:00  INFO 1343149 --- [           main] [bbddff6b-4cbc-4846-ad46-24679ea17fcf] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:15:41.808-03:00  WARN 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-08T20:15:41.811-03:00  WARN 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:15:41.811-03:00  WARN 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-08T20:15:41.811-03:00  WARN 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:15:41.812-03:00  WARN 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:15:41.812-03:00  WARN 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:15:41.835-03:00  INFO 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=191
+2026-11-08T20:15:41.848-03:00  INFO 1343149 --- [           main] [40817a22-489c-473c-b508-1f594f1387b2] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 222ms userId=- planId=-
+2026-11-08T20:15:41.937-03:00  INFO 1343149 --- [           main] [2aea5647-c478-42fd-b7b3-1f9e26eb5288] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 57ms userId=1 planId=1
+2026-11-08T20:15:42.019-03:00  INFO 1343149 --- [           main] [f52bd8aa-aa3a-479d-9cc7-27ba08e6b578] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=22
+2026-11-08T20:15:42.019-03:00  INFO 1343149 --- [           main] [f52bd8aa-aa3a-479d-9cc7-27ba08e6b578] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 26ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#createReject` - exit 0
 
 ```
-2026-11-08T16:25:51.828-03:00  WARN 1229582 --- [           main] [be708880-9258-42b5-b0e0-e2b69574983f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:25:51.829-03:00  WARN 1229582 --- [           main] [be708880-9258-42b5-b0e0-e2b69574983f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:25:51.829-03:00  WARN 1229582 --- [           main] [be708880-9258-42b5-b0e0-e2b69574983f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-08T16:25:51.829-03:00  WARN 1229582 --- [           main] [be708880-9258-42b5-b0e0-e2b69574983f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:25:51.829-03:00  WARN 1229582 --- [           main] [be708880-9258-42b5-b0e0-e2b69574983f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-08T16:25:51.836-03:00  INFO 1229582 --- [           main] [be708880-9258-42b5-b0e0-e2b69574983f] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=133
-2026-11-08T16:25:51.850-03:00  INFO 1229582 --- [           main] [be708880-9258-42b5-b0e0-e2b69574983f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 163ms userId=- planId=-
-2026-11-08T16:25:51.907-03:00  INFO 1229582 --- [           main] [c4d4b176-6678-4745-b1df-733e8474bbaf] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=13
-2026-11-08T16:25:51.907-03:00  INFO 1229582 --- [           main] [c4d4b176-6678-4745-b1df-733e8474bbaf] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 17ms userId=- planId=-
-2026-11-08T16:25:51.927-03:00  INFO 1229582 --- [           main] [787fc2d0-6430-457d-b469-0d2be2c0934b] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=9
-2026-11-08T16:25:51.928-03:00  INFO 1229582 --- [           main] [787fc2d0-6430-457d-b469-0d2be2c0934b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 19ms userId=- planId=-
-2026-11-08T16:25:51.939-03:00  INFO 1229582 --- [           main] [ddb6e934-2e92-46d4-84cd-a748154c801d] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=7
-2026-11-08T16:25:51.939-03:00  INFO 1229582 --- [           main] [ddb6e934-2e92-46d4-84cd-a748154c801d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 10ms userId=- planId=-
-2026-11-08T16:25:51.950-03:00  INFO 1229582 --- [           main] [2dfd38f1-1f6a-40c5-8e1d-3a1959364bcc] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=6
-2026-11-08T16:25:51.950-03:00  INFO 1229582 --- [           main] [2dfd38f1-1f6a-40c5-8e1d-3a1959364bcc] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 9ms userId=- planId=-
+2026-11-08T20:16:06.202-03:00  WARN 1343681 --- [           main] [f986464c-663c-41eb-b919-37fcdc5981cb] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-08T20:16:06.203-03:00  WARN 1343681 --- [           main] [f986464c-663c-41eb-b919-37fcdc5981cb] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:16:06.203-03:00  WARN 1343681 --- [           main] [f986464c-663c-41eb-b919-37fcdc5981cb] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:16:06.203-03:00  WARN 1343681 --- [           main] [f986464c-663c-41eb-b919-37fcdc5981cb] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:16:06.203-03:00  WARN 1343681 --- [           main] [f986464c-663c-41eb-b919-37fcdc5981cb] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:16:06.210-03:00  INFO 1343681 --- [           main] [f986464c-663c-41eb-b919-37fcdc5981cb] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=123
+2026-11-08T20:16:06.223-03:00  INFO 1343681 --- [           main] [f986464c-663c-41eb-b919-37fcdc5981cb] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 153ms userId=- planId=-
+2026-11-08T20:16:06.279-03:00  INFO 1343681 --- [           main] [d2259cf0-7b50-484a-8348-8e4166aa6901] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=11
+2026-11-08T20:16:06.279-03:00  INFO 1343681 --- [           main] [d2259cf0-7b50-484a-8348-8e4166aa6901] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 15ms userId=- planId=-
+2026-11-08T20:16:06.307-03:00  INFO 1343681 --- [           main] [bd014ee2-f7b9-4f9f-851c-99c4ecc1bace] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=11
+2026-11-08T20:16:06.308-03:00  INFO 1343681 --- [           main] [bd014ee2-f7b9-4f9f-851c-99c4ecc1bace] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 27ms userId=- planId=-
+2026-11-08T20:16:06.319-03:00  INFO 1343681 --- [           main] [8a585929-9b7d-46b7-839f-450704a334fd] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=7
+2026-11-08T20:16:06.319-03:00  INFO 1343681 --- [           main] [8a585929-9b7d-46b7-839f-450704a334fd] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 10ms userId=- planId=-
+2026-11-08T20:16:06.332-03:00  INFO 1343681 --- [           main] [4d9ef48d-4b04-4ddf-9534-1b0374ede780] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=7
+2026-11-08T20:16:06.332-03:00  INFO 1343681 --- [           main] [4d9ef48d-4b04-4ddf-9534-1b0374ede780] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 11ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#writeResultN` - exit 0
@@ -916,157 +930,157 @@ WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:26:15.323-03:00  INFO 1230126 --- [           main] [fa59d755-bdba-4547-90cd-bf3882f90f8f] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:26:15.343-03:00  INFO 1230126 --- [           main] [fa59d755-bdba-4547-90cd-bf3882f90f8f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 129ms userId=- planId=-
-2026-11-08T16:26:15.354-03:00  INFO 1230126 --- [           main] [3b71058c-b347-421d-92ca-4527103b1d32] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:26:15.554-03:00  WARN 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-08T16:26:15.557-03:00  WARN 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:26:15.557-03:00  WARN 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-08T16:26:15.557-03:00  WARN 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:26:15.558-03:00  WARN 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:26:15.558-03:00  WARN 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
-2026-11-08T16:26:15.581-03:00  INFO 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=203
-2026-11-08T16:26:15.596-03:00  INFO 1230126 --- [           main] [9c1223fb-e12b-432a-b223-30248af0e9fc] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 241ms userId=- planId=-
+2026-11-08T20:16:30.512-03:00  INFO 1344211 --- [           main] [b0124384-b048-405f-8cc1-350b795e896e] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:16:30.532-03:00  INFO 1344211 --- [           main] [b0124384-b048-405f-8cc1-350b795e896e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 141ms userId=- planId=-
+2026-11-08T20:16:30.543-03:00  INFO 1344211 --- [           main] [599ff2aa-6b35-4fe6-bb56-98b95ac942d6] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:16:30.732-03:00  WARN 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:16:30.735-03:00  WARN 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-08T20:16:30.736-03:00  WARN 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:16:30.736-03:00  WARN 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:16:30.736-03:00  WARN 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List)
+2026-11-08T20:16:30.736-03:00  WARN 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-08T20:16:30.762-03:00  INFO 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=196
+2026-11-08T20:16:30.788-03:00  INFO 1344211 --- [           main] [41b80c14-a035-4795-a384-e6e1ce84a826] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 244ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#createSchema` - exit 0
 
 ```
-2026-11-08T16:26:38.617-03:00  INFO 1230691 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:26:38.741-03:00  INFO 1230691 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:26:38.742-03:00  INFO 1230691 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:26:38.743-03:00  INFO 1230691 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:26:38.799-03:00  INFO 1230691 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.886 seconds (process running for 10.052)
+2026-11-08T20:16:54.229-03:00  INFO 1344734 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:16:54.364-03:00  INFO 1344734 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:16:54.365-03:00  INFO 1344734 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:16:54.366-03:00  INFO 1344734 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:16:54.423-03:00  INFO 1344734 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.81 seconds (process running for 10.072)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:26:39.304-03:00  INFO 1230691 --- [           main] [2cd67b1a-3d46-4aa4-a879-6d44916117f3] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:26:39.324-03:00  INFO 1230691 --- [           main] [2cd67b1a-3d46-4aa4-a879-6d44916117f3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 130ms userId=- planId=-
-2026-11-08T16:26:39.335-03:00  INFO 1230691 --- [           main] [c09753c6-af7d-488c-a85d-ceeba2377306] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:26:39.358-03:00  INFO 1230691 --- [           main] [17e3fee6-91e9-4b29-a0ce-ea320d28f761] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 22ms userId=- planId=-
+2026-11-08T20:16:54.933-03:00  INFO 1344734 --- [           main] [85cc8261-a375-47f2-834e-42d317fd604e] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:16:54.954-03:00  INFO 1344734 --- [           main] [85cc8261-a375-47f2-834e-42d317fd604e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 132ms userId=- planId=-
+2026-11-08T20:16:54.965-03:00  INFO 1344734 --- [           main] [ca1b3f5b-9137-49ed-9ce2-2f6006b71087] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:16:54.989-03:00  INFO 1344734 --- [           main] [69f1c4cb-db9f-4437-bc91-46a69a197bb1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 22ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#confirmRecor` - exit 0
 
 ```
-2026-11-08T16:27:03.007-03:00  INFO 1231236 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:27:03.063-03:00  INFO 1231236 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.91 seconds (process running for 10.167)
+2026-11-08T20:17:18.173-03:00  INFO 1345281 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:17:18.231-03:00  INFO 1345281 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.739 seconds (process running for 9.906)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:27:03.595-03:00  INFO 1231236 --- [           main] [6b0d14ef-caa9-402b-8ad9-0cd30ea7a1ea] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:27:03.615-03:00  INFO 1231236 --- [           main] [6b0d14ef-caa9-402b-8ad9-0cd30ea7a1ea] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 137ms userId=- planId=-
-2026-11-08T16:27:03.626-03:00  INFO 1231236 --- [           main] [2bab85ab-b6e0-4171-96d0-a94d437c0ed5] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:27:03.793-03:00  INFO 1231236 --- [           main] [c48a0b62-1206-4e70-9d77-414515394574] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=ok durationMs=150
-2026-11-08T16:27:03.807-03:00  INFO 1231236 --- [           main] [c48a0b62-1206-4e70-9d77-414515394574] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 180ms userId=- planId=-
-2026-11-08T16:27:03.892-03:00  INFO 1231236 --- [           main] [a887c3b6-ecb9-4ffc-8cff-854f862f1a99] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=ok durationMs=25
-2026-11-08T16:27:03.892-03:00  INFO 1231236 --- [           main] [a887c3b6-ecb9-4ffc-8cff-854f862f1a99] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 29ms userId=- planId=-
+2026-11-08T20:17:18.781-03:00  INFO 1345281 --- [           main] [949dbd74-5076-41d8-a35b-da75db293e94] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:17:18.802-03:00  INFO 1345281 --- [           main] [949dbd74-5076-41d8-a35b-da75db293e94] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 131ms userId=- planId=-
+2026-11-08T20:17:18.813-03:00  INFO 1345281 --- [           main] [9408de13-bf3e-4603-8fae-224481f8b530] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:17:19.005-03:00  INFO 1345281 --- [           main] [651a6fd2-ce46-4eaf-bce5-aea7d3fc0472] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=ok durationMs=176
+2026-11-08T20:17:19.021-03:00  INFO 1345281 --- [           main] [651a6fd2-ce46-4eaf-bce5-aea7d3fc0472] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 207ms userId=- planId=-
+2026-11-08T20:17:19.106-03:00  INFO 1345281 --- [           main] [7bd9f09c-5402-418e-a5b1-2a288922cc45] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=ok durationMs=29
+2026-11-08T20:17:19.107-03:00  INFO 1345281 --- [           main] [7bd9f09c-5402-418e-a5b1-2a288922cc45] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 33ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#confirmRecom` - exit 0
 
 ```
-2026-11-08T16:27:26.933-03:00  INFO 1231784 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:27:26.935-03:00  INFO 1231784 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:27:26.990-03:00  INFO 1231784 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.914 seconds (process running for 10.058)
+2026-11-08T20:17:43.088-03:00  INFO 1345802 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:17:43.089-03:00  INFO 1345802 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:17:43.148-03:00  INFO 1345802 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 9.01 seconds (process running for 10.216)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:27:27.535-03:00  INFO 1231784 --- [           main] [630b488b-6d87-4047-bd8e-bdb4819b4748] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:27:27.554-03:00  INFO 1231784 --- [           main] [630b488b-6d87-4047-bd8e-bdb4819b4748] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 129ms userId=- planId=-
-2026-11-08T16:27:27.565-03:00  INFO 1231784 --- [           main] [3c980457-8b08-4b1f-8125-87e0b8bf30e0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:27:27.734-03:00  INFO 1231784 --- [           main] [64c282d3-3754-4f83-8af6-5f03efa8cda6] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=ok durationMs=154
-2026-11-08T16:27:27.748-03:00  INFO 1231784 --- [           main] [64c282d3-3754-4f83-8af6-5f03efa8cda6] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 182ms userId=- planId=-
-2026-11-08T16:27:27.827-03:00  INFO 1231784 --- [           main] [93094b6c-0ce0-431e-a8c2-91ba6e94016b] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 39ms userId=1 planId=1
+2026-11-08T20:17:43.697-03:00  INFO 1345802 --- [           main] [cc5299e0-c316-4a23-8c95-3083524c4197] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:17:43.717-03:00  INFO 1345802 --- [           main] [cc5299e0-c316-4a23-8c95-3083524c4197] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 141ms userId=- planId=-
+2026-11-08T20:17:43.728-03:00  INFO 1345802 --- [           main] [73db05bb-f1a2-4a89-8175-11226ff90a97] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:17:43.911-03:00  INFO 1345802 --- [           main] [4950f165-2c3e-46d1-9932-d918fe4f0e68] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=ok durationMs=168
+2026-11-08T20:17:43.925-03:00  INFO 1345802 --- [           main] [4950f165-2c3e-46d1-9932-d918fe4f0e68] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 196ms userId=- planId=-
+2026-11-08T20:17:44.002-03:00  INFO 1345802 --- [           main] [3389e419-df32-4d4a-bb1a-703743aa6912] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 43ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#confirmNotAw` - exit 0
 
 ```
-2026-11-08T16:27:51.403-03:00  INFO 1232348 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:27:51.404-03:00  INFO 1232348 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:27:51.462-03:00  INFO 1232348 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 9.098 seconds (process running for 10.34)
+2026-11-08T20:18:07.726-03:00  INFO 1346343 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:18:07.727-03:00  INFO 1346343 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:18:07.788-03:00  INFO 1346343 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 9.161 seconds (process running for 10.354)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:27:52.001-03:00  INFO 1232348 --- [           main] [c779a5a9-c615-4289-b690-11a2e7fea44d] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:27:52.020-03:00  INFO 1232348 --- [           main] [c779a5a9-c615-4289-b690-11a2e7fea44d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 128ms userId=- planId=-
-2026-11-08T16:27:52.031-03:00  INFO 1232348 --- [           main] [34e84149-3f20-45e4-8b8d-56015ed2c647] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:27:52.198-03:00  INFO 1232348 --- [           main] [057c5abf-5bd5-4caa-a8f0-d6de448cfed7] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=error durationMs=150
-2026-11-08T16:27:52.212-03:00  INFO 1232348 --- [           main] [057c5abf-5bd5-4caa-a8f0-d6de448cfed7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 180ms userId=- planId=-
-2026-11-08T16:27:52.327-03:00  INFO 1232348 --- [           main] [1bc46b82-32b6-4f55-911f-82645ba0c23c] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 42ms userId=1 planId=1
+2026-11-08T20:18:08.353-03:00  INFO 1346343 --- [           main] [4e77adeb-8bad-4c39-b13c-d9df7e7fee40] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:18:08.373-03:00  INFO 1346343 --- [           main] [4e77adeb-8bad-4c39-b13c-d9df7e7fee40] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 130ms userId=- planId=-
+2026-11-08T20:18:08.384-03:00  INFO 1346343 --- [           main] [025b3f7c-4adb-4d31-bbbe-6b3edd523737] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:18:08.553-03:00  INFO 1346343 --- [           main] [caa319f2-8a02-4c75-8afc-ab113cbd8eb1] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=error durationMs=154
+2026-11-08T20:18:08.569-03:00  INFO 1346343 --- [           main] [caa319f2-8a02-4c75-8afc-ab113cbd8eb1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 183ms userId=- planId=-
+2026-11-08T20:18:08.694-03:00  INFO 1346343 --- [           main] [3d48594b-36e4-4471-8643-192e103b963c] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 48ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#roleMatrixFo` - exit 0
 
 ```
-2026-11-08T16:28:15.919-03:00  INFO 1232884 --- [           main] [75547573-e9dc-4df0-8911-a87ecc7e9415] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
-2026-11-08T16:28:15.921-03:00  INFO 1232884 --- [           main] [92cb8fbd-1549-49c8-9209-3dded2215154] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
-2026-11-08T16:28:15.928-03:00  INFO 1232884 --- [           main] [747397ba-101d-4698-ad38-8f08b56d5ec7] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=5 plan=null outcome=error durationMs=4
-2026-11-08T16:28:15.928-03:00  INFO 1232884 --- [           main] [747397ba-101d-4698-ad38-8f08b56d5ec7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 6ms userId=- planId=-
-2026-11-08T16:28:16.026-03:00  INFO 1232884 --- [           main] [0aa6ed2d-e567-4f88-aae5-81abb697c63e] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 42ms userId=1 planId=1
-2026-11-08T16:28:16.040-03:00  INFO 1232884 --- [           main] [47d28246-7a76-4bf5-ae41-9e3e2797d536] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:28:16.040-03:00  INFO 1232884 --- [           main] [47d28246-7a76-4bf5-ae41-9e3e2797d536] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
-2026-11-08T16:28:16.042-03:00  INFO 1232884 --- [           main] [5b827461-1305-4fed-890e-05f92023c755] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
-2026-11-08T16:28:16.065-03:00  INFO 1232884 --- [           main] [205c6d4e-c225-4eeb-a3c4-ae64ecb0c392] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=3 plan=1 outcome=ok durationMs=19
-2026-11-08T16:28:16.066-03:00  INFO 1232884 --- [           main] [205c6d4e-c225-4eeb-a3c4-ae64ecb0c392] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 23ms userId=- planId=-
-2026-11-08T16:28:16.072-03:00  INFO 1232884 --- [           main] [b4c3b453-1819-41f2-8ee1-c5e04701264f] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:28:16.073-03:00  INFO 1232884 --- [           main] [b4c3b453-1819-41f2-8ee1-c5e04701264f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
-2026-11-08T16:28:16.075-03:00  INFO 1232884 --- [           main] [235830b6-a478-41d2-8024-e243e15128e0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
-2026-11-08T16:28:16.121-03:00  INFO 1232884 --- [           main] [630aff9d-7c56-4310-bbb1-f07174f323ff] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=2 plan=1 outcome=ok durationMs=43
-2026-11-08T16:28:16.121-03:00  INFO 1232884 --- [           main] [630aff9d-7c56-4310-bbb1-f07174f323ff] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 45ms userId=- planId=-
+2026-11-08T20:18:33.005-03:00  INFO 1346869 --- [           main] [ba7c6566-0a24-4c31-81c1-7e540ad44c70] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
+2026-11-08T20:18:33.007-03:00  INFO 1346869 --- [           main] [8bd178f1-bbb0-4a08-b91b-1b15139b7991] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
+2026-11-08T20:18:33.013-03:00  INFO 1346869 --- [           main] [1a1fb00a-ce09-45ea-9d37-6c93f0dc6fd5] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=5 plan=null outcome=error durationMs=3
+2026-11-08T20:18:33.013-03:00  INFO 1346869 --- [           main] [1a1fb00a-ce09-45ea-9d37-6c93f0dc6fd5] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 5ms userId=- planId=-
+2026-11-08T20:18:33.095-03:00  INFO 1346869 --- [           main] [b5cc799b-1ed0-4afe-942e-7a4b022afdb8] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 41ms userId=1 planId=1
+2026-11-08T20:18:33.107-03:00  INFO 1346869 --- [           main] [ef59de3e-0e34-4cae-bc42-eb2923a63a37] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:18:33.108-03:00  INFO 1346869 --- [           main] [ef59de3e-0e34-4cae-bc42-eb2923a63a37] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
+2026-11-08T20:18:33.110-03:00  INFO 1346869 --- [           main] [8c7fd737-c822-40f6-9b9e-5132b3f019d6] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
+2026-11-08T20:18:33.138-03:00  INFO 1346869 --- [           main] [aa3178e6-41a8-42a9-ae78-1dbbe6f36f27] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=3 plan=1 outcome=ok durationMs=25
+2026-11-08T20:18:33.138-03:00  INFO 1346869 --- [           main] [aa3178e6-41a8-42a9-ae78-1dbbe6f36f27] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 27ms userId=- planId=-
+2026-11-08T20:18:33.143-03:00  INFO 1346869 --- [           main] [013cdd83-d79f-4110-bfed-ac4d85b2ed20] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:18:33.143-03:00  INFO 1346869 --- [           main] [013cdd83-d79f-4110-bfed-ac4d85b2ed20] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
+2026-11-08T20:18:33.145-03:00  INFO 1346869 --- [           main] [219e93ae-4b8a-452b-af4d-7ca3e0c48c25] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
+2026-11-08T20:18:33.184-03:00  INFO 1346869 --- [           main] [8381ea53-feb0-47cb-9261-cf3dd83fe758] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=2 plan=1 outcome=ok durationMs=36
+2026-11-08T20:18:33.184-03:00  INFO 1346869 --- [           main] [8381ea53-feb0-47cb-9261-cf3dd83fe758] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 38ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#otherPlanIdN` - exit 0
 
 ```
-2026-11-08T16:28:39.088-03:00  INFO 1233459 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:28:39.088-03:00  INFO 1233459 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:28:39.089-03:00  INFO 1233459 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:28:39.146-03:00  INFO 1233459 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.829 seconds (process running for 10.079)
+2026-11-08T20:18:56.638-03:00  INFO 1347403 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:18:56.639-03:00  INFO 1347403 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:18:56.640-03:00  INFO 1347403 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:18:56.698-03:00  INFO 1347403 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.755 seconds (process running for 9.891)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:28:39.682-03:00  INFO 1233459 --- [           main] [4d5a862f-3f1a-4774-b873-536a4e81e204] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:28:39.703-03:00  INFO 1233459 --- [           main] [4d5a862f-3f1a-4774-b873-536a4e81e204] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 129ms userId=- planId=-
-2026-11-08T16:28:39.714-03:00  INFO 1233459 --- [           main] [e14c474a-4d55-4ea9-955e-6fbb956d9482] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:28:39.867-03:00  INFO 1233459 --- [           main] [e252dd87-8fdc-40f0-abcc-0bdcddc564b9] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=error durationMs=137
-2026-11-08T16:28:39.886-03:00  INFO 1233459 --- [           main] [e252dd87-8fdc-40f0-abcc-0bdcddc564b9] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 171ms userId=- planId=-
+2026-11-08T20:18:57.247-03:00  INFO 1347403 --- [           main] [93521bba-8b5b-4850-a483-57d1f7e33f14] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:18:57.267-03:00  INFO 1347403 --- [           main] [93521bba-8b5b-4850-a483-57d1f7e33f14] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 132ms userId=- planId=-
+2026-11-08T20:18:57.278-03:00  INFO 1347403 --- [           main] [953779db-27ee-4aea-b144-54f15459c54d] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:18:57.418-03:00  INFO 1347403 --- [           main] [f4bde011-5309-48bc-9a25-6767359baa1b] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=confirm_transaction user=1 plan=1 outcome=error durationMs=125
+2026-11-08T20:18:57.434-03:00  INFO 1347403 --- [           main] [f4bde011-5309-48bc-9a25-6767359baa1b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 154ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#writeHints' ` - exit 0
 
 ```
-2026-11-08T16:29:02.904-03:00  INFO 1234004 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-08T16:29:03.029-03:00  INFO 1234004 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:29:03.029-03:00  INFO 1234004 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:29:03.030-03:00  INFO 1234004 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-08T16:29:03.089-03:00  INFO 1234004 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.837 seconds (process running for 10.055)
+2026-11-08T20:19:20.787-03:00  INFO 1347938 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-08T20:19:20.920-03:00  INFO 1347938 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:19:20.920-03:00  INFO 1347938 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:19:20.921-03:00  INFO 1347938 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:19:20.981-03:00  INFO 1347938 --- [           main] [] com.lcs.findraco.mcp.McpCaptureToolsIT   : Started McpCaptureToolsIT in 8.846 seconds (process running for 9.986)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:29:03.614-03:00  INFO 1234004 --- [           main] [1de4bc8c-4f12-4d42-930a-416e5973ce83] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:29:03.635-03:00  INFO 1234004 --- [           main] [1de4bc8c-4f12-4d42-930a-416e5973ce83] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 130ms userId=- planId=-
-2026-11-08T16:29:03.646-03:00  INFO 1234004 --- [           main] [93bd93dc-7231-41d0-94e2-1a51ae59ab47] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:29:03.668-03:00  INFO 1234004 --- [           main] [0be9d651-9962-4d88-989d-9695cdb92991] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 22ms userId=- planId=-
+2026-11-08T20:19:21.485-03:00  INFO 1347938 --- [           main] [8343e4bc-9cde-453b-b883-df8f5e7ba346] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:19:21.506-03:00  INFO 1347938 --- [           main] [8343e4bc-9cde-453b-b883-df8f5e7ba346] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 130ms userId=- planId=-
+2026-11-08T20:19:21.517-03:00  INFO 1347938 --- [           main] [141334b8-8814-4773-8a1b-b27a9bfeebd0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:19:21.540-03:00  INFO 1347938 --- [           main] [18e3e1fd-52c6-42d2-a7c9-c33ae568640f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 22ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='McpUpdateCopyTest#keepsEveryStoredF` - exit 0
@@ -1081,78 +1095,78 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:29:32.067-03:00  INFO 1234849 --- [           main] [c41d0f08-759b-4baa-81f9-b0584ac6388a] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:29:32.088-03:00  INFO 1234849 --- [           main] [c41d0f08-759b-4baa-81f9-b0584ac6388a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 139ms userId=- planId=-
-2026-11-08T16:29:32.099-03:00  INFO 1234849 --- [           main] [19fadc36-b7e7-4189-81d3-ba2fcf0ceb70] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:29:32.251-03:00  WARN 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:29:32.254-03:00  WARN 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-08T16:29:32.254-03:00  WARN 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:29:32.254-03:00  WARN 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:29:32.254-03:00  WARN 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:29:32.255-03:00  WARN 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-08T16:29:32.334-03:00  INFO 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=220
-2026-11-08T16:29:32.347-03:00  INFO 1234849 --- [           main] [25243d1c-caf4-49fe-9976-4627eed85645] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 247ms userId=- planId=-
-2026-11-08T16:29:32.473-03:00  INFO 1234849 --- [           main] [9d253640-d203-4702-a071-c4345140ae33] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 45ms userId=1 planId=1
+2026-11-08T20:19:50.676-03:00  INFO 1348755 --- [           main] [51ca4032-ee2c-4d35-9edb-3a7f9bd87c98] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:19:50.696-03:00  INFO 1348755 --- [           main] [51ca4032-ee2c-4d35-9edb-3a7f9bd87c98] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 128ms userId=- planId=-
+2026-11-08T20:19:50.707-03:00  INFO 1348755 --- [           main] [5bc38803-f1ad-41d6-a185-b507c7675102] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:19:50.861-03:00  WARN 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:19:50.864-03:00  WARN 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:19:50.865-03:00  WARN 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-08T20:19:50.865-03:00  WARN 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:19:50.865-03:00  WARN 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:19:50.866-03:00  WARN 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-08T20:19:50.939-03:00  INFO 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=217
+2026-11-08T20:19:50.956-03:00  INFO 1348755 --- [           main] [73148a9e-934e-4f85-b460-baf0c5124676] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 248ms userId=- planId=-
+2026-11-08T20:19:51.076-03:00  INFO 1348755 --- [           main] [1c2a52ba-d34d-4b6e-82dd-5cf529a34797] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 45ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpUpdateToolIT#occurrenceEdit` - exit 0
 
 ```
-2026-11-08T16:29:56.375-03:00  INFO 1235411 --- [           main] [b2b2028e-65db-4ad7-86e1-e3b90ed684bb] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 201 268ms userId=1 planId=1
-2026-11-08T16:29:56.487-03:00  INFO 1235411 --- [           main] [e9f8131a-480d-44a3-8368-9d228c07bc0c] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:29:56.503-03:00  INFO 1235411 --- [           main] [e9f8131a-480d-44a3-8368-9d228c07bc0c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 47ms userId=- planId=-
-2026-11-08T16:29:56.511-03:00  INFO 1235411 --- [           main] [39585fcb-bca6-40a1-93cb-38a03d828964] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:29:56.573-03:00  WARN 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:29:56.574-03:00  WARN 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-08T16:29:56.574-03:00  WARN 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-08T16:29:56.574-03:00  WARN 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:29:56.574-03:00  WARN 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:29:56.574-03:00  WARN 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:29:56.613-03:00  INFO 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=87
-2026-11-08T16:29:56.626-03:00  INFO 1235411 --- [           main] [452ea4c7-9f41-4619-8767-8172184e6289] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 114ms userId=- planId=-
-2026-11-08T16:29:56.645-03:00  INFO 1235411 --- [           main] [c52589ab-2101-42f6-a794-45d96ca2f1cc] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 14ms userId=1 planId=1
-2026-11-08T16:29:56.661-03:00  INFO 1235411 --- [           main] [8749bb14-3787-4f86-9c5e-5ee27cc84da1] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 12ms userId=1 planId=1
-2026-11-08T16:29:56.675-03:00  INFO 1235411 --- [           main] [5b5a8940-9404-43c8-aeba-f1542f645786] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 12ms userId=1 planId=1
+2026-11-08T20:20:15.509-03:00  INFO 1349292 --- [           main] [17b7eb7c-81fa-403e-86c9-777fc55c68de] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 201 249ms userId=1 planId=1
+2026-11-08T20:20:15.610-03:00  INFO 1349292 --- [           main] [ef24a6e9-8dd8-49fb-aae7-6f902dc1c911] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:20:15.625-03:00  INFO 1349292 --- [           main] [ef24a6e9-8dd8-49fb-aae7-6f902dc1c911] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 45ms userId=- planId=-
+2026-11-08T20:20:15.634-03:00  INFO 1349292 --- [           main] [ef7b009c-6748-4324-accf-f1a0f68ba765] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:20:15.723-03:00  WARN 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-08T20:20:15.723-03:00  WARN 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:20:15.723-03:00  WARN 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:20:15.723-03:00  WARN 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:20:15.724-03:00  WARN 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:20:15.724-03:00  WARN 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-08T20:20:15.764-03:00  INFO 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=105
+2026-11-08T20:20:15.778-03:00  INFO 1349292 --- [           main] [c6042e71-6382-40c2-9db1-8641e8c5ef43] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 143ms userId=- planId=-
+2026-11-08T20:20:15.798-03:00  INFO 1349292 --- [           main] [7dffcef1-8b9a-4bdf-a3f2-93d60ab2c567] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 15ms userId=1 planId=1
+2026-11-08T20:20:15.813-03:00  INFO 1349292 --- [           main] [4677cf7c-0f0e-4b5d-8d52-f410ac187cf6] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 12ms userId=1 planId=1
+2026-11-08T20:20:15.826-03:00  INFO 1349292 --- [           main] [1f62fa25-d94b-4764-9fe9-29ba9d7d768a] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 12ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpUpdateToolIT#emptyUpdateIsT` - exit 0
 
 ```
-2026-11-08T16:30:19.559-03:00  INFO 1235964 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-08T16:30:19.559-03:00  INFO 1235964 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-08T16:30:19.561-03:00  INFO 1235964 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-08T16:30:19.623-03:00  INFO 1235964 --- [           main] [] com.lcs.findraco.mcp.McpUpdateToolIT     : Started McpUpdateToolIT in 8.953 seconds (process running for 10.097)
+2026-11-08T20:20:39.138-03:00  INFO 1349830 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:20:39.138-03:00  INFO 1349830 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:20:39.140-03:00  INFO 1349830 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-08T20:20:39.205-03:00  INFO 1349830 --- [           main] [] com.lcs.findraco.mcp.McpUpdateToolIT     : Started McpUpdateToolIT in 8.719 seconds (process running for 9.856)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:30:20.172-03:00  INFO 1235964 --- [           main] [9d904b12-ebd2-4dcc-81df-de1e45a26295] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:30:20.192-03:00  INFO 1235964 --- [           main] [9d904b12-ebd2-4dcc-81df-de1e45a26295] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 140ms userId=- planId=-
-2026-11-08T16:30:20.204-03:00  INFO 1235964 --- [           main] [667cede0-4549-48ee-a508-e3734069d443] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 8ms userId=- planId=-
-2026-11-08T16:30:20.326-03:00  INFO 1235964 --- [           main] [c01ceb73-e6a8-42eb-9e0e-7b254099012c] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=107
-2026-11-08T16:30:20.340-03:00  INFO 1235964 --- [           main] [c01ceb73-e6a8-42eb-9e0e-7b254099012c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 134ms userId=- planId=-
+2026-11-08T20:20:39.735-03:00  INFO 1349830 --- [           main] [66e51c8a-80ec-423e-a600-88e6f0198d05] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:20:39.764-03:00  INFO 1349830 --- [           main] [66e51c8a-80ec-423e-a600-88e6f0198d05] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 137ms userId=- planId=-
+2026-11-08T20:20:39.775-03:00  INFO 1349830 --- [           main] [4d018ba3-efde-4127-a7b4-45a381249e4f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:20:39.897-03:00  INFO 1349830 --- [           main] [48adf541-1dbb-4597-99a1-f6fa437e8214] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=106
+2026-11-08T20:20:39.911-03:00  INFO 1349830 --- [           main] [48adf541-1dbb-4597-99a1-f6fa437e8214] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 134ms userId=- planId=-
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpUpdateToolIT#splitRulesOnAm` - exit 0
 
 ```
-2026-11-08T16:30:44.672-03:00  WARN 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-08T16:30:44.676-03:00  WARN 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:30:44.676-03:00  WARN 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:30:44.676-03:00  WARN 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:30:44.676-03:00  WARN 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:30:44.677-03:00  WARN 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-08T16:30:44.735-03:00  INFO 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=198
-2026-11-08T16:30:44.750-03:00  INFO 1236511 --- [           main] [ce77feaa-0685-4a67-9014-6b67c615bd1c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 227ms userId=- planId=-
-2026-11-08T16:30:44.828-03:00  INFO 1236511 --- [           main] [4ea18c74-2109-4027-80e7-18776ae49dca] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 42ms userId=1 planId=1
-2026-11-08T16:30:44.921-03:00  INFO 1236511 --- [           main] [a6614b45-b8c5-4f13-98af-cb26558ca261] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=22
-2026-11-08T16:30:44.922-03:00  INFO 1236511 --- [           main] [a6614b45-b8c5-4f13-98af-cb26558ca261] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 26ms userId=- planId=-
-2026-11-08T16:30:44.953-03:00  INFO 1236511 --- [           main] [d31aed57-48fa-447a-9873-6b700e4d8fff] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 23ms userId=1 planId=1
-2026-11-08T16:30:44.988-03:00  INFO 1236511 --- [           main] [fc94e0b1-12e5-4717-b6d5-b5a79385cd68] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=30
-2026-11-08T16:30:44.988-03:00  INFO 1236511 --- [           main] [fc94e0b1-12e5-4717-b6d5-b5a79385cd68] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 34ms userId=- planId=-
-2026-11-08T16:30:45.005-03:00  INFO 1236511 --- [           main] [ea87f9f6-38d8-4cc2-a79e-f4c88030ed26] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 14ms userId=1 planId=1
+2026-11-08T20:21:04.252-03:00  WARN 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:21:04.255-03:00  WARN 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:21:04.256-03:00  WARN 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:21:04.256-03:00  WARN 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:21:04.257-03:00  WARN 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-08T20:21:04.257-03:00  WARN 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-08T20:21:04.309-03:00  INFO 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=199
+2026-11-08T20:21:04.323-03:00  INFO 1350344 --- [           main] [3821ee0c-3985-4d3d-8e3a-0a8db07c192c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 227ms userId=- planId=-
+2026-11-08T20:21:04.400-03:00  INFO 1350344 --- [           main] [73ef2b87-55ef-40ae-9237-c79c03b5523d] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 45ms userId=1 planId=1
+2026-11-08T20:21:04.477-03:00  INFO 1350344 --- [           main] [c1ddf3f0-4821-4756-8d22-038298015043] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=18
+2026-11-08T20:21:04.478-03:00  INFO 1350344 --- [           main] [c1ddf3f0-4821-4756-8d22-038298015043] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 22ms userId=- planId=-
+2026-11-08T20:21:04.501-03:00  INFO 1350344 --- [           main] [664cd158-fce1-4705-bd47-13dac92e229f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 17ms userId=1 planId=1
+2026-11-08T20:21:04.532-03:00  INFO 1350344 --- [           main] [45eb3939-aa61-4060-a455-f9e845a086e7] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=ok durationMs=26
+2026-11-08T20:21:04.533-03:00  INFO 1350344 --- [           main] [45eb3939-aa61-4060-a455-f9e845a086e7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 30ms userId=- planId=-
+2026-11-08T20:21:04.548-03:00  INFO 1350344 --- [           main] [c792fdfa-4370-4a5b-8d42-831aa27ff461] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 12ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpUpdateToolIT#amountBelowIte` - exit 0
@@ -1161,18 +1175,18 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:31:08.291-03:00  INFO 1237058 --- [           main] [910c5a7f-a46a-4ca9-9354-bd56d95b9137] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:31:08.311-03:00  INFO 1237058 --- [           main] [910c5a7f-a46a-4ca9-9354-bd56d95b9137] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 129ms userId=- planId=-
-2026-11-08T16:31:08.321-03:00  INFO 1237058 --- [           main] [3b48c0a8-798e-48a1-931f-e185e6c2f6a1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:31:08.470-03:00  WARN 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:31:08.473-03:00  WARN 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:31:08.473-03:00  WARN 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:31:08.473-03:00  WARN 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-08T16:31:08.473-03:00  WARN 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-08T16:31:08.473-03:00  WARN 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:31:08.509-03:00  INFO 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=173
-2026-11-08T16:31:08.524-03:00  INFO 1237058 --- [           main] [2090e0bf-9dd1-4e6c-b750-2d1f7511e431] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 201ms userId=- planId=-
-2026-11-08T16:31:08.650-03:00  INFO 1237058 --- [           main] [e4398698-6f4f-4355-8f25-b442e3a5465a] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 50ms userId=1 planId=1
+2026-11-08T20:21:28.394-03:00  INFO 1350892 --- [           main] [62f851e2-1309-493c-82d9-060e06e4f472] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:21:28.414-03:00  INFO 1350892 --- [           main] [62f851e2-1309-493c-82d9-060e06e4f472] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 132ms userId=- planId=-
+2026-11-08T20:21:28.425-03:00  INFO 1350892 --- [           main] [fc7c85ce-eddb-4cc9-9595-7bcf1671d007] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:21:28.602-03:00  WARN 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:21:28.605-03:00  WARN 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:21:28.605-03:00  WARN 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-08T20:21:28.605-03:00  WARN 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-08T20:21:28.606-03:00  WARN 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:21:28.606-03:00  WARN 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:21:28.642-03:00  INFO 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=190
+2026-11-08T20:21:28.656-03:00  INFO 1350892 --- [           main] [202a2c47-47ae-4588-a491-0cfcdb21d601] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 230ms userId=- planId=-
+2026-11-08T20:21:28.778-03:00  INFO 1350892 --- [           main] [127642ff-74c7-4e16-8160-514035716317] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 48ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpUpdateToolIT#staleVersionIs` - exit 0
@@ -1181,42 +1195,214 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-2026-11-08T16:31:32.531-03:00  INFO 1237602 --- [           main] [6a9a3563-585b-42a9-8a09-eb0acea7619b] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:31:32.551-03:00  INFO 1237602 --- [           main] [6a9a3563-585b-42a9-8a09-eb0acea7619b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 137ms userId=- planId=-
-2026-11-08T16:31:32.562-03:00  INFO 1237602 --- [           main] [bcff235e-7fbd-4878-b914-70cfcd1b87cd] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:31:32.710-03:00  WARN 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:31:32.713-03:00  WARN 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:31:32.713-03:00  WARN 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:31:32.713-03:00  WARN 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:31:32.714-03:00  WARN 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-08T16:31:32.714-03:00  WARN 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-08T16:31:32.737-03:00  INFO 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=160
-2026-11-08T16:31:32.752-03:00  INFO 1237602 --- [           main] [7ba4b647-4888-4f62-aba4-5284ffeece57] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 189ms userId=- planId=-
-2026-11-08T16:31:32.878-03:00  INFO 1237602 --- [           main] [067545db-bfe5-43f4-8eab-93e867af8bce] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 42ms userId=1 planId=1
+2026-11-08T20:21:52.797-03:00  INFO 1351407 --- [           main] [7085ccdf-c058-4bb7-bffb-b2b3c952b47c] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:21:52.816-03:00  INFO 1351407 --- [           main] [7085ccdf-c058-4bb7-bffb-b2b3c952b47c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 131ms userId=- planId=-
+2026-11-08T20:21:52.826-03:00  INFO 1351407 --- [           main] [af19e660-117e-4797-abfc-7d2f049f9dc1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 6ms userId=- planId=-
+2026-11-08T20:21:52.992-03:00  WARN 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:21:52.995-03:00  WARN 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:21:52.995-03:00  WARN 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:21:52.995-03:00  WARN 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-08T20:21:52.996-03:00  WARN 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:21:52.996-03:00  WARN 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-08T20:21:53.019-03:00  INFO 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=1 plan=1 outcome=error durationMs=177
+2026-11-08T20:21:53.032-03:00  INFO 1351407 --- [           main] [e4514038-8189-4405-9b6d-13e25d18c710] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 205ms userId=- planId=-
+2026-11-08T20:21:53.152-03:00  INFO 1351407 --- [           main] [b98bb320-f490-4491-95a2-e5067eef7af3] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 46ms userId=1 planId=1
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpUpdateToolIT#viewerCannotEd` - exit 0
 
 ```
-2026-11-08T16:31:56.306-03:00  INFO 1238155 --- [           main] [5093db08-7118-4b5e-b97e-711fe3bcca99] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 129ms userId=- planId=-
-2026-11-08T16:31:56.317-03:00  INFO 1238155 --- [           main] [42f331cb-66e6-403d-9196-ed7686c0113c] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
-2026-11-08T16:31:56.489-03:00  WARN 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-08T16:31:56.492-03:00  WARN 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-08T16:31:56.493-03:00  WARN 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-08T16:31:56.493-03:00  WARN 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-08T16:31:56.494-03:00  WARN 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:31:56.494-03:00  WARN 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
-2026-11-08T16:31:56.518-03:00  INFO 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=2 plan=1 outcome=error durationMs=185
-2026-11-08T16:31:56.533-03:00  INFO 1238155 --- [           main] [fd72dd2a-2b39-41e5-9618-dbb7a276138b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 215ms userId=- planId=-
-2026-11-08T16:31:56.654-03:00  INFO 1238155 --- [           main] [68bf26fb-b42e-473c-9c6a-5d328f747c5f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 43ms userId=1 planId=1
-2026-11-08T16:31:56.672-03:00  INFO 1238155 --- [           main] [44e9587e-5792-4098-a50a-a2d251712687] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
-2026-11-08T16:31:56.672-03:00  INFO 1238155 --- [           main] [44e9587e-5792-4098-a50a-a2d251712687] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 3ms userId=- planId=-
-2026-11-08T16:31:56.675-03:00  INFO 1238155 --- [           main] [72f0b73e-ce6f-43f1-b41d-17a3136a4d2b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
-2026-11-08T16:31:56.687-03:00  INFO 1238155 --- [           main] [67a90fd7-8194-401a-a8e7-612d198e1296] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 11ms userId=- planId=-
+2026-11-08T20:22:17.689-03:00  INFO 1351943 --- [           main] [0586cea7-167b-44c6-b610-7b8d13fe6913] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 137ms userId=- planId=-
+2026-11-08T20:22:17.701-03:00  INFO 1351943 --- [           main] [311d84d7-ce25-4d85-8e12-bbcb4c702ac2] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:22:17.847-03:00  WARN 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-08T20:22:17.850-03:00  WARN 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-08T20:22:17.851-03:00  WARN 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:22:17.851-03:00  WARN 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, Long)
+2026-11-08T20:22:17.851-03:00  WARN 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-08T20:22:17.851-03:00  WARN 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-08T20:22:17.872-03:00  INFO 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=update_transaction user=2 plan=1 outcome=error durationMs=155
+2026-11-08T20:22:17.887-03:00  INFO 1351943 --- [           main] [e8cc5b92-4c66-4a48-8f5e-329b93a869c8] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 185ms userId=- planId=-
+2026-11-08T20:22:18.008-03:00  INFO 1351943 --- [           main] [8b87546b-e195-4bc9-82d0-4f7b8d837e6e] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 43ms userId=1 planId=1
+2026-11-08T20:22:18.029-03:00  INFO 1351943 --- [           main] [33aec6c4-b9c2-4c22-8851-fa2806f37834] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:22:18.029-03:00  INFO 1351943 --- [           main] [33aec6c4-b9c2-4c22-8851-fa2806f37834] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 2ms userId=- planId=-
+2026-11-08T20:22:18.032-03:00  INFO 1351943 --- [           main] [aefbf6a9-e7cd-4420-afb5-54a93e8dbe13] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 1ms userId=- planId=-
+2026-11-08T20:22:18.043-03:00  INFO 1351943 --- [           main] [8d6ac78d-ce73-4135-bc19-426f4b354a84] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 10ms userId=- planId=-
 ```
 
 `cd frontend && grep -q "oauth2" vite.config.ts && grep -q "well-known" vite.config.ts && grep -q "\\\\/mcp" vi` - exit 0
 
 ```
 (no output)
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#forwarde` - exit 0
+
+```
+2026-11-08T20:22:41.571-03:00  INFO 1352464 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-08T20:22:41.571-03:00  INFO 1352464 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:22:41.572-03:00  INFO 1352464 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:22:41.627-03:00  INFO 1352464 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.919 seconds (process running for 10.108)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+2026-11-08T20:22:42.050-03:00  WARN 1352464 --- [           main] [33baf3c8-6cba-4053-ba68-75de7b5a47b0] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:22:42.057-03:00  INFO 1352464 --- [           main] [33baf3c8-6cba-4053-ba68-75de7b5a47b0] c.l.f.shared.web.RequestLogFilter        : GET - 302 48ms userId=- planId=-
+2026-11-08T20:22:42.256-03:00  INFO 1352464 --- [           main] [5ac677e1-267f-46b4-91c5-834cebdc433d] c.l.f.shared.web.RequestLogFilter        : POST - 302 195ms userId=- planId=-
+2026-11-08T20:22:42.319-03:00  INFO 1352464 --- [           main] [c5fce9ae-e53f-4e61-b5d4-6a019220178f] c.l.f.shared.web.RequestLogFilter        : POST - 302 62ms userId=- planId=-
+2026-11-08T20:22:42.353-03:00  INFO 1352464 --- [           main] [e3bbf656-ecde-47c7-9181-e623c7e3de9f] c.l.f.shared.web.RequestLogFilter        : GET - 302 32ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#unknownArgument` - exit 0
+
+```
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-08T20:23:06.188-03:00  INFO 1352984 --- [           main] [f0516a7e-824c-4e63-b72b-5c53a201dd9a] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:23:06.209-03:00  INFO 1352984 --- [           main] [f0516a7e-824c-4e63-b72b-5c53a201dd9a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 130ms userId=- planId=-
+2026-11-08T20:23:06.224-03:00  INFO 1352984 --- [           main] [7d076198-e1ec-4e0e-877b-8b66b5aaa7c7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 10ms userId=- planId=-
+2026-11-08T20:23:06.237-03:00  WARN 1352984 --- [           main] [f1d8e45d-489e-4792-895b-2d030ced6d7e] i.m.util.ToolInputValidator              : Tool (list_categories) input validation failed: Validation failed: JSON schema validation errors: [: property 'bogus' is not defined in the schema and the schema does not allow additional properties]
+2026-11-08T20:23:06.255-03:00  INFO 1352984 --- [           main] [f1d8e45d-489e-4792-895b-2d030ced6d7e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 29ms userId=- planId=-
+2026-11-08T20:23:06.309-03:00  WARN 1352984 --- [           main] [0ab63c2e-3985-48c8-b4c9-7ddabcc0cc39] i.m.util.ToolInputValidator              : Tool (create_transaction) input validation failed: Validation failed: JSON schema validation errors: [: property 'plano' is not defined in the schema and the schema does not allow additional properties]
+2026-11-08T20:23:06.309-03:00  INFO 1352984 --- [           main] [0ab63c2e-3985-48c8-b4c9-7ddabcc0cc39] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 3ms userId=- planId=-
+2026-11-08T20:23:06.474-03:00  INFO 1352984 --- [           main] [579af801-b247-47b4-9887-1d197b0083d5] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_categories user=1 plan=2 outcome=ok durationMs=155
+2026-11-08T20:23:06.474-03:00  INFO 1352984 --- [           main] [579af801-b247-47b4-9887-1d197b0083d5] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 159ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#wrongTypeAndEnu` - exit 0
+
+```
+2026-11-08T20:23:30.000-03:00  INFO 1353527 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-11-08T20:23:30.060-03:00  INFO 1353527 --- [           main] [] com.lcs.findraco.mcp.McpPlanToolsIT      : Started McpPlanToolsIT in 8.994 seconds (process running for 10.123)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-08T20:23:30.579-03:00  INFO 1353527 --- [           main] [d20c9f69-d55f-4cca-805f-c01d1b1ba268] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:23:30.599-03:00  INFO 1353527 --- [           main] [d20c9f69-d55f-4cca-805f-c01d1b1ba268] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 128ms userId=- planId=-
+2026-11-08T20:23:30.609-03:00  INFO 1353527 --- [           main] [8d5b79d5-fb24-4053-8e23-5c080d0bbcd0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 6ms userId=- planId=-
+2026-11-08T20:23:30.620-03:00  WARN 1353527 --- [           main] [0f8f9e16-9938-42ee-98e4-7162b25c63fb] i.m.util.ToolInputValidator              : Tool (create_transaction) input validation failed: Validation failed: JSON schema validation errors: [/amount: string found, number expected]
+2026-11-08T20:23:30.637-03:00  INFO 1353527 --- [           main] [0f8f9e16-9938-42ee-98e4-7162b25c63fb] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 26ms userId=- planId=-
+2026-11-08T20:23:30.690-03:00  WARN 1353527 --- [           main] [ac471492-babd-4075-8671-1b27873351b7] i.m.util.ToolInputValidator              : Tool (create_transaction) input validation failed: Validation failed: JSON schema validation errors: [/type: does not have a value in the enumeration ["CREDIT", "DEBIT"]]
+2026-11-08T20:23:30.690-03:00  INFO 1353527 --- [           main] [ac471492-babd-4075-8671-1b27873351b7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 3ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#loopback` - exit 0
+
+```
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-08T20:23:54.831-03:00  WARN 1354038 --- [           main] [cece4bc8-772e-41d5-9c1a-4c8f761a76b9] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:23:54.838-03:00  INFO 1354038 --- [           main] [cece4bc8-772e-41d5-9c1a-4c8f761a76b9] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
+2026-11-08T20:23:55.102-03:00  INFO 1354038 --- [           main] [05943211-80b3-417f-89b4-41f4a6a13cac] c.l.f.shared.web.RequestLogFilter        : POST - 302 260ms userId=- planId=-
+2026-11-08T20:23:55.105-03:00  WARN 1354038 --- [           main] [cdadf1d8-82f7-48fe-a672-c3ed75bf1676] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/loopback-client could not be fetched: ResourceAccessException
+2026-11-08T20:23:55.136-03:00  INFO 1354038 --- [           main] [cdadf1d8-82f7-48fe-a672-c3ed75bf1676] c.l.f.shared.web.RequestLogFilter        : GET - 302 32ms userId=- planId=-
+2026-11-08T20:23:55.186-03:00  INFO 1354038 --- [           main] [e1d2e630-828d-4673-bd58-2dd812736ddb] c.l.f.shared.web.RequestLogFilter        : POST - 302 47ms userId=- planId=-
+2026-11-08T20:23:55.245-03:00  INFO 1354038 --- [           main] [95c591a8-44d8-4b66-a063-ef32bff6cf95] c.l.f.shared.web.RequestLogFilter        : GET - 400 0ms userId=- planId=-
+2026-11-08T20:23:55.246-03:00  INFO 1354038 --- [           main] [7b292edf-e4c0-467a-a014-dfcdf6195255] c.l.f.shared.web.RequestLogFilter        : GET - 400 0ms userId=- planId=-
+2026-11-08T20:23:55.247-03:00  INFO 1354038 --- [           main] [fc4909cb-e737-4f3f-94d2-ccd7e46247f6] c.l.f.shared.web.RequestLogFilter        : GET - 400 0ms userId=- planId=-
+2026-11-08T20:23:55.248-03:00  INFO 1354038 --- [           main] [60894a3c-1339-47fb-b417-38ba1cd33557] c.l.f.shared.web.RequestLogFilter        : GET - 400 0ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='McpUpdateCopyTest#keepsInstallmentS` - exit 0
+
+```
+(no output)
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#codeLive` - exit 0
+
+```
+2026-11-08T20:24:23.306-03:00  INFO 1354853 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-08T20:24:23.307-03:00  INFO 1354853 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-08T20:24:23.369-03:00  INFO 1354853 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.875 seconds (process running for 10.049)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-08T20:24:23.758-03:00  WARN 1354853 --- [           main] [7442f106-7533-4234-8e14-8c9260ad126f] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:24:23.765-03:00  INFO 1354853 --- [           main] [7442f106-7533-4234-8e14-8c9260ad126f] c.l.f.shared.web.RequestLogFilter        : GET - 302 42ms userId=- planId=-
+2026-11-08T20:24:24.017-03:00  INFO 1354853 --- [           main] [4463edfc-9751-481a-bf19-6f8459a97901] c.l.f.shared.web.RequestLogFilter        : POST - 302 248ms userId=- planId=-
+2026-11-08T20:24:24.048-03:00  INFO 1354853 --- [           main] [7ad64588-a3f6-4a4a-8901-95de1c776fd1] c.l.f.shared.web.RequestLogFilter        : GET - 302 30ms userId=- planId=-
+2026-11-08T20:24:24.096-03:00  INFO 1354853 --- [           main] [b6e80fe1-426e-4be1-b615-8230455120ce] c.l.f.shared.web.RequestLogFilter        : POST - 302 47ms userId=- planId=-
+2026-11-08T20:24:24.165-03:00  INFO 1354853 --- [           main] [b565723c-f5c3-4774-9fde-591da7d0156a] c.l.f.shared.web.RequestLogFilter        : POST - 400 15ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='ConfigurationPropertiesTest#mcpRate` - exit 0
+
+```
+(no output)
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#clientIn` - exit 0
+
+```
+2026-11-08T20:24:51.816-03:00  INFO 1355659 --- [           main] [] c.l.findraco.auth.AuthorizationServerIT  : Started AuthorizationServerIT in 8.739 seconds (process running for 9.89)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-08T20:24:52.225-03:00  WARN 1355659 --- [           main] [6aa63ca3-3606-4a0a-8f06-e8a92bf1fb44] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/test-client could not be fetched: ResourceAccessException
+2026-11-08T20:24:52.232-03:00  INFO 1355659 --- [           main] [6aa63ca3-3606-4a0a-8f06-e8a92bf1fb44] c.l.f.shared.web.RequestLogFilter        : GET - 302 53ms userId=- planId=-
+2026-11-08T20:24:52.487-03:00  INFO 1355659 --- [           main] [b5b45af5-32cd-41b2-85ef-73778c3c5e0d] c.l.f.shared.web.RequestLogFilter        : POST - 302 251ms userId=- planId=-
+2026-11-08T20:24:52.490-03:00  WARN 1355659 --- [           main] [85bb143c-f53c-4b40-9de1-b0d40f256794] c.l.f.a.s.CimdRegisteredClientRepository : Client metadata document http://127.0.0.1:1/oauth/loopback-client could not be fetched: ResourceAccessException
+2026-11-08T20:24:52.521-03:00  INFO 1355659 --- [           main] [85bb143c-f53c-4b40-9de1-b0d40f256794] c.l.f.shared.web.RequestLogFilter        : GET - 302 32ms userId=- planId=-
+2026-11-08T20:24:52.582-03:00  INFO 1355659 --- [           main] [d7eab829-c2a3-4544-b925-1417e2bb9b2b] c.l.f.shared.web.RequestLogFilter        : GET /oauth2/client-info 200 60ms userId=- planId=-
+2026-11-08T20:24:52.621-03:00  INFO 1355659 --- [           main] [b49d5067-e98d-4570-b377-41eef4692283] c.l.f.shared.web.RequestLogFilter        : GET /oauth2/client-info 200 3ms userId=- planId=-
+2026-11-08T20:24:52.627-03:00  INFO 1355659 --- [           main] [5708a0f7-47c8-47f0-b40b-6c4b7eb7f5f9] c.l.f.shared.web.RequestLogFilter        : GET /oauth2/client-info 200 5ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#archivedDefault` - exit 0
+
+```
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-08T20:25:17.057-03:00  INFO 1356184 --- [           main] [e52e4c61-20bd-4431-ae61-43621fc6ad97] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:25:17.078-03:00  INFO 1356184 --- [           main] [e52e4c61-20bd-4431-ae61-43621fc6ad97] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 137ms userId=- planId=-
+2026-11-08T20:25:17.089-03:00  INFO 1356184 --- [           main] [c0c90075-fc85-48e9-aca8-931e57c1f2e0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:25:17.192-03:00  INFO 1356184 --- [           main] [01749c0c-51fb-47c6-b1a3-54f729c87af3] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=89
+2026-11-08T20:25:17.207-03:00  INFO 1356184 --- [           main] [01749c0c-51fb-47c6-b1a3-54f729c87af3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 116ms userId=- planId=-
+2026-11-08T20:25:17.309-03:00  INFO 1356184 --- [           main] [c2656fb6-7589-43b1-8b13-6787324105a1] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=2 outcome=ok durationMs=33
+2026-11-08T20:25:17.309-03:00  INFO 1356184 --- [           main] [c2656fb6-7589-43b1-8b13-6787324105a1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 37ms userId=- planId=-
+2026-11-08T20:25:17.317-03:00  INFO 1356184 --- [           main] [fcb1be96-bd5d-4c1b-90db-46270dc7e781] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=2
+2026-11-08T20:25:17.317-03:00  INFO 1356184 --- [           main] [fcb1be96-bd5d-4c1b-90db-46270dc7e781] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 6ms userId=- planId=-
+2026-11-08T20:25:17.325-03:00  INFO 1356184 --- [           main] [8f84671b-2670-441c-aaa1-b57b7d257649] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=1 plan=null outcome=error durationMs=3
+2026-11-08T20:25:17.326-03:00  INFO 1356184 --- [           main] [8f84671b-2670-441c-aaa1-b57b7d257649] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 7ms userId=- planId=-
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#memberRemovedAf` - exit 0
+
+```
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+2026-11-08T20:25:41.479-03:00  INFO 1356699 --- [           main] [04a9dba2-1963-461c-8ae8-06edc5cee988] i.m.server.McpAsyncServer                : Client initialize request - Protocol: 2025-06-18, Capabilities: ClientCapabilities[experimental=null, roots=null, sampling=null, elicitation=null, extensions=null], Info: Implementation[name=test, title=null, version=1, description=null, icons=null, websiteUrl=null]
+2026-11-08T20:25:41.517-03:00  INFO 1356699 --- [           main] [04a9dba2-1963-461c-8ae8-06edc5cee988] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 148ms userId=- planId=-
+2026-11-08T20:25:41.529-03:00  INFO 1356699 --- [           main] [6f3b91dc-fe72-4ef7-b2a0-ff98ac2c7281] c.l.f.shared.web.RequestLogFilter        : POST /mcp 202 7ms userId=- planId=-
+2026-11-08T20:25:41.658-03:00  INFO 1356699 --- [           main] [0bb8e6c7-32d7-4b81-bca5-18d4af667b8f] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=2 plan=1 outcome=ok durationMs=116
+2026-11-08T20:25:41.672-03:00  INFO 1356699 --- [           main] [0bb8e6c7-32d7-4b81-bca5-18d4af667b8f] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 142ms userId=- planId=-
+2026-11-08T20:25:41.723-03:00  INFO 1356699 --- [           main] [a56744d4-0c40-47d1-ab9c-00816cb5a056] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=2 plan=null outcome=error durationMs=6
+2026-11-08T20:25:41.724-03:00  INFO 1356699 --- [           main] [a56744d4-0c40-47d1-ab9c-00816cb5a056] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 9ms userId=- planId=-
+2026-11-08T20:25:41.733-03:00  INFO 1356699 --- [           main] [037b13f1-1e79-488a-a578-7fa647a4abe1] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=2 plan=null outcome=error durationMs=3
+2026-11-08T20:25:41.733-03:00  INFO 1356699 --- [           main] [037b13f1-1e79-488a-a578-7fa647a4abe1] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 6ms userId=- planId=-
+2026-11-08T20:25:41.740-03:00  INFO 1356699 --- [           main] [21e01028-6762-4636-a2ad-0c30b1cdc682] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=plan_probe user=2 plan=null outcome=error durationMs=3
+2026-11-08T20:25:41.740-03:00  INFO 1356699 --- [           main] [21e01028-6762-4636-a2ad-0c30b1cdc682] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 6ms userId=- planId=-
 ```
