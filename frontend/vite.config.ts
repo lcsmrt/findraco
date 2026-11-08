@@ -133,8 +133,9 @@ export default defineConfig({
         // The 1024 px logo source is only read at build time; no page renders it.
         globIgnores: ["findraco-logo.png"],
         navigateFallback: "index.html",
-        // The API is never served from the shell, and nothing under it is cached.
-        navigateFallbackDenylist: [/^\/api\//],
+        // The API, the OAuth authorization server and the MCP endpoint are never served from the shell,
+        // and nothing under them is cached: an installed app must still reach them on a navigation.
+        navigateFallbackDenylist: [/^\/api\//, /^\/oauth2\//, /^\/mcp/, /^\/\.well-known\//],
       },
     }),
   ],

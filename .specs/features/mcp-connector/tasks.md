@@ -240,8 +240,8 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C67 passes
-- [ ] Build gate green (end of Phase 3)
+- [x] C67 passes
+- [x] Build gate green (end of Phase 3)
 
 **Tests**: none
 **Gate**: build
