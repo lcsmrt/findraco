@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class McpPlanResolver {
 
+    private static final String NO_ACTIVE_PLAN = "You have no active plan.";
+
     private final PlanService planService;
 
     public McpPlanResolver(PlanService planService) {
@@ -41,7 +43,9 @@ public class McpPlanResolver {
     private static PlanResponse defaultPlan(List<PlanResponse> plans) {
         return defaultPlanOf(plans)
                 .orElseThrow(() -> new McpToolException(
-                        "You have no default plan. Pass the plan argument. Your plans: " + names(plans) + "."));
+                        plans.isEmpty()
+                                ? NO_ACTIVE_PLAN
+                                : "You have no default plan. Pass the plan argument. " + yourPlans(plans)));
     }
 
     private static PlanResponse named(String plan, List<PlanResponse> plans) {
@@ -56,7 +60,7 @@ public class McpPlanResolver {
                 .filter(candidate -> McpNames.matches(spoken, candidate.name()))
                 .toList();
         if (matches.isEmpty()) {
-            throw new McpToolException("No plan is named \"" + spoken + "\". Your plans: " + names(plans) + ".");
+            throw new McpToolException("No plan is named \"" + spoken + "\". " + yourPlans(plans));
         }
         if (matches.size() > 1) {
             throw new McpToolException("Several plans are named \"" + spoken + "\": "
@@ -68,7 +72,10 @@ public class McpPlanResolver {
         return matches.get(0);
     }
 
-    private static String names(List<PlanResponse> plans) {
-        return plans.stream().map(PlanResponse::name).collect(Collectors.joining(", "));
+    /** What Claude is told to choose from; with nothing to choose from, that there is nothing. */
+    private static String yourPlans(List<PlanResponse> plans) {
+        return plans.isEmpty()
+                ? NO_ACTIVE_PLAN
+                : "Your plans: " + plans.stream().map(PlanResponse::name).collect(Collectors.joining(", ")) + ".";
     }
 }

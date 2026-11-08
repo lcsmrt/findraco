@@ -490,6 +490,12 @@ Proof: run unit | ✓ getOAuthClientInfo > sends the consent state so the pendin
 **C79** - The consent page passes the URL's `state` to the client-info request (MCP-02, Connect 5)
 Proof: run unit | ✓ OAuthConsentPage > asks which host the pending request redirects to
 
+**C80** - An archived or missing default plan returns a tool error asking for `plan` and listing the active plans; with none it says "You have no active plan." (MCP-04, Edge 3)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#archivedDefaultPlanAsksForPlan' -Dsurefire.skip=true
+
+**C81** - A member removed from a plan after connecting is refused that plan and never shown it (MCP-04, Edge 4)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#memberRemovedAfterConnectingIsRefused' -Dsurefire.skip=true
+
 ---
 
 ## Handoff

@@ -132,6 +132,52 @@ class McpPlanToolsIT extends AbstractMcpIntegrationTest {
     }
 
     @Test
+    void archivedDefaultPlanAsksForPlan() throws Exception {
+        User user = fixtures.aUser();
+        Plan home = plan(user, "Home", true);
+        plan(user, "Trip", false);
+        jdbc.update("UPDATE plans SET deleted_at = now() WHERE id = ?", home.getId());
+        McpClient client = clientOf(user);
+
+        // The archived default is gone from the choices, not named as one.
+        assertThat(errorText(client.callTool("plan_probe", Map.of())))
+                .isEqualTo("You have no default plan. Pass the plan argument. Your plans: Trip.");
+        assertThat(client.callJson("plan_probe", Map.of("plan", "Trip"))
+                        .path("name")
+                        .asString())
+                .isEqualTo("Trip");
+
+        jdbc.update("UPDATE plans SET deleted_at = now() WHERE id <> ?", home.getId());
+        assertThat(errorText(client.callTool("plan_probe", Map.of()))).isEqualTo("You have no active plan.");
+        assertThat(errorText(client.callTool("plan_probe", Map.of("plan", "Home"))))
+                .isEqualTo("No plan is named \"Home\". You have no active plan.");
+    }
+
+    @Test
+    void memberRemovedAfterConnectingIsRefused() throws Exception {
+        User owner = fixtures.aUser();
+        User member = fixtures.aUser();
+        Plan shared = plan(owner, "Shared", true);
+        fixtures.addMember(shared, member, PlanRole.EDITOR);
+        McpClient connected = clientOf(member);
+        assertThat(connected
+                        .callJson("plan_probe", Map.of("plan", "Shared"))
+                        .path("id")
+                        .asLong())
+                .isEqualTo(shared.getId());
+
+        jdbc.update("DELETE FROM plan_memberships WHERE plan_id = ? AND user_id = ?", shared.getId(), member.getId());
+
+        // The token still verifies; the plan is simply no longer theirs.
+        assertThat(errorText(connected.callTool("plan_probe", Map.of("plan", "Shared"))))
+                .isEqualTo("No plan is named \"Shared\". You have no active plan.");
+        assertThat(errorText(connected.callTool(
+                        "plan_probe", Map.of("plan", shared.getId().toString()))))
+                .doesNotContain("Shared");
+        assertThat(errorText(connected.callTool("plan_probe", Map.of()))).isEqualTo("You have no active plan.");
+    }
+
+    @Test
     void unexpectedFailureIsGenericToolError() throws Exception {
         User user = fixtures.aUser();
         McpClient client = clientOf(user);
