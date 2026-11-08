@@ -17,6 +17,7 @@ import com.lcs.findraco.transaction.response.TransactionResponse;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 class McpUpdateCopyTest {
@@ -31,6 +32,11 @@ class McpUpdateCopyTest {
     }
 
     private static TransactionResponse stored(String description) {
+        return stored(description, "series-1", 3);
+    }
+
+    private static TransactionResponse stored(
+            String description, @Nullable String seriesId, @Nullable Integer parcelsNumber) {
         return new TransactionResponse(
                 11L,
                 9L,
@@ -38,8 +44,8 @@ class McpUpdateCopyTest {
                 TransactionType.DEBIT,
                 new BigDecimal("100.00"),
                 description,
-                "series-1",
-                3,
+                seriesId,
+                parcelsNumber,
                 LocalDate.of(2026, 3, 10),
                 LocalDate.of(2026, 9, 10),
                 new TransactionCreatorResponse(1L, "Ana"),
@@ -101,5 +107,8 @@ class McpUpdateCopyTest {
                 .isEqualTo("Phone (2/3)");
         assertThat(McpUpdateCopy.of(stored(), null, null, "Power").description())
                 .isEqualTo("Power");
+        assertThat(McpUpdateCopy.of(stored("Pizza (1/2)", null, null), null, null, "Pizza")
+                        .description())
+                .isEqualTo("Pizza");
     }
 }

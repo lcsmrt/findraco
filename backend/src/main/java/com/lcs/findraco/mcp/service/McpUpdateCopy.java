@@ -21,9 +21,15 @@ public final class McpUpdateCopy {
 
     private McpUpdateCopy() {}
 
-    /** An installment keeps its "(k/N)" when the description changes, as the app's own edit of one occurrence does. */
-    private static String withInstallmentSuffix(String description, String stored) {
-        Matcher suffix = INSTALLMENT_SUFFIX.matcher(stored);
+    /**
+     * An installment occurrence keeps its "(k/N)" when the description changes, as the app's own edit of one
+     * occurrence does; a one-off row whose name merely ends in "(k/N)" is renamed as asked.
+     */
+    private static String withInstallmentSuffix(String description, TransactionResponse stored) {
+        if (stored.seriesId() == null || stored.parcelsNumber() == null) {
+            return description;
+        }
+        Matcher suffix = INSTALLMENT_SUFFIX.matcher(stored.description());
         return suffix.find() && !INSTALLMENT_SUFFIX.matcher(description).find()
                 ? description + " " + suffix.group()
                 : description;
@@ -38,7 +44,7 @@ public final class McpUpdateCopy {
                 stored.category() == null ? null : stored.category().id(),
                 stored.type(),
                 amount != null ? amount : stored.amount(),
-                description != null ? withInstallmentSuffix(description, stored.description()) : stored.description(),
+                description != null ? withInstallmentSuffix(description, stored) : stored.description(),
                 stored.parcelsNumber(),
                 date != null ? date : stored.startDate(),
                 stored.endDate(),
