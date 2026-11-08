@@ -7,13 +7,16 @@ import com.lcs.findraco.mcp.response.McpTransactionResponse;
 import com.lcs.findraco.mcp.service.McpCategoryResolver;
 import com.lcs.findraco.mcp.service.McpPlanResolver;
 import com.lcs.findraco.mcp.service.McpToolRunner;
+import com.lcs.findraco.mcp.service.McpUpdateCopy;
 import com.lcs.findraco.mcp.service.McpValidation;
 import com.lcs.findraco.shared.error.DomainException;
 import com.lcs.findraco.shared.error.ProblemType;
+import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
+import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.service.TransactionService;
 import com.lcs.findraco.user.service.UserService;
@@ -155,6 +158,50 @@ public class McpTransactionTools {
                 }
                 throw new McpToolException("Transaction " + id + " is not awaiting confirmation, so it does not "
                         + "take one. Its date or amount can be edited with update_transaction instead.");
+            }
+        });
+    }
+
+    @McpTool(
+            name = "update_transaction",
+            title = "Update transaction",
+            description = "Corrects the amount, the date or the description of one transaction; everything else "
+                    + "stays as stored. For an occurrence of a series only that occurrence changes. A transaction "
+                    + "split by fixed amounts cannot change its amount here. Pass at least one of amount, date and "
+                    + "description. Find the id with list_transactions.",
+            annotations =
+                    @McpTool.McpAnnotations(destructiveHint = false, idempotentHint = true, openWorldHint = false))
+    public CallToolResult updateTransaction(
+            @McpToolParam(description = "Id of the transaction to change") Long id,
+            @McpToolParam(required = false, description = "The new amount, positive with at most 2 decimal places")
+                    BigDecimal amount,
+            @McpToolParam(required = false, description = "The new date (YYYY-MM-DD)") LocalDate date,
+            @McpToolParam(required = false, description = "The new description, up to 255 characters")
+                    String description,
+            @McpToolParam(required = false, description = "Plan name or id; the default plan when omitted")
+                    String plan) {
+        return runner.inPlan("update_transaction", plan, resolved -> {
+            if (amount == null && date == null && description == null) {
+                throw new McpToolException("Pass at least one of amount, date and description to change.");
+            }
+            TransactionResponse stored = transactionService.getById(id, resolved.ctx());
+            if (amount != null && amount.compareTo(stored.amount()) != 0 && stored.splitMode() == SplitMode.EXACT) {
+                throw new McpToolException("Transaction " + id + " is split by fixed amounts, so its amount "
+                        + "cannot change from here. Edit it in the app.");
+            }
+            UpdateTransactionRequest request = validation.valid(McpUpdateCopy.of(stored, amount, date, description));
+            // SPEC_DEVIATION: design.md sends an occurrence of a series through editSeries with scope THIS_ONE.
+            // Reason: that edit keeps the occurrence's own date and takes its category and split from the series
+            // definition, so it could neither move the date (spec Edit 1) nor keep every other field as stored.
+            // The plain update changes this one row only, in one transaction, with its own version.
+            try {
+                return saved(resolved, transactionService.update(id, request, resolved.ctx()));
+            } catch (DomainException exception) {
+                if (exception.type() != ProblemType.STALE_VERSION) {
+                    throw exception;
+                }
+                throw new McpToolException("Transaction " + id + " changed meanwhile, so nothing was saved. "
+                        + "Read it again and retry.");
             }
         });
     }

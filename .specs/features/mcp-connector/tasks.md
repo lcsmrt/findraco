@@ -203,8 +203,8 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C53–C60 pass
-- [ ] Build gate green (end of Phase 2)
+- [x] C53–C60 pass
+- [x] Build gate green (end of Phase 2)
 
 **Tests**: integration
 **Gate**: build

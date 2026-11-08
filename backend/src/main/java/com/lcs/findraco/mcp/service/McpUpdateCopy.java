@@ -1,0 +1,47 @@
+package com.lcs.findraco.mcp.service;
+
+import com.lcs.findraco.transaction.request.TransactionItemRequest;
+import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
+import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
+import com.lcs.findraco.transaction.response.TransactionResponse;
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import org.jspecify.annotations.Nullable;
+
+/**
+ * Builds the edit of a transaction that changes only the amount, the date or the description. The API's edit replaces
+ * every field, items and participants included, so each stored field is copied into the request, and a field left out
+ * here would be wiped from the transaction.
+ */
+public final class McpUpdateCopy {
+
+    private McpUpdateCopy() {}
+
+    public static UpdateTransactionRequest of(
+            TransactionResponse stored,
+            @Nullable BigDecimal amount,
+            @Nullable LocalDate date,
+            @Nullable String description) {
+        return new UpdateTransactionRequest(
+                stored.category() == null ? null : stored.category().id(),
+                stored.type(),
+                amount != null ? amount : stored.amount(),
+                description != null ? description : stored.description(),
+                stored.parcelsNumber(),
+                date != null ? date : stored.startDate(),
+                stored.endDate(),
+                stored.splitMode(),
+                stored.participants().stream()
+                        .map(participant ->
+                                new TransactionParticipantRequest(participant.id(), participant.shareAmount()))
+                        .toList(),
+                stored.items().stream()
+                        .map(item -> new TransactionItemRequest(
+                                item.description(),
+                                item.amount(),
+                                item.category() == null ? null : item.category().id(),
+                                item.quantity()))
+                        .toList(),
+                stored.version());
+    }
+}
