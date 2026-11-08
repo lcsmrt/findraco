@@ -52,6 +52,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 
 | # | Feature | Why | Source |
 | - | ------- | --- | ------ |
+| M5-11 | **Evaluate a managed identity provider** (Clerk, WorkOS, Descope…) | Would bring Google sign-in, MFA, a sessions screen and native CIMD at once, at the cost of migrating every account off the VPS; decide together with Google sign-in. AD-026 keeps the MCP tools independent of the issuer. | User — 2026-11-08 |
 | M4-09 | **Broader CSV / bank import sources** | Reduce Nubank-only lock-in; depends on having a robust parser first. | Future |
 | M4-10 | **Dashboard "what-if" / budgets** | Let users simulate the impact of a future purchase against limits. | Future |
 | — | **More frontend unit coverage** | Extend the established test harness to remaining forms/hooks. Low risk, incremental. | CONCERNS.md |
