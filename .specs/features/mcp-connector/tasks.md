@@ -469,6 +469,15 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C72** - Changing the description of an installment keeps its `(k/N)` suffix; a description that already ends in one is kept as given (MCP-08, Edit 1)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='McpUpdateCopyTest#keepsInstallmentSuffix' -Dsurefire.failIfNoSpecifiedTests=true
 
+**C73** - The stored authorization code lives exactly 60 seconds (`expires_at - issued_at`), and one past it is refused with `invalid_grant` (MCP-02, Connect 6)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#codeLivesSixtySeconds' -Dsurefire.skip=true
+
+**C74** - A contributor confirming another member's row gets the "cannot modify a transaction created by another member" tool error and the row is unchanged (MCP-07, Capture 12)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#roleMatrixForWrites' -Dsurefire.skip=true
+
+**C75** - The shipped `app.rate-limit.mcp-user` rule is 60 calls per `PT1M` (MCP-09, Edge 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q test -Dtest='ConfigurationPropertiesTest#mcpRateLimitDefaultIsSixtyPerMinute' -Dsurefire.failIfNoSpecifiedTests=true
+
 ---
 
 ## Handoff

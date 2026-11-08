@@ -226,6 +226,28 @@ class AuthorizationServerIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void codeLivesSixtySeconds() throws Exception {
+        String code = flow.code(fixtures.aUser());
+
+        // The lifetime the server stored, not one the test wrote: the row says 60 seconds.
+        Double lifetime = jdbc.queryForObject(
+                "SELECT EXTRACT(EPOCH FROM (authorization_code_expires_at - authorization_code_issued_at)) "
+                        + "FROM oauth2_authorization WHERE authorization_code_value = ?",
+                Double.class,
+                code);
+        assertThat(lifetime).isEqualTo(60.0);
+
+        jdbc.update(
+                "UPDATE oauth2_authorization SET authorization_code_issued_at = now() - interval '61 seconds', "
+                        + "authorization_code_expires_at = now() - interval '1 second' "
+                        + "WHERE authorization_code_value = ?",
+                code);
+        flow.exchange(code)
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("invalid_grant"));
+    }
+
+    @Test
     void denyReturnsAccessDenied() throws Exception {
         MockHttpSession session = flow.signIn(fixtures.aUser());
 

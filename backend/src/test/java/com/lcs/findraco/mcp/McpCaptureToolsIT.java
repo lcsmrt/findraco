@@ -291,7 +291,7 @@ class McpCaptureToolsIT extends AbstractMcpIntegrationTest {
         assertThat(errorText(clientOf(viewer).callTool("confirm_transaction", confirm)))
                 .contains("Viewers cannot modify");
         assertThat(errorText(clientOf(contributor).callTool("confirm_transaction", confirm)))
-                .isNotBlank();
+                .isEqualTo("You cannot modify a transaction created by another member.");
         assertThat(errorText(clientOf(stranger).callTool("create_transaction", create)))
                 .contains("Elsewhere")
                 .doesNotContain("Home");

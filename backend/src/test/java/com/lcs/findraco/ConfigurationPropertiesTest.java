@@ -11,6 +11,7 @@ import com.lcs.findraco.plan.config.PlanPurgeProperties;
 import com.lcs.findraco.shared.config.AppProperties;
 import com.lcs.findraco.shared.config.OAuthProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
+import com.lcs.findraco.shared.ratelimit.RateLimitRule;
 import com.lcs.findraco.transaction.config.ImportProperties;
 import com.lcs.findraco.transaction.config.SeriesProperties;
 import java.io.IOException;
@@ -20,13 +21,18 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.bind.validation.BindValidationException;
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 /** Every {@code app.*} record refuses to start the application on a missing or out-of-range value. */
 class ConfigurationPropertiesTest {
@@ -112,6 +118,20 @@ class ConfigurationPropertiesTest {
         OAuthProperties.class
     })
     static class AllProperties {}
+
+    /** The shipped defaults, not the test fixtures above: Claude's 60 calls per minute per user. */
+    @Test
+    void mcpRateLimitDefaultIsSixtyPerMinute() throws IOException {
+        Properties shipped = PropertiesLoaderUtils.loadProperties(
+                new FileSystemResource("src/main/resources/application.properties"));
+
+        RateLimitRule rule = new Binder(new MapConfigurationPropertySource(shipped))
+                .bind("app.rate-limit.mcp-user", RateLimitRule.class)
+                .get();
+
+        assertThat(rule.capacity()).isEqualTo(60);
+        assertThat(rule.period()).isEqualTo(Duration.ofMinutes(1));
+    }
 
     @Test
     void validValuesBindIntoEveryRecord() {
