@@ -7,5 +7,6 @@ public enum RateLimit {
     FORGOT_EMAIL,
     FORGOT_IP,
     REGISTER_IP,
-    IMPORT_USER
+    IMPORT_USER,
+    MCP_USER
 }

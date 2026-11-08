@@ -75,8 +75,8 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C1, C2 pass
-- [ ] App starts in tests with the test PEM; fails to start without `app.oauth.signing-key`
+- [x] C1, C2 pass
+- [x] App starts in tests with the test PEM; fails to start without `app.oauth.signing-key`
 
 **Tests**: integration
 **Gate**: quick
@@ -459,7 +459,7 @@ Proof: cd frontend && grep -q "oauth2" vite.config.ts && grep -q "well-known" vi
 ## Handoff
 
 **Settled mid-build:** none
-**Dispatched:** none
+**Dispatched:** worker A (Phase 1, T1–T4, Opus) at d066ce3
 **Walked:** none
 
 ---

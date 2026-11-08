@@ -14,7 +14,8 @@ public record RateLimitProperties(
         @NotNull @Valid RateLimitRule forgotEmail,
         @NotNull @Valid RateLimitRule forgotIp,
         @NotNull @Valid RateLimitRule registerIp,
-        @NotNull @Valid RateLimitRule importUser) {
+        @NotNull @Valid RateLimitRule importUser,
+        @NotNull @Valid RateLimitRule mcpUser) {
 
     public RateLimitRule rule(RateLimit limit) {
         return switch (limit) {
@@ -24,6 +25,7 @@ public record RateLimitProperties(
             case FORGOT_IP -> forgotIp;
             case REGISTER_IP -> registerIp;
             case IMPORT_USER -> importUser;
+            case MCP_USER -> mcpUser;
         };
     }
 }

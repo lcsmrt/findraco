@@ -23,7 +23,8 @@ class RateLimiterTest {
                     THREE_PER_MINUTE,
                     THREE_PER_MINUTE,
                     THREE_PER_MINUTE,
-                    new RateLimitRule(1, Duration.ofHours(1))),
+                    new RateLimitRule(1, Duration.ofHours(1)),
+                    THREE_PER_MINUTE),
             clock);
 
     @Test

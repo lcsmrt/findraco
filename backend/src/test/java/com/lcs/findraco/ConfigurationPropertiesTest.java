@@ -6,6 +6,7 @@ import com.lcs.findraco.auth.config.CorsProperties;
 import com.lcs.findraco.auth.config.JwtProperties;
 import com.lcs.findraco.auth.config.MailExecutorProperties;
 import com.lcs.findraco.auth.config.MailProperties;
+import com.lcs.findraco.auth.config.OAuthProperties;
 import com.lcs.findraco.auth.config.SessionProperties;
 import com.lcs.findraco.plan.config.PlanPurgeProperties;
 import com.lcs.findraco.shared.config.AppProperties;
@@ -83,7 +84,14 @@ class ConfigurationPropertiesTest {
             Map.entry("app.rate-limit.register-ip.capacity", "5"),
             Map.entry("app.rate-limit.register-ip.period", "PT1H"),
             Map.entry("app.rate-limit.import-user.capacity", "10"),
-            Map.entry("app.rate-limit.import-user.period", "PT1H"));
+            Map.entry("app.rate-limit.import-user.period", "PT1H"),
+            Map.entry("app.rate-limit.mcp-user.capacity", "60"),
+            Map.entry("app.rate-limit.mcp-user.period", "PT1M"),
+            Map.entry("app.oauth.issuer", "https://findraco.app"),
+            Map.entry("app.oauth.mcp-resource", "https://findraco.app/mcp"),
+            Map.entry("app.oauth.signing-key", "/run/secrets/oauth-signing-key.pem"),
+            Map.entry("app.oauth.cimd.allowed-clients", "https://claude.ai/oauth/mcp-oauth-client-metadata"),
+            Map.entry("app.oauth.cimd.cache-ttl", "PT24H"));
 
     private static final Map<String, String> VALID_MAIL_STRINGS =
             Map.of("app.mail.smtp-host", "", "app.mail.smtp-username", "", "app.mail.smtp-password", "");
@@ -99,7 +107,8 @@ class ConfigurationPropertiesTest {
         RateLimitProperties.class,
         ImportProperties.class,
         SeriesProperties.class,
-        PlanPurgeProperties.class
+        PlanPurgeProperties.class,
+        OAuthProperties.class
     })
     static class AllProperties {}
 
@@ -198,6 +207,17 @@ class ConfigurationPropertiesTest {
     void missingRateLimitRuleFailsStartup() {
         runWithout("app.rate-limit.import-user.capacity", "app.rate-limit.import-user.period")
                 .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
+    void oauthRequiresSigningKey() {
+        runWithout("app.oauth.signing-key").run(context -> {
+            assertThat(context).hasFailed();
+            assertThat(context.getStartupFailure())
+                    .rootCause()
+                    .isInstanceOf(BindValidationException.class)
+                    .hasMessageContaining("on field 'signingKey'");
+        });
     }
 
     private static void assertStartupFailsOn(Map<String, String> overrides, String prefix, String field) {

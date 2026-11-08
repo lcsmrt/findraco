@@ -226,7 +226,39 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "user_sessions.replaced_at",
                         "user_sessions.created_at",
                         "plans.deleted_at",
-                        "plan_invitations.expires_at");
+                        "plan_invitations.expires_at",
+                        "oauth2_authorization.authorization_code_issued_at",
+                        "oauth2_authorization.authorization_code_expires_at",
+                        "oauth2_authorization.access_token_issued_at",
+                        "oauth2_authorization.access_token_expires_at",
+                        "oauth2_authorization.oidc_id_token_issued_at",
+                        "oauth2_authorization.oidc_id_token_expires_at",
+                        "oauth2_authorization.refresh_token_issued_at",
+                        "oauth2_authorization.refresh_token_expires_at",
+                        "oauth2_authorization.user_code_issued_at",
+                        "oauth2_authorization.user_code_expires_at",
+                        "oauth2_authorization.device_code_issued_at",
+                        "oauth2_authorization.device_code_expires_at");
+    }
+
+    /** V25: Spring Authorization Server's grant and consent tables, with grants indexed by their user. */
+    @Test
+    void oauthTablesExist() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+
+        assertThat(namesOf(
+                        jdbc,
+                        "SELECT conname FROM pg_constraint WHERE conrelid IN "
+                                + "('public.oauth2_authorization'::regclass, "
+                                + "'public.oauth2_authorization_consent'::regclass)"))
+                .containsExactlyInAnyOrder("pk_oauth2_authorization", "pk_oauth2_authorization_consent");
+        assertThat(namesOf(
+                        jdbc,
+                        "SELECT indexdef FROM pg_indexes WHERE tablename = 'oauth2_authorization' "
+                                + "AND indexname = 'idx_oauth2_authorization_principal_name'"))
+                .singleElement()
+                .asString()
+                .contains("(principal_name)");
     }
 
     @Test
