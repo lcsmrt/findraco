@@ -457,6 +457,12 @@ Proof: cd frontend && grep -q "oauth2" vite.config.ts && grep -q "well-known" vi
 **C68** - Behind a TLS-terminating proxy (`X-Forwarded-Proto: https`, another `Host`) every redirect of the connect flow (authorize to login, login failure, login to authorize, authorize to consent) stays on the issuer origin (MCP-02, Connect 4, design Risks)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='AuthorizationServerIT#forwardedHttpsRedirectsStayHttps' -Dsurefire.skip=true
 
+**C69** - A tool call with an argument outside the tool's schema (including a misspelled `plan`) returns `isError` naming the parameter and creates nothing (MCP-09, Edge 2)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#unknownArgumentIsToolError' -Dsurefire.skip=true
+
+**C70** - A wrong-type or wrong-enum argument returns `isError` naming the parameter, worded in English whatever the machine locale (MCP-09, Edge 2, Assumptions)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpPlanToolsIT#wrongTypeAndEnumErrorsAreEnglish' -Dsurefire.skip=true
+
 ---
 
 ## Handoff

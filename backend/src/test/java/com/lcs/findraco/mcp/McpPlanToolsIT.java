@@ -169,4 +169,41 @@ class McpPlanToolsIT extends AbstractMcpIntegrationTest {
                     .doesNotContain("dentist", "350");
         }
     }
+
+    @Test
+    void unknownArgumentIsToolError() throws Exception {
+        User user = fixtures.aUser();
+        plan(user, "Home", true);
+        Plan trip = plan(user, "Trip", false);
+        McpClient client = clientOf(user);
+
+        assertThat(errorText(client.callTool("list_categories", Map.of("bogus", 1))))
+                .contains("bogus");
+        // A misspelled plan must not fall back to the default plan: nothing is created.
+        assertThat(errorText(client.callTool(
+                        "create_transaction",
+                        Map.of("type", "DEBIT", "amount", 42, "description", "Posto", "plano", trip.getName()))))
+                .contains("plano");
+        assertThat(jdbc.queryForObject("SELECT count(*) FROM transactions", Long.class))
+                .isZero();
+        // A tool that knows the argument still takes it.
+        assertThat(client.callTool("list_categories", Map.of("plan", "Trip"))
+                        .path("isError")
+                        .asBoolean())
+                .isFalse();
+    }
+
+    @Test
+    void wrongTypeAndEnumErrorsAreEnglish() throws Exception {
+        User user = fixtures.aUser();
+        plan(user, "Home", true);
+        McpClient client = clientOf(user);
+
+        assertThat(errorText(client.callTool(
+                        "create_transaction", Map.of("type", "DEBIT", "amount", "abc", "description", "Posto"))))
+                .contains("/amount", "found", "expected");
+        assertThat(errorText(client.callTool(
+                        "create_transaction", Map.of("type", "SIDEWAYS", "amount", 42, "description", "Posto"))))
+                .contains("/type");
+    }
 }
