@@ -94,7 +94,7 @@ T9 → T10
 
 **Done when**:
 
-- [ ] C3, C4, C5, C6, C7 pass
+- [x] C3, C4, C5, C6, C7 pass
 
 **Tests**: unit
 **Gate**: quick
