@@ -63,6 +63,11 @@ public class Fixtures {
         return LocalDate.now(clock);
     }
 
+    /** Today for {@code user}, in their saved time zone: the day that decides actual versus forecast. */
+    public LocalDate today(User user) {
+        return user.today(clock);
+    }
+
     /** The stored version of a transaction, which an edit sends back; 0 when there is no such row. */
     public long transactionVersion(long id) {
         return version("SELECT version FROM transactions WHERE id = ?", id);
