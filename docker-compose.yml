@@ -18,11 +18,19 @@ services:
       - SERVER_ADDRESS=${SERVER_ADDRESS:?set SERVER_ADDRESS to the docker0 gateway, see DEPLOY.md}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS}
       - APP_URL=${APP_URL}
+      # Claude connector (see DEPLOY.md). No defaults: an unset value must stop the deploy instead of
+      # issuing tokens for a wrong origin or from a key that changes on each start.
+      - OAUTH_ISSUER=${OAUTH_ISSUER:?set OAUTH_ISSUER to the public origin, see DEPLOY.md}
+      - MCP_RESOURCE=${MCP_RESOURCE:?set MCP_RESOURCE to the public /mcp URL, see DEPLOY.md}
+      - OAUTH_SIGNING_KEY=${OAUTH_SIGNING_KEY:?set OAUTH_SIGNING_KEY to the mounted key path, see DEPLOY.md}
       - SMTP_HOST=${SMTP_HOST:-}
       - SMTP_PORT=${SMTP_PORT:-587}
       - SMTP_USER=${SMTP_USER:-}
       - SMTP_PASS=${SMTP_PASS:-}
       - SMTP_FROM=${SMTP_FROM:-no-reply@findraco.local}
+    # The RSA signing key is a file on the VPS, read-only, never in the image or the repository.
+    volumes:
+      - ${OAUTH_SIGNING_KEY_FILE:?set OAUTH_SIGNING_KEY_FILE to the key on the VPS, see DEPLOY.md}:${OAUTH_SIGNING_KEY}:ro
     restart: unless-stopped
 
   findraco-web:

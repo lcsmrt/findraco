@@ -43,6 +43,28 @@ Portainer/VPS steps in addition to the normal `git push` → GitHub Actions rede
   queries must return zero rows; a row is two accounts, or two pending invitations to the same plan,
   that would merge. Resolve them first, or V20 aborts and the deploy fails at start-up.
 
+- [ ] Before deploying the Claude connector (MCP): the API refuses to start without these Portainer
+  stack variables (the compose file also refuses to deploy without them).
+  - `OAUTH_ISSUER`: the bare public origin, e.g. `https://<domain>`, no path and no trailing slash
+    (`app.oauth.issuer`). Every OAuth endpoint is this origin plus `/oauth2/...`.
+  - `MCP_RESOURCE`: the public MCP URL, `https://<domain>/mcp` (`app.oauth.mcp-resource`); it is the
+    audience of every access token.
+  - `OAUTH_SIGNING_KEY`: the path of the signing key **inside the container**, e.g.
+    `/run/secrets/mcp-signing-key.pem` (`app.oauth.signing-key`). `OAUTH_SIGNING_KEY_FILE` is where the
+    file lives on the VPS; compose mounts it read-only at that path.
+  - Generate the RSA key once, on the VPS, and keep it out of the repository and the image:
+    `openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out mcp-signing-key.pem`
+    then `chmod 600 mcp-signing-key.pem`. Never regenerate it casually: a new key invalidates every
+    connected Claude, which then has to sign in again.
+  - The TLS terminator in front of findraco-web must send `X-Forwarded-Proto: https` (Cloudflare, Nginx
+    Proxy Manager, Caddy and Traefik do by default); nginx passes it on. The authorization server's
+    redirects are built from `OAUTH_ISSUER`, not from the request, so a missing header does not break the
+    connect flow, but the API would see every request as plain http.
+  - Pre-release check, from the VPS: `curl -s -o /dev/null -w '%{http_code}' https://claude.ai/oauth/mcp-oauth-client-metadata`
+    must print `200`. Otherwise the app falls back to a pinned copy of that document.
+  - After the deploy: `curl -s https://<domain>/.well-known/oauth-authorization-server` returns JSON
+    whose `issuer` is `OAUTH_ISSUER`, and `curl -si -X POST https://<domain>/mcp` answers `401`.
+
 ## Post-deploy
 
 - [ ] Verify the browser tab shows the new favicon and the page title reads **findraco**.

@@ -9,8 +9,8 @@ import {
   type RegisterUserFormOutput,
   type RegisterUserFormValues,
 } from "./authForms";
-import { AuthCard } from "./components/AuthCard";
-import { PasswordInput } from "./components/PasswordInput";
+import { AuthCard } from "@/components/authCard/AuthCard";
+import { PasswordInput } from "@/components/passwordInput/PasswordInput";
 import { passwordSpacesHint } from "./utils/passwordSchema";
 import { Trans, useTranslation } from "react-i18next";
 

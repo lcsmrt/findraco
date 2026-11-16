@@ -8,7 +8,7 @@ import {
   type ForgotPasswordFormOutput,
   type ForgotPasswordFormValues,
 } from "./authForms";
-import { AuthCard } from "./components/AuthCard";
+import { AuthCard } from "@/components/authCard/AuthCard";
 import { useTranslation } from "react-i18next";
 
 type ForgotPasswordViewProps = {

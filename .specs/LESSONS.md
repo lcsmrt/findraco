@@ -308,6 +308,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: C39, verification.md finding 5 (frontend/forms)
 - last seen: 2026-11-05T19:57:51Z
 
+### L-050 - Any redirect a backend builds behind nginx needs an IT with forwarded Host/Proto headers; build absolute redirects from configured origins, never the request.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backend/security` · harmful: 0
+- features: mcp-connector
+- evidence: verification.md W1 (backend/security)
+- last seen: 2026-11-08T23:26:38Z
+
+### L-051 - A test must not write the state it claims to verify (expiry, limits) or accept any error message; assert the configured value and the specific error.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `backend/tests` · harmful: 0
+- features: mcp-connector
+- evidence: C13, C50, C31 (backend/tests)
+- last seen: 2026-11-08T23:26:38Z
+
+### L-052 - MCP tool schemas must refuse unknown arguments, or a misspelled optional parameter silently falls back to a default.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `mcp` · harmful: 0
+- features: mcp-connector
+- evidence: verification.md Edge 2 (mcp)
+- last seen: 2026-11-08T23:26:38Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

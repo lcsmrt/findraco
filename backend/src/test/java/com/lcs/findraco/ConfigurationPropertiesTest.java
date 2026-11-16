@@ -9,7 +9,9 @@ import com.lcs.findraco.auth.config.MailProperties;
 import com.lcs.findraco.auth.config.SessionProperties;
 import com.lcs.findraco.plan.config.PlanPurgeProperties;
 import com.lcs.findraco.shared.config.AppProperties;
+import com.lcs.findraco.shared.config.OAuthProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
+import com.lcs.findraco.shared.ratelimit.RateLimitRule;
 import com.lcs.findraco.transaction.config.ImportProperties;
 import com.lcs.findraco.transaction.config.SeriesProperties;
 import java.io.IOException;
@@ -19,13 +21,18 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.TreeMap;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.context.properties.bind.Binder;
 import org.springframework.boot.context.properties.bind.validation.BindValidationException;
+import org.springframework.boot.context.properties.source.MapConfigurationPropertySource;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.support.PropertiesLoaderUtils;
 
 /** Every {@code app.*} record refuses to start the application on a missing or out-of-range value. */
 class ConfigurationPropertiesTest {
@@ -83,7 +90,15 @@ class ConfigurationPropertiesTest {
             Map.entry("app.rate-limit.register-ip.capacity", "5"),
             Map.entry("app.rate-limit.register-ip.period", "PT1H"),
             Map.entry("app.rate-limit.import-user.capacity", "10"),
-            Map.entry("app.rate-limit.import-user.period", "PT1H"));
+            Map.entry("app.rate-limit.import-user.period", "PT1H"),
+            Map.entry("app.rate-limit.mcp-user.capacity", "60"),
+            Map.entry("app.rate-limit.mcp-user.period", "PT1M"),
+            Map.entry("app.oauth.issuer", "https://findraco.app"),
+            Map.entry("app.oauth.mcp-resource", "https://findraco.app/mcp"),
+            Map.entry("app.oauth.signing-key", "/run/secrets/oauth-signing-key.pem"),
+            Map.entry("app.oauth.cimd.allowed-clients", "https://claude.ai/oauth/mcp-oauth-client-metadata"),
+            Map.entry("app.oauth.cimd.cache-ttl", "PT24H"),
+            Map.entry("app.oauth.grant-purge-cron", "0 15 4 * * *"));
 
     private static final Map<String, String> VALID_MAIL_STRINGS =
             Map.of("app.mail.smtp-host", "", "app.mail.smtp-username", "", "app.mail.smtp-password", "");
@@ -99,9 +114,24 @@ class ConfigurationPropertiesTest {
         RateLimitProperties.class,
         ImportProperties.class,
         SeriesProperties.class,
-        PlanPurgeProperties.class
+        PlanPurgeProperties.class,
+        OAuthProperties.class
     })
     static class AllProperties {}
+
+    /** The shipped defaults, not the test fixtures above: Claude's 60 calls per minute per user. */
+    @Test
+    void mcpRateLimitDefaultIsSixtyPerMinute() throws IOException {
+        Properties shipped = PropertiesLoaderUtils.loadProperties(
+                new FileSystemResource("src/main/resources/application.properties"));
+
+        RateLimitRule rule = new Binder(new MapConfigurationPropertySource(shipped))
+                .bind("app.rate-limit.mcp-user", RateLimitRule.class)
+                .get();
+
+        assertThat(rule.capacity()).isEqualTo(60);
+        assertThat(rule.period()).isEqualTo(Duration.ofMinutes(1));
+    }
 
     @Test
     void validValuesBindIntoEveryRecord() {
@@ -198,6 +228,17 @@ class ConfigurationPropertiesTest {
     void missingRateLimitRuleFailsStartup() {
         runWithout("app.rate-limit.import-user.capacity", "app.rate-limit.import-user.period")
                 .run(context -> assertThat(context).hasFailed());
+    }
+
+    @Test
+    void oauthRequiresSigningKey() {
+        runWithout("app.oauth.signing-key").run(context -> {
+            assertThat(context).hasFailed();
+            assertThat(context.getStartupFailure())
+                    .rootCause()
+                    .isInstanceOf(BindValidationException.class)
+                    .hasMessageContaining("on field 'signingKey'");
+        });
     }
 
     private static void assertStartupFailsOn(Map<String, String> overrides, String prefix, String field) {

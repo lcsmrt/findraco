@@ -5,8 +5,8 @@ import { Text } from "@/components/typography/base/Text";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { loginSchema, type LoginFormOutput, type LoginFormValues } from "./authForms";
-import { AuthCard } from "./components/AuthCard";
-import { PasswordInput } from "./components/PasswordInput";
+import { AuthCard } from "@/components/authCard/AuthCard";
+import { PasswordInput } from "@/components/passwordInput/PasswordInput";
 import { useTranslation } from "react-i18next";
 
 type LoginViewProps = {

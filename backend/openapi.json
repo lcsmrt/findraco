@@ -635,6 +635,18 @@
         "required" : [ "expenses", "income", "month", "year" ],
         "type" : "object"
       },
+      "OAuthClientInfoResponse" : {
+        "properties" : {
+          "name" : {
+            "type" : "string"
+          },
+          "redirectHost" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "name", "redirectHost" ],
+        "type" : "object"
+      },
       "PageResponseCategoryResponse" : {
         "properties" : {
           "content" : {
@@ -5862,6 +5874,91 @@
         },
         "summary" : "Pins a time zone, or hands the zone back to the device's Time-Zone header",
         "tags" : [ "Users" ]
+      }
+    },
+    "/oauth2/client-info" : {
+      "get" : {
+        "operationId" : "clientInfo",
+        "parameters" : [ {
+          "in" : "query",
+          "name" : "client_id",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "query",
+          "name" : "state",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/OAuthClientInfoResponse"
+                }
+              }
+            },
+            "description" : "OK"
+          },
+          "400" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Bad Request"
+          },
+          "401" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unauthorized"
+          },
+          "404" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Not Found"
+          },
+          "422" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Unprocessable Content"
+          },
+          "500" : {
+            "content" : {
+              "application/problem+json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/ProblemDetail"
+                }
+              }
+            },
+            "description" : "Internal Server Error"
+          }
+        },
+        "security" : [ ],
+        "summary" : "Names an OAuth client and the host of the redirect its pending request asked for; 404 for a client outside the allowlist",
+        "tags" : [ "OAuth" ]
       }
     }
   },

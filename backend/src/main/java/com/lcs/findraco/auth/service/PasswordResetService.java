@@ -25,6 +25,7 @@ public class PasswordResetService {
     private final UserService userService;
     private final EmailService emailService;
     private final SessionService sessionService;
+    private final McpGrantService mcpGrantService;
     private final Clock clock;
     private final RateLimiter rateLimiter;
     private final String appUrl;
@@ -34,6 +35,7 @@ public class PasswordResetService {
             UserService userService,
             EmailService emailService,
             SessionService sessionService,
+            McpGrantService mcpGrantService,
             Clock clock,
             RateLimiter rateLimiter,
             AppProperties appProperties) {
@@ -41,6 +43,7 @@ public class PasswordResetService {
         this.userService = userService;
         this.emailService = emailService;
         this.sessionService = sessionService;
+        this.mcpGrantService = mcpGrantService;
         this.clock = clock;
         this.rateLimiter = rateLimiter;
         this.appUrl = appProperties.url();
@@ -79,7 +82,7 @@ public class PasswordResetService {
         return findValidToken(token).isPresent();
     }
 
-    /** Sets the new password, consumes the token (single use) and signs the user out everywhere. */
+    /** Sets the new password, consumes the token (single use) and signs the user out everywhere, Claude included. */
     @Transactional
     public void resetPassword(ResetPasswordRequest dto) {
         PasswordResetToken resetToken = findValidToken(dto.token())
@@ -88,6 +91,7 @@ public class PasswordResetService {
         userService.changePassword(resetToken.getUser(), dto.password());
         tokenRepository.deleteAllByUser(resetToken.getUser());
         sessionService.revokeAll(resetToken.getUser());
+        mcpGrantService.revokeAll(resetToken.getUser().getId());
     }
 
     private Optional<PasswordResetToken> findValidToken(String token) {

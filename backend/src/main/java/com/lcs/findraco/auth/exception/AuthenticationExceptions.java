@@ -22,4 +22,11 @@ public class AuthenticationExceptions {
                     "This password reset link is invalid or has expired.");
         }
     }
+
+    /** The client id is not one of the allowlisted OAuth clients, or its metadata document is invalid. */
+    public static class OAuthClientNotFoundException extends DomainException {
+        public OAuthClientNotFoundException() {
+            super(ProblemType.NOT_FOUND, HttpStatus.NOT_FOUND, "Unknown OAuth client.");
+        }
+    }
 }

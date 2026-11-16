@@ -10,6 +10,8 @@ import { PlansPage } from "@/features/plans/PlansPage";
 import { AcceptInvitationPage } from "@/features/plans/AcceptInvitationPage";
 import { ForgotPassword } from "@/features/auth/ForgotPasswordPage";
 import { ResetPassword } from "@/features/auth/ResetPasswordPage";
+import { OAuthConsentPage } from "@/features/oauth/OAuthConsentPage";
+import { OAuthLoginPage } from "@/features/oauth/OAuthLoginPage";
 import { CategoriesPage } from "@/features/categories/CategoriesPage";
 import { OverviewPage } from "@/features/overview/OverviewPage";
 import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
@@ -25,6 +27,8 @@ export function AppRouter() {
         <Route path={PATHS.registerUser} element={<RegisterUser />} />
         <Route path={PATHS.forgotPassword} element={<ForgotPassword />} />
         <Route path={PATHS.resetPassword} element={<ResetPassword />} />
+        <Route path={PATHS.oauthLogin} element={<OAuthLoginPage />} />
+        <Route path={PATHS.oauthConsent} element={<OAuthConsentPage />} />
       </Route>
 
       <Route
