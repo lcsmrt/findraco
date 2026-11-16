@@ -41,8 +41,18 @@ class DashboardActualIT extends AbstractIntegrationTest {
     void summarySplitsActualFromForecast() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        aTransaction(plan, owner, TransactionType.CREDIT, "5000.00", today().minusDays(4));
-        aTransaction(plan, owner, TransactionType.DEBIT, "2000.00", today().plusDays(15));
+        aTransaction(
+                plan,
+                owner,
+                TransactionType.CREDIT,
+                "5000.00",
+                fixtures.today(owner).minusDays(4));
+        aTransaction(
+                plan,
+                owner,
+                TransactionType.DEBIT,
+                "2000.00",
+                fixtures.today(owner).plusDays(15));
 
         JsonNode summary = summary(plan, owner);
 
@@ -53,7 +63,7 @@ class DashboardActualIT extends AbstractIntegrationTest {
     void pendingCountsOnlyInForecast() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        aPendingOccurrence(plan, owner, "200.00", today().minusDays(10));
+        aPendingOccurrence(plan, owner, "200.00", fixtures.today(owner).minusDays(10));
 
         JsonNode summary = summary(plan, owner);
 
@@ -64,9 +74,19 @@ class DashboardActualIT extends AbstractIntegrationTest {
     void noForecastMeansEqualFigures() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        aTransaction(plan, owner, TransactionType.CREDIT, "1000.00", today().minusDays(20));
-        aTransaction(plan, owner, TransactionType.DEBIT, "300.00", today().minusDays(10));
-        aTransaction(plan, owner, TransactionType.DEBIT, "50.00", today());
+        aTransaction(
+                plan,
+                owner,
+                TransactionType.CREDIT,
+                "1000.00",
+                fixtures.today(owner).minusDays(20));
+        aTransaction(
+                plan,
+                owner,
+                TransactionType.DEBIT,
+                "300.00",
+                fixtures.today(owner).minusDays(10));
+        aTransaction(plan, owner, TransactionType.DEBIT, "50.00", fixtures.today(owner));
 
         JsonNode summary = summary(plan, owner);
 
@@ -77,7 +97,7 @@ class DashboardActualIT extends AbstractIntegrationTest {
     void trendAndPeopleCountEverything() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        LocalDate day = today().withDayOfMonth(1).plusMonths(1);
+        LocalDate day = fixtures.today(owner).withDayOfMonth(1).plusMonths(1);
         aTransaction(plan, owner, TransactionType.DEBIT, "100.00", day);
         aPendingOccurrence(plan, owner, "40.00", day.plusDays(1));
 
@@ -98,10 +118,25 @@ class DashboardActualIT extends AbstractIntegrationTest {
     void personBreakdownSplitsActualFromForecast() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        aTransaction(plan, owner, TransactionType.CREDIT, "5000.00", today().minusDays(4));
-        aTransaction(plan, owner, TransactionType.DEBIT, "300.00", today().minusDays(2));
-        aTransaction(plan, owner, TransactionType.DEBIT, "2000.00", today().plusDays(15));
-        aPendingOccurrence(plan, owner, "200.00", today().minusDays(10));
+        aTransaction(
+                plan,
+                owner,
+                TransactionType.CREDIT,
+                "5000.00",
+                fixtures.today(owner).minusDays(4));
+        aTransaction(
+                plan,
+                owner,
+                TransactionType.DEBIT,
+                "300.00",
+                fixtures.today(owner).minusDays(2));
+        aTransaction(
+                plan,
+                owner,
+                TransactionType.DEBIT,
+                "2000.00",
+                fixtures.today(owner).plusDays(15));
+        aPendingOccurrence(plan, owner, "200.00", fixtures.today(owner).minusDays(10));
 
         JsonNode person = summary(plan, owner).get("personBreakdown").get(0);
 
@@ -159,8 +194,8 @@ class DashboardActualIT extends AbstractIntegrationTest {
     private JsonNode summary(Plan plan, User reader) throws Exception {
         return read(get(DashboardRoutes.DASHBOARD, plan.getId())
                 .with(testAuthHelper.asUser(reader))
-                .param("startDate", today().minusDays(30).toString())
-                .param("endDate", today().plusDays(30).toString()));
+                .param("startDate", fixtures.today(reader).minusDays(30).toString())
+                .param("endDate", fixtures.today(reader).plusDays(30).toString()));
     }
 
     private JsonNode read(MockHttpServletRequestBuilder request) throws Exception {
