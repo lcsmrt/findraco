@@ -192,8 +192,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Tests named as in C15–C17 pass
-- [ ] Gate check passes: Quick
+- [x] Tests named as in C15–C17 pass
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
@@ -377,8 +377,8 @@ Proof: run unit | ✓ usageOf > shows at least 101 percent while over
 
 ## Handoff
 
-**Settled mid-build:** none
-**Dispatched:** worker A (Phase 1, T1–T6, Sonnet) at ed264208+tasks commit
+**Settled mid-build:** none. Worker A deviations: T4 key is `transactions.form.choosePerson` (the namespace of the other schema messages); one T4 test and two T2 assertions that held the old behaviour were replaced by the spec's outcome; the `WithForecast` fixture's actuals now sum to the headline
+**Dispatched:** worker A (Phase 1, T1–T6, Sonnet) at 74f8b22a, returned (1aaabd40); worker B (Phase 2, T7–T12, Sonnet) at 1aaabd40
 **Walked:** not yet
 
 ---
