@@ -72,8 +72,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Tests named as in C1–C3 pass; the existing `PlanFiltersGate.test.tsx` suite still passes unchanged (C4)
-- [ ] Gate check passes: Quick
+- [x] Tests named as in C1–C3 pass; the existing `PlanFiltersGate.test.tsx` suite still passes unchanged (C4)
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
