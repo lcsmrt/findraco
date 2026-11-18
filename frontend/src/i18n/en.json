@@ -32,7 +32,9 @@
       "transactionAdded": "Transaction added.",
       "transactionConfirmed": "Transaction confirmed.",
       "transactionDeleted": "Transaction deleted.",
+      "transactionRestored": "Transaction restored.",
       "transactionUpdated": "Transaction updated.",
+      "undo": "Undo",
       "youJoinedThePlan": "You joined the plan.",
       "youLeftThePlan": "You left the plan."
     }

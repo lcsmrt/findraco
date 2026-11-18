@@ -9,6 +9,7 @@ import type {
   TransactionSeriesResponse,
   PagedResponse,
   RecurrenceDefinitionResponse,
+  TransactionTrashEntry,
   UpdateTransactionSeriesRequest,
 } from "@/api/dtos";
 import type { PlanContextValue } from "@/app/providers/usePlanContext";
@@ -24,7 +25,9 @@ import {
   useDeleteTransactionSeries,
   useGetTransactions,
   useGetTransactionSeries,
+  useGetTransactionTrash,
   useImportNubankCsv,
+  useRestoreDeletion,
   useUpdateTransaction,
   useUpdateTransactionSeries,
 } from "./useTransactionService";
@@ -89,6 +92,7 @@ function seedLists(client: QueryClient) {
   client.setQueryData(["categorySpending", 5, { startDate: "2026-10-01" }], []);
   client.setQueryData(["dashboardSummary", 5, { startDate: "2026-10-01" }], { totalIncome: 0 });
   client.setQueryData(["dashboardTrend", 5, { months: 6 }], []);
+  client.setQueryData(["transactionTrash", 5, undefined], { content: [] });
   client.setQueryData(["transactionSeries", 5, "s1"], definition);
   client.setQueryData(["transactionSeries", 5, "other"], definition);
 }
@@ -100,6 +104,7 @@ function invalidated(client: QueryClient) {
     spending: client.getQueryState(["categorySpending", 5, { startDate: "2026-10-01" }])?.isInvalidated,
     summary: client.getQueryState(["dashboardSummary", 5, { startDate: "2026-10-01" }])?.isInvalidated,
     trend: client.getQueryState(["dashboardTrend", 5, { months: 6 }])?.isInvalidated,
+    trash: client.getQueryState(["transactionTrash", 5, undefined])?.isInvalidated,
     series: client.getQueryState(["transactionSeries", 5, "s1"])?.isInvalidated,
     otherSeries: client.getQueryState(["transactionSeries", 5, "other"])?.isInvalidated,
   };
@@ -114,7 +119,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const transactionData = { lists: true, usage: true, spending: true, summary: true, trend: true };
+const transactionData = { lists: true, usage: true, spending: true, summary: true, trend: true, trash: true };
 
 describe("useGetTransactions", () => {
   it("GETs the plan-scoped page with paging, sort and filter in the query and returns it", async () => {
@@ -214,8 +219,8 @@ describe("transaction mutations", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map(sent)).toEqual([["DELETE", `${path}/40`, {}]]);
     expect(invalidated(queryClient)).toMatchObject(transactionData);
-    expect(toast.success).toHaveBeenCalledWith("Transaction deleted.");
-    expect(onSuccess).toHaveBeenCalledWith(undefined, 40);
+    expect(toast.success).toHaveBeenCalledWith("Transaction deleted.", expect.anything());
+    expect(onSuccess).toHaveBeenCalledWith({ deletionId: 1 }, 40);
   });
 
   it(`import POSTs to the import URL and returns the counts; the toast and the refresh are asserted once, in the page flow (BST-17 AC 5)`, async () => {
@@ -327,7 +332,59 @@ describe("series mutations", () => {
       ["DELETE", `${path}/series/s1`, { scope: "THIS_AND_FOLLOWING", pivotOccurrenceId: "40" }],
     ]);
     expect(invalidated(queryClient)).toEqual({ ...transactionData, series: true, otherSeries: false });
-    expect(toast.success).toHaveBeenCalledWith("Series deleted.");
-    expect(onSuccess).toHaveBeenCalledWith(undefined, request);
+    expect(toast.success).toHaveBeenCalledWith("Series deleted.", expect.anything());
+    expect(onSuccess).toHaveBeenCalledWith({ deletionId: 1 }, request);
+  });
+
+  it("restore POSTs the deletion's restore URL, refreshes the transaction data and the trash and shows \"Transaction restored.\"", async () => {
+    server.use(handlers.restore(6));
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useRestoreDeletion(), {
+      plan: plan5,
+      seed: seedLists,
+    });
+    result.current.mutate(9);
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests.map(sent)).toEqual([["POST", `${path}/trash/9/restore`, {}]]);
+    expect(result.current.data).toEqual({ restored: 6 });
+    expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Transaction restored.");
+  });
+});
+
+describe("useGetTransactionTrash", () => {
+  it("GETs the plan's trash page and returns it", async () => {
+    const entry: TransactionTrashEntry = {
+      id: 9,
+      kind: "SERIES",
+      scope: "ALL",
+      description: "Gym",
+      count: 6,
+      amount: 1800,
+      type: "DEBIT",
+      deletedAt: "2026-11-18T12:00:00Z",
+      deletedBy: { id: 1, name: "Ana" },
+      expiresAt: "2026-12-18T12:00:00Z",
+    };
+    const page: PagedResponse<TransactionTrashEntry> = {
+      content: [entry],
+      page: 0,
+      size: 20,
+      totalElements: 1,
+      totalPages: 1,
+      last: true,
+    };
+    server.use(handlers.trash(page));
+    const requests = recordRequests();
+
+    const { result } = renderHookWithProviders(() => useGetTransactionTrash({ page: 0, size: 20 }), {
+      plan: plan5,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests.map(sent)).toEqual([["GET", `${path}/trash`, { page: "0", size: "20" }]]);
+    expect(result.current.data).toEqual(page);
   });
 });
