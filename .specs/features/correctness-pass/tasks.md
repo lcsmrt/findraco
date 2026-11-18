@@ -252,8 +252,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Story named as in C20 passes
-- [ ] Gate check passes: Quick (stories)
+- [x] Story named as in C20 passes
+- [x] Gate check passes: Quick (stories)
 
 **Tests**: story
 **Gate**: quick

@@ -107,6 +107,20 @@ export const Confirmable: Story = {
   },
 };
 
+// A row that belongs to a series carries the same marker the table's description cell shows.
+export const SeriesRow: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Gym", "2026-10-14", { seriesId: "s-1" }),
+      transaction(2, "Groceries", "2026-10-14"),
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getAllByText("Series")).toHaveLength(1);
+    await expect(canvas.getByRole("button", { name: /Gym.*Series/ })).toBeVisible();
+  },
+};
+
 export const Loading: Story = { args: { transactions: [], isLoading: true, pagination: undefined } };
 
 export const Empty: Story = {
