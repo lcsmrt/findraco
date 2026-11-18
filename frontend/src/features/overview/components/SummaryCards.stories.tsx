@@ -55,16 +55,23 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 // Part of the month's expenses is still ahead: R$ 800,00 happened of the R$ 5.147,50 forecast.
+const actualByPerson: Record<number, { actualExpense: number; actualNet: number }> = {
+  1: { actualExpense: 500, actualNet: 5700 },
+  2: { actualExpense: 300, actualNet: 4500 },
+};
 const withForecast: DashboardSummaryResponse = {
   ...couple,
   actualIncome: 11000,
   actualExpenses: 800,
   actualBalance: 10200,
+  // The members' actual amounts add up to the headline, as the API reports them.
+  personBreakdown: couple.personBreakdown.map((person) => ({ ...person, ...actualByPerson[person.userId] })),
 };
 
 export const WithForecast: Story = {
   args: { view: summaryView(withForecast, null, colorOf) },
   play: async ({ canvas }) => {
+    await expect(visibleText(canvas, "Net")).toBeVisible();
     await expect(visibleText(canvas, "R$ 800,00")).toBeVisible();
     await expect(visibleText(canvas, "R$ 10.200,00")).toBeVisible();
     // The headline is the actual figure, named on its own line, apart from the forecast line.

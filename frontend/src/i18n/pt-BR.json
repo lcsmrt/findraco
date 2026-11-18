@@ -361,7 +361,7 @@
   },
   "overview": {
     "balance": {
-      "balance": "Saldo"
+      "balance": "Resultado"
     },
     "categorySpendingList": {
       "focus": "{{name}} {{spent}} de {{limit}}",

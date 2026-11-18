@@ -361,7 +361,7 @@
   },
   "overview": {
     "balance": {
-      "balance": "Balance"
+      "balance": "Net"
     },
     "categorySpendingList": {
       "focus": "{{name}} {{spent}} of {{limit}}",
