@@ -131,6 +131,6 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 - **Settled mid-build:** none
 - **Dispatched:** backend builder (Sonnet, worktree /home/lcs/dev/findraco-trash) at 2e925704
-- **Boundary:** C1–C13, C16–C18, C24–C28 closed at 867f5c8c
+- **Boundary:** C1–C13, C16–C18, C24–C28 closed at bac5414c
 - **Abandoned:** -
 - **Walked:** not yet
