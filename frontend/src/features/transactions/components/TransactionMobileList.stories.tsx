@@ -130,6 +130,7 @@ export const Empty: Story = {
   },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("No transactions found.")).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "Next page" })).toBeNull();
   },
 };
 
