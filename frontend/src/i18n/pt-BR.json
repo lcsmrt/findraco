@@ -488,6 +488,21 @@
       "plans": "Planos",
       "selectPlan": "Selecione um plano"
     },
+    "planTrashListView": {
+      "count_one": "{{count}} transação",
+      "count_other": "{{count}} transações",
+      "deletedBy": "Excluída por {{name}} em {{date}}",
+      "deletedOn": "Excluída em {{date}}",
+      "description": "As transações excluídas ficam aqui por 30 dias e podem ser restauradas.",
+      "empty": "Nada na lixeira. O que você excluir fica aqui por 30 dias.",
+      "expiresOn": "Removida de vez em {{date}}",
+      "loadError": "Não foi possível carregar a lixeira.",
+      "restore": "Restaurar",
+      "restoreEntry": "Restaurar {{description}}",
+      "retry": "Tentar de novo",
+      "series": "Série",
+      "trash": "Lixeira"
+    },
     "plansPage": {
       "archive": "Arquivar",
       "archiveDescription": "Tem certeza de que quer arquivar o plano \"{{name}}\"? Você pode restaurá-lo em \"Planos arquivados\" por 30 dias; depois disso ele é excluído definitivamente.",

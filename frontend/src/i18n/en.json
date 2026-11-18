@@ -488,6 +488,21 @@
       "plans": "Plans",
       "selectPlan": "Select plan"
     },
+    "planTrashListView": {
+      "count_one": "{{count}} transaction",
+      "count_other": "{{count}} transactions",
+      "deletedBy": "Deleted by {{name}} on {{date}}",
+      "deletedOn": "Deleted on {{date}}",
+      "description": "Deleted transactions stay here for 30 days and can be restored.",
+      "empty": "Nothing in the trash. What you delete stays here for 30 days.",
+      "expiresOn": "Removed for good on {{date}}",
+      "loadError": "Could not load the trash.",
+      "restore": "Restore",
+      "restoreEntry": "Restore {{description}}",
+      "retry": "Retry",
+      "series": "Series",
+      "trash": "Trash"
+    },
     "plansPage": {
       "archive": "Archive",
       "archiveDescription": "Are you sure you want to archive the plan \"{{name}}\"? You can restore it from \"Archived plans\" for 30 days; after that it is deleted permanently.",
