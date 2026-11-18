@@ -3,11 +3,12 @@ import type { DashboardSummaryResponse } from "@/api/dtos";
 export type SummarySegment = {
   memberId: number;
   name: string;
+  /** The member's actual amount. */
   amount: number;
   color: string;
   /** Another member is selected. */
   dimmed: boolean;
-  /** Width in percent of the plan's total. */
+  /** Width in percent of the plan's actual total. */
   widthPct: number;
 };
 
@@ -49,15 +50,16 @@ export function summaryView(
     return {
       total: memberId != null ? (selected ? amountOf(selected) : 0) : planTotal,
       actual: memberId != null ? (selected ? actualOf(selected) : 0) : planActual,
+      // The segments sit under the headline's actual figure, so they use the same basis.
       segments: people
-        .filter((person) => amountOf(person) > 0)
+        .filter((person) => actualOf(person) > 0)
         .map((person) => ({
           memberId: person.userId,
           name: person.name,
-          amount: amountOf(person),
+          amount: actualOf(person),
           color: colorOf(person.userId),
           dimmed: memberId != null && person.userId !== memberId,
-          widthPct: planTotal > 0 ? (amountOf(person) / planTotal) * 100 : 0,
+          widthPct: planActual > 0 ? (actualOf(person) / planActual) * 100 : 0,
         })),
     };
   }

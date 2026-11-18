@@ -92,8 +92,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Tests named as in C5–C6 pass
-- [ ] Gate check passes: Quick
+- [x] Tests named as in C5–C6 pass
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
