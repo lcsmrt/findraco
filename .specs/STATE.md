@@ -210,6 +210,14 @@
 - **Date**: 2026-11-08
 - **Status**: active
 
+### AD-027
+- **Decision**: When the period arrows land on a range that equals a preset resolved against today (This month, Last 3 months, Last 6 months, This year), the selection is stored as that preset, not as an absolute range. Any other arrow-reached range stays absolute and is restored as that fixed range. Amends the `period-navigator` persistence row (2026-10-31, "keep the last month viewed").
+- **Reason**: Stepping ‹ then › left the screen pinned to the current month as a fixed range, so in a later month it still opened on the old one. User, 2026-11-17, asked "When the arrows land exactly on a preset range (for example the current month), should it be saved as the preset?", chose "Yes, save as preset".
+- **Trade-off**: A month reached by the arrows that happens to be the current one now follows the calendar; reaching it on purpose and expecting it to stay is no longer possible.
+- **Scope**: `utils/periodParams`, `PeriodNavigator` callers (Overview, Transactions).
+- **Date**: 2026-11-17
+- **Status**: active
+
 ## Handoff
 
 - **Next**: investigate the 403 seen on the first claude.ai connect (iPhone app, 2026-11-16 ~03:45 UTC, requestId `2602d1ce-7c11-472e-ab61-2a9fb5d8ad8c`): the in-app browser first showed the SPA 404 (beta.30 service worker served `/oauth2/authorize`), the user updated the version, signed in, then got a 403 `/error` problem; a retry went straight to consent (session already signed in) and connected. User brings `docker logs findraco-web`/`findraco-api` lines. Also pending: a new user's default time zone should be the device's, not America/Sao_Paulo (user, to discuss)
@@ -219,5 +227,5 @@
 - **Verifier lesson**: never a git worktree with `pnpm exec` here; mutate copies in place, restore and `cmp`. Commits need JDK 25 on PATH for the husky pre-commit (`JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8` and its `bin`). `backend/.env` points at `localhost:5432`, the prod tunnel: a local backend run must override `SPRING_DATASOURCE_*` (the walk used a throwaway Postgres on 5434)
 - **Pending decisions (user)**: TLS checked 2026-11-08 from outside: `findraco.lcsmrt.com` → 72.60.1.97 directly (Cloudflare DNS only, no proxy), TLS ends at the host's nginx 1.24 (Ubuntu) with Let's Encrypt, http→https 301 in place; still to confirm on the box that its findraco block sends `X-Forwarded-Proto` (not critical after W1: redirects use `OAUTH_ISSUER`). Deploy values: `OAUTH_ISSUER=https://findraco.lcsmrt.com`, `MCP_RESOURCE=https://findraco.lcsmrt.com/mcp`, connector URL the same; explain flow test vs E2E with a concrete example when E2E starts
 - **Process rules (user)**: full gate once per phase, related tests per task, fewer and grouped tasks; workers in Sonnet, Verifier (and ambiguous batches) in Opus; every push that ships a frontend change bumps `1.0.0-beta.N`
-- **Queue (user, 2026-11-06)**: 1. M5-05 (built, deploy pending); 2. close open work (Dependabot majors, release tags, Expense Items P2/P3, prod DB password rotation); 3. daily use + small fixes; 4. brand/design polish. Later candidates: MCP delete/series via a trash first, M5-11 managed IdP evaluation (Google sign-in)
+- **Queue (user, 2026-11-06)**: 1. M5-05 (built, deploy pending); 2. close open work (Dependabot majors, release tags, Expense Items P2 (P3 dropped 2026-11-17), prod DB password rotation); 3. daily use + small fixes; 4. brand/design polish. Later candidates: MCP delete/series via a trash first, M5-11 managed IdP evaluation (Google sign-in)
 - **Blockers**: none. **Branch**: `mcp-connector` at 5c27b6f7 + this docs commit. Nothing running
