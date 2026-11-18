@@ -1,6 +1,6 @@
 import type { PeriodNavigator } from "@/components/periodNavigator/PeriodNavigator";
 import type { Period } from "@/utils/period";
-import { resolveSelection } from "@/utils/periodParams";
+import { resolveSelection, selectionForRange } from "@/utils/periodParams";
 import type { ComponentProps } from "react";
 import { useMemo } from "react";
 import { useTransactionFilters } from "./filters/useTransactionFilters";
@@ -31,7 +31,10 @@ export function useTransactionPeriod() {
     onRangeChange: (next) =>
       updateTransactions((t) => ({ ...t, period: { ...t.period, customRange: next } })),
     onStep: (next) =>
-      updateTransactions((t) => ({ ...t, period: { ...t.period, customRange: next } })),
+      updateTransactions((t) => ({
+        ...t,
+        period: selectionForRange({ startDate: next.from, endDate: next.to }, new Date()),
+      })),
   };
 
   return { range, navigator };
