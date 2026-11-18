@@ -649,6 +649,8 @@
     "transaction-category-type-mismatch": "A categoria não corresponde ao tipo da transação.",
     "transaction-not-awaiting-confirmation": "Esta transação não está aguardando confirmação.",
     "transaction-not-found": "Esta transação não existe mais.",
+    "trash-entry-not-found": "Esta exclusão não está mais na lixeira.",
+    "trash-series-changed": "A série foi alterada depois desta exclusão, então não dá para restaurá-la.",
     "unauthenticated": "Sua sessão terminou. Entre novamente.",
     "unexpected": "Ocorreu um erro inesperado.",
     "unsupported-request": "Esta ação não é compatível.",

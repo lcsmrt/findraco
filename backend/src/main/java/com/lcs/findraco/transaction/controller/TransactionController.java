@@ -11,6 +11,7 @@ import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.ImportResultResponse;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
+import com.lcs.findraco.transaction.response.TransactionDeletedResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
 import com.lcs.findraco.transaction.service.TransactionImportService;
@@ -91,26 +92,22 @@ public class TransactionController {
         return ResponseEntity.status(status).body(result);
     }
 
-    @Operation(summary = "Deletes a transaction")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @Operation(summary = "Moves a transaction to the trash, where it can be restored for 30 days")
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteTransaction(@PathVariable Long id, PlanContext ctx) {
-        transactionService.delete(id, ctx);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<TransactionDeletedResponse> deleteTransaction(@PathVariable Long id, PlanContext ctx) {
+        return ResponseEntity.ok(transactionService.delete(id, ctx));
     }
 
     @Operation(
             summary =
-                    "Deletes a series of recurring transactions (This one / This and following / All); the scope is required")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
+                    "Moves a series of recurring transactions to the trash (This one / This and following / All); the scope is required")
     @DeleteMapping("/series/{seriesId}")
-    public ResponseEntity<Void> deleteSeries(
+    public ResponseEntity<TransactionDeletedResponse> deleteSeries(
             @PathVariable String seriesId,
             @RequestParam SeriesEditScope scope,
             @RequestParam(required = false) Long pivotOccurrenceId,
             PlanContext ctx) {
-        transactionService.deleteSeries(seriesId, scope, pivotOccurrenceId, ctx);
-        return ResponseEntity.noContent().build();
+        return ResponseEntity.ok(transactionService.deleteSeries(seriesId, scope, pivotOccurrenceId, ctx));
     }
 
     @Operation(summary = "Fetches a series' recurrence definition (for edit-form prefill)")

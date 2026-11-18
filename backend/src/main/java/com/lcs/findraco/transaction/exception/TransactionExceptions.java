@@ -19,6 +19,21 @@ public class TransactionExceptions {
         }
     }
 
+    public static class TrashEntryNotFoundException extends DomainException {
+        public TrashEntryNotFoundException(Long id) {
+            super(ProblemType.TRASH_ENTRY_NOT_FOUND, HttpStatus.NOT_FOUND, "Trash entry " + id + " not found.");
+        }
+    }
+
+    public static class TrashSeriesChangedException extends DomainException {
+        public TrashSeriesChangedException() {
+            super(
+                    ProblemType.TRASH_SERIES_CHANGED,
+                    HttpStatus.CONFLICT,
+                    "The series was changed after this deletion, so it cannot be restored.");
+        }
+    }
+
     public static class TransactionNotAwaitingConfirmationException extends DomainException {
         public TransactionNotAwaitingConfirmationException() {
             super(

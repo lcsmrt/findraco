@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.plan.exception.PlanExceptions;
 import com.lcs.findraco.plan.model.PlanRole;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -38,6 +39,20 @@ class PlanAuthorizationTest {
     @Test
     void createDeniedForViewer() {
         assertThatThrownBy(() -> authorization.requireCanCreateTransaction(PlanRole.VIEWER))
+                .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
+    }
+
+    @Test
+    void trashAllowedForEveryRoleButViewer() {
+        for (PlanRole role : List.of(PlanRole.OWNER, PlanRole.EDITOR, PlanRole.CONTRIBUTOR)) {
+            assertThatCode(() -> authorization.requireCanUseTransactionTrash(role))
+                    .doesNotThrowAnyException();
+        }
+    }
+
+    @Test
+    void trashDeniedForViewer() {
+        assertThatThrownBy(() -> authorization.requireCanUseTransactionTrash(PlanRole.VIEWER))
                 .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
     }
 

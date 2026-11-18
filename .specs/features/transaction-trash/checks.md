@@ -130,7 +130,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** none yet
+- **Dispatched:** backend builder (Sonnet, worktree /home/lcs/dev/findraco-trash) at 2e925704
 - **Boundary:** -
 - **Abandoned:** -
 - **Walked:** not yet

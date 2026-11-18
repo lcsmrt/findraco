@@ -322,7 +322,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             Category category,
             String seriesId,
             long seriesVersion,
-            long invitationId) {}
+            long invitationId,
+            long deletionId) {}
 
     /** A route and the status each role gets; a non-member always gets 404 (the plan does not exist for them). */
     record Row(String key, Function<Scene, RequestBuilder> call, int owner, int editor, int contributor, int viewer) {
@@ -544,17 +545,35 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         "DELETE " + TX + "/{id}",
                         s -> delete(
                                 TX + "/{id}", s.cast().plan().getId(), s.row().getId()),
-                        204,
-                        204,
+                        200,
+                        200,
                         403,
                         403),
                 new Row(
                         "DELETE " + TX + "/series/{seriesId}",
                         s -> delete(TX + "/series/{seriesId}", s.cast().plan().getId(), s.seriesId())
                                 .param("scope", "ALL"),
-                        204,
-                        204,
+                        200,
+                        200,
                         403,
+                        403),
+                new Row(
+                        "GET " + TX + "/trash",
+                        s -> get(TX + "/trash", s.cast().plan().getId()),
+                        200,
+                        200,
+                        200,
+                        403),
+                // The deletion is the owner's: a contributor does not see it, so for them it does not exist.
+                new Row(
+                        "POST " + TX + "/trash/{deletionId}/restore",
+                        s -> post(
+                                TX + "/trash/{deletionId}/restore",
+                                s.cast().plan().getId(),
+                                s.deletionId()),
+                        200,
+                        200,
+                        404,
                         403),
                 new Row(
                         "GET " + TX + "/series/{seriesId}",
@@ -738,6 +757,18 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 .get("id")
                 .asLong();
 
+        Transaction trashed =
+                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("20.00"), TransactionType.DEBIT);
+        long deletionId = objectMapper
+                .readTree(mockMvc.perform(delete(TX + "/{id}", cast.plan().getId(), trashed.getId())
+                                .with(testAuthHelper.asUser(cast.owner())))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString())
+                .get("deletionId")
+                .asLong();
+
         User caller =
                 switch (who) {
                     case OWNER -> cast.owner();
@@ -756,7 +787,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 category,
                 seriesId,
                 fixtures.seriesVersion(seriesId),
-                invitationId);
+                invitationId,
+                deletionId);
     }
 
     private static Map<String, Object> editSeriesBody(Scene scene) {

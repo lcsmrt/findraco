@@ -20,7 +20,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
     // memberId (null → whole plan). Under the SPLIT-01 invariant (every tx has >=1 participation whose
     // shares sum to amount) the unfiltered totals are identical to summing ft.amount (AGG-02).
     @Query("SELECT COALESCE(SUM(tp.shareAmount), 0) FROM Transaction ft JOIN ft.participants tp "
-            + "WHERE ft.plan = :plan AND ft.type = :type "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.type = :type "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "AND (:memberId IS NULL OR tp.member.id = :memberId)")
     BigDecimal sumByPlanAndTypeAndDateRange(
@@ -35,7 +35,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
      * on or before it. A transaction that waits for its confirmation counts only in the plain sum above.
      */
     @Query("SELECT COALESCE(SUM(tp.shareAmount), 0) FROM Transaction ft JOIN ft.participants tp "
-            + "WHERE ft.plan = :plan AND ft.type = :type "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.type = :type "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "AND (ft.confirmation = com.lcs.findraco.transaction.model.Confirmation.CONFIRMED "
             + "OR (ft.confirmation = com.lcs.findraco.transaction.model.Confirmation.BY_DATE "
@@ -51,7 +51,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
 
     @Query("SELECT year(ft.startDate), month(ft.startDate), ft.type, COALESCE(SUM(tp.shareAmount), 0) "
             + "FROM Transaction ft JOIN ft.participants tp "
-            + "WHERE ft.plan = :plan "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "AND (:memberId IS NULL OR tp.member.id = :memberId) "
             + "GROUP BY year(ft.startDate), month(ft.startDate), ft.type "
@@ -71,7 +71,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             + "OR (ft.confirmation = com.lcs.findraco.transaction.model.Confirmation.BY_DATE "
             + "AND ft.startDate <= :today) THEN tp.shareAmount ELSE 0 END), 0) "
             + "FROM Transaction ft JOIN ft.participants tp "
-            + "WHERE ft.plan = :plan "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "AND (:memberId IS NULL OR tp.member.id = :memberId) "
             + "GROUP BY tp.member.id, tp.member.name, ft.type")

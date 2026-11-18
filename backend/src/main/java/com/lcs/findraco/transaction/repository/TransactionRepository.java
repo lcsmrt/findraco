@@ -3,6 +3,7 @@ package com.lcs.findraco.transaction.repository;
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionDeletion;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -42,12 +43,26 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
             + "WHERE t IN :transactions")
     List<Transaction> fetchItems(@Param("transactions") Collection<Transaction> transactions);
 
-    Optional<Transaction> findByIdAndPlan(Long id, Plan plan);
+    // The finders below see active transactions only: a trashed one is gone to every screen, total and
+    // regeneration (AD-028). findAllByPlan and findExistingSourceRefs see them all, on purpose.
+    @Query("SELECT t FROM Transaction t WHERE t.id = :id AND t.plan = :plan AND t.deletion IS NULL")
+    Optional<Transaction> findByIdAndPlan(@Param("id") Long id, @Param("plan") Plan plan);
 
     @EntityGraph(attributePaths = {"createdBy", "category.owner", "category.parent.owner"})
-    List<Transaction> findAllByPlanAndSeriesId(Plan plan, String seriesId);
+    @Query("SELECT t FROM Transaction t WHERE t.plan = :plan AND t.seriesId = :seriesId AND t.deletion IS NULL")
+    List<Transaction> findAllByPlanAndSeriesId(@Param("plan") Plan plan, @Param("seriesId") String seriesId);
 
-    long countByCategory(Category category);
+    /** The rows of one deletion, with what the role check reads. */
+    @EntityGraph(attributePaths = {"createdBy"})
+    List<Transaction> findAllByDeletion(TransactionDeletion deletion);
+
+    /** Per deletion of the page: [deletionId, rows, total amount, a description, a type]. */
+    @Query("SELECT t.deletion.id, COUNT(t), COALESCE(SUM(t.amount), 0), MIN(t.description), MIN(t.type) "
+            + "FROM Transaction t WHERE t.deletion IN :deletions GROUP BY t.deletion.id")
+    List<Object[]> summarizeDeletions(@Param("deletions") Collection<TransactionDeletion> deletions);
+
+    @Query("SELECT COUNT(t) FROM Transaction t WHERE t.category = :category AND t.deletion IS NULL")
+    long countByCategory(@Param("category") Category category);
 
     // VERSIONED bumps each moved row's version, so an edit based on a read from before the move is stale.
     @Modifying(flushAutomatically = true)
@@ -56,7 +71,7 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
 
     // Items are part of their transaction, so the transaction's repository reads and moves them;
     // they have no repository of their own.
-    @Query("SELECT COUNT(it) FROM TransactionItem it WHERE it.category = :category")
+    @Query("SELECT COUNT(it) FROM TransactionItem it WHERE it.category = :category AND it.transaction.deletion IS NULL")
     long countItemsByCategory(@Param("category") Category category);
 
     // An item is part of its transaction, so moving the item changes the transaction: its version goes up
@@ -69,6 +84,16 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     @Modifying(flushAutomatically = true)
     @Query("UPDATE TransactionItem it SET it.category = :target WHERE it.category = :source")
     int reassignItemCategory(@Param("source") Category source, @Param("target") Category target);
+
+    // Only the deletion of a category leaves trashed rows with no category: nothing active uses it then, and
+    // the foreign keys would otherwise block the delete and, later, the purge.
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE VERSIONED Transaction ft SET ft.category = NULL WHERE ft.category = :source")
+    int clearCategory(@Param("source") Category source);
+
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE TransactionItem it SET it.category = NULL WHERE it.category = :source")
+    int clearItemCategory(@Param("source") Category source);
 
     @Query("SELECT ft.sourceRef FROM Transaction ft WHERE ft.plan = :plan AND ft.sourceRef IN :sourceRefs")
     Set<String> findExistingSourceRefs(@Param("plan") Plan plan, @Param("sourceRefs") Collection<String> sourceRefs);

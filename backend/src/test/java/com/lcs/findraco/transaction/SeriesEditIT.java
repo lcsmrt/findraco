@@ -508,7 +508,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
         mockMvc.perform(delete(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), seriesId)
                         .with(testAuthHelper.asUser(owner))
                         .param("scope", "ALL"))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         for (JsonNode occ : created.get("occurrences")) {
             mockMvc.perform(get(
@@ -544,7 +544,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .param("scope", "THIS_ONE")
                         .param("pivotOccurrenceId", String.valueOf(march)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         JsonNode edited = editSeries(
                 plan, owner, seriesId, recurringEditBody("Gym 2", "60.00", start, end, "ALL"), status().isOk());
@@ -587,7 +587,7 @@ class SeriesEditIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner))
                         .param("scope", "THIS_AND_FOLLOWING")
                         .param("pivotOccurrenceId", String.valueOf(fifth)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
 
         assertThat(transactionRepository.findAllByPlanAndSeriesId(plan, seriesId))
                 .extracting(Transaction::getDescription)

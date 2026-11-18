@@ -49,6 +49,8 @@ export type ProblemType =
   | "category-owner-not-member"
   | "transaction-not-found"
   | "series-not-found"
+  | "trash-entry-not-found"
+  | "trash-series-changed"
   | "transaction-not-awaiting-confirmation"
   | "transaction-category-type-mismatch"
   | "item-category-type-mismatch"
