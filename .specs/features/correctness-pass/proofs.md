@@ -1,9 +1,9 @@
 # correctness-pass proofs
 
-**HEAD**: 1756ae7d
+**HEAD**: 9dd6a437
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 26 pass, 0 fail
+**Result**: 27 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -30,6 +30,7 @@
 | C21 | `run stories / ✓ TablePagination.stories.tsx > Empty` | pass |
 | C22 | `run unit / ✓ usageOf > caps the percent at 99 while money remains` | pass |
 | C23 | `run unit / ✓ usageOf > shows at least 101 percent while over` | pass |
+| C24 | `run stories / ✓ ConfirmTransactionDialogView.stories.tsx > Date Without Clear` | pass |
 | Build | `cd frontend && pnpm lint` | pass |
 | Build | `cd frontend && pnpm build` | pass |
 | Build | `cd frontend && node scripts/check-siblings.ts` | pass |
@@ -59,18 +60,18 @@ The width(0) and height(0) of chart should be greater than 0,
 `Run stories` - exit 0
 
 ```
- ✓ |storybook (chromium)| src/components/input/DatePicker.stories.tsx > Optional Clears 27ms
- ✓ |storybook (chromium)| src/components/input/DatePicker.stories.tsx > Invalid Typing 99ms
- ✓ |storybook (chromium)| src/components/input/DatePicker.stories.tsx > Range 30ms
- ✓ |storybook (chromium)| src/components/input/DatePicker.stories.tsx > Range Empty 283ms
- ✓ |storybook (chromium)| src/components/input/DatePicker.stories.tsx > Range Single Month 68ms
+ ✓ |storybook (chromium)| src/components/input/DatePicker.stories.tsx > Range Empty 280ms
+ ✓ |storybook (chromium)| src/components/input/DatePicker.stories.tsx > Range Single Month 67ms
 
- Test Files  4 passed (4)
-      Tests  24 passed (24)
-   Start at  00:48:55
-   Duration  3.45s (transform 0ms, setup 2.12s, collect 1.64s, tests 2.87s, environment 0ms, prepare 8.59s)
+ Test Files  5 passed (5)
+      Tests  27 passed (27)
+   Start at  08:18:28
+   Duration  3.69s (transform 0ms, setup 2.81s, collect 2.12s, tests 3.64s, environment 0ms, prepare 11.75s)
 
 No story files found for the specified pattern: src/**/*.mdx
+stderr | src/features/transactions/components/ConfirmTransactionDialogView.stories.tsx > Filled
+You are using Testing Library's `screen` object. Use `within(canvasElement)` instead.
+More info: https://storybook.js.org/docs/writing-tests/interaction-testing?ref=error
 stderr | src/components/input/DatePicker.stories.tsx > Calendar Open
 You are using Testing Library's `screen` object. Use `within(canvasElement)` instead.
 More info: https://storybook.js.org/docs/writing-tests/interaction-testing?ref=error
