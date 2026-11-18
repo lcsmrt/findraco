@@ -103,6 +103,15 @@ describe("selectionForRange", () => {
       period: "this-month",
       customRange: { from: "2026-09-01", to: "2026-09-30" },
     });
+    // Sharing only one edge with a preset is not equal to it: This month starts 2026-10-01, Last 3 months ends 2026-10-31.
+    expect(selectionForRange({ startDate: "2026-10-01", endDate: "2026-10-20" }, now).customRange).toEqual({
+      from: "2026-10-01",
+      to: "2026-10-20",
+    });
+    expect(selectionForRange({ startDate: "2026-09-01", endDate: "2026-10-31" }, now).customRange).toEqual({
+      from: "2026-09-01",
+      to: "2026-10-31",
+    });
   });
 
   it("a preset reached by the arrows resolves against a later date", () => {

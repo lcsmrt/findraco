@@ -96,6 +96,8 @@ the redesign will build on, so they ship before any redesign work.
 4. WHEN the member erases the date text and leaves the field THEN the system SHALL show the date the form still holds.  <!-- event-driven -->
 5. WHERE a date field is optional (the series end date) the system SHALL keep its clear button and clearing it SHALL clear the value.  <!-- optional-feature -->
 
+6. The confirm dialog's date field SHALL show no clear button (FIX-09, added after verification).  <!-- ubiquitous -->
+
 **Independent Test**: Choose "Outra pessoa" in a two-member plan and save: the expense belongs to the other member.
 
 ---
@@ -153,8 +155,9 @@ the redesign will build on, so they ship before any redesign work.
 | FIX-06 | P1: The period follows the calendar (AC 1–3) | Tasks | Pending |
 | FIX-07 | P2: Lists and limits say what they hold (AC 1–2) | Tasks | Pending |
 | FIX-08 | P2: Lists and limits say what they hold (AC 3–4) | Tasks | Pending |
+| FIX-09 | P1: The form saves what the user chose (AC 6, from verification) | Tasks | Pending |
 
-**Coverage:** 8 total, 0 mapped to tasks, 8 unmapped ⚠️
+**Coverage:** 9 total, 9 mapped to tasks
 
 ---
 

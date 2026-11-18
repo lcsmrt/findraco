@@ -13,7 +13,7 @@ Implement these tasks with the `tlc-spec-driven` skill: **activate it by name an
 **Approved**: 2026-11-18 - user: "Consegue seguir com design e tasks e execução disso aqui sozinho? Em seguida, escolher adequadamente entre lean e sdd e continuar com a fase 1. Sozinho, sem me chamar pra nada, até 9 da manhã"
 **Build**: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 **Run unit**: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/app/providers/PlanProvider.test.tsx src/app/routing/PlanFiltersGate.test.tsx src/features/overview/utils/summaryView.test.ts src/features/transactions/components/transactionForm.test.ts src/features/transactions/components/TransactionFormDrawer.test.tsx src/utils/periodParams.test.ts src/features/overview/OverviewPage.test.tsx src/features/transactions/TransactionsPage.test.tsx src/features/overview/utils/spendingRows.test.ts
-**Run stories**: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/overview/components/SummaryCards.stories.tsx src/components/input/DatePicker.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/components/table/TablePagination.stories.tsx
+**Run stories**: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/overview/components/SummaryCards.stories.tsx src/components/input/DatePicker.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/components/table/TablePagination.stories.tsx src/features/transactions/components/ConfirmTransactionDialogView.stories.tsx
 
 > Unattended run (user, 2026-11-18): tasks were approved in advance with the spec; the user reviews after the build.
 
@@ -373,13 +373,16 @@ Proof: run unit | ✓ usageOf > caps the percent at 99 while money remains
 **C23** - OVER with `percentUsed` 100.2 shows 101 (FIX-08, AC 4)
 Proof: run unit | ✓ usageOf > shows at least 101 percent while over
 
+**C24** - The confirm dialog's date field shows no clear button (FIX-09, AC 6)
+Proof: run stories | ✓ ConfirmTransactionDialogView.stories.tsx > Date Without Clear
+
 ---
 
 ## Handoff
 
 **Settled mid-build:** none. Worker A deviations: T4 key is `transactions.form.choosePerson` (the namespace of the other schema messages); one T4 test and two T2 assertions that held the old behaviour were replaced by the spec's outcome; the `WithForecast` fixture's actuals now sum to the headline
-**Dispatched:** worker A (Phase 1, T1–T6, Sonnet) at 74f8b22a, returned (1aaabd40); worker B (Phase 2, T7–T12, Sonnet) at 1aaabd40
-**Walked:** not yet
+**Dispatched:** worker A (Phase 1, T1–T6, Sonnet) at 74f8b22a, returned (1aaabd40); worker B (Phase 2, T7–T12, Sonnet) at 1aaabd40, returned (1756ae7d); check_proofs 26/26 at 1756ae7d; Verifier (Opus) at 1756ae7d, returned FAIL (2 findings), fixed in one pass by the orchestrator
+**Walked:** 2026-11-18 08:14, local stack (throwaway Postgres on 5434, backend jar on 3000, built SPA at 1756ae7d served by `vite preview` on 5173 with `VITE_FINDRACO_API_URL` pointing at it), Playwright 390×844 pt-BR, seeded plan "Casa" (Lucas owner, Marina editor). Sign in as lucas@example.com, switch to Casa, reload `/overview?plan=3`: the Overview of Casa renders, switcher reads Casa (FIX-01). Card reads "Resultado"; Despesas headline R$ 6.127,37 with Lucas R$ 3.924,43 + Marina R$ 2.202,94 (FIX-02/03). Restaurantes shows "restam R$ 1,22 · 99%" (FIX-08). ‹ then › leaves `/overview?plan=3` with no `period=custom` (FIX-06). Transactions on the phone shows the "Série" marker (FIX-07). New transaction → "Outra pessoa" preselects Marina (FIX-04); the date field has no clear button (FIX-05).
 
 ---
 

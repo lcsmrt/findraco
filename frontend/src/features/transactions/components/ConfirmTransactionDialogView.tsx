@@ -85,6 +85,7 @@ export function ConfirmTransactionDialogView({
               value={field.value}
               // Clearing the text keeps the last date: a confirmed transaction always has one.
               onChange={(date) => date && field.onChange(date)}
+              required
               disabled={isSaving}
               className="w-full"
             />
