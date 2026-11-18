@@ -292,8 +292,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Tests named as in C22–C23 pass
-- [ ] Gate check passes: Build (last task)
+- [x] Tests named as in C22–C23 pass
+- [x] Gate check passes: Build (last task)
 
 **Tests**: unit
 **Gate**: build
