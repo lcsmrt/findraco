@@ -218,6 +218,14 @@
 - **Date**: 2026-11-17
 - **Status**: active
 
+### AD-028
+- **Decision**: Deleting transactions moves them to a per-plan trash for 30 days. Each delete action is one `transaction_deletions` row; trashed `transactions` and a series deleted whole (`recurrence_definitions`) point at it through `deletion_id` with `ON DELETE CASCADE`, and the deletion records what it changed on the series (EXDATE added, previous end or parcel count) so restore undoes it as one action. Finders filter `deletion_id IS NULL` explicitly (AD-006), except importer dedup and category reassignment, which see trashed rows. Both DELETE routes answer `200 { deletionId }`. A daily job purges deletions older than 30 days.
+- **Reason**: ROADMAP 1.0 "data safety": a delete was physical with no timestamps, and the MCP is about to be able to delete (DESIGN-PLAN R1, R9). User, 2026-11-18, delegated the phase 1 decisions ("Sozinho, sem me chamar pra nada").
+- **Trade-off**: Every new transaction finder must remember the filter; restore of a series edited since the deletion is refused (409) instead of merged.
+- **Scope**: `transaction` (service, repositories, new trash service and purge job), `dashboard` and `category` read repositories, `plan` (Plans screen trash section), frontend delete toasts.
+- **Date**: 2026-11-18
+- **Status**: active
+
 ## Handoff
 
 - **Next**: investigate the 403 seen on the first claude.ai connect (iPhone app, 2026-11-16 ~03:45 UTC, requestId `2602d1ce-7c11-472e-ab61-2a9fb5d8ad8c`): the in-app browser first showed the SPA 404 (beta.30 service worker served `/oauth2/authorize`), the user updated the version, signed in, then got a 403 `/error` problem; a retry went straight to consent (session already signed in) and connected. User brings `docker logs findraco-web`/`findraco-api` lines. Also pending: a new user's default time zone should be the device's, not America/Sao_Paulo (user, to discuss)
