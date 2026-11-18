@@ -212,8 +212,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Test named as in C18 passes
-- [ ] Gate check passes: Quick
+- [x] Test named as in C18 passes
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick

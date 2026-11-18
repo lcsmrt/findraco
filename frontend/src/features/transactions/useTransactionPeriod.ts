@@ -30,6 +30,8 @@ export function useTransactionPeriod() {
       updateTransactions((t) => ({ ...t, period: { period: next, customRange: null } })),
     onRangeChange: (next) =>
       updateTransactions((t) => ({ ...t, period: { ...t.period, customRange: next } })),
+    onStep: (next) =>
+      updateTransactions((t) => ({ ...t, period: { ...t.period, customRange: next } })),
   };
 
   return { range, navigator };

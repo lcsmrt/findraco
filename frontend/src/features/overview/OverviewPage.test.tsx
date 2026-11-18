@@ -157,3 +157,33 @@ describe("OverviewPage category usage", () => {
     expect(spendingQuery).toEqual({ startDate: expect.any(String), endDate: expect.any(String) });
   });
 });
+
+describe("OverviewPage", () => {
+  // Only the clock is faked: the screen opens on the current month, so the URL depends on "today".
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date(2026, 9, 15));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("previous then next arrow returns to this month as a preset", async () => {
+    const { user } = renderOverview("/?plan=5", [ana, bruno]);
+
+    await user.click(await screen.findByRole("button", { name: "Previous period" }));
+    await waitFor(() =>
+      expect(searchParams()).toEqual({
+        plan: "5",
+        period: "custom",
+        periodFrom: "2026-09-01",
+        periodTo: "2026-09-30",
+      }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next period" }));
+
+    await waitFor(() => expect(searchParams()).toEqual({ plan: "5" }));
+  });
+});
