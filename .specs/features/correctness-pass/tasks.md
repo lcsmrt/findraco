@@ -152,8 +152,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Stories named as in C13–C14 pass
-- [ ] Gate check passes: Quick (stories)
+- [x] Stories named as in C13–C14 pass
+- [x] Gate check passes: Quick (stories)
 
 **Tests**: story
 **Gate**: quick
