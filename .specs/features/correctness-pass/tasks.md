@@ -132,8 +132,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Tests named as in C9–C11 pass; critical branch threshold still met (`pnpm exec vitest run --project=critical --coverage`)
-- [ ] Gate check passes: Quick
+- [x] Tests named as in C9–C11 pass; critical branch threshold still met (`pnpm exec vitest run --project=critical --coverage`)
+- [x] Gate check passes: Quick
 
 **Tests**: unit
 **Gate**: quick
