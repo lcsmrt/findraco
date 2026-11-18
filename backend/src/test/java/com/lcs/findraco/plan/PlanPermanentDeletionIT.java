@@ -189,7 +189,7 @@ class PlanPermanentDeletionIT extends AbstractIntegrationTest {
                         .param("scope", "THIS_ONE")
                         .param("pivotOccurrenceId", String.valueOf(occurrence))
                         .with(testAuthHelper.asUser(owner)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
         return objectMapper
                 .readTree(postJson(PlanRoutes.PLAN_INVITATION, plan, owner, Map.of("role", "VIEWER", "type", "LINK")))
                 .get("token")
