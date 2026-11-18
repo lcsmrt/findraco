@@ -772,6 +772,14 @@ describe("TransactionFormDrawer", () => {
     expect(await saveThisOne(user, requests)).toMatchObject({ scope: "THIS_ONE", pivotConfirmed: false });
   });
 
+  it("the date field has no clear button", () => {
+    renderDrawer({ members: [lucas] });
+
+    // A new transaction opens on today's date, so a clear button would show if the field allowed it.
+    expect((screen.getByLabelText("Date") as HTMLInputElement).value).not.toBe("");
+    expect(screen.queryByRole("button", { name: "Clear date" })).toBeNull();
+  });
+
   it("one-off shows no confirmation controls", () => {
     renderDrawer({ mode: "edit", transaction: savedTransaction, members: [lucas] });
 

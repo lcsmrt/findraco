@@ -172,8 +172,8 @@ T7 → T8 → T9 → T10 → T11 → T12
 
 **Done when**:
 
-- [ ] Test named as in C12 passes
-- [ ] Gate check passes: Build (last task of Phase 1)
+- [x] Test named as in C12 passes
+- [x] Gate check passes: Build (last task of Phase 1)
 
 **Tests**: unit
 **Gate**: build
