@@ -8,6 +8,12 @@ import { createUnhandledRequestRecorder } from "./unhandledRequests";
 // Every test asserts English copy; the device language of the runner must never leak in.
 initI18n("en");
 
+// jsdom has no pointer capture, which the toast's swipe handling calls on every press; the toast's
+// action button is the one place a test presses it.
+Element.prototype.setPointerCapture = () => {};
+Element.prototype.releasePointerCapture = () => {};
+Element.prototype.hasPointerCapture = () => false;
+
 const unhandledRequests = createUnhandledRequestRecorder();
 
 beforeAll(() => {

@@ -324,6 +324,43 @@ describe("TransactionsPage", () => {
     expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
     expect(screen.queryByRole("dialog", { name: "Edit Transaction" })).toBeNull();
   });
+
+  it("undo in the delete toast restores the transaction", async () => {
+    const { requests, user } = renderTab();
+    const row = await tableRow("Rent");
+    server.use(transactionHandlers.remove(7), transactionHandlers.restore());
+
+    await user.click(row.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog", { name: "Confirm Deletion" });
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+    await screen.findByText("Transaction deleted.");
+    await user.click(await screen.findByRole("button", { name: "Undo" }));
+
+    expect(await screen.findByText("Transaction restored.")).toBeTruthy();
+    expect(writes(requests)).toEqual([
+      ["DELETE", `${API}/42`],
+      ["POST", `${API}/trash/7/restore`],
+    ]);
+  });
+
+  it("undo in the series delete toast restores the series", async () => {
+    const { requests, user } = renderTab({ transactions: [gym] });
+    const row = await tableRow("Gym (3/12)");
+    server.use(transactionHandlers.removeSeries(8), transactionHandlers.restore(12));
+
+    await user.click(row.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog", { name: "Delete series" });
+    await user.click(within(dialog).getByRole("radio", { name: /^All/ }));
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+    await screen.findByText("Series deleted.");
+    await user.click(await screen.findByRole("button", { name: "Undo" }));
+
+    expect(await screen.findByText("Transaction restored.")).toBeTruthy();
+    expect(writes(requests)).toEqual([
+      ["DELETE", `${API}/series/s-1?scope=ALL&pivotOccurrenceId=55`],
+      ["POST", `${API}/trash/8/restore`],
+    ]);
+  });
 });
 
 describe("TransactionsPage row permissions (BST-10 AC 10, 11)", () => {
