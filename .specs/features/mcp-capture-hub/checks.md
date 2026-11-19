@@ -82,7 +82,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C21** - In `tools/list`, `delete_transaction` has `annotations.destructiveHint: true` and a description containing "30 days" and "restore_deletion" (AC 17)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#deleteToolIsDestructiveAndNamesRestore' -Dsurefire.skip=true
 
-**C22** - A CONTRIBUTOR deleting another member's row, and a VIEWER deleting any row, through `delete_transaction` get a tool error and the row stays listed; a CONTRIBUTOR deleting their own row succeeds (AC 18)
+**C22** - A CONTRIBUTOR deleting another member's row, and a VIEWER deleting any row, through `delete_transaction` get a tool error and the row stays listed; a CONTRIBUTOR deleting their own row succeeds; through `restore_deletion`, a VIEWER is refused with "Viewers cannot use the transaction trash." and a CONTRIBUTOR restoring the owner's deletion gets the not-found message, and the row stays trashed (AC 18; AC 16)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#deleteFollowsTheAppsRoleMatrix' -Dsurefire.skip=true
 
 **C23** - The committed `backend/openapi.json` matches the generated docs with the new `status` and `uncategorized` parameters (Changes underneath: contract)
@@ -100,7 +100,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 | MCP `update_transaction` cases (5) | `category` C7 · `removeCategory` C8 · both C9 · type mismatch C10 · row shared with a former member C25 | - |
 | MCP `list_transactions` new params (2) | `status` C14 · `uncategorized` C12, C16 | - |
 | MCP `delete_transaction` scopes (3) | THIS_ONE (default) C19 · THIS_AND_FOLLOWING C19 · ALL C19 · single row C18 | - |
-| MCP `restore_deletion` outcomes (3) | restored C20 · not found C20 · series changed C20 | - |
+| MCP `restore_deletion` outcomes (5) | restored C20 · not found C20 · series changed C20 · viewer refused C22 · contributor on the owner's deletion C22 | - |
 | status values, AC 11 (3) | ACTUAL C13 · FORECAST C13 · PENDING C13, C14 | - |
 | name matching, AC 2 (5 examples) | lowercase first name C2 · accented full name C2 · unknown C4 · ambiguous C4 · first name that is another's whole name C4 | - |
 | `series` field values (3) | `k/N` C17 · `monthly` C17 · null C17 | - |

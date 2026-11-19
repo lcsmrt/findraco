@@ -583,6 +583,16 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
         JsonNode own = clientOf(contributor).callJson("delete_transaction", with(inHome, "id", contributors.getId()));
         assertThat(own.path("count").asLong()).isEqualTo(1);
         assertThat(ids(listed(clientOf(owner)))).containsExactly(owners.getId());
+
+        long deletion = clientOf(owner)
+                .callJson("delete_transaction", Map.of("id", owners.getId()))
+                .path("deletionId")
+                .asLong();
+        assertThat(errorText(clientOf(viewer).callTool("restore_deletion", with(inHome, "deletionId", deletion))))
+                .isEqualTo("Viewers cannot use the transaction trash.");
+        assertThat(errorText(clientOf(contributor).callTool("restore_deletion", with(inHome, "deletionId", deletion))))
+                .isEqualTo("Trash entry " + deletion + " not found.");
+        assertThat(ids(listed(clientOf(owner)))).isEmpty();
     }
 
     private static Map<String, Object> with(Map<String, Object> base, String key, Object value) {
