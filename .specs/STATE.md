@@ -241,9 +241,9 @@
   - #36 `feat/transaction-trash` → `fix/correctness-pass`: R1 trash, `1.0.0-beta.34` (AD-028). Retarget to `main` after #35 merges.
   - `feat/mcp-capture-hub` → `feat/transaction-trash`: R9 (AD-029), backend only, no version bump. Retarget after #36.
 - **Owner decisions pending**:
-  1. Trash: a later delete or an "only this" edit of another occurrence makes an older series deletion unrestorable (409, AC 9 as written). Proposed: block only when the series' rule or end changed.
-  2. MCP: a row shared with a member who left the plan cannot be edited through Claude (stated limit, C25) - and the app's edit refuses it too (`TransactionService` rejects participants outside the plan). Proposed: keep a former member's stored share when the split is unchanged.
-  3. R3 neutral movements: six questions in `.specs/features/neutral-movements/plan.md` (draft, not approved).
+  1. Trash - ANSWERED 2026-11-19, user: "Só bloquear se a série mudou": an older series deletion stays restorable after later deletes or "only this" edits; 409 only when the series' amount, rule or end changed after it. Not built yet.
+  2. Former members - ANSWERED 2026-11-19, user: "Se o plano é meu, por que eu não poderia editar? Não tem sentido pra mim.": a row already split with a member who left stays fully editable (app and Claude); the former member's share stays valid on that row; a former member cannot be added to a row they are not on. Confirmed 2026-11-19 ("Cara, pra mim faz sentido"); the share recalculates when the amount changes. Not built yet.
+  3. R3 neutral movements: all decisions answered 2026-11-19 (refund case added, no category on neutral rows); criteria drafted in `.specs/features/neutral-movements/plan.md`, awaiting plan approval.
 - **Next phase per DESIGN-PLAN**: phase 2 foundations, after the decisions above; R17 contacts and import review come in phase 3.
 - **Environment lessons**: each git worktree needs its own `pnpm install --offline --frozen-lockfile` (never symlink node_modules); never run two maven builds in the same `backend/` (a Verifier's throwaway test broke a `check_proofs` run); the local walk stack is Postgres on 5434 + `java -jar` on 3000 + `vite preview` with `VITE_FINDRACO_API_URL`.
 - **Running locally**: nothing.

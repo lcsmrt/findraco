@@ -60,12 +60,32 @@ flowchart LR
 | 5 | Can a split or a category apply to a neutral row? | No category, no split | It is not spending; a category would count it in limits again |
 | 6 | Does Claude get a `neutral` parameter? | Yes, on create and update | Claude is the capture channel |
 
-## Criteria (to be finalised after the decisions)
+### Owner answers (2026-11-19)
 
-1. WHILE a row has a neutral kind the system SHALL count it in no income, expense, result, category total or limit.
-2. WHEN a statement row's text starts with "Pagamento de fatura" THEN the import SHALL store it as a card bill payment.
-3. WHEN a member marks a row as neutral THEN the list SHALL show it with the "Neutro" badge and its kind.
-4. WHEN the list is filtered by "Neutros" THEN it SHALL show only neutral rows.
+1. Kinds: transfer between members, card bill payment, savings/investment move - as recommended.
+   Owner raised a fourth case: a friend outside the plan pays back their half of a shared R$ 100 pizza; today that
+   Pix counts as income and the full R$ 100 stays in food spending, so both income and spending are inflated
+   Answer 2026-11-19, user: "Reembolso abate o gasto": the friend's Pix becomes a refund in the purchase's category,
+   so Food shows R$ 50 and income does not grow.
+2. Import: apply the kind to "Pagamento de fatura"; only suggest it for Pix between members - as recommended.
+3. Existing rows: a review list the owner applies; no automatic backfill - as recommended.
+4. Overview: a small "Neutros R$ X" line under the result, out of the totals - as recommended.
+5. Category on neutral rows: none for now - user, 2026-11-19: "Sem categoria agora". Goal "caixinhas" and investments
+   arrive as accounts (R7); allowing a category later is a validation change with no data migration. A refund is the
+   exception: it carries the purchase's category, since it reduces that category's spending.
+6. Claude gets the neutral kind on create and update - as recommended (Claude is the capture channel).
+
+## Criteria
+
+1. WHILE a row has a neutral kind (transfer between members, card bill payment, savings move) the system SHALL count it in no income, expense, result, category total or limit.
+2. WHILE a credit row is a refund the system SHALL subtract it from its category's spending and from the period's expenses, and SHALL count it in no income (R$ 100 pizza in Food + R$ 50 refund in Food → Food R$ 50, income unchanged).
+3. WHEN a statement row's text starts with "Pagamento de fatura" THEN the import SHALL store it as a card bill payment.
+4. WHEN a statement Pix's counterpart name matches a plan member THEN the import SHALL store it unmarked and the "Revisar movimentos" list SHALL offer it as a transfer.
+5. WHEN a member opens "Revisar movimentos" THEN the system SHALL list existing rows matching the rules of criteria 3 and 4 that have no kind, and SHALL change a row only when the member applies it.
+6. WHEN a member gives a neutral kind to a row with a category or a split THEN the system SHALL refuse it (422), except a refund, which requires a category.
+7. WHEN the Overview shows a period with neutral rows THEN it SHALL show "Neutros R$ X" under the result, out of the totals.
+8. WHEN a member marks a row as neutral or refund THEN the list SHALL show it with a badge naming its kind, and a "Neutros" filter SHALL show only such rows.
+9. WHEN Claude creates or updates a transaction with a kind THEN the system SHALL store it under the same rules as the app.
 
 ## Out of scope
 
