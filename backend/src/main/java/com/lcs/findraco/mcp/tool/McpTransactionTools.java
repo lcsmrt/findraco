@@ -82,7 +82,20 @@ public class McpTransactionTools {
                     : categories.resolve(category, resolved.name(), resolved.ctx());
             Page<TransactionResponse> found = transactionService.findAllByPlanPaged(
                     new TransactionFilter(
-                            type, categoryId, null, text, from, to, null, null, pageNumber, PAGE_SIZE, null, null),
+                            type,
+                            categoryId,
+                            null,
+                            text,
+                            from,
+                            to,
+                            null,
+                            null,
+                            null,
+                            null,
+                            pageNumber,
+                            PAGE_SIZE,
+                            null,
+                            null),
                     resolved.ctx());
             Integer nextPage = found.hasNext() ? pageNumber + 1 : null;
             return new McpTransactionPageResponse(
