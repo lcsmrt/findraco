@@ -47,7 +47,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C12** - `list_transactions` with `uncategorized: true` returns exactly the uncategorized rows (AC 10)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#listUncategorizedReturnsOnlyRowsWithoutCategory' -Dsurefire.skip=true
 
-**C13** - `GET …/transaction?status=` returns, against the reader's today: `PENDING` the confirmation-required forecasts dated on or before today; `FORECAST` the other forecasts; `ACTUAL` the confirmed rows and past automatic rows - each row listed under exactly the status `Transaction.status(today)` gives it; a reader in America/Sao_Paulo at 2026-11-18T04:00:00Z sees a confirmation-required bill dated 2026-11-18 under `PENDING` (AC 11)
+**C13** - `GET …/transaction?status=` returns, against the reader's today: `PENDING` the confirmation-required forecasts dated before today; `FORECAST` the other forecasts, a confirmation-required bill dated today included; `ACTUAL` the confirmed rows and automatic rows dated up to today - each row listed under exactly the status `Transaction.status(today)` gives it; a reader in a zone where the overdue bill's date has not come yet sees it under `FORECAST` (AC 11)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionListFilterIT#statusFilterFollowsTheReadersToday' -Dsurefire.skip=true
 
 **C14** - `list_transactions` with `status: PENDING` returns the same rows as the REST filter (AC 11)
@@ -102,7 +102,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 ## Swept
 
-- validation: C4, C5, C9, C15, C16; `attributedTo` bounded by `StrictToolSchemas` like every other array (max 20 names)
+- validation: C4, C5, C9, C15, C16; `attributedTo` bounded to 20 names by `McpMemberResolver` (`StrictToolSchemas` does not bound arrays)
 - failure modes: C4, C9, C10, C20 (a refused call changes nothing)
 - idempotency: C20 (a second restore is a tool error, not a double insert)
 - authorization: C22; create and list roles as today (`McpCaptureToolsIT#roleMatrixForWrites`)
@@ -114,7 +114,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 ## Handoff
 
-- **Settled mid-build:** none
+- **Settled mid-build:** AC 11 / C13 boundary corrected to `Transaction.status(today)` (PENDING only before today) by the orchestrator - the criterion names that rule, the draft example contradicted it
 - **Dispatched:** builder (Sonnet, main tree /home/lcs/dev/findraco) at 9acb6b8f
 - **Boundary:** C1–C24 built and green at the build's last commit (backend only; the SPA does not send the new filters)
 - **Abandoned:** the C13 example "a bill dated 2026-11-18 requiring confirmation, reader's today 2026-11-18 → PENDING" (and AC 11's "on or before the reader's today"): `Transaction.status(today)` answers FORECAST for a confirmation-required row dated today and PENDING only when it is dated before today (`TransactionConfirmationTest#requiredBeforeTodayIsPending`). The filter follows `Transaction.status(today)` exactly, as the claim's first half requires, so `TransactionListFilterIT#statusFilterFollowsTheReadersToday` asserts the bill due today under FORECAST and the bill dated the day before under PENDING for the reader whose today it is; it also uses two real zones 25 hours apart (the context clock is the system one, so 2026-11-18T04:00Z cannot be pinned). The claim needs the owner's ruling: change the plan's PENDING boundary to "on or before today" (then `Transaction.status`, its test and the app's "A confirmar" view change too) or keep `status(today)` and correct C13/AC 11.
