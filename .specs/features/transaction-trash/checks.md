@@ -101,6 +101,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C28** - Restoring after its category was deleted with a target brings the row back in the target; without a target, with no category (AC 22)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#restoreAfterCategoryDeleteUsesTheTarget' -Dsurefire.skip=true
 
+**C29** - Restoring an "only this" or "this and following" deletion after its series' category was deleted with a target answers `200` and brings the rows back in the target; a deletion whose series was edited since still answers `409` `trash-series-changed` after the move (AC 22, AC 9; appended after the build found the gap)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#restoreOccurrenceAfterTheSeriesCategoryWasDeleted' -Dsurefire.skip=true
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -129,7 +132,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 ## Handoff
 
-- **Settled mid-build:** none
+- **Settled mid-build:** a category move bumps the series version, which made restore of a series deletion answer 409 against AC 22; the deletions of a moved series now follow the bump (C29)
 - **Dispatched:** backend builder (Sonnet, worktree /home/lcs/dev/findraco-trash) at 2e925704
 - **Boundary:** C1–C13, C16–C18, C24–C28 closed at bac5414c
 - **Abandoned:** -

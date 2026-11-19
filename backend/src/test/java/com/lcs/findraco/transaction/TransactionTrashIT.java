@@ -557,6 +557,69 @@ class TransactionTrashIT extends AbstractIntegrationTest {
         assertThat(fetch(plan, owner, toNone).get("category").isNull()).isTrue();
     }
 
+    @Test
+    void restoreOccurrenceAfterTheSeriesCategoryWasDeleted() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category source = fixtures.aCategory(plan, TransactionType.DEBIT, "Source");
+        Category target = fixtures.aCategory(plan, TransactionType.DEBIT, "Target");
+        LocalDate start = LocalDate.of(2026, 1, 15);
+
+        Map<String, Object> gymBody = recurring("Gym", "50.00", start, start.plusMonths(4));
+        gymBody.put("categoryId", source.getId());
+        JsonNode gym = createSeries(plan, owner, gymBody);
+        String gymId = gym.get("seriesId").asString();
+        long march = gym.get("occurrences").get(2).get("id").asLong();
+        long onlyThis = deleteSeries(plan, owner, gymId, "THIS_ONE", march);
+
+        Map<String, Object> laptopBody = installment("Laptop", "300.00", start, 6);
+        laptopBody.put("categoryId", source.getId());
+        JsonNode laptop = createSeries(plan, owner, laptopBody);
+        String laptopId = laptop.get("seriesId").asString();
+        long parcel4 = laptop.get("occurrences").get(3).get("id").asLong();
+        long following = deleteSeries(plan, owner, laptopId, "THIS_AND_FOLLOWING", parcel4);
+
+        mockMvc.perform(delete(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), source.getId())
+                        .param("reassignTo", target.getId().toString())
+                        .with(testAuthHelper.asUser(owner)))
+                .andExpect(status().isNoContent());
+
+        // Moving the series to another category is not a change to the series.
+        restore(plan, owner, onlyThis)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.restored").value(1));
+        assertThat(fetch(plan, owner, march).get("category").get("id").asLong()).isEqualTo(target.getId());
+        restore(plan, owner, following)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.restored").value(3));
+        assertThat(fetch(plan, owner, parcel4).get("category").get("id").asLong())
+                .isEqualTo(target.getId());
+        assertThat(definition(plan, owner, laptopId).get("parcelsNumber").asInt())
+                .isEqualTo(6);
+
+        // A series edited after the deletion stays refused after a category move.
+        Category alone = fixtures.aCategory(plan, TransactionType.DEBIT, "Alone");
+        Map<String, Object> rentBody = recurring("Rent", "900.00", start, start.plusMonths(4));
+        rentBody.put("categoryId", alone.getId());
+        JsonNode rent = createSeries(plan, owner, rentBody);
+        String rentId = rent.get("seriesId").asString();
+        long rentMarch = rent.get("occurrences").get(2).get("id").asLong();
+        long rentJanuary = rent.get("occurrences").get(0).get("id").asLong();
+        long stale = deleteSeries(plan, owner, rentId, "THIS_ONE", rentMarch);
+        Map<String, Object> edit = recurring("Rent renamed", "900.00", start, start.plusMonths(4));
+        edit.put("categoryId", alone.getId());
+        edit.put("scope", "THIS_ONE");
+        edit.put("pivotOccurrenceId", rentJanuary);
+        edit.put("version", fixtures.seriesVersion(rentId));
+        editSeries(plan, owner, rentId, edit);
+        mockMvc.perform(delete(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), alone.getId())
+                        .param("reassignTo", target.getId().toString())
+                        .with(testAuthHelper.asUser(owner)))
+                .andExpect(status().isNoContent());
+
+        restore(plan, owner, stale).andExpect(problem(HttpStatus.CONFLICT, "trash-series-changed"));
+    }
+
     // --- helpers -----------------------------------------------------------------------------------------
 
     private JsonNode json(ResultActions actions) throws Exception {

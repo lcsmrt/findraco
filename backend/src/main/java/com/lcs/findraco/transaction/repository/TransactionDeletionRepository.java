@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.repository;
 
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.model.TransactionDeletion;
 import jakarta.persistence.LockModeType;
@@ -34,6 +35,17 @@ public interface TransactionDeletionRepository extends JpaRepository<Transaction
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT d FROM TransactionDeletion d WHERE d.id = :id AND d.plan = :plan")
     Optional<TransactionDeletion> findByIdAndPlanForUpdate(@Param("id") Long id, @Param("plan") Plan plan);
+
+    /**
+     * Moving a series to another category bumps its version but is not a change to the series: the deletions that
+     * recorded its version move with it, so their restore still passes and a stale one stays stale. Runs before the
+     * move, while the series still points at {@code category}.
+     */
+    @Modifying(flushAutomatically = true)
+    @Query("UPDATE TransactionDeletion d SET d.definitionVersion = d.definitionVersion + 1 "
+            + "WHERE d.definitionTrashed = false AND d.recurrenceDefinitionId IN "
+            + "(SELECT rd.id FROM RecurrenceDefinition rd WHERE rd.category = :category)")
+    int followSeriesCategoryMove(@Param("category") Category category);
 
     /** Ids of the deletions made at or before {@code cutoff}, oldest first so a series' older tail goes first. */
     @Query("SELECT d.id FROM TransactionDeletion d WHERE d.deletedAt <= :cutoff ORDER BY d.deletedAt, d.id")
