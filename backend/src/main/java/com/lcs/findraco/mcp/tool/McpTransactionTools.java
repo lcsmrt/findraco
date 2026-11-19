@@ -20,6 +20,7 @@ import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
 import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
+import com.lcs.findraco.transaction.response.TransactionParticipantResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.service.TransactionService;
 import com.lcs.findraco.user.service.UserService;
@@ -240,6 +241,11 @@ public class McpTransactionTools {
                 throw new McpToolException("Transaction " + id + " is split by fixed amounts, so its amount "
                         + "cannot change from here. Edit it in the app.");
             }
+            members.requireAllInPlan(
+                    stored.participants().stream()
+                            .map(TransactionParticipantResponse::id)
+                            .toList(),
+                    resolved.ctx());
             UpdateTransactionRequest request = validation.valid(
                     McpUpdateCopy.of(stored, amount, date, description, withCategory || clearCategory, categoryId));
             // SPEC_DEVIATION: design.md sends an occurrence of a series through editSeries with scope THIS_ONE.

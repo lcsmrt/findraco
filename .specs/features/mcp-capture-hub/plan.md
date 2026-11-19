@@ -123,6 +123,7 @@ Data: none - no stored shape changes.
 | Creating series or installments through the MCP | Kept out by the mcp-connector spec; a wrong series is many wrong rows |
 | Listing the trash through the MCP | The app shows it; Claude gets the `deletionId` at delete time |
 | Contacts outside the plan | R17 |
+| Editing a row shared with a former member | the service refuses participants outside the plan; owner decision pending |
 
 ## Assumptions
 

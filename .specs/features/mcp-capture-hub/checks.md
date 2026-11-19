@@ -3,7 +3,7 @@
 Build: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true
 Plan: `.specs/features/mcp-capture-hub/plan.md`
 
-24 checks in 3 slices · 2 one-way doors · 0 open
+25 checks in 3 slices · 2 one-way doors · 0 open
 
 ## Checks
 
@@ -62,6 +62,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C17** - Listed rows carry `attributedTo` (first names: `["Ana"]` alone, `["Ana","Marina"]` split) and `series`: `"3/6"` for the third of six installments, `"monthly"` for an open monthly series, null for a single row (AC 13)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#listedRowsCarryAttributionAndSeries' -Dsurefire.skip=true
 
+**C25** - `update_transaction` on a row shared with someone who has left the plan answers the tool error "This transaction is shared with someone who is no longer in the plan, so it cannot be changed through Claude." and the row and its version are unchanged (AC 6; Out of scope)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#updateOfARowSharedWithAFormerMemberIsAToolError' -Dsurefire.skip=true
+
 ### S3 - Delete a mistake, safely
 
 **C18** - `delete_transaction` on a single row answers `deletionId`, `description`, `count: 1`; the row leaves `list_transactions` and appears in `GET …/transaction/trash` under that `deletionId` (AC 14)
@@ -91,7 +94,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 | --- | --- | --- |
 | `GET /plan/{planId}/transaction` statuses (3) | 200 C11, C13 · 400 C15 · 404 C24 | - |
 | MCP `create_transaction` cases (5) | no names C1 · one name C2 · several names C3 · unknown, ambiguous or a first name that is another's whole name C4 · someone else in a single-member plan C5 | - |
-| MCP `update_transaction` cases (4) | `category` C7 · `removeCategory` C8 · both C9 · type mismatch C10 | - |
+| MCP `update_transaction` cases (5) | `category` C7 · `removeCategory` C8 · both C9 · type mismatch C10 · row shared with a former member C25 | - |
 | MCP `list_transactions` new params (2) | `status` C14 · `uncategorized` C12, C16 | - |
 | MCP `delete_transaction` scopes (3) | THIS_ONE (default) C19 · THIS_AND_FOLLOWING C19 · ALL C19 · single row C18 | - |
 | MCP `restore_deletion` outcomes (3) | restored C20 · not found C20 · series changed C20 | - |
