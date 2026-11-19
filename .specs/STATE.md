@@ -226,6 +226,14 @@
 - **Date**: 2026-11-18
 - **Status**: active
 
+### AD-029
+- **Decision**: The MCP connector may attribute a transaction to named plan members: `create_transaction` takes `attributedTo` (member names), one name puts the whole amount on that member and two or more split it equally with the app's cent allocation. Exact or custom splits, series and items stay out of the MCP. Reverses the mcp-connector rule "no splits from the connector" (AD-026 scope). The transactions list (REST and MCP) gains `status` (ACTUAL, FORECAST, PENDING, derived against the reader's today) and `uncategorized` filters, and the MCP gains `delete_transaction` (to the trash, AD-028) and `restore_deletion`.
+- **Reason**: Claude is the owners' main capture channel and they pool money (owner answers, 2026-11-17), so "a farmácia foi da Marina" and "dividimos o mercado" are the common spoken cases; typing them in the app afterwards defeats the channel. User, 2026-11-18, delegated the phase 1 decisions ("Sozinho, sem me chamar pra nada").
+- **Trade-off**: A misheard name attributes to the wrong member (mitigated: an unknown or ambiguous name is refused with the member list); an equal split is the only split Claude can make.
+- **Scope**: `mcp` (tools, member resolver, responses), `transaction` (list filter, `TransactionFilter`), `backend/openapi.json`.
+- **Date**: 2026-11-18
+- **Status**: active
+
 ## Handoff
 
 - **Run**: unattended overnight run, 2026-11-18 (user asleep; the 5-hour limit stopped every agent from ~01:10 to the user's return at 08:10). Design refactor plan: `.specs/project/DESIGN-PLAN.md` (owner answers, phases 0–7, R17 contacts).
