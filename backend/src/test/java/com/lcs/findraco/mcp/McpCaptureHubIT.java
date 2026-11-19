@@ -216,15 +216,19 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
         Plan plan = plan(ana, "Home", true);
         memberNamed(plan, "Marina Souza", PlanRole.EDITOR);
         memberNamed(plan, "Marina Costa", PlanRole.EDITOR);
+        memberNamed(plan, "Ana", PlanRole.EDITOR);
         McpClient client = clientOf(ana);
 
         String unknown =
                 errorText(client.callTool("create_transaction", debit("Farmácia", "attributedTo", List.of("Zélia"))));
         String ambiguous =
                 errorText(client.callTool("create_transaction", debit("Farmácia", "attributedTo", List.of("marina"))));
+        String firstNameOfOneAndWholeNameOfAnother =
+                errorText(client.callTool("create_transaction", debit("Farmácia", "attributedTo", List.of("ana"))));
 
         assertThat(unknown).contains("Zélia", "Ana Lima", "Marina Souza", "Marina Costa");
         assertThat(ambiguous).contains("Several", "Ana Lima", "Marina Souza", "Marina Costa");
+        assertThat(firstNameOfOneAndWholeNameOfAnother).contains("Several", "Ana Lima", "Marina Souza");
         assertThat(count()).isZero();
     }
 

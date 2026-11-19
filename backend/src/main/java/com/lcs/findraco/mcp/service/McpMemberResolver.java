@@ -11,8 +11,9 @@ import org.springframework.stereotype.Service;
 
 /**
  * Turns the names Claude hears ("Marina", "Marína Souza") into members of the plan, by the same rule as plan and
- * category names. A full name wins over a first name, so two Anas with different surnames are told apart by the
- * surname.
+ * category names. A name of several words is a full name, so two Anas with different surnames are told apart by the
+ * surname; a one-word name is compared with full names and first names together, so it never silently picks one of
+ * two members it could mean.
  */
 @Service
 public class McpMemberResolver {
@@ -50,9 +51,12 @@ public class McpMemberResolver {
         List<PlanMemberResponse> matches = members.stream()
                 .filter(member -> McpNames.matches(name, member.name()))
                 .toList();
-        if (matches.isEmpty()) {
+        if (isOneWord(name)) {
+            // A one-word name is a full name for a member called just that and a first name for the others, so a
+            // first name that is also another member's whole name is ambiguous, not silently the second.
             matches = members.stream()
-                    .filter(member -> McpNames.matches(name, McpNames.firstName(member.name())))
+                    .filter(member -> McpNames.matches(name, member.name())
+                            || McpNames.matches(name, McpNames.firstName(member.name())))
                     .toList();
         }
         if (matches.isEmpty()) {
@@ -64,6 +68,10 @@ public class McpMemberResolver {
                     + "\"; use the full name. " + membersOf(planName, members));
         }
         return matches.get(0).userId();
+    }
+
+    private static boolean isOneWord(String name) {
+        return name.strip().indexOf(' ') < 0;
     }
 
     private static String membersOf(String planName, List<PlanMemberResponse> members) {

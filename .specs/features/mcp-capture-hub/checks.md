@@ -18,7 +18,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C3** - `create_transaction` of R$ 100,00 with three names stores 33,34 · 33,33 · 33,33, the same cents the app's equal split stores for the same three members (AC 3)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#createForSeveralNamesSplitsEqually' -Dsurefire.skip=true
 
-**C4** - `create_transaction` with a name that matches no member, and with one that matches two, answers a tool error whose text lists the plan's members, and the plan's transaction count is unchanged (AC 4)
+**C4** - `create_transaction` with a name that matches no member, with one that matches two, and with a one-word name that is one member's first name and another member's whole name (`"ana"` for "Ana Lima" and "Ana"), answers a tool error whose text lists the plan's members, and the plan's transaction count is unchanged (AC 4)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#createWithAnUnknownOrAmbiguousNameIsAToolError' -Dsurefire.skip=true
 
 **C5** - In a single-member plan, `create_transaction` with `attributedTo: ["Marina"]` answers the same tool error and creates nothing; with the caller's own name it succeeds (AC 5)
@@ -90,13 +90,13 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | `GET /plan/{planId}/transaction` statuses (3) | 200 C11, C13 · 400 C15 · 404 C24 | - |
-| MCP `create_transaction` cases (5) | no names C1 · one name C2 · several names C3 · unknown or ambiguous C4 · someone else in a single-member plan C5 | - |
+| MCP `create_transaction` cases (5) | no names C1 · one name C2 · several names C3 · unknown, ambiguous or a first name that is another's whole name C4 · someone else in a single-member plan C5 | - |
 | MCP `update_transaction` cases (4) | `category` C7 · `removeCategory` C8 · both C9 · type mismatch C10 | - |
 | MCP `list_transactions` new params (2) | `status` C14 · `uncategorized` C12, C16 | - |
 | MCP `delete_transaction` scopes (3) | THIS_ONE (default) C19 · THIS_AND_FOLLOWING C19 · ALL C19 · single row C18 | - |
 | MCP `restore_deletion` outcomes (3) | restored C20 · not found C20 · series changed C20 | - |
 | status values, AC 11 (3) | ACTUAL C13 · FORECAST C13 · PENDING C13, C14 | - |
-| name matching, AC 2 (4 examples) | lowercase first name C2 · accented full name C2 · unknown C4 · ambiguous C4 | - |
+| name matching, AC 2 (5 examples) | lowercase first name C2 · accented full name C2 · unknown C4 · ambiguous C4 · first name that is another's whole name C4 | - |
 | `series` field values (3) | `k/N` C17 · `monthly` C17 · null C17 | - |
 | doors (2) | REST list filters C11, C13, C15, C23 · tool names and parameters C6, C21 | - |
 
@@ -115,7 +115,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 ## Handoff
 
 - **Settled mid-build:** AC 11 / C13 boundary corrected to `Transaction.status(today)` (PENDING only before today) by the orchestrator - the criterion names that rule, the draft example contradicted it
-- **Dispatched:** builder (Sonnet, main tree /home/lcs/dev/findraco) at 9acb6b8f
+- **Dispatched:** builder (Sonnet, main tree /home/lcs/dev/findraco) at 9acb6b8f, returned at 781faa24; Verifier (Opus) at a28e8483
 - **Boundary:** C1–C24 built and green at the build's last commit (backend only; the SPA does not send the new filters)
 - **Abandoned:** the C13 example "a bill dated 2026-11-18 requiring confirmation, reader's today 2026-11-18 → PENDING" (and AC 11's "on or before the reader's today"): `Transaction.status(today)` answers FORECAST for a confirmation-required row dated today and PENDING only when it is dated before today (`TransactionConfirmationTest#requiredBeforeTodayIsPending`). The filter follows `Transaction.status(today)` exactly, as the claim's first half requires, so `TransactionListFilterIT#statusFilterFollowsTheReadersToday` asserts the bill due today under FORECAST and the bill dated the day before under PENDING for the reader whose today it is; it also uses two real zones 25 hours apart (the context clock is the system one, so 2026-11-18T04:00Z cannot be pinned). The claim needs the owner's ruling: change the plan's PENDING boundary to "on or before today" (then `Transaction.status`, its test and the app's "A confirmar" view change too) or keep `status(today)` and correct C13/AC 11.
 - **Walked:** n/a - no screen changes
