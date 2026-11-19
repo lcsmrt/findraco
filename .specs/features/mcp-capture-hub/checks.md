@@ -67,6 +67,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 **C25** - `update_transaction` on a row shared with someone who has left the plan answers the tool error "This transaction is shared with someone who is no longer in the plan, so it cannot be changed through Claude." and the row and its version are unchanged (AC 6; Out of scope)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#updateOfARowSharedWithAFormerMemberIsAToolError' -Dsurefire.skip=true
+Superseded by phase1-followups C11: the tool now updates such a row and keeps the former member's share.
 
 ### S3 - Delete a mistake, safely
 

@@ -364,25 +364,19 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
     }
 
     @Test
-    void updateOfARowSharedWithAFormerMemberIsAToolError() throws Exception {
+    void updateOfARowSharedWithAFormerMemberKeepsTheirShare() throws Exception {
         User ana = named("Ana Lima");
         Plan plan = plan(ana, "Home", true);
         User marina = memberNamed(plan, "Marina Souza", PlanRole.EDITOR);
-        fixtures.aCategory(plan, TransactionType.DEBIT, "Mercado");
         Transaction shared = row(plan, ana, "Compras", null, List.of(ana, marina), today());
         jdbc.update("DELETE FROM plan_memberships WHERE plan_id = ? AND user_id = ?", plan.getId(), marina.getId());
-        long version = fixtures.transactionVersion(shared.getId());
 
-        String error = errorText(
-                clientOf(ana).callTool("update_transaction", Map.of("id", shared.getId(), "category", "Mercado")));
+        clientOf(ana).callJson("update_transaction", Map.of("id", shared.getId(), "description", "Mercado do mês"));
 
-        assertThat(error)
-                .isEqualTo("This transaction is shared with someone who is no longer in the plan, "
-                        + "so it cannot be changed through Claude.");
         JsonNode after = stored(plan, ana, shared.getId());
-        assertThat(after.path("category").isNull()).isTrue();
+        assertThat(after.path("description").asString()).isEqualTo("Mercado do mês");
         assertThat(shareOwners(after)).containsExactly(ana.getId(), marina.getId());
-        assertThat(fixtures.transactionVersion(shared.getId())).isEqualTo(version);
+        assertThat(shares(after)).allSatisfy(share -> assertThat(share).isEqualByComparingTo("50.00"));
     }
 
     @Test
