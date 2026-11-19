@@ -357,6 +357,31 @@ export function participantsForMode(
   }));
 }
 
+/** One line of the participants list: a person the split can include. */
+export type SplitRow = { userId: number; name: string; isFormer: boolean };
+
+/**
+ * Who the split lists: the plan's members, then whoever is already on the row without being a member any
+ * more, so their share can be seen, changed or removed. A former member never appears on a row that does
+ * not carry them.
+ */
+export function splitRows(
+  members: PlanMember[],
+  participants: TransactionFormValues["participants"],
+): SplitRow[] {
+  const memberIds = new Set(members.map((member) => member.userId));
+  return [
+    ...members.map((member) => ({ userId: member.userId, name: member.name, isFormer: false })),
+    ...participants
+      .filter((participant) => !memberIds.has(participant.memberId))
+      .map((participant) => ({
+        userId: participant.memberId,
+        name: participant.memberName,
+        isFormer: true,
+      })),
+  ];
+}
+
 function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split("T")[0].split("-").map(Number);
   return new Date(year, month - 1, day);

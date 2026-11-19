@@ -772,6 +772,32 @@ describe("TransactionFormDrawer", () => {
     expect(await saveThisOne(user, requests)).toMatchObject({ scope: "THIS_ONE", pivotConfirmed: false });
   });
 
+  it("keeps a former member's share when saving", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const shared: Transaction = {
+      ...savedTransaction,
+      splitMode: "EXACT",
+      participants: [
+        { id: lucas.userId, name: "Lucas", shareAmount: 75.25 },
+        { id: 9, name: "Ana", shareAmount: 75.25 },
+      ],
+    };
+    server.use(transactionHandlers.update(shared));
+    renderDrawer({ mode: "edit", transaction: shared, members: [lucas, livia] });
+
+    const former = await screen.findByRole("checkbox", { name: "Ana (no longer in the plan)" });
+    expect(former.getAttribute("aria-checked")).toBe("true");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await sentBody(requests, "PUT")).toMatchObject({
+      participants: [
+        { memberId: lucas.userId, shareAmount: 75.25 },
+        { memberId: 9, shareAmount: 75.25 },
+      ],
+    });
+  });
+
   it("the date field has no clear button", () => {
     renderDrawer({ members: [lucas] });
 

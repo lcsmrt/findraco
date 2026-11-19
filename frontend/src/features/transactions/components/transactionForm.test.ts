@@ -8,6 +8,7 @@ import {
   itemsRemainderCents,
   ownerDefaultAttribution,
   participantsForMode,
+  splitRows,
   toInlineSavePayload,
   toPayload,
   transactionFormSchema,
@@ -778,5 +779,27 @@ describe("buildDefaultValues — confirmation", () => {
     expect(buildDefaultValues({ ...required, status: "ACTUAL" }, 7).confirmed).toBe(true);
     expect(buildDefaultValues({ ...required, status: "FORECAST" }, 7).confirmed).toBe(false);
     expect(buildDefaultValues({ ...required, status: "PENDING" }, 7).confirmed).toBe(false);
+  });
+});
+
+describe("splitRows — who the participants list shows", () => {
+  const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "OWNER" };
+  const bia: PlanMember = { userId: 2, name: "Bia", email: "bia@example.com", role: "EDITOR" };
+
+  it("lists the members, then a participant who is no longer one, under their stored name", () => {
+    const participants = [
+      { memberId: 1, memberName: "Ana", shareAmount: null },
+      { memberId: 9, memberName: "Caio", shareAmount: 60 },
+    ];
+
+    expect(splitRows([ana, bia], participants)).toEqual([
+      { userId: 1, name: "Ana", isFormer: false },
+      { userId: 2, name: "Bia", isFormer: false },
+      { userId: 9, name: "Caio", isFormer: true },
+    ]);
+  });
+
+  it("lists no former member the row does not carry", () => {
+    expect(splitRows([ana], [])).toEqual([{ userId: 1, name: "Ana", isFormer: false }]);
   });
 });
