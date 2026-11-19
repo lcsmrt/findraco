@@ -351,20 +351,25 @@ export function TransactionStatusBadge({ status }: TransactionStatusBadgeProps) 
   return <Badge variant="outline">{t("transactions.transactionStatusBadge.forecast")}</Badge>;
 }
 
-type DescriptionCellProps = EditableCellProps;
-
-export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
+/** The marker of a transaction that belongs to a series; the table and the phone list share it. */
+export function SeriesBadge() {
   const { t } = useTranslation();
 
   return (
+    <Badge variant="secondary" className="gap-1">
+      <RepeatIcon />
+      {t("transactions.descriptionCell.series")}
+    </Badge>
+  );
+}
+
+type DescriptionCellProps = EditableCellProps;
+
+export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
+  return (
     <div className="flex items-center gap-1.5">
       <EditableDescriptionCell transaction={transaction} onSave={onSave} />
-      {transaction.seriesId && (
-        <Badge variant="secondary" className="gap-1">
-          <RepeatIcon />
-          {t("transactions.descriptionCell.series")}
-        </Badge>
-      )}
+      {transaction.seriesId && <SeriesBadge />}
       <TransactionStatusBadge status={transaction.status} />
     </div>
   );

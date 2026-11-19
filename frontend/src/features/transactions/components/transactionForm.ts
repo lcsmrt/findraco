@@ -98,6 +98,14 @@ export const transactionFormSchema = z
       }
     }
 
+    if (values.attributionMode === "SOMEONE" && values.participants.length === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "transactions.form.choosePerson",
+        path: ["participants"],
+      });
+    }
+
     if (
       values.attributionMode === "SPLIT" &&
       values.splitMode === "EXACT" &&
@@ -322,8 +330,9 @@ export function occurrenceParcel(
 }
 
 /**
- * The participants a new attribution mode starts with: none for "me", one other member kept for
- * "someone else", and every member for a split unless at least two are already chosen.
+ * The participants a new attribution mode starts with: none for "me", one other member for
+ * "someone else" (the one already chosen, else the first member besides the current user), and every
+ * member for a split unless at least two are already chosen.
  */
 export function participantsForMode(
   mode: TransactionFormValues["attributionMode"],
@@ -333,7 +342,12 @@ export function participantsForMode(
 ): TransactionFormValues["participants"] {
   if (mode === "ME") return [];
   if (mode === "SOMEONE") {
-    return participants.filter((participant) => participant.memberId !== currentUserId).slice(0, 1);
+    const chosen = participants.find((participant) => participant.memberId !== currentUserId);
+    if (chosen) return [chosen];
+    const first = members.find((member) => member.userId !== currentUserId);
+    return first
+      ? [{ memberId: first.userId, memberName: first.name, shareAmount: null }]
+      : [];
   }
   if (participants.length >= 2) return participants;
   return members.map((member) => ({

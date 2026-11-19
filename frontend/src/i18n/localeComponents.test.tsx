@@ -14,6 +14,7 @@ function renderNavigator() {
       isCustom={false}
       onPresetChange={vi.fn()}
       onRangeChange={vi.fn()}
+      onStep={vi.fn()}
     />,
   );
 }

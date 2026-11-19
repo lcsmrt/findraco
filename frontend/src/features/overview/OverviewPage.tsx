@@ -1,7 +1,8 @@
 import { useGetDashboardSummary } from "@/api/services/useDashboardService";
 import { useGetCategorySpending } from "@/api/services/useCategoryService";
 import { useMemo } from "react";
-import { resolvePeriodDates, type Period } from "@/utils/period";
+import { resolvePeriodDates, type Period, type PeriodRange } from "@/utils/period";
+import { selectionForRange } from "@/utils/periodParams";
 import { useOverviewFilters } from "./filters/useOverviewFilters";
 import { useMemberColors } from "@/hooks/useMemberColors";
 import {
@@ -71,6 +72,11 @@ export function OverviewPage() {
     updateOverview((o) => ({ ...o, customRange: next }));
   }
 
+  function handleStep(next: { from: string; to: string }) {
+    const range: PeriodRange = { startDate: next.from, endDate: next.to };
+    updateOverview((o) => ({ ...o, ...selectionForRange(range, new Date()) }));
+  }
+
   function handleMemberChange(member: MemberOption | null) {
     updateOverview((o) => ({ ...o, memberId: member?.id ?? null }));
   }
@@ -83,6 +89,7 @@ export function OverviewPage() {
         isCustom: customRange != null,
         onPresetChange: handlePeriodClick,
         onRangeChange: handleRangeChange,
+        onStep: handleStep,
       }}
       memberFilter={
         showMemberPicker

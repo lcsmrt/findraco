@@ -363,7 +363,7 @@
   },
   "overview": {
     "balance": {
-      "balance": "Balance"
+      "balance": "Net"
     },
     "categorySpendingList": {
       "focus": "{{name}} {{spent}} of {{limit}}",
@@ -758,6 +758,7 @@
     },
     "form": {
       "amountMustBePositive": "Amount must be positive",
+      "choosePerson": "Choose the person",
       "dateIsRequired": "Date is required",
       "descriptionIsRequired": "Description is required",
       "enterAtLeast2Installments": "Enter at least 2 installments",

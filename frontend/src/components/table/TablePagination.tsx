@@ -45,7 +45,10 @@ export function TablePagination({
     last,
   } = pagination || {};
 
-  const start = totalElements === 0 ? 0 : page * size + 1;
+  // Nothing to page through: the list shows its own empty state and no bar.
+  if (totalElements === 0) return null;
+
+  const start = page * size + 1;
   const end = Math.min((page + 1) * size, totalElements);
 
   return (

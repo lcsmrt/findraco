@@ -11,21 +11,23 @@ const meta = {
     isCustom: false,
     onPresetChange: fn(),
     onRangeChange: fn(),
+    onStep: fn(),
   },
 } satisfies Meta<typeof PeriodNavigator>;
 export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-// The arrows step by the period's own length and always produce an absolute range.
+// The arrows step by the period's own length and report the range they land on.
 export const ThisMonth: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("October 2026")).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: "Previous period" }));
-    await expect(args.onRangeChange).toHaveBeenCalledWith({
+    await expect(args.onStep).toHaveBeenCalledWith({
       from: "2026-09-01",
       to: "2026-09-30",
     });
+    await expect(args.onRangeChange).not.toHaveBeenCalled();
   },
 };
 

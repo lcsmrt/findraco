@@ -103,6 +103,16 @@ const STATUS: Record<UsageStatus, SpendingStatus> = { OK: "ok", WARNING: "warnin
 /** What the API evaluated for a spend against a limit; all null without one. */
 type Evaluated = Pick<CategorySpendingMember, "remaining" | "percentUsed" | "status">;
 
+/**
+ * The percent as the row shows it: rounded, but never "100%" beside money still remaining nor
+ * "100%" beside an overspend, so the figure agrees with the amount next to it.
+ */
+function displayPercent(percentUsed: number, remaining: number, over: boolean): number {
+  const rounded = Math.round(percentUsed);
+  if (over) return Math.max(101, rounded);
+  return remaining > 0 ? Math.min(99, rounded) : rounded;
+}
+
 /** The API's evaluation as the row shows it: integer percent, and remaining or over-by. */
 export function usageOf({ remaining, percentUsed, status }: Evaluated): Usage {
   if (status == null || remaining == null || percentUsed == null) {
@@ -111,7 +121,7 @@ export function usageOf({ remaining, percentUsed, status }: Evaluated): Usage {
   const over = status === "OVER";
   return {
     status: STATUS[status],
-    percent: Math.round(percentUsed),
+    percent: displayPercent(percentUsed, remaining, over),
     remaining: over ? null : remaining,
     overBy: over ? -remaining : null,
   };

@@ -14,10 +14,13 @@ type DemoDatePickerProps = {
   initialValue?: Date;
   disabled?: boolean;
   disablePast?: boolean;
+  required?: boolean;
+  /** Called with every value the picker reports, after the story's own state takes it. */
+  onChange?: (date: Date | undefined) => void;
 };
 
 // The picker is controlled, so the story holds the value like a form field does.
-function DemoDatePicker({ initialValue, disabled, disablePast }: DemoDatePickerProps) {
+function DemoDatePicker({ initialValue, disabled, disablePast, required, onChange }: DemoDatePickerProps) {
   const [value, setValue] = useState(initialValue);
   return (
     <Field className="w-56">
@@ -25,8 +28,12 @@ function DemoDatePicker({ initialValue, disabled, disablePast }: DemoDatePickerP
       <DatePicker
         id="demo-date"
         value={value}
-        onChange={setValue}
+        onChange={(date) => {
+          setValue(date);
+          onChange?.(date);
+        }}
         disabled={disabled}
+        required={required}
         disabledDates={disablePast ? { before: new Date(2026, 2, 10) } : undefined}
       />
     </Field>
@@ -138,6 +145,32 @@ export const CalendarOpen: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Open calendar" }));
     await userEvent.click(await screen.findByRole("button", { name: /March 20th/ }));
     await waitFor(() => expect(canvas.getByLabelText("Date")).toHaveValue("20/03/2026"));
+  },
+};
+
+// A required date has no clear button: erasing the text and leaving the field shows the date again.
+export const RequiredRestoresDate: Story = {
+  args: { initialValue: new Date(2026, 2, 14), required: true, onChange: fn() },
+  play: async ({ canvas, userEvent, args }) => {
+    const input = canvas.getByLabelText("Date");
+    await expect(canvas.queryByRole("button", { name: "Clear date" })).toBeNull();
+
+    await userEvent.clear(input);
+    await userEvent.tab();
+
+    await expect(input).toHaveValue("14/03/2026");
+    await expect(args.onChange).not.toHaveBeenCalledWith(undefined);
+  },
+};
+
+// An optional date keeps its clear button, and clearing it clears the value.
+export const OptionalClears: Story = {
+  args: { initialValue: new Date(2026, 2, 14), onChange: fn() },
+  play: async ({ canvas, userEvent, args }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Clear date" }));
+
+    await expect(canvas.getByLabelText("Date")).toHaveValue("");
+    await expect(args.onChange).toHaveBeenLastCalledWith(undefined);
   },
 };
 

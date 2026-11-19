@@ -29,15 +29,47 @@ describe("summaryView", () => {
     expect(view.income.total).toBe(5147);
     expect(view.expenses.total).toBe(4450);
     expect(view.balance).toBe(697);
-    expect(view.income.segments.map((s) => [s.memberId, s.name, s.amount, s.color, s.dimmed])).toEqual([
-      [LUCAS, "Lucas", 2733, "blue", false],
-      [LIVIA, "Livia", 2414, "pink", false],
+    expect(view.income.segments.map((s) => [s.memberId, s.name, s.color, s.dimmed])).toEqual([
+      [LUCAS, "Lucas", "blue", false],
+      [LIVIA, "Livia", "pink", false],
+    ]);
+    expect(view.expenses.segments.map((s) => s.memberId)).toEqual([LUCAS, LIVIA]);
+  });
+
+  it("member segments use actual amounts relative to the plan's actual total", () => {
+    const view = summaryView(dashboard, null, colorOf);
+
+    expect(view.income.segments.map((s) => [s.memberId, s.amount])).toEqual([
+      [LUCAS, 1600],
+      [LIVIA, 1400],
     ]);
     expect(view.expenses.segments.map((s) => [s.memberId, s.amount])).toEqual([
-      [LUCAS, 2345],
-      [LIVIA, 2105],
+      [LUCAS, 600],
+      [LIVIA, 600],
     ]);
-    expect(view.income.segments.reduce((sum, s) => sum + s.widthPct, 0)).toBeCloseTo(100, 5);
+    expect(view.income.segments.map((s) => s.widthPct)).toEqual([(1600 / 3000) * 100, (1400 / 3000) * 100]);
+    expect(view.expenses.segments.map((s) => s.widthPct)).toEqual([50, 50]);
+    expect(view.income.segments.reduce((sum, s) => sum + s.amount, 0)).toBe(view.income.actual);
+    expect(view.expenses.segments.reduce((sum, s) => sum + s.amount, 0)).toBe(view.expenses.actual);
+  });
+
+  it("omits a member whose actual amount is zero", () => {
+    const view = summaryView(
+      {
+        ...dashboard,
+        actualIncome: 1600,
+        personBreakdown: dashboard.personBreakdown.map((person) =>
+          person.userId === LIVIA ? { ...person, actualIncome: 0 } : person,
+        ),
+      },
+      null,
+      colorOf,
+    );
+
+    // Livia still has forecast income (2414) but nothing received yet.
+    expect(view.income.segments.map((s) => s.memberId)).toEqual([LUCAS]);
+    expect(view.income.segments[0].widthPct).toBe(100);
+    expect(view.expenses.segments.map((s) => s.memberId)).toEqual([LUCAS, LIVIA]);
   });
 
   it("pairs each plan total with its actual figure", () => {
@@ -68,7 +100,7 @@ describe("summaryView", () => {
       [LIVIA, false],
     ]);
     expect(view.expenses.segments.find((s) => s.memberId === LIVIA)?.widthPct).toBeCloseTo(
-      (2105 / 4450) * 100,
+      (600 / 1200) * 100,
       5,
     );
   });

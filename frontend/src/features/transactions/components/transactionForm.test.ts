@@ -608,10 +608,6 @@ describe("participantsForMode — the participants an attribution mode starts wi
     ]);
   });
 
-  it("starts Someone else empty when only the current user was chosen", () => {
-    expect(participantsForMode("SOMEONE", [asParticipant(ana)], [ana, bia], 1)).toEqual([]);
-  });
-
   it("splits between every member when fewer than two were chosen", () => {
     expect(participantsForMode("SPLIT", [asParticipant(bia)], [ana, bia], 1)).toEqual([
       asParticipant(ana),
@@ -623,6 +619,48 @@ describe("participantsForMode — the participants an attribution mode starts wi
     const participants = [asParticipant(ana, 30), asParticipant(caio, 70)];
 
     expect(participantsForMode("SPLIT", participants, [ana, bia, caio], 1)).toBe(participants);
+  });
+});
+
+describe("participantsForMode", () => {
+  const me: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "OWNER" };
+  const marina: PlanMember = { userId: 2, name: "Marina", email: "marina@example.com", role: "EDITOR" };
+  const bruno: PlanMember = { userId: 3, name: "Bruno", email: "bruno@example.com", role: "EDITOR" };
+  function asParticipant(member: PlanMember) {
+    return { memberId: member.userId, memberName: member.name, shareAmount: null };
+  }
+
+  it("preselects the first other member for someone else", () => {
+    const members = [me, marina, bruno];
+
+    expect(participantsForMode("SOMEONE", [], members, 1)).toEqual([asParticipant(marina)]);
+    // Only the current user chosen (coming from Dividir) leaves nobody else chosen.
+    expect(participantsForMode("SOMEONE", [asParticipant(me)], members, 1)).toEqual([asParticipant(marina)]);
+  });
+
+  it("keeps an other member already chosen for someone else", () => {
+    const members = [me, marina, bruno];
+
+    expect(participantsForMode("SOMEONE", [asParticipant(me), asParticipant(bruno)], members, 1)).toEqual([
+      asParticipant(bruno),
+    ]);
+  });
+});
+
+describe("transactionFormSchema", () => {
+  it("someone else without a person is invalid with the choose-the-person message", () => {
+    const result = transactionFormSchema.safeParse({
+      ...validValues,
+      attributionMode: "SOMEONE",
+      participants: [],
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.find((i) => i.path[0] === "participants")?.message).toBe(
+        "transactions.form.choosePerson",
+      );
+    }
   });
 });
 

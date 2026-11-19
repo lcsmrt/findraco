@@ -39,3 +39,17 @@ export function resolveSelection(selection: PeriodSelection, now: Date): PeriodR
     ? { startDate: customRange.from, endDate: customRange.to }
     : resolvePeriodDates(period, now);
 }
+
+/**
+ * The selection to store for a range the period arrows reached: the preset whose dates
+ * (resolved against `now`) equal the range, so it keeps following the calendar; any other range as is.
+ */
+export function selectionForRange(range: PeriodRange, now: Date): PeriodSelection {
+  const preset = PERIODS.find((p) => {
+    const dates = resolvePeriodDates(p, now);
+    return dates.startDate === range.startDate && dates.endDate === range.endDate;
+  });
+  return preset
+    ? { period: preset, customRange: null }
+    : { period: DEFAULT_PERIOD, customRange: { from: range.startDate, to: range.endDate } };
+}

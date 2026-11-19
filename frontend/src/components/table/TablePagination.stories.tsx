@@ -50,11 +50,13 @@ export const Empty: Story = {
     pagination: { number: 0, size: 10, totalElements: 0, totalPages: 0, first: true, last: true },
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("Page 1 of 1")).toBeVisible();
+    await expect(canvas.queryByText("Page 1 of 1")).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Next page" })).toBeNull();
+    await expect(canvas.queryByRole("combobox")).toBeNull();
   },
 };
 
-// Before the first response arrives there is no pagination at all.
+// Before the first response arrives there is no pagination at all, and so no pager.
 export const Loading: Story = { tags: ["!test"], args: { pagination: undefined } };
 
 export const WithoutPageSize: Story = { args: { onPageSizeChange: undefined } };
