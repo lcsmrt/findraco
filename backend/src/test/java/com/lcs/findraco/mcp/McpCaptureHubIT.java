@@ -497,6 +497,12 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
         JsonNode one = client.callJson("delete_transaction", Map.of("id", third));
         assertThat(one.path("count").asLong()).isEqualTo(1);
         assertThat(listed(client).path("transactions")).hasSize(5);
+        List<Long> occurrences = new ArrayList<>();
+        series.path("occurrences")
+                .forEach(occurrence -> occurrences.add(occurrence.path("id").asLong()));
+        List<Long> otherFive = new ArrayList<>(occurrences);
+        otherFive.remove(Long.valueOf(third));
+        assertThat(ids(listed(client))).doesNotContain(third).containsExactlyInAnyOrderElementsOf(otherFive);
 
         JsonNode following = client.callJson("delete_transaction", Map.of("id", fourth, "scope", "THIS_AND_FOLLOWING"));
         assertThat(following.path("count").asLong()).isEqualTo(3);
