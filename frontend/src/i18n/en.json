@@ -497,6 +497,7 @@
       "empty": "Nothing in the trash. What you delete stays here for 30 days.",
       "expiresOn": "Removed for good on {{date}}",
       "loadError": "Could not load the trash.",
+      "newestOnly": "Showing the {{shown}} newest of {{total}} deletions.",
       "restore": "Restore",
       "restoreEntry": "Restore {{description}}",
       "retry": "Retry",

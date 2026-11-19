@@ -22,6 +22,7 @@ export function PlanTrashSection() {
   return (
     <PlanTrashListView
       entries={data?.content ?? []}
+      total={data?.totalElements ?? 0}
       isError={isError}
       restoringId={restore.isPending ? restore.variables : null}
       onRestore={(entry) => restore.mutate(entry.id)}
