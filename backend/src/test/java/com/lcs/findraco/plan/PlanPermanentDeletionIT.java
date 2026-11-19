@@ -52,6 +52,7 @@ class PlanPermanentDeletionIT extends AbstractIntegrationTest {
                     "transaction_participants",
                     "SELECT count(*) FROM transaction_participants p JOIN transactions t ON t.id = p.transaction_id"
                             + " WHERE t.plan_id = ?"),
+            Map.entry("transaction_deletions", "SELECT count(*) FROM transaction_deletions WHERE plan_id = ?"),
             Map.entry("recurrence_definitions", "SELECT count(*) FROM recurrence_definitions WHERE plan_id = ?"),
             Map.entry(
                     "recurrence_definition_participants",

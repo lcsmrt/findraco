@@ -26,7 +26,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C5** - A series trashed whole gets no new occurrence from the top-up job or the read horizon (AC 5)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#trashedSeriesIsNotToppedUp' -Dsurefire.skip=true
 
-**C6** - With one active and one trashed expense in a category, the summary, person breakdown, monthly trend, category spending, category usage count and a list search by description each count only the active one (AC 6)
+**C6** - With one active and one trashed expense in a category, the summary, person breakdown, monthly trend, category spending (by category and by an item's category), category usage count and a list search by description each count only the active one, actual totals included (AC 6)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#trashedRowsCountInNoReader' -Dsurefire.skip=true
 
 ### S2 - Undo and restore
@@ -43,8 +43,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C10** - Restoring an "all" deletion reactivates the series: its rows list again and the top-up generates for it again (AC 8)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#restoreAllReactivatesTheSeries' -Dsurefire.skip=true
 
-**C11** - After a series deletion, an edit of that series makes its restore answer 409 `trash-series-changed` and leaves rows and series unchanged (AC 9)
+**C11** - After a series deletion, an edit of that series, or another deletion in it, makes its restore answer 409 `trash-series-changed` and leaves rows and series unchanged (AC 9)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#restoreAfterTheSeriesChangedIsAConflict' -Dsurefire.skip=true
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#restoreAfterTheSeriesWasDeletedAgainIsAConflict' -Dsurefire.skip=true
 
 **C12** - Restore answers 404 for an unknown id, a deletion already restored, and another plan's deletion (AC 10)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#restoreOfAMissingDeletionIsNotFound' -Dsurefire.skip=true
@@ -63,7 +64,7 @@ Proof: run unit | ✓ TransactionsPage > undo in the series delete toast restore
 **C16** - The trash lists deletions newest first; an "all" delete of a 6-parcel R$ 300 series is one entry with count 6, amount 1800.00, `deletedBy` and `expiresAt` = deletion + 30 days (AC 13)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#trashListsDeletionsNewestFirstWithTotals' -Dsurefire.skip=true
 
-**C17** - A contributor's trash lists only the deletions they made (AC 14)
+**C17** - A contributor's trash lists only the deletions they made, and they can restore their own (`200`) (AC 14)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#contributorSeesOnlyTheirOwnDeletions' -Dsurefire.skip=true
 
 **C18** - The trash list and restore answer each role as the matrix says (VIEWER 403, non-member 404), and both routes have a matrix row (AC 14)
@@ -91,6 +92,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 **C25** - Every foreign key to `plans` cascades, `transaction_deletions.plan_id` included (AC 19)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='PlanSchemaIT#everyForeignKeyToPlansCascadesOnDelete' -Dsurefire.skip=true
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='PlanPermanentDeletionIT#deletingNowRemovesThePlanAndEveryRowScopedToItAndNothingElse' -Dsurefire.skip=true
 
 **C26** - Importing the same statement again after trashing one of its rows imports nothing and reports that row as already imported (AC 20)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#reimportSkipsATrashedRow' -Dsurefire.skip=true
@@ -104,6 +106,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C29** - Restoring an "only this" or "this and following" deletion after its series' category was deleted with a target answers `200` and brings the rows back in the target; a deletion whose series was edited since still answers `409` `trash-series-changed` after the move (AC 22, AC 9; appended after the build found the gap)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TransactionTrashIT#restoreOccurrenceAfterTheSeriesCategoryWasDeleted' -Dsurefire.skip=true
 
+**C30** - When the trash holds more deletions than the screen loaded (60, 2 shown), the trash card says "Showing the 2 newest of 60 deletions."; with all loaded it says nothing (Verifier finding: the list loads the 50 newest)
+Proof: run stories | ✓ PlanTrashListView.stories.tsx > Newest Only
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -116,7 +121,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 | `POST /plan/{planId}/transaction/trash/{deletionId}/restore` statuses (4) | 200 C7 · 404 C12 · 409 C11 · 403 C13, C18 | - |
 | purge boundary, AC 18 (2 examples) | 30 days C24 · 29 days 23 h C24 | - |
 | doors (4) | deletion record C2, C16 · `transactions.deletion_id` cascade C24 · `recurrence_definitions.deletion_id` C5, C10, C24 · 200 body C1, C14 | - |
-| trash screen states (4) | entries C20 · empty C22 · error C23 · hidden for viewer C19 | - |
+| trash screen states (5) | entries C20 · empty C22 · error C23 · hidden for viewer C19 · newest only C30 | - |
 
 ## Swept
 

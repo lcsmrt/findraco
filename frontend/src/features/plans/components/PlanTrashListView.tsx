@@ -16,6 +16,8 @@ import { useTranslation } from "react-i18next";
 
 type PlanTrashListViewProps = {
   entries: TransactionTrashEntry[];
+  /** How many deletions the plan's trash holds; more than `entries` when only the newest are loaded. */
+  total: number;
   isError: boolean;
   /** The deletion whose restore is in flight, if any. */
   restoringId: number | null;
@@ -26,6 +28,7 @@ type PlanTrashListViewProps = {
 /** The plan's trashed deletions, with who deleted each and the date it is removed for good. */
 export function PlanTrashListView({
   entries,
+  total,
   isError,
   restoringId,
   onRestore,
@@ -107,6 +110,13 @@ export function PlanTrashListView({
                 </Button>
               </li>
             ))}
+            {total > entries.length && (
+              <li>
+                <Text variant="caption" className="text-muted-foreground">
+                  {t("plans.planTrashListView.newestOnly", { shown: entries.length, total })}
+                </Text>
+              </li>
+            )}
           </ul>
         )}
       </CardContent>

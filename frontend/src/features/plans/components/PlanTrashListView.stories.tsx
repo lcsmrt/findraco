@@ -34,7 +34,7 @@ const entries: TransactionTrashEntry[] = [
 const meta = {
   title: "Plans/PlanTrashListView",
   component: PlanTrashListView,
-  args: { entries, isError: false, restoringId: null, onRestore: fn(), onRetry: fn() },
+  args: { entries, total: entries.length, isError: false, restoringId: null, onRestore: fn(), onRetry: fn() },
 } satisfies Meta<typeof PlanTrashListView>;
 export default meta;
 
@@ -43,6 +43,7 @@ type Story = StoryObj<typeof meta>;
 export const Entries: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("Gym")).toBeVisible();
+    await expect(canvas.queryByText(/newest of/)).toBeNull();
     await expect(canvas.getByText(/^6 transactions/)).toBeVisible();
     await expect(canvas.getByText(/1\.800,00/)).toBeVisible();
     await expect(canvas.getByText("Deleted by Ana on 10/11/2026")).toBeVisible();
@@ -53,8 +54,15 @@ export const Entries: Story = {
   },
 };
 
+export const NewestOnly: Story = {
+  args: { total: 60 },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Showing the 2 newest of 60 deletions.")).toBeVisible();
+  },
+};
+
 export const Empty: Story = {
-  args: { entries: [] },
+  args: { entries: [], total: 0 },
   play: async ({ canvas }) => {
     await expect(
       canvas.getByText("Nothing in the trash. What you delete stays here for 30 days."),
@@ -63,7 +71,7 @@ export const Empty: Story = {
 };
 
 export const LoadError: Story = {
-  args: { entries: [], isError: true },
+  args: { entries: [], total: 0, isError: true },
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByRole("alert")).toHaveTextContent("Could not load the trash.");
     await expect(canvas.queryByText(/Nothing in the trash/)).toBeNull();

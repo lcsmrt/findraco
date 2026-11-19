@@ -497,6 +497,7 @@
       "empty": "Nada na lixeira. O que você excluir fica aqui por 30 dias.",
       "expiresOn": "Removida de vez em {{date}}",
       "loadError": "Não foi possível carregar a lixeira.",
+      "newestOnly": "Mostrando as {{shown}} exclusões mais recentes de {{total}}.",
       "restore": "Restaurar",
       "restoreEntry": "Restaurar {{description}}",
       "retry": "Tentar de novo",

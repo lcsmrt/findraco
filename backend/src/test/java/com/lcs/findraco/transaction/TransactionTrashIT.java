@@ -201,7 +201,26 @@ class TransactionTrashIT extends AbstractIntegrationTest {
         Category category = fixtures.aCategory(plan, TransactionType.DEBIT, "Home");
         LocalDate day = LocalDate.of(2026, 11, 10);
         createTransaction(plan, owner, "Rent active", "100.00", day, category.getId());
-        long trashed = createTransaction(plan, owner, "Rent trashed", "30.00", day, category.getId());
+        Category groceries = fixtures.aCategory(plan, TransactionType.DEBIT, "Groceries");
+        Map<String, Object> trashedBody = transactionBody("Rent trashed", "30.00", day, category.getId());
+        trashedBody.put(
+                "items",
+                List.of(Map.of(
+                        "description",
+                        "Soap",
+                        "amount",
+                        new BigDecimal("10.00"),
+                        "quantity",
+                        1,
+                        "categoryId",
+                        groceries.getId())));
+        long trashed = json(mockMvc.perform(post(TX, plan.getId())
+                                .with(testAuthHelper.asUser(owner))
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(objectMapper.writeValueAsString(trashedBody)))
+                        .andExpect(status().isCreated()))
+                .get("id")
+                .asLong();
         mockMvc.perform(delete(TX + "/{id}", plan.getId(), trashed).with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isOk());
         String from = "2026-11-01";
@@ -213,6 +232,7 @@ class TransactionTrashIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isOk()));
         assertThat(summary.get("totalExpenses").decimalValue()).isEqualByComparingTo("100.00");
+        assertThat(summary.get("actualExpenses").decimalValue()).isEqualByComparingTo("100.00");
         assertThat(summary.get("personBreakdown").get(0).get("expense").decimalValue())
                 .isEqualByComparingTo("100.00");
 
@@ -229,6 +249,9 @@ class TransactionTrashIT extends AbstractIntegrationTest {
                         .with(testAuthHelper.asUser(owner)))
                 .andExpect(status().isOk()));
         assertThat(findSpent(spending, category.getId())).isEqualByComparingTo("100.00");
+        // The trashed row's item would move 10.00 into Groceries if the item reader counted it.
+        BigDecimal groceriesSpent = findSpent(spending, groceries.getId());
+        assertThat(groceriesSpent == null ? BigDecimal.ZERO : groceriesSpent).isEqualByComparingTo("0");
 
         JsonNode usage =
                 json(mockMvc.perform(get(CategoryRoutes.CATEGORY + "/{id}/usage", plan.getId(), category.getId())
@@ -381,6 +404,23 @@ class TransactionTrashIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void restoreAfterTheSeriesWasDeletedAgainIsAConflict() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate start = LocalDate.of(2026, 1, 15);
+        JsonNode series = createSeries(plan, owner, recurring("Gym", "50.00", start, start.plusMonths(4)));
+        String seriesId = series.get("seriesId").asString();
+        long march = series.get("occurrences").get(2).get("id").asLong();
+        long april = series.get("occurrences").get(3).get("id").asLong();
+        long marchDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", march);
+        deleteSeries(plan, owner, seriesId, "THIS_ONE", april);
+
+        restore(plan, owner, marchDeletion).andExpect(problem(HttpStatus.CONFLICT, "trash-series-changed"));
+
+        assertThat(listedIds(plan, owner)).hasSize(3).doesNotContain(march, april);
+    }
+
+    @Test
     void restoreOfAMissingDeletionIsNotFound() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
@@ -465,6 +505,11 @@ class TransactionTrashIT extends AbstractIntegrationTest {
         assertThat(contributorsTrash.get("content")).hasSize(1);
         assertThat(contributorsTrash.get("content").get(0).get("id").asLong()).isEqualTo(mine);
         assertThat(ownersTrash.get("content")).hasSize(2);
+
+        restore(plan, contributor, mine)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.restored").value(1));
+        assertThat(listedIds(plan, contributor)).contains(contributorsRow);
     }
 
     @Test
