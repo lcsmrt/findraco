@@ -133,7 +133,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 ## Handoff
 
 - **Settled mid-build:** a category move bumps the series version, which made restore of a series deletion answer 409 against AC 22; the deletions of a moved series now follow the bump (C29)
-- **Dispatched:** backend builder (Sonnet, worktree /home/lcs/dev/findraco-trash) at 2e925704
+- **Dispatched:** backend builder (Sonnet, worktree /home/lcs/dev/findraco-trash) at 2e925704; Verifier (Opus) at the commit after ce0e6ad2
 - **Boundary:** C1–C13, C16–C18, C24–C28 closed at bac5414c
 - **Abandoned:** -
-- **Walked:** not yet
+- **Walked:** 2026-11-19 00:25, local stack (throwaway Postgres on 5434, backend jar and built SPA at ce0e6ad2 via `vite preview`), Playwright 1280×800 pt-BR. Transactions: hover a row, delete → dialog reads "Excluir esta transação? Ela fica na lixeira por 30 dias e pode ser restaurada na tela de Planos." → Excluir: the row leaves the list and a toast offers "Desfazer"; Desfazer puts the row back. Delete another row, open Planos: section "Lixeira" lists it ("1 transação · - R$ 180,90", "Excluída por … em 19/11/2026", "Removida de vez em 19/12/2026") with "Restaurar"; Restaurar empties the trash ("Nada na lixeira…") and the row is back in Transactions.
