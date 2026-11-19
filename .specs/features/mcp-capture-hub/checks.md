@@ -116,6 +116,6 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 - **Settled mid-build:** none
 - **Dispatched:** builder (Sonnet, main tree /home/lcs/dev/findraco) at 9acb6b8f
-- **Boundary:** -
-- **Abandoned:** -
+- **Boundary:** C1–C24 built and green at the build's last commit (backend only; the SPA does not send the new filters)
+- **Abandoned:** the C13 example "a bill dated 2026-11-18 requiring confirmation, reader's today 2026-11-18 → PENDING" (and AC 11's "on or before the reader's today"): `Transaction.status(today)` answers FORECAST for a confirmation-required row dated today and PENDING only when it is dated before today (`TransactionConfirmationTest#requiredBeforeTodayIsPending`). The filter follows `Transaction.status(today)` exactly, as the claim's first half requires, so `TransactionListFilterIT#statusFilterFollowsTheReadersToday` asserts the bill due today under FORECAST and the bill dated the day before under PENDING for the reader whose today it is; it also uses two real zones 25 hours apart (the context clock is the system one, so 2026-11-18T04:00Z cannot be pinned). The claim needs the owner's ruling: change the plan's PENDING boundary to "on or before today" (then `Transaction.status`, its test and the app's "A confirmar" view change too) or keep `status(today)` and correct C13/AC 11.
 - **Walked:** n/a - no screen changes
