@@ -860,7 +860,7 @@
     "useTransactionActions": {
       "chooseOccurrences": "Escolha quais ocorrências excluir.",
       "confirmDeletion": "Confirmar exclusão",
-      "deleteDescription": "Tem certeza de que quer excluir esta transação? Esta ação não pode ser desfeita.",
+      "deleteDescription": "Excluir esta transação? Ela fica na lixeira por 30 dias e pode ser restaurada na tela de Planos.",
       "deleteSeries": "Excluir série"
     }
   }

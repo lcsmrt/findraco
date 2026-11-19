@@ -860,7 +860,7 @@
     "useTransactionActions": {
       "chooseOccurrences": "Choose which occurrences to delete.",
       "confirmDeletion": "Confirm Deletion",
-      "deleteDescription": "Are you sure you want to delete this transaction? This action cannot be undone.",
+      "deleteDescription": "Delete this transaction? It stays in the trash for 30 days and can be restored from the Plans screen.",
       "deleteSeries": "Delete series"
     }
   }
