@@ -12,6 +12,13 @@ public final class McpNames {
         return normalize(spoken).equals(normalize(stored));
     }
 
+    /** The first word of a name: "Marina" for "Marina Souza". */
+    public static String firstName(String name) {
+        String stripped = name.strip();
+        int space = stripped.indexOf(' ');
+        return space < 0 ? stripped : stripped.substring(0, space);
+    }
+
     /** Decomposed, marks stripped and case-folded ({@code ß} and {@code SS} meet in upper case). */
     private static String normalize(String name) {
         return Normalizer.normalize(name.strip(), Normalizer.Form.NFD)

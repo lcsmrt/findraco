@@ -5,6 +5,7 @@ import com.lcs.findraco.mcp.response.McpSavedTransactionResponse;
 import com.lcs.findraco.mcp.response.McpTransactionPageResponse;
 import com.lcs.findraco.mcp.response.McpTransactionResponse;
 import com.lcs.findraco.mcp.service.McpCategoryResolver;
+import com.lcs.findraco.mcp.service.McpMemberResolver;
 import com.lcs.findraco.mcp.service.McpPlanResolver;
 import com.lcs.findraco.mcp.service.McpToolRunner;
 import com.lcs.findraco.mcp.service.McpUpdateCopy;
@@ -12,10 +13,12 @@ import com.lcs.findraco.mcp.service.McpValidation;
 import com.lcs.findraco.shared.error.DomainException;
 import com.lcs.findraco.shared.error.ProblemType;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
+import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.service.TransactionService;
@@ -23,6 +26,7 @@ import com.lcs.findraco.user.service.UserService;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpToolParam;
 import org.springframework.data.domain.Page;
@@ -36,6 +40,7 @@ public class McpTransactionTools {
 
     private final McpToolRunner runner;
     private final McpCategoryResolver categories;
+    private final McpMemberResolver members;
     private final McpValidation validation;
     private final TransactionService transactionService;
     private final UserService userService;
@@ -43,11 +48,13 @@ public class McpTransactionTools {
     public McpTransactionTools(
             McpToolRunner runner,
             McpCategoryResolver categories,
+            McpMemberResolver members,
             McpValidation validation,
             TransactionService transactionService,
             UserService userService) {
         this.runner = runner;
         this.categories = categories;
+        this.members = members;
         this.validation = validation;
         this.transactionService = transactionService;
         this.userService = userService;
@@ -59,8 +66,9 @@ public class McpTransactionTools {
             description = "Lists the transactions of a plan, newest first, at most 50 per call, each with id, "
                     + "description, amount, date, type, category and status (ACTUAL happened, FORECAST is expected "
                     + "and not confirmed yet, PENDING is due but waits for its confirmation). Filter by period, "
-                    + "category, type and description text; the answer says how many matched and how to get the "
-                    + "next page.",
+                    + "category, type, status, description text, or only what has no category; each row also says "
+                    + "whom it is attributed to and its place in a series (\"3/6\" or \"monthly\"). The answer says "
+                    + "how many matched and how to get the next page.",
             annotations = @McpTool.McpAnnotations(readOnlyHint = true, openWorldHint = false))
     public CallToolResult listTransactions(
             @McpToolParam(required = false, description = "First date to include (YYYY-MM-DD)") LocalDate from,
@@ -68,6 +76,12 @@ public class McpTransactionTools {
             @McpToolParam(required = false, description = "Category name; includes its subcategories") String category,
             @McpToolParam(required = false, description = "DEBIT for expenses, CREDIT for income") TransactionType type,
             @McpToolParam(required = false, description = "Text the description contains") String text,
+            @McpToolParam(
+                            required = false,
+                            description = "ACTUAL, FORECAST or PENDING; PENDING is what waits for its confirmation")
+                    TransactionStatus status,
+            @McpToolParam(required = false, description = "true for only the transactions with no category")
+                    Boolean uncategorized,
             @McpToolParam(required = false, description = "Page number, from 0; the previous answer gives nextPage")
                     Integer page,
             @McpToolParam(required = false, description = "Plan name or id; the default plan when omitted")
@@ -90,8 +104,8 @@ public class McpTransactionTools {
                             to,
                             null,
                             null,
-                            null,
-                            null,
+                            status,
+                            uncategorized,
                             pageNumber,
                             PAGE_SIZE,
                             null,
@@ -117,10 +131,12 @@ public class McpTransactionTools {
     @McpTool(
             name = "create_transaction",
             title = "Create transaction",
-            description = "Records one expense (DEBIT) or income (CREDIT) in a plan, paid in full by the user. "
-                    + "The date is today unless given; the category is by name (see list_categories) and the "
-                    + "transaction is uncategorized without one. Installments, recurrences and splits between "
-                    + "members are not created from here. Returns the stored transaction.",
+            description = "Records one expense (DEBIT) or income (CREDIT) in a plan, attributed to the user unless "
+                    + "attributedTo names other members: one name puts the whole amount on that member, two or more "
+                    + "split it equally. The date is today unless given; the category is by name (see "
+                    + "list_categories) and the transaction is uncategorized without one. Installments, "
+                    + "recurrences and splits by fixed amounts are not created from here. Returns the stored "
+                    + "transaction.",
             annotations = @McpTool.McpAnnotations(destructiveHint = false, openWorldHint = false))
     public CallToolResult createTransaction(
             @McpToolParam(description = "DEBIT for an expense, CREDIT for income") TransactionType type,
@@ -128,16 +144,25 @@ public class McpTransactionTools {
             @McpToolParam(description = "What it was, up to 255 characters") String description,
             @McpToolParam(required = false, description = "Date (YYYY-MM-DD); today when omitted") LocalDate date,
             @McpToolParam(required = false, description = "Category name; uncategorized when omitted") String category,
-            @McpToolParam(required = false, description = "Plan name or id; the default plan when omitted")
-                    String plan) {
+            @McpToolParam(required = false, description = "Plan name or id; the default plan when omitted") String plan,
+            @McpToolParam(
+                            required = false,
+                            description = "Names of the plan members it is for (first or full name), at most 20; "
+                                    + "the amount is split equally between them. The user when omitted")
+                    List<String> attributedTo) {
         return runner.inPlan("create_transaction", plan, resolved -> {
+            List<TransactionParticipantRequest> participants = attributedTo == null || attributedTo.isEmpty()
+                    ? null
+                    : members.resolve(attributedTo, resolved.name(), resolved.ctx()).stream()
+                            .map(memberId -> new TransactionParticipantRequest(memberId, null))
+                            .toList();
             Long categoryId = category == null || category.isBlank()
                     ? null
                     : categories.resolve(category, resolved.name(), resolved.ctx());
             LocalDate when =
                     date != null ? date : userService.today(resolved.ctx().userId());
             CreateTransactionRequest request = validation.valid(new CreateTransactionRequest(
-                    categoryId, type, amount, description, null, when, null, null, null, null));
+                    categoryId, type, amount, description, null, when, null, SplitMode.EQUAL, participants, null));
             return saved(resolved, transactionService.create(request, resolved.ctx()));
         });
     }
@@ -178,11 +203,12 @@ public class McpTransactionTools {
     @McpTool(
             name = "update_transaction",
             title = "Update transaction",
-            description = "Corrects the amount, the date or the description of one transaction; everything else "
-                    + "stays as stored. For an occurrence of a series only that occurrence changes (a later edit of "
-                    + "the whole series in the app may reset it to the series values). A transaction "
-                    + "split by fixed amounts cannot change its amount here. Pass at least one of amount, date and "
-                    + "description. Find the id with list_transactions.",
+            description = "Corrects the amount, the date, the description or the category of one transaction; "
+                    + "everything else stays as stored. For an occurrence of a series only that occurrence changes "
+                    + "(a later edit of the whole series in the app may reset it to the series values). A transaction "
+                    + "split by fixed amounts cannot change its amount here. Pass at least one of amount, date, "
+                    + "description, category and removeCategory (which leaves it uncategorized). Find the id with "
+                    + "list_transactions.",
             annotations =
                     @McpTool.McpAnnotations(destructiveHint = false, idempotentHint = true, openWorldHint = false))
     public CallToolResult updateTransaction(
@@ -192,18 +218,30 @@ public class McpTransactionTools {
             @McpToolParam(required = false, description = "The new date (YYYY-MM-DD)") LocalDate date,
             @McpToolParam(required = false, description = "The new description, up to 255 characters")
                     String description,
+            @McpToolParam(required = false, description = "The new category name (see list_categories)")
+                    String category,
+            @McpToolParam(required = false, description = "true to leave the transaction with no category")
+                    Boolean removeCategory,
             @McpToolParam(required = false, description = "Plan name or id; the default plan when omitted")
                     String plan) {
         return runner.inPlan("update_transaction", plan, resolved -> {
-            if (amount == null && date == null && description == null) {
-                throw new McpToolException("Pass at least one of amount, date and description to change.");
+            boolean withCategory = category != null && !category.isBlank();
+            boolean clearCategory = Boolean.TRUE.equals(removeCategory);
+            if (withCategory && clearCategory) {
+                throw new McpToolException("Pass either category or removeCategory, not both.");
             }
+            if (amount == null && date == null && description == null && !withCategory && !clearCategory) {
+                throw new McpToolException(
+                        "Pass at least one of amount, date and description (or category or removeCategory) to change.");
+            }
+            Long categoryId = withCategory ? categories.resolve(category, resolved.name(), resolved.ctx()) : null;
             TransactionResponse stored = transactionService.getById(id, resolved.ctx());
             if (amount != null && amount.compareTo(stored.amount()) != 0 && stored.splitMode() == SplitMode.EXACT) {
                 throw new McpToolException("Transaction " + id + " is split by fixed amounts, so its amount "
                         + "cannot change from here. Edit it in the app.");
             }
-            UpdateTransactionRequest request = validation.valid(McpUpdateCopy.of(stored, amount, date, description));
+            UpdateTransactionRequest request = validation.valid(
+                    McpUpdateCopy.of(stored, amount, date, description, withCategory || clearCategory, categoryId));
             // SPEC_DEVIATION: design.md sends an occurrence of a series through editSeries with scope THIS_ONE.
             // Reason: that edit keeps the occurrence's own date and takes its category and split from the series
             // definition, so it could neither move the date (spec Edit 1) nor keep every other field as stored.
