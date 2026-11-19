@@ -414,6 +414,136 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
         assertThat(byDescription.get("Streaming").path("series").asString()).isEqualTo("monthly");
     }
 
+    // --- S3: delete a mistake, safely ---
+
+    @Test
+    void deleteASingleRowTrashesIt() throws Exception {
+        User ana = named("Ana Lima");
+        Plan plan = plan(ana, "Home", true);
+        Transaction keep = row(plan, ana, "Fica", null, List.of(ana), today());
+        Transaction mistake = row(plan, ana, "Duplicada", null, List.of(ana), today());
+        McpClient client = clientOf(ana);
+
+        JsonNode deleted = client.callJson("delete_transaction", Map.of("id", mistake.getId()));
+
+        assertThat(deleted.path("description").asString()).isEqualTo("Duplicada");
+        assertThat(deleted.path("count").asLong()).isEqualTo(1);
+        assertThat(ids(listed(client))).containsExactly(keep.getId());
+        JsonNode trash = json(mockMvc.perform(get(TX + "/trash", plan.getId()).with(testAuthHelper.asUser(ana)))
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+        assertThat(trash.path("content")).hasSize(1);
+        assertThat(trash.path("content").get(0).path("id").asLong())
+                .isEqualTo(deleted.path("deletionId").asLong());
+    }
+
+    @Test
+    void deleteAnOccurrenceDefaultsToThisOneAndHonoursScope() throws Exception {
+        User ana = named("Ana Lima");
+        Plan plan = plan(ana, "Home", true);
+        McpClient client = clientOf(ana);
+        JsonNode series = createSeries(plan, ana, installments("Notebook", LocalDate.of(2026, 1, 15), 6));
+        long third = series.path("occurrences").get(2).path("id").asLong();
+        long fourth = series.path("occurrences").get(3).path("id").asLong();
+
+        JsonNode one = client.callJson("delete_transaction", Map.of("id", third));
+        assertThat(one.path("count").asLong()).isEqualTo(1);
+        assertThat(listed(client).path("transactions")).hasSize(5);
+
+        JsonNode following = client.callJson("delete_transaction", Map.of("id", fourth, "scope", "THIS_AND_FOLLOWING"));
+        assertThat(following.path("count").asLong()).isEqualTo(3);
+        assertThat(listed(client).path("transactions")).hasSize(2);
+
+        JsonNode rest = client.callJson(
+                "delete_transaction",
+                Map.of("id", series.path("occurrences").get(0).path("id").asLong(), "scope", "ALL"));
+        assertThat(rest.path("count").asLong()).isEqualTo(2);
+        assertThat(listed(client).path("transactions")).isEmpty();
+    }
+
+    @Test
+    void restoreDeletionRestoresAndMapsServiceErrors() throws Exception {
+        User ana = named("Ana Lima");
+        User stranger = named("Estranho");
+        Plan plan = plan(ana, "Home", true);
+        plan(stranger, "Elsewhere", true);
+        McpClient client = clientOf(ana);
+        Transaction mistake = row(plan, ana, "Duplicada", null, List.of(ana), today());
+        long deletionId = client.callJson("delete_transaction", Map.of("id", mistake.getId()))
+                .path("deletionId")
+                .asLong();
+
+        JsonNode restored = client.callJson("restore_deletion", Map.of("deletionId", deletionId));
+
+        assertThat(restored.path("restored").asLong()).isEqualTo(1);
+        assertThat(ids(listed(client))).containsExactly(mistake.getId());
+        assertThat(errorText(client.callTool("restore_deletion", Map.of("deletionId", deletionId))))
+                .contains("Trash entry " + deletionId + " not found");
+        long anotherDeletion = client.callJson("delete_transaction", Map.of("id", mistake.getId()))
+                .path("deletionId")
+                .asLong();
+        assertThat(errorText(clientOf(stranger).callTool("restore_deletion", Map.of("deletionId", anotherDeletion))))
+                .contains("not found");
+
+        JsonNode series = createSeries(plan, ana, installments("Notebook", LocalDate.of(2026, 1, 15), 6));
+        long third = series.path("occurrences").get(2).path("id").asLong();
+        long seriesDeletion = client.callJson("delete_transaction", Map.of("id", third))
+                .path("deletionId")
+                .asLong();
+        long other = series.path("occurrences").get(4).path("id").asLong();
+        client.callJson("delete_transaction", Map.of("id", other));
+        assertThat(errorText(client.callTool("restore_deletion", Map.of("deletionId", seriesDeletion))))
+                .isEqualTo("The series was changed after this deletion, so it cannot be restored.");
+    }
+
+    @Test
+    void deleteToolIsDestructiveAndNamesRestore() throws Exception {
+        JsonNode tools = clientOf(fixtures.aUser()).listTools();
+
+        JsonNode delete = null;
+        for (JsonNode tool : tools) {
+            if (tool.path("name").asString().equals("delete_transaction")) {
+                delete = tool;
+            }
+        }
+        assertThat(delete).isNotNull();
+        assertThat(delete.path("annotations").path("destructiveHint").asBoolean())
+                .isTrue();
+        assertThat(delete.path("description").asString()).contains("30 days", "restore_deletion");
+    }
+
+    @Test
+    void deleteFollowsTheAppsRoleMatrix() throws Exception {
+        User owner = named("Ana Lima");
+        Plan plan = plan(owner, "Home", true);
+        User contributor = memberNamed(plan, "Caio Dias", PlanRole.CONTRIBUTOR);
+        User viewer = memberNamed(plan, "Vera Reis", PlanRole.VIEWER);
+        plan(contributor, "Mine", true);
+        plan(viewer, "Mine too", true);
+        Map<String, Object> inHome = Map.of("plan", plan.getId().toString());
+        Transaction owners = row(plan, owner, "Da Ana", null, List.of(owner), today());
+        Transaction contributors = row(plan, contributor, "Do Caio", null, List.of(contributor), today());
+
+        assertThat(errorText(clientOf(contributor).callTool("delete_transaction", with(inHome, "id", owners.getId()))))
+                .isEqualTo("You cannot modify a transaction created by another member.");
+        assertThat(errorText(clientOf(viewer).callTool("delete_transaction", with(inHome, "id", owners.getId()))))
+                .contains("Viewers cannot modify");
+        assertThat(errorText(clientOf(viewer).callTool("delete_transaction", with(inHome, "id", contributors.getId()))))
+                .contains("Viewers cannot modify");
+        assertThat(ids(listed(clientOf(owner)))).containsExactlyInAnyOrder(owners.getId(), contributors.getId());
+
+        JsonNode own = clientOf(contributor).callJson("delete_transaction", with(inHome, "id", contributors.getId()));
+        assertThat(own.path("count").asLong()).isEqualTo(1);
+        assertThat(ids(listed(clientOf(owner)))).containsExactly(owners.getId());
+    }
+
+    private static Map<String, Object> with(Map<String, Object> base, String key, Object value) {
+        Map<String, Object> map = new LinkedHashMap<>(base);
+        map.put(key, value);
+        return map;
+    }
+
     private Map<String, Object> installments(String description, LocalDate start, int parcels) {
         Map<String, Object> body = monthly(description, start);
         body.put("mode", "INSTALLMENT");
