@@ -3,7 +3,7 @@
 Build: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true
 Plan: `.specs/features/mcp-capture-hub/plan.md`
 
-25 checks in 3 slices · 2 one-way doors · 0 open
+26 checks in 3 slices · 2 one-way doors · 0 open
 
 ## Checks
 
@@ -26,6 +26,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 **C6** - The `create_transaction` schema lists exactly `type`, `amount`, `description`, `date`, `category`, `plan`, `attributedTo`, and still no series or exact-split field (AC 1-3; AD-029)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureToolsIT#createSchemaHasNoSeriesOrSplit' -Dsurefire.skip=true
+
+**C26** - A CONTRIBUTOR's `create_transaction` with another member in `attributedTo` answers the tool error "Only owners and editors can attribute a transaction to other members." and creates nothing; the same call with their own name succeeds and attributes the row to them (AC 2; Surface: CONTRIBUTOR)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#contributorCanAttributeOnlyToThemselves' -Dsurefire.skip=true
 
 ### S2 - Fix and find
 
@@ -93,7 +96,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | `GET /plan/{planId}/transaction` statuses (3) | 200 C11, C13 · 400 C15 · 404 C24 | - |
-| MCP `create_transaction` cases (5) | no names C1 · one name C2 · several names C3 · unknown, ambiguous or a first name that is another's whole name C4 · someone else in a single-member plan C5 | - |
+| MCP `create_transaction` cases (6) | no names C1 · one name C2 · several names C3 · unknown, ambiguous or a first name that is another's whole name C4 · someone else in a single-member plan C5 · contributor naming another member C26 | - |
 | MCP `update_transaction` cases (5) | `category` C7 · `removeCategory` C8 · both C9 · type mismatch C10 · row shared with a former member C25 | - |
 | MCP `list_transactions` new params (2) | `status` C14 · `uncategorized` C12, C16 | - |
 | MCP `delete_transaction` scopes (3) | THIS_ONE (default) C19 · THIS_AND_FOLLOWING C19 · ALL C19 · single row C18 | - |

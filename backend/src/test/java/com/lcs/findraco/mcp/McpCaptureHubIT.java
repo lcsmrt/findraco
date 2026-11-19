@@ -249,6 +249,27 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
                 .containsExactly(ana.getId());
     }
 
+    @Test
+    void contributorCanAttributeOnlyToThemselves() throws Exception {
+        User owner = named("Ana Lima");
+        Plan plan = plan(owner, "Home", true);
+        User contributor = memberNamed(plan, "Caio Dias", PlanRole.CONTRIBUTOR);
+        plan(contributor, "Mine", true);
+        McpClient client = clientOf(contributor);
+
+        String refused = errorText(client.callTool(
+                "create_transaction", with(debit("Farmácia", "attributedTo", List.of("Ana")), "plan", "Home")));
+
+        assertThat(refused).isEqualTo("Only owners and editors can attribute a transaction to other members.");
+        assertThat(count()).isZero();
+        JsonNode own = client.callJson(
+                "create_transaction", with(debit("Posto", "attributedTo", List.of("caio")), "plan", "Home"));
+        assertThat(shareOwners(
+                        stored(plan, owner, own.path("transaction").path("id").asLong())))
+                .containsExactly(contributor.getId());
+        assertThat(count()).isEqualTo(1);
+    }
+
     // --- S2: fix and find ---
 
     @Test
