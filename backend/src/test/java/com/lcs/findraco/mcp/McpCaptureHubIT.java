@@ -545,7 +545,7 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
                 .path("deletionId")
                 .asLong();
         long other = series.path("occurrences").get(4).path("id").asLong();
-        client.callJson("delete_transaction", Map.of("id", other));
+        client.callJson("delete_transaction", Map.of("id", other, "scope", "THIS_AND_FOLLOWING"));
         assertThat(errorText(client.callTool("restore_deletion", Map.of("deletionId", seriesDeletion))))
                 .isEqualTo("The series was changed after this deletion, so it cannot be restored.");
     }

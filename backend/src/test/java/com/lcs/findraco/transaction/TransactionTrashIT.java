@@ -381,12 +381,10 @@ class TransactionTrashIT extends AbstractIntegrationTest {
         JsonNode series = createSeries(plan, owner, installment("Laptop", "300.00", LocalDate.of(2026, 1, 15), 6));
         String seriesId = series.get("seriesId").asString();
         long parcel4 = series.get("occurrences").get(3).get("id").asLong();
-        long parcel1 = series.get("occurrences").get(0).get("id").asLong();
         long deletionId = deleteSeries(plan, owner, seriesId, "THIS_AND_FOLLOWING", parcel4);
 
         Map<String, Object> edit = installment("Laptop renamed", "300.00", LocalDate.of(2026, 1, 15), 3);
-        edit.put("scope", "THIS_ONE");
-        edit.put("pivotOccurrenceId", parcel1);
+        edit.put("scope", "ALL");
         edit.put("version", fixtures.seriesVersion(seriesId));
         editSeries(plan, owner, seriesId, edit);
         long parcelsBefore =
@@ -404,20 +402,19 @@ class TransactionTrashIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void restoreAfterTheSeriesWasDeletedAgainIsAConflict() throws Exception {
+    void restoreAfterTheWholeSeriesWasDeletedIsAConflict() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         LocalDate start = LocalDate.of(2026, 1, 15);
         JsonNode series = createSeries(plan, owner, recurring("Gym", "50.00", start, start.plusMonths(4)));
         String seriesId = series.get("seriesId").asString();
         long march = series.get("occurrences").get(2).get("id").asLong();
-        long april = series.get("occurrences").get(3).get("id").asLong();
         long marchDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", march);
-        deleteSeries(plan, owner, seriesId, "THIS_ONE", april);
+        deleteSeries(plan, owner, seriesId, "ALL", null);
 
         restore(plan, owner, marchDeletion).andExpect(problem(HttpStatus.CONFLICT, "trash-series-changed"));
 
-        assertThat(listedIds(plan, owner)).hasSize(3).doesNotContain(march, april);
+        assertThat(listedIds(plan, owner)).isEmpty();
     }
 
     @Test
@@ -649,12 +646,10 @@ class TransactionTrashIT extends AbstractIntegrationTest {
         JsonNode rent = createSeries(plan, owner, rentBody);
         String rentId = rent.get("seriesId").asString();
         long rentMarch = rent.get("occurrences").get(2).get("id").asLong();
-        long rentJanuary = rent.get("occurrences").get(0).get("id").asLong();
         long stale = deleteSeries(plan, owner, rentId, "THIS_ONE", rentMarch);
-        Map<String, Object> edit = recurring("Rent renamed", "900.00", start, start.plusMonths(4));
+        Map<String, Object> edit = recurring("Rent renamed", "950.00", start, start.plusMonths(4));
         edit.put("categoryId", alone.getId());
-        edit.put("scope", "THIS_ONE");
-        edit.put("pivotOccurrenceId", rentJanuary);
+        edit.put("scope", "ALL");
         edit.put("version", fixtures.seriesVersion(rentId));
         editSeries(plan, owner, rentId, edit);
         mockMvc.perform(delete(CategoryRoutes.CATEGORY + "/{id}", plan.getId(), alone.getId())

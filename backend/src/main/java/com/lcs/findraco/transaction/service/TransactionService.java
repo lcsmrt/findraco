@@ -322,7 +322,7 @@ public class TransactionService {
                 deletion.recordException(definition, transaction.getScheduledDate());
             }
             recurrenceDefinitionRepository.saveAndFlush(definition);
-            deletion.recordDefinitionVersion(definition.getVersion());
+            deletion.recordDefinitionVersion(definition.getRuleRevision());
         }
         return new TransactionDeletedResponse(deletion.getId());
     }
@@ -418,7 +418,7 @@ public class TransactionService {
         if (definition != null) {
             changeSeriesFor(definition, deletion, scope, pivot, occurrences, inScope);
             recurrenceDefinitionRepository.saveAndFlush(definition);
-            deletion.recordDefinitionVersion(definition.getVersion());
+            deletion.recordDefinitionVersion(definition.getRuleRevision());
         }
         return new TransactionDeletedResponse(deletion.getId());
     }

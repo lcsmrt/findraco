@@ -550,6 +550,29 @@ class MigrationsIT extends AbstractIntegrationTest {
                         .containsExactly("2026-01-20", "2999-01-20", "none"));
     }
 
+    @Test
+    void ruleRevisionResetsExistingDeletions() {
+        String seed = "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
+                + "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);"
+                + "INSERT INTO recurrence_definitions (id, plan_id, created_by, series_id, type, amount, description, "
+                + "mode, recurrence_interval, start_date, requires_confirmation) "
+                + "VALUES (1, 1, 1, 'series-1', 'DEBIT', 80.00, 'Gym', 'RECURRING', 'MONTHLY', '2026-01-15', false);"
+                + "INSERT INTO transaction_deletions (id, plan_id, deleted_at, kind, scope, recurrence_definition_id, "
+                + "definition_version, exception_date, definition_trashed) VALUES "
+                + "(1, 1, now(), 'SERIES', 'THIS_ONE', 1, 3, '2026-03-15', false);";
+
+        migrateScratchDatabase("27", seed, scratch -> {
+            assertThat(scratch.queryForMap("SELECT is_nullable, column_default FROM information_schema.columns "
+                            + "WHERE table_name = 'recurrence_definitions' AND column_name = 'rule_revision'"))
+                    .containsEntry("is_nullable", "NO")
+                    .containsEntry("column_default", "0");
+            assertThat(scratch.queryForObject("SELECT rule_revision FROM recurrence_definitions", Long.class))
+                    .isZero();
+            assertThat(scratch.queryForObject("SELECT definition_version FROM transaction_deletions", Long.class))
+                    .isZero();
+        });
+    }
+
     /**
      * Builds a scratch database up to V12, applies {@code tamper}, then runs the rest of the chain.
      * The scratch database lives in the same container and is dropped afterwards.

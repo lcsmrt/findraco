@@ -92,7 +92,10 @@ public class TransactionDeletion {
         definitionTrashed = true;
     }
 
-    /** The version the series had right after the deletion; a different one at restore means it changed since. */
+    /**
+     * The rule revision the series had right after the deletion (stored in {@code definition_version}); a different
+     * one at restore means the series' rule changed since.
+     */
     public void recordDefinitionVersion(long version) {
         definitionVersion = version;
     }

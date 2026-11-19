@@ -157,7 +157,7 @@ public class TransactionTrashService {
             }
             definition.restore();
         } else {
-            if (definition.isTrashed() || deletion.getDefinitionVersion() != definition.getVersion()) {
+            if (definition.isTrashed() || deletion.getDefinitionVersion() != definition.getRuleRevision()) {
                 throw new TransactionExceptions.TrashSeriesChangedException();
             }
             if (deletion.getExceptionDate() != null) {
