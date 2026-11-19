@@ -115,7 +115,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** -
+- **Dispatched:** builder (Sonnet, main tree /home/lcs/dev/findraco) at 9acb6b8f
 - **Boundary:** -
 - **Abandoned:** -
 - **Walked:** n/a - no screen changes
