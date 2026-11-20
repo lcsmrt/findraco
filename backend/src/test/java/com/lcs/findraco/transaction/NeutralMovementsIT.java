@@ -146,6 +146,25 @@ class NeutralMovementsIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void uncategorizedFilterLeavesNeutralRowsOut() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        Transaction purchase = row(plan, owner, TransactionType.DEBIT, "40.00", NOVEMBER, null, null);
+        row(plan, owner, TransactionType.DEBIT, "1500.00", NOVEMBER, null, TransactionKind.CARD_BILL_PAYMENT);
+        row(plan, owner, TransactionType.DEBIT, "500.00", NOVEMBER, null, TransactionKind.SAVINGS);
+        row(plan, owner, TransactionType.DEBIT, "30.00", NOVEMBER, food, null);
+
+        JsonNode uncategorized = readBody(mockMvc.perform(get(TransactionRoutes.TRANSACTION, plan.getId())
+                        .with(testAuthHelper.asUser(owner))
+                        .param("uncategorized", "true"))
+                .andExpect(status().isOk()));
+
+        assertThat(ids(uncategorized)).containsExactly(purchase.getId());
+        assertThat(uncategorized.path("totalElements").asLong()).isEqualTo(1);
+    }
+
+    @Test
     void refundNeedsAnExpenseCategoryOnACredit() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

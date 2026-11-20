@@ -172,6 +172,19 @@ class McpNeutralKindIT extends AbstractMcpIntegrationTest {
         assertThat(foodRow.path("spent").decimalValue()).isEqualByComparingTo("50.00");
     }
 
+    @Test
+    void uncategorizedFilterLeavesNeutralRowsOut() throws Exception {
+        User user = userIn("UTC");
+        Plan plan = plan(user, "Home", true);
+        Transaction purchase = transaction(plan, user, "Market", "40.00", TransactionType.DEBIT, today(), null);
+        kinded(plan, user, "Bill", "1500.00", TransactionType.DEBIT, TransactionKind.CARD_BILL_PAYMENT);
+
+        JsonNode listed = clientOf(user).callJson("list_transactions", Map.of("uncategorized", true));
+
+        assertThat(listed.path("transactions")).hasSize(1);
+        assertThat(listed.path("transactions").get(0).path("id").asLong()).isEqualTo(purchase.getId());
+    }
+
     private void kinded(
             Plan plan, User user, String description, String amount, TransactionType type, TransactionKind kind) {
         Transaction row = transaction(plan, user, description, amount, type, LocalDate.of(2026, 11, 10), null);

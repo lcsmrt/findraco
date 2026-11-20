@@ -67,12 +67,14 @@ public class TransactionSpecification {
         return (root, query, cb) -> cb.equal(root.get("kind"), TransactionKind.valueOf(kind.name()));
     }
 
-    /** Only transactions with no category. */
+    /** Only transactions with no category that could take one: a neutral kind never does, so it is left out. */
     public static Specification<Transaction> uncategorized(Boolean uncategorized) {
         if (!Boolean.TRUE.equals(uncategorized)) {
             return (root, query, cb) -> null;
         }
-        return (root, query, cb) -> cb.isNull(root.get("category"));
+        return (root, query, cb) -> cb.and(
+                cb.isNull(root.get("category")),
+                cb.or(cb.isNull(root.get("kind")), cb.equal(root.get("kind"), TransactionKind.REFUND)));
     }
 
     /**
