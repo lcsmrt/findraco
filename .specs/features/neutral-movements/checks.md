@@ -5,7 +5,7 @@ Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose 
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/overview/components/SummaryCards.stories.tsx src/features/transactions/components/NeutralReviewListView.stories.tsx
 Plan: `.specs/features/neutral-movements/plan.md`
 
-24 checks in 4 slices · 2 one-way doors · 0 open, of which 0 block
+28 checks in 4 slices · 2 one-way doors · 0 open, of which 0 block
 
 ## Checks
 
@@ -29,6 +29,10 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C6** - The Overview shows "Neutros" under the result with "saiu R$ 2.000,00" and "entrou R$ 500,00" when the summary has them, and no "Neutros" line when both are 0 (AC 3)
 Proof: run stories | ✓ src/features/overview/components/SummaryCards.stories.tsx > With Neutral Movements
 Proof: run stories | ✓ src/features/overview/components/SummaryCards.stories.tsx > Default
+
+**C28** - With an uncategorized market purchase and an uncategorized CARD_BILL_PAYMENT, `uncategorized=true` returns only the purchase, in REST and in MCP `list_transactions` (AC 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='NeutralMovementsIT#uncategorizedFilterLeavesNeutralRowsOut' -Dsurefire.skip=true
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpNeutralKindIT#uncategorizedFilterLeavesNeutralRowsOut' -Dsurefire.skip=true
 
 ### S2 - Refunds lower spending
 
@@ -65,11 +69,22 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 Proof: run unit | ✓ NeutralReviewSheet > applies a candidate and removes it from the list
 Proof: run stories | ✓ src/features/transactions/components/NeutralReviewListView.stories.tsx > Empty
 
+**C25** - Applying CARD_BILL_PAYMENT from the review to an imported "Pagamento de fatura" of 1500 in category "Cartão" answers 200, the row has no category and the kind set, it leaves the review list, and the category's spending drops by 1500 (AC 9)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='NeutralCandidatesIT#applyingRemovesTheCategoryOfANeutralRow' -Dsurefire.skip=true
+
+**C26** - The owner edits Marina's TRANSFER of 500 (Marina the only participant) from the form, changing only the description: the PUT keeps Marina as the participant, answers 200, and the kind stays TRANSFER (AC 2, AC 11)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='NeutralMovementsIT#anyMemberCanSaveAnotherMembersNeutralRow' -Dsurefire.skip=true
+Proof: run unit | ✓ TransactionFormDrawer > keeps the payer of a neutral row when another member saves it
+
+**C27** - Member "Lucas" (one-word name): "…pelo Pix - LUCAS FERREIRA - …" is not proposed; "…pelo Pix - LUCAS - …" is proposed as TRANSFER (AC 8)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='NeutralCandidatesIT#oneWordNamesMatchOnlyTheWholeName' -Dsurefire.skip=true
+
 ### S4 - Seeing and choosing the kind
 
 **C17** - In the form, choosing "Fatura" hides category and split, choosing "Reembolso" keeps category and hides nothing else, and the payload carries `kind`; a form value with kind CARD_BILL_PAYMENT maps back to the same choice (AC 11)
 Proof: run unit | ✓ transactionForm > maps the movement kind both ways
 Proof: run unit | ✓ TransactionFormDrawer > saves a neutral kind without category or split
+Proof: run unit | ✓ TransactionFormDrawer > keeps the category of a refund, from the expense categories
 
 **C18** - Reopening a row saved as "Guardar" shows "Guardar" selected (AC 11)
 Proof: run unit | ✓ TransactionFormDrawer > reopens a row with its movement kind
@@ -102,10 +117,12 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 | aggregate readers (7) | summary C1 · trend C2 · person breakdown C2 · category spending C3 · limits C3 · MCP summary C23 · MCP category spending C23 | - |
 | refund readers (4) | category C7 · expenses C7 · person C8 · limit C10 | - |
 | kind validation (6) | neutral + category C4 · neutral + split C4 · neutral + items C4 · refund without category C9 · refund with credit category C9 · refund on a debit C9 | - |
-| review rule, AC 8 (6 examples) | Pix sent to member C12 · Pix received, accents C12 · unmarked bill C12 · other name C12 · already kinded C12 · no bank text C12 | - |
-| `POST /plan/{planId}/transaction/{id}/kind` statuses (5) | 200 C13 · 409 C13 · 422 C4 · 403 C14 · 404 C14 | - |
+| review rule, AC 8 (7 examples) | Pix sent to member C12 · Pix received, accents C12 · unmarked bill C12 · other name C12 · already kinded C12 · no bank text C12 · one-word name C27 | - |
+| `POST /plan/{planId}/transaction/{id}/kind` statuses (6) | 200 C13 · 409 C13 · 422 C4 · 403 C14 · 404 C14 · apply removes category C25 | - |
 | `GET /plan/{planId}/transaction/neutral-candidates` statuses (2) | 200 C12 · 404 C14 | - |
 | `POST`, `PUT`, `GET /plan/{planId}/transaction` with `kind` statuses (3) | 200 C17 · 422 C4 · 404 existing (PlanAuthorizationMatrixIT non-member rows) C15 | - |
+| neutral row payer (2) | creator C4 · another member C26 | - |
+| uncategorized filter (2) | REST C28 · MCP C28 | - |
 | `GET /plan/{planId}/dashboard` new fields (2) | `neutralOut` C5 · `neutralIn` C5 | - |
 | badges (4) | Entre membros C19 · Fatura C19 · Guardar C19 · Reembolso C19 | - |
 | MCP tools (5) | create C21 · update C22 · list C22 · month summary C23 · category spending C23 | - |
@@ -126,7 +143,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 ## Handoff
 
-- **Settled mid-build:** none
+- **Settled mid-build:** 2026-11-20, Verifier finding 1 asked to the owner ("Pagamento de fatura" with a category in the review list): user chose "Aplicar tira a categoria" - applying a neutral kind from the review removes the row's category, items and split, leaving the payer alone.
 - **Dispatched:** backend worker (Sonnet) at 17a800b6, returned; frontend worker (Sonnet) at eef88bf0, returned; Verifier (Opus) at 84f3db67
 - **Boundary:** backend C1-C5, C7-C15, C20 (backend), C21-C24 closed at 7f71b4bf; frontend C6, C16-C19, C20 (frontend) closed at 8af5c53c
 - **Abandoned:** none
