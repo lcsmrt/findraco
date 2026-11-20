@@ -11,17 +11,21 @@
 | C1 | `TrashRuleRevisionIT` `restoreAfterAnotherOnlyThisDeleteSucceeds` | yes - asserts 200, `restored` 1 and March listed; the lock-version rule it replaces fails it (April's exception moves the version) |
 | C2 | `TrashRuleRevisionIT` `restoreAfterAnOnlyThisEditSucceeds` | yes - 200, March 80.00, May 95.00 |
 | C3 | `TrashRuleRevisionIT` `restoreAfterAnAmountEditConflicts` | yes - 409 `trash-series-changed`, deletion row kept, March absent, exception kept |
-| C4 | `TrashRuleRevisionIT` `restoreAfterTheEndChangedConflicts` | yes - March 409, then June 200 |
-| C5 | `TrashRuleRevisionIT` `restoreAfterAnyPatternChangeConflicts` | yes for the 4 it names - but parcels (in AC 2) has no case; see findings |
-| C6 | `TrashRuleRevisionIT` `flagOnlyEditKeepsTheDeletionRestorable` | no - the series is created with `requiresConfirmation` defaulting to true and the edit sends true, so the flag never flips |
+| C4 | `TrashRuleRevisionIT` `restoreAfterATailWasDeletedSucceeds` | yes - March 200, then June 200, both listed, and the definition's `endDate` is back to START+7 months |
+| C5 | `TrashRuleRevisionIT` `restoreAfterAnyPatternChangeConflicts` | yes - 409 `trash-series-changed` for each of the 4; the end case moves the end to February, before March, so it is refused by `covers`, not by the revision |
+| C6 | `TrashRuleRevisionIT` `flagOnlyEditKeepsTheDeletionRestorable` | yes - asserts the definition's flag true before and false after the edit, then restore 200 and March listed |
 | C7 | `MigrationsIT` `ruleRevisionResetsExistingDeletions` | yes - column `NO`/`0`, revision 0, `definition_version` 3 -> 0 |
 | C8 | `FormerMemberEditIT` `editKeepingAFormerMemberRecalculatesTheirShare` | yes - 200, Ana 60.00, owner 60.00, stored and returned |
 | C9 | `FormerMemberEditIT` `seriesEditKeepingAFormerMemberSucceeds` | yes - 200, 3 occurrences each with Ana 45.00 |
 | C10 | `FormerMemberEditIT` `formerMemberCannotJoinANewRow` | yes for a one-off row - edit and create 422 `participant-not-member`, row and version unchanged; the series path is not covered, see findings |
 | C11 | `McpCaptureHubIT` `updateOfARowSharedWithAFormerMemberKeepsTheirShare` | yes - new description stored, Marina kept at 50.00 |
-| C12 | `AttributionFields.stories.tsx` `Former Participant`; `TransactionFormDrawer.test.tsx` `keeps a former member's share when saving` | yes - checked checkbox named with the former label, share shown, PUT carries memberId 9 with its share; label asserted in English only (see findings) |
+| C12 | `AttributionFields.stories.tsx` `Former Participant`; `TransactionFormDrawer.test.tsx` `keeps a former member's share when saving` | yes - checkbox "Ana Lima (no longer in the plan)" checked, share R$ 60,00 shown, PUT carries memberId 9 with its share; the pt-BR copy is claimed as the same key, not asserted |
 | C13 | `TrashRuleRevisionIT` `restoringOneDeletionKeepsAnotherRestorable` | yes - June 200 then March 200, both listed |
 | C14 | `TransactionFormDrawer.test.tsx` `shows the split of a row shared with a former member in a one-member plan` | yes - former checkbox present with one member, PUT amount 120 with both memberIds (fails if `showsAttribution` hides the fields) |
+| C15 | `TrashRuleRevisionIT` `restoringTheTailFirstKeepsAnEarlierDeletionRestorable` | yes - June 200, then March 200, both listed; fails under the earlier code (March 409, my round-1 example) |
+| C16 | `TrashRuleRevisionIT` `parcelsChangeBlocksTheRestore` | yes - 8 parcels: 409 `trash-series-changed` (parcel 3 is still inside the series, so only the revision can refuse it); 6 parcels resent: 200 and parcel 3 listed |
+| C17 | `FormerMemberEditIT` `formerMemberCannotReturnToASeriesOccurrence` | yes - "only this" re-add 422 `participant-not-member` and the occurrence keeps only the owner; "this and following" from a pivot carrying Ana on a definition without her 422; both were 200 before the fix |
+| C18 | `TrashRuleRevisionIT` `restoringATailAfterItsEndMovedConflicts` | yes - the "all" edit resends the same amount, description and split, so the revision does not move and the 409 can only come from the cut end no longer holding |
 
 ## Findings
 
