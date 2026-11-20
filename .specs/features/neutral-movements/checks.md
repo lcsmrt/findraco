@@ -128,6 +128,6 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 - **Settled mid-build:** none
 - **Dispatched:** backend worker (Sonnet) at 17a800b6, returned; frontend worker (Sonnet) at eef88bf0
-- **Boundary:** backend C1-C5, C7-C15, C20 (backend), C21-C24 closed at 7f71b4bf
+- **Boundary:** backend C1-C5, C7-C15, C20 (backend), C21-C24 closed at 7f71b4bf; frontend C6, C16-C19, C20 (frontend) closed at 8af5c53c
 - **Abandoned:** none
 - **Walked:** none yet
