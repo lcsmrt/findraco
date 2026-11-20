@@ -226,13 +226,25 @@
 - **Date**: 2026-11-18
 - **Status**: active
 
+### AD-029
+- **Decision**: The MCP connector may attribute a transaction to named plan members: `create_transaction` takes `attributedTo` (member names), one name puts the whole amount on that member and two or more split it equally with the app's cent allocation. Exact or custom splits, series and items stay out of the MCP. Reverses the mcp-connector rule "no splits from the connector" (AD-026 scope). The transactions list (REST and MCP) gains `status` (ACTUAL, FORECAST, PENDING, derived against the reader's today) and `uncategorized` filters, and the MCP gains `delete_transaction` (to the trash, AD-028) and `restore_deletion`.
+- **Reason**: Claude is the owners' main capture channel and they pool money (owner answers, 2026-11-17), so "a farmácia foi da Marina" and "dividimos o mercado" are the common spoken cases; typing them in the app afterwards defeats the channel. User, 2026-11-18, delegated the phase 1 decisions ("Sozinho, sem me chamar pra nada").
+- **Trade-off**: A misheard name attributes to the wrong member (mitigated: an unknown or ambiguous name is refused with the member list); an equal split is the only split Claude can make.
+- **Scope**: `mcp` (tools, member resolver, responses), `transaction` (list filter, `TransactionFilter`), `backend/openapi.json`.
+- **Date**: 2026-11-18
+- **Status**: active
+
 ## Handoff
 
-- **Run**: unattended overnight run, 2026-11-18 (user asleep; the 5-hour limit stopped every agent from ~01:10 to the user's return at 08:10). Design refactor plan: `.specs/project/DESIGN-PLAN.md` (owner answers, phases 0–7, R17 contacts).
-- **Phase 0 `correctness-pass`** (branch `fix/correctness-pass`, not pushed): T1–T12 committed (9393faed..1756ae7d), `check_proofs` 26/26 at 1756ae7d, walk done (tasks.md `**Walked:**`). Verifier (Opus) resumed at 08:12; when it returns: fix findings in one pass, rerun `check_proofs.py correctness-pass`, `validate_verification.py correctness-pass`, then the `chore(release): 1.0.0-beta.33` commit before any push. Push/PR only when the user asks.
-- **Phase 1 `transaction-trash`** (lean; worktree `/home/lcs/dev/findraco-trash`, branch `feat/transaction-trash` from 74f8b22a): plan.md and checks.md committed (2e925704, AD-028); backend builder resumed at 08:12 with uncommitted service/repository edits - see `checks.md` `## Handoff` for what it closed. Frontend part (toast "Desfazer", Plans screen trash section, C14–C15, C19–C23) not started: build it in the MAIN tree after phase 0 is closed (`git switch feat/transaction-trash` there, then `git worktree remove /home/lcs/dev/findraco-trash`), never with pnpm in the worktree.
-- **Phase 1 `mcp-capture-hub`** (lean, R9): plan in `.specs/features/mcp-capture-hub/plan.md` (checks not written); build it on a branch stacked on `feat/transaction-trash`; it reverses the mcp-connector "no splits" rule (AD-029 to write). Not built.
-- **R3 neutral movements**: draft plan with six owner decisions, not approved, not built (`.specs/features/neutral-movements/plan.md`).
-- **Environment lesson**: running pnpm in a git worktree whose `frontend/node_modules` is a symlink to the main tree rewrote the main tree's links into the worktree; each worktree needs its own `pnpm install --offline --frozen-lockfile` (done for findraco-trash).
-- **Running locally**: Postgres `findraco-walk-pg` (127.0.0.1:5434), backend jar on 3000, `vite preview` on 5173 - stop them and `docker rm -f findraco-walk-pg` when done.
-- **Still open from before**: first-connect MCP 403 (needs VPS logs); Dependabot #24/#25/#16; release tags; prod DB password rotation; new-user default time zone (R12).
+- **Run**: 2026-11-18/19. Design refactor plan: `.specs/project/DESIGN-PLAN.md` (owner answers, phases 0–7, R17 contacts). Three stacked PRs, each verified (lean/sdd gate exit 0), none merged:
+  - #35 `fix/correctness-pass` → `main`: phase 0, `1.0.0-beta.33`.
+  - #36 `feat/transaction-trash` → `fix/correctness-pass`: R1 trash, `1.0.0-beta.34` (AD-028). Retarget to `main` after #35 merges.
+  - `feat/mcp-capture-hub` → `feat/transaction-trash`: R9 (AD-029), backend only, no version bump. Retarget after #36.
+- **Owner decisions pending**:
+  1. Trash - ANSWERED 2026-11-19, user: "Só bloquear se a série mudou": an older series deletion stays restorable after later deletes or "only this" edits; 409 only when the series' amount, rule or end changed after it. Not built yet.
+  2. Former members - ANSWERED 2026-11-19, user: "Se o plano é meu, por que eu não poderia editar? Não tem sentido pra mim.": a row already split with a member who left stays fully editable (app and Claude); the former member's share stays valid on that row; a former member cannot be added to a row they are not on. Confirmed 2026-11-19 ("Cara, pra mim faz sentido"); the share recalculates when the amount changes. Not built yet.
+  3. R3 neutral movements: all decisions answered 2026-11-19 (refund case added, no category on neutral rows); criteria drafted in `.specs/features/neutral-movements/plan.md`, awaiting plan approval.
+- **Next phase per DESIGN-PLAN**: phase 2 foundations, after the decisions above; R17 contacts and import review come in phase 3.
+- **Environment lessons**: each git worktree needs its own `pnpm install --offline --frozen-lockfile` (never symlink node_modules); never run two maven builds in the same `backend/` (a Verifier's throwaway test broke a `check_proofs` run); the local walk stack is Postgres on 5434 + `java -jar` on 3000 + `vite preview` with `VITE_FINDRACO_API_URL`.
+- **Running locally**: nothing.
+- **Still open from before**: first-connect MCP 403 (needs VPS logs); Dependabot #24/#25/#16/#30/#31/#32; release tags; prod DB password rotation; new-user default time zone (R12).

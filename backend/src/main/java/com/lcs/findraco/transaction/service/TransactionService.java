@@ -6,6 +6,7 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
+import com.lcs.findraco.shared.error.MalformedRequestException;
 import com.lcs.findraco.shared.error.StaleVersionException;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.config.SeriesProperties;
@@ -147,6 +148,10 @@ public class TransactionService {
     public Page<TransactionResponse> findAllByPlanPaged(TransactionFilter filter, PlanContext ctx) {
         TransactionSortField sortBy = filter.sortBy();
         Sort.Direction direction = PageRequests.direction(filter.sortDirection());
+        if (Boolean.TRUE.equals(filter.uncategorized()) && filter.categoryId() != null) {
+            throw new MalformedRequestException("uncategorized", "A list cannot be uncategorized and in a category.");
+        }
+        LocalDate today = userService.today(ctx.userId());
 
         List<Specification<Transaction>> specs = new ArrayList<>(List.of(
                 TransactionSpecification.belongsToPlan(plan(ctx)),
@@ -158,7 +163,9 @@ public class TransactionService {
                 TransactionSpecification.startDateFrom(filter.startDateFrom()),
                 TransactionSpecification.startDateTo(filter.startDateTo()),
                 TransactionSpecification.amountMin(filter.amountMin()),
-                TransactionSpecification.amountMax(filter.amountMax())));
+                TransactionSpecification.amountMax(filter.amountMax()),
+                TransactionSpecification.uncategorized(filter.uncategorized()),
+                TransactionSpecification.hasStatus(filter.status(), today)));
 
         // category / attributed-to are aggregate/association orderings the Specification owns; for those
         // the Pageable is left unsorted so the spec's ORDER BY is the only one applied. Simple property
@@ -182,7 +189,6 @@ public class TransactionService {
             transactionRepository.fetchParticipants(page.getContent());
             transactionRepository.fetchItems(page.getContent());
         }
-        LocalDate today = userService.today(ctx.userId());
         return page.map(transaction -> response(transaction, ctx, today));
     }
 

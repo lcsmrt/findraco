@@ -2,8 +2,10 @@ package com.lcs.findraco.transaction.repository;
 
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.shared.web.LikePatterns;
+import com.lcs.findraco.transaction.model.Confirmation;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
@@ -49,6 +51,36 @@ public class TransactionSpecification {
             return cb.or(
                     cb.equal(category.get("id"), categoryId),
                     cb.equal(category.get("parent").get("id"), categoryId));
+        };
+    }
+
+    /** Only transactions with no category. */
+    public static Specification<Transaction> uncategorized(Boolean uncategorized) {
+        if (!Boolean.TRUE.equals(uncategorized)) {
+            return (root, query, cb) -> null;
+        }
+        return (root, query, cb) -> cb.isNull(root.get("category"));
+    }
+
+    /**
+     * The transactions {@link Transaction#status} reports as {@code status} for a reader whose day is {@code today}:
+     * the same three-way rule, written as a predicate so the database applies it before paging.
+     */
+    public static Specification<Transaction> hasStatus(TransactionStatus status, LocalDate today) {
+        if (status == null) {
+            return (root, query, cb) -> null;
+        }
+        return (root, query, cb) -> {
+            Predicate byDate = cb.equal(root.get("confirmation"), Confirmation.BY_DATE);
+            Predicate required = cb.equal(root.get("confirmation"), Confirmation.REQUIRED);
+            Predicate confirmed = cb.equal(root.get("confirmation"), Confirmation.CONFIRMED);
+            Predicate afterToday = cb.greaterThan(root.get("startDate"), today);
+            Predicate beforeToday = cb.lessThan(root.get("startDate"), today);
+            return switch (status) {
+                case ACTUAL -> cb.or(confirmed, cb.and(byDate, cb.not(afterToday)));
+                case FORECAST -> cb.or(cb.and(byDate, afterToday), cb.and(required, cb.not(beforeToday)));
+                case PENDING -> cb.and(required, beforeToday);
+            };
         };
     }
 

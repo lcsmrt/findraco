@@ -40,8 +40,21 @@ public final class McpUpdateCopy {
             @Nullable BigDecimal amount,
             @Nullable LocalDate date,
             @Nullable String description) {
+        return of(stored, amount, date, description, false, null);
+    }
+
+    /** As above; with {@code changeCategory} the transaction takes {@code categoryId}, none when it is null. */
+    public static UpdateTransactionRequest of(
+            TransactionResponse stored,
+            @Nullable BigDecimal amount,
+            @Nullable LocalDate date,
+            @Nullable String description,
+            boolean changeCategory,
+            @Nullable Long categoryId) {
+        Long keptCategoryId =
+                stored.category() == null ? null : stored.category().id();
         return new UpdateTransactionRequest(
-                stored.category() == null ? null : stored.category().id(),
+                changeCategory ? categoryId : keptCategoryId,
                 stored.type(),
                 amount != null ? amount : stored.amount(),
                 description != null ? withInstallmentSuffix(description, stored) : stored.description(),
