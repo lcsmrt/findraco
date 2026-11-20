@@ -31,11 +31,14 @@ import com.lcs.findraco.transaction.repository.TransactionSpecification;
 import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
+import com.lcs.findraco.transaction.request.NeutralCandidateFilter;
+import com.lcs.findraco.transaction.request.SetTransactionKindRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
 import com.lcs.findraco.transaction.request.TransactionItemRequest;
 import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
+import com.lcs.findraco.transaction.response.NeutralCandidateResponse;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
 import com.lcs.findraco.transaction.response.TransactionDeletedResponse;
 import com.lcs.findraco.transaction.response.TransactionPermissionsResponse;
@@ -75,6 +78,7 @@ public class TransactionService {
     private final TransactionDeletionRepository transactionDeletionRepository;
     private final SeriesRegenerator seriesRegenerator;
     private final SeriesProperties seriesProperties;
+    private final NeutralCandidateFinder neutralCandidateFinder;
     private final Clock clock;
     private final EntityManager entityManager;
 
@@ -89,6 +93,7 @@ public class TransactionService {
             TransactionDeletionRepository transactionDeletionRepository,
             SeriesRegenerator seriesRegenerator,
             SeriesProperties seriesProperties,
+            NeutralCandidateFinder neutralCandidateFinder,
             Clock clock,
             EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
@@ -101,6 +106,7 @@ public class TransactionService {
         this.transactionDeletionRepository = transactionDeletionRepository;
         this.seriesRegenerator = seriesRegenerator;
         this.seriesProperties = seriesProperties;
+        this.neutralCandidateFinder = neutralCandidateFinder;
         this.clock = clock;
         this.entityManager = entityManager;
     }
@@ -165,6 +171,7 @@ public class TransactionService {
                 TransactionSpecification.amountMin(filter.amountMin()),
                 TransactionSpecification.amountMax(filter.amountMax()),
                 TransactionSpecification.uncategorized(filter.uncategorized()),
+                TransactionSpecification.hasKind(filter.kind()),
                 TransactionSpecification.hasStatus(filter.status(), today)));
 
         // category / attributed-to are aggregate/association orderings the Specification owns; for those
@@ -192,6 +199,16 @@ public class TransactionService {
         return page.map(transaction -> response(transaction, ctx, today));
     }
 
+    /** The review of movements: rows with no kind whose bank text looks neutral, with the kind proposed for each. */
+    @Transactional(readOnly = true)
+    public Page<NeutralCandidateResponse> findNeutralCandidates(NeutralCandidateFilter filter, PlanContext ctx) {
+        LocalDate today = userService.today(ctx.userId());
+        return neutralCandidateFinder
+                .find(filter, ctx)
+                .map(candidate -> new NeutralCandidateResponse(
+                        response(candidate.transaction(), ctx, today), candidate.proposedKind()));
+    }
+
     @Transactional
     public TransactionResponse create(CreateTransactionRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
@@ -204,7 +221,8 @@ public class TransactionService {
                 dto.description(),
                 dto.startDate(),
                 dto.endDate(),
-                dto.parcelsNumber());
+                dto.parcelsNumber(),
+                dto.kind());
         Transaction transaction = Transaction.create(new TransactionDraft(
                 plan(ctx), user(ctx), details, split.mode(), split.shares(), items(dto.items(), ctx), null, null));
 
@@ -225,8 +243,21 @@ public class TransactionService {
                 dto.description(),
                 dto.startDate(),
                 dto.endDate(),
-                dto.parcelsNumber());
+                dto.parcelsNumber(),
+                dto.kind());
         transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
+
+        return response(transactionRepository.saveAndFlush(transaction), ctx);
+    }
+
+    /** Marks a row with a kind, as the review of movements does; the row's other values stay as they are. */
+    @Transactional
+    public TransactionResponse setKind(Long id, SetTransactionKindRequest dto, PlanContext ctx) {
+        Transaction transaction = load(id, ctx);
+        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
+        claimVersion(transaction, transaction.getVersion(), dto.version());
+
+        transaction.assignKind(dto.kind());
 
         return response(transactionRepository.saveAndFlush(transaction), ctx);
     }
@@ -560,7 +591,8 @@ public class TransactionService {
                             suffix != null ? series.description() + " " + suffix : series.description(),
                             pivot.getStartDate(),
                             pivot.getEndDate(),
-                            pivot.getParcelsNumber()),
+                            pivot.getParcelsNumber(),
+                            pivot.getKind()),
                     split.mode(),
                     split.shares());
             if (dto.pivotConfirmed() != null) {

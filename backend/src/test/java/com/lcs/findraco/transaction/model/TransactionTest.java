@@ -217,6 +217,81 @@ class TransactionTest {
         assertThat(transaction.getDescription()).isEqualTo("Taxi");
     }
 
+    @Test
+    void aNeutralKindTakesNoCategoryItemsOrOtherMember() {
+        for (TransactionKind kind :
+                List.of(TransactionKind.TRANSFER, TransactionKind.CARD_BILL_PAYMENT, TransactionKind.SAVINGS)) {
+            TransactionDetails withCategory = kindDetails(kind, TransactionType.DEBIT, category(TransactionType.DEBIT));
+            TransactionDetails plain = kindDetails(kind, TransactionType.DEBIT, null);
+
+            assertThat(Transaction.create(draft(plain, SplitMode.EQUAL, self(), List.of()))
+                            .getKind())
+                    .isEqualTo(kind);
+            assertThatThrownBy(() -> Transaction.create(draft(withCategory, SplitMode.EQUAL, self(), List.of())))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+            assertThatThrownBy(() ->
+                            Transaction.create(draft(plain, SplitMode.EQUAL, self(), List.of(item("10.00", null)))))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+            assertThatThrownBy(() -> Transaction.create(draft(
+                            plain,
+                            SplitMode.EQUAL,
+                            List.of(new Share(owner, null), new Share(partner, null)),
+                            List.of())))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        }
+    }
+
+    @Test
+    void aRefundIsACreditInTheExpenseCategoryItPaysBack() {
+        Category food = category(TransactionType.DEBIT);
+
+        Transaction refund = Transaction.create(draft(
+                kindDetails(TransactionKind.REFUND, TransactionType.CREDIT, food), SplitMode.EQUAL, self(), List.of()));
+
+        assertThat(refund.getCategory()).isSameAs(food);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(TransactionKind.REFUND, TransactionType.CREDIT, null),
+                        SplitMode.EQUAL,
+                        self(),
+                        List.of())))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(TransactionKind.REFUND, TransactionType.CREDIT, category(TransactionType.CREDIT)),
+                        SplitMode.EQUAL,
+                        self(),
+                        List.of())))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(TransactionKind.REFUND, TransactionType.DEBIT, food),
+                        SplitMode.EQUAL,
+                        self(),
+                        List.of())))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+    }
+
+    @Test
+    void assigningAKindChecksTheRowAsItIs() {
+        Transaction categorized = Transaction.create(
+                draft(detailsIn(category(TransactionType.DEBIT)), SplitMode.EQUAL, self(), List.of()));
+        Transaction plain = Transaction.create(draft(details("100.00"), SplitMode.EQUAL, self(), List.of()));
+
+        plain.assignKind(TransactionKind.SAVINGS);
+
+        assertThat(plain.getKind()).isEqualTo(TransactionKind.SAVINGS);
+        assertThatThrownBy(() -> categorized.assignKind(TransactionKind.TRANSFER))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThat(categorized.getKind()).isNull();
+    }
+
+    private TransactionDetails kindDetails(TransactionKind kind, TransactionType type, Category category) {
+        return new TransactionDetails(category, type, new BigDecimal("100.00"), "Movement", DAY, null, null, kind);
+    }
+
+    private static TransactionDetails detailsIn(Category category) {
+        return new TransactionDetails(
+                category, TransactionType.DEBIT, new BigDecimal("100.00"), "Groceries", DAY, null, null);
+    }
+
     private TransactionDraft draft(
             TransactionDetails details, SplitMode mode, List<Share> shares, List<ItemDraft> items) {
         return new TransactionDraft(plan, owner, details, mode, shares, items, null, null);

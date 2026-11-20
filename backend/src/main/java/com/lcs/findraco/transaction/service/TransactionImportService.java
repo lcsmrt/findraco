@@ -17,6 +17,7 @@ import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.response.ImportResultResponse;
@@ -120,8 +121,10 @@ public class TransactionImportService {
         TransactionType type = row.amount().signum() > 0 ? TransactionType.CREDIT : TransactionType.DEBIT;
         String description =
                 row.sourceText().substring(0, Math.min(row.sourceText().length(), DESCRIPTION_LENGTH));
+        TransactionKind kind =
+                NeutralMovementRules.isCardBillPayment(row.sourceText()) ? TransactionKind.CARD_BILL_PAYMENT : null;
         TransactionDetails details =
-                new TransactionDetails(null, type, row.amount().abs(), description, row.date(), null, null);
+                new TransactionDetails(null, type, row.amount().abs(), description, row.date(), null, null, kind);
         // The importer pays for every row, as a form without participants would.
         return new TransactionDraft(
                 plan,

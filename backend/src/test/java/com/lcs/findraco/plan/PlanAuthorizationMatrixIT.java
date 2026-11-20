@@ -528,6 +528,27 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         200,
                         403,
                         403),
+                // The rows of the review of movements: the list is every member's, applying a kind edits the row.
+                new Row(
+                        "GET " + TX + "/neutral-candidates",
+                        s -> get(TX + "/neutral-candidates", s.cast().plan().getId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
+                        "POST " + TX + "/{id}/kind",
+                        s -> post(
+                                        TX + "/{id}/kind",
+                                        s.cast().plan().getId(),
+                                        s.row().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json(Map.of(
+                                        "kind", "TRANSFER", "version", s.row().getVersion()))),
+                        200,
+                        200,
+                        403,
+                        403),
                 new Row(
                         "POST " + TX + "/import",
                         s -> multipart(TX + "/import", s.cast().plan().getId())
@@ -683,14 +704,29 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @ParameterizedTest
     @MethodSource("everyRouteForEveryRole")
     void eachRouteAnswersEachRoleAsTheMatrixSays(Row row, Who who) throws Exception {
-        Scene scene = scene(who);
+        assertThat(statusOf(row, who)).as("%s as %s", row.key(), who).isEqualTo(row.expected(who));
+    }
 
+    @Test
+    void neutralReviewFollowsTheRoleMatrix() throws Exception {
+        Set<String> review = Set.of("GET " + TX + "/neutral-candidates", "POST " + TX + "/{id}/kind");
+        List<Row> rows =
+                rows().stream().filter(row -> review.contains(row.key())).toList();
+
+        assertThat(rows).hasSize(2);
+        for (Row row : rows) {
+            for (Who who : Who.values()) {
+                assertThat(statusOf(row, who)).as("%s as %s", row.key(), who).isEqualTo(row.expected(who));
+            }
+        }
+    }
+
+    private int statusOf(Row row, Who who) throws Exception {
+        Scene scene = scene(who);
         RequestBuilder call = row.call().apply(scene);
         RequestBuilder signedIn =
                 context -> testAuthHelper.asUser(scene.caller()).postProcessRequest(call.buildRequest(context));
-        int status = mockMvc.perform(signedIn).andReturn().getResponse().getStatus();
-
-        assertThat(status).as("%s as %s", row.key(), who).isEqualTo(row.expected(who));
+        return mockMvc.perform(signedIn).andReturn().getResponse().getStatus();
     }
 
     @Autowired

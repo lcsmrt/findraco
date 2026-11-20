@@ -631,6 +631,7 @@
     "malformed-request": "Não foi possível enviar a solicitação. Recarregue a página e tente novamente.",
     "member-not-found": "Esta pessoa não é mais membro do plano.",
     "network": "Não foi possível acessar o servidor. Verifique sua conexão e tente novamente.",
+    "neutral-kind-invalid": "Esse tipo não serve para a transação: transferência, fatura e guardar dinheiro não têm categoria nem divisão, e um reembolso precisa de uma categoria de despesa.",
     "not-found": "Este item não existe mais.",
     "not-transaction-creator": "Você só pode alterar transações que você criou.",
     "owner-role-needs-transfer": "Para tornar alguém dono, transfira a propriedade.",

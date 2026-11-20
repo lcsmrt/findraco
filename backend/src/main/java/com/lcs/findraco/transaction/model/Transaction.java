@@ -40,6 +40,10 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionType type;
 
+    /** What the row is besides income or expense; null for a normal one (see {@link TransactionKind}). */
+    @Enumerated(EnumType.STRING)
+    private TransactionKind kind;
+
     private BigDecimal amount;
     private String description;
     private String sourceRef;
@@ -105,6 +109,7 @@ public class Transaction {
 
     /** Replaces everything a member edits: the details, the split and the items. */
     public void edit(TransactionDetails details, SplitMode mode, List<Share> shares, List<ItemDraft> newItems) {
+        requireKindFits(details, shares, newItems);
         requireValid(details);
         List<Share> split = SPLIT_RESOLVER.split(details.amount(), mode, shares);
         requireItemsFit(newItems, details.type(), details.amount());
@@ -117,12 +122,24 @@ public class Transaction {
 
     /** Changes the details and the split, keeping the items, which must still fit. */
     public void edit(TransactionDetails details, SplitMode mode, List<Share> shares) {
+        requireKindFits(details, shares, currentItems());
         requireValid(details);
         List<Share> split = SPLIT_RESOLVER.split(details.amount(), mode, shares);
         requireItemsFit(currentItems(), details.type(), details.amount());
 
         apply(details);
         applySplit(mode, split);
+    }
+
+    /** Marks the row with {@code newKind}, which it must be able to carry as it is; its other values stay. */
+    public void assignKind(TransactionKind newKind) {
+        TransactionDetails marked =
+                new TransactionDetails(category, type, amount, description, startDate, endDate, parcelsNumber, newKind);
+        List<Share> shares = participants.stream()
+                .map(participant -> new Share(participant.getMember(), participant.getShareAmount()))
+                .toList();
+        requireKindFits(marked, shares, currentItems());
+        kind = newKind;
     }
 
     /** Moves the transaction to the trash under {@code trashedBy}; every finder that serves a screen then skips it. */
@@ -224,8 +241,48 @@ public class Transaction {
         if (details.endDate() != null && details.startDate().isAfter(details.endDate())) {
             throw new TransactionExceptions.PeriodStartAfterEndException();
         }
-        if (details.category() != null && details.category().getType() != details.type()) {
+        boolean refund = details.kind() == TransactionKind.REFUND;
+        if (!refund && details.category() != null && details.category().getType() != details.type()) {
             throw new TransactionExceptions.CategoryTypeMismatchException();
+        }
+    }
+
+    /**
+     * A neutral kind moves money without earning or spending it, so it has no category, no items and nobody but
+     * its creator in the split. A refund pays back a purchase: a credit with the expense category it lowers.
+     */
+    private void requireKindFits(TransactionDetails details, List<Share> shares, List<ItemDraft> candidateItems) {
+        TransactionKind candidate = details.kind();
+        if (candidate == null) {
+            return;
+        }
+        if (!candidate.isNeutral()) {
+            if (details.type() != TransactionType.CREDIT) {
+                throw new TransactionExceptions.NeutralKindInvalidException("A REFUND must be a CREDIT.");
+            }
+            if (details.category() == null || details.category().getType() != TransactionType.DEBIT) {
+                throw new TransactionExceptions.NeutralKindInvalidException(
+                        "A REFUND needs the expense category it pays back.");
+            }
+            if (!candidateItems.isEmpty()) {
+                throw new TransactionExceptions.NeutralKindInvalidException("A REFUND cannot have items.");
+            }
+            return;
+        }
+        if (details.category() != null) {
+            throw new TransactionExceptions.NeutralKindInvalidException(
+                    candidate + " is a neutral kind and takes no category.");
+        }
+        if (!candidateItems.isEmpty()) {
+            throw new TransactionExceptions.NeutralKindInvalidException(
+                    candidate + " is a neutral kind and takes no items.");
+        }
+        Long creatorId = createdBy == null ? null : createdBy.getId();
+        boolean splitWithOthers =
+                shares.stream().anyMatch(share -> !share.member().getId().equals(creatorId));
+        if (splitWithOthers) {
+            throw new TransactionExceptions.NeutralKindInvalidException(
+                    candidate + " is a neutral kind and cannot be split with another member.");
         }
     }
 
@@ -258,6 +315,7 @@ public class Transaction {
     private void apply(TransactionDetails details) {
         category = details.category();
         type = details.type();
+        kind = details.kind();
         amount = details.amount();
         description = details.description();
         startDate = details.startDate();
@@ -309,6 +367,10 @@ public class Transaction {
 
     public TransactionType getType() {
         return type;
+    }
+
+    public TransactionKind getKind() {
+        return kind;
     }
 
     public BigDecimal getAmount() {

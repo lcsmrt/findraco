@@ -631,6 +631,7 @@
     "malformed-request": "The request could not be sent. Reload the page and try again.",
     "member-not-found": "This person is no longer a member of the plan.",
     "network": "Could not reach the server. Check your connection and try again.",
+    "neutral-kind-invalid": "This kind does not fit the transaction: a transfer, card bill or savings move takes no category or split, and a refund needs an expense category.",
     "not-found": "This item no longer exists.",
     "not-transaction-creator": "You can only change transactions you created.",
     "owner-role-needs-transfer": "To make someone the owner, transfer ownership.",

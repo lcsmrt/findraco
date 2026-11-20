@@ -1,5 +1,6 @@
 package com.lcs.findraco.transaction.request;
 
+import com.lcs.findraco.transaction.model.TransactionKindFilter;
 import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
@@ -15,6 +16,7 @@ import java.time.LocalDate;
  *
  * @param status where the transaction stands for the reader's today, as {@code Transaction.status} derives it.
  * @param uncategorized only transactions with no category; cannot be combined with {@code categoryId}.
+ * @param kind only transactions of this kind; {@code NEUTRAL} is every transaction that has a kind.
  */
 public record TransactionFilter(
         TransactionType type,
@@ -32,6 +34,8 @@ public record TransactionFilter(
         TransactionStatus status,
 
         Boolean uncategorized,
+
+        TransactionKindFilter kind,
 
         @Min(value = 0, message = "Page number cannot be negative.")
         Integer page,

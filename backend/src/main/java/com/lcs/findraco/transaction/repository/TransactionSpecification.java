@@ -4,6 +4,8 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.shared.web.LikePatterns;
 import com.lcs.findraco.transaction.model.Confirmation;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionKind;
+import com.lcs.findraco.transaction.model.TransactionKindFilter;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
 import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
@@ -52,6 +54,17 @@ public class TransactionSpecification {
                     cb.equal(category.get("id"), categoryId),
                     cb.equal(category.get("parent").get("id"), categoryId));
         };
+    }
+
+    /** One kind, or with {@code NEUTRAL} every row that has a kind. */
+    public static Specification<Transaction> hasKind(TransactionKindFilter kind) {
+        if (kind == null) {
+            return (root, query, cb) -> null;
+        }
+        if (kind == TransactionKindFilter.NEUTRAL) {
+            return (root, query, cb) -> cb.isNotNull(root.get("kind"));
+        }
+        return (root, query, cb) -> cb.equal(root.get("kind"), TransactionKind.valueOf(kind.name()));
     }
 
     /** Only transactions with no category. */

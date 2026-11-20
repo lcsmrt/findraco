@@ -1,6 +1,7 @@
 package com.lcs.findraco.mcp.response;
 
 import com.lcs.findraco.mcp.service.McpNames;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.response.TransactionResponse;
@@ -21,6 +22,7 @@ public record McpTransactionResponse(
         BigDecimal amount,
         LocalDate date,
         TransactionType type,
+        @Nullable TransactionKind kind,
         @Nullable String category,
         TransactionStatus status,
         List<String> attributedTo,
@@ -35,6 +37,7 @@ public record McpTransactionResponse(
                 transaction.amount(),
                 transaction.startDate(),
                 transaction.type(),
+                transaction.kind(),
                 transaction.category() == null ? null : transaction.category().description(),
                 transaction.status(),
                 transaction.participants().stream()
