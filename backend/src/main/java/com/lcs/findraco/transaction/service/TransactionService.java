@@ -19,10 +19,12 @@ import com.lcs.findraco.transaction.model.SeriesPattern;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionDeletion;
 import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionDeletionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.repository.TransactionSpecification;
 import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
@@ -34,6 +36,7 @@ import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
+import com.lcs.findraco.transaction.response.TransactionDeletedResponse;
 import com.lcs.findraco.transaction.response.TransactionPermissionsResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
@@ -68,6 +71,7 @@ public class TransactionService {
     private final UserService userService;
 
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
+    private final TransactionDeletionRepository transactionDeletionRepository;
     private final SeriesRegenerator seriesRegenerator;
     private final SeriesProperties seriesProperties;
     private final Clock clock;
@@ -81,6 +85,7 @@ public class TransactionService {
             PlanService planService,
             UserService userService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
+            TransactionDeletionRepository transactionDeletionRepository,
             SeriesRegenerator seriesRegenerator,
             SeriesProperties seriesProperties,
             Clock clock,
@@ -92,6 +97,7 @@ public class TransactionService {
         this.planService = planService;
         this.userService = userService;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
+        this.transactionDeletionRepository = transactionDeletionRepository;
         this.seriesRegenerator = seriesRegenerator;
         this.seriesProperties = seriesProperties;
         this.clock = clock;
@@ -144,6 +150,7 @@ public class TransactionService {
 
         List<Specification<Transaction>> specs = new ArrayList<>(List.of(
                 TransactionSpecification.belongsToPlan(plan(ctx)),
+                TransactionSpecification.isActive(),
                 TransactionSpecification.typeEquals(filter.type()),
                 TransactionSpecification.categoryInTree(filter.categoryId()),
                 TransactionSpecification.hasParticipant(filter.memberId()),
@@ -287,11 +294,31 @@ public class TransactionService {
                 .toList();
     }
 
+    /**
+     * Moves a transaction to the trash. An occurrence of a series also records its date as an exception of the
+     * series, so a later edit of the series does not bring it back; a restore removes the exception again.
+     */
     @Transactional
-    public void delete(Long id, PlanContext ctx) {
+    public TransactionDeletedResponse delete(Long id, PlanContext ctx) {
         Transaction transaction = load(id, ctx);
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
-        transactionRepository.delete(transaction);
+
+        TransactionDeletion deletion = transactionDeletionRepository.save(
+                TransactionDeletion.ofTransaction(plan(ctx), user(ctx), clock.instant()));
+        transaction.trash(deletion);
+
+        if (transaction.getRecurrenceDefinition() != null) {
+            RecurrenceDefinition definition = recurrenceDefinitionRepository
+                    .findByIdAndPlanForUpdate(
+                            transaction.getRecurrenceDefinition().getId(), plan(ctx))
+                    .orElseThrow();
+            if (definition.except(transaction.getScheduledDate())) {
+                deletion.recordException(definition, transaction.getScheduledDate());
+            }
+            recurrenceDefinitionRepository.saveAndFlush(definition);
+            deletion.recordDefinitionVersion(definition.getVersion());
+        }
+        return new TransactionDeletedResponse(deletion.getId());
     }
 
     @Transactional
@@ -340,7 +367,8 @@ public class TransactionService {
     }
 
     @Transactional
-    public void deleteSeries(String seriesId, SeriesEditScope scope, Long pivotOccurrenceId, PlanContext ctx) {
+    public TransactionDeletedResponse deleteSeries(
+            String seriesId, SeriesEditScope scope, Long pivotOccurrenceId, PlanContext ctx) {
         // Lock the definition before reading the occurrences, as the top-up does, so a concurrent top-up
         // cannot add occurrences to a series that is being deleted. A series with no definition has no lock.
         RecurrenceDefinition definition = recurrenceDefinitionRepository
@@ -377,11 +405,30 @@ public class TransactionService {
             planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(occurrence), ctx.userId());
         }
 
-        if (scope == SeriesEditScope.THIS_ONE && definition != null) {
-            definition.except(pivot.getScheduledDate());
-        }
-        transactionRepository.deleteAll(inScope);
+        TransactionDeletion deletion = transactionDeletionRepository.save(
+                TransactionDeletion.ofSeries(plan(ctx), user(ctx), clock.instant(), scope));
+        inScope.forEach(occurrence -> occurrence.trash(deletion));
 
+        if (definition != null) {
+            changeSeriesFor(definition, deletion, scope, pivot, occurrences, inScope);
+            recurrenceDefinitionRepository.saveAndFlush(definition);
+            deletion.recordDefinitionVersion(definition.getVersion());
+        }
+        return new TransactionDeletedResponse(deletion.getId());
+    }
+
+    /**
+     * What the deletion does to the series, recorded on the deletion so a restore undoes it. A series left with
+     * no occurrence goes to the trash whole; "only this" skips the date for good, and "this and following"
+     * shrinks the range so a later regeneration does not recreate the removed tail.
+     */
+    private void changeSeriesFor(
+            RecurrenceDefinition definition,
+            TransactionDeletion deletion,
+            SeriesEditScope scope,
+            Transaction pivot,
+            List<Transaction> occurrences,
+            List<Transaction> inScope) {
         Set<Long> deletedIds = new HashSet<>();
         for (Transaction occurrence : inScope) {
             deletedIds.add(occurrence.getId());
@@ -391,22 +438,19 @@ public class TransactionService {
                 .toList();
 
         if (remaining.isEmpty()) {
-            if (definition != null) {
-                recurrenceDefinitionRepository.delete(definition);
+            deletion.recordTrashedDefinition(definition);
+            definition.trash(deletion);
+        } else if (scope == SeriesEditScope.THIS_ONE) {
+            if (definition.except(pivot.getScheduledDate())) {
+                deletion.recordException(definition, pivot.getScheduledDate());
             }
-            return;
-        }
-
-        // THIS_AND_FOLLOWING left earlier occurrences behind: shrink the definition's range so a
-        // later regeneration won't recreate the deleted tail. THIS_ONE recorded its date as an exception
-        // above, so the gap stays.
-        if (scope == SeriesEditScope.THIS_AND_FOLLOWING && definition != null) {
+        } else if (scope == SeriesEditScope.THIS_AND_FOLLOWING) {
             LocalDate lastDate = remaining.stream()
                     .map(Transaction::getStartDate)
                     .max(LocalDate::compareTo)
                     .orElseThrow();
+            deletion.recordPreviousEnd(definition);
             definition.shortenTo(remaining.size(), lastDate);
-            recurrenceDefinitionRepository.save(definition);
         }
     }
 

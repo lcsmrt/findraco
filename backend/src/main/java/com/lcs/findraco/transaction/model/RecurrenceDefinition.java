@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import org.hibernate.annotations.OptimisticLock;
 
 @Entity
 @Table(name = "recurrence_definitions")
@@ -74,8 +75,16 @@ public class RecurrenceDefinition {
     @Column(name = "requires_confirmation")
     private boolean requiresConfirmation;
 
+    // The mark moves with the calendar, not with a person's edit: it must not bump the version a trashed
+    // series is restored against.
+    @OptimisticLock(excluded = true)
     @Column(name = "generated_through")
     private LocalDate generatedThrough;
+
+    /** The deletion that moved the whole series to the trash; null while it is active. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deletion_id")
+    private TransactionDeletion deletion;
 
     @ElementCollection
     @CollectionTable(name = "recurrence_exceptions", joinColumns = @JoinColumn(name = "definition_id"))
@@ -165,9 +174,37 @@ public class RecurrenceDefinition {
         }
     }
 
-    /** Skips one date for good: neither generation nor a later edit produces an occurrence on it. */
-    public void except(LocalDate date) {
-        exceptions.add(date);
+    /**
+     * Skips one date for good: neither generation nor a later edit produces an occurrence on it. False when
+     * the date was already skipped.
+     */
+    public boolean except(LocalDate date) {
+        return exceptions.add(date);
+    }
+
+    /** Lets {@code date} produce an occurrence again; undoes {@link #except}. */
+    public void unexcept(LocalDate date) {
+        exceptions.remove(date);
+    }
+
+    /** Puts back how the series ended before {@link #shortenTo} cut it. */
+    public void restoreEnd(Integer previousParcelsNumber, LocalDate previousEndDate) {
+        parcelsNumber = previousParcelsNumber;
+        endDate = previousEndDate;
+    }
+
+    /** Moves the series to the trash under {@code trashedBy}: top-up, the read horizon and every lookup skip it. */
+    public void trash(TransactionDeletion trashedBy) {
+        deletion = trashedBy;
+    }
+
+    public boolean isTrashed() {
+        return deletion != null;
+    }
+
+    /** Takes the series out of the trash. */
+    public void restore() {
+        deletion = null;
     }
 
     /**

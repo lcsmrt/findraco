@@ -52,6 +52,7 @@ class PlanPermanentDeletionIT extends AbstractIntegrationTest {
                     "transaction_participants",
                     "SELECT count(*) FROM transaction_participants p JOIN transactions t ON t.id = p.transaction_id"
                             + " WHERE t.plan_id = ?"),
+            Map.entry("transaction_deletions", "SELECT count(*) FROM transaction_deletions WHERE plan_id = ?"),
             Map.entry("recurrence_definitions", "SELECT count(*) FROM recurrence_definitions WHERE plan_id = ?"),
             Map.entry(
                     "recurrence_definition_participants",
@@ -189,7 +190,7 @@ class PlanPermanentDeletionIT extends AbstractIntegrationTest {
                         .param("scope", "THIS_ONE")
                         .param("pivotOccurrenceId", String.valueOf(occurrence))
                         .with(testAuthHelper.asUser(owner)))
-                .andExpect(status().isNoContent());
+                .andExpect(status().isOk());
         return objectMapper
                 .readTree(postJson(PlanRoutes.PLAN_INVITATION, plan, owner, Map.of("role", "VIEWER", "type", "LINK")))
                 .get("token")

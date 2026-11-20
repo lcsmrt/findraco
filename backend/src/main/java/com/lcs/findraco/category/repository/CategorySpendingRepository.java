@@ -19,7 +19,7 @@ public interface CategorySpendingRepository extends Repository<Transaction, Long
     // the categorized transactions in the period.
     @Query("SELECT ft.category.id, tp.member.id, COALESCE(SUM(tp.shareAmount), 0) "
             + "FROM Transaction ft JOIN ft.participants tp "
-            + "WHERE ft.plan = :plan AND ft.type = :type AND ft.category IS NOT NULL "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.type = :type AND ft.category IS NOT NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "GROUP BY ft.category.id, tp.member.id")
     List<Object[]> findCategoryMemberFacts(
@@ -34,7 +34,7 @@ public interface CategorySpendingRepository extends Repository<Transaction, Long
     // transactions still attribute their items.
     @Query("SELECT it.id, it.category.id, c.id, it.amount, tp.member.id, tp.shareAmount "
             + "FROM Transaction ft JOIN ft.items it JOIN ft.participants tp LEFT JOIN ft.category c "
-            + "WHERE ft.plan = :plan AND ft.type = :type AND it.category IS NOT NULL "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.type = :type AND it.category IS NOT NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "ORDER BY it.id, tp.member.id")
     List<Object[]> findCategorizedItemParticipantRows(

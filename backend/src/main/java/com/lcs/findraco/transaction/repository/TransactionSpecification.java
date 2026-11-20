@@ -23,6 +23,11 @@ public class TransactionSpecification {
         return (root, query, cb) -> cb.equal(root.get("plan"), plan);
     }
 
+    /** Leaves out what the trash holds. */
+    public static Specification<Transaction> isActive() {
+        return (root, query, cb) -> cb.isNull(root.get("deletion"));
+    }
+
     public static Specification<Transaction> typeEquals(TransactionType type) {
         if (type == null) {
             return (root, query, cb) -> null;

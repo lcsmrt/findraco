@@ -38,6 +38,8 @@ type PlansPageViewProps = {
   // Slots: both lists load their own data for the active plan.
   membersList: ReactNode;
   invitationsList: ReactNode;
+  // The active plan's trash of deleted transactions.
+  trash: ReactNode;
   // Not tied to the active plan: the owner's archived plans.
   archivedPlans: ReactNode;
 };
@@ -59,6 +61,7 @@ export function PlansPageView({
   onLeave,
   membersList,
   invitationsList,
+  trash,
   archivedPlans,
 }: PlansPageViewProps) {
   const { t } = useTranslation();
@@ -179,6 +182,8 @@ export function PlansPageView({
           <CardContent>{invitationsList}</CardContent>
         </Card>
       )}
+
+      {activePlan && trash}
 
       {archivedPlans}
     </div>

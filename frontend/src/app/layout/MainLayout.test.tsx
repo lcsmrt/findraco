@@ -5,6 +5,7 @@ import type {
   PagedResponse,
   Plan,
   PlanMember,
+  TransactionTrashEntry,
 } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
 import { transactionHandlers } from "@/api/services/transaction.handlers";
@@ -162,6 +163,7 @@ beforeEach(() => {
     categoryHandlers.spending([]),
     categoryHandlers.list(emptyPage<Category>()),
     transactionHandlers.list(emptyPage<Transaction>()),
+    transactionHandlers.trash(emptyPage<TransactionTrashEntry>()),
   );
 });
 

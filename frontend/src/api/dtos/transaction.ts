@@ -193,3 +193,34 @@ export type ImportResultResponse = {
   imported: number;
   skippedDuplicates: number;
 };
+
+/** The body of a delete: the id that restores everything that delete took, until the trash purge. */
+export type DeletionResponse = {
+  deletionId: number;
+};
+
+export type RestoreDeletionResponse = {
+  /** How many transactions came back. */
+  restored: number;
+};
+
+export type TransactionTrashKind = "TRANSACTION" | "SERIES";
+
+/** One deletion in the plan's trash. */
+export type TransactionTrashEntry = {
+  id: number;
+  kind: TransactionTrashKind;
+  /** The series scope of a series deletion; null for a single transaction. */
+  scope: SeriesEditScope | null;
+  description: string;
+  /** How many transactions the deletion took. */
+  count: number;
+  /** The total of those transactions. */
+  amount: number;
+  type: TransactionType;
+  /** ISO instant. */
+  deletedAt: string;
+  deletedBy: { id: number; name: string } | null;
+  /** ISO instant: the deletion plus the retention period. */
+  expiresAt: string;
+};

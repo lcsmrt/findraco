@@ -66,6 +66,11 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private Confirmation confirmation = Confirmation.BY_DATE;
 
+    /** The deletion that moved this transaction to the trash; null while it is active. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "deletion_id")
+    private TransactionDeletion deletion;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "split_mode")
     private SplitMode splitMode = SplitMode.EQUAL;
@@ -118,6 +123,20 @@ public class Transaction {
 
         apply(details);
         applySplit(mode, split);
+    }
+
+    /** Moves the transaction to the trash under {@code trashedBy}; every finder that serves a screen then skips it. */
+    public void trash(TransactionDeletion trashedBy) {
+        deletion = trashedBy;
+    }
+
+    public boolean isTrashed() {
+        return deletion != null;
+    }
+
+    /** Takes the transaction out of the trash with every value it had. */
+    public void restore() {
+        deletion = null;
     }
 
     /** Splits the amount anew among {@code shares}. */

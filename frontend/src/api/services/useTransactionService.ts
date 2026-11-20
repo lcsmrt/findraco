@@ -15,6 +15,9 @@ import {
   UpdateTransactionSeriesRequest,
   UpdateTransactionRequest,
   ConfirmTransactionRequest,
+  DeletionResponse,
+  RestoreDeletionResponse,
+  TransactionTrashEntry,
 } from "../dtos";
 import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
@@ -22,6 +25,9 @@ import { buildMutationOptions } from "../utils/buildMutationOptions";
 import { buildPagedQuery } from "../utils/buildPagedQuery";
 import { importResultMessage } from "../utils/importResultMessage";
 import { usePlanContext } from "@/app/providers/usePlanContext";
+import { problemToast } from "../utils/problems";
+import { i18n } from "@/i18n/i18n";
+import { toast } from "sonner";
 
 /**
  * A transaction write changes every view derived from transactions: the lists, the category usage
@@ -34,6 +40,87 @@ function invalidateTransactionData(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: ["categorySpending"] });
   queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
   queryClient.invalidateQueries({ queryKey: ["dashboardTrend"] });
+  queryClient.invalidateQueries({ queryKey: ["transactionTrash"] });
+}
+
+/**
+ * The success toast of a delete, with "Undo": using it restores that deletion and says so. A restore
+ * the server refuses (the entry expired, the series changed) shows the reason in place of the success.
+ */
+function toastDeletedWithUndo(
+  queryClient: QueryClient,
+  planId: number,
+  messageKey: "api.toast.transactionDeleted" | "api.toast.seriesDeleted",
+  { deletionId }: DeletionResponse,
+) {
+  toast.success(i18n.t(messageKey), {
+    action: {
+      label: i18n.t("api.toast.undo"),
+      onClick: () => {
+        restoreDeletion(planId, deletionId).then(
+          () => {
+            invalidateTransactionData(queryClient);
+            toast.success(i18n.t("api.toast.transactionRestored"));
+          },
+          (error: unknown) => {
+            const { message, description } = problemToast(error);
+            toast.error(message, description ? { description } : undefined);
+          },
+        );
+      },
+    },
+  });
+}
+
+async function restoreDeletion(
+  planId: number,
+  deletionId: number,
+): Promise<RestoreDeletionResponse> {
+  const { data } = await findracoApi.post(
+    `/plan/${planId}/transaction/trash/${deletionId}/restore`,
+  );
+  return data;
+}
+
+export function useRestoreDeletion(
+  options?: MutationOptions<RestoreDeletionResponse, number>,
+) {
+  const queryClient = useQueryClient();
+  const { activePlanId } = usePlanContext();
+  return useMutation({
+    mutationFn: (deletionId: number) => restoreDeletion(activePlanId!, deletionId),
+    ...buildMutationOptions({ successMessage: "api.toast.transactionRestored" }, {
+      ...options,
+      onSuccess: (data, variables) => {
+        invalidateTransactionData(queryClient);
+        options?.onSuccess?.(data, variables);
+      },
+    }),
+  });
+}
+
+async function getTransactionTrash(
+  planId: number,
+  params?: PagedRequest,
+): Promise<PagedResponse<TransactionTrashEntry>> {
+  const query = buildPagedQuery(params);
+  const { data } = await findracoApi.get(
+    `/plan/${planId}/transaction/trash?${query}`,
+  );
+  return data;
+}
+
+export function useGetTransactionTrash(
+  params?: PagedRequest,
+  options?: QueryOptions<PagedResponse<TransactionTrashEntry>>,
+) {
+  const { activePlanId } = usePlanContext();
+  return useQuery({
+    queryFn: () => getTransactionTrash(activePlanId!, params),
+    queryKey: ["transactionTrash", activePlanId, params],
+    ...options,
+    enabled: activePlanId != null && (options?.enabled ?? true),
+  });
 }
 
 async function getTransactions(
@@ -228,28 +315,32 @@ export function useCreateTransactionSeries(
 async function deleteTransactionSeries(
   planId: number,
   { seriesId, scope, pivotOccurrenceId }: DeleteTransactionSeriesRequest,
-): Promise<void> {
+): Promise<DeletionResponse> {
   const query = new URLSearchParams({ scope });
   if (pivotOccurrenceId != null) {
     query.set("pivotOccurrenceId", String(pivotOccurrenceId));
   }
-  await findracoApi.delete(
+  const { data } = await findracoApi.delete(
     `/plan/${planId}/transaction/series/${seriesId}?${query}`,
   );
+  return data;
 }
 
 export function useDeleteTransactionSeries(
-  options?: MutationOptions<void, DeleteTransactionSeriesRequest>,
+  options?: MutationOptions<DeletionResponse, DeleteTransactionSeriesRequest>,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
     mutationFn: (payload: DeleteTransactionSeriesRequest) =>
       deleteTransactionSeries(activePlanId!, payload),
-    ...buildMutationOptions({ successMessage: "api.toast.seriesDeleted" }, {
+    ...buildMutationOptions({ showSuccessToast: false }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
+        if (options?.showSuccessToast !== false) {
+          toastDeletedWithUndo(queryClient, activePlanId!, "api.toast.seriesDeleted", data);
+        }
         queryClient.invalidateQueries({
           queryKey: [
             "transactionSeries",
@@ -326,21 +417,25 @@ export function useUpdateTransactionSeries(
 async function deleteTransaction(
   planId: number,
   id: number,
-): Promise<void> {
-  await findracoApi.delete(`/plan/${planId}/transaction/${id}`);
+): Promise<DeletionResponse> {
+  const { data } = await findracoApi.delete(`/plan/${planId}/transaction/${id}`);
+  return data;
 }
 
 export function useDeleteTransaction(
-  options?: MutationOptions<void, number>,
+  options?: MutationOptions<DeletionResponse, number>,
 ) {
   const queryClient = useQueryClient();
   const { activePlanId } = usePlanContext();
   return useMutation({
     mutationFn: (id: number) => deleteTransaction(activePlanId!, id),
-    ...buildMutationOptions({ successMessage: "api.toast.transactionDeleted" }, {
+    ...buildMutationOptions({ showSuccessToast: false }, {
       ...options,
       onSuccess: (data, variables) => {
         invalidateTransactionData(queryClient);
+        if (options?.showSuccessToast !== false) {
+          toastDeletedWithUndo(queryClient, activePlanId!, "api.toast.transactionDeleted", data);
+        }
         options?.onSuccess?.(data, variables);
       },
     }),

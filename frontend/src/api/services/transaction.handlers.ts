@@ -1,5 +1,8 @@
 import { http, HttpResponse, type HttpHandler } from "msw";
 import type {
+  DeletionResponse,
+  RestoreDeletionResponse,
+  TransactionTrashEntry,
   ImportResultResponse,
   LineProblem,
   Problem,
@@ -18,6 +21,7 @@ import type {
 type PlanParams = { planId: string };
 type TransactionParams = PlanParams & { id: string };
 type SeriesParams = PlanParams & { seriesId: string };
+type TrashParams = PlanParams & { deletionId: string };
 
 const base = "*/plan/:planId/transaction";
 
@@ -27,8 +31,30 @@ export const transactionHandlers = {
       HttpResponse.json(page),
     );
   },
-  remove(): HttpHandler {
-    return http.delete<TransactionParams>(`${base}/:id`, () => new HttpResponse(null, { status: 204 }));
+  remove(deletionId = 1): HttpHandler {
+    return http.delete<TransactionParams, never, DeletionResponse>(`${base}/:id`, () =>
+      HttpResponse.json({ deletionId }),
+    );
+  },
+  restore(restored = 1): HttpHandler {
+    return http.post<TrashParams, never, RestoreDeletionResponse>(`${base}/trash/:deletionId/restore`, () =>
+      HttpResponse.json({ restored }),
+    );
+  },
+  restoreRejected(status: number, type: ProblemType): HttpHandler {
+    return http.post<TrashParams, never, Problem>(`${base}/trash/:deletionId/restore`, () =>
+      HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),
+    );
+  },
+  trash(page: PagedResponse<TransactionTrashEntry>): HttpHandler {
+    return http.get<PlanParams, never, PagedResponse<TransactionTrashEntry>>(`${base}/trash`, () =>
+      HttpResponse.json(page),
+    );
+  },
+  trashError(status = 500): HttpHandler {
+    return http.get<PlanParams, never, Problem>(`${base}/trash`, () =>
+      HttpResponse.json({ type: "urn:findraco:problem:internal", status }, { status }),
+    );
   },
   importCsv(result: ImportResultResponse): HttpHandler {
     return http.post<PlanParams, never, ImportResultResponse>(`${base}/import`, () =>
@@ -48,8 +74,10 @@ export const transactionHandlers = {
       HttpResponse.json(definition),
     );
   },
-  removeSeries(): HttpHandler {
-    return http.delete<SeriesParams>(`${base}/series/:seriesId`, () => new HttpResponse(null, { status: 204 }));
+  removeSeries(deletionId = 1): HttpHandler {
+    return http.delete<SeriesParams, never, DeletionResponse>(`${base}/series/:seriesId`, () =>
+      HttpResponse.json({ deletionId }),
+    );
   },
   create(transaction: Transaction): HttpHandler {
     return http.post<

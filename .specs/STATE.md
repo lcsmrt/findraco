@@ -218,6 +218,14 @@
 - **Date**: 2026-11-17
 - **Status**: active
 
+### AD-028
+- **Decision**: Deleting transactions moves them to a per-plan trash for 30 days. Each delete action is one `transaction_deletions` row; trashed `transactions` and a series deleted whole (`recurrence_definitions`) point at it through `deletion_id` with `ON DELETE CASCADE`, and the deletion records what it changed on the series (EXDATE added, previous end or parcel count) so restore undoes it as one action. Finders filter `deletion_id IS NULL` explicitly (AD-006), except importer dedup and category reassignment, which see trashed rows. Both DELETE routes answer `200 { deletionId }`. A daily job purges deletions older than 30 days.
+- **Reason**: ROADMAP 1.0 "data safety": a delete was physical with no timestamps, and the MCP is about to be able to delete (DESIGN-PLAN R1, R9). User, 2026-11-18, delegated the phase 1 decisions ("Sozinho, sem me chamar pra nada").
+- **Trade-off**: Every new transaction finder must remember the filter; restore of a series edited since the deletion is refused (409) instead of merged.
+- **Scope**: `transaction` (service, repositories, new trash service and purge job), `dashboard` and `category` read repositories, `plan` (Plans screen trash section), frontend delete toasts.
+- **Date**: 2026-11-18
+- **Status**: active
+
 ## Handoff
 
 - **Run**: unattended overnight run, 2026-11-18 (user asleep; the 5-hour limit stopped every agent from ~01:10 to the user's return at 08:10). Design refactor plan: `.specs/project/DESIGN-PLAN.md` (owner answers, phases 0–7, R17 contacts).
