@@ -5,7 +5,7 @@ Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose 
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions/components/AttributionFields.stories.tsx
 Plan: `.specs/features/phase1-followups/plan.md`
 
-17 checks in 2 slices · 1 one-way door · 0 open, of which 0 block
+18 checks in 2 slices · 2 one-way doors · 0 open, of which 0 block
 
 ## Checks
 
@@ -23,7 +23,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C4** - March deleted, then "June and following" deleted: restoring March answers 200 (March is inside the series); restoring the June deletion answers 200 and the series ends where it did before (AC 1)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoreAfterATailWasDeletedSucceeds' -Dsurefire.skip=true
 
-**C5** - Each pattern field changed by an "all" edit after a deletion - description, category, split, end date - makes the restore answer 409, table-driven over the 4 (AC 2)
+**C5** - Each change by an "all" edit after a deletion - description, category, split, and an end date moved before the deleted occurrence - makes the restore answer 409, table-driven over the 4 (AC 2)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoreAfterAnyPatternChangeConflicts' -Dsurefire.skip=true
 
 **C6** - An "all" edit that sends the same amount, description, category, split and end with only `requiresConfirmation` flipped leaves March restorable (200) (AC 3)
@@ -40,6 +40,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 **C16** - In a 6-parcel installment series, parcel 3 deleted, then the series edited "all" to 8 parcels: restoring parcel 3 answers 409; resending the same 6 parcels instead leaves it 200 (AC 2)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#parcelsChangeBlocksTheRestore' -Dsurefire.skip=true
+
+**C18** - "June and following" deleted, then the series' end moved by an "all" edit: restoring the June deletion answers 409 `trash-series-changed` (AC 2)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoringATailAfterItsEndMovedConflicts' -Dsurefire.skip=true
 
 ### S2 - Rows shared with a former member stay editable
 
@@ -62,7 +65,7 @@ Proof: run unit | ✓ TransactionFormDrawer > keeps a former member's share when
 **C17** - A series split between the owner and Ana; May edited "only this" to the owner alone; Ana leaves; editing May "only this" with Ana answers 422 `participant-not-member`; and a "this and following" edit from an occurrence that still has Ana, on a series whose definition no longer has her, answers 422 (AC 7)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='FormerMemberEditIT#formerMemberCannotReturnToASeriesOccurrence' -Dsurefire.skip=true
 
-**C14** - In a plan whose only current member is the owner, the edit form of a row split 50/50 with Ana (left) shows the split with "Ana Lima (fora do plano)", and saving it with the amount changed to 120.00 sends both participants (AC 9)
+**C14** - In a plan whose only current member is the owner, the edit form of a row split 50/50 with Ana (left) shows the split with "Ana Lima (no longer in the plan)", and saving it with the amount changed to 120.00 sends both participants (AC 9)
 Proof: run unit | ✓ TransactionFormDrawer > shows the split of a row shared with a former member in a one-member plan
 
 ## Coverage
@@ -70,7 +73,7 @@ Proof: run unit | ✓ TransactionFormDrawer > shows the split of a row shared wi
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
 | later series changes that keep a deletion restorable (6) | other "only this" delete C1 · "only this" edit C2 · flag-only edit C6 · another deletion restored C13 · a later tail cut C4 · tail restored first C15 | - |
-| later series changes that block it (6) | amount C3 · parcels C16 · description C5 · category C5 · split C5 · end moved before the occurrence C5 | - |
+| later series changes that block it (7) | amount C3 · parcels C16 · description C5 · category C5 · split C5 · end moved before the occurrence C5 · a tail's end moved since its cut C18 | - |
 | door 1: `V28` (2 statements) | column C7 · reset C7 | - |
 | participant sources on an edit (4) | current member C8 · former member already on the row C8 · former member not on the row C10 · former member on the series but not the occurrence, or the reverse C17 | - |
 | edit channels for a former member's row (3) | app row C8 · app series C9 · Claude C11 | - |
