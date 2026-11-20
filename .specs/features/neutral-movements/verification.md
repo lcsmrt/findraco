@@ -24,7 +24,7 @@
 | C14 | `NeutralCandidatesIT` `reviewFollowsTheRowRoles` | yes |
 | C15 | `PlanAuthorizationMatrixIT` `neutralReviewFollowsTheRoleMatrix` | yes |
 | C16 | `NeutralReviewSheet.test.tsx` `applies a candidate and removes it from the list`; `NeutralReviewListView.stories.tsx` `Empty` | yes |
-| C17 | `transactionForm.test.ts` `maps the movement kind both ways`; `TransactionFormDrawer.test.tsx` `saves a neutral kind without category or split` | no - the cited tests hold "Fatura" and the mapping; the "Reembolso keeps category" half is only in the uncited `keeps the category of a refund, from the expense categories` |
+| C17 | `transactionForm.test.ts` `maps the movement kind both ways`; `TransactionFormDrawer.test.tsx` `saves a neutral kind without category or split`, `keeps the category of a refund, from the expense categories` | yes - the third test picks "Reembolso", keeps an expense category and sends `categoryId` with `kind: REFUND`; it also asserts Items hidden, so the claim's "hides nothing else" means category and split |
 | C18 | `TransactionFormDrawer.test.tsx` `reopens a row with its movement kind` | yes - and the PUT carries the kind back; only the creator edits (see finding 2) |
 | C19 | `TransactionCells.stories.tsx` `Movement Kinds`; `TransactionMobileList.stories.tsx` `Movement Kinds` | yes - `en` labels; the `pt-BR` labels are "Entre membros", "Fatura", "Guardar", "Reembolso" |
 | C20 | `TransactionsPage.test.tsx` `filters the list to neutral movements`; `NeutralMovementsIT` `listFilterNeutralReturnsOnlyRowsWithAKind` | yes |
@@ -32,6 +32,10 @@
 | C22 | `McpNeutralKindIT` `updateAndListCarryTheKind` | yes |
 | C23 | `McpNeutralKindIT` `summaryToolsUseTheNeutralRules` | yes - the month summary equals the dashboard body, and Food 50 |
 | C24 | `MigrationsIT` `transactionKindIsAClosedNullableSet` | yes - the "existing rows" are inserted after V29, so the test holds nullable-with-no-default rather than pre-V29 rows |
+| C25 | `NeutralCandidatesIT` `applyingRemovesTheCategoryOfANeutralRow` | yes - 200, kind set, category null in the response and the row, list empty, "Cartão" 1500 -> 0.00 |
+| C26 | `NeutralMovementsIT` `anyMemberCanSaveAnotherMembersNeutralRow`; `TransactionFormDrawer.test.tsx` `keeps the payer of a neutral row when another member saves it` | yes - the backend accepts the owner's PUT with Marina as the one participant (200, kind TRANSFER, Marina kept), and the form, saved by Lucas, sends `participants: [{ memberId: livia }]` |
+| C27 | `NeutralCandidatesIT` `oneWordNamesMatchOnlyTheWholeName` | yes - `containsExactly` the "LUCAS" row as TRANSFER, so "LUCAS FERREIRA" left out |
+| C28 | `NeutralMovementsIT` `uncategorizedFilterLeavesNeutralRowsOut`; `McpNeutralKindIT` `uncategorizedFilterLeavesNeutralRowsOut` | yes - REST returns exactly the purchase (bill, savings and the categorized row left out), and MCP returns 1 row, the purchase |
 
 Own examples run at HEAD in a throwaway IT, deleted afterwards. These passed:
 

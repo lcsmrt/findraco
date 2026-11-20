@@ -81,7 +81,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 ### S4 - Seeing and choosing the kind
 
-**C17** - In the form, choosing "Fatura" hides category and split, choosing "Reembolso" keeps category and hides nothing else, and the payload carries `kind`; a form value with kind CARD_BILL_PAYMENT maps back to the same choice (AC 11)
+**C17** - In the form, choosing "Fatura" hides category and split, choosing "Reembolso" keeps category (expense categories) and hides split and items, and the payload carries `kind`; a form value with kind CARD_BILL_PAYMENT maps back to the same choice (AC 11)
 Proof: run unit | ✓ transactionForm > maps the movement kind both ways
 Proof: run unit | ✓ TransactionFormDrawer > saves a neutral kind without category or split
 Proof: run unit | ✓ TransactionFormDrawer > keeps the category of a refund, from the expense categories
@@ -144,7 +144,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 ## Handoff
 
 - **Settled mid-build:** 2026-11-20, Verifier finding 1 asked to the owner ("Pagamento de fatura" with a category in the review list): user chose "Aplicar tira a categoria" - applying a neutral kind from the review removes the row's category, items and split, leaving the payer alone.
-- **Dispatched:** backend worker (Sonnet) at 17a800b6, returned; frontend worker (Sonnet) at eef88bf0, returned; Verifier (Opus) at 84f3db67
+- **Dispatched:** backend worker (Sonnet) at 17a800b6, returned; frontend worker (Sonnet) at eef88bf0, returned; Verifier (Opus) at 84f3db67, returned; resumed for C25-C28 at 96a4fd43, returned
 - **Boundary:** backend C1-C5, C7-C15, C20 (backend), C21-C24 closed at 7f71b4bf; frontend C6, C16-C19, C20 (frontend) closed at 8af5c53c; fixes C25-C28 closed at b09e870c
 - **Abandoned:** none
 - **Walked:** local stack (Postgres 5434, jar on 3000, vite preview 5173) at cf8d14c1. Lucas and Marina Lima in one plan; API: salary 3000, Mercado 200, Pizza 100 in Comida (limit 80), REFUND 50 in Comida, SAVINGS 300; Nubank CSV import with "Pagamento de fatura" -1500, Pix sent to MARINA SOUZA LIMA -500, Pix received from MARINA LIMA +500 → only the bill stored as CARD_BILL_PAYMENT. Visão geral (desktop): Receitas 3.500, Despesas 750, Resultado 2.750, "Neutros saiu R$ 1.800,00 · entrou R$ 0,00" under the result, Comida R$ 50,00 de R$ 80,00. Transações: badges Fatura, Guardar, Reembolso on their rows; "Revisar movimentos" (toolbar, beside Importar CSV) lists the two Pix as "Entre membros"; Aplicar on the received one → list keeps 1, toast "Movimento marcado". Editar on Mercado → "Tipo de movimento" = Guardar hides Categoria; saved; reopened shows Guardar. Filtros → Neutros → URL kind=NEUTRAL, chip "Neutros", 5 rows (Pix received, bill, Caixinha, refund, Mercado), Salário gone. Dashboard after: income 3000, expenses 550, neutralOut 2000, neutralIn 500. Phone 390x844: list badges, review sheet full width with Aplicar, Overview line "saiu R$ 2.000,00 · entrou R$ 500,00".
