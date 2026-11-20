@@ -322,6 +322,27 @@ describe("TransactionsPage", () => {
     expect(within(dialog).getByText(/Electricity/)).toBeTruthy();
   });
 
+  it("filters the list to neutral movements", async () => {
+    const { requests, user } = renderTab();
+    await tableRow("Rent");
+
+    await user.click(screen.getByRole("button", { name: "Filters" }));
+    const filters = await screen.findByRole("dialog", { name: "Filters" });
+    await user.click(within(filters).getByRole("checkbox", { name: "Neutral" }));
+    await user.click(within(filters).getByRole("button", { name: "Apply" }));
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10", kind: "NEUTRAL" }),
+    );
+    expect(searchParams()).toEqual({ kind: "NEUTRAL" });
+    expect(chipLabels()).toEqual(["Neutral"]);
+
+    await user.click(screen.getByRole("button", { name: "Remove Neutral" }));
+
+    await waitFor(() => expect(searchParams()).toEqual({}));
+    expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10" });
+  });
+
   it("previous then next arrow returns to this month as a preset", async () => {
     const { user } = renderTab();
     await tableRow("Rent");

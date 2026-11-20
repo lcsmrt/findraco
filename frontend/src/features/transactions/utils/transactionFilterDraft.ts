@@ -12,6 +12,8 @@ export type MemberOption = { id: number; name: string };
 /** Editable popover state; mapped from and back to the applied URL filters. */
 export type FilterDraft = {
   type: TransactionType | typeof TYPE_ALL;
+  /** Only the rows that count as neutral movements, whatever their kind. */
+  neutral: boolean;
   /** Kept apart from `category`, which is null until the category name has loaded. */
   categoryId: number | null;
   category: Category | null;
@@ -33,6 +35,7 @@ export function toDraft(applied: AppliedFilters): FilterDraft {
   const { filter, categoryForDisplay, memberForDisplay } = applied;
   return {
     type: filter.type ?? TYPE_ALL,
+    neutral: filter.kind === "NEUTRAL",
     categoryId: filter.categoryId ?? null,
     category: categoryForDisplay,
     memberId: filter.memberId ?? null,
@@ -59,6 +62,7 @@ export function withDraftMember(
 export function fromDraft(draft: FilterDraft): AppliedFilters {
   const filter: PagedTransactionsFilter = {};
   if (draft.type !== TYPE_ALL) filter.type = draft.type;
+  if (draft.neutral) filter.kind = "NEUTRAL";
   if (draft.categoryId != null) filter.categoryId = draft.categoryId;
   if (draft.memberId != null) filter.memberId = draft.memberId;
   if (draft.amountMin != null) filter.amountMin = draft.amountMin;

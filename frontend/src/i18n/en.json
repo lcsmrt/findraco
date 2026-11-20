@@ -844,6 +844,7 @@
       "filters": "Filters",
       "maximumAmount": "Maximum amount",
       "minimumAmount": "Minimum amount",
+      "neutral": "Neutral",
       "reset": "Reset"
     },
     "transactionFormDrawer": {
