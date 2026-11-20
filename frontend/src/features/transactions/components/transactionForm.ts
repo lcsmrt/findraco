@@ -462,8 +462,29 @@ function attributionToPayload(
   };
 }
 
-/** What the PUT would clear if an edit left it out: the form has no field for either. */
-type StoredPeriod = Pick<Transaction, "parcelsNumber" | "endDate">;
+/**
+ * What the PUT would clear if an edit left it out: the form has no field for the parcel count or the end
+ * date. A neutral movement also reads who it is on, since its form shows no attribution.
+ */
+type StoredPeriod = Pick<Transaction, "parcelsNumber" | "endDate"> &
+  Partial<Pick<Transaction, "participants">>;
+
+/** A neutral movement has one payer: the row's own when it has just one, otherwise whoever is saving. */
+function neutralAttribution(
+  values: TransactionFormOutput,
+  stored: StoredPeriod | undefined,
+  currentUserId: number | undefined,
+): TransactionFormOutput {
+  const payer = stored?.participants?.length === 1 ? stored.participants[0] : undefined;
+  if (!payer || payer.id === currentUserId) {
+    return { ...values, attributionMode: "ME" };
+  }
+  return {
+    ...values,
+    attributionMode: "SOMEONE",
+    participants: [{ memberId: payer.id, memberName: payer.name, shareAmount: null }],
+  };
+}
 
 function datePart(isoDate: string | null | undefined): string | undefined {
   return isoDate ? isoDate.split("T")[0] : undefined;
@@ -471,7 +492,8 @@ function datePart(isoDate: string | null | undefined): string | undefined {
 
 /**
  * @param stored The transaction being edited. The API replaces the whole transaction and the form
- *   has no field for its parcel count or end date, so they travel back as stored.
+ *   has no field for its parcel count or end date, so they travel back as stored; its payer travels
+ *   back too when it is a neutral movement.
  */
 export function toPayload(
   values: TransactionFormOutput,
@@ -479,10 +501,10 @@ export function toPayload(
   currentUserId?: number,
   stored?: StoredPeriod,
 ): Omit<UpdateTransactionRequest["body"], "version"> {
-  // A neutral movement is the user's own, with no category or items; the backend refuses anything else.
+  // A neutral movement has no category or items and one payer; the backend refuses anything else.
   const neutral = isNeutralKind(values.kind);
   const { participants, splitMode } = attributionToPayload(
-    neutral ? { ...values, attributionMode: "ME" } : values,
+    neutral ? neutralAttribution(values, stored, currentUserId) : values,
     showAttribution,
     currentUserId,
   );

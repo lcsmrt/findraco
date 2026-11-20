@@ -867,6 +867,34 @@ describe("TransactionFormDrawer", () => {
     expect(body).not.toHaveProperty("categoryId");
   });
 
+  it("keeps the payer of a neutral row when another member saves it", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const livias: Transaction = {
+      ...savedTransaction,
+      kind: "TRANSFER",
+      amount: 500,
+      participants: [{ id: livia.userId, name: "Livia", shareAmount: 500 }],
+    };
+    server.use(transactionHandlers.update(livias));
+    renderDrawer({ mode: "edit", transaction: livias, members: [lucas, livia] });
+
+    // The members load first: a form reset after them would drop what is typed.
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Save" })).toHaveProperty("disabled", false),
+    );
+    await user.clear(screen.getByLabelText("Description"));
+    await user.type(screen.getByLabelText("Description"), "Pix to Lucas");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await sentBody(requests, "PUT")).toMatchObject({
+      kind: "TRANSFER",
+      description: "Pix to Lucas",
+      splitMode: "EQUAL",
+      participants: [{ memberId: livia.userId }],
+    });
+  });
+
   it("keeps the category of a refund, from the expense categories", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();
