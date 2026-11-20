@@ -234,6 +234,14 @@
 - **Date**: 2026-11-18
 - **Status**: active
 
+### AD-030
+- **Decision**: A transaction may carry a movement `kind` (`transactions.kind`: TRANSFER, CARD_BILL_PAYMENT, SAVINGS, REFUND; null = normal). The three neutral kinds count in no income, expense, result, trend, person breakdown, category total or limit, carry no category or items and exactly one participant; the dashboard reports them as `neutralOut` / `neutralIn`. REFUND is a CREDIT with an expense category that subtracts from that category, the period's expenses and its participants' spending. The import stores "Pagamento de fatura" as CARD_BILL_PAYMENT; Pix between members and older rows are proposed in a review list and applied by a member (applying drops category, items and split). Series carry no kind.
+- **Reason**: card purchases sent through Claude and the imported bill payment counted twice, Pix between the owners inflated both totals, savings counted as spending, and a friend's payback counted as income (owner answers 2026-11-17, 2026-11-19, 2026-11-20).
+- **Trade-off**: a kind instead of a third `TransactionType` keeps the money's direction; linking both sides of a transfer and account balances wait for R7 accounts.
+- **Scope**: `transaction` (entity rules, import, review endpoints, list filter), `dashboard`, `category` spending, `mcp` tools, frontend form, list, overview, `backend/openapi.json`.
+- **Date**: 2026-11-20
+- **Status**: active
+
 ## Handoff
 
 - **Run**: 2026-11-18/19. Design refactor plan: `.specs/project/DESIGN-PLAN.md` (owner answers, phases 0–7, R17 contacts). Three stacked PRs, each verified (lean/sdd gate exit 0), none merged:
@@ -243,7 +251,7 @@
 - **Owner decisions pending**:
   1. Trash - ANSWERED 2026-11-19, user: "Só bloquear se a série mudou": built in `feat/phase1-followups` (gate exit 0): a restore is refused only when it would bring back stale data - pattern changed (rule revision), occurrence outside the series' range, or a tail's end moved since its cut (owner: "Permitir").
   2. Former members - ANSWERED 2026-11-19, user: "Se o plano é meu, por que eu não poderia editar? Não tem sentido pra mim.": a row already split with a member who left stays fully editable (app and Claude); the former member's share stays valid on that row; a former member cannot be added to a row they are not on. Confirmed 2026-11-19 ("Cara, pra mim faz sentido"); built in `feat/phase1-followups` (gate exit 0), app form included.
-  3. R3 neutral movements: all decisions answered 2026-11-19 (refund case added, no category on neutral rows); criteria drafted in `.specs/features/neutral-movements/plan.md`, awaiting plan approval.
+  3. R3 neutral movements: built in `feat/neutral-movements` (AD-030, gate exit 0), stacked on `feat/phase1-followups`; neither branch pushed yet.
 - **Next phase per DESIGN-PLAN**: phase 2 foundations, after the decisions above; R17 contacts and import review come in phase 3.
 - **Environment lessons**: each git worktree needs its own `pnpm install --offline --frozen-lockfile` (never symlink node_modules); never run two maven builds in the same `backend/` (a Verifier's throwaway test broke a `check_proofs` run); the local walk stack is Postgres on 5434 + `java -jar` on 3000 + `vite preview` with `VITE_FINDRACO_API_URL`.
 - **Running locally**: nothing.
