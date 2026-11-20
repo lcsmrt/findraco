@@ -141,7 +141,7 @@ public class McpTransactionTools {
                     + "list_categories) and the transaction is uncategorized without one. Installments, "
                     + "recurrences and splits by fixed amounts are not created from here. A kind marks what is not "
                     + "plain income or expense: TRANSFER (between members), CARD_BILL_PAYMENT (paying the card bill) "
-                    + "and SAVINGS (money set aside) count in no total and take no category or other member; "
+                    + "and SAVINGS (money set aside) count in no total and take no category or items, and one member; "
                     + "REFUND is a CREDIT that gives back spending and needs the expense category it pays back. "
                     + "Returns the stored transaction.",
             annotations = @McpTool.McpAnnotations(destructiveHint = false, openWorldHint = false))

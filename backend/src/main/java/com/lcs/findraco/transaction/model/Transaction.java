@@ -131,15 +131,29 @@ public class Transaction {
         applySplit(mode, split);
     }
 
-    /** Marks the row with {@code newKind}, which it must be able to carry as it is; its other values stay. */
+    /**
+     * Marks the row with {@code newKind}. A neutral kind takes what it cannot carry off the row: the category, the
+     * items, and a split among several, which collapses to one payer (the only participant, otherwise the creator).
+     * A refund must fit the row as it is, with its other values untouched.
+     */
     public void assignKind(TransactionKind newKind) {
-        TransactionDetails marked =
-                new TransactionDetails(category, type, amount, description, startDate, endDate, parcelsNumber, newKind);
-        List<Share> shares = participants.stream()
+        if (newKind.isNeutral()) {
+            User payer = participants.size() == 1 ? participants.getFirst().getMember() : createdBy;
+            category = null;
+            items.clear();
+            replaceSplit(SplitMode.EQUAL, List.of(new Share(payer, null)));
+        } else {
+            TransactionDetails marked = new TransactionDetails(
+                    category, type, amount, description, startDate, endDate, parcelsNumber, newKind);
+            requireKindFits(marked, currentShares(), currentItems());
+        }
+        kind = newKind;
+    }
+
+    private List<Share> currentShares() {
+        return participants.stream()
                 .map(participant -> new Share(participant.getMember(), participant.getShareAmount()))
                 .toList();
-        requireKindFits(marked, shares, currentItems());
-        kind = newKind;
     }
 
     /** Moves the transaction to the trash under {@code trashedBy}; every finder that serves a screen then skips it. */
@@ -248,8 +262,8 @@ public class Transaction {
     }
 
     /**
-     * A neutral kind moves money without earning or spending it, so it has no category, no items and nobody but
-     * its creator in the split. A refund pays back a purchase: a credit with the expense category it lowers.
+     * A neutral kind moves money without earning or spending it, so it has no category, no items and one payer: a
+     * single participant, any member. A refund pays back a purchase: a credit with the expense category it lowers.
      */
     private void requireKindFits(TransactionDetails details, List<Share> shares, List<ItemDraft> candidateItems) {
         TransactionKind candidate = details.kind();
@@ -277,12 +291,9 @@ public class Transaction {
             throw new TransactionExceptions.NeutralKindInvalidException(
                     candidate + " is a neutral kind and takes no items.");
         }
-        Long creatorId = createdBy == null ? null : createdBy.getId();
-        boolean splitWithOthers =
-                shares.stream().anyMatch(share -> !share.member().getId().equals(creatorId));
-        if (splitWithOthers) {
+        if (shares.size() != 1) {
             throw new TransactionExceptions.NeutralKindInvalidException(
-                    candidate + " is a neutral kind and cannot be split with another member.");
+                    candidate + " is a neutral kind and takes exactly one participant.");
         }
     }
 

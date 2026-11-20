@@ -122,6 +122,30 @@ class NeutralMovementsIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void anyMemberCanSaveAnotherMembersNeutralRow() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User marina = fixtures.aUser();
+        fixtures.addMember(plan, marina, PlanRole.EDITOR);
+        Transaction marinas =
+                row(plan, marina, TransactionType.DEBIT, "500.00", NOVEMBER, null, TransactionKind.TRANSFER);
+        Map<String, Object> edit = body(TransactionType.DEBIT, "500.00", TransactionKind.TRANSFER, null);
+        edit.put("description", "Pix to the rent");
+        edit.put("participants", List.of(member(marina)));
+        edit.put("items", List.of());
+        edit.put("version", marinas.getVersion());
+
+        JsonNode saved =
+                readBody(send(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), marinas.getId()), owner, edit)
+                        .andExpect(status().isOk()));
+
+        assertThat(saved.path("kind").asString()).isEqualTo("TRANSFER");
+        assertThat(saved.path("description").asString()).isEqualTo("Pix to the rent");
+        assertThat(saved.path("participants")).hasSize(1);
+        assertThat(saved.path("participants").get(0).path("id").asLong()).isEqualTo(marina.getId());
+    }
+
+    @Test
     void refundNeedsAnExpenseCategoryOnACredit() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

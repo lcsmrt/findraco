@@ -7,6 +7,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
@@ -144,6 +146,29 @@ class NeutralCandidatesIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void applyingRemovesTheCategoryOfANeutralRow() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category card = fixtures.aCategory(plan, TransactionType.DEBIT, "Cartão");
+        Transaction bill =
+                imported(plan, owner, "1500.00", LocalDate.of(2026, 11, 20), "Pagamento de fatura", null, card);
+        assertThat(candidates(plan, owner, "").path("content")).hasSize(1);
+        assertThat(spentIn(plan, owner, "Cartão")).isEqualByComparingTo("1500.00");
+
+        JsonNode applied =
+                read(apply(plan, owner, bill.getId(), "CARD_BILL_PAYMENT", fixtures.transactionVersion(bill.getId()))
+                        .andExpect(status().isOk()));
+
+        assertThat(applied.path("kind").asString()).isEqualTo("CARD_BILL_PAYMENT");
+        assertThat(applied.path("category").isNull()).isTrue();
+        assertThat(candidates(plan, owner, "").path("content")).isEmpty();
+        assertThat(spentIn(plan, owner, "Cartão")).isEqualByComparingTo("0.00");
+        Transaction stored = transactionRepository.findById(bill.getId()).orElseThrow();
+        assertThat(stored.getKind()).isEqualTo(TransactionKind.CARD_BILL_PAYMENT);
+        assertThat(stored.getCategory()).isNull();
+    }
+
+    @Test
     void applyingAKindTheRowCannotCarryAnswers422AndChangesNothing() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
@@ -201,6 +226,20 @@ class NeutralCandidatesIT extends AbstractIntegrationTest {
                 .decimalValue();
     }
 
+    private BigDecimal spentIn(Plan plan, User caller, String categoryName) throws Exception {
+        JsonNode tree = read(mockMvc.perform(get(CategoryRoutes.CATEGORY + "/spending", plan.getId())
+                        .with(testAuthHelper.asUser(caller))
+                        .param("startDate", "2026-11-01")
+                        .param("endDate", "2026-11-30"))
+                .andExpect(status().isOk()));
+        for (JsonNode category : tree) {
+            if (categoryName.equals(category.path("name").asString())) {
+                return category.path("spent").decimalValue();
+            }
+        }
+        throw new AssertionError("no category " + categoryName);
+    }
+
     private ResultActions apply(Plan plan, User caller, long id, String kind, long version) throws Exception {
         return mockMvc.perform(post(TransactionRoutes.TRANSACTION + "/{id}/kind", plan.getId(), id)
                 .with(testAuthHelper.asUser(caller))
@@ -238,11 +277,22 @@ class NeutralCandidatesIT extends AbstractIntegrationTest {
 
     private Transaction imported(
             Plan plan, User creator, String amount, LocalDate date, String sourceText, TransactionKind kind) {
+        return imported(plan, creator, amount, date, sourceText, kind, null);
+    }
+
+    private Transaction imported(
+            Plan plan,
+            User creator,
+            String amount,
+            LocalDate date,
+            String sourceText,
+            TransactionKind kind,
+            Category category) {
         return fixtures.aTransaction(new TransactionDraft(
                 plan,
                 creator,
                 new TransactionDetails(
-                        null,
+                        category,
                         TransactionType.DEBIT,
                         new BigDecimal(amount),
                         sourceText == null ? "Manual" : sourceText,
