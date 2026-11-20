@@ -1,6 +1,6 @@
 import type { CategorySpending, CategorySpendingMember, UsageStatus } from "@/api/dtos";
 import { describe, expect, it } from "vitest";
-import { buildSpendingRows, type SpendingRow } from "./spendingRows";
+import { buildSpendingRows, usageOf, type SpendingRow } from "./spendingRows";
 
 const LUCAS = 1;
 const LIVIA = 2;
@@ -344,5 +344,27 @@ describe("buildSpendingRows: per person (UX-04)", () => {
     );
 
     expect(rows[0].focus).toEqual({ memberId: LIVIA, name: "Livia", color: colorOf(LIVIA), spent: 0, of: 1500, sharedLimit: 1500 });
+  });
+});
+
+describe("usageOf", () => {
+  it("caps the percent at 99 while money remains", () => {
+    expect(usageOf({ remaining: 1.22, percentUsed: 99.9, status: "WARNING" })).toMatchObject({
+      percent: 99,
+      remaining: 1.22,
+    });
+  });
+
+  it("shows at least 101 percent while over", () => {
+    expect(usageOf({ remaining: -0.2, percentUsed: 100.2, status: "OVER" })).toMatchObject({
+      percent: 101,
+      overBy: 0.2,
+    });
+  });
+
+  it("keeps the rounded percent when it already agrees with the amount", () => {
+    expect(usageOf({ remaining: 50, percentUsed: 49.6, status: "OK" }).percent).toBe(50);
+    expect(usageOf({ remaining: -50, percentUsed: 150.4, status: "OVER" }).percent).toBe(150);
+    expect(usageOf({ remaining: 0, percentUsed: 100, status: "WARNING" }).percent).toBe(100);
   });
 });

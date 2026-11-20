@@ -22,6 +22,7 @@ import { stubScreenWidth } from "@/test/screenWidth";
 import { server } from "@/test/server";
 import { cleanup, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useLocation, type Location } from "react-router-dom";
 import { Toaster } from "sonner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SeriesScopeDialogProvider } from "./components/SeriesScopeDialogProvider";
@@ -84,6 +85,17 @@ function planValue(): PlanContextValue {
   };
 }
 
+let location: Location;
+
+function LocationProbe() {
+  location = useLocation();
+  return null;
+}
+
+function searchParams() {
+  return Object.fromEntries(new URLSearchParams(location.search));
+}
+
 const categorySheet: CategoryFormSheetContextValue = { openCreate: vi.fn(), openEdit: vi.fn() };
 
 type TabOptions = {
@@ -109,6 +121,7 @@ function renderTab({ transactions = [rent], route = "/", categories = [] }: TabO
       </ConfirmDialogProvider>
       {/* The real Toaster shows the outcome the user reads. */}
       <Toaster />
+      <LocationProbe />
     </CategoryFormSheetContext.Provider>,
     { auth: authValue(), plan: planValue(), route },
   );
@@ -307,6 +320,20 @@ describe("TransactionsPage", () => {
     );
     expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
     expect(within(dialog).getByText(/Electricity/)).toBeTruthy();
+  });
+
+  it("previous then next arrow returns to this month as a preset", async () => {
+    const { user } = renderTab();
+    await tableRow("Rent");
+
+    await user.click(screen.getByRole("button", { name: "Previous period" }));
+    await waitFor(() =>
+      expect(searchParams()).toEqual({ period: "custom", periodFrom: "2026-09-01", periodTo: "2026-09-30" }),
+    );
+
+    await user.click(screen.getByRole("button", { name: "Next period" }));
+
+    await waitFor(() => expect(searchParams()).toEqual({}));
   });
 
   it("mobile confirm opens the dialog", async () => {

@@ -21,6 +21,8 @@ export type DatePickerProps = {
   onChange?: (date: Date | undefined) => void;
   placeholder?: string;
   disabled?: boolean;
+  /** The field always holds a date: no clear button, and erasing the text restores the current date. */
+  required?: boolean;
   disabledDates?: Matcher | Matcher[];
   fromYear?: number;
   toYear?: number;
@@ -40,6 +42,7 @@ export function DatePicker({
   onChange,
   placeholder = datePlaceholder(),
   disabled,
+  required,
   disabledDates,
   fromYear = 1900,
   toYear = CURRENT_YEAR + 20,
@@ -61,6 +64,10 @@ export function DatePicker({
   function commitInput(raw: string) {
     const trimmed = raw.trim();
     if (!trimmed) {
+      if (required) {
+        setInputValue(value ? formatDate(value) : "");
+        return;
+      }
       onChange?.(undefined);
       setInputValue("");
       return;
@@ -104,7 +111,7 @@ export function DatePicker({
             if (e.key === "Escape") setInputValue(value ? formatDate(value) : "");
           }}
         />
-        {value && !disabled && (
+        {value && !disabled && !required && (
           <InputGroupAddon align="inline-end">
             <InputGroupButton
               aria-label={t("components.datePicker.clearDate")}

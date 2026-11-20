@@ -361,7 +361,7 @@
   },
   "overview": {
     "balance": {
-      "balance": "Saldo"
+      "balance": "Resultado"
     },
     "categorySpendingList": {
       "focus": "{{name}} {{spent}} de {{limit}}",
@@ -739,6 +739,7 @@
     },
     "form": {
       "amountMustBePositive": "O valor deve ser positivo",
+      "choosePerson": "Escolha a pessoa",
       "dateIsRequired": "A data é obrigatória",
       "descriptionIsRequired": "A descrição é obrigatória",
       "enterAtLeast2Installments": "Informe pelo menos 2 parcelas",

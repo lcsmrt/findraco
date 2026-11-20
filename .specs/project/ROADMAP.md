@@ -35,7 +35,7 @@ Features are grouped by user-facing goal and tagged with their source milestone/
 | M5-08 | **Session persistence** ✅ SHIPPED 2026-10-16 (UAT approved) (spec: `.specs/features/session-persistence/`) | An expired session shows empty pages instead of redirecting to login, and the 24h JWT forces a sign-in every day. Fix the expiry handling and add renewable 30-day sessions. | User — 2026-10-16 |
 | M5-09 | **Mobile navigation** (spec: `.specs/features/mobile-navigation/`) | Bottom bar on the phone (Overview · Transactions · + · Categories · Plans), global add from any screen, Plans as a destination; desktop tabs mirror it. First topic of the second categories UX round (one topic at a time). | User — 2026-10-16 |
 | M4-03 | **Expense Items P2** | Quantity input + itemized indicator in the transactions table; closes the visible gap left by P1. | M4 deferred |
-| M4-04 | **Expense Items P3** | Replicate items across series occurrences so a recurring grocery run stays itemized. | M4 deferred |
+| ~~M4-04~~ | ~~**Expense Items P3**~~ | **Dropped (user, 2026-11-17):** a recurring purchase is rarely itemized the same way twice, so copying items across occurrences would create rows to correct, not save work. See `DESIGN-PLAN.md` Track 5. | M4 deferred |
 
 ### Should have (high value, slightly later)
 
@@ -161,7 +161,7 @@ Operational follow-ups that aren't features (moved from the old `STATE.md` on 20
 - Break a transaction into **line items**, each with its own category + amount (additive `TransactionItem` child of `FinancialTransaction`, mirrors `TransactionParticipant`)
 - The dashboard **category breakdown** becomes item-aware (Partition Invariant: `spent[C] = A[C] − B[C] + I[C]`); top-line totals unchanged — answers "cleaning vs. food in one grocery run"
 - **Loose** sums (remainder → parent category), items on both DEBIT and CREDIT, independent of the participant/split axis, no new authz gate
-- Sequenced AFTER Shared Plans + Expense Splitting (per AD-004). **P1 (T1–T10) executed & E2E-verified 2026-07-15.** Still planned: **P2** (quantity input, itemized indicator in the transactions table) and **P3** (items replicated across recurring/installment series occurrences)
+- Sequenced AFTER Shared Plans + Expense Splitting (per AD-004). **P1 (T1–T10) executed & E2E-verified 2026-07-15.** Still planned: **P2** (quantity input, itemized indicator in the transactions table) ~~and **P3** (items replicated across recurring/installment series occurrences)~~ (P3 dropped 2026-11-17)
 
 ---
 

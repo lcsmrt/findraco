@@ -41,7 +41,10 @@ type PeriodNavigatorProps = {
   /** Whether the selection is an absolute range rather than a preset. */
   isCustom: boolean;
   onPresetChange: (period: Period) => void;
+  /** A range picked in the calendar. */
   onRangeChange: (range: CustomRange) => void;
+  /** The range an arrow stepped to; the caller may recognise it as a preset. */
+  onStep: (range: CustomRange) => void;
 };
 
 function toCustom(range: PeriodRange): CustomRange {
@@ -53,7 +56,7 @@ function toCustom(range: PeriodRange): CustomRange {
 
 /**
  * "‹ October 2026 ›" plus a Range menu. The arrows step the period by
- * its own length and always produce an absolute range; presets set the period.
+ * its own length and report the range they land on; presets set the period.
  * The label opens the same range calendar as Custom…, so a custom range is one tap away.
  */
 export function PeriodNavigator({
@@ -62,6 +65,7 @@ export function PeriodNavigator({
   isCustom,
   onPresetChange,
   onRangeChange,
+  onStep,
 }: PeriodNavigatorProps) {
   const { t } = useTranslation();
 
@@ -93,7 +97,7 @@ export function PeriodNavigator({
         variant="ghost"
         size="icon"
         aria-label={t("components.periodNavigator.previousPeriod")}
-        onClick={() => onRangeChange(toCustom(shiftRange(range, -1)))}
+        onClick={() => onStep(toCustom(shiftRange(range, -1)))}
       >
         <ChevronLeftIcon />
       </Button>
@@ -111,7 +115,7 @@ export function PeriodNavigator({
         variant="ghost"
         size="icon"
         aria-label={t("components.periodNavigator.nextPeriod")}
-        onClick={() => onRangeChange(toCustom(shiftRange(range, 1)))}
+        onClick={() => onStep(toCustom(shiftRange(range, 1)))}
       >
         <ChevronRightIcon />
       </Button>

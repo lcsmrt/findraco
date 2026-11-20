@@ -53,6 +53,12 @@ export const EmptyAmount: Story = {
   },
 };
 
+export const DateWithoutClear: Story = {
+  play: async () => {
+    await expect(screen.queryByRole("button", { name: "Clear date" })).toBeNull();
+  },
+};
+
 export const Saving: Story = {
   tags: ["!test"],
   args: { isSaving: true },

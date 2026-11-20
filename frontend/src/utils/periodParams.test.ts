@@ -1,8 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { PERIODS } from "./period";
+import { PERIODS, resolvePeriodDates } from "./period";
 import {
   parsePeriodParams,
   resolveSelection,
+  selectionForRange,
   serializePeriodParams,
   type PeriodSelection,
 } from "./periodParams";
@@ -82,6 +83,42 @@ describe("resolveSelection", () => {
 
   it("resolves a preset against now, so a saved This month follows the calendar (PNAV-03)", () => {
     expect(resolveSelection(DEFAULT_SELECTION, new Date(2026, 10, 3))).toEqual({
+      startDate: "2026-11-01",
+      endDate: "2026-11-30",
+    });
+  });
+});
+
+describe("selectionForRange", () => {
+  const now = new Date(2026, 9, 15);
+
+  it("a range equal to a preset's range becomes that preset", () => {
+    for (const period of PERIODS) {
+      expect(selectionForRange(resolvePeriodDates(period, now), now)).toEqual({ period, customRange: null });
+    }
+  });
+
+  it("a range equal to no preset stays a custom range", () => {
+    expect(selectionForRange({ startDate: "2026-09-01", endDate: "2026-09-30" }, now)).toEqual({
+      period: "this-month",
+      customRange: { from: "2026-09-01", to: "2026-09-30" },
+    });
+    // Sharing only one edge with a preset is not equal to it: This month starts 2026-10-01, Last 3 months ends 2026-10-31.
+    expect(selectionForRange({ startDate: "2026-10-01", endDate: "2026-10-20" }, now).customRange).toEqual({
+      from: "2026-10-01",
+      to: "2026-10-20",
+    });
+    expect(selectionForRange({ startDate: "2026-09-01", endDate: "2026-10-31" }, now).customRange).toEqual({
+      from: "2026-09-01",
+      to: "2026-10-31",
+    });
+  });
+
+  it("a preset reached by the arrows resolves against a later date", () => {
+    const { period, customRange } = selectionForRange(resolvePeriodDates("this-month", now), now);
+    const later = new Date(2026, 10, 3);
+
+    expect(resolveSelection({ period, customRange }, later)).toEqual({
       startDate: "2026-11-01",
       endDate: "2026-11-30",
     });
