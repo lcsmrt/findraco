@@ -8,7 +8,7 @@ import { toPagination } from "@/api/utils/toPagination";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import type { Sorting } from "@/components/table/components/TableHeader";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTransactionFilters } from "./filters/useTransactionFilters";
 import { useTransactionFilterChips } from "./useTransactionFilterChips";
 import { useTransactionPeriod } from "./useTransactionPeriod";
@@ -18,6 +18,7 @@ import {
   TransactionFilterPopover,
 } from "./components/TransactionFilterPopover";
 import { ConfirmTransactionDialog } from "./components/ConfirmTransactionDialog";
+import { NeutralReviewSheet } from "./components/NeutralReviewSheet";
 import { TransactionFormDrawer } from "./components/TransactionFormDrawer";
 import { buildTransactionColumns, InlineSaveBody } from "./components/transactionColumns";
 import { toInlineSavePayload } from "./components/transactionForm";
@@ -50,7 +51,8 @@ export function TransactionsPage() {
   });
   const { activePlanId } = usePlanContext();
   const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
-  const { canAttributeToOthers } = usePlanPermissions();
+  const { canAttributeToOthers, canCreateTransactions } = usePlanPermissions();
+  const [reviewOpen, setReviewOpen] = useState(false);
   const { mutate: updateTransaction } = useUpdateTransaction();
   const sorting = useMemo(() => toSorting(sort), [sort]);
 
@@ -110,6 +112,7 @@ export function TransactionsPage() {
         onClearFilters={onClearFilters}
         onImport={importCsv}
         isImporting={isImporting}
+        onReview={canCreateTransactions ? () => setReviewOpen(true) : undefined}
         transactions={data?.content ?? []}
         isLoading={isLoading}
         pagination={data && toPagination(data)}
@@ -133,6 +136,8 @@ export function TransactionsPage() {
       />
 
       <ConfirmTransactionDialog transaction={actions.confirming} onClose={actions.closeConfirm} />
+
+      <NeutralReviewSheet open={reviewOpen} onOpenChange={setReviewOpen} />
     </>
   );
 }

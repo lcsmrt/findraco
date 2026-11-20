@@ -503,7 +503,7 @@
       "newestOnly": "Mostrando as {{shown}} exclusões mais recentes de {{total}}.",
       "restore": "Restaurar",
       "restoreEntry": "Restaurar {{description}}",
-      "retry": "Tentar de novo",
+      "retry": "Tentar novamente",
       "series": "Série",
       "trash": "Lixeira"
     },
@@ -802,6 +802,18 @@
       "savings": "Guardar",
       "transfer": "Entre membros"
     },
+    "neutralReviewListView": {
+      "apply": "Aplicar",
+      "applyTo": "Aplicar em {{description}}",
+      "empty": "Nada para revisar.",
+      "loadError": "Não foi possível carregar os movimentos para revisar.",
+      "newestOnly": "Mostrando os {{shown}} mais recentes de {{total}}.",
+      "retry": "Tentar novamente"
+    },
+    "neutralReviewSheet": {
+      "description": "Movimentos que parecem uma transferência entre membros ou o pagamento de uma fatura. Aplicar tira o movimento dos totais.",
+      "reviewMovements": "Revisar movimentos"
+    },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Mudar o número de parcelas atualiza a série inteira."
     },
@@ -872,6 +884,7 @@
       "importCsv": "Importar CSV",
       "importing": "Importando...",
       "removeFilter": "Remover {{name}}",
+      "reviewMovements": "Revisar movimentos",
       "searchTransactions": "Buscar transações...",
       "searchTransactions2": "Buscar transações"
     },

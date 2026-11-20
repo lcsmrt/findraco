@@ -137,6 +137,14 @@ export const ActiveFilters: Story = {
   },
 };
 
+export const WithReview: Story = {
+  args: { onReview: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Review movements" }));
+    await expect(args.onReview).toHaveBeenCalledTimes(1);
+  },
+};
+
 export const Importing: Story = {
   args: { isImporting: true },
   play: async ({ canvas }) => {

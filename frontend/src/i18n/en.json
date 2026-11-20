@@ -802,6 +802,18 @@
       "savings": "Savings",
       "transfer": "Between members"
     },
+    "neutralReviewListView": {
+      "apply": "Apply",
+      "applyTo": "Apply to {{description}}",
+      "empty": "Nothing to review.",
+      "loadError": "Could not load the movements to review.",
+      "newestOnly": "Showing the {{shown}} newest of {{total}}.",
+      "retry": "Retry"
+    },
+    "neutralReviewSheet": {
+      "description": "Rows that look like a transfer between members or a card bill payment. Applying one takes it out of the totals.",
+      "reviewMovements": "Review movements"
+    },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Changing the number of parcels updates the whole series."
     },
@@ -872,6 +884,7 @@
       "importCsv": "Import CSV",
       "importing": "Importing...",
       "removeFilter": "Remove {{name}}",
+      "reviewMovements": "Review movements",
       "searchTransactions": "Search transactions...",
       "searchTransactions2": "Search transactions"
     },
