@@ -78,8 +78,9 @@ public class RecurrenceDefinition {
     private boolean requiresConfirmation;
 
     /**
-     * Counts the changes to what the occurrences are generated from (amount, description, category, parcels,
-     * end, split). A trashed row is restored against it, so an edit of something else leaves it alone.
+     * Counts the changes to what an occurrence carries: amount, description, category, split and, for an
+     * installment series, the number of parcels. A trashed row is restored against it, so a change to the
+     * series' end, an exception or a flag leaves it alone.
      */
     @Column(name = "rule_revision")
     private long ruleRevision;
@@ -182,8 +183,7 @@ public class RecurrenceDefinition {
         return !Objects.equals(categoryId(category), categoryId(pattern.category()))
                 || amount.compareTo(pattern.amount()) != 0
                 || !Objects.equals(description, pattern.description())
-                || !Objects.equals(parcelsNumber, pattern.parcelsNumber())
-                || !Objects.equals(endDate, pattern.endDate())
+                || (mode == RecurrenceMode.INSTALLMENT && !Objects.equals(parcelsNumber, pattern.parcelsNumber()))
                 || splitMode != pattern.splitMode()
                 || !sharesByMember(participants.stream()
                                 .map(participant -> new Share(participant.getMember(), participant.getShareAmount()))
@@ -203,6 +203,18 @@ public class RecurrenceDefinition {
         return byMember;
     }
 
+    /**
+     * Whether the series still reaches {@code slot}: not past its end date, and for an installment series not
+     * beyond its last parcel.
+     */
+    public boolean covers(LocalDate slot) {
+        if (mode == RecurrenceMode.INSTALLMENT) {
+            int first = firstParcel != null ? firstParcel : 1;
+            return !slot.isAfter(startDate.plusMonths(parcelsNumber - first));
+        }
+        return endDate == null || !slot.isAfter(endDate);
+    }
+
     /** Records the last occurrence generated so far, so a top-up continues after it. */
     public void markGeneratedThrough(LocalDate lastGenerated) {
         generatedThrough = lastGenerated;
@@ -218,7 +230,6 @@ public class RecurrenceDefinition {
         } else {
             endDate = lastDate;
         }
-        ruleRevision++;
     }
 
     /**

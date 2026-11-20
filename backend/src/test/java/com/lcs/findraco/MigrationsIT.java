@@ -555,11 +555,13 @@ class MigrationsIT extends AbstractIntegrationTest {
         String seed = "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
                 + "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);"
                 + "INSERT INTO recurrence_definitions (id, plan_id, created_by, series_id, type, amount, description, "
-                + "mode, recurrence_interval, start_date, requires_confirmation) "
-                + "VALUES (1, 1, 1, 'series-1', 'DEBIT', 80.00, 'Gym', 'RECURRING', 'MONTHLY', '2026-01-15', false);"
+                + "mode, recurrence_interval, start_date, end_date, requires_confirmation) "
+                + "VALUES (1, 1, 1, 'series-1', 'DEBIT', 80.00, 'Gym', 'RECURRING', 'MONTHLY', '2026-01-15', "
+                + "'2026-05-15', false);"
                 + "INSERT INTO transaction_deletions (id, plan_id, deleted_at, kind, scope, recurrence_definition_id, "
                 + "definition_version, exception_date, definition_trashed) VALUES "
-                + "(1, 1, now(), 'SERIES', 'THIS_ONE', 1, 3, '2026-03-15', false);";
+                + "(1, 1, now(), 'SERIES', 'THIS_ONE', 1, 3, '2026-03-15', false), "
+                + "(2, 1, now(), 'SERIES', 'THIS_AND_FOLLOWING', 1, 3, null, false);";
 
         migrateScratchDatabase("27", seed, scratch -> {
             assertThat(scratch.queryForMap("SELECT is_nullable, column_default FROM information_schema.columns "
@@ -568,8 +570,15 @@ class MigrationsIT extends AbstractIntegrationTest {
                     .containsEntry("column_default", "0");
             assertThat(scratch.queryForObject("SELECT rule_revision FROM recurrence_definitions", Long.class))
                     .isZero();
-            assertThat(scratch.queryForObject("SELECT definition_version FROM transaction_deletions", Long.class))
-                    .isZero();
+            assertThat(scratch.queryForList("SELECT definition_version FROM transaction_deletions", Long.class))
+                    .containsOnly(0L);
+            // A tail deletion takes the end its series has now; an "only this" one has no cut.
+            assertThat(scratch.queryForObject(
+                            "SELECT cut_end_date::text FROM transaction_deletions WHERE id = 2", String.class))
+                    .isEqualTo("2026-05-15");
+            assertThat(scratch.queryForObject(
+                            "SELECT cut_end_date::text FROM transaction_deletions WHERE id = 1", String.class))
+                    .isNull();
         });
     }
 

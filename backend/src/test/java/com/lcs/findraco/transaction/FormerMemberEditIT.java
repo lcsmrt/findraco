@@ -120,6 +120,65 @@ class FormerMemberEditIT extends AbstractIntegrationTest {
                 .isEqualTo(1);
     }
 
+    @Test
+    void formerMemberCannotReturnToASeriesOccurrence() throws Exception {
+        User owner = fixtures.aUser();
+        User ana = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        fixtures.addMember(plan, ana, PlanRole.EDITOR);
+        LocalDate start = LocalDate.of(2026, 1, 15);
+
+        // Ana is on the series, then taken off its third occurrence alone.
+        JsonNode withAna = createSeries(plan, owner, series("Gym", "80.00", start, List.of(owner, ana)));
+        String withAnaId = withAna.get("seriesId").asString();
+        long withAnaThird = withAna.get("occurrences").get(2).get("id").asLong();
+        editSeries(plan, owner, withAnaId, "THIS_ONE", withAnaThird, series("Gym", "80.00", start, List.of(owner)))
+                .andExpect(status().isOk());
+
+        // The series is the owner's alone, and Ana is put on its third occurrence alone.
+        JsonNode alone = createSeries(plan, owner, series("Rent", "900.00", start, List.of(owner)));
+        String aloneId = alone.get("seriesId").asString();
+        long aloneThird = alone.get("occurrences").get(2).get("id").asLong();
+        editSeries(plan, owner, aloneId, "THIS_ONE", aloneThird, series("Rent", "900.00", start, List.of(owner, ana)))
+                .andExpect(status().isOk());
+        leave(plan, ana);
+
+        editSeries(plan, owner, withAnaId, "THIS_ONE", withAnaThird, series("Gym", "80.00", start, List.of(owner, ana)))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "participant-not-member"));
+        editSeries(
+                        plan,
+                        owner,
+                        aloneId,
+                        "THIS_AND_FOLLOWING",
+                        aloneThird,
+                        series("Rent", "900.00", start, List.of(owner, ana)))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "participant-not-member"));
+
+        assertThat(sharesByMember(fetch(plan, owner, withAnaThird))).containsOnlyKeys(owner.getId());
+    }
+
+    private JsonNode createSeries(Plan plan, User user, Map<String, Object> body) throws Exception {
+        return json(mockMvc.perform(post(TX + "/series", plan.getId())
+                        .with(testAuthHelper.asUser(user))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isCreated()));
+    }
+
+    private ResultActions editSeries(
+            Plan plan, User user, String seriesId, String scope, long pivot, Map<String, Object> series)
+            throws Exception {
+        Map<String, Object> request = new LinkedHashMap<>();
+        request.put("scope", scope);
+        request.put("pivotOccurrenceId", pivot);
+        request.put("version", fixtures.seriesVersion(seriesId));
+        request.put("series", series);
+        return mockMvc.perform(put(TX + "/series/{seriesId}", plan.getId(), seriesId)
+                .with(testAuthHelper.asUser(user))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)));
+    }
+
     private void leave(Plan plan, User user) {
         jdbc.update("DELETE FROM plan_memberships WHERE plan_id = ? AND user_id = ?", plan.getId(), user.getId());
     }

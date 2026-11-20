@@ -108,7 +108,7 @@ class TrashRuleRevisionIT extends AbstractIntegrationTest {
     }
 
     @Test
-    void restoreAfterTheEndChangedConflicts() throws Exception {
+    void restoreAfterATailWasDeletedSucceeds() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
         JsonNode series = createSeries(plan, owner, gym(START.plusMonths(7)));
@@ -118,10 +118,80 @@ class TrashRuleRevisionIT extends AbstractIntegrationTest {
         long marchDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", march);
         long juneDeletion = deleteSeries(plan, owner, seriesId, "THIS_AND_FOLLOWING", june);
 
-        restore(plan, owner, marchDeletion).andExpect(problem(HttpStatus.CONFLICT, "trash-series-changed"));
+        restore(plan, owner, marchDeletion).andExpect(status().isOk());
+        restore(plan, owner, juneDeletion).andExpect(status().isOk());
+
+        assertThat(listedIds(plan, owner)).contains(march, june);
+        assertThat(definition(plan, owner, seriesId).get("endDate").asString())
+                .isEqualTo(START.plusMonths(7).toString());
+    }
+
+    @Test
+    void restoringTheTailFirstKeepsAnEarlierDeletionRestorable() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode series = createSeries(plan, owner, gym(START.plusMonths(7)));
+        String seriesId = series.get("seriesId").asString();
+        long march = occurrenceId(series, 2);
+        long june = occurrenceId(series, 5);
+        long marchDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", march);
+        long juneDeletion = deleteSeries(plan, owner, seriesId, "THIS_AND_FOLLOWING", june);
 
         restore(plan, owner, juneDeletion).andExpect(status().isOk());
-        assertThat(listedIds(plan, owner)).contains(june).doesNotContain(march);
+        restore(plan, owner, marchDeletion).andExpect(status().isOk());
+
+        assertThat(listedIds(plan, owner)).contains(march, june);
+    }
+
+    @Test
+    void restoringATailAfterItsEndMovedConflicts() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode series = createSeries(plan, owner, gym(START.plusMonths(7)));
+        String seriesId = series.get("seriesId").asString();
+        long juneDeletion = deleteSeries(plan, owner, seriesId, "THIS_AND_FOLLOWING", occurrenceId(series, 5));
+
+        Map<String, Object> edit = gym(START.plusMonths(3));
+        editSeries(plan, owner, seriesId, "ALL", null, edit).andExpect(status().isOk());
+
+        restore(plan, owner, juneDeletion).andExpect(problem(HttpStatus.CONFLICT, "trash-series-changed"));
+    }
+
+    @Test
+    void restoreOfAnOccurrenceBeyondTheNewEndConflicts() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode series = createSeries(plan, owner, gym(START.plusMonths(4)));
+        String seriesId = series.get("seriesId").asString();
+        long marchDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", occurrenceId(series, 2));
+        long mayDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", occurrenceId(series, 4));
+
+        // The series now ends in April: May's deletion is past its end, March's is not.
+        editSeries(plan, owner, seriesId, "ALL", null, gym(START.plusMonths(3))).andExpect(status().isOk());
+
+        restore(plan, owner, mayDeletion).andExpect(problem(HttpStatus.CONFLICT, "trash-series-changed"));
+        restore(plan, owner, marchDeletion).andExpect(status().isOk());
+    }
+
+    @Test
+    void parcelsChangeBlocksTheRestore() throws Exception {
+        for (int parcels : new int[] {8, 6}) {
+            User owner = fixtures.aUser();
+            Plan plan = fixtures.aPlan(owner);
+            JsonNode series = createSeries(plan, owner, laptop(6));
+            String seriesId = series.get("seriesId").asString();
+            long parcel3 = occurrenceId(series, 2);
+            long deletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", parcel3);
+
+            editSeries(plan, owner, seriesId, "ALL", null, laptop(parcels)).andExpect(status().isOk());
+
+            if (parcels == 8) {
+                restore(plan, owner, deletion).andExpect(problem(HttpStatus.CONFLICT, "trash-series-changed"));
+            } else {
+                restore(plan, owner, deletion).andExpect(status().isOk());
+                assertThat(listedIds(plan, owner)).contains(parcel3);
+            }
+        }
     }
 
     @Test
@@ -156,9 +226,10 @@ class TrashRuleRevisionIT extends AbstractIntegrationTest {
                                 List.of(
                                         Map.of("memberId", change.owner().getId()),
                                         Map.of("memberId", change.other().getId()))));
+        // March is deleted, so an end before it leaves the occurrence outside the series.
         changes.put(
                 "end date",
-                change -> change.edit().put("endDate", START.plusMonths(3).toString()));
+                change -> change.edit().put("endDate", START.plusMonths(1).toString()));
 
         for (Map.Entry<String, Consumer<PatternChange>> change : changes.entrySet()) {
             User owner = fixtures.aUser();
@@ -182,14 +253,20 @@ class TrashRuleRevisionIT extends AbstractIntegrationTest {
     void flagOnlyEditKeepsTheDeletionRestorable() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        JsonNode series = createSeries(plan, owner, gym(START.plusMonths(4)));
+        Map<String, Object> created = gym(START.plusMonths(4));
+        created.put("requiresConfirmation", true);
+        JsonNode series = createSeries(plan, owner, created);
         String seriesId = series.get("seriesId").asString();
         long march = occurrenceId(series, 2);
         long marchDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", march);
+        assertThat(definition(plan, owner, seriesId).get("requiresConfirmation").asBoolean())
+                .isTrue();
 
         Map<String, Object> edit = gym(START.plusMonths(4));
-        edit.put("requiresConfirmation", true);
+        edit.put("requiresConfirmation", false);
         editSeries(plan, owner, seriesId, "ALL", null, edit).andExpect(status().isOk());
+        assertThat(definition(plan, owner, seriesId).get("requiresConfirmation").asBoolean())
+                .isFalse();
 
         restore(plan, owner, marchDeletion).andExpect(status().isOk());
         assertThat(listedIds(plan, owner)).contains(march);
@@ -210,6 +287,24 @@ class TrashRuleRevisionIT extends AbstractIntegrationTest {
         body.put("interval", "MONTHLY");
         body.put("splitMode", "EQUAL");
         return body;
+    }
+
+    private Map<String, Object> laptop(int parcels) {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("type", "DEBIT");
+        body.put("amount", new BigDecimal("300.00"));
+        body.put("description", "Laptop");
+        body.put("mode", "INSTALLMENT");
+        body.put("startDate", START.toString());
+        body.put("parcelsNumber", parcels);
+        body.put("splitMode", "EQUAL");
+        return body;
+    }
+
+    private JsonNode definition(Plan plan, User user, String seriesId) throws Exception {
+        return json(mockMvc.perform(
+                        get(TX + "/series/{seriesId}", plan.getId(), seriesId).with(testAuthHelper.asUser(user)))
+                .andExpect(status().isOk()));
     }
 
     private JsonNode json(ResultActions actions) throws Exception {

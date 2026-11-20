@@ -5,7 +5,7 @@ Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose 
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions/components/AttributionFields.stories.tsx
 Plan: `.specs/features/phase1-followups/plan.md`
 
-14 checks in 2 slices · 1 one-way door · 0 open, of which 0 block
+17 checks in 2 slices · 1 one-way door · 0 open, of which 0 block
 
 ## Checks
 
@@ -20,8 +20,8 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C3** - March deleted, then the series edited "all" to R$ 90: restoring March answers 409 `trash-series-changed`, and the trash entry and March's absence are unchanged (AC 2)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoreAfterAnAmountEditConflicts' -Dsurefire.skip=true
 
-**C4** - March deleted, then "June and following" deleted: restoring March answers 409 `trash-series-changed`; restoring the June deletion answers 200 (AC 2)
-Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoreAfterTheEndChangedConflicts' -Dsurefire.skip=true
+**C4** - March deleted, then "June and following" deleted: restoring March answers 200 (March is inside the series); restoring the June deletion answers 200 and the series ends where it did before (AC 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoreAfterATailWasDeletedSucceeds' -Dsurefire.skip=true
 
 **C5** - Each pattern field changed by an "all" edit after a deletion - description, category, split, end date - makes the restore answer 409, table-driven over the 4 (AC 2)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoreAfterAnyPatternChangeConflicts' -Dsurefire.skip=true
@@ -34,6 +34,12 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 **C13** - June and following deleted, then March deleted "only this": restoring June answers 200, then restoring March answers 200 and both are listed again (AC 1)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoringOneDeletionKeepsAnotherRestorable' -Dsurefire.skip=true
+
+**C15** - March deleted "only this", then "June and following" deleted, June restored (200), then March restored: 200 (AC 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoringTheTailFirstKeepsAnEarlierDeletionRestorable' -Dsurefire.skip=true
+
+**C16** - In a 6-parcel installment series, parcel 3 deleted, then the series edited "all" to 8 parcels: restoring parcel 3 answers 409; resending the same 6 parcels instead leaves it 200 (AC 2)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#parcelsChangeBlocksTheRestore' -Dsurefire.skip=true
 
 ### S2 - Rows shared with a former member stay editable
 
@@ -49,9 +55,12 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C11** - MCP `update_transaction` with a new description on a row split equally with Ana (left) succeeds; the row has the new description and Ana keeps her share (AC 8)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpCaptureHubIT#updateOfARowSharedWithAFormerMemberKeepsTheirShare' -Dsurefire.skip=true
 
-**C12** - The edit form of a row split with Ana (left) shows "Ana (fora do plano)" with a checked checkbox, and saving without touching the split sends Ana's `memberId` in `participants` (AC 9)
+**C12** - The edit form of a row split with Ana (left) shows "Ana Lima (no longer in the plan)" (pt-BR copy "(fora do plano)", same key) with a checked checkbox, and saving without touching the split sends Ana's `memberId` in `participants` (AC 9)
 Proof: run stories | ✓ src/features/transactions/components/AttributionFields.stories.tsx > Former Participant
 Proof: run unit | ✓ TransactionFormDrawer > keeps a former member's share when saving
+
+**C17** - A series split between the owner and Ana; May edited "only this" to the owner alone; Ana leaves; editing May "only this" with Ana answers 422 `participant-not-member`; and a "this and following" edit from an occurrence that still has Ana, on a series whose definition no longer has her, answers 422 (AC 7)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='FormerMemberEditIT#formerMemberCannotReturnToASeriesOccurrence' -Dsurefire.skip=true
 
 **C14** - In a plan whose only current member is the owner, the edit form of a row split 50/50 with Ana (left) shows the split with "Ana Lima (fora do plano)", and saving it with the amount changed to 120.00 sends both participants (AC 9)
 Proof: run unit | ✓ TransactionFormDrawer > shows the split of a row shared with a former member in a one-member plan
@@ -60,28 +69,28 @@ Proof: run unit | ✓ TransactionFormDrawer > shows the split of a row shared wi
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
-| later series changes that keep a deletion restorable (4) | other "only this" delete C1 · "only this" edit C2 · flag-only edit C6 · another deletion restored C13 | - |
-| later series changes that block it (6) | amount C3 · end by tail delete C4 · description C5 · category C5 · split C5 · end date C5 | - |
+| later series changes that keep a deletion restorable (6) | other "only this" delete C1 · "only this" edit C2 · flag-only edit C6 · another deletion restored C13 · a later tail cut C4 · tail restored first C15 | - |
+| later series changes that block it (6) | amount C3 · parcels C16 · description C5 · category C5 · split C5 · end moved before the occurrence C5 | - |
 | door 1: `V28` (2 statements) | column C7 · reset C7 | - |
-| participant sources on an edit (3) | current member C8 · former member already on the row C8 · former member not on the row C10 | - |
+| participant sources on an edit (4) | current member C8 · former member already on the row C8 · former member not on the row C10 · former member on the series but not the occurrence, or the reverse C17 | - |
 | edit channels for a former member's row (3) | app row C8 · app series C9 · Claude C11 | - |
 | form states of a former participant (3) | shown C12 · kept on save C12 · one-member plan C14 | - |
 
 ## Swept
 
-- validation: C10
+- validation: C10 · C17
 - failure modes: C3 - a refused restore changes nothing
 - idempotency: existing - a restored deletion is gone, so a second restore is 404 (transaction-trash C10)
 - authorization: existing - `requireCanModifyTransaction` on edit and restore, unchanged
 - concurrency: existing - restore and series edit lock the definition (`findByIdAndPlanForUpdate`); the lock version still guards concurrent edits
 - data lifecycle: C7
 - dependency failure: n/a - no external call
-- state transitions: C1-C6
+- state transitions: C1-C6 · C13 · C15 · C16
 - observability: n/a - no logging requirement
 
 ## Handoff
 
-- **Settled mid-build:** none
+- **Settled mid-build:** 2026-11-19, Verifier finding 2 asked to the owner ("Excluo março, depois 'junho em diante'; restaurar março?"): user chose "Permitir" - a restore is refused only when it would bring back stale data (pattern changed, or the occurrence is outside the series' current range, or a tail's end moved since its cut); C4 changes accordingly.
 - **Dispatched:** build worker (Sonnet) at f21a7229; returned (C1-C14 built); Verifier (Opus) at 5dd4f403
 - **Boundary:** C1-C14 closed at 3df93fd7
 - **Abandoned:** none

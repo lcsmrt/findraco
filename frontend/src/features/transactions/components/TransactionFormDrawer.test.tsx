@@ -780,13 +780,13 @@ describe("TransactionFormDrawer", () => {
       splitMode: "EXACT",
       participants: [
         { id: lucas.userId, name: "Lucas", shareAmount: 75.25 },
-        { id: 9, name: "Ana", shareAmount: 75.25 },
+        { id: 9, name: "Ana Lima", shareAmount: 75.25 },
       ],
     };
     server.use(transactionHandlers.update(shared));
     renderDrawer({ mode: "edit", transaction: shared, members: [lucas, livia] });
 
-    const former = await screen.findByRole("checkbox", { name: "Ana (no longer in the plan)" });
+    const former = await screen.findByRole("checkbox", { name: "Ana Lima (no longer in the plan)" });
     expect(former.getAttribute("aria-checked")).toBe("true");
     await user.click(screen.getByRole("button", { name: "Save" }));
 

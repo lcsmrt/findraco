@@ -5,6 +5,7 @@ import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * One delete action: the rows it moved to the trash point at it, and it records what the action changed on
@@ -49,6 +50,12 @@ public class TransactionDeletion {
     @Column(name = "previous_parcels_number")
     private Integer previousParcelsNumber;
 
+    @Column(name = "cut_end_date")
+    private LocalDate cutEndDate;
+
+    @Column(name = "cut_parcels_number")
+    private Integer cutParcelsNumber;
+
     @Column(name = "definition_trashed")
     private boolean definitionTrashed;
 
@@ -84,6 +91,18 @@ public class TransactionDeletion {
         recurrenceDefinitionId = definition.getId();
         previousEndDate = definition.getEndDate();
         previousParcelsNumber = definition.getParcelsNumber();
+    }
+
+    /** The deletion has just ended the series earlier; this is the end it left. */
+    public void recordCutEnd(RecurrenceDefinition definition) {
+        cutEndDate = definition.getEndDate();
+        cutParcelsNumber = definition.getParcelsNumber();
+    }
+
+    /** Whether the series still ends where this deletion cut it, so putting the old end back overwrites nothing. */
+    public boolean cutEndStillHolds(RecurrenceDefinition definition) {
+        return Objects.equals(cutEndDate, definition.getEndDate())
+                && Objects.equals(cutParcelsNumber, definition.getParcelsNumber());
     }
 
     /** The deletion moved the whole series to the trash. */

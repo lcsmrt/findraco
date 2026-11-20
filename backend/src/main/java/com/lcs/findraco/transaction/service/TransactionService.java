@@ -470,6 +470,7 @@ public class TransactionService {
                     .orElseThrow();
             deletion.recordPreviousEnd(definition);
             definition.shortenTo(remaining.size(), lastDate);
+            deletion.recordCutEnd(definition);
         }
     }
 
@@ -520,13 +521,15 @@ public class TransactionService {
                     .orElseThrow(TransactionExceptions.SeriesPivotNotFoundException::new);
         }
 
+        // An occurrence edited alone keeps who it carries; an edit of the series keeps who the series carries.
         Set<Long> keptMemberIds = new HashSet<>();
-        definition
-                .getParticipants()
-                .forEach(
-                        participant -> keptMemberIds.add(participant.getMember().getId()));
-        if (pivot != null) {
+        if (dto.scope() == SeriesEditScope.THIS_ONE) {
             keptMemberIds.addAll(participantIds(pivot));
+        } else {
+            definition
+                    .getParticipants()
+                    .forEach(participant ->
+                            keptMemberIds.add(participant.getMember().getId()));
         }
         RequestedSplit split = requestedSplit(series.participants(), series.splitMode(), keptMemberIds, ctx);
 

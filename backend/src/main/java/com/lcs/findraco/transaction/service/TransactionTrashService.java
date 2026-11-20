@@ -161,9 +161,15 @@ public class TransactionTrashService {
                 throw new TransactionExceptions.TrashSeriesChangedException();
             }
             if (deletion.getExceptionDate() != null) {
+                if (!definition.covers(deletion.getExceptionDate())) {
+                    throw new TransactionExceptions.TrashSeriesChangedException();
+                }
                 definition.unexcept(deletion.getExceptionDate());
             }
             if (deletion.getScope() == SeriesEditScope.THIS_AND_FOLLOWING) {
+                if (!deletion.cutEndStillHolds(definition)) {
+                    throw new TransactionExceptions.TrashSeriesChangedException();
+                }
                 definition.restoreEnd(deletion.getPreviousParcelsNumber(), deletion.getPreviousEndDate());
             }
         }

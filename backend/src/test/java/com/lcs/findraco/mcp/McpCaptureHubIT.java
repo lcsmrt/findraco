@@ -534,12 +534,13 @@ class McpCaptureHubIT extends AbstractMcpIntegrationTest {
                 .contains("not found");
 
         JsonNode series = createSeries(plan, ana, installments("Notebook", LocalDate.of(2026, 1, 15), 6));
-        long third = series.path("occurrences").get(2).path("id").asLong();
-        long seriesDeletion = client.callJson("delete_transaction", Map.of("id", third))
+        long fourth = series.path("occurrences").get(3).path("id").asLong();
+        long seriesDeletion = client.callJson("delete_transaction", Map.of("id", fourth))
                 .path("deletionId")
                 .asLong();
-        long other = series.path("occurrences").get(4).path("id").asLong();
-        client.callJson("delete_transaction", Map.of("id", other, "scope", "THIS_AND_FOLLOWING"));
+        // The series now ends after parcel 2, so parcel 4 no longer belongs to it.
+        long third = series.path("occurrences").get(2).path("id").asLong();
+        client.callJson("delete_transaction", Map.of("id", third, "scope", "THIS_AND_FOLLOWING"));
         assertThat(errorText(client.callTool("restore_deletion", Map.of("deletionId", seriesDeletion))))
                 .isEqualTo("The series was changed after this deletion, so it cannot be restored.");
     }

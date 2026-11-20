@@ -115,6 +115,55 @@ class RecurrenceDefinitionTest {
     }
 
     @Test
+    void theRuleRevisionRisesOnlyWhenWhatAnOccurrenceCarriesChanges() {
+        RecurrenceDefinition definition = RecurrenceDefinition.create(
+                recurring(RecurrenceInterval.MONTHLY, START.plusMonths(5), null, SplitMode.EQUAL, self()));
+        assertThat(definition.getRuleRevision()).isZero();
+
+        definition.editPattern(pattern(null, START.plusMonths(5)));
+        definition.editPattern(pattern(null, START.plusMonths(3)));
+        definition.shortenTo(2, START.plusMonths(1));
+        definition.restoreEnd(null, START.plusMonths(5));
+        definition.except(START.plusMonths(2));
+        definition.unexcept(START.plusMonths(2));
+        definition.markGeneratedThrough(START.plusMonths(5));
+        assertThat(definition.getRuleRevision()).isZero();
+
+        definition.editPattern(new SeriesPattern(
+                null, new BigDecimal("95.00"), "Gym", null, START.plusMonths(5), SplitMode.EQUAL, self()));
+        definition.editPattern(new SeriesPattern(
+                null, new BigDecimal("95.00"), "Gym 2", null, START.plusMonths(5), SplitMode.EQUAL, self()));
+        assertThat(definition.getRuleRevision()).isEqualTo(2);
+    }
+
+    @Test
+    void theNumberOfParcelsRaisesTheRuleRevisionOfInstallmentsOnly() {
+        RecurrenceDefinition definition = RecurrenceDefinition.create(installments(6, 1));
+
+        definition.editPattern(new SeriesPattern(null, AMOUNT, "Laptop", 6, null, SplitMode.EQUAL, self()));
+        assertThat(definition.getRuleRevision()).isZero();
+
+        definition.editPattern(new SeriesPattern(null, AMOUNT, "Laptop", 8, null, SplitMode.EQUAL, self()));
+        assertThat(definition.getRuleRevision()).isEqualTo(1);
+    }
+
+    @Test
+    void aSeriesCoversTheSlotsUpToItsEnd() {
+        RecurrenceDefinition recurring = RecurrenceDefinition.create(
+                recurring(RecurrenceInterval.MONTHLY, START.plusMonths(2), null, SplitMode.EQUAL, self()));
+        RecurrenceDefinition openEnded =
+                RecurrenceDefinition.create(recurring(RecurrenceInterval.MONTHLY, null, null, SplitMode.EQUAL, self()));
+        RecurrenceDefinition installments = RecurrenceDefinition.create(installments(6, 2));
+
+        assertThat(recurring.covers(START.plusMonths(2))).isTrue();
+        assertThat(recurring.covers(START.plusMonths(3))).isFalse();
+        assertThat(openEnded.covers(START.plusYears(30))).isTrue();
+        // Parcels 2 to 6 start on START, so the sixth falls four months later.
+        assertThat(installments.covers(START.plusMonths(4))).isTrue();
+        assertThat(installments.covers(START.plusMonths(5))).isFalse();
+    }
+
+    @Test
     void aSeriesHasNoPublicSetters() {
         assertThat(Arrays.stream(RecurrenceDefinition.class.getMethods()).map(method -> method.getName()))
                 .noneMatch(name -> name.startsWith("set"));

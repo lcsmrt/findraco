@@ -24,10 +24,13 @@ with a former member is edited like any other row.
 This reuses the deletion's stored comparison and the existing split resolver; both rules run in
 `TransactionTrashService` and `TransactionService`, which the backend ITs reach.
 
-1. a series edit or deletion -> `RecurrenceDefinition` (exists) - raises `ruleRevision` only when its pattern or
-   end actually changes (door 1); an exception date, a flag, the trash and the generation mark leave it alone
+1. a series edit -> `RecurrenceDefinition` (exists) - raises `ruleRevision` only when what an occurrence carries
+   actually changes: amount, description, category, split, or the parcels of an installment series (door 1); an
+   end date, an exception date, a flag, the trash and the generation mark leave it alone
 2. `TransactionService` (exists) - a deletion records the definition's `ruleRevision` instead of its version
-3. restore -> `TransactionTrashService` (exists) - 409 only when the recorded revision differs from the current one
+3. restore -> `TransactionTrashService` (exists) - 409 only when it would bring back stale data: the recorded
+   revision differs, the occurrence's date lies outside the series' current range, or a tail's end moved since its
+   cut
 4. an edit with participants -> `TransactionService.requestedSplit` (exists) - accepts a current member, or a member
    already on the row or series being edited; a former member on a new row stays 422 `participant-not-member`
 5. `McpMemberResolver` (exists) - stops refusing rows shared with a former member and sends their shares on
@@ -69,6 +72,7 @@ None - no route or signature changes; `PUT` transaction and series accept former
 | One-way door | Literal shape | Alternative rejected |
 | --- | --- | --- |
 | 1. a rule revision on the series | `V28`: `alter table recurrence_definitions add column rule_revision bigint not null default 0`; `update transaction_deletions set definition_version = 0 where definition_trashed = false` | a snapshot of amount, rule and end on each deletion: four more columns that every new series field would have to join |
+| 2. the end a "this and following" deletion cut the series to (added mid-build, V28 unshipped) | `V28`: `alter table transaction_deletions add column cut_parcels_number integer`, `add column cut_end_date date`; existing tail deletions take the series' current end | comparing a counter that also rises on a cut: it cannot let a tail restore and an earlier "only this" deletion both pass, in either order |
 
 - Nothing else in this change is hard to reverse
 
@@ -82,8 +86,16 @@ An older deletion comes back unless the series it belonged to was rewritten.
 
 1. WHEN a member restores an occurrence or tail deletion after later "only this" deletions or "only this" edits of other occurrences of the same series THEN the system SHALL restore it (200)
    - delete March, then April "only this" → restore March 200; delete March, then edit May "only this" → restore March 200
-2. IF the series' amount, description, category, split, interval, parcels or end changed after the deletion THEN the restore SHALL answer 409 `trash-series-changed` and change nothing
-   - delete March, then edit all with a new amount → 409; delete March, then delete June and following → restore March 409
+2. IF the series' amount, description, category, split or installment parcels changed after the deletion, or the
+   deleted occurrence now lies outside the series (after its end date, or beyond its last parcel), or a "this and
+   following" deletion's cut end has moved since THEN the restore SHALL answer 409 `trash-series-changed` and change
+   nothing
+   - delete March, then edit all with a new amount → 409; 6 parcels, delete parcel 3, then edit all to 8 parcels → 409;
+     delete May, then edit all with an end in April → 409; delete "June and following", then move the series' end →
+     restore of the June deletion 409
+   - delete March, then delete "June and following" → restore March 200 (March is inside the series), then restore
+     June 200 and the series ends where it did before; delete March, delete "June and following", restore June, then
+     March → 200
 3. WHEN a series edit changes only the confirmation flag THEN an older deletion SHALL stay restorable (200)
 4. WHEN a deletion made before this change is restored and the series' rule has not changed since THEN the system SHALL restore it (200)
 
@@ -111,7 +123,7 @@ A former member's share never freezes a row.
 
 | Assumption | Chosen default | Rationale | Confirmed? |
 | --- | --- | --- | --- |
-| What "a série mudou" covers | amount, description, category, split, interval, parcels, end | the owner's words "valor, regra ou fim da série"; description and split are part of the rule the occurrences are generated from | y |
+| What "a série mudou" covers | amount, description, category, split, installment parcels; plus, for a restore, whether the occurrence is still inside the series and whether a tail's end is where its cut left it | the owner chose "Permitir" (2026-11-19): a restore is refused only when it would bring back stale data | y |
 | Flag-only edits | do not block | the restored rows keep their own status | y |
 | Former participant label | "(fora do plano)" / "(no longer in the plan)" | the owner approved keeping their share visible | y |
 
