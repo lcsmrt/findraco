@@ -62,9 +62,12 @@ public enum ProblemType {
     // Transactions and series
     TRANSACTION_NOT_FOUND("transaction-not-found"),
     SERIES_NOT_FOUND("series-not-found"),
+    TRASH_ENTRY_NOT_FOUND("trash-entry-not-found"),
+    TRASH_SERIES_CHANGED("trash-series-changed"),
     TRANSACTION_NOT_AWAITING_CONFIRMATION("transaction-not-awaiting-confirmation"),
     TRANSACTION_CATEGORY_TYPE_MISMATCH("transaction-category-type-mismatch"),
     ITEM_CATEGORY_TYPE_MISMATCH("item-category-type-mismatch"),
+    NEUTRAL_KIND_INVALID("neutral-kind-invalid"),
     ITEMS_EXCEED_AMOUNT("items-exceed-amount"),
     PARTICIPANT_SHARES_MISMATCH("participant-shares-mismatch"),
     PARTICIPANT_DUPLICATE("participant-duplicate"),

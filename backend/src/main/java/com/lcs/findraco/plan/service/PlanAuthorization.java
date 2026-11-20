@@ -18,6 +18,11 @@ public class PlanAuthorization {
         return role != PlanRole.VIEWER;
     }
 
+    /** Any member except VIEWER may open the transaction trash and restore what they may modify. */
+    public boolean canUseTransactionTrash(PlanRole role) {
+        return role != PlanRole.VIEWER;
+    }
+
     /** OWNER/EDITOR may modify (edit or delete) any transaction; CONTRIBUTOR only their own; VIEWER none. */
     public boolean canModifyTransaction(PlanRole role, @Nullable Long rowOwnerId, long actorId) {
         return switch (role) {
@@ -45,6 +50,12 @@ public class PlanAuthorization {
     public void requireCanCreateTransaction(PlanRole role) {
         if (!canCreateTransactions(role)) {
             throw new PlanExceptions.InsufficientPlanRoleException("Viewers cannot create transactions.");
+        }
+    }
+
+    public void requireCanUseTransactionTrash(PlanRole role) {
+        if (!canUseTransactionTrash(role)) {
+            throw new PlanExceptions.InsufficientPlanRoleException("Viewers cannot use the transaction trash.");
         }
     }
 

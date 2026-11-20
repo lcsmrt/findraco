@@ -5,6 +5,7 @@ export function countActiveFilters(
 ): number {
   let n = 0;
   if (filter.type) n++;
+  if (filter.kind) n++;
   if (filter.categoryId != null) n++;
   if (filter.memberId != null) n++;
   if (filter.amountMin != null || filter.amountMax != null) n++;

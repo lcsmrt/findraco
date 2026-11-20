@@ -15,6 +15,7 @@
       "categoryUpdated": "Categoria atualizada.",
       "invitationCreated": "Convite criado.",
       "invitationRevoked": "Convite revogado.",
+      "kindApplied": "Movimento marcado.",
       "memberRemoved": "Membro removido.",
       "operationCompleted": "Operação concluída com sucesso.",
       "ownershipTransferred": "Propriedade transferida.",
@@ -32,7 +33,9 @@
       "transactionAdded": "Transação adicionada.",
       "transactionConfirmed": "Transação confirmada.",
       "transactionDeleted": "Transação excluída.",
+      "transactionRestored": "Transação restaurada.",
       "transactionUpdated": "Transação atualizada.",
+      "undo": "Desfazer",
       "youJoinedThePlan": "Você entrou no plano.",
       "youLeftThePlan": "Você saiu do plano."
     }
@@ -386,6 +389,8 @@
     "summaryCards": {
       "actual": "Realizado",
       "forecast": "Previsto {{amount}}",
+      "neutral": "Neutros",
+      "neutralAmounts": "saiu {{moneyOut}} · entrou {{moneyIn}}",
       "expenses": "Despesas",
       "income": "Receitas"
     }
@@ -485,6 +490,22 @@
       "newPlan": "Novo plano",
       "plans": "Planos",
       "selectPlan": "Selecione um plano"
+    },
+    "planTrashListView": {
+      "count_one": "{{count}} transação",
+      "count_other": "{{count}} transações",
+      "deletedBy": "Excluída por {{name}} em {{date}}",
+      "deletedOn": "Excluída em {{date}}",
+      "description": "As transações excluídas ficam aqui por 30 dias e podem ser restauradas.",
+      "empty": "Nada na lixeira. O que você excluir fica aqui por 30 dias.",
+      "expiresOn": "Removida de vez em {{date}}",
+      "loadError": "Não foi possível carregar a lixeira.",
+      "newestOnly": "Mostrando as {{shown}} exclusões mais recentes de {{total}}.",
+      "restore": "Restaurar",
+      "restoreEntry": "Restaurar {{description}}",
+      "retry": "Tentar novamente",
+      "series": "Série",
+      "trash": "Lixeira"
     },
     "plansPage": {
       "archive": "Arquivar",
@@ -613,6 +634,7 @@
     "malformed-request": "Não foi possível enviar a solicitação. Recarregue a página e tente novamente.",
     "member-not-found": "Esta pessoa não é mais membro do plano.",
     "network": "Não foi possível acessar o servidor. Verifique sua conexão e tente novamente.",
+    "neutral-kind-invalid": "Esse tipo não serve para a transação: transferência, fatura e guardar dinheiro não têm categoria nem divisão, e um reembolso precisa de uma categoria de despesa.",
     "not-found": "Este item não existe mais.",
     "not-transaction-creator": "Você só pode alterar transações que você criou.",
     "owner-role-needs-transfer": "Para tornar alguém dono, transfira a propriedade.",
@@ -649,6 +671,8 @@
     "transaction-category-type-mismatch": "A categoria não corresponde ao tipo da transação.",
     "transaction-not-awaiting-confirmation": "Esta transação não está aguardando confirmação.",
     "transaction-not-found": "Esta transação não existe mais.",
+    "trash-entry-not-found": "Esta exclusão não está mais na lixeira.",
+    "trash-series-changed": "A série foi alterada depois desta exclusão, então não dá para restaurá-la.",
     "unauthenticated": "Sua sessão terminou. Entre novamente.",
     "unexpected": "Ocorreu um erro inesperado.",
     "unsupported-request": "Esta ação não é compatível.",
@@ -680,6 +704,7 @@
       "attributedTo": "Atribuído a",
       "equal": "Igual",
       "exact": "Exato",
+      "formerMember": "{{name}} (fora do plano)",
       "me": "Eu",
       "participants": "Participantes",
       "person": "Pessoa",
@@ -744,6 +769,7 @@
       "descriptionIsRequired": "A descrição é obrigatória",
       "enterAtLeast2Installments": "Informe pelo menos 2 parcelas",
       "itemsCannotExceedTheTransaction": "Os itens não podem passar do total da transação",
+      "refundNeedsACategory": "Um reembolso precisa da categoria que ele devolve",
       "selectInstallmentOrRecurring": "Selecione parcelada ou recorrente",
       "sharesMustAddUpTo": "As partes devem somar o valor total",
       "theCurrentInstallmentCannotBe": "A parcela atual não pode ser maior que o total",
@@ -765,6 +791,28 @@
       "items": "Itens",
       "remainder": "Restante: {{amount}}",
       "removeItem": "Remover o item {{number}}"
+    },
+    "kindField": {
+      "movementKind": "Tipo de movimento"
+    },
+    "kinds": {
+      "cardBillPayment": "Fatura",
+      "normal": "Normal",
+      "refund": "Reembolso",
+      "savings": "Guardar",
+      "transfer": "Entre membros"
+    },
+    "neutralReviewListView": {
+      "apply": "Aplicar",
+      "applyTo": "Aplicar em {{description}}",
+      "empty": "Nada para revisar.",
+      "loadError": "Não foi possível carregar os movimentos para revisar.",
+      "newestOnly": "Mostrando os {{shown}} mais recentes de {{total}}.",
+      "retry": "Tentar novamente"
+    },
+    "neutralReviewSheet": {
+      "description": "Movimentos que parecem uma transferência entre membros ou o pagamento de uma fatura. Aplicar tira o movimento dos totais.",
+      "reviewMovements": "Revisar movimentos"
     },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Mudar o número de parcelas atualiza a série inteira."
@@ -810,6 +858,7 @@
       "filters": "Filtros",
       "maximumAmount": "Valor máximo",
       "minimumAmount": "Valor mínimo",
+      "neutral": "Neutros",
       "reset": "Redefinir"
     },
     "transactionFormDrawer": {
@@ -835,13 +884,14 @@
       "importCsv": "Importar CSV",
       "importing": "Importando...",
       "removeFilter": "Remover {{name}}",
+      "reviewMovements": "Revisar movimentos",
       "searchTransactions": "Buscar transações...",
       "searchTransactions2": "Buscar transações"
     },
     "useTransactionActions": {
       "chooseOccurrences": "Escolha quais ocorrências excluir.",
       "confirmDeletion": "Confirmar exclusão",
-      "deleteDescription": "Tem certeza de que quer excluir esta transação? Esta ação não pode ser desfeita.",
+      "deleteDescription": "Excluir esta transação? Ela fica na lixeira por 30 dias e pode ser restaurada na tela de Planos.",
       "deleteSeries": "Excluir série"
     }
   }

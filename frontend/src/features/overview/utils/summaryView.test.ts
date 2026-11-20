@@ -20,6 +20,8 @@ const dashboard: DashboardSummaryResponse = {
   actualIncome: 3000,
   actualExpenses: 1200,
   actualBalance: 1800,
+  neutralOut: 0,
+  neutralIn: 0,
 };
 
 describe("summaryView", () => {
@@ -125,5 +127,24 @@ describe("summaryView", () => {
 
     expect(view.income.segments).toEqual([]);
     expect(view.expenses.segments.map((s) => s.memberId)).toEqual([LUCAS]);
+  });
+
+  it("gives the neutral movements of the plan: what went out and what came in", () => {
+    const view = summaryView({ ...dashboard, neutralOut: 2000, neutralIn: 500 }, null, colorOf);
+
+    expect(view.neutral).toEqual({ out: 2000, in: 500 });
+  });
+
+  it("shows neutral movements when only one direction moved", () => {
+    expect(summaryView({ ...dashboard, neutralOut: 1500 }, null, colorOf).neutral).toEqual({ out: 1500, in: 0 });
+    expect(summaryView({ ...dashboard, neutralIn: 80 }, null, colorOf).neutral).toEqual({ out: 0, in: 80 });
+  });
+
+  it("has no neutral line when nothing neutral moved", () => {
+    expect(summaryView(dashboard, null, colorOf).neutral).toBeNull();
+  });
+
+  it("has no neutral line in a member's view: the plan's neutral money is not theirs", () => {
+    expect(summaryView({ ...dashboard, neutralOut: 2000, neutralIn: 500 }, LIVIA, colorOf).neutral).toBeNull();
   });
 });

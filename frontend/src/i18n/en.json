@@ -15,6 +15,7 @@
       "categoryUpdated": "Category updated.",
       "invitationCreated": "Invitation created.",
       "invitationRevoked": "Invitation revoked.",
+      "kindApplied": "Movement marked.",
       "memberRemoved": "Member removed.",
       "operationCompleted": "Operation completed successfully.",
       "ownershipTransferred": "Ownership transferred.",
@@ -32,7 +33,9 @@
       "transactionAdded": "Transaction added.",
       "transactionConfirmed": "Transaction confirmed.",
       "transactionDeleted": "Transaction deleted.",
+      "transactionRestored": "Transaction restored.",
       "transactionUpdated": "Transaction updated.",
+      "undo": "Undo",
       "youJoinedThePlan": "You joined the plan.",
       "youLeftThePlan": "You left the plan."
     }
@@ -386,6 +389,8 @@
     "summaryCards": {
       "actual": "Actual",
       "forecast": "Forecast {{amount}}",
+      "neutral": "Neutral",
+      "neutralAmounts": "out {{moneyOut}} · in {{moneyIn}}",
       "expenses": "Expenses",
       "income": "Income"
     }
@@ -485,6 +490,22 @@
       "newPlan": "New plan",
       "plans": "Plans",
       "selectPlan": "Select plan"
+    },
+    "planTrashListView": {
+      "count_one": "{{count}} transaction",
+      "count_other": "{{count}} transactions",
+      "deletedBy": "Deleted by {{name}} on {{date}}",
+      "deletedOn": "Deleted on {{date}}",
+      "description": "Deleted transactions stay here for 30 days and can be restored.",
+      "empty": "Nothing in the trash. What you delete stays here for 30 days.",
+      "expiresOn": "Removed for good on {{date}}",
+      "loadError": "Could not load the trash.",
+      "newestOnly": "Showing the {{shown}} newest of {{total}} deletions.",
+      "restore": "Restore",
+      "restoreEntry": "Restore {{description}}",
+      "retry": "Retry",
+      "series": "Series",
+      "trash": "Trash"
     },
     "plansPage": {
       "archive": "Archive",
@@ -613,6 +634,7 @@
     "malformed-request": "The request could not be sent. Reload the page and try again.",
     "member-not-found": "This person is no longer a member of the plan.",
     "network": "Could not reach the server. Check your connection and try again.",
+    "neutral-kind-invalid": "This kind does not fit the transaction: a transfer, card bill or savings move takes no category or split, and a refund needs an expense category.",
     "not-found": "This item no longer exists.",
     "not-transaction-creator": "You can only change transactions you created.",
     "owner-role-needs-transfer": "To make someone the owner, transfer ownership.",
@@ -649,6 +671,8 @@
     "transaction-category-type-mismatch": "The category does not match the transaction type.",
     "transaction-not-awaiting-confirmation": "This transaction is not awaiting confirmation.",
     "transaction-not-found": "This transaction no longer exists.",
+    "trash-entry-not-found": "This deletion is no longer in the trash.",
+    "trash-series-changed": "The series was changed after this deletion, so it cannot be restored.",
     "unauthenticated": "Your session has ended. Sign in again.",
     "unexpected": "An unexpected error occurred.",
     "unsupported-request": "This action is not supported.",
@@ -680,6 +704,7 @@
       "attributedTo": "Attributed to",
       "equal": "Equal",
       "exact": "Exact",
+      "formerMember": "{{name}} (no longer in the plan)",
       "me": "Me",
       "participants": "Participants",
       "person": "Person",
@@ -744,6 +769,7 @@
       "descriptionIsRequired": "Description is required",
       "enterAtLeast2Installments": "Enter at least 2 installments",
       "itemsCannotExceedTheTransaction": "Items cannot exceed the transaction total",
+      "refundNeedsACategory": "A refund needs the category it pays back",
       "selectInstallmentOrRecurring": "Select installment or recurring",
       "sharesMustAddUpTo": "Shares must add up to the total amount",
       "theCurrentInstallmentCannotBe": "The current installment cannot be greater than the total",
@@ -765,6 +791,28 @@
       "items": "Items",
       "remainder": "Remainder: {{amount}}",
       "removeItem": "Remove item {{number}}"
+    },
+    "kindField": {
+      "movementKind": "Movement kind"
+    },
+    "kinds": {
+      "cardBillPayment": "Card bill",
+      "normal": "Normal",
+      "refund": "Refund",
+      "savings": "Savings",
+      "transfer": "Between members"
+    },
+    "neutralReviewListView": {
+      "apply": "Apply",
+      "applyTo": "Apply to {{description}}",
+      "empty": "Nothing to review.",
+      "loadError": "Could not load the movements to review.",
+      "newestOnly": "Showing the {{shown}} newest of {{total}}.",
+      "retry": "Retry"
+    },
+    "neutralReviewSheet": {
+      "description": "Rows that look like a transfer between members or a card bill payment. Applying one takes it out of the totals.",
+      "reviewMovements": "Review movements"
     },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Changing the number of parcels updates the whole series."
@@ -810,6 +858,7 @@
       "filters": "Filters",
       "maximumAmount": "Maximum amount",
       "minimumAmount": "Minimum amount",
+      "neutral": "Neutral",
       "reset": "Reset"
     },
     "transactionFormDrawer": {
@@ -835,13 +884,14 @@
       "importCsv": "Import CSV",
       "importing": "Importing...",
       "removeFilter": "Remove {{name}}",
+      "reviewMovements": "Review movements",
       "searchTransactions": "Search transactions...",
       "searchTransactions2": "Search transactions"
     },
     "useTransactionActions": {
       "chooseOccurrences": "Choose which occurrences to delete.",
       "confirmDeletion": "Confirm Deletion",
-      "deleteDescription": "Are you sure you want to delete this transaction? This action cannot be undone.",
+      "deleteDescription": "Delete this transaction? It stays in the trash for 30 days and can be restored from the Plans screen.",
       "deleteSeries": "Delete series"
     }
   }

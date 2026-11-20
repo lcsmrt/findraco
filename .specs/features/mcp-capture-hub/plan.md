@@ -98,8 +98,9 @@ Data: none - no stored shape changes.
 8. IF both `category` and `removeCategory: true` are given THEN the tool SHALL answer a tool error and change nothing.
 9. IF the new category's type does not match the transaction's THEN the tool SHALL answer the existing `transaction-category-type-mismatch` message and change nothing.
 10. WHEN the list is filtered with `uncategorized: true` (tool or REST) THEN the system SHALL return only transactions with no category.
-11. WHEN the list is filtered with `status: PENDING` THEN the system SHALL return only forecasts that require confirmation and whose date is on or before the reader's today; `FORECAST` the other forecasts; `ACTUAL` confirmed or past automatic rows - the same derivation as `Transaction.status(today)`.
-    - reader in São Paulo at 2026-11-18 01:00 local (04:00 UTC): a bill due 2026-11-18 requiring confirmation → PENDING
+11. WHEN the list is filtered with `status: PENDING` THEN the system SHALL return only forecasts that require confirmation and whose date is before the reader's today; `FORECAST` the other forecasts; `ACTUAL` confirmed or past automatic rows - the same derivation as `Transaction.status(today)`.
+    - reader whose today is 2026-11-18: a bill requiring confirmation dated 2026-11-17 → PENDING; dated 2026-11-18 → FORECAST (as the app shows it); a reader in a zone where it is still 2026-11-16 → FORECAST
+    - corrected while building: the first draft said "on or before", which contradicted `Transaction.status(today)`, the rule this criterion names
 12. IF `uncategorized: true` is combined with a category THEN the REST endpoint SHALL answer `400` and the tool a tool error.
 13. WHEN Claude lists transactions THEN each row SHALL carry `attributedTo` (member first names) and `series` (`"k/N"` for installments, `"monthly"` for an open series, null otherwise).
 
@@ -122,6 +123,7 @@ Data: none - no stored shape changes.
 | Creating series or installments through the MCP | Kept out by the mcp-connector spec; a wrong series is many wrong rows |
 | Listing the trash through the MCP | The app shows it; Claude gets the `deletionId` at delete time |
 | Contacts outside the plan | R17 |
+| Editing a row shared with a former member | the service refused participants outside the plan; lifted by phase1-followups (a row keeps the former member it already has) |
 
 ## Assumptions
 

@@ -6,6 +6,7 @@ import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
+import com.lcs.findraco.shared.error.MalformedRequestException;
 import com.lcs.findraco.shared.error.StaleVersionException;
 import com.lcs.findraco.shared.web.PageRequests;
 import com.lcs.findraco.transaction.config.SeriesProperties;
@@ -19,21 +20,27 @@ import com.lcs.findraco.transaction.model.SeriesPattern;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionDeletion;
 import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
 import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
+import com.lcs.findraco.transaction.repository.TransactionDeletionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import com.lcs.findraco.transaction.repository.TransactionSpecification;
 import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
+import com.lcs.findraco.transaction.request.NeutralCandidateFilter;
+import com.lcs.findraco.transaction.request.SetTransactionKindRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
 import com.lcs.findraco.transaction.request.TransactionItemRequest;
 import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
+import com.lcs.findraco.transaction.response.NeutralCandidateResponse;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
+import com.lcs.findraco.transaction.response.TransactionDeletedResponse;
 import com.lcs.findraco.transaction.response.TransactionPermissionsResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
 import com.lcs.findraco.transaction.response.TransactionSeriesResponse;
@@ -68,8 +75,10 @@ public class TransactionService {
     private final UserService userService;
 
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
+    private final TransactionDeletionRepository transactionDeletionRepository;
     private final SeriesRegenerator seriesRegenerator;
     private final SeriesProperties seriesProperties;
+    private final NeutralCandidateFinder neutralCandidateFinder;
     private final Clock clock;
     private final EntityManager entityManager;
 
@@ -81,8 +90,10 @@ public class TransactionService {
             PlanService planService,
             UserService userService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
+            TransactionDeletionRepository transactionDeletionRepository,
             SeriesRegenerator seriesRegenerator,
             SeriesProperties seriesProperties,
+            NeutralCandidateFinder neutralCandidateFinder,
             Clock clock,
             EntityManager entityManager) {
         this.transactionRepository = transactionRepository;
@@ -92,8 +103,10 @@ public class TransactionService {
         this.planService = planService;
         this.userService = userService;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
+        this.transactionDeletionRepository = transactionDeletionRepository;
         this.seriesRegenerator = seriesRegenerator;
         this.seriesProperties = seriesProperties;
+        this.neutralCandidateFinder = neutralCandidateFinder;
         this.clock = clock;
         this.entityManager = entityManager;
     }
@@ -141,9 +154,14 @@ public class TransactionService {
     public Page<TransactionResponse> findAllByPlanPaged(TransactionFilter filter, PlanContext ctx) {
         TransactionSortField sortBy = filter.sortBy();
         Sort.Direction direction = PageRequests.direction(filter.sortDirection());
+        if (Boolean.TRUE.equals(filter.uncategorized()) && filter.categoryId() != null) {
+            throw new MalformedRequestException("uncategorized", "A list cannot be uncategorized and in a category.");
+        }
+        LocalDate today = userService.today(ctx.userId());
 
         List<Specification<Transaction>> specs = new ArrayList<>(List.of(
                 TransactionSpecification.belongsToPlan(plan(ctx)),
+                TransactionSpecification.isActive(),
                 TransactionSpecification.typeEquals(filter.type()),
                 TransactionSpecification.categoryInTree(filter.categoryId()),
                 TransactionSpecification.hasParticipant(filter.memberId()),
@@ -151,7 +169,10 @@ public class TransactionService {
                 TransactionSpecification.startDateFrom(filter.startDateFrom()),
                 TransactionSpecification.startDateTo(filter.startDateTo()),
                 TransactionSpecification.amountMin(filter.amountMin()),
-                TransactionSpecification.amountMax(filter.amountMax())));
+                TransactionSpecification.amountMax(filter.amountMax()),
+                TransactionSpecification.uncategorized(filter.uncategorized()),
+                TransactionSpecification.hasKind(filter.kind()),
+                TransactionSpecification.hasStatus(filter.status(), today)));
 
         // category / attributed-to are aggregate/association orderings the Specification owns; for those
         // the Pageable is left unsorted so the spec's ORDER BY is the only one applied. Simple property
@@ -175,15 +196,24 @@ public class TransactionService {
             transactionRepository.fetchParticipants(page.getContent());
             transactionRepository.fetchItems(page.getContent());
         }
-        LocalDate today = userService.today(ctx.userId());
         return page.map(transaction -> response(transaction, ctx, today));
+    }
+
+    /** The review of movements: rows with no kind whose bank text looks neutral, with the kind proposed for each. */
+    @Transactional(readOnly = true)
+    public Page<NeutralCandidateResponse> findNeutralCandidates(NeutralCandidateFilter filter, PlanContext ctx) {
+        LocalDate today = userService.today(ctx.userId());
+        return neutralCandidateFinder
+                .find(filter, ctx)
+                .map(candidate -> new NeutralCandidateResponse(
+                        response(candidate.transaction(), ctx, today), candidate.proposedKind()));
     }
 
     @Transactional
     public TransactionResponse create(CreateTransactionRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
-        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), Set.of(), ctx);
         TransactionDetails details = new TransactionDetails(
                 category(dto.categoryId(), ctx),
                 dto.type(),
@@ -191,7 +221,8 @@ public class TransactionService {
                 dto.description(),
                 dto.startDate(),
                 dto.endDate(),
-                dto.parcelsNumber());
+                dto.parcelsNumber(),
+                dto.kind());
         Transaction transaction = Transaction.create(new TransactionDraft(
                 plan(ctx), user(ctx), details, split.mode(), split.shares(), items(dto.items(), ctx), null, null));
 
@@ -204,7 +235,7 @@ public class TransactionService {
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
         claimVersion(transaction, transaction.getVersion(), dto.version());
 
-        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), participantIds(transaction), ctx);
         TransactionDetails details = new TransactionDetails(
                 category(dto.categoryId(), ctx),
                 dto.type(),
@@ -212,8 +243,21 @@ public class TransactionService {
                 dto.description(),
                 dto.startDate(),
                 dto.endDate(),
-                dto.parcelsNumber());
+                dto.parcelsNumber(),
+                dto.kind());
         transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
+
+        return response(transactionRepository.saveAndFlush(transaction), ctx);
+    }
+
+    /** Marks a row with a kind, as the review of movements does; the row's other values stay as they are. */
+    @Transactional
+    public TransactionResponse setKind(Long id, SetTransactionKindRequest dto, PlanContext ctx) {
+        Transaction transaction = load(id, ctx);
+        planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
+        claimVersion(transaction, transaction.getVersion(), dto.version());
+
+        transaction.assignKind(dto.kind());
 
         return response(transactionRepository.saveAndFlush(transaction), ctx);
     }
@@ -252,10 +296,15 @@ public class TransactionService {
 
     /**
      * Without participants the creator takes the whole amount. An empty list is kept as sent, so the
-     * aggregate refuses it like any other split without a participant.
+     * aggregate refuses it like any other split without a participant. A participant must be a member of the
+     * plan, or already be on the row or series being edited ({@code keptMemberIds}): someone who left the plan
+     * keeps their share until an edit removes it, but no row takes them on again.
      */
     private RequestedSplit requestedSplit(
-            List<TransactionParticipantRequest> participantInputs, SplitMode requestedSplitMode, PlanContext ctx) {
+            List<TransactionParticipantRequest> participantInputs,
+            SplitMode requestedSplitMode,
+            Set<Long> keptMemberIds,
+            PlanContext ctx) {
         if (participantInputs == null) {
             return new RequestedSplit(SplitMode.EQUAL, List.of(new Share(user(ctx), null)));
         }
@@ -264,7 +313,7 @@ public class TransactionService {
         for (TransactionParticipantRequest input : participantInputs) {
             User member = userService
                     .findById(input.memberId())
-                    .filter(u -> planService.isMember(ctx.planId(), u.getId()))
+                    .filter(u -> keptMemberIds.contains(u.getId()) || planService.isMember(ctx.planId(), u.getId()))
                     .orElseThrow(TransactionExceptions.ParticipantNotMemberException::new);
             shares.add(new Share(member, input.shareAmount()));
         }
@@ -277,6 +326,14 @@ public class TransactionService {
         return new RequestedSplit(requestedSplitMode != null ? requestedSplitMode : SplitMode.EQUAL, shares);
     }
 
+    private static Set<Long> participantIds(Transaction transaction) {
+        Set<Long> ids = new HashSet<>();
+        transaction
+                .getParticipants()
+                .forEach(participant -> ids.add(participant.getMember().getId()));
+        return ids;
+    }
+
     private List<ItemDraft> items(List<TransactionItemRequest> itemInputs, PlanContext ctx) {
         if (itemInputs == null) {
             return List.of();
@@ -287,18 +344,38 @@ public class TransactionService {
                 .toList();
     }
 
+    /**
+     * Moves a transaction to the trash. An occurrence of a series also records its date as an exception of the
+     * series, so a later edit of the series does not bring it back; a restore removes the exception again.
+     */
     @Transactional
-    public void delete(Long id, PlanContext ctx) {
+    public TransactionDeletedResponse delete(Long id, PlanContext ctx) {
         Transaction transaction = load(id, ctx);
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
-        transactionRepository.delete(transaction);
+
+        TransactionDeletion deletion = transactionDeletionRepository.save(
+                TransactionDeletion.ofTransaction(plan(ctx), user(ctx), clock.instant()));
+        transaction.trash(deletion);
+
+        if (transaction.getRecurrenceDefinition() != null) {
+            RecurrenceDefinition definition = recurrenceDefinitionRepository
+                    .findByIdAndPlanForUpdate(
+                            transaction.getRecurrenceDefinition().getId(), plan(ctx))
+                    .orElseThrow();
+            if (definition.except(transaction.getScheduledDate())) {
+                deletion.recordException(definition, transaction.getScheduledDate());
+            }
+            recurrenceDefinitionRepository.saveAndFlush(definition);
+            deletion.recordDefinitionVersion(definition.getRuleRevision());
+        }
+        return new TransactionDeletedResponse(deletion.getId());
     }
 
     @Transactional
     public TransactionSeriesResponse createSeries(CreateSeriesRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
-        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), Set.of(), ctx);
         RecurrenceDefinition definition =
                 recurrenceDefinitionRepository.save(RecurrenceDefinition.create(new SeriesDraft(
                         plan(ctx),
@@ -340,7 +417,8 @@ public class TransactionService {
     }
 
     @Transactional
-    public void deleteSeries(String seriesId, SeriesEditScope scope, Long pivotOccurrenceId, PlanContext ctx) {
+    public TransactionDeletedResponse deleteSeries(
+            String seriesId, SeriesEditScope scope, Long pivotOccurrenceId, PlanContext ctx) {
         // Lock the definition before reading the occurrences, as the top-up does, so a concurrent top-up
         // cannot add occurrences to a series that is being deleted. A series with no definition has no lock.
         RecurrenceDefinition definition = recurrenceDefinitionRepository
@@ -377,11 +455,30 @@ public class TransactionService {
             planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(occurrence), ctx.userId());
         }
 
-        if (scope == SeriesEditScope.THIS_ONE && definition != null) {
-            definition.except(pivot.getScheduledDate());
-        }
-        transactionRepository.deleteAll(inScope);
+        TransactionDeletion deletion = transactionDeletionRepository.save(
+                TransactionDeletion.ofSeries(plan(ctx), user(ctx), clock.instant(), scope));
+        inScope.forEach(occurrence -> occurrence.trash(deletion));
 
+        if (definition != null) {
+            changeSeriesFor(definition, deletion, scope, pivot, occurrences, inScope);
+            recurrenceDefinitionRepository.saveAndFlush(definition);
+            deletion.recordDefinitionVersion(definition.getRuleRevision());
+        }
+        return new TransactionDeletedResponse(deletion.getId());
+    }
+
+    /**
+     * What the deletion does to the series, recorded on the deletion so a restore undoes it. A series left with
+     * no occurrence goes to the trash whole; "only this" skips the date for good, and "this and following"
+     * shrinks the range so a later regeneration does not recreate the removed tail.
+     */
+    private void changeSeriesFor(
+            RecurrenceDefinition definition,
+            TransactionDeletion deletion,
+            SeriesEditScope scope,
+            Transaction pivot,
+            List<Transaction> occurrences,
+            List<Transaction> inScope) {
         Set<Long> deletedIds = new HashSet<>();
         for (Transaction occurrence : inScope) {
             deletedIds.add(occurrence.getId());
@@ -391,22 +488,20 @@ public class TransactionService {
                 .toList();
 
         if (remaining.isEmpty()) {
-            if (definition != null) {
-                recurrenceDefinitionRepository.delete(definition);
+            deletion.recordTrashedDefinition(definition);
+            definition.trash(deletion);
+        } else if (scope == SeriesEditScope.THIS_ONE) {
+            if (definition.except(pivot.getScheduledDate())) {
+                deletion.recordException(definition, pivot.getScheduledDate());
             }
-            return;
-        }
-
-        // THIS_AND_FOLLOWING left earlier occurrences behind: shrink the definition's range so a
-        // later regeneration won't recreate the deleted tail. THIS_ONE recorded its date as an exception
-        // above, so the gap stays.
-        if (scope == SeriesEditScope.THIS_AND_FOLLOWING && definition != null) {
+        } else if (scope == SeriesEditScope.THIS_AND_FOLLOWING) {
             LocalDate lastDate = remaining.stream()
                     .map(Transaction::getStartDate)
                     .max(LocalDate::compareTo)
                     .orElseThrow();
+            deletion.recordPreviousEnd(definition);
             definition.shortenTo(remaining.size(), lastDate);
-            recurrenceDefinitionRepository.save(definition);
+            deletion.recordCutEnd(definition);
         }
     }
 
@@ -448,8 +543,6 @@ public class TransactionService {
             throw new TransactionExceptions.SeriesParcelsChangeNeedsAllException();
         }
 
-        RequestedSplit split = requestedSplit(series.participants(), series.splitMode(), ctx);
-
         Transaction pivot = null;
         if (dto.scope() != SeriesEditScope.ALL) {
             Long pivotOccurrenceId = dto.pivotOccurrenceId();
@@ -458,6 +551,18 @@ public class TransactionService {
                     .findFirst()
                     .orElseThrow(TransactionExceptions.SeriesPivotNotFoundException::new);
         }
+
+        // An occurrence edited alone keeps who it carries; an edit of the series keeps who the series carries.
+        Set<Long> keptMemberIds = new HashSet<>();
+        if (dto.scope() == SeriesEditScope.THIS_ONE) {
+            keptMemberIds.addAll(participantIds(pivot));
+        } else {
+            definition
+                    .getParticipants()
+                    .forEach(participant ->
+                            keptMemberIds.add(participant.getMember().getId()));
+        }
+        RequestedSplit split = requestedSplit(series.participants(), series.splitMode(), keptMemberIds, ctx);
 
         List<Transaction> inScope;
         switch (dto.scope()) {
@@ -486,7 +591,8 @@ public class TransactionService {
                             suffix != null ? series.description() + " " + suffix : series.description(),
                             pivot.getStartDate(),
                             pivot.getEndDate(),
-                            pivot.getParcelsNumber()),
+                            pivot.getParcelsNumber(),
+                            pivot.getKind()),
                     split.mode(),
                     split.shares());
             if (dto.pivotConfirmed() != null) {

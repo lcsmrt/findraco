@@ -42,6 +42,7 @@ class McpUpdateCopyTest {
                 9L,
                 category(7L, "Home"),
                 TransactionType.DEBIT,
+                null,
                 new BigDecimal("100.00"),
                 description,
                 seriesId,
@@ -78,6 +79,7 @@ class McpUpdateCopyTest {
                 List.of(
                         new TransactionItemRequest("Base fee", new BigDecimal("30.00"), 8L, 2),
                         new TransactionItemRequest("Extra", new BigDecimal("10.00"), null, null)),
+                null,
                 9L);
     }
 

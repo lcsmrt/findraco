@@ -47,4 +47,14 @@ public class TransactionCategoryService {
         transactionRepository.reassignItemCategory(from, to);
         recurrenceDefinitionRepository.reassignCategory(from, to);
     }
+
+    /** Leaves the transactions, items and definitions still pointing at a category (trashed ones) with none. */
+    @Transactional
+    public void clearCategory(long categoryId) {
+        Category category = entityManager.getReference(Category.class, categoryId);
+        transactionRepository.clearCategory(category);
+        transactionRepository.bumpVersionsOfItemsIn(category);
+        transactionRepository.clearItemCategory(category);
+        recurrenceDefinitionRepository.clearCategory(category);
+    }
 }

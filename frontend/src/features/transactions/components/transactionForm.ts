@@ -14,6 +14,7 @@ import { toCents } from "@/utils/money";
 import { addMonths, differenceInCalendarMonths } from "date-fns";
 import { toIsoDate } from "@/utils/dates";
 import { z } from "zod";
+import { hidesItems, isNeutralKind } from "../utils/movementKind";
 import type { InlineSaveBody } from "./transactionColumns";
 
 export type TransactionFormMode = "create" | "edit" | "duplicate";
@@ -34,6 +35,8 @@ function centsOf(value: number | null | undefined): number {
 export const transactionFormSchema = z
   .object({
     type: z.enum(["DEBIT", "CREDIT"]),
+    /** Empty for a normal income or expense. */
+    kind: z.enum(["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND"]).nullish(),
     description: z.string().min(1, "transactions.form.descriptionIsRequired"),
     amount: z.number().nullable().refine(isPositiveAmount, "transactions.form.amountMustBePositive"),
     category: z
@@ -98,7 +101,18 @@ export const transactionFormSchema = z
       }
     }
 
-    if (values.attributionMode === "SOMEONE" && values.participants.length === 0) {
+    if (values.kind === "REFUND" && !values.category) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "transactions.form.refundNeedsACategory",
+        path: ["category"],
+      });
+    }
+
+    // A neutral movement hides the attribution, so a choice left behind there must not block saving.
+    const attributed = !isNeutralKind(values.kind);
+
+    if (attributed && values.attributionMode === "SOMEONE" && values.participants.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "transactions.form.choosePerson",
@@ -107,6 +121,7 @@ export const transactionFormSchema = z
     }
 
     if (
+      attributed &&
       values.attributionMode === "SPLIT" &&
       values.splitMode === "EXACT" &&
       values.participants.length > 0
@@ -357,6 +372,55 @@ export function participantsForMode(
   }));
 }
 
+type AttributionVisibilityInput = {
+  canAttributeToOthers: boolean;
+  members: PlanMember[];
+  /** Who the edited row is already split with; empty when creating. */
+  participants: Transaction["participants"];
+  currentUserId?: number;
+};
+
+/**
+ * Whether the form shows the attribution fields. A plan with one member left hides them, unless the row
+ * already has someone else on it: saving a form whose participants were never shown would drop them.
+ */
+export function showsAttribution({
+  canAttributeToOthers,
+  members,
+  participants,
+  currentUserId,
+}: AttributionVisibilityInput): boolean {
+  return (
+    canAttributeToOthers &&
+    (members.length > 1 || participants.some((participant) => participant.id !== currentUserId))
+  );
+}
+
+/** One line of the participants list: a person the split can include. */
+export type SplitRow = { userId: number; name: string; isFormer: boolean };
+
+/**
+ * Who the split lists: the plan's members, then whoever is already on the row without being a member any
+ * more, so their share can be seen, changed or removed. A former member never appears on a row that does
+ * not carry them.
+ */
+export function splitRows(
+  members: PlanMember[],
+  participants: TransactionFormValues["participants"],
+): SplitRow[] {
+  const memberIds = new Set(members.map((member) => member.userId));
+  return [
+    ...members.map((member) => ({ userId: member.userId, name: member.name, isFormer: false })),
+    ...participants
+      .filter((participant) => !memberIds.has(participant.memberId))
+      .map((participant) => ({
+        userId: participant.memberId,
+        name: participant.memberName,
+        isFormer: true,
+      })),
+  ];
+}
+
 function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split("T")[0].split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -398,8 +462,29 @@ function attributionToPayload(
   };
 }
 
-/** What the PUT would clear if an edit left it out: the form has no field for either. */
-type StoredPeriod = Pick<Transaction, "parcelsNumber" | "endDate">;
+/**
+ * What the PUT would clear if an edit left it out: the form has no field for the parcel count or the end
+ * date. A neutral movement also reads who it is on, since its form shows no attribution.
+ */
+type StoredPeriod = Pick<Transaction, "parcelsNumber" | "endDate"> &
+  Partial<Pick<Transaction, "participants">>;
+
+/** A neutral movement has one payer: the row's own when it has just one, otherwise whoever is saving. */
+function neutralAttribution(
+  values: TransactionFormOutput,
+  stored: StoredPeriod | undefined,
+  currentUserId: number | undefined,
+): TransactionFormOutput {
+  const payer = stored?.participants?.length === 1 ? stored.participants[0] : undefined;
+  if (!payer || payer.id === currentUserId) {
+    return { ...values, attributionMode: "ME" };
+  }
+  return {
+    ...values,
+    attributionMode: "SOMEONE",
+    participants: [{ memberId: payer.id, memberName: payer.name, shareAmount: null }],
+  };
+}
 
 function datePart(isoDate: string | null | undefined): string | undefined {
   return isoDate ? isoDate.split("T")[0] : undefined;
@@ -407,7 +492,8 @@ function datePart(isoDate: string | null | undefined): string | undefined {
 
 /**
  * @param stored The transaction being edited. The API replaces the whole transaction and the form
- *   has no field for its parcel count or end date, so they travel back as stored.
+ *   has no field for its parcel count or end date, so they travel back as stored; its payer travels
+ *   back too when it is a neutral movement.
  */
 export function toPayload(
   values: TransactionFormOutput,
@@ -415,27 +501,33 @@ export function toPayload(
   currentUserId?: number,
   stored?: StoredPeriod,
 ): Omit<UpdateTransactionRequest["body"], "version"> {
+  // A neutral movement has no category or items and one payer; the backend refuses anything else.
+  const neutral = isNeutralKind(values.kind);
   const { participants, splitMode } = attributionToPayload(
-    values,
+    neutral ? neutralAttribution(values, stored, currentUserId) : values,
     showAttribution,
     currentUserId,
   );
 
   return {
     type: values.type,
+    // The PUT clears a kind it does not carry, so an edit always sends the one chosen.
+    kind: values.kind ?? undefined,
     description: values.description,
     amount: values.amount,
-    categoryId: values.category?.id,
+    categoryId: neutral ? undefined : values.category?.id,
     startDate: toIsoDate(values.date),
     parcelsNumber: stored?.parcelsNumber ?? undefined,
     endDate: datePart(stored?.endDate),
     splitMode,
     participants,
-    items: values.items.map((item) => ({
-      description: item.description,
-      amount: item.amount,
-      categoryId: item.category?.id,
-    })),
+    items: hidesItems(values.kind)
+      ? []
+      : values.items.map((item) => ({
+          description: item.description,
+          amount: item.amount,
+          categoryId: item.category?.id,
+        })),
   };
 }
 
@@ -453,6 +545,7 @@ export function toInlineSavePayload(
     params: { id: transaction.id },
     body: {
       type: transaction.type,
+      kind: transaction.kind ?? undefined,
       description: change.description ?? transaction.description,
       amount: change.amount ?? transaction.amount,
       categoryId: change.categoryId ?? transaction.category?.id,
@@ -568,6 +661,7 @@ export function buildDefaultValues(
     const isSeriesEdit = !!definition;
     return {
       type: transaction.type,
+      kind: transaction.kind ?? null,
       description: isSeriesEdit
         ? stripInstallmentSuffix(transaction.description)
         : transaction.description,
@@ -608,6 +702,7 @@ export function buildDefaultValues(
   }
   return {
     type: "DEBIT",
+    kind: null,
     description: "",
     amount: null,
     category: null,

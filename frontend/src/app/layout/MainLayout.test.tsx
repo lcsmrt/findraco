@@ -5,6 +5,7 @@ import type {
   PagedResponse,
   Plan,
   PlanMember,
+  TransactionTrashEntry,
 } from "@/api/dtos";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
 import { transactionHandlers } from "@/api/services/transaction.handlers";
@@ -40,7 +41,7 @@ const emptySummary: DashboardSummaryResponse = {
   totalExpenses: 0,
   netBalance: 0,
   personBreakdown: [],
-  actualIncome: 0, actualExpenses: 0, actualBalance: 0,
+  actualIncome: 0, actualExpenses: 0, actualBalance: 0, neutralOut: 0, neutralIn: 0,
 };
 
 const created: Transaction = {
@@ -162,6 +163,7 @@ beforeEach(() => {
     categoryHandlers.spending([]),
     categoryHandlers.list(emptyPage<Category>()),
     transactionHandlers.list(emptyPage<Transaction>()),
+    transactionHandlers.trash(emptyPage<TransactionTrashEntry>()),
   );
 });
 

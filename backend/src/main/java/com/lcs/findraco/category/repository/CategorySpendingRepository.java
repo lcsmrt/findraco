@@ -19,7 +19,8 @@ public interface CategorySpendingRepository extends Repository<Transaction, Long
     // the categorized transactions in the period.
     @Query("SELECT ft.category.id, tp.member.id, COALESCE(SUM(tp.shareAmount), 0) "
             + "FROM Transaction ft JOIN ft.participants tp "
-            + "WHERE ft.plan = :plan AND ft.type = :type AND ft.category IS NOT NULL "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.kind IS NULL AND ft.type = :type "
+            + "AND ft.category IS NOT NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "GROUP BY ft.category.id, tp.member.id")
     List<Object[]> findCategoryMemberFacts(
@@ -28,13 +29,25 @@ public interface CategorySpendingRepository extends Repository<Transaction, Long
             @Param("startDate") LocalDate startDate,
             @Param("endDate") LocalDate endDate);
 
+    // What refunds gave back, per category x member: the same shape as query A, to be taken from it. A refund is a
+    // credit that names the expense category it pays back.
+    @Query("SELECT ft.category.id, tp.member.id, COALESCE(SUM(tp.shareAmount), 0) "
+            + "FROM Transaction ft JOIN ft.participants tp "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL "
+            + "AND ft.kind = com.lcs.findraco.transaction.model.TransactionKind.REFUND "
+            + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
+            + "GROUP BY ft.category.id, tp.member.id")
+    List<Object[]> findCategoryMemberRefunds(
+            @Param("plan") Plan plan, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
+
     // One row per categorized item x participant of its transaction, unaggregated, for
     // ItemShareAllocator: [itemId, itemCategoryId, transactionCategoryId (nullable), itemAmount,
     // memberId, shareAmount]. The transaction's category is LEFT-joined so uncategorized
     // transactions still attribute their items.
     @Query("SELECT it.id, it.category.id, c.id, it.amount, tp.member.id, tp.shareAmount "
             + "FROM Transaction ft JOIN ft.items it JOIN ft.participants tp LEFT JOIN ft.category c "
-            + "WHERE ft.plan = :plan AND ft.type = :type AND it.category IS NOT NULL "
+            + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.kind IS NULL AND ft.type = :type "
+            + "AND it.category IS NOT NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "ORDER BY it.id, tp.member.id")
     List<Object[]> findCategorizedItemParticipantRows(

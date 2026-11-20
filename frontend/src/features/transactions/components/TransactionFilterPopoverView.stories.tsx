@@ -66,6 +66,16 @@ export const OpenSharedPlan: Story = {
   },
 };
 
+export const NeutralChoice: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("button", { name: "Filters" }));
+    await userEvent.click(await screen.findByRole("checkbox", { name: "Neutral" }));
+    await userEvent.click(screen.getByRole("button", { name: "Apply" }));
+    await expect(args.onApply).toHaveBeenCalledWith({ ...noFilters, filter: { kind: "NEUTRAL" } });
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Apply" })).toBeNull());
+  },
+};
+
 export const OpenSingleMember: Story = {
   args: { members: [members[0]] },
   play: async ({ canvas, userEvent }) => {

@@ -8,6 +8,8 @@ import {
   itemsRemainderCents,
   ownerDefaultAttribution,
   participantsForMode,
+  showsAttribution,
+  splitRows,
   toInlineSavePayload,
   toPayload,
   transactionFormSchema,
@@ -778,5 +780,159 @@ describe("buildDefaultValues — confirmation", () => {
     expect(buildDefaultValues({ ...required, status: "ACTUAL" }, 7).confirmed).toBe(true);
     expect(buildDefaultValues({ ...required, status: "FORECAST" }, 7).confirmed).toBe(false);
     expect(buildDefaultValues({ ...required, status: "PENDING" }, 7).confirmed).toBe(false);
+  });
+});
+
+describe("splitRows — who the participants list shows", () => {
+  const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "OWNER" };
+  const bia: PlanMember = { userId: 2, name: "Bia", email: "bia@example.com", role: "EDITOR" };
+
+  it("lists the members, then a participant who is no longer one, under their stored name", () => {
+    const participants = [
+      { memberId: 1, memberName: "Ana", shareAmount: null },
+      { memberId: 9, memberName: "Caio", shareAmount: 60 },
+    ];
+
+    expect(splitRows([ana, bia], participants)).toEqual([
+      { userId: 1, name: "Ana", isFormer: false },
+      { userId: 2, name: "Bia", isFormer: false },
+      { userId: 9, name: "Caio", isFormer: true },
+    ]);
+  });
+
+  it("lists no former member the row does not carry", () => {
+    expect(splitRows([ana], [])).toEqual([{ userId: 1, name: "Ana", isFormer: false }]);
+  });
+});
+
+describe("showsAttribution — when the form lists who the row is split with", () => {
+  const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "OWNER" };
+  const bia: PlanMember = { userId: 2, name: "Bia", email: "bia@example.com", role: "EDITOR" };
+  const withBia = { id: 2, name: "Bia", shareAmount: 50 };
+  const withCaio = { id: 9, name: "Caio", shareAmount: 50 };
+  const input = { canAttributeToOthers: true, currentUserId: 1 };
+
+  it("shows it when the plan has more than one member", () => {
+    expect(showsAttribution({ ...input, members: [ana, bia], participants: [] })).toBe(true);
+  });
+
+  it("hides it in a one-member plan on a row that is only the user's", () => {
+    const own = { id: 1, name: "Ana", shareAmount: 100 };
+
+    expect(showsAttribution({ ...input, members: [ana], participants: [] })).toBe(false);
+    expect(showsAttribution({ ...input, members: [ana], participants: [own] })).toBe(false);
+  });
+
+  it("shows it in a one-member plan when the row has someone who left, so saving keeps them", () => {
+    expect(showsAttribution({ ...input, members: [ana], participants: [withBia, withCaio] })).toBe(true);
+  });
+
+  it("hides it from a member who may not attribute to others", () => {
+    expect(
+      showsAttribution({ ...input, canAttributeToOthers: false, members: [ana, bia], participants: [withCaio] }),
+    ).toBe(false);
+  });
+});
+
+describe("transactionForm", () => {
+  function withKind(kind: Transaction["kind"]): Transaction {
+    return { ...baseTransaction, kind };
+  }
+
+  it("maps the movement kind both ways", () => {
+    expect(buildDefaultValues(withKind("CARD_BILL_PAYMENT")).kind).toBe("CARD_BILL_PAYMENT");
+    expect(buildDefaultValues(baseTransaction).kind).toBeNull();
+    expect(buildDefaultValues().kind).toBeNull();
+
+    expect(toPayload({ ...validValues, kind: "CARD_BILL_PAYMENT" }, false).kind).toBe("CARD_BILL_PAYMENT");
+    expect(toPayload({ ...validValues, kind: "SAVINGS" }, false).kind).toBe("SAVINGS");
+    // The PUT clears a kind it leaves out, so a normal row sends none.
+    expect(toPayload(validValues, false).kind).toBeUndefined();
+    expect(toPayload({ ...validValues, kind: null }, false).kind).toBeUndefined();
+  });
+
+  it("sends a neutral movement without category, items or anyone but the user", () => {
+    const withExtras: TransactionFormOutput = {
+      ...validValues,
+      kind: "TRANSFER",
+      attributionMode: "SPLIT",
+      splitMode: "EXACT",
+      participants: [
+        { memberId: 1, memberName: "Ana", shareAmount: 40 },
+        { memberId: 2, memberName: "Bia", shareAmount: 60 },
+      ],
+      items: [{ description: "Wine", amount: 20, category: null }],
+    };
+
+    expect(toPayload(withExtras, true, 1)).toMatchObject({
+      kind: "TRANSFER",
+      categoryId: undefined,
+      participants: [{ memberId: 1 }],
+      splitMode: "EQUAL",
+      items: [],
+    });
+  });
+
+  it("keeps the category and the attribution of a refund and sends no items", () => {
+    const refund: TransactionFormOutput = {
+      ...validValues,
+      type: "CREDIT",
+      kind: "REFUND",
+      attributionMode: "SOMEONE",
+      participants: [{ memberId: 2, memberName: "Bia", shareAmount: null }],
+      items: [{ description: "Pizza", amount: 20, category: null }],
+    };
+
+    expect(toPayload(refund, true, 1)).toMatchObject({
+      kind: "REFUND",
+      categoryId: 1,
+      participants: [{ memberId: 2 }],
+      items: [],
+    });
+  });
+
+  it("requires a category on a refund", () => {
+    const result = transactionFormSchema.safeParse({
+      ...validValues,
+      type: "CREDIT",
+      kind: "REFUND",
+      category: null,
+    });
+
+    expect(result.success).toBe(false);
+    expect(result.error?.issues.map((issue) => [issue.path[0], issue.message])).toEqual([
+      ["category", "transactions.form.refundNeedsACategory"],
+    ]);
+    expect(
+      transactionFormSchema.safeParse({ ...validValues, type: "CREDIT", kind: "REFUND" }).success,
+    ).toBe(true);
+  });
+
+  it("does not hold a neutral movement to the attribution it hides", () => {
+    const hidden = {
+      ...validValues,
+      category: null,
+      attributionMode: "SOMEONE",
+      participants: [],
+    };
+
+    expect(transactionFormSchema.safeParse({ ...hidden, kind: "SAVINGS" }).success).toBe(true);
+    expect(transactionFormSchema.safeParse(hidden).success).toBe(false);
+    expect(
+      transactionFormSchema.safeParse({
+        ...hidden,
+        kind: "SAVINGS",
+        attributionMode: "SPLIT",
+        splitMode: "EXACT",
+        participants: [{ memberId: 2, memberName: "Bia", shareAmount: 10 }],
+      }).success,
+    ).toBe(true);
+  });
+
+  it("sends the kind back on a table cell edit, so the edit does not clear it", () => {
+    const body = toInlineSavePayload(withKind("SAVINGS"), { description: "Piggy bank" }).body;
+
+    expect(body.kind).toBe("SAVINGS");
+    expect(toInlineSavePayload(baseTransaction, { description: "Rent" }).body.kind).toBeUndefined();
   });
 });

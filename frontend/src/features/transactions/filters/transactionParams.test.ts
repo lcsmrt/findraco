@@ -20,6 +20,7 @@ describe("transactions codec", () => {
   const full: TransactionFilters = {
     filter: {
       type: "DEBIT",
+      kind: "NEUTRAL",
       categoryId: 12,
       memberId: 7,
       amountMin: 50,
@@ -35,6 +36,7 @@ describe("transactions codec", () => {
     const serialized = serializeTransactionFilters(full);
     expect(serialized).toEqual({
       type: "DEBIT",
+      kind: "NEUTRAL",
       category: "12",
       member: "7",
       period: "custom",
@@ -59,6 +61,8 @@ describe("transactions codec", () => {
 
   it.each([
     ["type", "TRANSFER"],
+    ["kind", "SAVINGS"],
+    ["kind", "neutral"],
     ["category", "abc"],
     ["member", "1.5"],
     ["period", "last-decade"],

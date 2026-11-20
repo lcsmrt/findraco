@@ -322,7 +322,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             Category category,
             String seriesId,
             long seriesVersion,
-            long invitationId) {}
+            long invitationId,
+            long deletionId) {}
 
     /** A route and the status each role gets; a non-member always gets 404 (the plan does not exist for them). */
     record Row(String key, Function<Scene, RequestBuilder> call, int owner, int editor, int contributor, int viewer) {
@@ -527,6 +528,27 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         200,
                         403,
                         403),
+                // The rows of the review of movements: the list is every member's, applying a kind edits the row.
+                new Row(
+                        "GET " + TX + "/neutral-candidates",
+                        s -> get(TX + "/neutral-candidates", s.cast().plan().getId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
+                        "POST " + TX + "/{id}/kind",
+                        s -> post(
+                                        TX + "/{id}/kind",
+                                        s.cast().plan().getId(),
+                                        s.row().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content(json(Map.of(
+                                        "kind", "TRANSFER", "version", s.row().getVersion()))),
+                        200,
+                        200,
+                        403,
+                        403),
                 new Row(
                         "POST " + TX + "/import",
                         s -> multipart(TX + "/import", s.cast().plan().getId())
@@ -544,17 +566,35 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         "DELETE " + TX + "/{id}",
                         s -> delete(
                                 TX + "/{id}", s.cast().plan().getId(), s.row().getId()),
-                        204,
-                        204,
+                        200,
+                        200,
                         403,
                         403),
                 new Row(
                         "DELETE " + TX + "/series/{seriesId}",
                         s -> delete(TX + "/series/{seriesId}", s.cast().plan().getId(), s.seriesId())
                                 .param("scope", "ALL"),
-                        204,
-                        204,
+                        200,
+                        200,
                         403,
+                        403),
+                new Row(
+                        "GET " + TX + "/trash",
+                        s -> get(TX + "/trash", s.cast().plan().getId()),
+                        200,
+                        200,
+                        200,
+                        403),
+                // The deletion is the owner's: a contributor does not see it, so for them it does not exist.
+                new Row(
+                        "POST " + TX + "/trash/{deletionId}/restore",
+                        s -> post(
+                                TX + "/trash/{deletionId}/restore",
+                                s.cast().plan().getId(),
+                                s.deletionId()),
+                        200,
+                        200,
+                        404,
                         403),
                 new Row(
                         "GET " + TX + "/series/{seriesId}",
@@ -664,14 +704,29 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     @ParameterizedTest
     @MethodSource("everyRouteForEveryRole")
     void eachRouteAnswersEachRoleAsTheMatrixSays(Row row, Who who) throws Exception {
-        Scene scene = scene(who);
+        assertThat(statusOf(row, who)).as("%s as %s", row.key(), who).isEqualTo(row.expected(who));
+    }
 
+    @Test
+    void neutralReviewFollowsTheRoleMatrix() throws Exception {
+        Set<String> review = Set.of("GET " + TX + "/neutral-candidates", "POST " + TX + "/{id}/kind");
+        List<Row> rows =
+                rows().stream().filter(row -> review.contains(row.key())).toList();
+
+        assertThat(rows).hasSize(2);
+        for (Row row : rows) {
+            for (Who who : Who.values()) {
+                assertThat(statusOf(row, who)).as("%s as %s", row.key(), who).isEqualTo(row.expected(who));
+            }
+        }
+    }
+
+    private int statusOf(Row row, Who who) throws Exception {
+        Scene scene = scene(who);
         RequestBuilder call = row.call().apply(scene);
         RequestBuilder signedIn =
                 context -> testAuthHelper.asUser(scene.caller()).postProcessRequest(call.buildRequest(context));
-        int status = mockMvc.perform(signedIn).andReturn().getResponse().getStatus();
-
-        assertThat(status).as("%s as %s", row.key(), who).isEqualTo(row.expected(who));
+        return mockMvc.perform(signedIn).andReturn().getResponse().getStatus();
     }
 
     @Autowired
@@ -738,6 +793,18 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 .get("id")
                 .asLong();
 
+        Transaction trashed =
+                fixtures.aTransaction(cast.plan(), cast.owner(), new BigDecimal("20.00"), TransactionType.DEBIT);
+        long deletionId = objectMapper
+                .readTree(mockMvc.perform(delete(TX + "/{id}", cast.plan().getId(), trashed.getId())
+                                .with(testAuthHelper.asUser(cast.owner())))
+                        .andExpect(status().isOk())
+                        .andReturn()
+                        .getResponse()
+                        .getContentAsString())
+                .get("deletionId")
+                .asLong();
+
         User caller =
                 switch (who) {
                     case OWNER -> cast.owner();
@@ -756,7 +823,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 category,
                 seriesId,
                 fixtures.seriesVersion(seriesId),
-                invitationId);
+                invitationId,
+                deletionId);
     }
 
     private static Map<String, Object> editSeriesBody(Scene scene) {

@@ -21,12 +21,23 @@ export type TransactionItem = {
 /** `PENDING` is a forecast whose date has passed without a confirmation. */
 export type TransactionStatus = "ACTUAL" | "FORECAST" | "PENDING";
 
+/**
+ * What a row is besides income or expense. TRANSFER, CARD_BILL_PAYMENT and SAVINGS count in no total;
+ * REFUND is a credit that lowers the spending of its (expense) category.
+ */
+export type TransactionKind = "TRANSFER" | "CARD_BILL_PAYMENT" | "SAVINGS" | "REFUND";
+
+/** The list filter: `NEUTRAL` matches every kind, a kind matches itself. */
+export type TransactionKindFilter = "NEUTRAL" | TransactionKind;
+
 export type Transaction = {
   id: number;
   /** Sent back on edit; an edit of a version that changed since answers 409 `stale-version`. */
   version: number;
   category?: Category;
   type: TransactionType;
+  /** Null for a normal income or expense. */
+  kind?: TransactionKind | null;
   amount: number;
   description: string;
   parcelsNumber?: number;
@@ -76,6 +87,7 @@ export type TransactionSortBy =
 
 export type PagedTransactionsFilter = {
   type?: TransactionType;
+  kind?: TransactionKindFilter;
   categoryId?: number;
   memberId?: number;
   description?: string;
@@ -88,6 +100,8 @@ export type PagedTransactionsFilter = {
 export type CreateTransactionRequest = {
   body: {
     type: TransactionType;
+    /** Omitted means a normal row; the PUT clears the stored kind when it is omitted. */
+    kind?: TransactionKind;
     amount: number;
     description: string;
     categoryId?: number;
@@ -192,4 +206,47 @@ export type ConfirmTransactionRequest = {
 export type ImportResultResponse = {
   imported: number;
   skippedDuplicates: number;
+};
+
+/** The body of a delete: the id that restores everything that delete took, until the trash purge. */
+export type DeletionResponse = {
+  deletionId: number;
+};
+
+export type RestoreDeletionResponse = {
+  /** How many transactions came back. */
+  restored: number;
+};
+
+export type TransactionTrashKind = "TRANSACTION" | "SERIES";
+
+/** One deletion in the plan's trash. */
+export type TransactionTrashEntry = {
+  id: number;
+  kind: TransactionTrashKind;
+  /** The series scope of a series deletion; null for a single transaction. */
+  scope: SeriesEditScope | null;
+  description: string;
+  /** How many transactions the deletion took. */
+  count: number;
+  /** The total of those transactions. */
+  amount: number;
+  type: TransactionType;
+  /** ISO instant. */
+  deletedAt: string;
+  deletedBy: { id: number; name: string } | null;
+  /** ISO instant: the deletion plus the retention period. */
+  expiresAt: string;
+};
+
+/** A row with no kind whose bank text looks like a neutral movement, and the kind it proposes. */
+export type NeutralCandidate = {
+  transaction: Transaction;
+  proposedKind: Extract<TransactionKind, "TRANSFER" | "CARD_BILL_PAYMENT">;
+};
+
+/** Sets the kind of one row; the version guards a concurrent edit (409 `stale-version`). */
+export type SetTransactionKindRequest = {
+  params: { id: number };
+  body: { kind: TransactionKind; version: number };
 };

@@ -22,6 +22,8 @@ describe("useGetDashboardSummary", () => {
       actualIncome: 1000,
       actualExpenses: 250,
       actualBalance: 750,
+      neutralOut: 0,
+      neutralIn: 0,
       personBreakdown: [],
     };
     server.use(dashboardHandlers.summary(summary));

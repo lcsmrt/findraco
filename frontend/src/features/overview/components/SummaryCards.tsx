@@ -110,12 +110,36 @@ function FigureBlock({ label, figure, tone, size }: FigureBlockProps) {
   );
 }
 
+type NeutralLineProps = {
+  neutral: NonNullable<SummaryView["neutral"]>;
+};
+
+/** What neutral movements moved, below the result and outside it. */
+function NeutralLine({ neutral }: NeutralLineProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Text as="p" variant="caption">
+        {t("overview.summaryCards.neutral")}
+      </Text>
+      <Text as="p" variant="caption" className="tabular-nums">
+        {t("overview.summaryCards.neutralAmounts", {
+          moneyOut: formatMoney(neutral.out),
+          moneyIn: formatMoney(neutral.in),
+        })}
+      </Text>
+    </div>
+  );
+}
+
 type BalanceProps = {
   balance: number;
   actual: number;
+  neutral: SummaryView["neutral"];
 };
 
-function Balance({ balance, actual }: BalanceProps) {
+function Balance({ balance, actual, neutral }: BalanceProps) {
   const { t } = useTranslation();
 
   return (
@@ -131,6 +155,7 @@ function Balance({ balance, actual }: BalanceProps) {
         {formatMoney(actual)}
       </Text>
       <StatusCaption forecast={balance} />
+      {neutral && <NeutralLine neutral={neutral} />}
     </div>
   );
 }
@@ -150,7 +175,7 @@ export function SummaryCards({ view }: SummaryCardsProps) {
     <>
       <Card className="sm:hidden">
         <CardContent className="flex flex-col gap-5 px-4">
-          <Balance balance={view.balance} actual={view.balanceActual} />
+          <Balance balance={view.balance} actual={view.balanceActual} neutral={view.neutral} />
           <div className="grid grid-cols-2 gap-4">
             <FigureBlock
               label={t("overview.summaryCards.income")}
@@ -191,7 +216,7 @@ export function SummaryCards({ view }: SummaryCardsProps) {
         </Card>
         <Card>
           <CardContent>
-            <Balance balance={view.balance} actual={view.balanceActual} />
+            <Balance balance={view.balance} actual={view.balanceActual} neutral={view.neutral} />
           </CardContent>
         </Card>
       </div>

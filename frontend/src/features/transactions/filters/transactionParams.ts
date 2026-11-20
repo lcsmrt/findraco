@@ -26,6 +26,7 @@ export const DEFAULT_PAGE_SIZE = 10;
 /** Every query param the Transactions screen owns; its filters gate keeps exactly these. */
 export const TRANSACTION_PARAM_KEYS = [
   "type",
+  "kind",
   "category",
   "member",
   ...PERIOD_PARAM_KEYS,
@@ -70,6 +71,8 @@ export function parseTransactionFilters(
 
   const type = TYPES.find((t) => t === params.get("type"));
   if (type) filter.type = type;
+  // The screen offers one kind choice, "Neutros"; any other value is not one of its filters.
+  if (params.get("kind") === "NEUTRAL") filter.kind = "NEUTRAL";
   const categoryId = parseId(params.get("category"));
   if (categoryId != null) filter.categoryId = categoryId;
   const memberId = parseId(params.get("member"));
@@ -96,6 +99,7 @@ export function serializeTransactionFilters(
   const { filter, period, sort, size } = filters;
   const out: Record<string, string> = serializePeriodParams(period);
   if (filter.type) out.type = filter.type;
+  if (filter.kind) out.kind = filter.kind;
   if (filter.categoryId != null) out.category = String(filter.categoryId);
   if (filter.memberId != null) out.member = String(filter.memberId);
   if (filter.amountMin != null) out.min = String(filter.amountMin);

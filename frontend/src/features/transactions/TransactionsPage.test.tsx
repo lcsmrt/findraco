@@ -74,8 +74,8 @@ function authValue(): AuthContextValue {
   };
 }
 
-function planValue(): PlanContextValue {
-  const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } };
+function planValue(createTransactions = true): PlanContextValue {
+  const plan: Plan = { id: PLAN_ID, name: "Home", isDefault: true, myRole: "OWNER", permissions: { createTransactions, attributeToOthers: true, manageCategories: true, managePlan: true } };
   return {
     activePlanId: PLAN_ID,
     setActivePlanId: vi.fn(),
@@ -103,9 +103,11 @@ type TabOptions = {
   /** The starting URL; its query string holds the filters. */
   route?: string;
   categories?: Category[];
+  /** False for a viewer, who may not set a kind. */
+  canCreate?: boolean;
 };
 
-function renderTab({ transactions = [rent], route = "/", categories = [] }: TabOptions = {}) {
+function renderTab({ transactions = [rent], route = "/", categories = [], canCreate = true }: TabOptions = {}) {
   server.use(
     transactionHandlers.list(pageOf(transactions)),
     planHandlers.members([lucas, livia]),
@@ -123,7 +125,7 @@ function renderTab({ transactions = [rent], route = "/", categories = [] }: TabO
       <Toaster />
       <LocationProbe />
     </CategoryFormSheetContext.Provider>,
-    { auth: authValue(), plan: planValue(), route },
+    { auth: authValue(), plan: planValue(canCreate), route },
   );
   return { requests, user: userEvent.setup() };
 }
@@ -322,6 +324,52 @@ describe("TransactionsPage", () => {
     expect(within(dialog).getByText(/Electricity/)).toBeTruthy();
   });
 
+  it("filters the list to neutral movements", async () => {
+    const { requests, user } = renderTab();
+    await tableRow("Rent");
+
+    await user.click(screen.getByRole("button", { name: "Filters" }));
+    const filters = await screen.findByRole("dialog", { name: "Filters" });
+    await user.click(within(filters).getByRole("checkbox", { name: "Neutral" }));
+    await user.click(within(filters).getByRole("button", { name: "Apply" }));
+
+    await waitFor(() =>
+      expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10", kind: "NEUTRAL" }),
+    );
+    expect(searchParams()).toEqual({ kind: "NEUTRAL" });
+    expect(chipLabels()).toEqual(["Neutral"]);
+
+    await user.click(screen.getByRole("button", { name: "Remove Neutral" }));
+
+    await waitFor(() => expect(searchParams()).toEqual({}));
+    expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10" });
+  });
+
+  it("opens the review of movements from the toolbar, and offers it only to who may edit", async () => {
+    server.use(
+      transactionHandlers.neutralCandidates({
+        content: [{ transaction: { ...rent, description: "Pagamento de fatura" }, proposedKind: "CARD_BILL_PAYMENT" }],
+        page: 0,
+        size: 50,
+        totalElements: 1,
+        totalPages: 1,
+        last: true,
+      }),
+    );
+    const { user } = renderTab();
+    await tableRow("Rent");
+
+    await user.click(screen.getByRole("button", { name: "Review movements" }));
+
+    const sheet = await screen.findByRole("dialog", { name: "Review movements" });
+    expect(await within(sheet).findByText("Pagamento de fatura")).toBeTruthy();
+
+    cleanup();
+    renderTab({ canCreate: false });
+    await tableRow("Rent");
+    expect(screen.queryByRole("button", { name: "Review movements" })).toBeNull();
+  });
+
   it("previous then next arrow returns to this month as a preset", async () => {
     const { user } = renderTab();
     await tableRow("Rent");
@@ -350,6 +398,43 @@ describe("TransactionsPage", () => {
     const dialog = await screen.findByRole("dialog", { name: "Confirm transaction" });
     expect((within(dialog).getByLabelText("Date") as HTMLInputElement).value).toBe("10/10/2026");
     expect(screen.queryByRole("dialog", { name: "Edit Transaction" })).toBeNull();
+  });
+
+  it("undo in the delete toast restores the transaction", async () => {
+    const { requests, user } = renderTab();
+    const row = await tableRow("Rent");
+    server.use(transactionHandlers.remove(7), transactionHandlers.restore());
+
+    await user.click(row.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog", { name: "Confirm Deletion" });
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+    await screen.findByText("Transaction deleted.");
+    await user.click(await screen.findByRole("button", { name: "Undo" }));
+
+    expect(await screen.findByText("Transaction restored.")).toBeTruthy();
+    expect(writes(requests)).toEqual([
+      ["DELETE", `${API}/42`],
+      ["POST", `${API}/trash/7/restore`],
+    ]);
+  });
+
+  it("undo in the series delete toast restores the series", async () => {
+    const { requests, user } = renderTab({ transactions: [gym] });
+    const row = await tableRow("Gym (3/12)");
+    server.use(transactionHandlers.removeSeries(8), transactionHandlers.restore(12));
+
+    await user.click(row.getByRole("button", { name: "Delete" }));
+    const dialog = await screen.findByRole("dialog", { name: "Delete series" });
+    await user.click(within(dialog).getByRole("radio", { name: /^All/ }));
+    await user.click(within(dialog).getByRole("button", { name: "Delete" }));
+    await screen.findByText("Series deleted.");
+    await user.click(await screen.findByRole("button", { name: "Undo" }));
+
+    expect(await screen.findByText("Transaction restored.")).toBeTruthy();
+    expect(writes(requests)).toEqual([
+      ["DELETE", `${API}/series/s-1?scope=ALL&pivotOccurrenceId=55`],
+      ["POST", `${API}/trash/8/restore`],
+    ]);
   });
 });
 

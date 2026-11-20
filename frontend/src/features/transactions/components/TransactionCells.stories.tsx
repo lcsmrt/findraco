@@ -184,6 +184,44 @@ export const StatusBadges: Story = {
   },
 };
 
+const KINDS = [
+  { kind: "TRANSFER", label: "Between members" },
+  { kind: "CARD_BILL_PAYMENT", label: "Card bill" },
+  { kind: "SAVINGS", label: "Savings" },
+  { kind: "REFUND", label: "Refund" },
+] as const;
+
+// One row per kind: a badge on the wrong row fails the story as surely as a missing one. A neutral
+// row has no category to pick and no one to attribute to, so its cells are not editable.
+export const MovementKinds: Story = {
+  render: (args) => (
+    <div className="flex flex-col gap-2">
+      {KINDS.map(({ kind }, index) => (
+        <DemoRow
+          key={kind}
+          {...args}
+          canEditParticipants
+          transaction={{ ...groceries, id: index + 10, description: `Row ${index}`, kind }}
+        />
+      ))}
+      <DemoRow {...args} canEditParticipants transaction={groceries} />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const rows = canvas.getAllByRole("row").map((row) => within(row));
+    for (const [index, { label }] of KINDS.entries()) {
+      await expect(rows[index].getByText(label)).toBeVisible();
+      for (const other of KINDS.filter((candidate) => candidate.label !== label)) {
+        await expect(rows[index].queryByText(other.label)).toBeNull();
+      }
+    }
+    await expect(rows[KINDS.length].queryByText("Refund")).toBeNull();
+    // Attribution is editable on a normal row and not on a neutral one.
+    await expect(rows[KINDS.length].getByRole("button", { name: /2 people/ })).toBeVisible();
+    await expect(rows[0].queryByRole("button", { name: /2 people/ })).toBeNull();
+  },
+};
+
 export const Confirmable: Story = {
   args: {
     transaction: { ...groceries, status: "PENDING", requiresConfirmation: true },

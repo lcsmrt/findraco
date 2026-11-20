@@ -2,6 +2,7 @@ package com.lcs.findraco.transaction.model;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.plan.model.Plan;
@@ -215,6 +216,124 @@ class TransactionTest {
 
         assertThat(transaction.getSourceText()).isEqualTo("UBER *TRIP");
         assertThat(transaction.getDescription()).isEqualTo("Taxi");
+    }
+
+    @Test
+    void aNeutralKindTakesNoCategoryItemsOrSeveralParticipants() {
+        for (TransactionKind kind :
+                List.of(TransactionKind.TRANSFER, TransactionKind.CARD_BILL_PAYMENT, TransactionKind.SAVINGS)) {
+            TransactionDetails withCategory = kindDetails(kind, TransactionType.DEBIT, category(TransactionType.DEBIT));
+            TransactionDetails plain = kindDetails(kind, TransactionType.DEBIT, null);
+
+            assertThat(Transaction.create(draft(plain, SplitMode.EQUAL, self(), List.of()))
+                            .getKind())
+                    .isEqualTo(kind);
+            assertThatThrownBy(() -> Transaction.create(draft(withCategory, SplitMode.EQUAL, self(), List.of())))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+            assertThatThrownBy(() ->
+                            Transaction.create(draft(plain, SplitMode.EQUAL, self(), List.of(item("10.00", null)))))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+            assertThatThrownBy(() -> Transaction.create(draft(
+                            plain,
+                            SplitMode.EQUAL,
+                            List.of(new Share(owner, null), new Share(partner, null)),
+                            List.of())))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        }
+    }
+
+    @Test
+    void aRefundIsACreditInTheExpenseCategoryItPaysBack() {
+        Category food = category(TransactionType.DEBIT);
+
+        Transaction refund = Transaction.create(draft(
+                kindDetails(TransactionKind.REFUND, TransactionType.CREDIT, food), SplitMode.EQUAL, self(), List.of()));
+
+        assertThat(refund.getCategory()).isSameAs(food);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(TransactionKind.REFUND, TransactionType.CREDIT, null),
+                        SplitMode.EQUAL,
+                        self(),
+                        List.of())))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(TransactionKind.REFUND, TransactionType.CREDIT, category(TransactionType.CREDIT)),
+                        SplitMode.EQUAL,
+                        self(),
+                        List.of())))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(TransactionKind.REFUND, TransactionType.DEBIT, food),
+                        SplitMode.EQUAL,
+                        self(),
+                        List.of())))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+    }
+
+    @Test
+    void aNeutralKindCanBeOnAnyOneMember() {
+        TransactionDetails details = kindDetails(TransactionKind.TRANSFER, TransactionType.DEBIT, null);
+
+        Transaction partnersRow =
+                Transaction.create(draft(details, SplitMode.EQUAL, List.of(new Share(partner, null)), List.of()));
+
+        assertThat(partnersRow.getParticipants())
+                .extracting(participant -> participant.getMember().getId())
+                .containsExactly(partner.getId());
+    }
+
+    @Test
+    void assigningANeutralKindTakesOffWhatItCannotCarry() {
+        Transaction shared = Transaction.create(draft(
+                detailsIn(category(TransactionType.DEBIT)),
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null), new Share(partner, null)),
+                List.of(item("10.00", null))));
+        Transaction partnersOwn = Transaction.create(draft(
+                detailsIn(category(TransactionType.DEBIT)),
+                SplitMode.EXACT,
+                List.of(share(partner, "100.00")),
+                List.of()));
+
+        shared.assignKind(TransactionKind.TRANSFER);
+        partnersOwn.assignKind(TransactionKind.SAVINGS);
+
+        assertThat(shared.getKind()).isEqualTo(TransactionKind.TRANSFER);
+        assertThat(shared.getCategory()).isNull();
+        assertThat(shared.getItems()).isEmpty();
+        assertThat(shared.getParticipants())
+                .extracting(participant -> participant.getMember().getId(), TransactionParticipant::getShareAmount)
+                .containsExactly(tuple(owner.getId(), new BigDecimal("100.00")));
+        assertThat(partnersOwn.getParticipants())
+                .extracting(participant -> participant.getMember().getId())
+                .containsExactly(partner.getId());
+        assertThat(partnersOwn.getCategory()).isNull();
+    }
+
+    @Test
+    void assigningARefundChecksTheRowAsItIsAndChangesNothing() {
+        Category salary = category(TransactionType.CREDIT);
+        Transaction credit = Transaction.create(
+                draft(kindDetails(null, TransactionType.CREDIT, salary), SplitMode.EQUAL, self(), List.of()));
+        Transaction plain = Transaction.create(draft(details("100.00"), SplitMode.EQUAL, self(), List.of()));
+
+        assertThatThrownBy(() -> credit.assignKind(TransactionKind.REFUND))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThatThrownBy(() -> plain.assignKind(TransactionKind.REFUND))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+
+        assertThat(credit.getKind()).isNull();
+        assertThat(credit.getCategory()).isSameAs(salary);
+        assertThat(plain.getKind()).isNull();
+    }
+
+    private TransactionDetails kindDetails(TransactionKind kind, TransactionType type, Category category) {
+        return new TransactionDetails(category, type, new BigDecimal("100.00"), "Movement", DAY, null, null, kind);
+    }
+
+    private static TransactionDetails detailsIn(Category category) {
+        return new TransactionDetails(
+                category, TransactionType.DEBIT, new BigDecimal("100.00"), "Groceries", DAY, null, null);
     }
 
     private TransactionDraft draft(

@@ -14,6 +14,7 @@ import com.lcs.findraco.shared.ratelimit.RateLimitProperties;
 import com.lcs.findraco.shared.ratelimit.RateLimitRule;
 import com.lcs.findraco.transaction.config.ImportProperties;
 import com.lcs.findraco.transaction.config.SeriesProperties;
+import com.lcs.findraco.transaction.config.TransactionTrashProperties;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -73,6 +74,7 @@ class ConfigurationPropertiesTest {
             Map.entry("app.series.horizon-months", "12"),
             Map.entry("app.series.top-up-cron", "0 30 3 * * *"),
             Map.entry("app.plans.purge-cron", "0 0 4 * * *"),
+            Map.entry("app.transactions.trash-purge-cron", "0 15 4 * * *"),
             Map.entry("app.import.max-bytes", "1048576"),
             Map.entry("app.import.max-rows", "5000"),
             Map.entry("app.import.max-errors", "50"),
@@ -115,6 +117,7 @@ class ConfigurationPropertiesTest {
         ImportProperties.class,
         SeriesProperties.class,
         PlanPurgeProperties.class,
+        TransactionTrashProperties.class,
         OAuthProperties.class
     })
     static class AllProperties {}
@@ -212,6 +215,11 @@ class ConfigurationPropertiesTest {
     @Test
     void blankPlanPurgeCronFailsStartup() {
         assertStartupFailsOn(Map.of("app.plans.purge-cron", ""), "app.plans", "purgeCron");
+    }
+
+    @Test
+    void blankTrashPurgeCronFailsStartup() {
+        assertStartupFailsOn(Map.of("app.transactions.trash-purge-cron", ""), "app.transactions", "trashPurgeCron");
     }
 
     @Test

@@ -2,8 +2,12 @@ package com.lcs.findraco.transaction.repository;
 
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.shared.web.LikePatterns;
+import com.lcs.findraco.transaction.model.Confirmation;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionKind;
+import com.lcs.findraco.transaction.model.TransactionKindFilter;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
+import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Join;
@@ -21,6 +25,11 @@ public class TransactionSpecification {
 
     public static Specification<Transaction> belongsToPlan(Plan plan) {
         return (root, query, cb) -> cb.equal(root.get("plan"), plan);
+    }
+
+    /** Leaves out what the trash holds. */
+    public static Specification<Transaction> isActive() {
+        return (root, query, cb) -> cb.isNull(root.get("deletion"));
     }
 
     public static Specification<Transaction> typeEquals(TransactionType type) {
@@ -44,6 +53,49 @@ public class TransactionSpecification {
             return cb.or(
                     cb.equal(category.get("id"), categoryId),
                     cb.equal(category.get("parent").get("id"), categoryId));
+        };
+    }
+
+    /** One kind, or with {@code NEUTRAL} every row that has a kind. */
+    public static Specification<Transaction> hasKind(TransactionKindFilter kind) {
+        if (kind == null) {
+            return (root, query, cb) -> null;
+        }
+        if (kind == TransactionKindFilter.NEUTRAL) {
+            return (root, query, cb) -> cb.isNotNull(root.get("kind"));
+        }
+        return (root, query, cb) -> cb.equal(root.get("kind"), TransactionKind.valueOf(kind.name()));
+    }
+
+    /** Only transactions with no category that could take one: a neutral kind never does, so it is left out. */
+    public static Specification<Transaction> uncategorized(Boolean uncategorized) {
+        if (!Boolean.TRUE.equals(uncategorized)) {
+            return (root, query, cb) -> null;
+        }
+        return (root, query, cb) -> cb.and(
+                cb.isNull(root.get("category")),
+                cb.or(cb.isNull(root.get("kind")), cb.equal(root.get("kind"), TransactionKind.REFUND)));
+    }
+
+    /**
+     * The transactions {@link Transaction#status} reports as {@code status} for a reader whose day is {@code today}:
+     * the same three-way rule, written as a predicate so the database applies it before paging.
+     */
+    public static Specification<Transaction> hasStatus(TransactionStatus status, LocalDate today) {
+        if (status == null) {
+            return (root, query, cb) -> null;
+        }
+        return (root, query, cb) -> {
+            Predicate byDate = cb.equal(root.get("confirmation"), Confirmation.BY_DATE);
+            Predicate required = cb.equal(root.get("confirmation"), Confirmation.REQUIRED);
+            Predicate confirmed = cb.equal(root.get("confirmation"), Confirmation.CONFIRMED);
+            Predicate afterToday = cb.greaterThan(root.get("startDate"), today);
+            Predicate beforeToday = cb.lessThan(root.get("startDate"), today);
+            return switch (status) {
+                case ACTUAL -> cb.or(confirmed, cb.and(byDate, cb.not(afterToday)));
+                case FORECAST -> cb.or(cb.and(byDate, afterToday), cb.and(required, cb.not(beforeToday)));
+                case PENDING -> cb.and(required, beforeToday);
+            };
         };
     }
 

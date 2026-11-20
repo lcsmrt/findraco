@@ -237,8 +237,12 @@ public class CategoryService {
             throw new CategoryExceptions.CategoryInUseException(
                     id, usage.transactions(), usage.items(), usage.recurrenceDefinitions());
         }
-        if (usage.inUse()) {
+        // Trashed rows, items and series still point at the category and count as no usage; they move with the
+        // rest, or lose the category, so neither this delete nor a later purge meets a foreign key.
+        if (target != null) {
             transactionCategoryService.reassignCategory(category.getId(), target.getId());
+        } else {
+            transactionCategoryService.clearCategory(category.getId());
         }
 
         categoryRepository.delete(category);

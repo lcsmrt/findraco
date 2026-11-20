@@ -172,7 +172,9 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "fk_transactions_plans",
                         "fk_transactions_created_by",
                         "fk_transactions_categories",
-                        "fk_transactions_recurrence_definitions");
+                        "fk_transactions_recurrence_definitions",
+                        "fk_transactions_deletion",
+                        "ck_transactions_kind");
         assertThat(namesOf(jdbc, "SELECT conname FROM pg_constraint WHERE conrelid = 'public.categories'::regclass"))
                 .containsExactlyInAnyOrder(
                         "pk_categories",
@@ -191,6 +193,7 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "idx_transactions_recurrence_definition_id",
                         "idx_transactions_created_by",
                         "idx_transactions_category_id",
+                        "idx_transactions_deletion_id",
                         "uk_transactions_plan_source_ref");
         assertThat(namesOf(jdbc, "SELECT indexname FROM pg_indexes WHERE tablename = 'categories'"))
                 .containsExactlyInAnyOrder(
@@ -226,6 +229,7 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "user_sessions.replaced_at",
                         "user_sessions.created_at",
                         "plans.deleted_at",
+                        "transaction_deletions.deleted_at",
                         "plan_invitations.expires_at",
                         "oauth2_authorization.authorization_code_issued_at",
                         "oauth2_authorization.authorization_code_expires_at",
@@ -344,6 +348,34 @@ class MigrationsIT extends AbstractIntegrationTest {
         assertThatThrownBy(() -> insertTransaction(jdbc, plan, owner, "0.00", null))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("ck_transactions_amount_positive");
+    }
+
+    @Test
+    void transactionKindIsAClosedNullableSet() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        insertTransaction(jdbc, plan, owner, "10.00", null);
+        for (String kind : List.of("TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND")) {
+            jdbc.update("UPDATE transactions SET kind = ? WHERE plan_id = ?", kind, plan.getId());
+        }
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT is_nullable FROM information_schema.columns "
+                                + "WHERE table_name = 'transactions' AND column_name = 'kind'",
+                        String.class))
+                .isEqualTo("YES");
+        insertTransaction(jdbc, plan, owner, "20.00", null);
+        assertThat(jdbc.queryForList(
+                        "SELECT kind FROM transactions WHERE plan_id = ? AND amount = 20.00",
+                        String.class,
+                        plan.getId()))
+                .singleElement()
+                .isNull();
+        assertThatThrownBy(() -> jdbc.update("UPDATE transactions SET kind = 'OTHER' WHERE plan_id = ?", plan.getId()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_transactions_kind");
     }
 
     @Test
@@ -545,6 +577,38 @@ class MigrationsIT extends AbstractIntegrationTest {
                                 "SELECT coalesce(scheduled_date::text, 'none') FROM transactions ORDER BY id",
                                 String.class))
                         .containsExactly("2026-01-20", "2999-01-20", "none"));
+    }
+
+    @Test
+    void ruleRevisionResetsExistingDeletions() {
+        String seed = "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
+                + "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);"
+                + "INSERT INTO recurrence_definitions (id, plan_id, created_by, series_id, type, amount, description, "
+                + "mode, recurrence_interval, start_date, end_date, requires_confirmation) "
+                + "VALUES (1, 1, 1, 'series-1', 'DEBIT', 80.00, 'Gym', 'RECURRING', 'MONTHLY', '2026-01-15', "
+                + "'2026-05-15', false);"
+                + "INSERT INTO transaction_deletions (id, plan_id, deleted_at, kind, scope, recurrence_definition_id, "
+                + "definition_version, exception_date, definition_trashed) VALUES "
+                + "(1, 1, now(), 'SERIES', 'THIS_ONE', 1, 3, '2026-03-15', false), "
+                + "(2, 1, now(), 'SERIES', 'THIS_AND_FOLLOWING', 1, 3, null, false);";
+
+        migrateScratchDatabase("27", seed, scratch -> {
+            assertThat(scratch.queryForMap("SELECT is_nullable, column_default FROM information_schema.columns "
+                            + "WHERE table_name = 'recurrence_definitions' AND column_name = 'rule_revision'"))
+                    .containsEntry("is_nullable", "NO")
+                    .containsEntry("column_default", "0");
+            assertThat(scratch.queryForObject("SELECT rule_revision FROM recurrence_definitions", Long.class))
+                    .isZero();
+            assertThat(scratch.queryForList("SELECT definition_version FROM transaction_deletions", Long.class))
+                    .containsOnly(0L);
+            // A tail deletion takes the end its series has now; an "only this" one has no cut.
+            assertThat(scratch.queryForObject(
+                            "SELECT cut_end_date::text FROM transaction_deletions WHERE id = 2", String.class))
+                    .isEqualTo("2026-05-15");
+            assertThat(scratch.queryForObject(
+                            "SELECT cut_end_date::text FROM transaction_deletions WHERE id = 1", String.class))
+                    .isNull();
+        });
     }
 
     /**

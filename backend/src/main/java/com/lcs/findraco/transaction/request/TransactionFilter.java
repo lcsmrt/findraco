@@ -1,6 +1,8 @@
 package com.lcs.findraco.transaction.request;
 
+import com.lcs.findraco.transaction.model.TransactionKindFilter;
 import com.lcs.findraco.transaction.model.TransactionSortField;
+import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -9,7 +11,13 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
-/** Query parameters of the transaction list; absent paging parameters take their defaults. */
+/**
+ * Query parameters of the transaction list; absent paging parameters take their defaults.
+ *
+ * @param status where the transaction stands for the reader's today, as {@code Transaction.status} derives it.
+ * @param uncategorized only transactions with no category; cannot be combined with {@code categoryId}.
+ * @param kind only transactions of this kind; {@code NEUTRAL} is every transaction that has a kind.
+ */
 public record TransactionFilter(
         TransactionType type,
         Long categoryId,
@@ -22,6 +30,12 @@ public record TransactionFilter(
         LocalDate startDateTo,
         BigDecimal amountMin,
         BigDecimal amountMax,
+
+        TransactionStatus status,
+
+        Boolean uncategorized,
+
+        TransactionKindFilter kind,
 
         @Min(value = 0, message = "Page number cannot be negative.")
         Integer page,
