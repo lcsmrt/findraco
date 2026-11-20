@@ -96,6 +96,13 @@ export function useTransactionFilterChips() {
         onRemove: () => removeFilters(["type"]),
       });
     }
+    if (filter.kind) {
+      result.push({
+        key: "kind",
+        label: t("transactions.transactionFilterPopoverView.neutral"),
+        onRemove: () => removeFilters(["kind"]),
+      });
+    }
     if (filter.categoryId != null && category) {
       result.push({
         key: "category",

@@ -65,10 +65,11 @@ public class SeriesRegenerator {
 
         boolean filterByPivot = scope != SeriesEditScope.ALL;
 
-        // A confirmed occurrence is a record of what happened, so an edit leaves it alone: it is neither
-        // updated nor deleted, and its slot is not refilled. Only the pivot takes the form's values.
+        // A confirmed occurrence is a record of what happened, and one marked with a kind was set apart by hand
+        // (a savings move among the rent), so an edit leaves both alone: neither updated nor deleted, and the
+        // slot is not refilled. Only the pivot takes the form's values.
         List<Transaction> frozen = existing.stream()
-                .filter(tx -> tx.getConfirmation() == Confirmation.CONFIRMED)
+                .filter(tx -> tx.getConfirmation() == Confirmation.CONFIRMED || tx.getKind() != null)
                 .filter(tx -> !(filterByPivot && tx.getScheduledDate().equals(pivotSlot)))
                 .toList();
         Set<LocalDate> frozenSlots =
@@ -151,7 +152,8 @@ public class SeriesRegenerator {
                         slot.description(),
                         date,
                         tx.getEndDate(),
-                        slot.parcelsNumber()),
+                        slot.parcelsNumber(),
+                        tx.getKind()),
                 def.getSplitMode(),
                 shares);
     }

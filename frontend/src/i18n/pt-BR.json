@@ -15,6 +15,7 @@
       "categoryUpdated": "Categoria atualizada.",
       "invitationCreated": "Convite criado.",
       "invitationRevoked": "Convite revogado.",
+      "kindApplied": "Movimento marcado.",
       "memberRemoved": "Membro removido.",
       "operationCompleted": "Operação concluída com sucesso.",
       "ownershipTransferred": "Propriedade transferida.",
@@ -388,6 +389,8 @@
     "summaryCards": {
       "actual": "Realizado",
       "forecast": "Previsto {{amount}}",
+      "neutral": "Neutros",
+      "neutralAmounts": "saiu {{moneyOut}} · entrou {{moneyIn}}",
       "expenses": "Despesas",
       "income": "Receitas"
     }
@@ -500,7 +503,7 @@
       "newestOnly": "Mostrando as {{shown}} exclusões mais recentes de {{total}}.",
       "restore": "Restaurar",
       "restoreEntry": "Restaurar {{description}}",
-      "retry": "Tentar de novo",
+      "retry": "Tentar novamente",
       "series": "Série",
       "trash": "Lixeira"
     },
@@ -631,6 +634,7 @@
     "malformed-request": "Não foi possível enviar a solicitação. Recarregue a página e tente novamente.",
     "member-not-found": "Esta pessoa não é mais membro do plano.",
     "network": "Não foi possível acessar o servidor. Verifique sua conexão e tente novamente.",
+    "neutral-kind-invalid": "Esse tipo não serve para a transação: transferência, fatura e guardar dinheiro não têm categoria nem divisão, e um reembolso precisa de uma categoria de despesa.",
     "not-found": "Este item não existe mais.",
     "not-transaction-creator": "Você só pode alterar transações que você criou.",
     "owner-role-needs-transfer": "Para tornar alguém dono, transfira a propriedade.",
@@ -765,6 +769,7 @@
       "descriptionIsRequired": "A descrição é obrigatória",
       "enterAtLeast2Installments": "Informe pelo menos 2 parcelas",
       "itemsCannotExceedTheTransaction": "Os itens não podem passar do total da transação",
+      "refundNeedsACategory": "Um reembolso precisa da categoria que ele devolve",
       "selectInstallmentOrRecurring": "Selecione parcelada ou recorrente",
       "sharesMustAddUpTo": "As partes devem somar o valor total",
       "theCurrentInstallmentCannotBe": "A parcela atual não pode ser maior que o total",
@@ -786,6 +791,28 @@
       "items": "Itens",
       "remainder": "Restante: {{amount}}",
       "removeItem": "Remover o item {{number}}"
+    },
+    "kindField": {
+      "movementKind": "Tipo de movimento"
+    },
+    "kinds": {
+      "cardBillPayment": "Fatura",
+      "normal": "Normal",
+      "refund": "Reembolso",
+      "savings": "Guardar",
+      "transfer": "Entre membros"
+    },
+    "neutralReviewListView": {
+      "apply": "Aplicar",
+      "applyTo": "Aplicar em {{description}}",
+      "empty": "Nada para revisar.",
+      "loadError": "Não foi possível carregar os movimentos para revisar.",
+      "newestOnly": "Mostrando os {{shown}} mais recentes de {{total}}.",
+      "retry": "Tentar novamente"
+    },
+    "neutralReviewSheet": {
+      "description": "Movimentos que parecem uma transferência entre membros ou o pagamento de uma fatura. Aplicar tira o movimento dos totais.",
+      "reviewMovements": "Revisar movimentos"
     },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Mudar o número de parcelas atualiza a série inteira."
@@ -831,6 +858,7 @@
       "filters": "Filtros",
       "maximumAmount": "Valor máximo",
       "minimumAmount": "Valor mínimo",
+      "neutral": "Neutros",
       "reset": "Redefinir"
     },
     "transactionFormDrawer": {
@@ -856,6 +884,7 @@
       "importCsv": "Importar CSV",
       "importing": "Importando...",
       "removeFilter": "Remover {{name}}",
+      "reviewMovements": "Revisar movimentos",
       "searchTransactions": "Buscar transações...",
       "searchTransactions2": "Buscar transações"
     },

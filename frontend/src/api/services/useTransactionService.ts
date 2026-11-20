@@ -18,6 +18,8 @@ import {
   DeletionResponse,
   RestoreDeletionResponse,
   TransactionTrashEntry,
+  NeutralCandidate,
+  SetTransactionKindRequest,
 } from "../dtos";
 import { MutationOptions } from "../types/mutationOptions";
 import { QueryOptions } from "../types/queryOptions";
@@ -41,6 +43,8 @@ function invalidateTransactionData(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: ["dashboardSummary"] });
   queryClient.invalidateQueries({ queryKey: ["dashboardTrend"] });
   queryClient.invalidateQueries({ queryKey: ["transactionTrash"] });
+  // A row that gained a kind, or a new import, changes what the review still lists.
+  queryClient.invalidateQueries({ queryKey: ["neutralCandidates"] });
 }
 
 /**
@@ -150,6 +154,59 @@ export function useGetTransactions(
     queryKey: ["transactions", activePlanId, params],
     ...options,
     enabled: activePlanId != null && (options?.enabled ?? true),
+  });
+}
+
+async function getNeutralCandidates(
+  planId: number,
+  params?: PagedRequest,
+): Promise<PagedResponse<NeutralCandidate>> {
+  const query = buildPagedQuery(params);
+  const { data } = await findracoApi.get(
+    `/plan/${planId}/transaction/neutral-candidates?${query}`,
+  );
+  return data;
+}
+
+export function useGetNeutralCandidates(
+  params?: PagedRequest,
+  options?: QueryOptions<PagedResponse<NeutralCandidate>>,
+) {
+  const { activePlanId } = usePlanContext();
+  return useQuery({
+    queryFn: () => getNeutralCandidates(activePlanId!, params),
+    queryKey: ["neutralCandidates", activePlanId, params],
+    ...options,
+    enabled: activePlanId != null && (options?.enabled ?? true),
+  });
+}
+
+async function setTransactionKind(
+  planId: number,
+  { params, body }: SetTransactionKindRequest,
+): Promise<Transaction> {
+  const { data } = await findracoApi.post(
+    `/plan/${planId}/transaction/${params.id}/kind`,
+    body,
+  );
+  return data;
+}
+
+export function useSetTransactionKind(
+  options?: MutationOptions<Transaction, SetTransactionKindRequest>,
+) {
+  const queryClient = useQueryClient();
+  const { activePlanId } = usePlanContext();
+  return useMutation({
+    mutationFn: (payload: SetTransactionKindRequest) =>
+      setTransactionKind(activePlanId!, payload),
+    ...buildMutationOptions({ successMessage: "api.toast.kindApplied" }, {
+      ...options,
+      onSuccess: (data, variables) => {
+        invalidateTransactionData(queryClient);
+        options?.onSuccess?.(data, variables);
+      },
+    }),
   });
 }
 

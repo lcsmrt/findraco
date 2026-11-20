@@ -30,6 +30,22 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
     Page<Transaction> findAll(Specification<Transaction> spec, Pageable pageable);
 
     /**
+     * The id and bank text of the active rows with no kind whose text may be a neutral movement, newest first; the
+     * match itself is made by {@code NeutralMovementRules}. A creator restricts it to the rows they made.
+     */
+    @Query("SELECT t.id, t.sourceText FROM Transaction t WHERE t.plan = :plan AND t.deletion IS NULL "
+            + "AND t.kind IS NULL AND t.sourceText IS NOT NULL "
+            + "AND (:creatorId IS NULL OR t.createdBy.id = :creatorId) "
+            + "AND (LOWER(t.sourceText) LIKE '%pagamento de fatura%' OR LOWER(t.sourceText) LIKE '%pelo pix%') "
+            + "ORDER BY t.startDate DESC, t.id DESC")
+    List<Object[]> findNeutralCandidateTexts(@Param("plan") Plan plan, @Param("creatorId") Long creatorId);
+
+    /** The rows of a page of the review, with what each row's response reads besides its collections. */
+    @EntityGraph(attributePaths = {"createdBy", "category.owner", "category.parent.owner"})
+    @Query("SELECT t FROM Transaction t WHERE t.id IN :ids")
+    List<Transaction> findAllWithDetailsByIdIn(@Param("ids") Collection<Long> ids);
+
+    /**
      * Loads the participants of transactions already read, in one query. Collections come by a second
      * query instead of the page query, so the page is cut by the database, not in memory.
      */

@@ -10,6 +10,10 @@ describe("countActiveFilters", () => {
     expect(countActiveFilters({ categoryId: 7 })).toBe(1);
   });
 
+  it("counts the neutral movements choice as one filter", () => {
+    expect(countActiveFilters({ kind: "NEUTRAL" })).toBe(1);
+  });
+
   it("counts an amount range once, whatever bounds are set", () => {
     expect(countActiveFilters({ amountMin: 10, amountMax: 500 })).toBe(1);
   });

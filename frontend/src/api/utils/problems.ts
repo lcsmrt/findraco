@@ -58,6 +58,7 @@ const PROBLEM_COPY = {
   "transaction-not-awaiting-confirmation": "problems.transaction-not-awaiting-confirmation",
   "transaction-category-type-mismatch": "problems.transaction-category-type-mismatch",
   "item-category-type-mismatch": "problems.item-category-type-mismatch",
+  "neutral-kind-invalid": "problems.neutral-kind-invalid",
   "items-exceed-amount": "problems.items-exceed-amount",
   "participant-shares-mismatch": "problems.participant-shares-mismatch",
   "participant-duplicate": "problems.participant-duplicate",

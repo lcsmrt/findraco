@@ -1,6 +1,7 @@
 package com.lcs.findraco.transaction.request;
 
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionType;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
@@ -41,4 +42,6 @@ public record CreateTransactionRequest(
         List<TransactionParticipantRequest> participants,
 
         @Valid @Size(max = 100, message = "A transaction takes at most 100 items.")
-        List<TransactionItemRequest> items) {}
+        List<TransactionItemRequest> items,
+
+        TransactionKind kind) {}

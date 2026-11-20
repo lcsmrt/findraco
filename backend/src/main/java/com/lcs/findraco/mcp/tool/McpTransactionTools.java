@@ -13,6 +13,7 @@ import com.lcs.findraco.mcp.service.McpValidation;
 import com.lcs.findraco.shared.error.DomainException;
 import com.lcs.findraco.shared.error.ProblemType;
 import com.lcs.findraco.transaction.model.SplitMode;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
@@ -65,7 +66,9 @@ public class McpTransactionTools {
             title = "List transactions",
             description = "Lists the transactions of a plan, newest first, at most 50 per call, each with id, "
                     + "description, amount, date, type, category and status (ACTUAL happened, FORECAST is expected "
-                    + "and not confirmed yet, PENDING is due but waits for its confirmation). Filter by period, "
+                    + "and not confirmed yet, PENDING is due but waits for its confirmation) and kind (none for a "
+                    + "normal income or expense; TRANSFER, CARD_BILL_PAYMENT and SAVINGS count in no total, REFUND "
+                    + "lowers the spending of its category). Filter by period, "
                     + "category, type, status, description text, or only what has no category; each row also says "
                     + "whom it is attributed to and its place in a series (\"3/6\" or \"monthly\"). The answer says "
                     + "how many matched and how to get the next page.",
@@ -106,6 +109,7 @@ public class McpTransactionTools {
                             null,
                             status,
                             uncategorized,
+                            null,
                             pageNumber,
                             PAGE_SIZE,
                             null,
@@ -135,8 +139,11 @@ public class McpTransactionTools {
                     + "attributedTo names other members: one name puts the whole amount on that member, two or more "
                     + "split it equally. The date is today unless given; the category is by name (see "
                     + "list_categories) and the transaction is uncategorized without one. Installments, "
-                    + "recurrences and splits by fixed amounts are not created from here. Returns the stored "
-                    + "transaction.",
+                    + "recurrences and splits by fixed amounts are not created from here. A kind marks what is not "
+                    + "plain income or expense: TRANSFER (between members), CARD_BILL_PAYMENT (paying the card bill) "
+                    + "and SAVINGS (money set aside) count in no total and take no category or items, and one member; "
+                    + "REFUND is a CREDIT that gives back spending and needs the expense category it pays back. "
+                    + "Returns the stored transaction.",
             annotations = @McpTool.McpAnnotations(destructiveHint = false, openWorldHint = false))
     public CallToolResult createTransaction(
             @McpToolParam(description = "DEBIT for an expense, CREDIT for income") TransactionType type,
@@ -149,7 +156,12 @@ public class McpTransactionTools {
                             required = false,
                             description = "Names of the plan members it is for (first or full name), at most 20; "
                                     + "the amount is split equally between them. The user when omitted")
-                    List<String> attributedTo) {
+                    List<String> attributedTo,
+            @McpToolParam(
+                            required = false,
+                            description = "TRANSFER, CARD_BILL_PAYMENT, SAVINGS or REFUND; a normal income or "
+                                    + "expense when omitted")
+                    TransactionKind kind) {
         return runner.inPlan("create_transaction", plan, resolved -> {
             List<TransactionParticipantRequest> participants = attributedTo == null || attributedTo.isEmpty()
                     ? null
@@ -162,7 +174,17 @@ public class McpTransactionTools {
             LocalDate when =
                     date != null ? date : userService.today(resolved.ctx().userId());
             CreateTransactionRequest request = validation.valid(new CreateTransactionRequest(
-                    categoryId, type, amount, description, null, when, null, SplitMode.EQUAL, participants, null));
+                    categoryId,
+                    type,
+                    amount,
+                    description,
+                    null,
+                    when,
+                    null,
+                    SplitMode.EQUAL,
+                    participants,
+                    null,
+                    kind));
             return saved(resolved, transactionService.create(request, resolved.ctx()));
         });
     }
@@ -203,11 +225,14 @@ public class McpTransactionTools {
     @McpTool(
             name = "update_transaction",
             title = "Update transaction",
-            description = "Corrects the amount, the date, the description or the category of one transaction; "
+            description = "Corrects the amount, the date, the description, the category or the kind of one "
+                    + "transaction (TRANSFER, CARD_BILL_PAYMENT, SAVINGS or REFUND; removeKind makes it a plain "
+                    + "income or expense again); "
                     + "everything else stays as stored. For an occurrence of a series only that occurrence changes "
                     + "(a later edit of the whole series in the app may reset it to the series values). A transaction "
                     + "split by fixed amounts cannot change its amount here. Pass at least one of amount, date, "
-                    + "description, category and removeCategory (which leaves it uncategorized). Find the id with "
+                    + "description, category, removeCategory (which leaves it uncategorized), kind and removeKind. "
+                    + "Find the id with "
                     + "list_transactions.",
             annotations =
                     @McpTool.McpAnnotations(destructiveHint = false, idempotentHint = true, openWorldHint = false))
@@ -222,6 +247,10 @@ public class McpTransactionTools {
                     String category,
             @McpToolParam(required = false, description = "true to leave the transaction with no category")
                     Boolean removeCategory,
+            @McpToolParam(required = false, description = "TRANSFER, CARD_BILL_PAYMENT, SAVINGS or REFUND")
+                    TransactionKind kind,
+            @McpToolParam(required = false, description = "true to make it a plain income or expense again")
+                    Boolean removeKind,
             @McpToolParam(required = false, description = "Plan name or id; the default plan when omitted")
                     String plan) {
         return runner.inPlan("update_transaction", plan, resolved -> {
@@ -230,9 +259,20 @@ public class McpTransactionTools {
             if (withCategory && clearCategory) {
                 throw new McpToolException("Pass either category or removeCategory, not both.");
             }
-            if (amount == null && date == null && description == null && !withCategory && !clearCategory) {
-                throw new McpToolException(
-                        "Pass at least one of amount, date and description (or category or removeCategory) to change.");
+            boolean withKind = kind != null;
+            boolean clearKind = Boolean.TRUE.equals(removeKind);
+            if (withKind && clearKind) {
+                throw new McpToolException("Pass either kind or removeKind, not both.");
+            }
+            if (amount == null
+                    && date == null
+                    && description == null
+                    && !withCategory
+                    && !clearCategory
+                    && !withKind
+                    && !clearKind) {
+                throw new McpToolException("Pass at least one of amount, date and description (or category, "
+                        + "removeCategory, kind or removeKind) to change.");
             }
             Long categoryId = withCategory ? categories.resolve(category, resolved.name(), resolved.ctx()) : null;
             TransactionResponse stored = transactionService.getById(id, resolved.ctx());
@@ -240,8 +280,15 @@ public class McpTransactionTools {
                 throw new McpToolException("Transaction " + id + " is split by fixed amounts, so its amount "
                         + "cannot change from here. Edit it in the app.");
             }
-            UpdateTransactionRequest request = validation.valid(
-                    McpUpdateCopy.of(stored, amount, date, description, withCategory || clearCategory, categoryId));
+            UpdateTransactionRequest request = validation.valid(McpUpdateCopy.of(
+                    stored,
+                    amount,
+                    date,
+                    description,
+                    withCategory || clearCategory,
+                    categoryId,
+                    withKind || clearKind,
+                    kind));
             // SPEC_DEVIATION: design.md sends an occurrence of a series through editSeries with scope THIS_ONE.
             // Reason: that edit keeps the occurrence's own date and takes its category and split from the series
             // definition, so it could neither move the date (spec Edit 1) nor keep every other field as stored.

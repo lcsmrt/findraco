@@ -17,6 +17,7 @@ import { maskDate } from "@/utils/string/masks";
 import { isValid } from "date-fns";
 import { CheckIcon, CopyIcon, PencilIcon, RepeatIcon, Trash2Icon, UsersIcon } from "lucide-react";
 import { useState } from "react";
+import { categoryTypeFor, isNeutralKind, KIND_LABEL_KEYS } from "../utils/movementKind";
 import { CategoryCombobox } from "./CategoryCombobox";
 import type { InlineSaveBody } from "./transactionColumns";
 import { useTranslation } from "react-i18next";
@@ -128,7 +129,7 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
 }
 
 export function EditableCategoryCell({ transaction, onSave }: EditableCellProps) {
-  const { category, type } = transaction;
+  const { category, type, kind } = transaction;
   const [editing, setEditing] = useState(false);
 
   function handleValueChange(newCategory: Category | null | undefined) {
@@ -150,7 +151,8 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
     </Text>
   );
 
-  if (!transaction.permissions.edit) {
+  // A neutral movement has no category, and the API refuses one.
+  if (!transaction.permissions.edit || isNeutralKind(kind)) {
     return display;
   }
 
@@ -167,7 +169,7 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
       <CategoryCombobox
         value={category ?? null}
         onValueChange={handleValueChange}
-        type={type}
+        type={categoryTypeFor(type, kind)}
         defaultOpen
         onOpenChange={handleOpenChange}
       />
@@ -351,6 +353,18 @@ export function TransactionStatusBadge({ status }: TransactionStatusBadgeProps) 
   return <Badge variant="outline">{t("transactions.transactionStatusBadge.forecast")}</Badge>;
 }
 
+type TransactionKindBadgeProps = {
+  kind: Transaction["kind"];
+};
+
+/** Names a row that counts as something other than income or expense; a normal row has none. */
+export function TransactionKindBadge({ kind }: TransactionKindBadgeProps) {
+  const { t } = useTranslation();
+
+  if (!kind) return null;
+  return <Badge variant="secondary">{t(KIND_LABEL_KEYS[kind])}</Badge>;
+}
+
 /** The marker of a transaction that belongs to a series; the table and the phone list share it. */
 export function SeriesBadge() {
   const { t } = useTranslation();
@@ -370,6 +384,7 @@ export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
     <div className="flex items-center gap-1.5">
       <EditableDescriptionCell transaction={transaction} onSave={onSave} />
       {transaction.seriesId && <SeriesBadge />}
+      <TransactionKindBadge kind={transaction.kind} />
       <TransactionStatusBadge status={transaction.status} />
     </div>
   );
@@ -383,7 +398,8 @@ type ParticipantsCellProps = {
 };
 
 export function ParticipantsCell({ transaction, members, canEdit, onSave }: ParticipantsCellProps) {
-  if (!canEdit || !transaction.permissions.edit) {
+  // A neutral movement is the user's own: the API refuses anyone else on it.
+  if (!canEdit || !transaction.permissions.edit || isNeutralKind(transaction.kind)) {
     return <ParticipantsSummary participants={transaction.participants} />;
   }
   return <EditableParticipantsCell transaction={transaction} members={members} onSave={onSave} />;

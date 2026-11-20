@@ -8,7 +8,7 @@ import { Table, TableContent, TablePagination } from "@/components/table";
 import type { Sorting } from "@/components/table/components/TableHeader";
 import type { Pagination } from "@/components/table/TablePagination";
 import type { ColumnDef } from "@tanstack/react-table";
-import { SearchIcon, UploadIcon, XIcon } from "lucide-react";
+import { ListChecksIcon, SearchIcon, UploadIcon, XIcon } from "lucide-react";
 import { useRef } from "react";
 import type { FilterChip } from "./useTransactionFilterChips";
 import { TransactionMobileList } from "./components/TransactionMobileList";
@@ -24,6 +24,8 @@ type TransactionsPageViewProps = {
   onClearFilters: () => void;
   onImport: (file: File) => void;
   isImporting: boolean;
+  /** Opens the review of rows that look like neutral movements; absent for a member who may not apply. */
+  onReview?: () => void;
   transactions: Transaction[];
   isLoading: boolean;
   pagination?: Partial<Pagination>;
@@ -46,6 +48,7 @@ export function TransactionsPageView({
   onClearFilters,
   onImport,
   isImporting,
+  onReview,
   transactions,
   isLoading,
   pagination,
@@ -113,6 +116,19 @@ export function TransactionsPageView({
               <UploadIcon className="h-4 w-4" />
               <span className="hidden sm:inline">{importLabel}</span>
             </Button>
+            {onReview && (
+              <Button
+                variant="outline"
+                onClick={onReview}
+                // The label hides below `sm`; the button keeps its name there.
+                aria-label={t("transactions.transactionsPageView.reviewMovements")}
+              >
+                <ListChecksIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">
+                  {t("transactions.transactionsPageView.reviewMovements")}
+                </span>
+              </Button>
+            )}
             <input
               ref={fileInputRef}
               type="file"

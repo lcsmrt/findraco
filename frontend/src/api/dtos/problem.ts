@@ -54,6 +54,7 @@ export type ProblemType =
   | "transaction-not-awaiting-confirmation"
   | "transaction-category-type-mismatch"
   | "item-category-type-mismatch"
+  | "neutral-kind-invalid"
   | "items-exceed-amount"
   | "participant-shares-mismatch"
   | "participant-duplicate"

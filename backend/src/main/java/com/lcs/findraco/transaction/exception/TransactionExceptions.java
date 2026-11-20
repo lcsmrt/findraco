@@ -63,6 +63,13 @@ public class TransactionExceptions {
         }
     }
 
+    /** A kind the row cannot carry; the detail names the rule it broke. */
+    public static class NeutralKindInvalidException extends DomainException {
+        public NeutralKindInvalidException(String detail) {
+            super(ProblemType.NEUTRAL_KIND_INVALID, HttpStatus.UNPROCESSABLE_CONTENT, "kind", detail);
+        }
+    }
+
     public static class ItemsTotalExceedsAmountException extends DomainException {
         public ItemsTotalExceedsAmountException() {
             super(

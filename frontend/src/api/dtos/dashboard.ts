@@ -25,6 +25,10 @@ export type DashboardSummaryResponse = {
   actualIncome: number;
   actualExpenses: number;
   actualBalance: number;
+  /** Money out of the plan in neutral movements (transfers, card bills, savings); in no total above. */
+  neutralOut: number;
+  /** Money in through neutral movements; in no total above. */
+  neutralIn: number;
   personBreakdown: PersonBreakdown[];
 };
 

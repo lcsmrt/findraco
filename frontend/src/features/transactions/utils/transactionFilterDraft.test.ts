@@ -111,4 +111,17 @@ describe("transaction filter draft mapping", () => {
     expect(draft.type).toBe("ALL");
     expect(fromDraft(draft).filter).toEqual({});
   });
+
+  it("round-trips the neutral movements choice and drops it when unchecked", () => {
+    const applied: AppliedFilters = {
+      filter: { kind: "NEUTRAL" },
+      categoryForDisplay: null,
+      memberForDisplay: null,
+    };
+    const draft = toDraft(applied);
+
+    expect(draft.neutral).toBe(true);
+    expect(fromDraft(draft).filter).toEqual({ kind: "NEUTRAL" });
+    expect(fromDraft({ ...draft, neutral: false }).filter).toEqual({});
+  });
 });

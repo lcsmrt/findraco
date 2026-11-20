@@ -7,6 +7,7 @@ import com.lcs.findraco.dashboard.response.MonthlyTrendResponse;
 import com.lcs.findraco.dashboard.response.PersonBreakdownResponse;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.service.PlanContext;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.service.SeriesHorizon;
 import com.lcs.findraco.user.service.UserService;
@@ -60,16 +61,24 @@ public class DashboardService {
         BigDecimal totalIncome = reportRepository.sumByPlanAndTypeAndDateRange(
                 plan, TransactionType.CREDIT, startDate, endDate, memberId);
 
-        BigDecimal totalExpenses = reportRepository.sumByPlanAndTypeAndDateRange(
-                plan, TransactionType.DEBIT, startDate, endDate, memberId);
+        // A refund gives spending back: it lowers the expenses and is no income.
+        BigDecimal totalExpenses = reportRepository
+                .sumByPlanAndTypeAndDateRange(plan, TransactionType.DEBIT, startDate, endDate, memberId)
+                .subtract(reportRepository.sumRefundsByPlanAndDateRange(plan, startDate, endDate, memberId));
 
         BigDecimal netBalance = totalIncome.subtract(totalExpenses);
 
         LocalDate today = userService.today(ctx.userId());
         BigDecimal actualIncome = reportRepository.sumActualByPlanAndTypeAndDateRange(
                 plan, TransactionType.CREDIT, startDate, endDate, memberId, today);
-        BigDecimal actualExpenses = reportRepository.sumActualByPlanAndTypeAndDateRange(
-                plan, TransactionType.DEBIT, startDate, endDate, memberId, today);
+        BigDecimal actualExpenses = reportRepository
+                .sumActualByPlanAndTypeAndDateRange(plan, TransactionType.DEBIT, startDate, endDate, memberId, today)
+                .subtract(
+                        reportRepository.sumActualRefundsByPlanAndDateRange(plan, startDate, endDate, memberId, today));
+        BigDecimal neutralOut = reportRepository.sumNeutralByPlanAndTypeAndDateRange(
+                plan, TransactionType.DEBIT, startDate, endDate, memberId);
+        BigDecimal neutralIn = reportRepository.sumNeutralByPlanAndTypeAndDateRange(
+                plan, TransactionType.CREDIT, startDate, endDate, memberId);
 
         List<PersonBreakdownResponse> personBreakdown = buildPersonBreakdown(plan, startDate, endDate, memberId, today);
 
@@ -80,6 +89,8 @@ public class DashboardService {
                 actualIncome,
                 actualExpenses,
                 actualIncome.subtract(actualExpenses),
+                neutralOut,
+                neutralIn,
                 personBreakdown);
     }
 
@@ -103,14 +114,17 @@ public class DashboardService {
             int year = ((Number) row[0]).intValue();
             int month = ((Number) row[1]).intValue();
             TransactionType type = (TransactionType) row[2];
-            BigDecimal amount = (BigDecimal) row[3];
+            TransactionKind kind = (TransactionKind) row[3];
+            BigDecimal amount = (BigDecimal) row[4];
 
             BigDecimal[] incomeAndExpenses = amountsByMonth.computeIfAbsent(
                     new MonthKey(year, month), k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO});
-            if (type == TransactionType.CREDIT) {
-                incomeAndExpenses[0] = amount;
+            if (kind == TransactionKind.REFUND) {
+                incomeAndExpenses[1] = incomeAndExpenses[1].subtract(amount);
+            } else if (type == TransactionType.CREDIT) {
+                incomeAndExpenses[0] = incomeAndExpenses[0].add(amount);
             } else {
-                incomeAndExpenses[1] = amount;
+                incomeAndExpenses[1] = incomeAndExpenses[1].add(amount);
             }
         }
 
@@ -133,15 +147,18 @@ public class DashboardService {
             Long userId = ((Number) row[0]).longValue();
             String name = (String) row[1];
             TransactionType type = (TransactionType) row[2];
-            BigDecimal amount = (BigDecimal) row[3];
-            BigDecimal actual = (BigDecimal) row[4];
+            TransactionKind kind = (TransactionKind) row[3];
+            BigDecimal amount = (BigDecimal) row[4];
+            BigDecimal actual = (BigDecimal) row[5];
 
             namesByUserId.putIfAbsent(userId, name);
             BigDecimal[] amounts = amountsByUserId.computeIfAbsent(
                     userId, k -> new BigDecimal[] {BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO, BigDecimal.ZERO});
-            int offset = type == TransactionType.CREDIT ? 0 : 1;
-            amounts[offset] = amount;
-            amounts[offset + 2] = actual;
+            // A refund lowers the spending of the member it is attributed to.
+            boolean refund = kind == TransactionKind.REFUND;
+            int offset = type == TransactionType.CREDIT && !refund ? 0 : 1;
+            amounts[offset] = amounts[offset].add(refund ? amount.negate() : amount);
+            amounts[offset + 2] = amounts[offset + 2].add(refund ? actual.negate() : actual);
         }
 
         List<PersonBreakdownResponse> breakdown = new ArrayList<>();

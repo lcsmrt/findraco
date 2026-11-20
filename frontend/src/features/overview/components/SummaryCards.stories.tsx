@@ -30,6 +30,8 @@ function summary(people: Person[]): DashboardSummaryResponse {
     actualIncome: totalIncome,
     actualExpenses: totalExpenses,
     actualBalance: totalIncome - totalExpenses,
+    neutralOut: 0,
+    neutralIn: 0,
     personBreakdown: people.map((person) => ({
       ...person,
       actualIncome: person.income,
@@ -66,6 +68,28 @@ const withForecast: DashboardSummaryResponse = {
   actualBalance: 10200,
   // The members' actual amounts add up to the headline, as the API reports them.
   personBreakdown: couple.personBreakdown.map((person) => ({ ...person, ...actualByPerson[person.userId] })),
+};
+
+// A period with no neutral movements shows no line for them.
+export const Default: Story = {
+  play: async ({ canvas }) => {
+    await expect(visibleText(canvas, "Net")).toBeVisible();
+    await expect(canvas.queryByText("Neutral")).toBeNull();
+    await expect(canvas.queryByText(/^out /)).toBeNull();
+  },
+};
+
+// A card bill and Pix between the members moved money that is in no figure above.
+const withNeutral: DashboardSummaryResponse = { ...couple, neutralOut: 2000, neutralIn: 500 };
+
+export const WithNeutralMovements: Story = {
+  args: { view: summaryView(withNeutral, null, colorOf) },
+  play: async ({ canvas }) => {
+    await expect(visibleText(canvas, "Neutral")).toBeVisible();
+    await expect(visibleText(canvas, "out R$ 2.000,00 · in R$ 500,00")).toBeVisible();
+    // The result is untouched by them.
+    await expect(visibleText(canvas, "R$ 5.852,50")).toBeVisible();
+  },
 };
 
 export const WithForecast: Story = {

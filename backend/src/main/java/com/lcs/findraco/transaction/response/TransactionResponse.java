@@ -4,6 +4,7 @@ import com.lcs.findraco.category.response.CategoryResponse;
 import com.lcs.findraco.transaction.model.Confirmation;
 import com.lcs.findraco.transaction.model.SplitMode;
 import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionStatus;
 import com.lcs.findraco.transaction.model.TransactionType;
 import java.math.BigDecimal;
@@ -16,6 +17,7 @@ public record TransactionResponse(
         long version,
         @Nullable CategoryResponse category,
         TransactionType type,
+        @Nullable TransactionKind kind,
         BigDecimal amount,
         String description,
         @Nullable String seriesId,
@@ -38,6 +40,7 @@ public record TransactionResponse(
                 transaction.getVersion(),
                 transaction.getCategory() != null ? CategoryResponse.from(transaction.getCategory()) : null,
                 transaction.getType(),
+                transaction.getKind(),
                 transaction.getAmount(),
                 transaction.getDescription(),
                 transaction.getSeriesId(),

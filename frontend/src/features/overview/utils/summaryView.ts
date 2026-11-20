@@ -25,12 +25,15 @@ export type SummaryView = {
   expenses: SummaryFigure;
   balance: number;
   balanceActual: number;
+  /** Money moved by neutral movements, outside the figures above; null when there is none to show. */
+  neutral: { out: number; in: number } | null;
 };
 
 /**
  * The Overview summary: Income and Expenses with a segment
  * per member, from the unfiltered dashboard. With a member selected, the figures are
- * that member's and their segment is highlighted against the plan's total.
+ * that member's and their segment is highlighted against the plan's total. The neutral movements
+ * are the plan's and are not split by member, so a member's view has none.
  */
 export function summaryView(
   data: DashboardSummaryResponse,
@@ -79,5 +82,9 @@ export function summaryView(
     ),
     balance: memberId != null ? (selected?.net ?? 0) : data.netBalance,
     balanceActual: memberId != null ? (selected?.actualNet ?? 0) : data.actualBalance,
+    neutral:
+      memberId == null && (data.neutralOut !== 0 || data.neutralIn !== 0)
+        ? { out: data.neutralOut, in: data.neutralIn }
+        : null,
   };
 }

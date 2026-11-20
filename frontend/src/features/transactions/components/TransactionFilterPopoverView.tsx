@@ -2,6 +2,7 @@ import type { Category, TransactionType, PlanMember } from "@/api/dtos";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
+import { Checkbox } from "@/components/input/base/Checkbox";
 import { Field, FieldLabel } from "@/components/input/base/Field";
 import {
   Select,
@@ -134,6 +135,18 @@ export function TransactionFilterPopoverView({
                 </SelectItem>
               </SelectContent>
             </Select>
+          </Field>
+
+          {/* A checkbox sits beside its label, a layout FormField does not offer. */}
+          <Field orientation="horizontal">
+            <Checkbox
+              id={`${fieldId}-neutral`}
+              checked={draft.neutral}
+              onCheckedChange={(neutral) => setDraft((d) => ({ ...d, neutral }))}
+            />
+            <FieldLabel htmlFor={`${fieldId}-neutral`}>
+              {t("transactions.transactionFilterPopoverView.neutral")}
+            </FieldLabel>
           </Field>
 
           <Field>

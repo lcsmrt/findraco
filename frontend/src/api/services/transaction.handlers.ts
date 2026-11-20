@@ -5,6 +5,8 @@ import type {
   TransactionTrashEntry,
   ImportResultResponse,
   LineProblem,
+  NeutralCandidate,
+  SetTransactionKindRequest,
   Problem,
   ProblemType,
   ConfirmTransactionRequest,
@@ -29,6 +31,24 @@ export const transactionHandlers = {
   list(page: PagedResponse<Transaction>): HttpHandler {
     return http.get<PlanParams, never, PagedResponse<Transaction>>(base, () =>
       HttpResponse.json(page),
+    );
+  },
+  neutralCandidates(page: PagedResponse<NeutralCandidate>): HttpHandler {
+    return http.get<PlanParams, never, PagedResponse<NeutralCandidate>>(
+      `${base}/neutral-candidates`,
+      () => HttpResponse.json(page),
+    );
+  },
+  setKind(transaction: Transaction): HttpHandler {
+    return http.post<TransactionParams, SetTransactionKindRequest["body"], Transaction>(
+      `${base}/:id/kind`,
+      () => HttpResponse.json(transaction),
+    );
+  },
+  setKindRejected(status: number, type: ProblemType): HttpHandler {
+    return http.post<TransactionParams, SetTransactionKindRequest["body"], Problem>(
+      `${base}/:id/kind`,
+      () => HttpResponse.json({ type: `urn:findraco:problem:${type}`, status }, { status }),
     );
   },
   remove(deletionId = 1): HttpHandler {

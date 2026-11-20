@@ -173,7 +173,8 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "fk_transactions_created_by",
                         "fk_transactions_categories",
                         "fk_transactions_recurrence_definitions",
-                        "fk_transactions_deletion");
+                        "fk_transactions_deletion",
+                        "ck_transactions_kind");
         assertThat(namesOf(jdbc, "SELECT conname FROM pg_constraint WHERE conrelid = 'public.categories'::regclass"))
                 .containsExactlyInAnyOrder(
                         "pk_categories",
@@ -347,6 +348,34 @@ class MigrationsIT extends AbstractIntegrationTest {
         assertThatThrownBy(() -> insertTransaction(jdbc, plan, owner, "0.00", null))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasMessageContaining("ck_transactions_amount_positive");
+    }
+
+    @Test
+    void transactionKindIsAClosedNullableSet() {
+        JdbcTemplate jdbc = new JdbcTemplate(dataSource);
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        insertTransaction(jdbc, plan, owner, "10.00", null);
+        for (String kind : List.of("TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND")) {
+            jdbc.update("UPDATE transactions SET kind = ? WHERE plan_id = ?", kind, plan.getId());
+        }
+
+        assertThat(jdbc.queryForObject(
+                        "SELECT is_nullable FROM information_schema.columns "
+                                + "WHERE table_name = 'transactions' AND column_name = 'kind'",
+                        String.class))
+                .isEqualTo("YES");
+        insertTransaction(jdbc, plan, owner, "20.00", null);
+        assertThat(jdbc.queryForList(
+                        "SELECT kind FROM transactions WHERE plan_id = ? AND amount = 20.00",
+                        String.class,
+                        plan.getId()))
+                .singleElement()
+                .isNull();
+        assertThatThrownBy(() -> jdbc.update("UPDATE transactions SET kind = 'OTHER' WHERE plan_id = ?", plan.getId()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_transactions_kind");
     }
 
     @Test

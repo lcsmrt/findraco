@@ -1,6 +1,6 @@
 import type { Transaction } from "@/api/dtos/transaction";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import { TransactionMobileList } from "./TransactionMobileList";
 
 function transaction(
@@ -118,6 +118,27 @@ export const SeriesRow: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getAllByText("Series")).toHaveLength(1);
     await expect(canvas.getByRole("button", { name: /Gym.*Series/ })).toBeVisible();
+  },
+};
+
+// One row per kind, each with its badge; a normal row has none.
+export const MovementKinds: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Pix to Livia", "2026-10-14", { kind: "TRANSFER", category: undefined }),
+      transaction(2, "Nubank bill", "2026-10-14", { kind: "CARD_BILL_PAYMENT", category: undefined }),
+      transaction(3, "Emergency fund", "2026-10-13", { kind: "SAVINGS", category: undefined }),
+      transaction(4, "Pizza paid back", "2026-10-13", { type: "CREDIT", kind: "REFUND" }),
+      transaction(5, "Groceries", "2026-10-12"),
+    ],
+  },
+  play: async ({ canvas }) => {
+    const rows = canvas.getAllByRole("button");
+    await expect(within(rows[0]).getByText("Between members")).toBeVisible();
+    await expect(within(rows[1]).getByText("Card bill")).toBeVisible();
+    await expect(within(rows[2]).getByText("Savings")).toBeVisible();
+    await expect(within(rows[3]).getByText("Refund")).toBeVisible();
+    await expect(within(rows[4]).queryByText(/Between members|Card bill|Savings|Refund/)).toBeNull();
   },
 };
 

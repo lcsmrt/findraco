@@ -1,5 +1,6 @@
 package com.lcs.findraco.mcp.service;
 
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.request.TransactionItemRequest;
 import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
@@ -11,7 +12,7 @@ import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 
 /**
- * Builds the edit of a transaction that changes only the amount, the date or the description. The API's edit replaces
+ * Builds the edit of a transaction that changes only the amount, the date, the description, the category or the kind. The API's edit replaces
  * every field, items and participants included, so each stored field is copied into the request, and a field left out
  * here would be wiped from the transaction.
  */
@@ -51,6 +52,19 @@ public final class McpUpdateCopy {
             @Nullable String description,
             boolean changeCategory,
             @Nullable Long categoryId) {
+        return of(stored, amount, date, description, changeCategory, categoryId, false, null);
+    }
+
+    /** As above; with {@code changeKind} the transaction takes {@code kind}, a normal row when it is null. */
+    public static UpdateTransactionRequest of(
+            TransactionResponse stored,
+            @Nullable BigDecimal amount,
+            @Nullable LocalDate date,
+            @Nullable String description,
+            boolean changeCategory,
+            @Nullable Long categoryId,
+            boolean changeKind,
+            @Nullable TransactionKind kind) {
         Long keptCategoryId =
                 stored.category() == null ? null : stored.category().id();
         return new UpdateTransactionRequest(
@@ -73,6 +87,7 @@ public final class McpUpdateCopy {
                                 item.category() == null ? null : item.category().id(),
                                 item.quantity()))
                         .toList(),
+                changeKind ? kind : stored.kind(),
                 stored.version());
     }
 }

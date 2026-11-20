@@ -195,7 +195,8 @@ class McpCaptureToolsIT extends AbstractMcpIntegrationTest {
         assertThat(create).isNotNull();
         JsonNode schema = create.path("inputSchema");
         assertThat(schema.path("properties").propertyNames())
-                .containsExactlyInAnyOrder("type", "amount", "description", "date", "category", "plan", "attributedTo");
+                .containsExactlyInAnyOrder(
+                        "type", "amount", "description", "date", "category", "plan", "attributedTo", "kind");
         assertThat(schema.path("required").valueStream().map(JsonNode::asString))
                 .containsExactlyInAnyOrder("type", "amount", "description");
     }
