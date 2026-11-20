@@ -18,7 +18,7 @@ import { Text } from "@/components/typography/base/Text";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CopyIcon, Trash2Icon } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 import {
   Controller,
   useFieldArray,
@@ -33,6 +33,7 @@ import { CategoryCombobox } from "./CategoryCombobox";
 import { EndDateField } from "./EndDateField";
 import { InstallmentsField } from "./InstallmentsField";
 import { ItemsField } from "./ItemsField";
+import { MovementKindField } from "./MovementKindField";
 import {
   TransactionFormMode,
   TransactionFormOutput,
@@ -46,6 +47,12 @@ import {
 import { useSeriesScope } from "./useSeriesScope";
 import { useTransactionFormSubmit } from "./useTransactionFormSubmit";
 import { useTranslation } from "react-i18next";
+import {
+  categoryTypeFor,
+  hidesItems,
+  isNeutralKind,
+  kindForType,
+} from "../utils/movementKind";
 
 type TransactionFormControl = Control<TransactionFormValues, unknown, TransactionFormOutput>;
 type TransactionFormSetValue = UseFormSetValue<TransactionFormValues>;
@@ -214,6 +221,10 @@ export function TransactionFormDrawer({
           )}
         </FormField>
 
+        {!isSeriesEdit && (
+          <MovementKindField control={control} setValue={setValue} disabled={isPending} />
+        )}
+
         <CategoryField
           control={control}
           onCategoryChange={applyCategoryAttribution}
@@ -242,31 +253,35 @@ export function TransactionFormDrawer({
         )}
 
         {!isSeriesEdit && (
-          <ItemsField
-            control={control}
-            disabled={isPending}
-            renderCategory={(picker) => (
-              <CategoryCombobox
-                value={picker.value}
-                onValueChange={picker.onValueChange}
-                type={picker.type}
-                disabled={picker.disabled}
-              />
-            )}
-          />
+          <HiddenForKinds control={control} hiddenFor={hidesItems}>
+            <ItemsField
+              control={control}
+              disabled={isPending}
+              renderCategory={(picker) => (
+                <CategoryCombobox
+                  value={picker.value}
+                  onValueChange={picker.onValueChange}
+                  type={picker.type}
+                  disabled={picker.disabled}
+                />
+              )}
+            />
+          </HiddenForKinds>
         )}
 
         {showAttribution && (
-          <AttributionFields
-            control={control}
-            participants={participants}
-            onEdit={() => {
-              participantsTouchedRef.current = true;
-            }}
-            members={members}
-            currentUserId={currentUserId}
-            disabled={isPending}
-          />
+          <HiddenForKinds control={control} hiddenFor={isNeutralKind}>
+            <AttributionFields
+              control={control}
+              participants={participants}
+              onEdit={() => {
+                participantsTouchedRef.current = true;
+              }}
+              members={members}
+              currentUserId={currentUserId}
+              disabled={isPending}
+            />
+          </HiddenForKinds>
         )}
 
         {transaction && isSeriesEdit && definition?.mode === "INSTALLMENT" && (
@@ -305,8 +320,23 @@ type SectionProps = {
   disabled: boolean;
 };
 
+type HiddenForKindsProps = {
+  control: TransactionFormControl;
+  hiddenFor: (kind: TransactionFormValues["kind"]) => boolean;
+  children: ReactNode;
+};
+
+/** Shows its fields unless the movement kind chosen has no use for them. */
+function HiddenForKinds({ control, hiddenFor, children }: HiddenForKindsProps) {
+  const kind = useWatch({ control, name: "kind" });
+
+  return hiddenFor(kind) ? null : children;
+}
+
 function TypeField({ control, setValue, disabled }: SectionProps) {
   const { t } = useTranslation();
+
+  const kind = useWatch({ control, name: "kind" });
 
   return (
     // The toggle group names itself, a layout FormField's label-for-input does not fit.
@@ -322,6 +352,8 @@ function TypeField({ control, setValue, disabled }: SectionProps) {
               field.onChange(type);
               // Categories belong to one type, so the chosen one no longer fits.
               setValue("category", null);
+              // A refund is only a credit.
+              setValue("kind", kindForType(kind, type));
             }}
             disabled={disabled}
           />
@@ -340,7 +372,9 @@ type CategoryFieldProps = {
 function CategoryField({ control, onCategoryChange, disabled }: CategoryFieldProps) {
   const { t } = useTranslation();
 
-  const type = useWatch({ control, name: "type" });
+  const [type, kind] = useWatch({ control, name: ["type", "kind"] });
+  // A neutral movement has no category; a refund takes an expense category although it is a credit.
+  if (isNeutralKind(kind)) return null;
 
   return (
     <FormField control={control} name="category" label={t("transactions.categoryField.category")}>
@@ -352,7 +386,7 @@ function CategoryField({ control, onCategoryChange, disabled }: CategoryFieldPro
             field.onChange(category);
             onCategoryChange(category);
           }}
-          type={type}
+          type={categoryTypeFor(type, kind)}
           disabled={disabled}
         />
       )}
@@ -378,7 +412,11 @@ function RecurrenceFields({ control, setValue, disabled }: SectionProps) {
               checked={field.value}
               onCheckedChange={(checked) => {
                 field.onChange(checked);
-                if (checked) return;
+                if (checked) {
+                  // A series carries no kind.
+                  setValue("kind", null);
+                  return;
+                }
                 // Turning repetition off drops its settings, so turning it back on starts clean.
                 setValue("recurrenceMode", undefined);
                 setValue("parcelsNumber", undefined);

@@ -767,6 +767,7 @@
       "descriptionIsRequired": "Description is required",
       "enterAtLeast2Installments": "Enter at least 2 installments",
       "itemsCannotExceedTheTransaction": "Items cannot exceed the transaction total",
+      "refundNeedsACategory": "A refund needs the category it pays back",
       "selectInstallmentOrRecurring": "Select installment or recurring",
       "sharesMustAddUpTo": "Shares must add up to the total amount",
       "theCurrentInstallmentCannotBe": "The current installment cannot be greater than the total",
@@ -788,6 +789,16 @@
       "items": "Items",
       "remainder": "Remainder: {{amount}}",
       "removeItem": "Remove item {{number}}"
+    },
+    "kindField": {
+      "movementKind": "Movement kind"
+    },
+    "kinds": {
+      "cardBillPayment": "Card bill",
+      "normal": "Normal",
+      "refund": "Refund",
+      "savings": "Savings",
+      "transfer": "Between members"
     },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Changing the number of parcels updates the whole series."

@@ -767,6 +767,7 @@
       "descriptionIsRequired": "A descrição é obrigatória",
       "enterAtLeast2Installments": "Informe pelo menos 2 parcelas",
       "itemsCannotExceedTheTransaction": "Os itens não podem passar do total da transação",
+      "refundNeedsACategory": "Um reembolso precisa da categoria que ele devolve",
       "selectInstallmentOrRecurring": "Selecione parcelada ou recorrente",
       "sharesMustAddUpTo": "As partes devem somar o valor total",
       "theCurrentInstallmentCannotBe": "A parcela atual não pode ser maior que o total",
@@ -788,6 +789,16 @@
       "items": "Itens",
       "remainder": "Restante: {{amount}}",
       "removeItem": "Remover o item {{number}}"
+    },
+    "kindField": {
+      "movementKind": "Tipo de movimento"
+    },
+    "kinds": {
+      "cardBillPayment": "Fatura",
+      "normal": "Normal",
+      "refund": "Reembolso",
+      "savings": "Guardar",
+      "transfer": "Entre membros"
     },
     "parcelsChangedWarning": {
       "changingTheNumberOfParcels": "Mudar o número de parcelas atualiza a série inteira."

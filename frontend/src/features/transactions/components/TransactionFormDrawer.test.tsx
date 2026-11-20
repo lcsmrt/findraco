@@ -832,6 +832,87 @@ describe("TransactionFormDrawer", () => {
     expect(screen.queryByRole("button", { name: "Clear date" })).toBeNull();
   });
 
+  async function chooseKind(user: ReturnType<typeof userEvent.setup>, name: string) {
+    await user.click(screen.getByRole("combobox", { name: "Movement kind" }));
+    await user.click(await screen.findByRole("option", { name }));
+  }
+
+  it("saves a neutral kind without category or split", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const food: Category = { id: 1, version: 0, type: "DEBIT", description: "Food" };
+    server.use(transactionHandlers.create({ ...savedTransaction, kind: "CARD_BILL_PAYMENT" }));
+    renderDrawer({ members: [lucas, livia], categories: [food] });
+    await user.type(screen.getByLabelText("Description"), "Card bill");
+    await user.type(screen.getByLabelText("Amount"), "150000");
+    await user.click(screen.getByLabelText("Category"));
+    await user.click(await screen.findByRole("option", { name: "Food" }));
+    await user.click(await screen.findByRole("button", { name: "Someone else" }));
+
+    await chooseKind(user, "Card bill");
+
+    expect(screen.queryByLabelText("Category")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Someone else" })).toBeNull();
+    expect(screen.queryByText("Items")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body).toMatchObject({
+      kind: "CARD_BILL_PAYMENT",
+      amount: 1500,
+      splitMode: "EQUAL",
+      participants: [{ memberId: lucas.userId }],
+      items: [],
+    });
+    expect(body).not.toHaveProperty("categoryId");
+  });
+
+  it("keeps the category of a refund, from the expense categories", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const food: Category = { id: 1, version: 0, type: "DEBIT", description: "Food" };
+    server.use(transactionHandlers.create({ ...savedTransaction, type: "CREDIT", kind: "REFUND" }));
+    renderDrawer({ members: [lucas], categories: [food] });
+    await user.type(screen.getByLabelText("Description"), "Pizza back");
+    await user.type(screen.getByLabelText("Amount"), "5000");
+    await user.click(screen.getByRole("button", { name: "Credit" }));
+    await user.click(screen.getByRole("combobox", { name: "Movement kind" }));
+    await user.click(await screen.findByRole("option", { name: "Refund" }));
+
+    expect(screen.queryByText("Items")).toBeNull();
+    await user.click(screen.getByLabelText("Category"));
+    await user.click(await screen.findByRole("option", { name: "Food" }));
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    expect(await sentBody(requests, "POST")).toMatchObject({
+      type: "CREDIT",
+      kind: "REFUND",
+      categoryId: 1,
+      items: [],
+    });
+    const categoryTypes = requests
+      .map((request) => new URL(request.url))
+      .filter((url) => url.pathname.endsWith("/category"))
+      .map((url) => url.searchParams.get("type"));
+    // The picker of a refund lists expense categories although the row is a credit.
+    expect(categoryTypes.at(-1)).toBe("DEBIT");
+  });
+
+  it("reopens a row with its movement kind", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const saved: Transaction = { ...savedTransaction, kind: "SAVINGS" };
+    server.use(transactionHandlers.update(saved));
+    renderDrawer({ mode: "edit", transaction: saved, members: [lucas, livia] });
+
+    expect(screen.getByRole("combobox", { name: "Movement kind" }).textContent).toContain("Savings");
+    expect(screen.queryByLabelText("Category")).toBeNull();
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    // The PUT replaces the whole row, so the kind has to travel back or it is cleared.
+    expect(await sentBody(requests, "PUT")).toMatchObject({ kind: "SAVINGS" });
+  });
+
   it("one-off shows no confirmation controls", () => {
     renderDrawer({ mode: "edit", transaction: savedTransaction, members: [lucas] });
 

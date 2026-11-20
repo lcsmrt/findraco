@@ -14,6 +14,7 @@ import { toCents } from "@/utils/money";
 import { addMonths, differenceInCalendarMonths } from "date-fns";
 import { toIsoDate } from "@/utils/dates";
 import { z } from "zod";
+import { hidesItems, isNeutralKind } from "../utils/movementKind";
 import type { InlineSaveBody } from "./transactionColumns";
 
 export type TransactionFormMode = "create" | "edit" | "duplicate";
@@ -34,6 +35,8 @@ function centsOf(value: number | null | undefined): number {
 export const transactionFormSchema = z
   .object({
     type: z.enum(["DEBIT", "CREDIT"]),
+    /** Empty for a normal income or expense. */
+    kind: z.enum(["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND"]).nullish(),
     description: z.string().min(1, "transactions.form.descriptionIsRequired"),
     amount: z.number().nullable().refine(isPositiveAmount, "transactions.form.amountMustBePositive"),
     category: z
@@ -98,7 +101,18 @@ export const transactionFormSchema = z
       }
     }
 
-    if (values.attributionMode === "SOMEONE" && values.participants.length === 0) {
+    if (values.kind === "REFUND" && !values.category) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "transactions.form.refundNeedsACategory",
+        path: ["category"],
+      });
+    }
+
+    // A neutral movement hides the attribution, so a choice left behind there must not block saving.
+    const attributed = !isNeutralKind(values.kind);
+
+    if (attributed && values.attributionMode === "SOMEONE" && values.participants.length === 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "transactions.form.choosePerson",
@@ -107,6 +121,7 @@ export const transactionFormSchema = z
     }
 
     if (
+      attributed &&
       values.attributionMode === "SPLIT" &&
       values.splitMode === "EXACT" &&
       values.participants.length > 0
@@ -464,27 +479,33 @@ export function toPayload(
   currentUserId?: number,
   stored?: StoredPeriod,
 ): Omit<UpdateTransactionRequest["body"], "version"> {
+  // A neutral movement is the user's own, with no category or items; the backend refuses anything else.
+  const neutral = isNeutralKind(values.kind);
   const { participants, splitMode } = attributionToPayload(
-    values,
+    neutral ? { ...values, attributionMode: "ME" } : values,
     showAttribution,
     currentUserId,
   );
 
   return {
     type: values.type,
+    // The PUT clears a kind it does not carry, so an edit always sends the one chosen.
+    kind: values.kind ?? undefined,
     description: values.description,
     amount: values.amount,
-    categoryId: values.category?.id,
+    categoryId: neutral ? undefined : values.category?.id,
     startDate: toIsoDate(values.date),
     parcelsNumber: stored?.parcelsNumber ?? undefined,
     endDate: datePart(stored?.endDate),
     splitMode,
     participants,
-    items: values.items.map((item) => ({
-      description: item.description,
-      amount: item.amount,
-      categoryId: item.category?.id,
-    })),
+    items: hidesItems(values.kind)
+      ? []
+      : values.items.map((item) => ({
+          description: item.description,
+          amount: item.amount,
+          categoryId: item.category?.id,
+        })),
   };
 }
 
@@ -502,6 +523,7 @@ export function toInlineSavePayload(
     params: { id: transaction.id },
     body: {
       type: transaction.type,
+      kind: transaction.kind ?? undefined,
       description: change.description ?? transaction.description,
       amount: change.amount ?? transaction.amount,
       categoryId: change.categoryId ?? transaction.category?.id,
@@ -617,6 +639,7 @@ export function buildDefaultValues(
     const isSeriesEdit = !!definition;
     return {
       type: transaction.type,
+      kind: transaction.kind ?? null,
       description: isSeriesEdit
         ? stripInstallmentSuffix(transaction.description)
         : transaction.description,
@@ -657,6 +680,7 @@ export function buildDefaultValues(
   }
   return {
     type: "DEBIT",
+    kind: null,
     description: "",
     amount: null,
     category: null,
