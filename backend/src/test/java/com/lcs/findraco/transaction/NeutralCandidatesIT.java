@@ -169,6 +169,28 @@ class NeutralCandidatesIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void oneWordNamesMatchOnlyTheWholeName() throws Exception {
+        User owner = fixtures.aUser();
+        jdbc.update("UPDATE users SET name = 'Lucas' WHERE id = ?", owner.getId());
+        Plan plan = fixtures.aPlan(owner);
+        LocalDate day = LocalDate.of(2026, 11, 20);
+        imported(
+                plan,
+                owner,
+                "50.00",
+                day.minusDays(1),
+                "Transferência enviada pelo Pix - LUCAS FERREIRA - ••.1 - NU",
+                null);
+        Transaction whole =
+                imported(plan, owner, "50.00", day, "Transferência enviada pelo Pix - LUCAS - ••.1 - NU", null);
+
+        JsonNode page = candidates(plan, owner, "");
+
+        assertThat(ids(page)).containsExactly(whole.getId());
+        assertThat(page.path("content").get(0).path("proposedKind").asString()).isEqualTo("TRANSFER");
+    }
+
+    @Test
     void applyingAKindTheRowCannotCarryAnswers422AndChangesNothing() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

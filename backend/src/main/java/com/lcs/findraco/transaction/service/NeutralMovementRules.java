@@ -5,7 +5,6 @@ import java.text.Normalizer;
 import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 
@@ -30,7 +29,8 @@ public final class NeutralMovementRules {
 
     /**
      * The kind the text proposes, or null when it matches no rule. A Pix text names its counterpart in the
-     * segment after the first " - "; it is a transfer when that name holds the first and last name of a member.
+     * segment after the first " - "; it is a transfer when that name holds the first and last name of a member. A
+     * member with a one-word name matches only a counterpart named by that word alone.
      */
     public static @Nullable TransactionKind propose(String sourceText, Collection<String> memberNames) {
         if (isCardBillPayment(sourceText)) {
@@ -43,12 +43,17 @@ public final class NeutralMovementRules {
         if (segments.length < 2) {
             return null;
         }
-        Set<String> counterpart = Set.copyOf(tokens(segments[1]));
+        List<String> counterpart = tokens(segments[1]);
         boolean isMember = memberNames.stream()
                 .map(NeutralMovementRules::tokens)
-                .anyMatch(name -> !name.isEmpty()
-                        && counterpart.contains(name.getFirst())
-                        && counterpart.contains(name.getLast()));
+                .anyMatch(name -> {
+                    if (name.isEmpty()) {
+                        return false;
+                    }
+                    return name.size() == 1
+                            ? counterpart.equals(name)
+                            : counterpart.contains(name.getFirst()) && counterpart.contains(name.getLast());
+                });
         return isMember ? TransactionKind.TRANSFER : null;
     }
 

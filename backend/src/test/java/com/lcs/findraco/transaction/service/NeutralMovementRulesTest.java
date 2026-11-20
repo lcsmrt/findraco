@@ -42,6 +42,16 @@ class NeutralMovementRulesTest {
     }
 
     @Test
+    void aOneWordNameMatchesOnlyTheWholeCounterpartName() {
+        List<String> members = List.of("Lucas");
+
+        assertThat(NeutralMovementRules.propose("Transferência enviada pelo Pix - LUCAS - ••.1 - NU", members))
+                .isEqualTo(TransactionKind.TRANSFER);
+        assertThat(NeutralMovementRules.propose("Transferência enviada pelo Pix - LUCAS FERREIRA - ••.1 - NU", members))
+                .isNull();
+    }
+
+    @Test
     void aCardBillWinsOverAPixText() {
         assertThat(propose("Pagamento de fatura pelo Pix - Marina Lima - x"))
                 .isEqualTo(TransactionKind.CARD_BILL_PAYMENT);
