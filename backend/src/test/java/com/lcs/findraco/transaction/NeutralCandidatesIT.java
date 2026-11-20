@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.support.AbstractIntegrationTest;
@@ -108,6 +109,7 @@ class NeutralCandidatesIT extends AbstractIntegrationTest {
         Transaction bill = imported(plan, owner, "100.00", day, "Pagamento de fatura", null);
         Transaction untouched = imported(plan, owner, "30.00", day, "Pagamento de fatura", null);
         long version = fixtures.transactionVersion(bill.getId());
+        assertThat(expenses(plan, owner)).isEqualByComparingTo("130.00");
 
         JsonNode applied = read(
                 apply(plan, owner, bill.getId(), "CARD_BILL_PAYMENT", version).andExpect(status().isOk()));
@@ -116,6 +118,7 @@ class NeutralCandidatesIT extends AbstractIntegrationTest {
         assertThat(applied.path("version").asLong()).isGreaterThan(version);
         assertThat(transactionRepository.findById(bill.getId()).orElseThrow().getKind())
                 .isEqualTo(TransactionKind.CARD_BILL_PAYMENT);
+        assertThat(expenses(plan, owner)).isEqualByComparingTo("30.00");
         JsonNode remaining = candidates(plan, owner, "");
         assertThat(remaining.path("content")).hasSize(1);
         assertThat(candidate(remaining, 0, "id")).isEqualTo(untouched.getId());
@@ -186,6 +189,16 @@ class NeutralCandidatesIT extends AbstractIntegrationTest {
                         .orElseThrow()
                         .getKind())
                 .isNull();
+    }
+
+    private BigDecimal expenses(Plan plan, User caller) throws Exception {
+        return read(mockMvc.perform(get(DashboardRoutes.DASHBOARD, plan.getId())
+                                .with(testAuthHelper.asUser(caller))
+                                .param("startDate", "2026-11-01")
+                                .param("endDate", "2026-11-30"))
+                        .andExpect(status().isOk()))
+                .path("totalExpenses")
+                .decimalValue();
     }
 
     private ResultActions apply(Plan plan, User caller, long id, String kind, long version) throws Exception {

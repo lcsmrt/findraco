@@ -2,13 +2,17 @@ package com.lcs.findraco.transaction;
 
 import static com.lcs.findraco.support.ProblemMatchers.problem;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.dashboard.controller.DashboardRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.support.AbstractIntegrationTest;
@@ -53,6 +57,9 @@ class NeutralMovementsIT extends AbstractIntegrationTest {
 
     @Autowired
     private TransactionRepository transactionRepository;
+
+    @Autowired
+    private CategoryRepository categoryRepository;
 
     @Test
     void neutralKindRefusesCategorySplitAndItems() throws Exception {
@@ -169,6 +176,212 @@ class NeutralMovementsIT extends AbstractIntegrationTest {
         assertThat(neutral.path("totalElements").asLong()).isEqualTo(3);
         assertThat(ids(refunds)).containsExactly(refund.getId());
         assertThat(everything.path("totalElements").asLong()).isEqualTo(5);
+    }
+
+    @Test
+    void neutralRowsCountInNoTotal() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary");
+        Category market = fixtures.aCategory(plan, TransactionType.DEBIT, "Market");
+        row(plan, owner, TransactionType.CREDIT, "3000.00", NOVEMBER, salary, null);
+        row(plan, owner, TransactionType.DEBIT, "200.00", NOVEMBER, market, null);
+        row(plan, owner, TransactionType.DEBIT, "1500.00", NOVEMBER, null, TransactionKind.CARD_BILL_PAYMENT);
+        row(plan, owner, TransactionType.DEBIT, "500.00", NOVEMBER, null, TransactionKind.TRANSFER);
+
+        JsonNode summary = summary(plan, owner);
+
+        assertThat(summary.path("totalIncome").decimalValue()).isEqualByComparingTo("3000.00");
+        assertThat(summary.path("totalExpenses").decimalValue()).isEqualByComparingTo("200.00");
+        assertThat(summary.path("netBalance").decimalValue()).isEqualByComparingTo("2800.00");
+        assertThat(summary.path("actualBalance").decimalValue()).isEqualByComparingTo("2800.00");
+    }
+
+    @Test
+    void neutralRowsLeaveTrendAndPeople() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        row(plan, owner, TransactionType.CREDIT, "3000.00", NOVEMBER, null, null);
+        row(plan, owner, TransactionType.DEBIT, "200.00", NOVEMBER, null, null);
+        row(plan, owner, TransactionType.DEBIT, "1500.00", NOVEMBER, null, TransactionKind.CARD_BILL_PAYMENT);
+        row(plan, owner, TransactionType.DEBIT, "500.00", NOVEMBER, null, TransactionKind.TRANSFER);
+
+        JsonNode trend = trend(plan, owner);
+        JsonNode people = summary(plan, owner).path("personBreakdown");
+
+        assertThat(trend).hasSize(1);
+        assertThat(trend.get(0).path("month").asInt()).isEqualTo(11);
+        assertThat(trend.get(0).path("income").decimalValue()).isEqualByComparingTo("3000.00");
+        assertThat(trend.get(0).path("expenses").decimalValue()).isEqualByComparingTo("200.00");
+        assertThat(people).hasSize(1);
+        assertThat(people.get(0).path("expense").decimalValue()).isEqualByComparingTo("200.00");
+        assertThat(people.get(0).path("income").decimalValue()).isEqualByComparingTo("3000.00");
+    }
+
+    @Test
+    void neutralKindsLeaveCategoriesAndLimits() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category food = limited(fixtures.aCategory(plan, TransactionType.DEBIT, "Food"), "400.00");
+        Category salary = fixtures.aCategory(plan, TransactionType.CREDIT, "Salary");
+        row(plan, owner, TransactionType.DEBIT, "100.00", NOVEMBER, food, null);
+        row(plan, owner, TransactionType.CREDIT, "3000.00", NOVEMBER, salary, null);
+        String before = spending(plan, owner).toString();
+
+        for (TransactionKind kind : NEUTRAL_KINDS) {
+            row(plan, owner, TransactionType.DEBIT, "500.00", NOVEMBER, null, kind);
+            row(plan, owner, TransactionType.CREDIT, "300.00", NOVEMBER, null, kind);
+
+            assertThat(spending(plan, owner).toString())
+                    .as("after %s rows", kind)
+                    .isEqualTo(before);
+        }
+
+        JsonNode foodRow = byName(spending(plan, owner), "Food");
+        assertThat(foodRow.path("spent").decimalValue()).isEqualByComparingTo("100.00");
+        assertThat(foodRow.path("limit").decimalValue()).isEqualByComparingTo("400.00");
+        assertThat(foodRow.path("remaining").decimalValue()).isEqualByComparingTo("300.00");
+        assertThat(byName(spending(plan, owner), "Salary").path("spent").decimalValue())
+                .isEqualByComparingTo("3000.00");
+    }
+
+    @Test
+    void dashboardReportsNeutralOutAndIn() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        row(plan, owner, TransactionType.DEBIT, "1500.00", NOVEMBER, null, TransactionKind.CARD_BILL_PAYMENT);
+        row(plan, owner, TransactionType.DEBIT, "500.00", NOVEMBER, null, TransactionKind.TRANSFER);
+        row(plan, owner, TransactionType.CREDIT, "500.00", NOVEMBER, null, TransactionKind.TRANSFER);
+        row(plan, owner, TransactionType.DEBIT, "70.00", NOVEMBER.minusMonths(1), null, TransactionKind.SAVINGS);
+        Transaction trashed = row(plan, owner, TransactionType.DEBIT, "99.00", NOVEMBER, null, TransactionKind.SAVINGS);
+        mockMvc.perform(delete(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), trashed.getId())
+                        .with(testAuthHelper.asUser(owner)))
+                .andExpect(status().isOk());
+
+        JsonNode summary = summary(plan, owner);
+
+        assertThat(summary.path("neutralOut").decimalValue()).isEqualByComparingTo("2000.00");
+        assertThat(summary.path("neutralIn").decimalValue()).isEqualByComparingTo("500.00");
+        assertThat(summary.path("totalExpenses").decimalValue()).isEqualByComparingTo("0.00");
+    }
+
+    @Test
+    void refundLowersItsCategoryAndExpenses() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        row(plan, owner, TransactionType.DEBIT, "100.00", NOVEMBER, food, null);
+        assertThat(summary(plan, owner).path("totalExpenses").decimalValue()).isEqualByComparingTo("100.00");
+
+        send(
+                        post(TransactionRoutes.TRANSACTION, plan.getId()),
+                        owner,
+                        body(TransactionType.CREDIT, "50.00", TransactionKind.REFUND, food.getId()))
+                .andExpect(status().isCreated());
+
+        JsonNode summary = summary(plan, owner);
+        assertThat(byName(spending(plan, owner), "Food").path("spent").decimalValue())
+                .isEqualByComparingTo("50.00");
+        assertThat(summary.path("totalExpenses").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(summary.path("totalIncome").decimalValue()).isEqualByComparingTo("0.00");
+        assertThat(summary.path("actualExpenses").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(trend(plan, owner).get(0).path("expenses").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(trend(plan, owner).get(0).path("income").decimalValue()).isEqualByComparingTo("0.00");
+    }
+
+    @Test
+    void refundLowersTheSpendingOfWhoItIsAttributedTo() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        User marina = fixtures.aUser();
+        fixtures.addMember(plan, marina, PlanRole.EDITOR);
+        Category food = fixtures.aCategory(plan, TransactionType.DEBIT, "Food");
+        fixtures.aTransaction(new TransactionDraft(
+                plan,
+                owner,
+                new TransactionDetails(
+                        food, TransactionType.DEBIT, new BigDecimal("100.00"), "Pizza", NOVEMBER, null, null),
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null), new Share(marina, null)),
+                List.of(),
+                null,
+                null));
+        assertThat(expenseOf(summary(plan, owner), marina)).isEqualByComparingTo("50.00");
+
+        Map<String, Object> refund = body(TransactionType.CREDIT, "50.00", TransactionKind.REFUND, food.getId());
+        refund.put("participants", List.of(member(marina)));
+        send(post(TransactionRoutes.TRANSACTION, plan.getId()), owner, refund).andExpect(status().isCreated());
+
+        JsonNode summary = summary(plan, owner);
+        assertThat(expenseOf(summary, marina)).isEqualByComparingTo("0.00");
+        assertThat(expenseOf(summary, owner)).isEqualByComparingTo("50.00");
+        JsonNode members = byName(spending(plan, owner), "Food").path("members");
+        assertThat(members).hasSize(1);
+        assertThat(members.get(0).path("memberId").asLong()).isEqualTo(owner.getId());
+        assertThat(members.get(0).path("spent").decimalValue()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
+    void limitIsMeasuredNetOfRefunds() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Category food = limited(fixtures.aCategory(plan, TransactionType.DEBIT, "Food"), "80.00");
+        row(plan, owner, TransactionType.DEBIT, "100.00", NOVEMBER, food, null);
+        assertThat(byName(spending(plan, owner), "Food").path("status").asString())
+                .isEqualTo("OVER");
+
+        row(plan, owner, TransactionType.CREDIT, "50.00", NOVEMBER, food, TransactionKind.REFUND);
+
+        JsonNode foodRow = byName(spending(plan, owner), "Food");
+        assertThat(foodRow.path("spent").decimalValue()).isEqualByComparingTo("50.00");
+        assertThat(foodRow.path("limit").decimalValue()).isEqualByComparingTo("80.00");
+        assertThat(foodRow.path("remaining").decimalValue()).isEqualByComparingTo("30.00");
+        assertThat(foodRow.path("percentUsed").decimalValue()).isEqualByComparingTo("62.50");
+        assertThat(foodRow.path("status").asString()).isNotEqualTo("OVER");
+    }
+
+    private Category limited(Category category, String limit) {
+        category.changeLimits(new BigDecimal(limit), null);
+        return categoryRepository.save(category);
+    }
+
+    private JsonNode summary(Plan plan, User caller) throws Exception {
+        return readBody(mockMvc.perform(period(get(DashboardRoutes.DASHBOARD, plan.getId()), caller))
+                .andExpect(status().isOk()));
+    }
+
+    private JsonNode trend(Plan plan, User caller) throws Exception {
+        return readBody(mockMvc.perform(period(get(DashboardRoutes.DASHBOARD + "/trend", plan.getId()), caller))
+                .andExpect(status().isOk()));
+    }
+
+    private JsonNode spending(Plan plan, User caller) throws Exception {
+        return readBody(mockMvc.perform(period(get(CategoryRoutes.CATEGORY + "/spending", plan.getId()), caller))
+                .andExpect(status().isOk()));
+    }
+
+    private MockHttpServletRequestBuilder period(MockHttpServletRequestBuilder request, User caller) {
+        return request.with(testAuthHelper.asUser(caller))
+                .param("startDate", "2026-11-01")
+                .param("endDate", "2026-11-30");
+    }
+
+    private static JsonNode byName(JsonNode tree, String name) {
+        for (JsonNode node : tree) {
+            if (name.equals(node.path("name").asString())) {
+                return node;
+            }
+        }
+        throw new AssertionError("no category named " + name + " in " + tree);
+    }
+
+    private static BigDecimal expenseOf(JsonNode summary, User member) {
+        for (JsonNode person : summary.path("personBreakdown")) {
+            if (person.path("userId").asLong() == member.getId()) {
+                return person.path("expense").decimalValue();
+            }
+        }
+        return BigDecimal.ZERO;
     }
 
     private JsonNode list(Plan plan, User caller, String kind) throws Exception {

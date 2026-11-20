@@ -14,6 +14,7 @@ import com.lcs.findraco.transaction.service.ItemShareAllocator.MemberFact;
 import com.lcs.findraco.transaction.service.SeriesHorizon;
 import com.lcs.findraco.user.service.UserService;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,7 +125,14 @@ public class CategorySpendingService {
     private record Facts(List<Object[]> rowsA, List<MemberFact> removed, List<MemberFact> added) {}
 
     private Facts facts(Plan plan, TransactionType type, LocalDate startDate, LocalDate endDate) {
-        List<Object[]> rowsA = spendingRepository.findCategoryMemberFacts(plan, type, startDate, endDate);
+        List<Object[]> rowsA =
+                new ArrayList<>(spendingRepository.findCategoryMemberFacts(plan, type, startDate, endDate));
+        if (type == TransactionType.DEBIT) {
+            // A refund takes back from the category it paid for, per member, as the spending it undoes.
+            spendingRepository
+                    .findCategoryMemberRefunds(plan, startDate, endDate)
+                    .forEach(row -> rowsA.add(new Object[] {row[0], row[1], ((BigDecimal) row[2]).negate()}));
+        }
         Allocation allocation = itemShareAllocator.allocate(
                 spendingRepository.findCategorizedItemParticipantRows(plan, type, startDate, endDate));
         return new Facts(rowsA, allocation.removed(), allocation.added());

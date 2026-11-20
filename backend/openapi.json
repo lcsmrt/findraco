@@ -480,6 +480,12 @@
           "netBalance" : {
             "type" : "number"
           },
+          "neutralIn" : {
+            "type" : "number"
+          },
+          "neutralOut" : {
+            "type" : "number"
+          },
           "personBreakdown" : {
             "items" : {
               "$ref" : "#/components/schemas/PersonBreakdownResponse"
@@ -493,7 +499,7 @@
             "type" : "number"
           }
         },
-        "required" : [ "actualBalance", "actualExpenses", "actualIncome", "netBalance", "personBreakdown", "totalExpenses", "totalIncome" ],
+        "required" : [ "actualBalance", "actualExpenses", "actualIncome", "netBalance", "neutralIn", "neutralOut", "personBreakdown", "totalExpenses", "totalIncome" ],
         "type" : "object"
       },
       "FieldProblem" : {
