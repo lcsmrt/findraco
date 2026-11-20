@@ -80,6 +80,6 @@ Proof: run unit | ✓ TransactionFormDrawer > keeps a former member's share when
 
 - **Settled mid-build:** none
 - **Dispatched:** build worker (Sonnet) at f21a7229
-- **Boundary:** C1-C12 closed at f2097e11
+- **Boundary:** C1-C13 closed at a3545e46
 - **Abandoned:** none
 - **Walked:** none yet
