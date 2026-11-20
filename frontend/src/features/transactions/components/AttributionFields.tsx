@@ -15,6 +15,8 @@ import {
 } from "react-hook-form";
 import {
   participantsForMode,
+  splitRows,
+  type SplitRow,
   type TransactionFormOutput,
   type TransactionFormValues,
 } from "./transactionForm";
@@ -57,6 +59,11 @@ export function AttributionFields({
   // Once a share is registered as a field, the resolver files the list-level error under `root`.
   const participantsError = errors.participants?.root ?? errors.participants;
   const otherMembers = members.filter((member) => member.userId !== currentUserId);
+  const rows = splitRows(members, values);
+  const personLabel =
+    person && rows.some((row) => row.isFormer && row.userId === person.memberId)
+      ? t("transactions.attributionFields.formerMember", { name: person.memberName })
+      : (person?.memberName ?? "");
 
   function handleAttributionModeChange(next: TransactionFormValues["attributionMode"]) {
     onEdit();
@@ -65,10 +72,10 @@ export function AttributionFields({
     replace(participantsForMode(next, values, members, currentUserId));
   }
 
-  function handleParticipantToggle(member: PlanMember, index: number, isChecked: boolean) {
+  function handleParticipantToggle(row: SplitRow, index: number, isChecked: boolean) {
     onEdit();
     if (isChecked) {
-      append({ memberId: member.userId, memberName: member.name, shareAmount: null });
+      append({ memberId: row.userId, memberName: row.name, shareAmount: null });
     } else {
       remove(index);
     }
@@ -103,7 +110,7 @@ export function AttributionFields({
           <StandardCombobox
             id="transaction-attributed-person"
             items={otherMembers.map((member) => ({ id: member.userId, name: member.name }))}
-            value={person ? { id: person.memberId, name: person.memberName } : null}
+            value={person ? { id: person.memberId, name: personLabel } : null}
             onValueChange={(value) => {
               onEdit();
               replace(
@@ -147,21 +154,22 @@ export function AttributionFields({
           <Field>
             <FieldLabel>{t("transactions.attributionFields.participants")}</FieldLabel>
             <div className="flex flex-col gap-2">
-              {members.map((member) => {
-                const index = fields.findIndex((field) => field.memberId === member.userId);
+              {rows.map((row) => {
+                const index = fields.findIndex((field) => field.memberId === row.userId);
                 const participant = fields[index];
+                const label = row.isFormer
+                  ? t("transactions.attributionFields.formerMember", { name: row.name })
+                  : row.name;
 
                 return (
-                  <div key={member.userId} className="flex items-center gap-2">
+                  <div key={row.userId} className="flex items-center gap-2">
                     <Checkbox
-                      aria-label={member.name}
+                      aria-label={label}
                       checked={participant !== undefined}
-                      onCheckedChange={(isChecked) =>
-                        handleParticipantToggle(member, index, isChecked)
-                      }
+                      onCheckedChange={(isChecked) => handleParticipantToggle(row, index, isChecked)}
                       disabled={disabled}
                     />
-                    <Text className="flex-1">{member.name}</Text>
+                    <Text className="flex-1">{label}</Text>
                     {splitMode.value === "EXACT" && participant && (
                       <Controller
                         key={participant.id}
@@ -175,7 +183,7 @@ export function AttributionFields({
                               field.onChange(shareAmount);
                             }}
                             aria-label={t("transactions.attributionFields.share", {
-                              name: member.name,
+                              name: row.name,
                             })}
                             aria-invalid={fieldState.invalid}
                             placeholder={t("common.r000")}

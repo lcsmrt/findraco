@@ -112,6 +112,32 @@ export const Split: Story = {
   },
 };
 
+const formerAna = member(9, "Ana Lima");
+
+// Ana Lima left the plan but is still on the row, so she is not among `members`.
+export const FormerParticipant: Story = {
+  args: {
+    attributionMode: "SPLIT",
+    splitMode: "EXACT",
+    participants: [asParticipant(ana, 40), asParticipant(formerAna, 60)],
+  },
+  play: async ({ canvas, userEvent }) => {
+    const former = canvas.getByRole("checkbox", { name: "Ana Lima (no longer in the plan)" });
+    await expect(former).toBeChecked();
+    await expect(canvas.getByLabelText("Ana Lima's share")).toHaveValue("R$ 60,00");
+    await userEvent.click(former);
+    await expect(canvas.queryByRole("checkbox", { name: /Ana Lima/ })).toBeNull();
+    await expect(canvas.queryByLabelText("Ana Lima's share")).toBeNull();
+  },
+};
+
+export const FormerPerson: Story = {
+  args: { attributionMode: "SOMEONE", participants: [asParticipant(formerAna)] },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Ana Lima (no longer in the plan)")).toBeVisible();
+  },
+};
+
 export const SplitExactShares: Story = {
   args: {
     attributionMode: "SPLIT",

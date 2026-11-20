@@ -44,20 +44,6 @@ public class McpMemberResolver {
         return ids;
     }
 
-    /**
-     * An update resends the stored shares, and the transaction service refuses a share of someone who is no longer in
-     * the plan; the caller is told so before anything is sent, instead of getting the service's unrelated message.
-     */
-    public void requireAllInPlan(List<Long> userIds, PlanContext ctx) {
-        List<Long> memberIds = planService.getMembers(ctx.planId(), ctx.userId()).stream()
-                .map(PlanMemberResponse::userId)
-                .toList();
-        if (!memberIds.containsAll(userIds)) {
-            throw new McpToolException("This transaction is shared with someone who is no longer in the plan, "
-                    + "so it cannot be changed through Claude.");
-        }
-    }
-
     private static long one(String name, String planName, List<PlanMemberResponse> members) {
         if (name == null || name.isBlank()) {
             throw new McpToolException("attributedTo cannot hold a blank name. " + membersOf(planName, members));

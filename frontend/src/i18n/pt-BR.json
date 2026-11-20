@@ -700,6 +700,7 @@
       "attributedTo": "Atribuído a",
       "equal": "Igual",
       "exact": "Exato",
+      "formerMember": "{{name}} (fora do plano)",
       "me": "Eu",
       "participants": "Participantes",
       "person": "Pessoa",

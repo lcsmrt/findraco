@@ -6,6 +6,7 @@ import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import org.hibernate.annotations.OptimisticLock;
@@ -75,6 +77,14 @@ public class RecurrenceDefinition {
     @Column(name = "requires_confirmation")
     private boolean requiresConfirmation;
 
+    /**
+     * Counts the changes to what an occurrence carries: amount, description, category, split and, for an
+     * installment series, the number of parcels. A trashed row is restored against it, so a change to the
+     * series' end, an exception or a flag leaves it alone.
+     */
+    @Column(name = "rule_revision")
+    private long ruleRevision;
+
     // The mark moves with the calendar, not with a person's edit: it must not bump the version a trashed
     // series is restored against.
     @OptimisticLock(excluded = true)
@@ -122,14 +132,15 @@ public class RecurrenceDefinition {
         definition.firstParcel = draft.mode() == RecurrenceMode.INSTALLMENT
                 ? (draft.currentParcel() != null ? draft.currentParcel() : 1)
                 : null;
-        definition.editPattern(new SeriesPattern(
+        SeriesPattern pattern = new SeriesPattern(
                 draft.category(),
                 draft.amount(),
                 draft.description(),
                 draft.parcelsNumber(),
                 draft.endDate(),
                 draft.splitMode(),
-                draft.participants()));
+                draft.participants());
+        definition.applyPattern(pattern, definition.checkedSplit(pattern));
         return definition;
     }
 
@@ -138,6 +149,15 @@ public class RecurrenceDefinition {
      * series never ends before it starts, and its category has the series' type.
      */
     public void editPattern(SeriesPattern pattern) {
+        List<Share> split = checkedSplit(pattern);
+        boolean changesRule = changesRule(pattern, split);
+        applyPattern(pattern, split);
+        if (changesRule) {
+            ruleRevision++;
+        }
+    }
+
+    private List<Share> checkedSplit(SeriesPattern pattern) {
         if (mode == RecurrenceMode.INSTALLMENT) {
             requireParcels(pattern.parcelsNumber());
         } else if (pattern.endDate() != null && startDate.isAfter(pattern.endDate())) {
@@ -146,8 +166,10 @@ public class RecurrenceDefinition {
         if (pattern.category() != null && pattern.category().getType() != type) {
             throw new TransactionExceptions.CategoryTypeMismatchException();
         }
-        List<Share> split = SPLIT_RESOLVER.split(pattern.amount(), pattern.splitMode(), pattern.participants());
+        return SPLIT_RESOLVER.split(pattern.amount(), pattern.splitMode(), pattern.participants());
+    }
 
+    private void applyPattern(SeriesPattern pattern, List<Share> split) {
         category = pattern.category();
         amount = pattern.amount();
         description = pattern.description();
@@ -155,6 +177,42 @@ public class RecurrenceDefinition {
         endDate = pattern.endDate();
         splitMode = pattern.splitMode();
         applySplit(split);
+    }
+
+    private boolean changesRule(SeriesPattern pattern, List<Share> split) {
+        return !Objects.equals(categoryId(category), categoryId(pattern.category()))
+                || amount.compareTo(pattern.amount()) != 0
+                || !Objects.equals(description, pattern.description())
+                || (mode == RecurrenceMode.INSTALLMENT && !Objects.equals(parcelsNumber, pattern.parcelsNumber()))
+                || splitMode != pattern.splitMode()
+                || !sharesByMember(participants.stream()
+                                .map(participant -> new Share(participant.getMember(), participant.getShareAmount()))
+                                .toList())
+                        .equals(sharesByMember(split));
+    }
+
+    private static Long categoryId(Category category) {
+        return category != null ? category.getId() : null;
+    }
+
+    /** Each member's share, scaled to cents so 60 and 60.00 are the same share. */
+    private static Map<Long, BigDecimal> sharesByMember(List<Share> shares) {
+        Map<Long, BigDecimal> byMember = new HashMap<>();
+        shares.forEach(
+                share -> byMember.put(share.member().getId(), share.amount().setScale(2, RoundingMode.HALF_UP)));
+        return byMember;
+    }
+
+    /**
+     * Whether the series still reaches {@code slot}: not past its end date, and for an installment series not
+     * beyond its last parcel.
+     */
+    public boolean covers(LocalDate slot) {
+        if (mode == RecurrenceMode.INSTALLMENT) {
+            int first = firstParcel != null ? firstParcel : 1;
+            return !slot.isAfter(startDate.plusMonths(parcelsNumber - first));
+        }
+        return endDate == null || !slot.isAfter(endDate);
     }
 
     /** Records the last occurrence generated so far, so a top-up continues after it. */
@@ -250,6 +308,10 @@ public class RecurrenceDefinition {
 
     public long getVersion() {
         return version;
+    }
+
+    public long getRuleRevision() {
+        return ruleRevision;
     }
 
     public Plan getPlan() {

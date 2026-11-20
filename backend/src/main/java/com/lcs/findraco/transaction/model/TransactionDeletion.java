@@ -5,6 +5,7 @@ import com.lcs.findraco.user.model.User;
 import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.util.Objects;
 
 /**
  * One delete action: the rows it moved to the trash point at it, and it records what the action changed on
@@ -49,6 +50,12 @@ public class TransactionDeletion {
     @Column(name = "previous_parcels_number")
     private Integer previousParcelsNumber;
 
+    @Column(name = "cut_end_date")
+    private LocalDate cutEndDate;
+
+    @Column(name = "cut_parcels_number")
+    private Integer cutParcelsNumber;
+
     @Column(name = "definition_trashed")
     private boolean definitionTrashed;
 
@@ -86,13 +93,28 @@ public class TransactionDeletion {
         previousParcelsNumber = definition.getParcelsNumber();
     }
 
+    /** The deletion has just ended the series earlier; this is the end it left. */
+    public void recordCutEnd(RecurrenceDefinition definition) {
+        cutEndDate = definition.getEndDate();
+        cutParcelsNumber = definition.getParcelsNumber();
+    }
+
+    /** Whether the series still ends where this deletion cut it, so putting the old end back overwrites nothing. */
+    public boolean cutEndStillHolds(RecurrenceDefinition definition) {
+        return Objects.equals(cutEndDate, definition.getEndDate())
+                && Objects.equals(cutParcelsNumber, definition.getParcelsNumber());
+    }
+
     /** The deletion moved the whole series to the trash. */
     public void recordTrashedDefinition(RecurrenceDefinition definition) {
         recurrenceDefinitionId = definition.getId();
         definitionTrashed = true;
     }
 
-    /** The version the series had right after the deletion; a different one at restore means it changed since. */
+    /**
+     * The rule revision the series had right after the deletion (stored in {@code definition_version}); a different
+     * one at restore means the series' rule changed since.
+     */
     public void recordDefinitionVersion(long version) {
         definitionVersion = version;
     }

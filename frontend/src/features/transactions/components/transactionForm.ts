@@ -357,6 +357,55 @@ export function participantsForMode(
   }));
 }
 
+type AttributionVisibilityInput = {
+  canAttributeToOthers: boolean;
+  members: PlanMember[];
+  /** Who the edited row is already split with; empty when creating. */
+  participants: Transaction["participants"];
+  currentUserId?: number;
+};
+
+/**
+ * Whether the form shows the attribution fields. A plan with one member left hides them, unless the row
+ * already has someone else on it: saving a form whose participants were never shown would drop them.
+ */
+export function showsAttribution({
+  canAttributeToOthers,
+  members,
+  participants,
+  currentUserId,
+}: AttributionVisibilityInput): boolean {
+  return (
+    canAttributeToOthers &&
+    (members.length > 1 || participants.some((participant) => participant.id !== currentUserId))
+  );
+}
+
+/** One line of the participants list: a person the split can include. */
+export type SplitRow = { userId: number; name: string; isFormer: boolean };
+
+/**
+ * Who the split lists: the plan's members, then whoever is already on the row without being a member any
+ * more, so their share can be seen, changed or removed. A former member never appears on a row that does
+ * not carry them.
+ */
+export function splitRows(
+  members: PlanMember[],
+  participants: TransactionFormValues["participants"],
+): SplitRow[] {
+  const memberIds = new Set(members.map((member) => member.userId));
+  return [
+    ...members.map((member) => ({ userId: member.userId, name: member.name, isFormer: false })),
+    ...participants
+      .filter((participant) => !memberIds.has(participant.memberId))
+      .map((participant) => ({
+        userId: participant.memberId,
+        name: participant.memberName,
+        isFormer: true,
+      })),
+  ];
+}
+
 function parseLocalDate(value: string): Date {
   const [year, month, day] = value.split("T")[0].split("-").map(Number);
   return new Date(year, month - 1, day);

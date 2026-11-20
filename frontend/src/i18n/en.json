@@ -700,6 +700,7 @@
       "attributedTo": "Attributed to",
       "equal": "Equal",
       "exact": "Exact",
+      "formerMember": "{{name}} (no longer in the plan)",
       "me": "Me",
       "participants": "Participants",
       "person": "Person",
