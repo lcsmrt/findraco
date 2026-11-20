@@ -173,7 +173,8 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "fk_transactions_created_by",
                         "fk_transactions_categories",
                         "fk_transactions_recurrence_definitions",
-                        "fk_transactions_deletion");
+                        "fk_transactions_deletion",
+                        "ck_transactions_kind");
         assertThat(namesOf(jdbc, "SELECT conname FROM pg_constraint WHERE conrelid = 'public.categories'::regclass"))
                 .containsExactlyInAnyOrder(
                         "pk_categories",
