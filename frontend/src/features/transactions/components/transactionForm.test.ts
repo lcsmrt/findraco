@@ -8,6 +8,7 @@ import {
   itemsRemainderCents,
   ownerDefaultAttribution,
   participantsForMode,
+  showsAttribution,
   splitRows,
   toInlineSavePayload,
   toPayload,
@@ -801,5 +802,34 @@ describe("splitRows — who the participants list shows", () => {
 
   it("lists no former member the row does not carry", () => {
     expect(splitRows([ana], [])).toEqual([{ userId: 1, name: "Ana", isFormer: false }]);
+  });
+});
+
+describe("showsAttribution — when the form lists who the row is split with", () => {
+  const ana: PlanMember = { userId: 1, name: "Ana", email: "ana@example.com", role: "OWNER" };
+  const bia: PlanMember = { userId: 2, name: "Bia", email: "bia@example.com", role: "EDITOR" };
+  const withBia = { id: 2, name: "Bia", shareAmount: 50 };
+  const withCaio = { id: 9, name: "Caio", shareAmount: 50 };
+  const input = { canAttributeToOthers: true, currentUserId: 1 };
+
+  it("shows it when the plan has more than one member", () => {
+    expect(showsAttribution({ ...input, members: [ana, bia], participants: [] })).toBe(true);
+  });
+
+  it("hides it in a one-member plan on a row that is only the user's", () => {
+    const own = { id: 1, name: "Ana", shareAmount: 100 };
+
+    expect(showsAttribution({ ...input, members: [ana], participants: [] })).toBe(false);
+    expect(showsAttribution({ ...input, members: [ana], participants: [own] })).toBe(false);
+  });
+
+  it("shows it in a one-member plan when the row has someone who left, so saving keeps them", () => {
+    expect(showsAttribution({ ...input, members: [ana], participants: [withBia, withCaio] })).toBe(true);
+  });
+
+  it("hides it from a member who may not attribute to others", () => {
+    expect(
+      showsAttribution({ ...input, canAttributeToOthers: false, members: [ana, bia], participants: [withCaio] }),
+    ).toBe(false);
   });
 });

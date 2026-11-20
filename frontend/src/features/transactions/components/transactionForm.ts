@@ -357,6 +357,30 @@ export function participantsForMode(
   }));
 }
 
+type AttributionVisibilityInput = {
+  canAttributeToOthers: boolean;
+  members: PlanMember[];
+  /** Who the edited row is already split with; empty when creating. */
+  participants: Transaction["participants"];
+  currentUserId?: number;
+};
+
+/**
+ * Whether the form shows the attribution fields. A plan with one member left hides them, unless the row
+ * already has someone else on it: saving a form whose participants were never shown would drop them.
+ */
+export function showsAttribution({
+  canAttributeToOthers,
+  members,
+  participants,
+  currentUserId,
+}: AttributionVisibilityInput): boolean {
+  return (
+    canAttributeToOthers &&
+    (members.length > 1 || participants.some((participant) => participant.id !== currentUserId))
+  );
+}
+
 /** One line of the participants list: a person the split can include. */
 export type SplitRow = { userId: number; name: string; isFormer: boolean };
 

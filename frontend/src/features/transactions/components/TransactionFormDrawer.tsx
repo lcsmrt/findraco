@@ -40,6 +40,7 @@ import {
   buildDefaultValues,
   categoryAttribution,
   occurrenceParcel,
+  showsAttribution,
   transactionFormSchema,
 } from "./transactionForm";
 import { useSeriesScope } from "./useSeriesScope";
@@ -80,7 +81,12 @@ export function TransactionFormDrawer({
   const currentUserId = useAuth().user?.id;
   const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
   const { canAttributeToOthers } = usePlanPermissions();
-  const showAttribution = canAttributeToOthers && members.length > 1;
+  const showAttribution = showsAttribution({
+    canAttributeToOthers,
+    members,
+    participants: transaction?.participants ?? [],
+    currentUserId,
+  });
   const chooseScope = useSeriesScope();
   const { data: definition } = useGetTransactionSeries(transaction?.seriesId, {
     enabled: open && isSeriesEdit,

@@ -5,7 +5,7 @@ Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose 
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions/components/AttributionFields.stories.tsx
 Plan: `.specs/features/phase1-followups/plan.md`
 
-13 checks in 2 slices · 1 one-way door · 0 open, of which 0 block
+14 checks in 2 slices · 1 one-way door · 0 open, of which 0 block
 
 ## Checks
 
@@ -53,6 +53,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 Proof: run stories | ✓ src/features/transactions/components/AttributionFields.stories.tsx > Former Participant
 Proof: run unit | ✓ TransactionFormDrawer > keeps a former member's share when saving
 
+**C14** - In a plan whose only current member is the owner, the edit form of a row split 50/50 with Ana (left) shows the split with "Ana Lima (fora do plano)", and saving it with the amount changed to 120.00 sends both participants (AC 9)
+Proof: run unit | ✓ TransactionFormDrawer > shows the split of a row shared with a former member in a one-member plan
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -62,7 +65,7 @@ Proof: run unit | ✓ TransactionFormDrawer > keeps a former member's share when
 | door 1: `V28` (2 statements) | column C7 · reset C7 | - |
 | participant sources on an edit (3) | current member C8 · former member already on the row C8 · former member not on the row C10 | - |
 | edit channels for a former member's row (3) | app row C8 · app series C9 · Claude C11 | - |
-| form states of a former participant (2) | shown C12 · kept on save C12 | - |
+| form states of a former participant (3) | shown C12 · kept on save C12 · one-member plan C14 | - |
 
 ## Swept
 

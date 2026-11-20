@@ -798,6 +798,32 @@ describe("TransactionFormDrawer", () => {
     });
   });
 
+  it("shows the split of a row shared with a former member in a one-member plan", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    const shared: Transaction = {
+      ...savedTransaction,
+      amount: 100,
+      participants: [
+        { id: lucas.userId, name: "Lucas", shareAmount: 50 },
+        { id: 9, name: "Ana Lima", shareAmount: 50 },
+      ],
+    };
+    server.use(transactionHandlers.update(shared));
+    renderDrawer({ mode: "edit", transaction: shared, members: [lucas] });
+
+    expect(await screen.findByRole("checkbox", { name: "Ana Lima (no longer in the plan)" })).toBeTruthy();
+    const amount = screen.getByLabelText("Amount");
+    await user.clear(amount);
+    await user.type(amount, "12000");
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await sentBody(requests, "PUT")).toMatchObject({
+      amount: 120,
+      participants: [{ memberId: lucas.userId }, { memberId: 9 }],
+    });
+  });
+
   it("the date field has no clear button", () => {
     renderDrawer({ members: [lucas] });
 
