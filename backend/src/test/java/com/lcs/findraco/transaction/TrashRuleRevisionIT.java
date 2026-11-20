@@ -125,6 +125,23 @@ class TrashRuleRevisionIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void restoringOneDeletionKeepsAnotherRestorable() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode series = createSeries(plan, owner, gym(START.plusMonths(7)));
+        String seriesId = series.get("seriesId").asString();
+        long march = occurrenceId(series, 2);
+        long june = occurrenceId(series, 5);
+        long juneDeletion = deleteSeries(plan, owner, seriesId, "THIS_AND_FOLLOWING", june);
+        long marchDeletion = deleteSeries(plan, owner, seriesId, "THIS_ONE", march);
+
+        restore(plan, owner, juneDeletion).andExpect(status().isOk());
+        restore(plan, owner, marchDeletion).andExpect(status().isOk());
+
+        assertThat(listedIds(plan, owner)).contains(march, june);
+    }
+
+    @Test
     void restoreAfterAnyPatternChangeConflicts() throws Exception {
         Map<String, Consumer<PatternChange>> changes = new LinkedHashMap<>();
         changes.put("description", change -> change.edit().put("description", "Gym renamed"));

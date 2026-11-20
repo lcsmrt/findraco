@@ -5,7 +5,7 @@ Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose 
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions/components/AttributionFields.stories.tsx
 Plan: `.specs/features/phase1-followups/plan.md`
 
-12 checks in 2 slices · 1 one-way door · 0 open, of which 0 block
+13 checks in 2 slices · 1 one-way door · 0 open, of which 0 block
 
 ## Checks
 
@@ -32,6 +32,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C7** - After the migration, `recurrence_definitions.rule_revision` exists `not null` with default 0, and a deletion row of an active series inserted before `V28` with `definition_version = 3` has `definition_version = 0` (AC 4)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='MigrationsIT#ruleRevisionResetsExistingDeletions' -Dsurefire.skip=true
 
+**C13** - June and following deleted, then March deleted "only this": restoring June answers 200, then restoring March answers 200 and both are listed again (AC 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='TrashRuleRevisionIT#restoringOneDeletionKeepsAnotherRestorable' -Dsurefire.skip=true
+
 ### S2 - Rows shared with a former member stay editable
 
 **C8** - A R$ 100.00 equal split between the owner and Ana; Ana leaves; the owner edits the amount to 120.00 keeping Ana: 200, Ana's share is 60.00 and the owner's 60.00 (AC 5)
@@ -54,7 +57,7 @@ Proof: run unit | ✓ TransactionFormDrawer > keeps a former member's share when
 
 | Set (size) | Member -> proof | Unproven |
 | --- | --- | --- |
-| later series changes that keep a deletion restorable (3) | other "only this" delete C1 · "only this" edit C2 · flag-only edit C6 | - |
+| later series changes that keep a deletion restorable (4) | other "only this" delete C1 · "only this" edit C2 · flag-only edit C6 · another deletion restored C13 | - |
 | later series changes that block it (6) | amount C3 · end by tail delete C4 · description C5 · category C5 · split C5 · end date C5 | - |
 | door 1: `V28` (2 statements) | column C7 · reset C7 | - |
 | participant sources on an edit (3) | current member C8 · former member already on the row C8 · former member not on the row C10 | - |

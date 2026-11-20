@@ -238,7 +238,6 @@ public class RecurrenceDefinition {
     public void restoreEnd(Integer previousParcelsNumber, LocalDate previousEndDate) {
         parcelsNumber = previousParcelsNumber;
         endDate = previousEndDate;
-        ruleRevision++;
     }
 
     /** Moves the series to the trash under {@code trashedBy}: top-up, the read horizon and every lookup skip it. */
