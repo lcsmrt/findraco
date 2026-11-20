@@ -27,7 +27,7 @@ const summary: DashboardSummaryResponse = {
     { userId: 7, name: "Ana", income: 3000, expense: 2222.23, net: 777.77, actualIncome: 3000, actualExpense: 2222.23, actualNet: 777.77 },
     { userId: 8, name: "Bruno", income: 2000, expense: 977.77, net: 1022.23, actualIncome: 2000, actualExpense: 977.77, actualNet: 1022.23 },
   ],
-  actualIncome: 0, actualExpenses: 0, actualBalance: 0,
+  actualIncome: 0, actualExpenses: 0, actualBalance: 0, neutralOut: 0, neutralIn: 0,
 };
 
 function planValue(): PlanContextValue {

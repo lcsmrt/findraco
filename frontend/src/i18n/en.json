@@ -15,6 +15,7 @@
       "categoryUpdated": "Category updated.",
       "invitationCreated": "Invitation created.",
       "invitationRevoked": "Invitation revoked.",
+      "kindApplied": "Movement marked.",
       "memberRemoved": "Member removed.",
       "operationCompleted": "Operation completed successfully.",
       "ownershipTransferred": "Ownership transferred.",

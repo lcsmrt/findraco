@@ -30,6 +30,8 @@ function summary(people: Person[]): DashboardSummaryResponse {
     actualIncome: totalIncome,
     actualExpenses: totalExpenses,
     actualBalance: totalIncome - totalExpenses,
+    neutralOut: 0,
+    neutralIn: 0,
     personBreakdown: people.map((person) => ({
       ...person,
       actualIncome: person.income,

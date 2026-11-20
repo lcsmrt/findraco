@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   ConfirmTransactionRequest,
   CreateTransactionRequest,
+  NeutralCandidate,
   Transaction,
   TransactionSeriesResponse,
   PagedResponse,
@@ -23,11 +24,13 @@ import {
   useCreateTransactionSeries,
   useDeleteTransaction,
   useDeleteTransactionSeries,
+  useGetNeutralCandidates,
   useGetTransactions,
   useGetTransactionSeries,
   useGetTransactionTrash,
   useImportNubankCsv,
   useRestoreDeletion,
+  useSetTransactionKind,
   useUpdateTransaction,
   useUpdateTransactionSeries,
 } from "./useTransactionService";
@@ -93,6 +96,7 @@ function seedLists(client: QueryClient) {
   client.setQueryData(["dashboardSummary", 5, { startDate: "2026-10-01" }], { totalIncome: 0 });
   client.setQueryData(["dashboardTrend", 5, { months: 6 }], []);
   client.setQueryData(["transactionTrash", 5, undefined], { content: [] });
+  client.setQueryData(["neutralCandidates", 5, undefined], { content: [] });
   client.setQueryData(["transactionSeries", 5, "s1"], definition);
   client.setQueryData(["transactionSeries", 5, "other"], definition);
 }
@@ -105,6 +109,7 @@ function invalidated(client: QueryClient) {
     summary: client.getQueryState(["dashboardSummary", 5, { startDate: "2026-10-01" }])?.isInvalidated,
     trend: client.getQueryState(["dashboardTrend", 5, { months: 6 }])?.isInvalidated,
     trash: client.getQueryState(["transactionTrash", 5, undefined])?.isInvalidated,
+    candidates: client.getQueryState(["neutralCandidates", 5, undefined])?.isInvalidated,
     series: client.getQueryState(["transactionSeries", 5, "s1"])?.isInvalidated,
     otherSeries: client.getQueryState(["transactionSeries", 5, "other"])?.isInvalidated,
   };
@@ -119,7 +124,15 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-const transactionData = { lists: true, usage: true, spending: true, summary: true, trend: true, trash: true };
+const transactionData = {
+  lists: true,
+  usage: true,
+  spending: true,
+  summary: true,
+  trend: true,
+  trash: true,
+  candidates: true,
+};
 
 describe("useGetTransactions", () => {
   it("GETs the plan-scoped page with paging, sort and filter in the query and returns it", async () => {
@@ -386,5 +399,48 @@ describe("useGetTransactionTrash", () => {
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(requests.map(sent)).toEqual([["GET", `${path}/trash`, { page: "0", size: "20" }]]);
     expect(result.current.data).toEqual(page);
+  });
+});
+
+describe("neutral candidates", () => {
+  const candidate: NeutralCandidate = { transaction, proposedKind: "TRANSFER" };
+
+  it("GETs the plan's review page and returns it", async () => {
+    const page: PagedResponse<NeutralCandidate> = {
+      content: [candidate],
+      page: 0,
+      size: 50,
+      totalElements: 1,
+      totalPages: 1,
+      last: true,
+    };
+    server.use(handlers.neutralCandidates(page));
+    const requests = recordRequests();
+
+    const { result } = renderHookWithProviders(() => useGetNeutralCandidates({ page: 0, size: 50 }), {
+      plan: plan5,
+    });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests.map(sent)).toEqual([["GET", `${path}/neutral-candidates`, { page: "0", size: "50" }]]);
+    expect(result.current.data).toEqual(page);
+  });
+
+  it("applying a kind POSTs the kind and version, refreshes the transaction data and the review and shows \"Movement marked.\"", async () => {
+    server.use(handlers.setKind({ ...transaction, kind: "TRANSFER", version: 1 }));
+    const requests = recordRequests();
+
+    const { result, queryClient } = renderHookWithProviders(() => useSetTransactionKind(), {
+      plan: plan5,
+      seed: seedLists,
+    });
+    result.current.mutate({ params: { id: 40 }, body: { kind: "TRANSFER", version: 0 } });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(requests.map(sent)).toEqual([["POST", `${path}/40/kind`, {}]]);
+    expect(await requests[0].clone().json()).toEqual({ kind: "TRANSFER", version: 0 });
+    expect(result.current.data).toMatchObject({ kind: "TRANSFER", version: 1 });
+    expect(invalidated(queryClient)).toMatchObject(transactionData);
+    expect(toast.success).toHaveBeenCalledWith("Movement marked.");
   });
 });

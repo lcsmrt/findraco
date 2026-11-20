@@ -35,7 +35,7 @@ const emptySummary: DashboardSummaryResponse = {
   totalExpenses: 0,
   netBalance: 0,
   personBreakdown: [],
-  actualIncome: 0, actualExpenses: 0, actualBalance: 0,
+  actualIncome: 0, actualExpenses: 0, actualBalance: 0, neutralOut: 0, neutralIn: 0,
 };
 
 function emptyPage<T>(): PagedResponse<T> {

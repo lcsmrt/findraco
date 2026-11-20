@@ -20,6 +20,8 @@ const dashboard: DashboardSummaryResponse = {
   actualIncome: 3000,
   actualExpenses: 1200,
   actualBalance: 1800,
+  neutralOut: 0,
+  neutralIn: 0,
 };
 
 describe("summaryView", () => {
