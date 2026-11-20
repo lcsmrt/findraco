@@ -92,6 +92,6 @@ Proof: run unit | ✓ TransactionFormDrawer > shows the split of a row shared wi
 
 - **Settled mid-build:** 2026-11-19, Verifier finding 2 asked to the owner ("Excluo março, depois 'junho em diante'; restaurar março?"): user chose "Permitir" - a restore is refused only when it would bring back stale data (pattern changed, or the occurrence is outside the series' current range, or a tail's end moved since its cut); C4 changes accordingly.
 - **Dispatched:** build worker (Sonnet) at f21a7229; returned (C1-C14 built); Verifier (Opus) at 5dd4f403
-- **Boundary:** C1-C14 closed at 3df93fd7
+- **Boundary:** C1-C17 closed at 8802eb2b
 - **Abandoned:** none
 - **Walked:** local stack (Postgres 5434, jar on 3000, vite preview 5173) at 60530618: Lucas and Ana in one plan, R$ 100 "Pizza dois" split 50/50, Ana left (`POST /plan/{id}/leave`); Lucas opened the row's edit button on Transações - the split shows "Ana Lima (fora do plano)" checked; changed Valor to 120,00 and saved - the API returns Lucas 60.00, Ana 60.00. The first walk at e7a97997 found the split hidden in a one-member plan and Ana's share dropped on save (fixed in 3df93fd7, C14).
