@@ -389,6 +389,8 @@
     "summaryCards": {
       "actual": "Actual",
       "forecast": "Forecast {{amount}}",
+      "neutral": "Neutral",
+      "neutralAmounts": "out {{moneyOut}} · in {{moneyIn}}",
       "expenses": "Expenses",
       "income": "Income"
     }

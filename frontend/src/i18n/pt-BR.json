@@ -389,6 +389,8 @@
     "summaryCards": {
       "actual": "Realizado",
       "forecast": "Previsto {{amount}}",
+      "neutral": "Neutros",
+      "neutralAmounts": "saiu {{moneyOut}} · entrou {{moneyIn}}",
       "expenses": "Despesas",
       "income": "Receitas"
     }
