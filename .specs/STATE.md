@@ -244,15 +244,10 @@
 
 ## Handoff
 
-- **Run**: 2026-11-18/19. Design refactor plan: `.specs/project/DESIGN-PLAN.md` (owner answers, phases 0–7, R17 contacts). Three stacked PRs, each verified (lean/sdd gate exit 0), none merged:
-  - #35 `fix/correctness-pass` → `main`: phase 0, `1.0.0-beta.33`.
-  - #36 `feat/transaction-trash` → `fix/correctness-pass`: R1 trash, `1.0.0-beta.34` (AD-028). Retarget to `main` after #35 merges.
-  - `feat/mcp-capture-hub` → `feat/transaction-trash`: R9 (AD-029), backend only, no version bump. Retarget after #36.
-- **Owner decisions pending**:
-  1. Trash - ANSWERED 2026-11-19, user: "Só bloquear se a série mudou": built in `feat/phase1-followups` (gate exit 0): a restore is refused only when it would bring back stale data - pattern changed (rule revision), occurrence outside the series' range, or a tail's end moved since its cut (owner: "Permitir").
-  2. Former members - ANSWERED 2026-11-19, user: "Se o plano é meu, por que eu não poderia editar? Não tem sentido pra mim.": a row already split with a member who left stays fully editable (app and Claude); the former member's share stays valid on that row; a former member cannot be added to a row they are not on. Confirmed 2026-11-19 ("Cara, pra mim faz sentido"); built in `feat/phase1-followups` (gate exit 0), app form included.
-  3. R3 neutral movements: built in `feat/neutral-movements` (AD-030, gate exit 0), stacked on `feat/phase1-followups`. PRs: #38 follow-ups (beta.35) → #37; #39 neutral movements (beta.36) → #38. Merge order #35, #36, #37, #38, #39, retargeting each to `main`.
-- **Next phase per DESIGN-PLAN**: phase 2 foundations, after the decisions above; R17 contacts and import review come in phase 3.
+- **Run**: 2026-11-18/19. Design refactor plan: `.specs/project/DESIGN-PLAN.md` (owner answers, phases 0–7, R17 contacts). Phases 0 and 1 shipped: the stacked PRs #35–#39 merged into their bases, so #40 (`feat/neutral-movements` → `main`) carried them; merged 2026-11-20, deploy green, production at `1.0.0-beta.36` with V27–V29. Stack branches deleted locally and on GitHub (2026-11-22).
+- **Owner to do**: Transactions → "Revisar movimentos": apply the proposed card bills and Pix between the owners; until then old rows count as before.
+- **Owner decisions built**: trash restore refused only when it would bring back stale data ("Só bloquear se a série mudou", "Permitir"); rows shared with a former member stay editable ("Se o plano é meu, por que eu não poderia editar?"); R3 neutral movements (AD-030).
+- **Next**: R18 change the day of a series (owner 2026-11-22: important, "gera inconveniência"; today a series edit drops `startDate` with a 200 and the form hides the date), then phase 2 foundations, one UX topic at a time; R17 contacts and import review come in phase 3.
 - **Environment lessons**: each git worktree needs its own `pnpm install --offline --frozen-lockfile` (never symlink node_modules); never run two maven builds in the same `backend/` (a Verifier's throwaway test broke a `check_proofs` run); the local walk stack is Postgres on 5434 + `java -jar` on 3000 + `vite preview` with `VITE_FINDRACO_API_URL`.
 - **Running locally**: nothing.
 - **Still open from before**: first-connect MCP 403 (needs VPS logs); Dependabot #24/#25/#16/#30/#31/#32; release tags; prod DB password rotation; new-user default time zone (R12).
