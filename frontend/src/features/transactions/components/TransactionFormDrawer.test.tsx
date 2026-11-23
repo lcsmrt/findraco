@@ -842,6 +842,27 @@ describe("TransactionFormDrawer series date", () => {
       version: 4,
     });
   });
+  it("saves an occurrence moved past the series end", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(transactionHandlers.updateSeries(edited));
+    // June's occurrence was moved alone to 02/07, past the series' end on 16/06.
+    const movedJune: Transaction = { ...april, startDate: "2026-07-02", endDate: "2026-07-02" };
+    await openSeries(monthly, movedJune);
+
+    expect(screen.getByLabelText<HTMLInputElement>("Data").value).toBe("02/07/2026");
+    const amount = screen.getByLabelText("Valor");
+    await user.clear(amount);
+    await user.type(amount, "9000");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+    await user.click(await screen.findByRole("button", { name: "Continuar" }));
+
+    await waitFor(() => expect(writes(requests)).toHaveLength(1));
+    expect(await writes(requests)[0].json()).toMatchObject({
+      scope: "THIS_ONE",
+      series: { amount: 90, endDate: "2026-06-16" },
+    });
+  });
 });
 
 describe("TransactionFormDrawer language", () => {

@@ -170,10 +170,14 @@ export const transactionFormSchema = z
         }
       }
       // The end date is checked against the earlier of the opened and the new date: moving the last
-      // occurrence past the series' end date is allowed, the series' end moves with it.
+      // occurrence past the series' end date is allowed, the series' end moves with it. An occurrence
+      // moved alone past the end reopens with its moved date, which says nothing about the end, so
+      // the check only runs when the date changed in this edit.
+      const dateChanged = !values.original || !isSameDay(values.date, values.original.date);
       const earliestDate =
         values.original && values.original.date < values.date ? values.original.date : values.date;
       if (
+        dateChanged &&
         values.recurrenceMode === "RECURRING" &&
         values.endDate &&
         values.endDate < earliestDate
