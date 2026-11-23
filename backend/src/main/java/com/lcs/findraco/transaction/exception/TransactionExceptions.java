@@ -196,6 +196,25 @@ public class TransactionExceptions {
         }
     }
 
+    public static class SeriesDateChangeInvalidException extends DomainException {
+        public SeriesDateChangeInvalidException() {
+            super(
+                    ProblemType.SERIES_DATE_CHANGE_INVALID,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "Another date is only accepted for this occurrence or for this and the following ones, and"
+                            + " another month only from the first occurrence.");
+        }
+    }
+
+    public static class SeriesMonthCollisionException extends DomainException {
+        public SeriesMonthCollisionException() {
+            super(
+                    ProblemType.SERIES_MONTH_COLLISION,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "Moving the series would leave two occurrences in the same month.");
+        }
+    }
+
     public static class SeriesTooManyOccurrencesException extends DomainException {
         public SeriesTooManyOccurrencesException(int max) {
             super(

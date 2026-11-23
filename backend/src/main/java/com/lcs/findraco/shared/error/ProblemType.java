@@ -82,6 +82,8 @@ public enum ProblemType {
     SERIES_PIVOT_NOT_FOUND("series-pivot-not-found"),
     SERIES_PARCELS_CHANGE_NEEDS_ALL("series-parcels-change-needs-all"),
     SERIES_TOO_MANY_OCCURRENCES("series-too-many-occurrences"),
+    SERIES_DATE_CHANGE_INVALID("series-date-change-invalid"),
+    SERIES_MONTH_COLLISION("series-month-collision"),
     IMPORT_LINE_INVALID("import-line-invalid"),
     CSV_UNKNOWN_FORMAT("csv-unknown-format"),
     CSV_FORMAT_NOT_SUPPORTED("csv-format-not-supported"),

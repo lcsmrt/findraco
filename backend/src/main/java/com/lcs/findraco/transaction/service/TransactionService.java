@@ -523,6 +523,29 @@ public class TransactionService {
         return matcher.find() ? matcher.group() : null;
     }
 
+    /**
+     * The date the pivot moves to, or null when the edit leaves it where it is. "All" never moves a date, so the
+     * past stays where it happened: it refuses another one.
+     */
+    private LocalDate requestedPivotDate(UpdateSeriesRequest dto, Transaction pivot, List<Transaction> occurrences) {
+        if (dto.pivotDate() == null) {
+            return null;
+        }
+        Transaction datePivot = pivot != null
+                ? pivot
+                : occurrences.stream()
+                        .filter(occurrence -> occurrence.getId().equals(dto.pivotOccurrenceId()))
+                        .findFirst()
+                        .orElseThrow(TransactionExceptions.SeriesPivotNotFoundException::new);
+        if (dto.pivotDate().equals(datePivot.getStartDate())) {
+            return null;
+        }
+        if (dto.scope() == SeriesEditScope.ALL) {
+            throw new TransactionExceptions.SeriesDateChangeInvalidException();
+        }
+        return dto.pivotDate();
+    }
+
     @Transactional
     public TransactionSeriesResponse editSeries(String seriesId, UpdateSeriesRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
@@ -581,6 +604,12 @@ public class TransactionService {
             planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(occurrence), ctx.userId());
         }
 
+        // Refused before anything changes, so a refused date change stores nothing.
+        LocalDate pivotDate = requestedPivotDate(dto, pivot, occurrences);
+        SeriesDateChange dateChange = dto.scope() == SeriesEditScope.THIS_AND_FOLLOWING && pivotDate != null
+                ? SeriesDateChange.of(pivot, pivotDate, occurrences)
+                : null;
+
         if (dto.scope() == SeriesEditScope.THIS_ONE) {
             String suffix = extractInstallmentSuffix(pivot.getDescription());
             pivot.edit(
@@ -589,7 +618,7 @@ public class TransactionService {
                             pivot.getType(),
                             series.amount(),
                             suffix != null ? series.description() + " " + suffix : series.description(),
-                            pivot.getStartDate(),
+                            pivotDate != null ? pivotDate : pivot.getStartDate(),
                             pivot.getEndDate(),
                             pivot.getParcelsNumber(),
                             pivot.getKind()),
@@ -619,6 +648,9 @@ public class TransactionService {
                 split.mode(),
                 split.shares()));
 
+        if (dateChange != null) {
+            dateChange.apply(definition, occurrences);
+        }
         LocalDate pivotSlot = dto.scope() == SeriesEditScope.ALL ? null : pivot.getScheduledDate();
 
         SeriesRegenerator.SeriesEditResult result =

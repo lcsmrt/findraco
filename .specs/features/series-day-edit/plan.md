@@ -30,8 +30,10 @@ date and sends it.
 3. "Só esta" -> `Transaction` (exists) - the pivot takes `pivotDate`; its slot stays
 4. "Esta e as seguintes" -> `RecurrenceDefinition` (exists) - takes the new day of the month (door 1), shifts start,
    end and exceptions by the month difference when the pivot is the first occurrence, raises `rule_revision`
-5. `SeriesRegenerator` (exists) - moves the pivot and every following unconfirmed occurrence, date and slot, to the
-   new day (and month); confirmed ones keep their date; slots and exceptions are matched by month
+5. `SeriesDateChange` (new, in `transaction.service`) - checks the change against the occurrences, then moves the
+   pivot and every following unconfirmed occurrence, date and slot, to the new day (and month) before
+   `SeriesRegenerator` (exists) reconciles; confirmed ones keep their date; the regenerator matches slots and
+   exceptions by month and never resets a date
 6. out: the series' occurrences; `OpenEndedSeriesTopUpService` and `RecurringTransactionGenerator` (exist) create
    later occurrences on the definition's day, clamped to the month's last day
 
@@ -41,13 +43,15 @@ sequenceDiagram
     participant S as TransactionService.editSeries
     participant X as Transaction
     participant D as RecurrenceDefinition
+    participant C as SeriesDateChange
     participant R as SeriesRegenerator
     participant T as OpenEndedSeriesTopUpService
     F->>S: 1. pivotDate, scope
     S->>S: 2. refuse "Todas", month from a later occurrence, two in one month
     S->>X: 3. "Só esta": pivot date
     S->>D: 4. "Esta e as seguintes": day of month, month shift, rule_revision + 1
-    S->>R: 5. move pivot and following unconfirmed, date and slot
+    S->>C: 5. move pivot and following unconfirmed, date and slot
+    S->>R: 5. reconcile by month
     R-->>F: 6. occurrences
     T->>D: 6. later occurrences on the definition's day
 ```
