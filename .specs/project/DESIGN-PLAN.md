@@ -178,6 +178,7 @@ Status is against ROADMAP.md and IDEAS.md.
 | R14 | Year table (category × month), comparisons with the average | "Is this month unusual?" | new | S–M | A limit is one value for all time, so changing it rewrites past months. |
 | ~~R15~~ | ~~Settlement with a payer field~~ | Dropped: the owners pool money. | | | |
 | R16 | Personal token and quick-add endpoint for iOS Shortcuts | Capture at the moment of paying. | new | M | Lower now that Claude is the capture channel. |
+| R18 | **Change the day of a series** | Editing a series ("all" or "this and following") cannot move its day: the form hides the date field and the API silently drops `startDate` (also `mode`, `interval`, `currentParcel`; audit H3 asked to reject or apply them). Moving two series from the 16th to the 18th (2026-11-02) means editing each occurrence or recreating the series, and the request answers 200 as if it had worked. | new, **important** (owner 2026-11-22: "gera inconveniência") | S–M | For the spec, not decided: the new day applies to the unconfirmed occurrences in scope; confirmed ones keep their date, as the regeneration already does; a day change raises the rule revision, so a trash restore of an occurrence on the old day is refused; fields an edit cannot change answer 422 instead of being dropped. Also through Claude. |
 
 ### R7 design sketch (for the spec, not decided)
 
@@ -241,7 +242,7 @@ database password rotation, the first-connect MCP 403) runs alongside and does n
 |---|---|---|
 | 0. Correctness | B1–B7 | Wrong numbers and labels cost trust; all are small and need no decision. |
 | 1. Truthful totals | R1 trash, R3 neutral movements, R9 MCP gaps (category on update, filters, items, attribution, delete through the trash, kind) | Totals are distorted today by card bill payments and Pix between the owners, and Claude is the capture channel. Redesigning screens over wrong numbers would be wasted work. |
-| 2. Foundations | S1, S2, S3, S4 (absorbs the P2 itemized marker), S10, S11, N5, N6, R12 | Every later screen uses money, touch sizes, badges and the page shell. |
+| 2. Foundations | R18 change the day of a series (first, owner priority 2026-11-22), then S1, S2, S3, S4 (absorbs the P2 itemized marker), S10, S11, N5, N6, R12 | Every later screen uses money, touch sizes, badges and the page shell. |
 | 3. People and imports | R17 contacts and money to receive; then C10 import review with R4 category and attribution memory; then R5 card bill import on top of it | The external user's whole flow: import the bill, sort his purchases from his parents', charge them. R17 changes the participant model every aggregate reads. The review step is built once and serves both statement formats. |
 | 4. Accounts | R7 light accounts and balance alignment | Gives the Overview its real hero; card bills from R5 and transfers from R3 already exist. |
 | 5. Overview | O2 with the balance hero, O1, O3 + C6, O4, O5, O6, O7, O8, O9, O13, O14 (now also showing dependants and money to receive) | One redesign with the final data in hand instead of two. |
