@@ -652,7 +652,7 @@
     "series-current-parcel-out-of-range": "A parcela atual deve estar entre 1 e o número de parcelas.",
     "series-date-change-invalid": "Essa mudança de data não é possível: com \"Todas\" a data não muda, e o mês só muda a partir da primeira ocorrência.",
     "series-interval-required": "Escolha com que frequência a transação se repete.",
-    "series-month-collision": "A série ficaria com duas ocorrências no mesmo mês. Nada foi alterado.",
+    "series-month-change-confirmed": "O mês de início só muda quando nenhuma ocorrência está confirmada. Nada foi alterado.",
     "series-not-found": "Esta série não existe mais.",
     "series-parcels-change-needs-all": "O número de parcelas só pode mudar para a série inteira.",
     "series-parcels-required": "Informe o número de parcelas.",

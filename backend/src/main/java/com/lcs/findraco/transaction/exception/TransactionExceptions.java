@@ -206,12 +206,12 @@ public class TransactionExceptions {
         }
     }
 
-    public static class SeriesMonthCollisionException extends DomainException {
-        public SeriesMonthCollisionException() {
+    public static class SeriesMonthChangeConfirmedException extends DomainException {
+        public SeriesMonthChangeConfirmedException() {
             super(
-                    ProblemType.SERIES_MONTH_COLLISION,
+                    ProblemType.SERIES_MONTH_CHANGE_CONFIRMED,
                     HttpStatus.UNPROCESSABLE_CONTENT,
-                    "Moving the series would leave two occurrences in the same month.");
+                    "The start month can only change while no occurrence of the series is confirmed.");
         }
     }
 

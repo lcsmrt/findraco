@@ -497,25 +497,19 @@ class SeriesDateEditIT extends AbstractIntegrationTest {
     void monthCollisionIsRefused() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
-        JsonNode series = createSeries(plan, owner, gym(MARCH_16, LocalDate.of(2026, 6, 16)));
-        String seriesId = series.get("seriesId").asString();
-        confirm(plan, owner, occurrenceId(series, APRIL), LocalDate.of(2026, 4, 16));
-        List<LocalDate> datesBefore = dates(seriesId);
-        long versionBefore = fixtures.seriesVersion(seriesId);
 
-        edit(
-                        plan,
-                        owner,
-                        seriesId,
-                        "THIS_AND_FOLLOWING",
-                        occurrenceId(series, MARCH),
-                        LocalDate.of(2026, 4, 16),
-                        gymBody())
-                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-month-collision"));
+        JsonNode aprilConfirmed = createSeries(plan, owner, gym(MARCH_16, LocalDate.of(2026, 6, 16)));
+        confirm(plan, owner, occurrenceId(aprilConfirmed, APRIL), LocalDate.of(2026, 4, 16));
+        assertMonthChangeRefused(plan, owner, aprilConfirmed, LocalDate.of(2026, 4, 16), gymBody());
 
-        assertThat(dates(seriesId)).isEqualTo(datesBefore);
-        assertThat(slots(seriesId)).isEqualTo(datesBefore);
-        assertThat(fixtures.seriesVersion(seriesId)).isEqualTo(versionBefore);
+        JsonNode juneConfirmed = createSeries(plan, owner, gym(MARCH_16, LocalDate.of(2026, 6, 16)));
+        confirm(plan, owner, occurrenceId(juneConfirmed, 3), LocalDate.of(2026, 6, 16));
+        assertMonthChangeRefused(plan, owner, juneConfirmed, LocalDate.of(2026, 2, 16), gymBody());
+
+        JsonNode lastInstallmentConfirmed = createSeries(plan, owner, laptop(LocalDate.of(2026, 12, 16)));
+        confirm(plan, owner, occurrenceId(lastInstallmentConfirmed, 9), LocalDate.of(2027, 9, 16));
+        assertMonthChangeRefused(
+                plan, owner, lastInstallmentConfirmed, LocalDate.of(2026, 11, 16), laptop(LocalDate.of(2026, 12, 16)));
 
         JsonNode unconfirmed = createSeries(plan, owner, gym(MARCH_16, LocalDate.of(2026, 6, 16)));
         String unconfirmedId = unconfirmed.get("seriesId").asString();
@@ -534,6 +528,26 @@ class SeriesDateEditIT extends AbstractIntegrationTest {
                         LocalDate.of(2026, 5, 16),
                         LocalDate.of(2026, 6, 16),
                         LocalDate.of(2026, 7, 16));
+    }
+
+    /** Moves the first occurrence to {@code newDate} and expects the refusal, with rows, dates and version intact. */
+    private void assertMonthChangeRefused(
+            Plan plan, User owner, JsonNode series, LocalDate newDate, Map<String, Object> body) throws Exception {
+        String seriesId = series.get("seriesId").asString();
+        List<LocalDate> datesBefore = dates(seriesId);
+        List<LocalDate> slotsBefore = slots(seriesId);
+        List<String> descriptionsBefore = descriptions(seriesId);
+        Map<String, Object> definitionBefore = definition(seriesId);
+        long versionBefore = fixtures.seriesVersion(seriesId);
+
+        edit(plan, owner, seriesId, "THIS_AND_FOLLOWING", occurrenceId(series, 0), newDate, body)
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "series-month-change-confirmed"));
+
+        assertThat(dates(seriesId)).isEqualTo(datesBefore);
+        assertThat(slots(seriesId)).isEqualTo(slotsBefore);
+        assertThat(descriptions(seriesId)).isEqualTo(descriptionsBefore);
+        assertThat(definition(seriesId)).isEqualTo(definitionBefore);
+        assertThat(fixtures.seriesVersion(seriesId)).isEqualTo(versionBefore);
     }
 
     @Test
@@ -678,6 +692,13 @@ class SeriesDateEditIT extends AbstractIntegrationTest {
         return jdbc.queryForList(
                 "SELECT scheduled_date FROM transactions WHERE series_id = ? AND deletion_id IS NULL ORDER BY scheduled_date",
                 LocalDate.class,
+                seriesId);
+    }
+
+    private List<String> descriptions(String seriesId) {
+        return jdbc.queryForList(
+                "SELECT description FROM transactions WHERE series_id = ? AND deletion_id IS NULL ORDER BY scheduled_date",
+                String.class,
                 seriesId);
     }
 

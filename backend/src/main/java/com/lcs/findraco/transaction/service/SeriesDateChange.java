@@ -7,9 +7,7 @@ import com.lcs.findraco.transaction.model.Transaction;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.temporal.ChronoUnit;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A series' day, and from its first occurrence its month, changed by moving the pivot occurrence ("this and
@@ -31,10 +29,13 @@ record SeriesDateChange(
         if (monthShift != 0 && !pivotIsFirst) {
             throw new TransactionExceptions.SeriesDateChangeInvalidException();
         }
-        SeriesDateChange change =
-                new SeriesDateChange(pivot, pivotDate.getDayOfMonth(), pivotMonth, monthShift, pivotIsFirst);
-        change.requireOneOccurrencePerMonth(occurrences);
-        return change;
+        // A confirmed occurrence keeps its month while the rest move, which would leave its old month empty to be
+        // refilled. Refusing the month change also keeps every other occurrence one per month: they all move by the
+        // same number of months, from the first one on.
+        if (monthShift != 0 && occurrences.stream().anyMatch(SeriesDateChange::isConfirmed)) {
+            throw new TransactionExceptions.SeriesMonthChangeConfirmedException();
+        }
+        return new SeriesDateChange(pivot, pivotDate.getDayOfMonth(), pivotMonth, monthShift, pivotIsFirst);
     }
 
     /** Applies the change to {@code definition} and to the pivot and every following occurrence that moves. */
@@ -53,20 +54,11 @@ record SeriesDateChange(
         if (occurrence.getId().equals(pivot.getId())) {
             return true;
         }
-        return !slotMonth(occurrence).isBefore(pivotMonth) && occurrence.getConfirmation() != Confirmation.CONFIRMED;
+        return !slotMonth(occurrence).isBefore(pivotMonth) && !isConfirmed(occurrence);
     }
 
-    private void requireOneOccurrencePerMonth(List<Transaction> occurrences) {
-        if (monthShift == 0) {
-            return;
-        }
-        Set<YearMonth> months = new HashSet<>();
-        for (Transaction occurrence : occurrences) {
-            YearMonth month = moves(occurrence) ? slotMonth(occurrence).plusMonths(monthShift) : slotMonth(occurrence);
-            if (!months.add(month)) {
-                throw new TransactionExceptions.SeriesMonthCollisionException();
-            }
-        }
+    private static boolean isConfirmed(Transaction occurrence) {
+        return occurrence.getConfirmation() == Confirmation.CONFIRMED;
     }
 
     private static YearMonth slotMonth(Transaction occurrence) {

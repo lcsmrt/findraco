@@ -70,7 +70,7 @@ export type ProblemType =
   | "series-parcels-change-needs-all"
   | "series-too-many-occurrences"
   | "series-date-change-invalid"
-  | "series-month-collision"
+  | "series-month-change-confirmed"
   | "import-line-invalid"
   | "csv-unknown-format"
   | "csv-format-not-supported"

@@ -785,14 +785,14 @@ describe("TransactionFormDrawer series date", () => {
         'Essa mudança de data não é possível: com "Todas" a data não muda, e o mês só muda a partir da primeira ocorrência.',
     },
     {
-      slug: "series-month-collision",
+      slug: "series-month-change-confirmed",
       language: "en",
-      message: "The series would end up with two occurrences in the same month. Nothing was changed.",
+      message: "The start month only changes when no occurrence is confirmed. Nothing was changed.",
     },
     {
-      slug: "series-month-collision",
+      slug: "series-month-change-confirmed",
       language: "pt-BR",
-      message: "A série ficaria com duas ocorrências no mesmo mês. Nada foi alterado.",
+      message: "O mês de início só muda quando nenhuma ocorrência está confirmada. Nada foi alterado.",
     },
   ] as const)("shows the series date problems from the API", async ({ slug, language, message }) => {
     const user = userEvent.setup();
