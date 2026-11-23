@@ -261,11 +261,11 @@ class SeriesDateEditIT extends AbstractIntegrationTest {
 
         // February has no 31st, so a member cannot pick day 31 there: the day is picked in March, the next month
         // that has it, and the months after keep it.
-        JsonNode fromFebruary = createSeries(plan, owner, gym(LocalDate.of(2026, 2, 16), LocalDate.of(2026, 4, 16)));
+        JsonNode fromFebruary = createSeries(plan, owner, gym(LocalDate.of(2026, 2, 16), LocalDate.of(2026, 5, 16)));
         String februarySeries = fromFebruary.get("seriesId").asString();
         Map<String, Object> februaryBody = gymBody();
         februaryBody.put("startDate", "2026-02-16");
-        februaryBody.put("endDate", "2026-04-16");
+        februaryBody.put("endDate", "2026-05-16");
         edit(
                         plan,
                         owner,
@@ -277,7 +277,11 @@ class SeriesDateEditIT extends AbstractIntegrationTest {
                 .andExpect(status().isOk());
 
         assertThat(dates(februarySeries))
-                .containsExactly(LocalDate.of(2026, 2, 16), LocalDate.of(2026, 3, 31), LocalDate.of(2026, 4, 30));
+                .containsExactly(
+                        LocalDate.of(2026, 2, 16),
+                        LocalDate.of(2026, 3, 31),
+                        LocalDate.of(2026, 4, 30),
+                        LocalDate.of(2026, 5, 31));
     }
 
     @Test
