@@ -11,6 +11,7 @@ import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.stereotype.Component;
@@ -48,7 +49,7 @@ public class RecurringTransactionGenerator {
                     definition,
                     dto.amount(),
                     dto.description() + " (" + parcel + "/" + total + ")",
-                    dto.startDate().plusMonths(parcel - first),
+                    definition.occurrenceDate(parcel - first),
                     total,
                     shares));
         }
@@ -61,10 +62,10 @@ public class RecurringTransactionGenerator {
 
         List<Transaction> occurrences = new ArrayList<>();
         // Each date is counted from the start, so a day clamped in a short month does not carry over.
-        for (int month = 0; !dto.startDate().plusMonths(month).isAfter(effectiveEnd); month++) {
+        for (int month = 0; !definition.occurrenceDate(month).isAfter(effectiveEnd); month++) {
             ensureWithinCap(occurrences.size() + 1);
             occurrences.add(occurrence(
-                    definition, dto.amount(), dto.description(), dto.startDate().plusMonths(month), null, shares));
+                    definition, dto.amount(), dto.description(), definition.occurrenceDate(month), null, shares));
         }
         return occurrences;
     }
@@ -73,14 +74,14 @@ public class RecurringTransactionGenerator {
      * Definition-driven forward-window generator used by rolling top-up (open-ended RECURRING series):
      * given an already-persisted {@link RecurrenceDefinition}, generates the unsaved occurrences for the
      * months strictly after {@code afterExclusive} (the current {@code generatedThrough} watermark) up
-     * through {@code throughInclusive} (the rolling horizon), skipping the series' excepted dates and honoring {@link #MAX_OCCURRENCES} per pass.
+     * through {@code throughInclusive} (the rolling horizon), skipping the months the series skips and honoring {@link #MAX_OCCURRENCES} per pass.
      */
     public List<Transaction> generateForwardWindow(
             RecurrenceDefinition def, LocalDate afterExclusive, LocalDate throughInclusive, List<Share> shares) {
         List<Transaction> occurrences = new ArrayList<>();
-        for (int month = 0; !def.getStartDate().plusMonths(month).isAfter(throughInclusive); month++) {
-            LocalDate date = def.getStartDate().plusMonths(month);
-            if (!date.isAfter(afterExclusive) || def.getExceptions().contains(date)) {
+        for (int month = 0; !def.occurrenceDate(month).isAfter(throughInclusive); month++) {
+            LocalDate date = def.occurrenceDate(month);
+            if (!date.isAfter(afterExclusive) || def.skips(YearMonth.from(date))) {
                 continue;
             }
             ensureWithinCap(occurrences.size() + 1);

@@ -611,6 +611,25 @@ class MigrationsIT extends AbstractIntegrationTest {
         });
     }
 
+    @Test
+    void recurrenceDayOfMonthIsFilledAndBounded() {
+        String seed = "INSERT INTO users (id, email, name, password) VALUES (1, 'a@b.c', 'A', 'x');"
+                + "INSERT INTO plans (id, name, created_by, is_default) VALUES (1, 'P', 1, true);"
+                + "INSERT INTO recurrence_definitions (id, plan_id, created_by, series_id, type, amount, description, "
+                + "mode, recurrence_interval, start_date, requires_confirmation) "
+                + "VALUES (1, 1, 1, 'series-1', 'DEBIT', 80.00, 'Gym', 'RECURRING', 'MONTHLY', '2026-03-16', false);";
+
+        migrateScratchDatabase("29", seed, scratch -> {
+            assertThat(scratch.queryForObject("SELECT day_of_month FROM recurrence_definitions", Integer.class))
+                    .isEqualTo(16);
+            for (int day : new int[] {0, 32}) {
+                assertThatThrownBy(() -> scratch.update("UPDATE recurrence_definitions SET day_of_month = ?", day))
+                        .isInstanceOf(DataIntegrityViolationException.class)
+                        .hasMessageContaining("ck_recurrence_definitions_day_of_month");
+            }
+        });
+    }
+
     /**
      * Builds a scratch database up to V12, applies {@code tamper}, then runs the rest of the chain.
      * The scratch database lives in the same container and is dropped afterwards.

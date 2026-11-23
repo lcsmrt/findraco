@@ -21,6 +21,7 @@ import com.lcs.findraco.transaction.service.OpenEndedSeriesTopUpService;
 import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -190,8 +191,12 @@ class SeriesConfirmationIT extends AbstractIntegrationTest {
 
         editSeries(plan, owner, seriesId, "ALL", null, "250.00", true);
 
-        assertThat(row(thirdId)).isEqualTo("250.00 " + slot + " REQUIRED");
-        assertThat(dates()).isEqualTo(datesBefore);
+        // The occurrence keeps the date it was confirmed on: an edit of the series never resets a date to its slot.
+        LocalDate confirmedOn = slot.plusDays(2);
+        assertThat(row(thirdId)).isEqualTo("250.00 " + confirmedOn + " REQUIRED");
+        List<LocalDate> expectedDates = new ArrayList<>(datesBefore);
+        expectedDates.set(2, confirmedOn);
+        assertThat(dates()).isEqualTo(expectedDates);
         assertThat(amounts()).containsExactly("250.00", "250.00", "250.00", "250.00", "250.00");
     }
 

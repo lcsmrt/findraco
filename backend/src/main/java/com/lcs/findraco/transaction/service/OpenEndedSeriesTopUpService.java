@@ -9,6 +9,7 @@ import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionRepository;
 import jakarta.persistence.EntityManager;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -79,15 +80,15 @@ public class OpenEndedSeriesTopUpService {
                 recurringTransactionGenerator.generateForwardWindow(definition, afterExclusive, through, shares);
 
         if (!candidates.isEmpty()) {
-            Set<LocalDate> existingSlots =
+            Set<YearMonth> existingSlots =
                     transactionRepository
                             .findAllByPlanAndSeriesId(definition.getPlan(), definition.getSeriesId())
                             .stream()
-                            .map(Transaction::getScheduledDate)
+                            .map(occurrence -> YearMonth.from(occurrence.getScheduledDate()))
                             .collect(Collectors.toSet());
 
             List<Transaction> toPersist = candidates.stream()
-                    .filter(occurrence -> !existingSlots.contains(occurrence.getScheduledDate()))
+                    .filter(occurrence -> !existingSlots.contains(YearMonth.from(occurrence.getScheduledDate())))
                     .toList();
             if (!toPersist.isEmpty()) {
                 transactionRepository.saveAll(toPersist);
