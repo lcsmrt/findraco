@@ -650,7 +650,9 @@
     "requestId": "Request id: {{id}}",
     "reset-token-invalid": "This password reset link is invalid or has expired. Request a new one.",
     "series-current-parcel-out-of-range": "The current installment must be between 1 and the number of installments.",
+    "series-date-change-invalid": "That date change is not possible: with \"All\" the date does not change, and the month only changes from the first occurrence.",
     "series-interval-required": "Choose how often the transaction repeats.",
+    "series-month-collision": "The series would end up with two occurrences in the same month. Nothing was changed.",
     "series-not-found": "This series no longer exists.",
     "series-parcels-change-needs-all": "The number of installments can only change for the whole series.",
     "series-parcels-required": "Enter the number of installments.",
@@ -765,6 +767,7 @@
     "form": {
       "amountMustBePositive": "Amount must be positive",
       "choosePerson": "Choose the person",
+      "dateAndInstallmentsInSeparateEdits": "Change the date and the number of installments in separate edits. Save one, then the other.",
       "dateIsRequired": "Date is required",
       "descriptionIsRequired": "Description is required",
       "enterAtLeast2Installments": "Enter at least 2 installments",

@@ -422,6 +422,7 @@ describe("toSeriesEditPayload", () => {
     expect(body).toEqual({
       scope: "ALL",
       pivotOccurrenceId: 55,
+      pivotDate: null,
       series: {
         type: "DEBIT",
         amount: 100,
@@ -589,5 +590,78 @@ describe("occurrenceParcel — the parcel of the occurrence being edited", () =>
     expect(
       occurrenceParcel({ startDate: "2026-11-30", firstParcel: undefined }, "2027-01-30"),
     ).toBe(3);
+  });
+});
+
+describe("transactionForm series date", () => {
+  const form = {
+    ...baseValues,
+    seriesEdit: true,
+    recurring: false,
+    recurrenceMode: "INSTALLMENT" as const,
+    parcelsNumber: 12,
+  };
+
+  it("sends the pivot date only when it changed", () => {
+    // The occurrence was opened on 2026-07-01.
+    const unchanged = toSeriesEditPayload(form, installmentTransaction, installmentDefinition, "THIS_ONE", false, undefined);
+    const sameDayLaterHour = toSeriesEditPayload(
+      { ...form, date: new Date(2026, 6, 1, 15, 30) },
+      installmentTransaction,
+      installmentDefinition,
+      "ALL",
+      false,
+      undefined,
+    );
+    const moved = toSeriesEditPayload(
+      { ...form, date: new Date(2026, 6, 18) },
+      installmentTransaction,
+      installmentDefinition,
+      "THIS_AND_FOLLOWING",
+      false,
+      undefined,
+    );
+
+    expect(unchanged.pivotDate).toBeNull();
+    expect(sameDayLaterHour.pivotDate).toBeNull();
+    expect(moved.pivotDate).toBe("2026-07-18");
+  });
+
+  it("opens a series edit with the occurrence's date and installment count to compare against", () => {
+    const defaults = buildDefaultValues(installmentTransaction, 1, installmentDefinition);
+
+    expect(defaults.original).toEqual({ date: new Date(2026, 6, 1), parcelsNumber: 12 });
+    expect(buildDefaultValues(installmentTransaction, 1, undefined).original).toBeUndefined();
+  });
+
+  it("refuses a new date and a new installment count together, on the count", () => {
+    const original = { date: new Date(2026, 6, 1), parcelsNumber: 12 };
+    const both = transactionFormSchema.safeParse({ ...form, original, date: new Date(2026, 6, 18), parcelsNumber: 10 });
+    const dateOnly = transactionFormSchema.safeParse({ ...form, original, date: new Date(2026, 6, 18) });
+    const countOnly = transactionFormSchema.safeParse({ ...form, original, parcelsNumber: 10 });
+
+    expect(both.success).toBe(false);
+    if (!both.success) {
+      expect(both.error.issues.map((issue) => [issue.path[0], issue.message])).toEqual([
+        ["parcelsNumber", "transactions.form.dateAndInstallmentsInSeparateEdits"],
+      ]);
+    }
+    expect(dateOnly.success).toBe(true);
+    expect(countOnly.success).toBe(true);
+  });
+
+  it("lets the last occurrence move past the series' end date", () => {
+    const recurring = {
+      ...baseValues,
+      seriesEdit: true,
+      recurring: false,
+      recurrenceMode: "RECURRING" as const,
+      original: { date: new Date(2026, 5, 16), parcelsNumber: null },
+      endDate: new Date(2026, 5, 16),
+    };
+
+    expect(transactionFormSchema.safeParse({ ...recurring, date: new Date(2026, 5, 18) }).success).toBe(true);
+    // An end date before the opened occurrence is still refused.
+    expect(transactionFormSchema.safeParse({ ...recurring, date: new Date(2026, 5, 18), endDate: new Date(2026, 5, 10) }).success).toBe(false);
   });
 });

@@ -11,7 +11,7 @@ import {
 } from "@/api/dtos/transaction";
 import type { PlanMember } from "@/api/dtos/plan";
 import { toCents } from "@/utils/money";
-import { addMonths, differenceInCalendarMonths } from "date-fns";
+import { addMonths, differenceInCalendarMonths, isSameDay } from "date-fns";
 import { toIsoDate } from "@/utils/dates";
 import { z } from "zod";
 import { hidesItems, isNeutralKind } from "../utils/movementKind";
@@ -62,6 +62,13 @@ export const transactionFormSchema = z
     /** Whole count; empty means the first installment. */
     currentParcel: z.number().nullable().optional(),
     endDate: z.date().optional(),
+    /**
+     * What a series edit opened with. The date and the installment count may change, and the
+     * schema compares them with the opened values. Unset outside a series edit.
+     */
+    original: z
+      .object({ date: z.date(), parcelsNumber: z.number().nullable() })
+      .optional(),
     attributionMode: z.enum(["ME", "SOMEONE", "SPLIT"]),
     splitMode: z.enum(["EQUAL", "EXACT"]),
     participants: z.array(
@@ -149,11 +156,27 @@ export const transactionFormSchema = z
             path: ["parcelsNumber"],
           });
         }
+        // A new count rebuilds the whole series and a new date moves part of it: one edit cannot do both.
+        if (
+          values.original &&
+          !isSameDay(values.date, values.original.date) &&
+          (values.parcelsNumber ?? null) !== values.original.parcelsNumber
+        ) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "transactions.form.dateAndInstallmentsInSeparateEdits",
+            path: ["parcelsNumber"],
+          });
+        }
       }
+      // The end date is checked against the earlier of the opened and the new date: moving the last
+      // occurrence past the series' end date is allowed, the series' end moves with it.
+      const earliestDate =
+        values.original && values.original.date < values.date ? values.original.date : values.date;
       if (
         values.recurrenceMode === "RECURRING" &&
         values.endDate &&
-        values.endDate < values.date
+        values.endDate < earliestDate
       ) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -327,6 +350,11 @@ export function seriesParcelsChanged(
   parcelsNumber: number | null | undefined,
 ): boolean {
   return definition?.mode === "INSTALLMENT" && parcelsNumber !== (definition.parcelsNumber ?? null);
+}
+
+/** Whether a series edit moved the occurrence to another day than the one it was opened on. */
+export function seriesDateChanged(transaction: Pick<Transaction, "startDate">, date: Date): boolean {
+  return !isSameDay(date, parseLocalDate(transaction.startDate));
 }
 
 /**
@@ -623,6 +651,8 @@ export function toSeriesEditPayload(
   return {
     scope,
     pivotOccurrenceId: transaction.id,
+    // Null leaves the pivot's date alone: the API refuses a date with "Todas", so it is sent only when it changed.
+    pivotDate: seriesDateChanged(transaction, values.date) ? toIsoDate(values.date) : null,
     series: {
       type: definition.type,
       amount: values.amount,
@@ -681,6 +711,13 @@ export function buildDefaultValues(
         isSeriesEdit && definition.mode === "RECURRING" && definition.endDate
           ? parseLocalDate(definition.endDate)
           : undefined,
+      original: isSeriesEdit
+        ? {
+            date: parseLocalDate(transaction.startDate),
+            parcelsNumber:
+              definition.mode === "INSTALLMENT" ? (definition.parcelsNumber ?? null) : null,
+          }
+        : undefined,
       attributionMode,
       splitMode: transaction.splitMode === "EXACT" ? "EXACT" : "EQUAL",
       participants:

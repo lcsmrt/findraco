@@ -650,7 +650,9 @@
     "requestId": "ID da solicitação: {{id}}",
     "reset-token-invalid": "Este link de redefinição de senha é inválido ou expirou. Solicite um novo.",
     "series-current-parcel-out-of-range": "A parcela atual deve estar entre 1 e o número de parcelas.",
+    "series-date-change-invalid": "Essa mudança de data não é possível: com \"Todas\" a data não muda, e o mês só muda a partir da primeira ocorrência.",
     "series-interval-required": "Escolha com que frequência a transação se repete.",
+    "series-month-collision": "A série ficaria com duas ocorrências no mesmo mês. Nada foi alterado.",
     "series-not-found": "Esta série não existe mais.",
     "series-parcels-change-needs-all": "O número de parcelas só pode mudar para a série inteira.",
     "series-parcels-required": "Informe o número de parcelas.",
@@ -765,6 +767,7 @@
     "form": {
       "amountMustBePositive": "O valor deve ser positivo",
       "choosePerson": "Escolha a pessoa",
+      "dateAndInstallmentsInSeparateEdits": "Mude a data e o número de parcelas em edições separadas. Salve uma, depois a outra.",
       "dateIsRequired": "A data é obrigatória",
       "descriptionIsRequired": "A descrição é obrigatória",
       "enterAtLeast2Installments": "Informe pelo menos 2 parcelas",

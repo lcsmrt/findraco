@@ -1,6 +1,7 @@
 import type {
   Transaction,
   RecurrenceDefinitionResponse,
+  SeriesEditScope,
 } from "@/api/dtos/transaction";
 import {
   useCreateTransaction,
@@ -9,6 +10,7 @@ import {
   useUpdateTransactionSeries,
 } from "@/api/services/useTransactionService";
 import {
+  seriesDateChanged,
   seriesParcelsChanged,
   toPayload,
   toSeriesCreatePayload,
@@ -18,6 +20,9 @@ import {
 } from "./transactionForm";
 import type { SeriesScopeDialogContextValue } from "./useSeriesScope";
 import { useTranslation } from "react-i18next";
+
+/** A date change leaves the past alone, so it never applies to the whole series. */
+const DATE_CHANGE_SCOPES: SeriesEditScope[] = ["THIS_ONE", "THIS_AND_FOLLOWING"];
 
 type UseTransactionFormSubmitArgs = {
   mode: TransactionFormMode;
@@ -62,7 +67,10 @@ export function useTransactionFormSubmit({
     if (!definition) return;
     const scope = seriesParcelsChanged(definition, values.parcelsNumber)
       ? "ALL"
-      : await chooseScope({ title: t("transactions.seriesScopeDialog.editSeries") });
+      : await chooseScope({
+          title: t("transactions.seriesScopeDialog.editSeries"),
+          scopes: seriesDateChanged(seriesTransaction, values.date) ? DATE_CHANGE_SCOPES : undefined,
+        });
     if (!scope) return;
 
     updateSeries.mutate({

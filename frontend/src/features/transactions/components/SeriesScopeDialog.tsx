@@ -58,6 +58,10 @@ export function SeriesScopeDialog({
 }: SeriesScopeDialogProps) {
   const { t } = useTranslation();
 
+  const offered = SCOPE_OPTIONS.filter(
+    (option) => !options.scopes || options.scopes.includes(option.value),
+  );
+
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onCancel()}>
       <DialogContent>
@@ -70,7 +74,7 @@ export function SeriesScopeDialog({
           </DialogDescription>
         </DialogHeader>
         <RadioGroup value={scope} onValueChange={(value) => onScopeChange(value)}>
-          {SCOPE_OPTIONS.map((option) => (
+          {offered.map((option) => (
             <FieldLabel key={option.value} htmlFor={option.value}>
               <Field orientation="horizontal">
                 <RadioGroupItem id={option.value} value={option.value} />

@@ -69,6 +69,8 @@ export type ProblemType =
   | "series-pivot-not-found"
   | "series-parcels-change-needs-all"
   | "series-too-many-occurrences"
+  | "series-date-change-invalid"
+  | "series-month-collision"
   | "import-line-invalid"
   | "csv-unknown-format"
   | "csv-format-not-supported"

@@ -6,6 +6,8 @@ export type ScopeDialogOptions = {
   description?: string;
   confirmLabel?: string;
   confirmVariant?: "default" | "destructive";
+  /** The scopes offered, in their usual order; every scope when unset. */
+  scopes?: SeriesEditScope[];
 };
 
 export type SeriesScopeDialogContextValue = {
