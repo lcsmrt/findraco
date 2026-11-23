@@ -243,14 +243,15 @@ public class RecurrenceDefinition {
      * Moves the series to {@code newDayOfMonth}, and {@code monthShift} months on: start, end and the skipped
      * months go with it, so no occurrence is left behind and none appears in a month the member had emptied. The
      * start takes the new day when the first occurrence is the one moved, or whenever the months shift. Counts as
-     * a change of rule, so a deletion made before it can no longer be restored.
+     * a change of rule, so a deletion made before it can no longer be restored. The end moves with the months
+     * only when {@code endMoves}; a member who typed another end in the same edit keeps it.
      */
-    public void moveSchedule(int newDayOfMonth, int monthShift, boolean startMoves) {
+    public void moveSchedule(int newDayOfMonth, int monthShift, boolean startMoves, boolean endMoves) {
         dayOfMonth = (short) newDayOfMonth;
         if (startMoves || monthShift != 0) {
             startDate = dateIn(YearMonth.from(startDate).plusMonths(monthShift));
         }
-        if (mode == RecurrenceMode.RECURRING && endDate != null) {
+        if (endMoves && mode == RecurrenceMode.RECURRING && endDate != null) {
             endDate = dateIn(YearMonth.from(endDate).plusMonths(monthShift));
         }
         if (monthShift != 0) {

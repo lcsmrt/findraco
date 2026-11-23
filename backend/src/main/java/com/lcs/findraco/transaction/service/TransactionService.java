@@ -639,6 +639,7 @@ public class TransactionService {
             definition.changeRequiresConfirmation(
                     series.requiresConfirmation(), inScope, userService.today(ctx.userId()));
         }
+        boolean endTyped = !Objects.equals(series.endDate(), definition.getEndDate());
         definition.editPattern(new SeriesPattern(
                 category,
                 series.amount(),
@@ -649,7 +650,7 @@ public class TransactionService {
                 split.shares()));
 
         if (dateChange != null) {
-            dateChange.apply(definition, occurrences);
+            dateChange.apply(definition, occurrences, endTyped);
         }
         LocalDate pivotSlot = dto.scope() == SeriesEditScope.ALL ? null : pivot.getScheduledDate();
 

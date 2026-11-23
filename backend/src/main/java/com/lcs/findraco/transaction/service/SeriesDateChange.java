@@ -38,9 +38,13 @@ record SeriesDateChange(
         return new SeriesDateChange(pivot, pivotDate.getDayOfMonth(), pivotMonth, monthShift, pivotIsFirst);
     }
 
-    /** Applies the change to {@code definition} and to the pivot and every following occurrence that moves. */
-    void apply(RecurrenceDefinition definition, List<Transaction> occurrences) {
-        definition.moveSchedule(newDayOfMonth, monthShift, pivotIsFirst);
+    /**
+     * Applies the change to {@code definition} and to the pivot and every following occurrence that moves. An
+     * {@code endTyped} end (the request's differs from the stored one) is the member's word and does not shift
+     * with the month; an unchanged one moves with it.
+     */
+    void apply(RecurrenceDefinition definition, List<Transaction> occurrences, boolean endTyped) {
+        definition.moveSchedule(newDayOfMonth, monthShift, pivotIsFirst, !(endTyped && monthShift != 0));
         for (Transaction occurrence : occurrences) {
             if (moves(occurrence)) {
                 occurrence.moveWithSeries(

@@ -401,6 +401,30 @@ class SeriesDateEditIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void typedEndWinsOverMonthShift() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        JsonNode series = createSeries(plan, owner, gym(MARCH_16, LocalDate.of(2026, 6, 16)));
+        String seriesId = series.get("seriesId").asString();
+        Map<String, Object> body = gymBody();
+        body.put("endDate", "2026-08-16");
+
+        edit(plan, owner, seriesId, "THIS_AND_FOLLOWING", occurrenceId(series, MARCH), LocalDate.of(2026, 4, 16), body)
+                .andExpect(status().isOk());
+
+        assertThat(dates(seriesId))
+                .containsExactly(
+                        LocalDate.of(2026, 4, 16),
+                        LocalDate.of(2026, 5, 16),
+                        LocalDate.of(2026, 6, 16),
+                        LocalDate.of(2026, 7, 16),
+                        LocalDate.of(2026, 8, 16));
+        assertThat(definition(seriesId))
+                .containsEntry("start_date", Date.valueOf("2026-04-16"))
+                .containsEntry("end_date", Date.valueOf("2026-08-16"));
+    }
+
+    @Test
     void firstOccurrenceShiftsInstallmentMonth() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
