@@ -12,6 +12,7 @@ import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
 import java.time.Clock;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -48,11 +49,12 @@ public class SeriesRegenerator {
             List<Transaction> toUpdate, List<Transaction> toCreate, List<Transaction> toDelete) {}
 
     /** A single target slot computed from the (post-edit) recurrence definition template. */
-    private record TargetOccurrence(LocalDate date, String description, Integer parcelsNumber) {}
+    private record TargetOccurrence(YearMonth month, LocalDate date, String description, Integer parcelsNumber) {}
 
     /**
-     * Occurrences are matched to targets by their series slot ({@link Transaction#getScheduledDate()}), never by
-     * their current date, which a confirmation may have moved. {@code pivotSlot} is the pivot's slot.
+     * Occurrences are matched to targets by the month of their series slot ({@link Transaction#getScheduledDate()}),
+     * never by their current date, which a confirmation or a date edit may have moved, nor by the slot's day, which
+     * a day change moves. A series is monthly, so a month holds one slot. {@code pivotSlot} is the pivot's slot.
      */
     public SeriesEditResult reconcile(
             RecurrenceDefinition def,
@@ -64,42 +66,43 @@ public class SeriesRegenerator {
         ensureWithinCap(fullTargets.size());
 
         boolean filterByPivot = scope != SeriesEditScope.ALL;
+        YearMonth pivotMonth = filterByPivot ? YearMonth.from(pivotSlot) : null;
 
         // A confirmed occurrence is a record of what happened, and one marked with a kind was set apart by hand
         // (a savings move among the rent), so an edit leaves both alone: neither updated nor deleted, and the
         // slot is not refilled. Only the pivot takes the form's values.
         List<Transaction> frozen = existing.stream()
                 .filter(tx -> tx.getConfirmation() == Confirmation.CONFIRMED || tx.getKind() != null)
-                .filter(tx -> !(filterByPivot && tx.getScheduledDate().equals(pivotSlot)))
+                .filter(tx -> !(filterByPivot && slotMonth(tx).equals(pivotMonth)))
                 .toList();
-        Set<LocalDate> frozenSlots =
-                frozen.stream().map(Transaction::getScheduledDate).collect(Collectors.toSet());
+        Set<YearMonth> frozenMonths =
+                frozen.stream().map(SeriesRegenerator::slotMonth).collect(Collectors.toSet());
 
         List<TargetOccurrence> inScopeTargets = fullTargets.stream()
-                .filter(t -> !filterByPivot || !t.date().isBefore(pivotSlot))
-                .filter(t -> !def.getExceptions().contains(t.date()))
-                .filter(t -> !frozenSlots.contains(t.date()))
+                .filter(t -> !filterByPivot || !t.month().isBefore(pivotMonth))
+                .filter(t -> !def.skips(t.month()))
+                .filter(t -> !frozenMonths.contains(t.month()))
                 .toList();
 
         // Matched by slot, never by position: a slot the member deleted stays a gap instead of being
         // refilled by the next occurrence shifting into it.
-        Map<LocalDate, Transaction> existingBySlot = new LinkedHashMap<>();
+        Map<YearMonth, Transaction> existingByMonth = new LinkedHashMap<>();
         List<Transaction> toUpdate = new ArrayList<>();
         List<Transaction> toCreate = new ArrayList<>();
         List<Transaction> toDelete = new ArrayList<>();
 
         existing.stream()
                 .filter(tx -> !frozen.contains(tx))
-                .filter(tx -> !filterByPivot || !tx.getScheduledDate().isBefore(pivotSlot))
+                .filter(tx -> !filterByPivot || !slotMonth(tx).isBefore(pivotMonth))
                 .sorted(Comparator.comparing(Transaction::getScheduledDate))
                 .forEach(tx -> {
-                    if (existingBySlot.putIfAbsent(tx.getScheduledDate(), tx) != null) {
+                    if (existingByMonth.putIfAbsent(slotMonth(tx), tx) != null) {
                         toDelete.add(tx);
                     }
                 });
 
         for (TargetOccurrence target : inScopeTargets) {
-            Transaction tx = existingBySlot.remove(target.date());
+            Transaction tx = existingByMonth.remove(target.month());
             if (tx != null) {
                 stampOccurrence(tx, target, def, shares);
                 toUpdate.add(tx);
@@ -107,9 +110,13 @@ public class SeriesRegenerator {
                 toCreate.add(buildNewOccurrence(target, def, shares));
             }
         }
-        toDelete.addAll(existingBySlot.values());
+        toDelete.addAll(existingByMonth.values());
 
         return new SeriesEditResult(toUpdate, toCreate, toDelete);
+    }
+
+    private static YearMonth slotMonth(Transaction tx) {
+        return YearMonth.from(tx.getScheduledDate());
     }
 
     private List<TargetOccurrence> buildFullTargetList(RecurrenceDefinition def) {
@@ -121,9 +128,9 @@ public class SeriesRegenerator {
         int first = def.getFirstParcel();
         List<TargetOccurrence> targets = new ArrayList<>(Math.max(0, total - first + 1));
         for (int parcel = first; parcel <= total; parcel++) {
-            LocalDate date = def.getStartDate().plusMonths(parcel - first);
+            LocalDate date = def.occurrenceDate(parcel - first);
             String description = def.getDescription() + " (" + parcel + "/" + total + ")";
-            targets.add(new TargetOccurrence(date, description, total));
+            targets.add(new TargetOccurrence(YearMonth.from(date), date, description, total));
         }
         return targets;
     }
@@ -135,22 +142,25 @@ public class SeriesRegenerator {
 
         List<TargetOccurrence> targets = new ArrayList<>();
         // Each date is counted from the start, so a day clamped in a short month does not carry over.
-        for (int month = 0; !def.getStartDate().plusMonths(month).isAfter(effectiveEnd); month++) {
-            targets.add(new TargetOccurrence(def.getStartDate().plusMonths(month), def.getDescription(), null));
+        for (int month = 0; !def.occurrenceDate(month).isAfter(effectiveEnd); month++) {
+            LocalDate date = def.occurrenceDate(month);
+            targets.add(new TargetOccurrence(YearMonth.from(date), date, def.getDescription(), null));
         }
         return targets;
     }
 
-    /** A forecast occurrence goes back to its slot's date; a confirmed pivot keeps the date it was paid on. */
+    /**
+     * An edit leaves every date alone: a date moves only by a date edit, a confirmation or the series' own day or
+     * month change, none of which this is.
+     */
     private void stampOccurrence(Transaction tx, TargetOccurrence slot, RecurrenceDefinition def, List<Share> shares) {
-        LocalDate date = tx.getConfirmation() == Confirmation.CONFIRMED ? tx.getStartDate() : slot.date();
         tx.edit(
                 new TransactionDetails(
                         def.getCategory(),
                         tx.getType(),
                         def.getAmount(),
                         slot.description(),
-                        date,
+                        tx.getStartDate(),
                         tx.getEndDate(),
                         slot.parcelsNumber(),
                         tx.getKind()),

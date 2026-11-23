@@ -8,6 +8,7 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -70,6 +71,13 @@ public class RecurrenceDefinition {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    /**
+     * The day each occurrence falls on, clamped to the last day of a shorter month. Kept apart from
+     * {@code startDate}, which a short month cannot hold the day in and which the installment numbering counts from.
+     */
+    @Column(name = "day_of_month")
+    private short dayOfMonth;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "split_mode")
     private SplitMode splitMode = SplitMode.EQUAL;
@@ -128,6 +136,7 @@ public class RecurrenceDefinition {
         definition.mode = draft.mode();
         definition.recurrenceInterval = draft.interval();
         definition.startDate = draft.startDate();
+        definition.dayOfMonth = (short) draft.startDate().getDayOfMonth();
         definition.requiresConfirmation = draft.requiresConfirmation();
         definition.firstParcel = draft.mode() == RecurrenceMode.INSTALLMENT
                 ? (draft.currentParcel() != null ? draft.currentParcel() : 1)
@@ -205,14 +214,53 @@ public class RecurrenceDefinition {
 
     /**
      * Whether the series still reaches {@code slot}: not past its end date, and for an installment series not
-     * beyond its last parcel.
+     * beyond the month of its last parcel.
      */
     public boolean covers(LocalDate slot) {
         if (mode == RecurrenceMode.INSTALLMENT) {
             int first = firstParcel != null ? firstParcel : 1;
-            return !slot.isAfter(startDate.plusMonths(parcelsNumber - first));
+            return !YearMonth.from(slot).isAfter(YearMonth.from(startDate).plusMonths(parcelsNumber - first));
         }
         return endDate == null || !slot.isAfter(endDate);
+    }
+
+    /** The date of the occurrence {@code monthsFromStart} months after the start month's: the series' day, clamped. */
+    public LocalDate occurrenceDate(int monthsFromStart) {
+        return dateIn(YearMonth.from(startDate).plusMonths(monthsFromStart));
+    }
+
+    /** The series' day in {@code month}, or the month's last day when it is shorter. */
+    public LocalDate dateIn(YearMonth month) {
+        return month.atDay(Math.min(dayOfMonth, month.lengthOfMonth()));
+    }
+
+    /** Whether the member deleted the occurrence of {@code month} "only this", whatever day it then fell on. */
+    public boolean skips(YearMonth month) {
+        return exceptions.stream().anyMatch(date -> YearMonth.from(date).equals(month));
+    }
+
+    /**
+     * Moves the series to {@code newDayOfMonth}, and {@code monthShift} months on: start, end and the skipped
+     * months go with it, so no occurrence is left behind and none appears in a month the member had emptied. The
+     * start takes the new day when the first occurrence is the one moved, or whenever the months shift. Counts as
+     * a change of rule, so a deletion made before it can no longer be restored. The end moves with the months
+     * only when {@code endMoves}; a member who typed another end in the same edit keeps it.
+     */
+    public void moveSchedule(int newDayOfMonth, int monthShift, boolean startMoves, boolean endMoves) {
+        dayOfMonth = (short) newDayOfMonth;
+        if (startMoves || monthShift != 0) {
+            startDate = dateIn(YearMonth.from(startDate).plusMonths(monthShift));
+        }
+        if (endMoves && mode == RecurrenceMode.RECURRING && endDate != null) {
+            endDate = dateIn(YearMonth.from(endDate).plusMonths(monthShift));
+        }
+        if (monthShift != 0) {
+            List<LocalDate> shifted =
+                    exceptions.stream().map(date -> date.plusMonths(monthShift)).toList();
+            exceptions.clear();
+            exceptions.addAll(shifted);
+        }
+        ruleRevision++;
     }
 
     /** Records the last occurrence generated so far, so a top-up continues after it. */
@@ -364,6 +412,10 @@ public class RecurrenceDefinition {
 
     public LocalDate getEndDate() {
         return endDate;
+    }
+
+    public int getDayOfMonth() {
+        return dayOfMonth;
     }
 
     public SplitMode getSplitMode() {

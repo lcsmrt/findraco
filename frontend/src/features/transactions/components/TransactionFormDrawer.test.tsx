@@ -644,6 +644,227 @@ describe("TransactionFormDrawer series edit (STD-07 AC 2)", () => {
   });
 });
 
+describe("TransactionFormDrawer series date", () => {
+  beforeEach(async () => {
+    vi.spyOn(toast, "error");
+    await i18n.changeLanguage("pt-BR");
+  });
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  // Monthly 16/03 to 16/06/2026, opened on April's occurrence.
+  const monthly: RecurrenceDefinitionResponse = {
+    id: 10,
+    version: 3,
+    seriesId: "s-2",
+    type: "DEBIT",
+    amount: 80,
+    description: "Gym",
+    mode: "RECURRING",
+    interval: "MONTHLY",
+    startDate: "2026-03-16",
+    endDate: "2026-06-16",
+    splitMode: "EQUAL",
+    participants: [],
+    requiresConfirmation: false,
+  };
+  const april: Transaction = {
+    ...savedTransaction,
+    id: 56,
+    seriesId: "s-2",
+    description: "Gym",
+    amount: 80,
+    startDate: "2026-04-16",
+    endDate: "2026-04-16",
+  };
+  // Installments 3/12 from 01/05/2026; the opened occurrence is July's.
+  const installments: RecurrenceDefinitionResponse = {
+    id: 9,
+    version: 0,
+    seriesId: "s-1",
+    type: "DEBIT",
+    amount: 150.5,
+    description: "Gym",
+    mode: "INSTALLMENT",
+    parcelsNumber: 12,
+    firstParcel: 3,
+    startDate: "2026-05-01",
+    splitMode: "EQUAL",
+    participants: [],
+    requiresConfirmation: false,
+  };
+  const july: Transaction = {
+    ...savedTransaction,
+    id: 55,
+    seriesId: "s-1",
+    description: "Gym (5/12)",
+  };
+  const edited = { seriesId: "s-2", count: 4, occurrences: [april] };
+
+  async function openSeries(definition: RecurrenceDefinitionResponse, occurrence: Transaction) {
+    server.use(transactionHandlers.series(definition));
+    renderDrawer({ mode: "edit", transaction: occurrence, members: [lucas] });
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Salvar" })).toHaveProperty("disabled", false),
+    );
+  }
+
+  async function typeDate(user: ReturnType<typeof userEvent.setup>, text: string, label = "Data") {
+    const field = screen.getByLabelText(label);
+    await user.clear(field);
+    await user.type(field, text);
+    await user.tab();
+  }
+
+  function writes(requests: Request[]) {
+    return requests.filter((request) => request.method !== "GET");
+  }
+
+  it("shows the opened occurrence's date", async () => {
+    await openSeries(monthly, april);
+
+    expect(screen.getByLabelText<HTMLInputElement>("Data").value).toBe("16/04/2026");
+  });
+
+  it("offers only this and following when the date changed", async () => {
+    const user = userEvent.setup();
+    await openSeries(monthly, april);
+
+    await typeDate(user, "18/04/2026");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    expect(await screen.findByRole("radio", { name: /^Só esta/ })).toBeDefined();
+    expect(screen.getByRole("radio", { name: /^Esta e as seguintes/ })).toBeDefined();
+    expect(screen.queryByRole("radio", { name: /^Todas/ })).toBeNull();
+  });
+
+  it("offers every scope when the date is unchanged", async () => {
+    const user = userEvent.setup();
+    await openSeries(monthly, april);
+
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    expect(await screen.findByRole("radio", { name: /^Só esta/ })).toBeDefined();
+    expect(screen.getByRole("radio", { name: /^Esta e as seguintes/ })).toBeDefined();
+    expect(screen.getByRole("radio", { name: /^Todas/ })).toBeDefined();
+  });
+
+  it("refuses a date and installments change in one edit", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    await openSeries(installments, july);
+
+    await typeDate(user, "18/07/2026");
+    const parcels = screen.getByLabelText("Número de parcelas");
+    await user.clear(parcels);
+    await user.type(parcels, "10");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+
+    expect(
+      await screen.findByText(
+        "Mude a data e o número de parcelas em edições separadas. Salve uma, depois a outra.",
+      ),
+    ).toBeDefined();
+    expect(screen.queryByRole("radio", { name: /^Só esta/ })).toBeNull();
+    expect(writes(requests)).toEqual([]);
+  });
+
+  it.each([
+    {
+      slug: "series-date-change-invalid",
+      language: "en",
+      message:
+        'That date change is not possible: with "All" the date does not change, and the month only changes from the first occurrence.',
+    },
+    {
+      slug: "series-date-change-invalid",
+      language: "pt-BR",
+      message:
+        'Essa mudança de data não é possível: com "Todas" a data não muda, e o mês só muda a partir da primeira ocorrência.',
+    },
+    {
+      slug: "series-month-change-confirmed",
+      language: "en",
+      message: "The start month only changes when no occurrence is confirmed. Nothing was changed.",
+    },
+    {
+      slug: "series-month-change-confirmed",
+      language: "pt-BR",
+      message: "O mês de início só muda quando nenhuma ocorrência está confirmada. Nada foi alterado.",
+    },
+  ] as const)("shows the series date problems from the API", async ({ slug, language, message }) => {
+    const user = userEvent.setup();
+    await i18n.changeLanguage(language);
+    server.use(transactionHandlers.series(monthly), transactionHandlers.updateSeriesRejected(422, slug));
+    renderDrawer({ mode: "edit", transaction: april, members: [lucas] });
+    const save = language === "en" ? "Save" : "Salvar";
+    await waitFor(() => expect(screen.getByRole("button", { name: save })).toHaveProperty("disabled", false));
+
+    await typeDate(user, "18/05/2026", language === "en" ? "Date" : "Data");
+    await user.click(screen.getByRole("button", { name: save }));
+    // "This one" is the scope the dialog starts on.
+    await user.click(await screen.findByRole("button", { name: language === "en" ? "Continue" : "Continuar" }));
+
+    await waitFor(() => expect(toast.error).toHaveBeenCalledWith(message, undefined));
+  });
+
+  it("sends the series' new end date on the next edit", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(transactionHandlers.updateSeries(edited));
+    await openSeries(monthly, april);
+
+    // The first edit moves the series' end from 16/06 to 18/06.
+    server.use(transactionHandlers.series({ ...monthly, version: 4, endDate: "2026-06-18" }));
+    await typeDate(user, "18/04/2026");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+    await user.click(await screen.findByRole("radio", { name: /^Esta e as seguintes/ }));
+    await user.click(screen.getByRole("button", { name: "Continuar" }));
+    await waitFor(() => expect(writes(requests)).toHaveLength(1));
+    await waitFor(() => expect(screen.getByLabelText<HTMLInputElement>("Data de término").value).toBe("18/06/2026"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Salvar" })).toHaveProperty("disabled", false));
+
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+    await user.click(await screen.findByRole("button", { name: "Continuar" }));
+    await waitFor(() => expect(writes(requests)).toHaveLength(2));
+
+    expect(await writes(requests)[0].json()).toMatchObject({
+      scope: "THIS_AND_FOLLOWING",
+      pivotDate: "2026-04-18",
+      series: { endDate: "2026-06-16" },
+      version: 3,
+    });
+    expect(await writes(requests)[1].json()).toMatchObject({
+      pivotDate: null,
+      series: { endDate: "2026-06-18" },
+      version: 4,
+    });
+  });
+  it("saves an occurrence moved past the series end", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(transactionHandlers.updateSeries(edited));
+    // June's occurrence was moved alone to 02/07, past the series' end on 16/06.
+    const movedJune: Transaction = { ...april, startDate: "2026-07-02", endDate: "2026-07-02" };
+    await openSeries(monthly, movedJune);
+
+    expect(screen.getByLabelText<HTMLInputElement>("Data").value).toBe("02/07/2026");
+    const amount = screen.getByLabelText("Valor");
+    await user.clear(amount);
+    await user.type(amount, "9000");
+    await user.click(screen.getByRole("button", { name: "Salvar" }));
+    await user.click(await screen.findByRole("button", { name: "Continuar" }));
+
+    await waitFor(() => expect(writes(requests)).toHaveLength(1));
+    expect(await writes(requests)[0].json()).toMatchObject({
+      scope: "THIS_ONE",
+      series: { amount: 90, endDate: "2026-06-16" },
+    });
+  });
+});
+
 describe("TransactionFormDrawer language", () => {
   afterEach(cleanup);
 

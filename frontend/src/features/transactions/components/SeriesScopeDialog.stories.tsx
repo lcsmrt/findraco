@@ -47,6 +47,17 @@ export const Edit: Story = {
   },
 };
 
+// A date change never applies to the whole series, so "All" is not offered.
+export const DateChanged: Story = {
+  args: { options: { scopes: ["THIS_ONE", "THIS_AND_FOLLOWING"] } },
+  play: async () => {
+    await expect(screen.getAllByRole("radio")).toHaveLength(2);
+    await expect(screen.getByRole("radio", { name: /This one/ })).toBeVisible();
+    await expect(screen.getByRole("radio", { name: /This and following/ })).toBeVisible();
+    await expect(screen.queryByRole("radio", { name: /All/ })).toBeNull();
+  },
+};
+
 export const Delete: Story = {
   tags: ["!test"],
   args: {

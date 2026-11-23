@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 53,
+  "next_id": 57,
   "lessons": [
     {
       "id": "L-001",
@@ -940,6 +940,78 @@
       ],
       "created": "2026-11-08T23:26:38Z",
       "last_seen": "2026-11-08T23:26:38Z"
+    },
+    {
+      "id": "L-053",
+      "key": "ac_gap::when a rule moves some rows and freezes others confirmed check what the regenerator refills in the slots the moved rows left count preservation needs its own criterion with a frozen row in range",
+      "text": "When a rule moves some rows and freezes others (confirmed), check what the regenerator refills in the slots the moved rows left; count-preservation needs its own criterion with a frozen row in range.",
+      "signal": "ac_gap",
+      "scope": "backend/series",
+      "status": "candidate",
+      "features": [
+        "series-day-edit"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 10 / C14 (backend/series)"
+      ],
+      "created": "2026-11-23T17:15:52Z",
+      "last_seen": "2026-11-23T17:15:52Z"
+    },
+    {
+      "id": "L-054",
+      "key": "spec_precision_gap::every criterion example must be reachable through the interface a date picked in a month cannot carry a day that month lacks",
+      "text": "Every criterion example must be reachable through the interface: a date picked in a month cannot carry a day that month lacks.",
+      "signal": "spec_precision_gap",
+      "scope": "plan/examples",
+      "status": "candidate",
+      "features": [
+        "series-day-edit"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 6 / C6 (plan/examples)"
+      ],
+      "created": "2026-11-23T17:15:52Z",
+      "last_seen": "2026-11-23T17:15:52Z"
+    },
+    {
+      "id": "L-055",
+      "key": "ac_gap::when a feature lets a value escape a bound another form rule checks an occurrence moved past the series end add a criterion for reopening and saving it unchanged",
+      "text": "When a feature lets a value escape a bound another form rule checks (an occurrence moved past the series end), add a criterion for reopening and saving it unchanged.",
+      "signal": "ac_gap",
+      "scope": "frontend/forms",
+      "status": "candidate",
+      "features": [
+        "series-day-edit"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "transactionForm.ts earliestDate / C26 (frontend/forms)"
+      ],
+      "created": "2026-11-23T17:15:52Z",
+      "last_seen": "2026-11-23T17:15:52Z"
+    },
+    {
+      "id": "L-056",
+      "key": "ac_gap::when an edit both derives a field end shifts with the month and accepts it typed in the same request state which wins and test the two together",
+      "text": "When an edit both derives a field (end shifts with the month) and accepts it typed in the same request, state which wins and test the two together.",
+      "signal": "ac_gap",
+      "scope": "backend/series",
+      "status": "candidate",
+      "features": [
+        "series-day-edit"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 17 / C25 (backend/series)"
+      ],
+      "created": "2026-11-23T17:15:53Z",
+      "last_seen": "2026-11-23T17:15:53Z"
     }
   ]
 }

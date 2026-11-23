@@ -95,7 +95,7 @@ export function TransactionFormDrawer({
     currentUserId,
   });
   const chooseScope = useSeriesScope();
-  const { data: definition } = useGetTransactionSeries(transaction?.seriesId, {
+  const { data: definition, isFetching: isDefinitionFetching } = useGetTransactionSeries(transaction?.seriesId, {
     enabled: open && isSeriesEdit,
   });
 
@@ -153,7 +153,8 @@ export function TransactionFormDrawer({
       onSubmit={handleSubmit(submit)}
       isSubmitting={isPending}
       submitLabel={mode === "edit" ? t("common.save") : t("common.create")}
-      submitDisabled={isSeriesEdit && !definition}
+      // An edit moves the series' end date, so a definition being reloaded is not the one to send back.
+      submitDisabled={isSeriesEdit && (!definition || isDefinitionFetching)}
       mobileActions={
         mode === "edit" &&
         transaction &&
@@ -231,26 +232,24 @@ export function TransactionFormDrawer({
           disabled={isPending}
         />
 
-        {!isSeriesEdit && (
-          <FormField
-            control={control}
-            name="date"
-            label={t("transactions.transactionFormDrawer.date")}
-          >
-            {(field) => (
-              <DatePicker
-                id={field.id}
-                ref={field.ref}
-                onBlur={field.onBlur}
-                value={field.value}
-                onChange={field.onChange}
-                required
-                disabled={isPending}
-                className="w-full"
-              />
-            )}
-          </FormField>
-        )}
+        <FormField
+          control={control}
+          name="date"
+          label={t("transactions.transactionFormDrawer.date")}
+        >
+          {(field) => (
+            <DatePicker
+              id={field.id}
+              ref={field.ref}
+              onBlur={field.onBlur}
+              value={field.value}
+              onChange={field.onChange}
+              required
+              disabled={isPending}
+              className="w-full"
+            />
+          )}
+        </FormField>
 
         {!isSeriesEdit && (
           <HiddenForKinds control={control} hiddenFor={hidesItems}>

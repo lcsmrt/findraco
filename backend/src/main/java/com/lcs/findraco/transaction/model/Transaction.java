@@ -63,8 +63,10 @@ public class Transaction {
     private LocalDate startDate;
     private LocalDate endDate;
 
-    /** The series slot this occurrence fills; it stays when a confirmation moves the date. Null on a one-off. */
-    @Column(updatable = false)
+    /**
+     * The series slot this occurrence fills; it stays when a confirmation or an edit moves the date, and moves only
+     * with the series ({@link #moveWithSeries}). Null on a one-off.
+     */
     private LocalDate scheduledDate;
 
     @Enumerated(EnumType.STRING)
@@ -206,6 +208,21 @@ public class Transaction {
         amount = confirmedAmount;
         startDate = confirmedDate;
         confirmation = Confirmation.CONFIRMED;
+    }
+
+    /**
+     * Takes {@code date} as both its date and its series slot, for a series that moved to another day or month. The
+     * one way a slot changes; an edit or a confirmation moves the date alone.
+     */
+    public void moveWithSeries(LocalDate date) {
+        if (scheduledDate == null) {
+            throw new IllegalStateException("A transaction outside a series has no slot to move.");
+        }
+        if (endDate != null && date.isAfter(endDate)) {
+            throw new TransactionExceptions.PeriodStartAfterEndException();
+        }
+        startDate = date;
+        scheduledDate = date;
     }
 
     /** The Status control of the edit form: confirmed or forecast again. A transaction due by date has no status to set. */

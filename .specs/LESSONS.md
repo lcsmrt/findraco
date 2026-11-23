@@ -326,6 +326,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification.md Edge 2 (mcp)
 - last seen: 2026-11-08T23:26:38Z
 
+### L-053 - When a rule moves some rows and freezes others (confirmed), check what the regenerator refills in the slots the moved rows left; count-preservation needs its own criterion with a frozen row in range.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backend/series` · harmful: 0
+- features: series-day-edit
+- evidence: AC 10 / C14 (backend/series)
+- last seen: 2026-11-23T17:15:52Z
+
+### L-054 - Every criterion example must be reachable through the interface: a date picked in a month cannot carry a day that month lacks.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `plan/examples` · harmful: 0
+- features: series-day-edit
+- evidence: AC 6 / C6 (plan/examples)
+- last seen: 2026-11-23T17:15:52Z
+
+### L-055 - When a feature lets a value escape a bound another form rule checks (an occurrence moved past the series end), add a criterion for reopening and saving it unchanged.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/forms` · harmful: 0
+- features: series-day-edit
+- evidence: transactionForm.ts earliestDate / C26 (frontend/forms)
+- last seen: 2026-11-23T17:15:52Z
+
+### L-056 - When an edit both derives a field (end shifts with the month) and accepts it typed in the same request, state which wins and test the two together.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backend/series` · harmful: 0
+- features: series-day-edit
+- evidence: AC 17 / C25 (backend/series)
+- last seen: 2026-11-23T17:15:53Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

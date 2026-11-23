@@ -73,6 +73,8 @@ const PROBLEM_COPY = {
   "series-pivot-not-found": "problems.series-pivot-not-found",
   "series-parcels-change-needs-all": "problems.series-parcels-change-needs-all",
   "series-too-many-occurrences": "problems.series-too-many-occurrences",
+  "series-date-change-invalid": "problems.series-date-change-invalid",
+  "series-month-change-confirmed": "problems.series-month-change-confirmed",
   "import-line-invalid": "problems.import-line-invalid",
   "csv-unknown-format": "problems.csv-unknown-format",
   "csv-format-not-supported": "problems.csv-format-not-supported",

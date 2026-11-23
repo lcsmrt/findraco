@@ -189,6 +189,8 @@ export type UpdateTransactionSeriesRequest = {
   body: {
     scope: SeriesEditScope;
     pivotOccurrenceId?: number;
+    /** The pivot occurrence's new date; null or omitted leaves it. Not with the "ALL" scope. */
+    pivotDate?: string | null;
     /** The series as the create request describes it. */
     series: CreateTransactionSeriesRequest["body"];
     version: number;

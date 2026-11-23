@@ -149,4 +149,14 @@ export const transactionHandlers = {
       TransactionSeriesResponse
     >(`${base}/series/:seriesId`, () => HttpResponse.json(series));
   },
+  updateSeriesRejected(status: number, type: ProblemType): HttpHandler {
+    return http.put<SeriesParams, UpdateTransactionSeriesRequest["body"], Problem>(
+      `${base}/series/:seriesId`,
+      () =>
+        HttpResponse.json(
+          { type: `urn:findraco:problem:${type}`, status },
+          { status, headers: { "Content-Type": "application/problem+json" } },
+        ),
+    );
+  },
 };
