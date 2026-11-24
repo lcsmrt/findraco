@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 69,
+  "next_id": 73,
   "lessons": [
     {
       "id": "L-001",
@@ -1228,6 +1228,78 @@
       ],
       "created": "2026-11-24T02:46:56Z",
       "last_seen": "2026-11-24T02:46:56Z"
+    },
+    {
+      "id": "L-069",
+      "key": "weak_test::an extended hit area is tested where neighbours exist wrapped rows and adjacent targets probing the smallest target itself the remove button not only a lone chip s centre",
+      "text": "An extended hit area is tested where neighbours exist: wrapped rows and adjacent targets, probing the smallest target itself (the remove button), not only a lone chip's centre.",
+      "signal": "weak_test",
+      "scope": "frontend/touch",
+      "status": "candidate",
+      "features": [
+        "header-polish"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 1-2 / C20 C21 (frontend/touch)"
+      ],
+      "created": "2026-11-24T04:36:54Z",
+      "last_seen": "2026-11-24T04:36:54Z"
+    },
+    {
+      "id": "L-070",
+      "key": "ac_gap::replacing a menu or trigger bound overlay with state opened panels loses focus return every panel opened from a control returns focus to it on close finalfocus with a story",
+      "text": "Replacing a menu or trigger-bound overlay with state-opened panels loses focus return; every panel opened from a control returns focus to it on close (finalFocus), with a story.",
+      "signal": "ac_gap",
+      "scope": "frontend/a11y",
+      "status": "candidate",
+      "features": [
+        "header-polish"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 3 / C22 (frontend/a11y)"
+      ],
+      "created": "2026-11-24T04:36:54Z",
+      "last_seen": "2026-11-24T04:36:54Z"
+    },
+    {
+      "id": "L-071",
+      "key": "gate_fail::write the walked line by replacing whatever line is there and confirm it in the file a builder s placeholder none does not match none yet and leaves the walk unrecorded",
+      "text": "Write the Walked line by replacing whatever line is there, and confirm it in the file; a builder's placeholder 'none - …' does not match 'none yet' and leaves the walk unrecorded.",
+      "signal": "gate_fail",
+      "scope": "specs/handoff",
+      "status": "candidate",
+      "features": [
+        "header-polish"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 4 (specs/handoff)"
+      ],
+      "created": "2026-11-24T04:36:54Z",
+      "last_seen": "2026-11-24T04:36:54Z"
+    },
+    {
+      "id": "L-072",
+      "key": "spec_deviation::when a plan supersedes an earlier feature s claim mark that earlier check superseded in the same commit that changes its test",
+      "text": "When a plan supersedes an earlier feature's claim, mark that earlier check superseded in the same commit that changes its test.",
+      "signal": "spec_deviation",
+      "scope": "specs/checks",
+      "status": "candidate",
+      "features": [
+        "header-polish"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 5 (specs/checks)"
+      ],
+      "created": "2026-11-24T04:36:54Z",
+      "last_seen": "2026-11-24T04:36:54Z"
     }
   ]
 }
