@@ -27,6 +27,8 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
+  --color-field: var(--field);
+  --color-field-hover: var(--field-hover);
   --color-ring: var(--ring);
   --color-member-1: var(--member-1);
   --color-member-2: var(--member-2);
@@ -80,6 +82,8 @@
   --border: #e0dbcf;
   /* Field borders and focus rings are UI components: WCAG 1.4.11 asks 3:1 against card and background. */
   --input: #8a8578;
+  --field: transparent;
+  --field-hover: transparent;
   --ring: #a14a07;
   /* Member identity colours (UX-04 AC 2): distinct hues, none amber/red so they never read as a status. */
   --member-1: #2a78d6;
@@ -134,6 +138,8 @@
   --warning-foreground: #1f1405;
   --border: #42413c;
   --input: #807e74;
+  --field: #383835;
+  --field-hover: #3b3b38;
   --ring: #f59e0b;
   --member-1: #3987e5;
   --member-2: #d55181;

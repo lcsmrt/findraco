@@ -39,9 +39,9 @@ export function NumberField({
     >
       <NumberFieldPrimitive.Group
         className={cn(
-          "border-input dark:bg-input/30 flex max-sm:h-11 h-9 w-full min-w-0 items-center overflow-hidden rounded-md border bg-transparent shadow-xs transition-[color,box-shadow]",
+          "border-input dark:bg-field flex max-sm:h-11 h-9 w-full min-w-0 items-center overflow-hidden rounded-md border bg-transparent shadow-xs transition-[color,box-shadow]",
           "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-ring has-[input:focus-visible]:ring-[3px]",
-          "has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40",
+          "has-[[aria-invalid=true]]:border-destructive",
           "data-disabled:opacity-50",
         )}
       >
