@@ -93,6 +93,25 @@ export const TouchTargets: Story = {
   },
 };
 
+// The checkbox is 16 px: the row, label included, is the 44 px target, and a tap on the label toggles it.
+export const CheckboxTarget: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(414, 896);
+    await userEvent.click(canvas.getByRole("button", { name: "Filters" }));
+    const checkbox = await screen.findByRole("checkbox", { name: "Neutral" });
+    const row = checkbox.closest("[data-slot=field]");
+    const label = screen.getByText("Neutral", { selector: "label" });
+    if (!row) throw new Error("The checkbox has no row");
+    await waitFor(() => {
+      expect(row.getBoundingClientRect().height).toBe(44);
+      expect(label.getBoundingClientRect().height).toBe(44);
+    });
+    await expect(checkbox).not.toBeChecked();
+    await userEvent.click(label);
+    await expect(checkbox).toBeChecked();
+  },
+};
+
 export const NeutralChoice: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Filters" }));

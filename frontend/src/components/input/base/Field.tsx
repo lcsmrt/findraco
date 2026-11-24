@@ -59,6 +59,8 @@ const fieldVariants = cva("group/field flex w-full gap-3 data-[invalid=true]:tex
       vertical: ["flex-col [&>*]:w-full [&>.sr-only]:w-auto"],
       horizontal: [
         "flex-row items-center",
+        // A phone row is a 44 px target and its label fills it, so a tap anywhere on it toggles.
+        "max-sm:min-h-11 max-sm:[&>[data-slot=field-label]]:self-stretch",
         "[&>[data-slot=field-label]]:flex-auto",
         "has-[>[data-slot=field-content]]:items-start has-[>[data-slot=field-content]]:[&>[role=checkbox],[role=radio]]:mt-px",
       ],
