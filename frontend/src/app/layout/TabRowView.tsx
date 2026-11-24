@@ -24,9 +24,9 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
   return (
     <nav
       aria-label={t("app.tabRowView.destinations")}
-      className={cn("hidden items-center gap-2 border-b px-4 sm:flex", className)}
+      className={cn("hidden h-14 items-center gap-2 border-b px-4 sm:flex", className)}
     >
-      <div className="flex flex-1">
+      <div className="flex flex-1 self-stretch">
         {DESTINATIONS.map((destination) => (
           <Link
             key={destination}
@@ -34,7 +34,7 @@ export function TabRowView({ current, onAdd, className }: TabRowViewProps) {
             aria-current={destination === current ? "page" : undefined}
             className={cn(
               buttonVariants({ variant: "ghost" }),
-              "-mb-px rounded-none border-0 border-b-2 px-4 py-2 transition-colors",
+              "-mb-px h-auto rounded-none border-0 border-b-2 px-4 transition-colors",
               destination === current
                 ? "border-primary text-foreground"
                 : "text-muted-foreground hover:text-foreground border-transparent",
