@@ -249,6 +249,42 @@ describe("eslint.config.js", () => {
     });
   });
 
+  describe("money through Money", () => {
+    const MONEY = "Render money through <Money>";
+
+    async function moneyMessages(jsx: string, filePath: string) {
+      const [result] = await eslint.lintText(
+        `import { formatMoney } from "@/utils/money";\nexport function Probe({ t }: { t: (key: string, values: object) => string }) {\n  return ${jsx};\n}\n`,
+        { filePath },
+      );
+      return result.messages
+        .filter((message) => message.ruleId === "no-restricted-syntax")
+        .map((message) => message.message)
+        .filter((message) => message.startsWith(MONEY));
+    }
+
+    it.each([
+      "src/features/x/ConfigProbe.tsx",
+      "src/app/layout/ConfigProbe.tsx",
+      "src/components/x/base/ConfigProbe.tsx",
+    ])("reports formatMoney rendered as a JSX child in %s (money-display AC 15)", async (filePath) => {
+      expect(await moneyMessages("<span>{formatMoney(1)}</span>", filePath)).toHaveLength(1);
+    });
+
+    it("leaves Money itself free to format a figure (money-display AC 15)", async () => {
+      expect(await moneyMessages("<span>{formatMoney(1)}</span>", "src/components/money/ConfigProbe.tsx")).toEqual(
+        [],
+      );
+    });
+
+    it.each([
+      ['<span>{t("key", { amount: formatMoney(1) })}</span>', "a translated sentence's values"],
+      ["<input value={formatMoney(1)} readOnly />", "an attribute"],
+    ])("allows formatMoney in %s (money-display AC 15)", async (jsx) => {
+      expect(await moneyMessages(jsx, "src/features/x/ConfigProbe.tsx")).toEqual([]);
+    });
+  });
+
   describe("interface texts", () => {
     const rule = "i18next/no-literal-string";
 
