@@ -3,9 +3,10 @@
 Build: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 Run critical: cd frontend && pnpm exec vitest run --project=critical --reporter=verbose src/utils/money.test.ts
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/money/Money.stories.tsx src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/transactions/components/NeutralReviewListView.stories.tsx src/features/plans/components/PlanTrashListView.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/overview/components/SummaryCards.stories.tsx src/features/overview/components/CategorySpendingList.stories.tsx src/features/overview/components/MonthlyTrendChart.stories.tsx src/features/categories/components/CategoryTreeRow.stories.tsx src/features/categories/components/CategoryLimitFields.stories.tsx src/features/transactions/components/ItemsField.stories.tsx
+Run tooling: cd frontend && pnpm exec vitest run --project=tooling --reporter=verbose eslint.config.test.ts
 Plan: `.specs/features/money-display/plan.md`
 
-25 checks in 5 slices · 2 one-way doors · 0 open, of which 0 block
+30 checks in 5 slices · 2 one-way doors · 0 open, of which 0 block
 
 Size checks read the computed `font-size` in the browser (`getComputedStyle`), never a class name: 14 px or larger means `parseFloat(fontSize) >= 14`.
 
@@ -101,6 +102,30 @@ Proof: run stories | ✓ src/features/overview/components/MonthlyTrendChart.stor
 **C25** - In the transactions table, the sort arrow of the amount header sits left of its label, and the label's right edge is within 8 px of the amounts' right edge (AC 6; the walk found the label 28 px left of the digits)
 Proof: run stories | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Amount Header Label Aligned
 
+### Appended after the Verifier
+
+**C26** - A trend chart month with no expenses shows "R$ 0,00" in the tooltip, beside its income (AC 11)
+Proof: run stories | ✓ src/features/overview/components/MonthlyTrendChart.stories.tsx > Tooltip Zero
+
+**C27** - `bySign` follows the shown sign: -0.005 shows "−R$ 0,01" in `text-destructive`; `isShownNegative` is true for -0.005 and -0.01, false for -0.004, 0 and 0.01 (AC 3)
+Proof: run stories | ✓ src/components/money/Money.stories.tsx > Half Cent Tone
+Proof: run critical | ✓ src/utils/money.test.ts > formatMoney > says -0.005 shows as negative: true
+Proof: run critical | ✓ src/utils/money.test.ts > formatMoney > says -0.004 shows as negative: false
+
+**C28** - Lint reports `formatMoney` rendered as a JSX child through a ternary, a logical and a template literal (AC 15)
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child through <span>{true ? formatMoney(1) : null}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child through <span>{true && formatMoney(1)}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child through <span>{`${formatMoney(1)} total`}</span>
+
+**C29** - Lint allows `formatMoney` in a translated sentence's values, also inside a ternary, and in an attribute, after a real lint run (AC 15)
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > allows formatMoney in <span>{t("key", { amount: formatMoney(1) })}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > allows formatMoney in <span>{true ? t("key", { amount: formatMoney(1) }) : null}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > allows formatMoney in <input value={formatMoney(1)} readOnly />
+
+**C30** - A `*.d.ts` augmentation may repeat a library's unused type parameters, and an unused type parameter elsewhere is still reported (AC 6: the column meta augmentation)
+Proof: run tooling | ✓ eslint.config.test.ts > code style > allows an augmentation to repeat a library's unused type parameters in a *.d.ts
+Proof: run tooling | ✓ eslint.config.test.ts > code style > reports an unused type parameter outside a *.d.ts
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -113,7 +138,7 @@ Proof: run stories | ✓ src/features/transactions/TransactionsPageView.stories.
 | AC 9 figures (3) | per-member amount C14 · "Previsto" C14 · neutral line C14 | - |
 | Landing doors (2) | `Money` API C2 C3 C4 C5 · `figure` and `numeric` C19 C13 | - |
 | removals, AC 16 (4) | `Amount` C22 · `font-mono` C22 · JetBrains Mono C22 · CLAUDE.md C22 | - |
-| lint guard, AC 15 (2) | JSX child refused C20 · sentence value allowed C21 | - |
+| lint guard, AC 15 (5) | JSX child refused C20 · through ternary, logical, template C28 · sentence value allowed C21 C29 · attribute allowed C29 | - |
 
 ## Swept
 
@@ -130,7 +155,7 @@ Proof: run stories | ✓ src/features/transactions/TransactionsPageView.stories.
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** build worker (Sonnet), all slices S1-S5, from `0ec112bf`, returned (C1-C22 at `e0c03d26`); walk worker (Sonnet) at `ae7bba37`, returned
-- **Boundary:** C1-C22 closed at `e0c03d26` (C23 is the orchestrator walk)
+- **Dispatched:** build worker (Sonnet), all slices S1-S5, from `0ec112bf`, returned (C1-C22 at `e0c03d26`); walk worker (Sonnet) at `ae7bba37`, returned; Verifier (Opus) at `8d781f30`, returned (FAIL, 6 findings, closed at `791a31e0`)
+- **Boundary:** C1-C22 closed at `e0c03d26`; C24-C25 at `8d781f30`; C26-C30 at `791a31e0` (C23 is the orchestrator walk)
 - **Abandoned:** none
 - **Walked:** C23 on the local stack at `ae7bba37` (walk Postgres container on 5434, db `walk`; backend `spring-boot:run` profile local on 3000; `pnpm dev` on 5173), Playwright pt-BR at 390x844 and 1280x800, shared plan with two members. Overview 390: Receitas and Despesas "R$ 1.234,50" at 20 px, green and red; Resultado "−R$ 100,00" at 24 px red (at zero "R$ 0,00" green); "Previsto −R$ 1.087,65", "saiu R$ 500,00 · entrou R$ 0,00", member amounts, "R$ 2.222,15 de R$ 3.234,75", "restam R$ 1.012,60 · 69%", "acima em R$ 370,40" all 14 px; no horizontal scroll. Overview 1280: figures 24 px, lines 14 px; tooltip amounts 14 px tabular, but "Despesas" touched its amount (0 px) - closed by C24. Transactions 1280: amounts "−R$ 987,65" red, "R$ 1.234,50" green, 14 px, right edges aligned at x=729; header "Valor" right-aligned but its label ended 28 px left of the digits behind the sort arrow - closed by C25; inline edit input Space Grotesk tabular, Escape closes. Phone list 390: same amounts, right edges aligned. Categories 390: "R$ 3.234,75" and member limits 14 px; edit sheet "Por membro" shares "61.8%" and "38.2%" at 14 px. Plan trash: "1 transação · −R$ 77,70" 14 px red. Users reach these from the Visão geral, Transações, Categorias and Planos tabs.
