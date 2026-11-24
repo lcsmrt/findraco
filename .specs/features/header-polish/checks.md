@@ -106,6 +106,6 @@ Proof: walk - each page at both widths
 
 - **Settled mid-build:** none
 - **Dispatched:** build worker (Sonnet), all slices, at the plan commit
-- **Boundary:** none yet
+- **Boundary:** C1-C16 closed at `f394140f`
 - **Abandoned:** none
-- **Walked:** none yet
+- **Walked:** none - C17 needs the local stack (backend and database), which the build worker did not start
