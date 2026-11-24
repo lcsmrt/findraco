@@ -133,13 +133,12 @@ export const MetaBadges: Story = {
 // The Food row folds its subcategories, so it is a button; Tab reaches it and it draws the ring.
 export const RowFocus: Story = {
   play: async ({ canvas, userEvent }) => {
-    await userEvent.tab();
     const row = canvas.getByRole("button", { name: /Food/ });
+    // The base layer sets the outline colour on every element, so only the box-shadow tells a ring.
+    await expect(getComputedStyle(row).boxShadow).not.toContain("rgb(161, 74, 7)");
+    await userEvent.tab();
     await expect(row).toHaveFocus();
-    await waitFor(() => {
-      const { boxShadow, outlineColor } = getComputedStyle(row);
-      return expect(`${boxShadow} ${outlineColor}`).toContain("rgb(161, 74, 7)");
-    });
+    await waitFor(() => expect(getComputedStyle(row).boxShadow).toContain("rgb(161, 74, 7)"));
   },
 };
 
