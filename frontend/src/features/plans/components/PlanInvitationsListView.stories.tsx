@@ -48,6 +48,32 @@ export const StatusBadges: Story = {
   },
 };
 
+// The colour of a theme token as an element painting it computes it.
+function tokenColor(token: string) {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${token})`;
+  document.body.append(probe);
+  const { color } = getComputedStyle(probe);
+  probe.remove();
+  return color;
+}
+
+// Each status carries its own icon and colour, read from the rendered svg and the badge's text colour.
+export const StatusColoursAndIcons: Story = {
+  play: async ({ canvas }) => {
+    const statuses = [
+      { label: "Pending", icon: "lucide-clock", token: "--secondary-foreground" },
+      { label: "Accepted", icon: "lucide-check", token: "--success" },
+      { label: "Revoked", icon: "lucide-x", token: "--destructive" },
+    ];
+    for (const { label, icon, token } of statuses) {
+      const badge = canvas.getAllByText(label)[0].closest<HTMLElement>("[data-variant]");
+      await expect(badge?.querySelector("svg")).toHaveClass(icon);
+      await expect(badge && getComputedStyle(badge).color).toBe(tokenColor(token));
+    }
+  },
+};
+
 export const Loading: Story = { args: { invitations: [], isLoading: true } };
 
 export const Empty: Story = {

@@ -149,6 +149,16 @@ function cardBackground() {
   return backgroundColor;
 }
 
+// The computed colour a theme token resolves to, read the way a rendered element would.
+function tokenColor(token: string) {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${token})`;
+  document.body.append(probe);
+  const { color } = getComputedStyle(probe);
+  probe.remove();
+  return color;
+}
+
 function badgeOf(element: HTMLElement) {
   const badge = element.closest<HTMLElement>("[data-variant]");
   if (!badge) throw new Error("the label is not inside a badge");
@@ -178,6 +188,31 @@ export const PendingBadge: Story = {
     await expect(badge).toHaveAttribute("data-variant", "status");
     await expect(badge).toHaveAttribute("data-tone", "warning");
     await expect(badge.querySelector("svg")).not.toBeNull();
+  },
+};
+
+// A status badge is told by its icon and its colour, so each is read from the rendered svg and text.
+export const StatusColoursAndIcons: Story = {
+  render: (args) => (
+    <div className="flex flex-col gap-2">
+      <DemoRow
+        {...args}
+        transaction={{ ...groceries, id: 2, description: "Electricity", status: "FORECAST", requiresConfirmation: true }}
+      />
+      <DemoRow
+        {...args}
+        transaction={{ ...groceries, id: 3, description: "Water", status: "PENDING", requiresConfirmation: true }}
+      />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    const forecast = badgeOf(canvas.getByText("Forecast"));
+    await expect(forecast.querySelector("svg")).toHaveClass("lucide-clock");
+
+    const pending = badgeOf(canvas.getByText("Pending"));
+    await expect(pending.querySelector("svg")).toHaveClass("lucide-triangle-alert");
+    await expect(getComputedStyle(pending).color).toBe(tokenColor("--warning"));
+    await expect(getComputedStyle(pending).color).not.toBe(getComputedStyle(forecast).color);
   },
 };
 
