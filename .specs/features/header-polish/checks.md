@@ -4,9 +4,10 @@ Build: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node 
 Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions/TransactionsPage.test.tsx
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/periodNavigator/PeriodNavigator.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/plans/PlansPageView.stories.tsx src/features/categories/CategoriesPageView.stories.tsx src/features/overview/components/MemberFilterChips.stories.tsx
 Run walkfix: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/table/TablePagination.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx
+Run verifyfix: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/overview/components/MemberFilterChips.stories.tsx src/components/periodNavigator/PeriodNavigator.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx
 Plan: `.specs/features/header-polish/plan.md`
 
-19 checks in 4 slices · 0 one-way doors · 0 open, of which 0 block
+22 checks in 4 slices · 0 one-way doors · 0 open, of which 0 block
 
 Story rules:
 - The storybook project runs at a 1200 × 900 viewport. Each width check sets its own viewport in `play` with `page.viewport` from `vitest/browser`.
@@ -87,6 +88,18 @@ Proof: run walkfix | ✓ src/features/transactions/TransactionsPageView.stories.
 **C19** - At 360 px, the pagination footer does not overflow its box. Previous and next sit inside it, and first and last are not rendered as buttons (AC 8; the walk found the last-page button clipped at 320 and 360)
 Proof: run walkfix | ✓ src/components/table/TablePagination.stories.tsx > Fits Phone
 
+### Appended after the Verifier
+
+**C20** - At 414 px with chips that wrap onto two rows (members "Lucas", "Livia", "Anastácia" and "Bartholomeu" on the Overview, and the four presets in the period sheet at 320 px), a tap 6 px below each first-row chip lands on that chip, never on the row below. Wrapped chip rows are at least 14 px apart (AC 11; finding 1)
+Proof: run verifyfix | ✓ src/features/overview/components/MemberFilterChips.stories.tsx > Wrapped Rows Phone
+Proof: run verifyfix | ✓ src/components/periodNavigator/PeriodNavigator.stories.tsx > Wrapped Presets Phone
+
+**C21** - At 414 px with removable filter chips on two rows, a tap 6 px above and 6 px below a first-row chip's remove button lands on that remove button (AC 11; finding 2)
+Proof: run verifyfix | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Filter Chip Remove Target
+
+**C22** - Closing the period panel returns keyboard focus to the period label, whether by picking a preset with the keyboard or by pressing Escape. This holds at 1280 px (popover) and at 414 px (sheet) (AC 2; finding 3)
+Proof: run verifyfix | ✓ src/components/periodNavigator/PeriodNavigator.stories.tsx > Focus Returns To Label
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -114,7 +127,7 @@ Proof: run walkfix | ✓ src/components/table/TablePagination.stories.tsx > Fits
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** build worker (Sonnet), all slices, at `19eca0b4`, returned (C1-C16 at `f394140f`); walk worker (Sonnet) at `d03ad4db`, returned; Verifier (Opus) at `9396519e`
+- **Dispatched:** build worker (Sonnet), all slices, at `19eca0b4`, returned (C1-C16 at `f394140f`); walk worker (Sonnet) at `d03ad4db`, returned; Verifier (Opus) at `dc64b96f`, returned (FAIL, 5 findings); verify-fix worker (Sonnet) at the findings commit
 - **Boundary:** C1-C16 closed at `f394140f`; C18-C19 at `9396519e`
 - **Abandoned:** none
-- **Walked:** none - C17 needs the local stack (backend and database), which the build worker did not start
+- **Walked:** C17 on the local stack at `d03ad4db` (walk Postgres 5434, backend local profile on 3000, `pnpm dev` 5173), Playwright pt-BR, dark, 390x844 and 1280x800. Visão geral: "‹ novembro 2026 ›" only, no "Intervalo"; at 390 the control spans 16-374 with 44 px arrows at the edges; member chips 32 px visible with a 45 px tap area (taps 6 px above and below toggle them), 28 px at 1280. The label opens a bottom sheet "Escolha um período" at 390 and a popover at 1280, with "Este mês" (marked), "Últimos 3 meses", "Últimos 6 meses" and "Este ano" above the calendar; "Últimos 3 meses" gives "set – nov 2026" and closes; days 10 then 11 give "10 – 11 nov 2026" and close. Transações: title and one "⋯" "Mais ações"; with 2 candidates a dot and "2 movimentos para revisar" with "Revisar" (opens the review sheet); the menu has "Importar CSV" and "Revisar movimentos", whose items were 28 px at 390 (C18); period row, search and filters row and list share 16-374 at 390 and 16-398 at 414; at 1280 left edges 16, the period control inline (plan assumption); a filter chip 32 px at 390. At 320 and 360 the pagination footer overflowed and clipped "last page" (C19). Categorias and Planos: title and action on one row; no subtitle on Planos. New transaction form and bottom bar unchanged. Users reach these from the Visão geral and Transações period label, the Transações "⋯", and the four tabs.

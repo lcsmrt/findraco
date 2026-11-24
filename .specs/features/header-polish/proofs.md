@@ -1,9 +1,9 @@
 # header-polish proofs
 
-**HEAD**: f394140f
+**HEAD**: dc64b96f
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 25 pass, 0 fail
+**Result**: 27 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -29,6 +29,8 @@
 | C15 | `run stories / ✓ src/features/transactions/TransactionsPageView.stories.tsx > Filter Chip Size Phone` | pass |
 | C16 | `run stories / ✓ src/features/overview/components/MemberFilterChips.stories.tsx > Chip Size Desktop` | pass |
 | C17 | `walk - each page at both widths` | pass (Walked) |
+| C18 | `run walkfix / ✓ src/features/transactions/TransactionsPageView.stories.tsx > Menu Items Phone` | pass |
+| C19 | `run walkfix / ✓ src/components/table/TablePagination.stories.tsx > Fits Phone` | pass |
 | Build | `cd frontend && pnpm lint` | pass |
 | Build | `cd frontend && pnpm build` | pass |
 | Build | `cd frontend && node scripts/check-siblings.ts` | pass |
@@ -38,13 +40,13 @@
 `Run stories` - exit 0
 
 ```
- ✓ |storybook (chromium)| src/features/transactions/TransactionsPageView.stories.tsx > Action On Title Row 106ms
- ✓ |storybook (chromium)| src/features/transactions/TransactionsPageView.stories.tsx > Filter Chip Size Phone 268ms
+ ✓ |storybook (chromium)| src/features/transactions/TransactionsPageView.stories.tsx > Action On Title Row 107ms
+ ✓ |storybook (chromium)| src/features/transactions/TransactionsPageView.stories.tsx > Filter Chip Size Phone 250ms
 
  Test Files  5 passed (5)
-      Tests  47 passed (47)
-   Start at  00:59:16
-   Duration  5.68s (transform 0ms, setup 2.68s, collect 2.16s, tests 7.40s, environment 0ms, prepare 10.76s)
+      Tests  48 passed (48)
+   Start at  01:21:55
+   Duration  5.72s (transform 0ms, setup 2.73s, collect 2.31s, tests 7.63s, environment 0ms, prepare 10.34s)
 
 No story files found for the specified pattern: src/**/*.mdx
 stderr | src/components/periodNavigator/PeriodNavigator.stories.tsx > Panel Popover
@@ -60,7 +62,7 @@ More info: https://storybook.js.org/docs/writing-tests/interaction-testing?ref=e
 ```
 Creating Table Instance...
 
- ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > replaces a custom range with the This month preset (PNAV-03 AC 1) 238ms
+ ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > replaces a custom range with the This month preset (PNAV-03 AC 1) 256ms
 stdout | src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > ignores the pre-feature from and to params and opens on the current month (PNAV-05)
 Creating Table Instance...
 
@@ -69,8 +71,28 @@ Creating Table Instance...
 
  Test Files  1 passed (1)
       Tests  48 passed (48)
-   Start at  00:59:24
-   Duration  13.19s (transform 669ms, setup 99ms, collect 3.21s, tests 9.36s, environment 328ms, prepare 42ms)
+   Start at  01:22:02
+   Duration  13.23s (transform 581ms, setup 97ms, collect 3.03s, tests 9.58s, environment 328ms, prepare 40ms)
 
 No story files found for the specified pattern: src/**/*.mdx
+```
+
+`Run walkfix` - exit 0
+
+```
+ ✓ |storybook (chromium)| src/features/transactions/TransactionsPageView.stories.tsx > Edges Aligned 119ms
+stdout | src/features/transactions/TransactionsPageView.stories.tsx > Filter Chip Size Phone
+Creating Table Instance...
+ ✓ |storybook (chromium)| src/features/transactions/TransactionsPageView.stories.tsx > Action On Title Row 106ms
+ ✓ |storybook (chromium)| src/features/transactions/TransactionsPageView.stories.tsx > Filter Chip Size Phone 252ms
+
+ Test Files  2 passed (2)
+      Tests  23 passed (23)
+   Start at  01:22:18
+   Duration  5.02s (transform 0ms, setup 796ms, collect 711ms, tests 3.78s, environment 0ms, prepare 4.14s)
+
+No story files found for the specified pattern: src/**/*.mdx
+stderr | src/features/transactions/TransactionsPageView.stories.tsx > More Actions Menu
+You are using Testing Library's `screen` object. Use `within(canvasElement)` instead.
+More info: https://storybook.js.org/docs/writing-tests/interaction-testing?ref=error
 ```
