@@ -73,7 +73,10 @@ export function TableBody<TData>({ table, renderSubComponent, emptyState, isLoad
               onClick={isExpandable ? () => handleRowClick(row) : undefined}
             >
               {row.getVisibleCells().map((cell) => (
-                <TableCellBase key={cell.id}>
+                <TableCellBase
+                  key={cell.id}
+                  className={cn(cell.column.columnDef.meta?.align === "right" && "text-right")}
+                >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCellBase>
               ))}

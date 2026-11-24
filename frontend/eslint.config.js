@@ -190,9 +190,11 @@ export default defineConfig({ ignores: ['dist'] }, {
 }, {
   // Augmenting a library's types (`declare module "axios" { interface … }`) needs declaration
   // merging, which only an interface does; augmentations live in `*.d.ts` files for that reason.
+  // An augmentation must repeat the library's type parameters, used or not, so those are not flagged.
   files: ['**/*.d.ts'],
   rules: {
     '@typescript-eslint/consistent-type-definitions': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
   },
 },
 // Import layers, from the widest to the narrowest; each spreads its parents' fragments.

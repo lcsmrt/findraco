@@ -269,6 +269,34 @@ export const EditAmount: Story = {
   },
 };
 
+export const EditAmountTypeface: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByText(/320,00/));
+    const { fontFamily, fontVariantNumeric } = getComputedStyle(
+      canvas.getByRole("textbox", { name: "Amount" }),
+    );
+    await expect(fontFamily.replace(/^["']/, "").startsWith("Space Grotesk")).toBe(true);
+    await expect(fontVariantNumeric).toContain("tabular-nums");
+  },
+};
+
+// A debit shows its minus and red, a credit no sign and green, in the app typeface.
+export const MoneyAmounts: Story = {
+  render: (args) => (
+    <div className="flex flex-col gap-2">
+      <DemoRow {...args} transaction={{ ...groceries, id: 20, amount: 1234.5 }} />
+      <DemoRow
+        {...args}
+        transaction={{ ...groceries, id: 21, type: "CREDIT", amount: 1234.5, description: "Salary" }}
+      />
+    </div>
+  ),
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("\u2212R$ 1.234,50")).toHaveClass("text-destructive");
+    await expect(canvas.getByText("R$ 1.234,50")).toHaveClass("text-success");
+  },
+};
+
 export const EditDate: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByText("14/10/2026"));

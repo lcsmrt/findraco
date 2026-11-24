@@ -64,6 +64,22 @@ export const Candidates: Story = {
   },
 };
 
+export const MoneyAmounts: Story = {
+  args: {
+    candidates: [
+      { transaction: row(1, "Pagamento de fatura", "2026-11-12", 1234.5), proposedKind: "CARD_BILL_PAYMENT" },
+      {
+        transaction: { ...row(2, "Estorno", "2026-11-09", 1234.5), type: "CREDIT" },
+        proposedKind: "TRANSFER",
+      },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("\u2212R$ 1.234,50")).toHaveClass("text-destructive");
+    await expect(canvas.getByText("R$ 1.234,50")).toHaveClass("text-success");
+  },
+};
+
 export const Empty: Story = {
   args: { candidates: [], total: 0 },
   play: async ({ canvas }) => {

@@ -54,6 +54,19 @@ export const Entries: Story = {
   },
 };
 
+export const MoneyAmounts: Story = {
+  args: {
+    entries: [
+      { ...entries[0], id: 1, amount: 1234.5, type: "DEBIT" },
+      { ...entries[1], id: 2, amount: 1234.5, type: "CREDIT" },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("\u2212R$ 1.234,50")).toHaveClass("text-destructive");
+    await expect(canvas.getByText("R$ 1.234,50")).toHaveClass("text-success");
+  },
+};
+
 export const NewestOnly: Story = {
   args: { total: 60 },
   play: async ({ canvas }) => {

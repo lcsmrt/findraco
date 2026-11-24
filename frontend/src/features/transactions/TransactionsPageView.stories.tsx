@@ -3,7 +3,7 @@ import type { PlanMember } from "@/api/dtos/plan";
 import { Button } from "@/components/button/base/Button";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SlidersHorizontalIcon } from "lucide-react";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import PeriodNavigatorMeta from "@/components/periodNavigator/PeriodNavigator.stories";
 import { buildTransactionColumns } from "./components/transactionColumns";
 import { TransactionsPageView } from "./TransactionsPageView";
@@ -100,6 +100,17 @@ export const SharedPlan: Story = {
     await expect(canvas.getByRole("button", { name: "Import CSV" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "New Transaction" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: "Manage Categories" })).toBeNull();
+  },
+};
+
+// Digits only line up in a column when the whole column, header included, sits against the same edge.
+export const AmountColumnAligned: Story = {
+  play: async ({ canvas }) => {
+    const table = within(canvas.getByRole("table"));
+    await expect(table.getByRole("columnheader", { name: /Amount/ })).toHaveStyle({ textAlign: "right" });
+    for (const amount of [/6\.200,00/, /2\.400,00/]) {
+      await expect(table.getByText(amount).closest("td")).toHaveStyle({ textAlign: "right" });
+    }
   },
 };
 

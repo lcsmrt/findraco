@@ -48,12 +48,14 @@ export function TableHeader<TData>({
             const isPlaceholder = header.isPlaceholder;
             const canSort = header.column.columnDef.enableSorting;
             const current = sorting?.find((s) => s.by === header.column.id);
+            const alignRight = header.column.columnDef.meta?.align === "right";
 
             return (
-              <TableHeadBase key={header.id}>
+              <TableHeadBase key={header.id} className={cn(alignRight && "text-right")}>
                 {isPlaceholder ? null : canSort ? (
                   <SortableTableHeaderCell
                     direction={current?.direction}
+                    alignRight={alignRight}
                     onClick={() => toggleSort(header.column.id)}
                   >
                     {flexRender(header.column.columnDef.header, header.getContext())}
@@ -79,12 +81,14 @@ function TableHeaderCell({ children }: { children: ReactNode }) {
 type SortableTableHeaderCellProps = {
   children: ReactNode;
   direction?: "asc" | "desc";
+  alignRight?: boolean;
   onClick?: (event?: unknown) => void;
 };
 
 function SortableTableHeaderCell({
   children,
   direction,
+  alignRight,
   onClick,
 }: SortableTableHeaderCellProps) {
   return (
@@ -92,7 +96,8 @@ function SortableTableHeaderCell({
       role="button"
       onClick={onClick}
       className={cn(
-        "group inline-flex w-full items-center gap-1 rounded px-2 py-1 select-none justify-between",
+        "group inline-flex w-full items-center gap-1 rounded px-2 py-1 select-none",
+        alignRight ? "justify-end" : "justify-between",
         "hover:bg-muted-foreground/10 hover:cursor-pointer truncate",
       )}
     >
