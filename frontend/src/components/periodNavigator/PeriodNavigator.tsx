@@ -2,6 +2,7 @@ import { Button } from "@/components/button/base/Button";
 import { Calendar } from "@/components/calendar/base/Calendar";
 import { Popover, PopoverContent } from "@/components/popover/base/Popover";
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/sheet/base/Drawer";
+import { Separator } from "@/components/separator/base/Separator";
 import { Toggle } from "@/components/toggle/base/Toggle";
 import { Text } from "@/components/typography/base/Text";
 import { useIsNarrowScreen } from "@/hooks/useIsNarrowScreen";
@@ -56,12 +57,13 @@ function PeriodPanel({ period, isCustom, draft, onPresetSelect, onRangeSelect }:
   const { t } = useTranslation();
 
   return (
-    <div className="flex flex-col gap-1 pb-2">
-      <div className="flex flex-wrap gap-1.5 px-3 pt-3 max-sm:gap-y-3.5">
+    <div className="flex flex-col pb-[calc(--spacing(2)+env(safe-area-inset-bottom))]">
+      <div className="grid grid-cols-2 gap-1.5 p-3 max-sm:gap-y-3.5">
         {PERIODS.map((preset) => (
           <Toggle
             key={preset}
             variant="chip"
+            className="w-full"
             pressed={!isCustom && period === preset}
             // A preset is applied whether or not it is already the current one.
             onPressedChange={() => onPresetSelect(preset)}
@@ -70,6 +72,7 @@ function PeriodPanel({ period, isCustom, draft, onPresetSelect, onRangeSelect }:
           </Toggle>
         ))}
       </div>
+      <Separator />
       <Calendar
         mode="range"
         locale={dayPickerLocale()}
@@ -78,7 +81,7 @@ function PeriodPanel({ period, isCustom, draft, onPresetSelect, onRangeSelect }:
         defaultMonth={draft?.from}
         captionLayout="dropdown"
         numberOfMonths={1}
-        className="mx-auto max-sm:[--cell-size:--spacing(10)]"
+        className="mx-auto pt-3 [--cell-size:--spacing(9)] max-sm:[--cell-size:min(--spacing(12),calc((100vw-(--spacing(12)))/7))]"
         autoFocus
         onSelect={onRangeSelect}
       />
