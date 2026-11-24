@@ -220,7 +220,8 @@ export const IconButtonTargets: Story = {
   args: { onReview: fn() },
   play: async ({ canvas }) => {
     await page.viewport(414, 896);
-    const names = ["More actions", "First page", "Previous page", "Next page", "Last page"];
+    // First and last page step aside on a phone (header-polish); previous and next remain.
+    const names = ["More actions", "Previous page", "Next page"];
     const buttons = names.flatMap((name) => visible(canvas.getAllByRole("button", { name })));
     await expect(buttons).toHaveLength(names.length);
     await waitFor(() => {
@@ -284,6 +285,19 @@ export const MoreActionsMenu: Story = {
     await userEvent.click(menu.getByRole("menuitem", { name: "Review movements" }));
     await expect(args.onReview).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+// On a phone a menu item is a 44 px target like every other control.
+export const MenuItemsPhone: Story = {
+  args: { onReview: fn() },
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(414, 896);
+    const menu = within(await openMenu(canvas, userEvent));
+    for (const name of ["Import CSV", "Review movements"]) {
+      const item = menu.getByRole("menuitem", { name });
+      await waitFor(() => expect(item.getBoundingClientRect().height).toBeGreaterThanOrEqual(44));
+    }
   },
 };
 

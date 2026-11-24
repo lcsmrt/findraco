@@ -3,9 +3,10 @@
 Build: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions/TransactionsPage.test.tsx
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/periodNavigator/PeriodNavigator.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/plans/PlansPageView.stories.tsx src/features/categories/CategoriesPageView.stories.tsx src/features/overview/components/MemberFilterChips.stories.tsx
+Run walkfix: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/table/TablePagination.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx
 Plan: `.specs/features/header-polish/plan.md`
 
-17 checks in 4 slices · 0 one-way doors · 0 open, of which 0 block
+19 checks in 4 slices · 0 one-way doors · 0 open, of which 0 block
 
 Story rules:
 - The storybook project runs at a 1200 × 900 viewport. Each width check sets its own viewport in `play` with `page.viewport` from `vitest/browser`.
@@ -78,6 +79,14 @@ Proof: run stories | ✓ src/features/overview/components/MemberFilterChips.stor
 **C17** - On the local stack at 390 × 844 and 1280 × 800, Overview, Transactions, Categories and Plans show the single period control and its panel (sheet on phone), the "⋯" menu and the review notice, header actions on the title row, and 32 px chips, with nothing clipped or overflowing (AC 1-12)
 Proof: walk - each page at both widths
 
+### Appended after the walk
+
+**C18** - At 414 px, the "More actions" menu items "Import CSV" and "Review movements" each measure 44 px tall or more: menu items join the phone touch tier (AC 6; the walk found 28 px)
+Proof: run walkfix | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Menu Items Phone
+
+**C19** - At 360 px, the pagination footer does not overflow its box. Previous and next sit inside it, and first and last are not rendered as buttons (AC 8; the walk found the last-page button clipped at 320 and 360)
+Proof: run walkfix | ✓ src/components/table/TablePagination.stories.tsx > Fits Phone
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -105,7 +114,7 @@ Proof: walk - each page at both widths
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** build worker (Sonnet), all slices, at the plan commit
-- **Boundary:** C1-C16 closed at `f394140f`
+- **Dispatched:** build worker (Sonnet), all slices, at `19eca0b4`, returned (C1-C16 at `f394140f`); walk worker (Sonnet) at `d03ad4db`, returned; Verifier (Opus) at the walk-fix commit
+- **Boundary:** C1-C16 closed at `f394140f`; C18-C19 at the walk-fix commit
 - **Abandoned:** none
 - **Walked:** none - C17 needs the local stack (backend and database), which the build worker did not start

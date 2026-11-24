@@ -84,12 +84,14 @@ export function TablePagination({
           {t("components.tablePagination.range", { start, end, total: totalElements })}
         </Text>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 sm:gap-2">
           <Button
             variant="ghost"
             size="icon-sm"
             onClick={() => onPageChange(0)}
             aria-label={t("components.tablePagination.firstPage")}
+            // Below `sm` the footer cannot fit four 44 px arrows; previous and next remain.
+            className="max-sm:hidden"
             disabled={first}
           >
             <ChevronsLeft className="h-4 w-4" />
@@ -120,6 +122,7 @@ export function TablePagination({
             size="icon-sm"
             onClick={() => onPageChange(totalPages - 1)}
             aria-label={t("components.tablePagination.lastPage")}
+            className="max-sm:hidden"
             disabled={last}
           >
             <ChevronsRight className="h-4 w-4" />

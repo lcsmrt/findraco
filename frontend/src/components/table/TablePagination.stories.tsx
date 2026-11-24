@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn } from "storybook/test";
+import { page } from "@vitest/browser/context";
+import { expect, fn, waitFor } from "storybook/test";
 import { TablePagination } from "./TablePagination";
 
 const meta = {
@@ -21,6 +22,30 @@ export const MiddlePage: Story = {
     await expect(canvas.getByText("11 – 20 of 42")).toBeVisible();
     await userEvent.click(canvas.getByRole("button", { name: "Next page" }));
     await expect(args.onPageChange).toHaveBeenCalledWith(2);
+  },
+};
+
+// At 360 px the footer keeps previous and next inside the card; first and last step aside.
+export const FitsPhone: Story = {
+  render: (args) => (
+    <div className="w-[328px]">
+      <TablePagination {...args} />
+    </div>
+  ),
+  play: async ({ canvas, canvasElement }) => {
+    await page.viewport(360, 800);
+    const footer = canvasElement.querySelector<HTMLElement>(".border-t");
+    if (!footer) throw new Error("no pagination footer");
+    await waitFor(() => expect(footer.scrollWidth).toBeLessThanOrEqual(footer.clientWidth));
+    const box = footer.getBoundingClientRect();
+    for (const name of ["Previous page", "Next page"]) {
+      const button = canvas.getByRole("button", { name }).getBoundingClientRect();
+      await expect(button.right).toBeLessThanOrEqual(box.right);
+      await expect(button.left).toBeGreaterThanOrEqual(box.left);
+    }
+    await expect(canvas.queryByRole("button", { name: "Last page" })).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "First page" })).toBeNull();
+    await page.viewport(1200, 900);
   },
 };
 
