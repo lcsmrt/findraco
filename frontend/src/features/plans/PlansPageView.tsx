@@ -117,9 +117,10 @@ export function PlansPageView({
 
       {activePlan && (
         <Card>
-          <CardHeader>
+          {/* On a phone the title takes the line and the actions wrap below it. */}
+          <CardHeader className="max-sm:has-data-[slot=card-action]:grid-cols-1">
             <CardTitle>{t("plans.plansPageView.membersOf", { name: activePlan.name })}</CardTitle>
-            <CardAction className="flex items-center gap-2">
+            <CardAction className="flex flex-wrap items-center gap-2 max-sm:col-start-1 max-sm:row-span-1 max-sm:row-start-2 max-sm:justify-self-start">
               {canManagePlan ? (
                 <>
                   <Button

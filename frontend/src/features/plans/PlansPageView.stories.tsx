@@ -1,7 +1,8 @@
 import type { Plan } from "@/api/dtos";
 import { Text } from "@/components/typography/base/Text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, within } from "storybook/test";
+import { page } from "@vitest/browser/context";
+import { expect, fn, waitFor, within } from "storybook/test";
 import { PlansPageView } from "./PlansPageView";
 
 const plans: Plan[] = [
@@ -126,6 +127,30 @@ export const ManyLongPlans: Story = {
       myRole: "OWNER",
       permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true },
     },
+  },
+};
+
+// On a phone the title takes its own line and the actions wrap below it, clear of the card's edge.
+export const MembersHeaderPhone: Story = {
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const title = canvas.getByText("Members of Personal");
+    const card = title.closest("[data-slot=card]");
+    if (!card) throw new Error("The members title is outside a card");
+    const actions = ["Rename plan", "Transfer ownership", "Archive plan", "Invite"].map((name) =>
+      canvas.getByRole("button", { name }),
+    );
+    await waitFor(() => {
+      const lineHeight = parseFloat(getComputedStyle(title).lineHeight);
+      expect(title.getBoundingClientRect().height).toBeLessThan(lineHeight * 1.5);
+      const edge = card.getBoundingClientRect().right;
+      for (const action of actions) {
+        const box = action.getBoundingClientRect();
+        expect(box.height).toBe(44);
+        expect(box.top).toBeGreaterThanOrEqual(title.getBoundingClientRect().bottom);
+        expect(edge - box.right).toBeGreaterThanOrEqual(12);
+      }
+    });
   },
 };
 
