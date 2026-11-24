@@ -69,7 +69,7 @@ New: nothing - existing columns get different values at sign-up.
 | One-way door | Literal shape | Alternative rejected |
 | --- | --- | --- |
 | 1. Badge families | `<Badge variant="status" tone="neutral" icon={<ClockIcon />}>`, with `tone` = `"neutral" \| "warning" \| "success" \| "destructive"`; `<Badge variant="tag">` for categories only; `<Badge variant="meta">` for roles, counts, series, kinds and items. The old `default`, `secondary`, `outline`, `success` and `destructive` badge variants are removed; the badge renders `data-variant` and, for `status`, `data-tone` | keep the five generic variants with class overrides: that is how a forecast and a category came to look the same |
-| 2. Touch tier | inside each primitive's size variant, `max-sm:h-11` (and `max-sm:size-11` for icon sizes) before the desktop height, e.g. `sm: "max-sm:h-11 h-7 …"` | an invisible hit-area pseudo-element: neighbouring targets overlap (user, 2026-11-23: "Grow them visibly") |
+| 2. Touch tier | inside each primitive's size variant, `max-sm:h-11` (and `max-sm:size-11` for icon sizes) before the desktop height, e.g. `sm: "max-sm:h-11 max-sm:min-w-11 h-7 …"`; the `min-w-11` keeps a button whose label is hidden on the phone 44 px wide (added after the walk) | an invisible hit-area pseudo-element: neighbouring targets overlap (user, 2026-11-23: "Grow them visibly") |
 | 3. Page shell | `MainLayoutView` content `mx-auto w-full max-w-7xl` (1280 px); `<PageHeader title context actions />` as each page's first child | a width per page: the edge jumps between tabs |
 
 - Nothing else in this change is hard to reverse
