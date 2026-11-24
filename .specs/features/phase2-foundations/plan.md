@@ -25,7 +25,7 @@ When this ships:
 
 This reuses the existing primitives (`Badge`, `Button`, `Toggle`, `Input`, `InputGroup`, `NumberField`, `Select`, `Combobox`), `PageHeader`, `MainLayoutView` and the theme tokens in `index.css`, changing them in place rather than adding parallel components. The rules that decide what a user sees run in those primitives' variants, which stories reach. The sign-up defaults run in `UserService` and `PlanService`, which ITs reach.
 
-1. theme tokens - `index.css` (exists): `--ring` and `--input` change in both themes, and the dead tokens go
+1. theme tokens - `index.css` (exists): `--ring` and `--input` change in both themes, a `--field` fill token separates a field's dark background from its border (added after the Verifier), and the dead tokens go
 2. `Badge` (exists) - gains the `status`, `tag` and `meta` families (door 1); `TransactionBadges` (new) is the one badge row the table and the phone list render
 3. primitives (exist) - a 44 px touch tier below `sm` inside their size variants (door 2), and a solid focus ring
 4. `PageHeader` (exists) - gains a context slot; `MainLayoutView` (exists) caps the content width (door 3); the four pages render it
