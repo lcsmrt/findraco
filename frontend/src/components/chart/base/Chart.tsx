@@ -1,6 +1,7 @@
 import { cn } from "@/lib/mergeClasses";
 import type { StyleWithVariables } from "@/lib/styleWithVariables";
-import { formatMoney } from "@/utils/money";
+import { Money } from "@/components/money/Money";
+import { Text } from "@/components/typography/base/Text";
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
 
@@ -220,9 +221,13 @@ function ChartTooltipContent({
                         </span>
                       </div>
                       {item.value && (
-                        <span className="font-mono font-medium text-foreground tabular-nums">
-                          {typeof item.value === "number" ? formatMoney(item.value) : item.value}
-                        </span>
+                        typeof item.value === "number" ? (
+                          <Money value={item.value} variant="label" className="text-foreground" />
+                        ) : (
+                          <Text variant="label" numeric className="text-foreground">
+                            {item.value}
+                          </Text>
+                        )
                       )}
                     </div>
                   </>

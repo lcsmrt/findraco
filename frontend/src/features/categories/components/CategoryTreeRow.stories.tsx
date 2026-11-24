@@ -57,6 +57,22 @@ export const Root: Story = {
 
 export const OwnerAndMemberLimits: Story = { args: { category: hobbies } };
 
+// Both layouts are in the DOM and CSS shows one, so each figure is found twice: narrow and wide.
+export const ReadableFigures: Story = {
+  args: { category: hobbies },
+  play: async ({ canvas }) => {
+    for (const amount of ["R$ 750,00", "R$ 300,00", "R$ 450,00"]) {
+      const figures = canvas.getAllByText(amount);
+      await expect(figures).toHaveLength(2);
+      for (const figure of figures) {
+        const { fontSize, fontVariantNumeric } = getComputedStyle(figure);
+        await expect(parseFloat(fontSize)).toBeGreaterThanOrEqual(14);
+        await expect(fontVariantNumeric).toContain("tabular-nums");
+      }
+    }
+  },
+};
+
 export const Child: Story = {
   args: {
     category: { id: 11, version: 0, type: "DEBIT", description: "Restaurants", parentId: 1, spendingLimit: 400 },

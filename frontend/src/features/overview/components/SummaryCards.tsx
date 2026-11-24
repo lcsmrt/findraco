@@ -1,4 +1,5 @@
 import { Card, CardContent } from "@/components/card/base/Card";
+import { Money } from "@/components/money/Money";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
@@ -39,20 +40,20 @@ function MemberAmounts({ figure, className }: MemberAmountsProps) {
     figure.segments.length > 0 && (
       <Text
         as="div"
-        variant="caption"
+        variant="secondary"
         className={cn("flex flex-wrap gap-x-3 gap-y-0.5", className)}
       >
         {figure.segments.map((segment) => (
           // Only the dot fades for the other members: faded text would fall below readable contrast.
           <span
             key={segment.memberId}
-            className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums"
+            className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap"
           >
             <MemberDot color={segment.color} className={cn(segment.dimmed && "opacity-25")} />
             <span className="min-w-0 truncate" title={segment.name}>
               {getFirstName(segment.name)}
             </span>
-            <span className="shrink-0">{formatMoney(segment.amount)}</span>
+            <Money value={segment.amount} className="shrink-0" />
           </span>
         ))}
       </Text>
@@ -73,7 +74,7 @@ function StatusCaption({ forecast }: StatusCaptionProps) {
       <Text as="p" variant="caption">
         {t("overview.summaryCards.actual")}
       </Text>
-      <Text as="p" variant="caption" className="tabular-nums">
+      <Text as="p" variant="secondary" numeric>
         {t("overview.summaryCards.forecast", { amount: formatMoney(forecast) })}
       </Text>
     </div>
@@ -93,13 +94,7 @@ function FigureBlock({ label, figure, tone, size }: FigureBlockProps) {
       <Text as="p" variant="secondary">
         {label}
       </Text>
-      <Text
-        as="p"
-        variant={size === "lg" ? "headline" : "title"}
-        className={cn("tabular-nums", tone === "income" ? "text-success" : "text-destructive")}
-      >
-        {formatMoney(figure.actual)}
-      </Text>
+      <Money as="p" value={figure.actual} tone={tone} variant={size === "lg" ? "headline" : "figure"} />
       <StatusCaption forecast={figure.total} />
       <MemberBar figure={figure} />
       <MemberAmounts
@@ -123,7 +118,7 @@ function NeutralLine({ neutral }: NeutralLineProps) {
       <Text as="p" variant="caption">
         {t("overview.summaryCards.neutral")}
       </Text>
-      <Text as="p" variant="caption" className="tabular-nums">
+      <Text as="p" variant="secondary" numeric>
         {t("overview.summaryCards.neutralAmounts", {
           moneyOut: formatMoney(neutral.out),
           moneyIn: formatMoney(neutral.in),
@@ -147,13 +142,7 @@ function Balance({ balance, actual, neutral }: BalanceProps) {
       <Text as="p" variant="secondary">
         {t("overview.balance.balance")}
       </Text>
-      <Text
-        as="p"
-        variant="headline"
-        className={cn("tabular-nums", actual >= 0 ? "text-success" : "text-destructive")}
-      >
-        {formatMoney(actual)}
-      </Text>
+      <Money as="p" value={actual} tone="bySign" variant="headline" />
       <StatusCaption forecast={balance} />
       {neutral && <NeutralLine neutral={neutral} />}
     </div>

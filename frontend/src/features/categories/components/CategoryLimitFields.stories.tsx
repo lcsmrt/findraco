@@ -75,6 +75,18 @@ export const PerMemberLimits: Story = {
   },
 };
 
+export const SharePercent: Story = {
+  args: {
+    limitMode: "perMember",
+    memberLimits: [row(1, "Ana", 300), row(2, "Bia", 100)],
+  },
+  play: async ({ canvas }) => {
+    for (const share of [canvas.getByText("75%"), canvas.getByText("25%")]) {
+      await expect(parseFloat(getComputedStyle(share).fontSize)).toBe(14);
+    }
+  },
+};
+
 export const PerMemberNotAllowed: Story = {
   args: {
     limitMode: "perMember",
