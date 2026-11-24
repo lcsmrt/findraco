@@ -14,7 +14,7 @@ When this ships, every amount uses the app typeface with figures of equal width,
 
 1. a value in reais (signed) -> `Money` (new) - formats it with `formatMoney` (exists), which now writes a negative with U+2212 and no space and a value that rounds to zero as "R$ 0,00" (so sentences, inputs and axis ticks get the same minus), picks the colour from `tone`, and renders through `Text` (exists) with `numeric`
 2. `typographyVariants` (exists) - gains the 20 px `figure` step and the `numeric` flag (door 2)
-3. the screens that show money (exist) - transaction lists, Overview cards, category spending, Categories tab, chart tooltip - render `Money` for each standalone figure, and put sentences that carry an amount in a 14 px step with `numeric`
+3. the screens that show money (exist) - transaction lists through `TransactionAmount` (new: a debit or credit as `Money`), Overview cards, category spending, Categories tab, chart tooltip - render `Money` for each standalone figure, and put sentences that carry an amount in a 14 px step with `numeric`
 4. out: the same screens, with JetBrains Mono and both `Amount` components gone
 
 ```mermaid

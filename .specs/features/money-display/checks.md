@@ -122,7 +122,7 @@ Proof: walk - open Overview, Transactions and Categories at those widths on the 
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** build worker (Sonnet), all slices S1-S5, from `0ec112bf`
+- **Dispatched:** build worker (Sonnet), all slices S1-S5, from `0ec112bf`, returned (C1-C22 at `e0c03d26`); walk worker (Sonnet) at `0d4f0cd1`
 - **Boundary:** C1-C22 closed at `e0c03d26` (C23 is the orchestrator walk)
 - **Abandoned:** none
 - **Walked:** none yet
