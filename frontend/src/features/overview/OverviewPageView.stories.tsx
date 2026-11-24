@@ -41,6 +41,12 @@ export const SharedPlan: Story = {
   },
 };
 
+export const PageTitle: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { level: 1, name: "Overview" })).toBeVisible();
+  },
+};
+
 export const SingleMember: Story = {
   tags: ["!test"],
   args: { memberFilter: null },

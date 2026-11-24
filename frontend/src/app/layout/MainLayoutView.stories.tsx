@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { MemoryRouter } from "react-router-dom";
 import { toast } from "sonner";
+import { page } from "@vitest/browser/context";
 import { expect, fn, waitFor } from "storybook/test";
 import { Text } from "@/components/typography/base/Text";
 import { BottomBarView } from "./BottomBarView";
@@ -90,6 +91,29 @@ export const WithNavigationMobile: Story = {
     // Pinned to the viewport, not laid out at the end of the page: it stays in view while scrolling.
     await expect(getComputedStyle(bar).position).toBe("fixed");
     await expect(Math.round(bar.getBoundingClientRect().bottom)).toBe(view?.innerHeight);
+  },
+};
+
+// One cap for every destination: the content never passes 1280 px and sits in the middle, so the
+// four pages share the same left and right edges.
+export const ContentWidth: Story = {
+  decorators: WithNavigationMobile.decorators,
+  args: {
+    navigation: {
+      tabRow: <TabRowView current="transactions" onAdd={fn()} />,
+      bottomBar: <BottomBarView current="transactions" onAdd={fn()} />,
+    },
+    children: <Text as="p">Page content</Text>,
+  },
+  play: async ({ canvasElement }) => {
+    await page.viewport(1440, 900);
+    const content = canvasElement.querySelector("[data-slot=page-content]");
+    if (!content) throw new Error("the layout has no content box");
+    await waitFor(() => {
+      const { left, right, width } = content.getBoundingClientRect();
+      expect(width).toBeLessThanOrEqual(1280);
+      expect(Math.abs(left - (document.documentElement.clientWidth - right))).toBeLessThanOrEqual(1);
+    });
   },
 };
 

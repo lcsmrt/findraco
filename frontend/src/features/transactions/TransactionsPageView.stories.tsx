@@ -104,6 +104,12 @@ export const SharedPlan: Story = {
   },
 };
 
+export const PageTitle: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { level: 1, name: "Transactions" })).toBeVisible();
+  },
+};
+
 // Digits only line up in a column when the whole column, header included, sits against the same edge.
 export const AmountColumnAligned: Story = {
   play: async ({ canvas }) => {

@@ -69,7 +69,7 @@ type Story = StoryObj<typeof meta>;
 
 export const GroupedByDay: Story = {
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getAllByRole("heading", { level: 3 })).toHaveLength(2);
+    await expect(canvas.getAllByRole("heading", { level: 2 })).toHaveLength(2);
     await userEvent.click(canvas.getByRole("button", { name: /Groceries/ }));
     await expect(args.onEdit).toHaveBeenCalledWith(week[0]);
   },

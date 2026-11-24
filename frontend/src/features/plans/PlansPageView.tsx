@@ -69,12 +69,12 @@ export function PlansPageView({
 
   return (
     // The layout gives the page its vertical spacing under the tab row, as for the other destinations.
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4">
+    <div className="flex w-full flex-col gap-6 px-4">
       <PageHeader
         title={t("plans.plansPageView.plans")}
         description={t("plans.plansPageView.manageYourPlansAndSwitch")}
         actions={
-          <Button size="sm" onClick={onCreatePlan}>
+          <Button variant="outline" onClick={onCreatePlan}>
             <PlusIcon className="h-4 w-4" />
             {t("plans.plansPageView.newPlan")}
           </Button>
@@ -149,7 +149,7 @@ export function PlansPageView({
                   >
                     <ArchiveIcon className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" onClick={onInvite}>
+                  <Button variant="outline" size="sm" onClick={onInvite}>
                     <UserPlusIcon className="h-4 w-4" />
                     {t("plans.plansPageView.invite")}
                   </Button>

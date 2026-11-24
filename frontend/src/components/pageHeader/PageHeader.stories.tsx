@@ -36,6 +36,22 @@ export const WithDescriptionAndActions: Story = {
   },
 };
 
+// The context row frames the page's data (period, member) under the title; the actions stay beside it.
+export const WithContext: Story = {
+  args: {
+    title: "Overview",
+    context: <Button variant="outline">October 2026</Button>,
+    actions: <Button variant="outline">Export</Button>,
+  },
+  play: async ({ canvas }) => {
+    const title = canvas.getByRole("heading", { level: 1, name: "Overview" });
+    const context = canvas.getByRole("button", { name: "October 2026" });
+    await expect(context).toBeVisible();
+    await expect(context.getBoundingClientRect().top).toBeGreaterThan(title.getBoundingClientRect().bottom);
+    await expect(canvas.getByRole("button", { name: "Export" })).toBeVisible();
+  },
+};
+
 export const LongTitle: Story = {
   tags: ["!test"],
   args: {

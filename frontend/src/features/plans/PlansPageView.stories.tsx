@@ -1,13 +1,23 @@
 import type { Plan } from "@/api/dtos";
 import { Text } from "@/components/typography/base/Text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn } from "storybook/test";
+import { expect, fn, within } from "storybook/test";
 import { PlansPageView } from "./PlansPageView";
 
 const plans: Plan[] = [
   { id: 1, name: "Personal", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } },
   { id: 2, name: "Household", isDefault: false, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } },
 ];
+
+// What the page paints for a theme token, as the computed colour a button's fill is compared to.
+function tokenColor(token: string) {
+  const probe = document.createElement("div");
+  probe.style.backgroundColor = `var(${token})`;
+  document.body.append(probe);
+  const { backgroundColor } = getComputedStyle(probe);
+  probe.remove();
+  return backgroundColor;
+}
 
 const meta = {
   title: "Plans/PlansPageView",
@@ -53,6 +63,31 @@ export const MetaBadges: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Owner").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
     await expect(canvas.getByText("Default").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+  },
+};
+
+export const PageTitle: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { level: 1, name: "Plans" })).toBeVisible();
+  },
+};
+
+// The page creates sit in the header as outline buttons (a border, no fill of their own): no filled
+// primary button is left on the page.
+export const HeaderActions: Story = {
+  play: async ({ canvas, canvasElement }) => {
+    const header = canvas.getByRole("heading", { level: 1, name: "Plans" }).closest("header");
+    if (!header) throw new Error("the page title is not inside a header");
+    const create = within(header).getByRole("button", { name: "New plan" });
+    await expect(create).toBeVisible();
+    await expect([tokenColor("--background"), "rgba(0, 0, 0, 0)"]).toContain(
+      getComputedStyle(create).backgroundColor,
+    );
+    await expect(parseFloat(getComputedStyle(create).borderTopWidth)).toBeGreaterThan(0);
+    const filled = [...canvasElement.querySelectorAll("[data-slot=button]")].filter(
+      (button) => getComputedStyle(button).backgroundColor === tokenColor("--primary"),
+    );
+    await expect(filled).toHaveLength(0);
   },
 };
 

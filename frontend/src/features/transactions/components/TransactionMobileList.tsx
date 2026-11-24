@@ -116,7 +116,7 @@ export function TransactionMobileList({
       ) : (
         days.map((group) => (
           <section key={group.day}>
-            <Heading level={3} variant="caption" className="bg-muted/50 border-b px-3 py-1.5">
+            <Heading level={2} variant="caption" className="bg-muted/50 border-b px-3 py-1.5">
               {formatPattern(group.day, DAY_HEADING_PATTERN)}
             </Heading>
             <div className="divide-y border-b">
