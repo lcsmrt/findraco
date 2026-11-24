@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useForm } from "react-hook-form";
-import { expect } from "storybook/test";
+import { page } from "@vitest/browser/context";
+import { expect, waitFor } from "storybook/test";
 import { CategoryLimitFields } from "./CategoryLimitFields";
 import type { CategoryFormOutput, CategoryFormValues, MemberLimitRow } from "./categoryForm";
 
@@ -72,6 +73,28 @@ export const PerMemberLimits: Story = {
     await expect(canvas.getByLabelText("Limit for Duda")).toBeDisabled();
     await userEvent.click(canvas.getByRole("button", { name: "Remove Duda's limit" }));
     await expect(canvas.queryByLabelText("Limit for Duda")).toBeNull();
+  },
+};
+
+// A phone finger needs 44 px: the limit toggles, the amount fields and the remove button grow to it.
+export const TouchTargets: Story = {
+  args: {
+    limitMode: "perMember",
+    memberLimits: [row(1, "Ana", 300), row(2, "Bia", 100), row(4, "Duda", 50, false)],
+  },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const controls = [
+      canvas.getByRole("button", { name: "Single" }),
+      canvas.getByRole("button", { name: "Per member" }),
+      canvas.getByLabelText("Limit for Ana"),
+      canvas.getByLabelText("Limit for Bia"),
+      canvas.getByRole("button", { name: "Remove Duda's limit" }),
+    ];
+    // Controls ease their size in (transition-all), so the heights are read once they settle.
+    await waitFor(() => {
+      for (const control of controls) expect(control.getBoundingClientRect().height).toBe(44);
+    });
   },
 };
 

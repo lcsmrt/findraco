@@ -19,15 +19,15 @@ export const toggleVariants = cva(
       },
       size: {
         default:
-          "h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
-        sm: "h-7 min-w-7 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
-        lg: "h-10 min-w-10 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+          "max-sm:h-11 max-sm:min-w-11 h-9 min-w-9 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
+        sm: "max-sm:h-11 max-sm:min-w-11 h-7 min-w-7 rounded-[min(var(--radius-md),12px)] px-2.5 text-[0.8rem] has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 [&_svg:not([class*='size-'])]:size-3.5",
+        lg: "max-sm:h-11 max-sm:min-w-11 h-10 min-w-10 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2",
       },
       variant: {
         default: "bg-transparent",
         outline:
           "border border-border bg-transparent text-muted-foreground hover:border-current/30",
-        chip: "h-7 min-w-0 gap-1.5 rounded-full border border-border bg-card px-3 text-xs text-foreground hover:bg-muted hover:text-foreground aria-pressed:border-foreground/80 aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:hover:bg-foreground/90",
+        chip: "max-sm:h-11 h-7 min-w-0 gap-1.5 rounded-full border border-border bg-card px-3 text-xs text-foreground hover:bg-muted hover:text-foreground aria-pressed:border-foreground/80 aria-pressed:bg-foreground aria-pressed:text-background aria-pressed:hover:bg-foreground/90",
       },
     },
     defaultVariants: {

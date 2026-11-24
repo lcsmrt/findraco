@@ -1,5 +1,6 @@
 import type { Category, PlanMember } from "@/api/dtos";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { page } from "@vitest/browser/context";
 import { expect, fn, screen, waitFor } from "storybook/test";
 import { TransactionFilterPopoverView } from "./TransactionFilterPopoverView";
 
@@ -71,6 +72,24 @@ export const OpenSharedPlan: Story = {
     await expect(args.onApply).toHaveBeenCalledWith(noFilters);
     // Applying closes the popover; the a11y check runs once it has left.
     await waitFor(() => expect(screen.queryByRole("button", { name: "Apply" })).toBeNull());
+  },
+};
+
+// A phone finger needs 44 px: the type select, the category combobox and the buttons grow to it.
+export const TouchTargets: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(414, 896);
+    await userEvent.click(canvas.getByRole("button", { name: "Filters" }));
+    const dialog = await screen.findByRole("dialog", { name: "Filters" });
+    const controls = [
+      screen.getByLabelText("Type"),
+      ...dialog.querySelectorAll("[role=combobox]"),
+      ...dialog.querySelectorAll("[data-slot=button]"),
+    ];
+    await expect(controls.length).toBeGreaterThan(4);
+    for (const control of controls) {
+      await expect(control.getBoundingClientRect().height).toBe(44);
+    }
   },
 };
 

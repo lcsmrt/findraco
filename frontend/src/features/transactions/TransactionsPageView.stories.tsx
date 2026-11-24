@@ -3,6 +3,7 @@ import type { PlanMember } from "@/api/dtos/plan";
 import { Button } from "@/components/button/base/Button";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SlidersHorizontalIcon } from "lucide-react";
+import { page } from "@vitest/browser/context";
 import { expect, fn, waitFor, within } from "storybook/test";
 import PeriodNavigatorMeta from "@/components/periodNavigator/PeriodNavigator.stories";
 import { buildTransactionColumns } from "./components/transactionColumns";
@@ -169,6 +170,62 @@ export const FocusRing: Story = {
       // Buttons ease their shadow in, so the ring is read once the transition has settled.
       await waitFor(() => expect(getComputedStyle(ringed).boxShadow).toContain("rgb(161, 74, 7)"));
     }
+  },
+};
+
+function visible(elements: Iterable<Element>) {
+  return [...elements].filter((element) => element.checkVisibility());
+}
+
+// A phone finger needs 44 px: every button, the search field and each filter chip grow to it.
+export const TouchTargets: Story = {
+  args: {
+    chips: [
+      { key: "type", label: "Debit", onRemove: fn() },
+      { key: "category", label: "Food › Restaurants", onRemove: fn() },
+    ],
+    onReview: fn(),
+  },
+  play: async ({ canvas, canvasElement }) => {
+    await page.viewport(414, 896);
+    const buttons = visible(canvasElement.querySelectorAll("[data-slot=button]"));
+    const iconButtons = canvas.getAllByRole("button", { name: /^Remove (Debit|Food)|^Previous period|^Next period/ });
+    const search = canvas.getByRole("textbox", { name: "Search transactions" });
+    const chips = visible(canvasElement.querySelectorAll("[data-variant=meta]")).filter((badge) =>
+      badge.querySelector("[data-slot=button]"),
+    );
+    await expect(buttons.length).toBeGreaterThan(5);
+    await expect(iconButtons.length).toBeGreaterThan(2);
+    await expect(chips).toHaveLength(2);
+    // Controls ease their size in (transition-all), so the sizes are read once they settle.
+    await waitFor(() => {
+      for (const button of buttons) expect(button.getBoundingClientRect().height).toBe(44);
+      for (const button of iconButtons) {
+        const { width, height } = button.getBoundingClientRect();
+        expect([width, height]).toEqual([44, 44]);
+      }
+      expect(search.getBoundingClientRect().height).toBe(44);
+      for (const chip of chips) expect(chip.getBoundingClientRect().height).toBe(44);
+    });
+  },
+};
+
+// From 640 px up the sizes are the desktop ones: 36 px default, 28 px small, 32 px icon.
+export const DesktopSizes: Story = {
+  play: async ({ canvas }) => {
+    await page.viewport(1280, 800);
+    const defaults = ["Import CSV", "Filters"].map((name) => canvas.getByRole("button", { name }));
+    // The period's "Range" menu is the page's small button; its arrows are the icon buttons.
+    const small = canvas.getByRole("button", { name: "Range" });
+    const icons = ["Previous period", "Next period"].map((name) => canvas.getByRole("button", { name }));
+    await waitFor(() => {
+      for (const button of defaults) expect(button.getBoundingClientRect().height).toBe(36);
+      expect(small.getBoundingClientRect().height).toBe(28);
+      for (const button of icons) {
+        const { width, height } = button.getBoundingClientRect();
+        expect([width, height]).toEqual([32, 32]);
+      }
+    });
   },
 };
 

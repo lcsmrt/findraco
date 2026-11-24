@@ -142,7 +142,7 @@ export function TransactionsPageView({
         {chips.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {chips.map((chip) => (
-              <Badge key={chip.key} variant="meta" className="gap-1 pr-1">
+              <Badge key={chip.key} variant="meta" className="gap-1 pr-1 max-sm:h-11">
                 {chip.label}
                 <Button
                   type="button"
