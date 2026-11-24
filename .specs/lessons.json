@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 63,
+  "next_id": 69,
   "lessons": [
     {
       "id": "L-001",
@@ -1120,6 +1120,114 @@
       ],
       "created": "2026-11-24T01:03:12Z",
       "last_seen": "2026-11-24T01:03:12Z"
+    },
+    {
+      "id": "L-063",
+      "key": "weak_test::a focus ring change covers every ring state default destructive aria invalid grep all partial opacity ring utilities not one pattern and test a destructive and an invalid control",
+      "text": "A focus-ring change covers every ring state (default, destructive, aria-invalid): grep all partial-opacity ring utilities, not one pattern, and test a destructive and an invalid control.",
+      "signal": "weak_test",
+      "scope": "frontend/a11y",
+      "status": "candidate",
+      "features": [
+        "phase2-foundations"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 1 / C45 C46 (frontend/a11y)"
+      ],
+      "created": "2026-11-24T02:46:56Z",
+      "last_seen": "2026-11-24T02:46:56Z"
+    },
+    {
+      "id": "L-064",
+      "key": "weak_test::a focus test asserts a value that differs before and after focus a global base style outline ring on makes outline color always match and the test vacuous",
+      "text": "A focus test asserts a value that differs before and after focus; a global base style (outline-ring on *) makes outline-color always match and the test vacuous.",
+      "signal": "weak_test",
+      "scope": "frontend/a11y",
+      "status": "candidate",
+      "features": [
+        "phase2-foundations"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 2 / C22 C23 (frontend/a11y)"
+      ],
+      "created": "2026-11-24T02:46:56Z",
+      "last_seen": "2026-11-24T02:46:56Z"
+    },
+    {
+      "id": "L-065",
+      "key": "ac_gap::before changing a colour token list every utility that reads it border fill alpha variants dark prefixes a border token reused as a fill moves text contrast too",
+      "text": "Before changing a colour token, list every utility that reads it (border, fill, alpha variants, dark: prefixes); a border token reused as a fill moves text contrast too.",
+      "signal": "ac_gap",
+      "scope": "frontend/tokens",
+      "status": "candidate",
+      "features": [
+        "phase2-foundations"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 3 / C47 (frontend/tokens)"
+      ],
+      "created": "2026-11-24T02:46:56Z",
+      "last_seen": "2026-11-24T02:46:56Z"
+    },
+    {
+      "id": "L-066",
+      "key": "spec_precision_gap::a coverage row names the component the proof actually renders two things called chips badge filter chips toggle chips are different members",
+      "text": "A coverage row names the component the proof actually renders; two things called chips (Badge filter chips, Toggle chips) are different members.",
+      "signal": "spec_precision_gap",
+      "scope": "specs/checks",
+      "status": "candidate",
+      "features": [
+        "phase2-foundations"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 4 / C48 (specs/checks)"
+      ],
+      "created": "2026-11-24T02:46:56Z",
+      "last_seen": "2026-11-24T02:46:56Z"
+    },
+    {
+      "id": "L-067",
+      "key": "weak_test::a visual variant test asserts the computed colour and the specific icon not a data attribute copied from the prop",
+      "text": "A visual-variant test asserts the computed colour and the specific icon, not a data attribute copied from the prop.",
+      "signal": "weak_test",
+      "scope": "frontend/tests",
+      "status": "candidate",
+      "features": [
+        "phase2-foundations"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 5 / C49 (frontend/tests)"
+      ],
+      "created": "2026-11-24T02:46:56Z",
+      "last_seen": "2026-11-24T02:46:56Z"
+    },
+    {
+      "id": "L-068",
+      "key": "ac_gap::a touch size change is walked on every page at phone width one off widths hidden label buttons sm icon only buttons bare dropdown triggers checkbox rows crowded headers escape primitive variants",
+      "text": "A touch-size change is walked on every page at phone width: one-off widths (hidden-label buttons, sm icon-only buttons, bare dropdown triggers, checkbox rows, crowded headers) escape primitive variants.",
+      "signal": "ac_gap",
+      "scope": "frontend/touch",
+      "status": "candidate",
+      "features": [
+        "phase2-foundations"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "walk C40-C44 (frontend/touch)"
+      ],
+      "created": "2026-11-24T02:46:56Z",
+      "last_seen": "2026-11-24T02:46:56Z"
     }
   ]
 }
