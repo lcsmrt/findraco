@@ -125,6 +125,32 @@ export const MemberSelected: Story = {
   args: { view: view(tree, { id: 1, name: "Lucas Martins" }) },
 };
 
+// The figures are read at a glance, so none of them may fall below 14 px.
+export const ReadableFigures: Story = {
+  render: (args) => (
+    <>
+      <CategorySpendingList {...args} />
+      <CategorySpendingList view={view(tree, { id: 1, name: "Lucas Martins" })} />
+    </>
+  ),
+  play: async ({ canvas }) => {
+    const figures = [
+      canvas.getAllByText("R$ 1.745,00"), // spent
+      canvas.getAllByText("of R$ 2.000,00"), // "de R$ Y"
+      canvas.getAllByText(/^remaining R\$ 255,00/), // limit status
+      canvas.getAllByText(/^· \d+(\.\d+)?%$/), // its percentage
+      canvas.getAllByText("R$ 1.051,00"), // member line
+      canvas.getAllByText(/^Lucas R\$ .+ of R\$ .+/), // focus line
+      canvas.getAllByText("R$ 490,00"), // subcategory amount
+    ];
+    for (const matches of figures) {
+      for (const figure of matches) {
+        await expect(parseFloat(getComputedStyle(figure).fontSize)).toBeGreaterThanOrEqual(14);
+      }
+    }
+  },
+};
+
 export const Empty: Story = {
   args: { view: view([]) },
   play: async ({ canvas }) => {

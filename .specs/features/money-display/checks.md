@@ -1,0 +1,161 @@
+# Money display checks
+
+Build: cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
+Run critical: cd frontend && pnpm exec vitest run --project=critical --reporter=verbose src/utils/money.test.ts
+Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/money/Money.stories.tsx src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/transactions/components/NeutralReviewListView.stories.tsx src/features/plans/components/PlanTrashListView.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/overview/components/SummaryCards.stories.tsx src/features/overview/components/CategorySpendingList.stories.tsx src/features/overview/components/MonthlyTrendChart.stories.tsx src/features/categories/components/CategoryTreeRow.stories.tsx src/features/categories/components/CategoryLimitFields.stories.tsx src/features/transactions/components/ItemsField.stories.tsx
+Run tooling: cd frontend && pnpm exec vitest run --project=tooling --reporter=verbose eslint.config.test.ts
+Plan: `.specs/features/money-display/plan.md`
+
+30 checks in 5 slices · 2 one-way doors · 0 open, of which 0 block
+
+Size checks read the computed `font-size` in the browser (`getComputedStyle`), never a class name: 14 px or larger means `parseFloat(fontSize) >= 14`.
+
+## Checks
+
+### S1 - One money component
+
+**C1** - `formatMoney` writes a negative with U+2212 and no space, and a value that rounds to zero with no minus (AC 1)
+- 1234.5 → "R$ 1.234,50"; -1234.5 → "−R$ 1.234,50"; 0 → "R$ 0,00"; -0.004 → "R$ 0,00"; compact -1500 → "−R$ 1,5 mil"
+Proof: run critical | ✓ src/utils/money.test.ts > formatMoney > writes a negative with U+2212
+Proof: run critical | ✓ src/utils/money.test.ts > formatMoney > writes a value that rounds to zero without a minus
+Proof: run critical | ✓ src/utils/money.test.ts > formatMoney > writes a compact negative with U+2212
+
+**C2** - `Money` renders the four AC 1 examples exactly as text: "R$ 1.234,50", "−R$ 1.234,50", "R$ 0,00", "R$ 0,00" (AC 1)
+Proof: run stories | ✓ src/components/money/Money.stories.tsx > Formats
+
+**C3** - `Money` renders with `tabular-nums` and a computed `font-family` that starts with "Space Grotesk", never a monospace face (AC 2)
+Proof: run stories | ✓ src/components/money/Money.stories.tsx > Typeface
+
+**C4** - `Money` tones: `income` → `text-success`; `expense` → `text-destructive`; `bySign` 10 → `text-success`, 0 → `text-success`, -0.004 → `text-success`, -10 → `text-destructive`; `default` → none of the two (AC 3)
+Proof: run stories | ✓ src/components/money/Money.stories.tsx > Tones
+
+**C5** - `Money` with 9999999999999.99 renders "R$ 9.999.999.999.999,99" with computed `white-space: nowrap` (AC 4)
+Proof: run stories | ✓ src/components/money/Money.stories.tsx > Large Value
+
+**C6** - The items field shows a negative remainder of -5 as "−R$ 5,00" inside its translated sentence (AC 1: sentences get the same minus)
+Proof: run stories | ✓ src/features/transactions/components/ItemsField.stories.tsx > Over Allocated
+
+### S2 - Transaction lists
+
+**C7** - The table cells show a debit of 1234.50 as "−R$ 1.234,50" in `text-destructive` and a credit of 1234.50 as "R$ 1.234,50" in `text-success` (AC 5)
+Proof: run stories | ✓ src/features/transactions/components/TransactionCells.stories.tsx > Money Amounts
+
+**C8** - The phone list shows the same debit and credit the same way (AC 5)
+Proof: run stories | ✓ src/features/transactions/components/TransactionMobileList.stories.tsx > Money Amounts
+
+**C9** - The neutral review list shows the same debit and credit the same way (AC 5)
+Proof: run stories | ✓ src/features/transactions/components/NeutralReviewListView.stories.tsx > Money Amounts
+
+**C10** - The trash list shows the same debit and credit the same way (AC 5)
+Proof: run stories | ✓ src/features/plans/components/PlanTrashListView.stories.tsx > Money Amounts
+
+**C11** - In the transactions table, the amount column header and each amount cell have a computed `text-align` of `right` (AC 6)
+Proof: run stories | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Amount Column Aligned
+
+**C12** - Clicking an amount in the table opens an input whose computed `font-family` starts with "Space Grotesk" and whose `font-variant-numeric` is `tabular-nums` (AC 7)
+Proof: run stories | ✓ src/features/transactions/components/TransactionCells.stories.tsx > Edit Amount Typeface
+
+### S3 - Overview
+
+**C13** - In the phone card, the Income and Expense figures compute to 20 px and the result to 24 px (AC 8)
+Proof: run stories | ✓ src/features/overview/components/SummaryCards.stories.tsx > Figure Sizes
+
+**C14** - In both layouts, each per-member amount, the "Previsto" line and the neutral movements line compute to 14 px or larger (AC 9)
+Proof: run stories | ✓ src/features/overview/components/SummaryCards.stories.tsx > Readable Figures
+
+**C15** - In the category spending list, the spent amount, "de R$ Y", the limit status with its percentage, the member line, the focus line and a subcategory amount each compute to 14 px or larger (AC 10)
+Proof: run stories | ✓ src/features/overview/components/CategorySpendingList.stories.tsx > Readable Figures
+
+**C16** - Hovering a month in the trend chart shows a tooltip whose value text is rendered by `Money` (`tabular-nums`, Space Grotesk) at 14 px (AC 11)
+Proof: run stories | ✓ src/features/overview/components/MonthlyTrendChart.stories.tsx > Tooltip
+
+### S4 - Categories tab
+
+**C17** - A category row shows its limit and each member limit amount with `tabular-nums` at 14 px or larger, in both the narrow and the wide layout (AC 12)
+Proof: run stories | ✓ src/features/categories/components/CategoryTreeRow.stories.tsx > Readable Figures
+
+**C18** - The per-member limit fields show each member's share percentage at 14 px (AC 13)
+Proof: run stories | ✓ src/features/categories/components/CategoryLimitFields.stories.tsx > Share Percent
+
+### S5 - Scale and guard
+
+**C19** - The scale has `figure` = "text-xl font-bold" beside `headline` = "text-2xl font-bold" and `title` = "text-base font-semibold", and `numeric: true` adds `tabular-nums`, absent without it (AC 14)
+Proof: cd frontend && node -e "import('./src/components/typography/base/typographyVariants.ts').then(({ typographyVariants: v }) => { const a = require('assert'); a.strictEqual(v({ variant: 'figure' }), 'text-xl font-bold'); a.strictEqual(v({ variant: 'headline' }), 'text-2xl font-bold'); a.strictEqual(v({ variant: 'title' }), 'text-base font-semibold'); a.ok(v({ variant: 'body', numeric: true }).split(' ').includes('tabular-nums')); a.ok(!v({ variant: 'body' }).split(' ').includes('tabular-nums')); })"
+
+**C20** - Lint fails a feature component that renders `{formatMoney(1)}` as a JSX child, with the message "Render money through <Money>" (AC 15)
+Proof: cd frontend && printf 'import { formatMoney } from "@/utils/money";\n\nexport function Probe() {\n  return <span>{formatMoney(1)}</span>;\n}\n' | pnpm exec eslint --stdin --stdin-filename src/features/overview/components/Probe.tsx | grep -q "Render money through <Money>"
+
+**C21** - Lint allows `formatMoney` inside a translated sentence's values (AC 15)
+Proof: cd frontend && out=$(printf 'import { useTranslation } from "react-i18next";\nimport { formatMoney } from "@/utils/money";\n\nexport function Probe() {\n  const { t } = useTranslation();\n  return <span>{t("overview.summaryCards.forecast", { amount: formatMoney(1) })}</span>;\n}\n' | pnpm exec eslint --stdin --stdin-filename src/features/overview/components/Probe.tsx || true); ! echo "$out" | grep -q -E "Parsing error|Render money through"
+
+**C22** - The frontend has no `Amount` component, no `font-mono` class, no `--font-mono` token and no JetBrains Mono import or dependency, and `CLAUDE.md` names `Money` for money display (AC 16)
+Proof: cd frontend && ! grep -rnE "font-mono|jetbrains-mono|function Amount\b" src package.json && test ! -e src/components/amount && grep -q 'money through `Money`' ../CLAUDE.md
+
+**C23** - The Overview at 390 px and 1280 px, the Transactions table at 1280 px and the Categories tab at 390 px show every amount in the new format with nothing clipped or overflowing (AC 5, 8, 12)
+Proof: walk - open Overview, Transactions and Categories at those widths on the local stack
+
+### Appended after the walk
+
+**C24** - In the trend chart tooltip with the widest figures, each label and its amount are at least 8 px apart (AC 11; the walk found "Despesas" touching "R$ 2.322,15")
+Proof: run stories | ✓ src/features/overview/components/MonthlyTrendChart.stories.tsx > Tooltip Spacing
+
+**C25** - In the transactions table, the sort arrow of the amount header sits left of its label, and the label's right edge is within 8 px of the amounts' right edge (AC 6; the walk found the label 28 px left of the digits)
+Proof: run stories | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Amount Header Label Aligned
+
+### Appended after the Verifier
+
+**C26** - A trend chart month with no expenses shows "R$ 0,00" in the tooltip, beside its income (AC 11)
+Proof: run stories | ✓ src/features/overview/components/MonthlyTrendChart.stories.tsx > Tooltip Zero
+
+**C27** - `bySign` follows the shown sign: -0.005 shows "−R$ 0,01" in `text-destructive`; `isShownNegative` is true for -0.005 and -0.01, false for -0.004, 0 and 0.01 (AC 3)
+Proof: run stories | ✓ src/components/money/Money.stories.tsx > Half Cent Tone
+Proof: run critical | ✓ src/utils/money.test.ts > formatMoney > says -0.005 shows as negative: true
+Proof: run critical | ✓ src/utils/money.test.ts > formatMoney > says -0.004 shows as negative: false
+
+**C28** - Lint reports `formatMoney` rendered as a JSX child through a ternary, a logical and a template literal (AC 15)
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child through <span>{true ? formatMoney(1) : null}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child through <span>{true && formatMoney(1)}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child through <span>{`${formatMoney(1)} total`}</span>
+
+**C29** - Lint allows `formatMoney` in a translated sentence's values, also inside a ternary, and in an attribute, after a real lint run (AC 15)
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > allows formatMoney in <span>{t("key", { amount: formatMoney(1) })}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > allows formatMoney in <span>{true ? t("key", { amount: formatMoney(1) }) : null}</span>
+Proof: run tooling | ✓ eslint.config.test.ts > money through Money > allows formatMoney in <input value={formatMoney(1)} readOnly />
+
+**C30** - A `*.d.ts` augmentation may repeat a library's unused type parameters, and an unused type parameter elsewhere is still reported (AC 6: the column meta augmentation)
+Proof: run tooling | ✓ eslint.config.test.ts > code style > allows an augmentation to repeat a library's unused type parameters in a *.d.ts
+Proof: run tooling | ✓ eslint.config.test.ts > code style > reports an unused type parameter outside a *.d.ts
+
+## Coverage
+
+| Set (size) | Member -> proof | Unproven |
+| --- | --- | --- |
+| AC 1 examples (5) | 1234.5 C1 C2 · -1234.5 C1 C2 · 0 C1 C2 · -0.004 C1 C2 · compact -1500 C1 | - |
+| `tone` values (4) | `income` C4 · `expense` C4 · `bySign` 10 / 0 / -0.004 / -10 C4 · `default` C4 | - |
+| transaction lists, AC 5 (4) | table C7 · phone list C8 · neutral review C9 · trash C10 | - |
+| readers in Changes underneath (10) | `TransactionCells` C7 C12 · `TransactionMobileList` C8 · `NeutralReviewListView` C9 · `PlanTrashListView` C10 · `SummaryCards` C13 C14 · `CategorySpendingList` C15 · `CategoryTreeRow` C17 · `CategoryLimitFields` C18 · `Chart` tooltip C16 · `ItemsField` C6 | - |
+| AC 10 figures (6) | spent C15 · "de R$ Y" C15 · status with % C15 · member line C15 · focus line C15 · subcategory amount C15 | - |
+| AC 9 figures (3) | per-member amount C14 · "Previsto" C14 · neutral line C14 | - |
+| Landing doors (2) | `Money` API C2 C3 C4 C5 · `figure` and `numeric` C19 C13 | - |
+| removals, AC 16 (4) | `Amount` C22 · `font-mono` C22 · JetBrains Mono C22 · CLAUDE.md C22 | - |
+| lint guard, AC 15 (5) | JSX child refused C20 · through ternary, logical, template C28 · sentence value allowed C21 C29 · attribute allowed C29 | - |
+
+## Swept
+
+- validation: n/a - no input changes; the inline amount input keeps its existing rules (`EditAmount` story)
+- failure modes: n/a - presentation only
+- idempotency: n/a - nothing is written
+- authorization: existing - the inline amount edit shows only with `permissions.edit` (`ReadOnly` story)
+- concurrency: n/a - nothing is written
+- data lifecycle: existing - the inline amount saves through the unchanged `onSave` (`EditAmount` story)
+- dependency failure: n/a - the typeface is bundled; a font that fails to load falls back to the sans stack
+- state transitions: n/a - no state changes
+- observability: n/a - no logging requirement
+
+## Handoff
+
+- **Settled mid-build:** none
+- **Dispatched:** build worker (Sonnet), all slices S1-S5, from `0ec112bf`, returned (C1-C22 at `e0c03d26`); walk worker (Sonnet) at `ae7bba37`, returned; Verifier (Opus) at `8d781f30`, returned (FAIL, 6 findings, closed at `791a31e0`)
+- **Boundary:** C1-C22 closed at `e0c03d26`; C24-C25 at `8d781f30`; C26-C30 at `791a31e0` (C23 is the orchestrator walk)
+- **Abandoned:** none
+- **Walked:** C23 on the local stack at `ae7bba37` (walk Postgres container on 5434, db `walk`; backend `spring-boot:run` profile local on 3000; `pnpm dev` on 5173), Playwright pt-BR at 390x844 and 1280x800, shared plan with two members. Overview 390: Receitas and Despesas "R$ 1.234,50" at 20 px, green and red; Resultado "−R$ 100,00" at 24 px red (at zero "R$ 0,00" green); "Previsto −R$ 1.087,65", "saiu R$ 500,00 · entrou R$ 0,00", member amounts, "R$ 2.222,15 de R$ 3.234,75", "restam R$ 1.012,60 · 69%", "acima em R$ 370,40" all 14 px; no horizontal scroll. Overview 1280: figures 24 px, lines 14 px; tooltip amounts 14 px tabular, but "Despesas" touched its amount (0 px) - closed by C24. Transactions 1280: amounts "−R$ 987,65" red, "R$ 1.234,50" green, 14 px, right edges aligned at x=729; header "Valor" right-aligned but its label ended 28 px left of the digits behind the sort arrow - closed by C25; inline edit input Space Grotesk tabular, Escape closes. Phone list 390: same amounts, right edges aligned. Categories 390: "R$ 3.234,75" and member limits 14 px; edit sheet "Por membro" shares "61.8%" and "38.2%" at 14 px. Plan trash: "1 transação · −R$ 77,70" 14 px red. Users reach these from the Visão geral, Transações, Categorias and Planos tabs.

@@ -129,7 +129,7 @@ export function CategoryLimitFields({
                       />
                     )}
                   />
-                  <Text variant="caption" className="w-14 text-right tabular-nums">
+                  <Text variant="secondary" numeric className="w-14 text-right">
                     {share != null ? `${share}%` : "—"}
                   </Text>
                   {!row.active ? (

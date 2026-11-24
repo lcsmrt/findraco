@@ -79,6 +79,7 @@ export function buildTransactionColumns({
       accessorKey: "amount",
       header: t("transactions.transactionColumns.amount"),
       enableSorting: true,
+      meta: { align: "right" },
       cell: ({ row }) =>
         createElement(EditableAmountCell, { transaction: row.original, onSave }),
     },

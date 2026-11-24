@@ -18,9 +18,11 @@ type HeadingProps = HTMLAttributes<HTMLHeadingElement> & {
   level: HeadingLevel;
   /** The look, from the design role. */
   variant: TypographyVariant;
+  /** Tabular digits, so figures of the same width line up in a column. */
+  numeric?: boolean;
 };
 
-export function Heading({ level, variant, className, ...props }: HeadingProps) {
+export function Heading({ level, variant, numeric, className, ...props }: HeadingProps) {
   const Tag = HEADING_TAGS[level];
-  return <Tag className={cn(typographyVariants({ variant }), className)} {...props} />;
+  return <Tag className={cn(typographyVariants({ variant, numeric }), className)} {...props} />;
 }

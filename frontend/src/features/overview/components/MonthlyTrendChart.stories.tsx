@@ -1,5 +1,6 @@
 import type { MonthlyTrend } from "@/api/dtos";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { expect, fireEvent, waitFor, within } from "storybook/test";
 import { MonthlyTrendChart } from "./MonthlyTrendChart";
 import { fillTrendMonths, trendWindow } from "../utils/trendMonths";
 
@@ -29,6 +30,83 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const OneMonthSelected: Story = {};
+
+// The tooltip is the only place the chart writes a full figure, so it carries the same look as the lists.
+export const Tooltip: Story = {
+  play: async ({ canvasElement }) => {
+    // The container measures itself after the first paint; a hover before that finds no plot area.
+    const plot = await waitFor(() => {
+      const surface = canvasElement.querySelector(".recharts-surface");
+      if (!surface || !canvasElement.querySelector(".recharts-line-curve")) throw new Error("not drawn yet");
+      return surface;
+    });
+    // Recharts reads the mouse move itself, which a user-event hover does not reach.
+    const box = plot.getBoundingClientRect();
+    fireEvent.mouseMove(plot, { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 });
+    const values = await within(canvasElement).findAllByText(/^R\$ /, { selector: ".recharts-tooltip-wrapper *" });
+    await expect(values).toHaveLength(2);
+    for (const value of values) {
+      const { fontFamily, fontVariantNumeric, fontSize } = getComputedStyle(value);
+      await expect(fontFamily.replace(/^["']/, "").startsWith("Space Grotesk")).toBe(true);
+      await expect(fontVariantNumeric).toContain("tabular-nums");
+      await expect(parseFloat(fontSize)).toBe(14);
+    }
+  },
+};
+
+// The widest figures in the fixtures: a long label must not touch its amount.
+export const TooltipSpacing: Story = {
+  args: {
+    months: trend(
+      { startDate: "2026-01-01", endDate: "2026-12-31" },
+      Array.from({ length: 12 }, (_, index) => ({
+        year: 2026,
+        month: index + 1,
+        income: 987654321,
+        expenses: 987654321,
+      })),
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const plot = await waitFor(() => {
+      const surface = canvasElement.querySelector(".recharts-surface");
+      if (!surface || !canvasElement.querySelector(".recharts-line-curve")) throw new Error("not drawn yet");
+      return surface;
+    });
+    const box = plot.getBoundingClientRect();
+    fireEvent.mouseMove(plot, { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 });
+    const values = await within(canvasElement).findAllByText(/^R\$ /, { selector: ".recharts-tooltip-wrapper *" });
+    await expect(values).toHaveLength(2);
+    for (const value of values) {
+      const row = value.parentElement;
+      const label = row?.querySelector(".text-muted-foreground");
+      if (!label) throw new Error("tooltip row has no label");
+      const gap = value.getBoundingClientRect().left - label.getBoundingClientRect().right;
+      await expect(gap).toBeGreaterThanOrEqual(8);
+    }
+  },
+};
+
+// A month with no expenses still shows its figure, at zero.
+export const TooltipZero: Story = {
+  args: {
+    months: trend(
+      { startDate: "2026-01-01", endDate: "2026-12-31" },
+      Array.from({ length: 12 }, (_, index) => ({ year: 2026, month: index + 1, income: 1000, expenses: 0 })),
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const plot = await waitFor(() => {
+      const surface = canvasElement.querySelector(".recharts-surface");
+      if (!surface || !canvasElement.querySelector(".recharts-line-curve")) throw new Error("not drawn yet");
+      return surface;
+    });
+    const box = plot.getBoundingClientRect();
+    fireEvent.mouseMove(plot, { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 });
+    const values = await within(canvasElement).findAllByText(/^R\$ /, { selector: ".recharts-tooltip-wrapper *" });
+    await expect(values.map((value) => value.textContent)).toEqual(["R$\u00a01.000,00", "R$\u00a00,00"]);
+  },
+};
 
 export const QuarterSelected: Story = {
   tags: ["!test"],

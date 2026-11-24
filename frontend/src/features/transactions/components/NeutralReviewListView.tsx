@@ -1,5 +1,5 @@
 import type { NeutralCandidate } from "@/api/dtos";
-import { Amount } from "@/components/amount/Amount";
+import { TransactionAmount } from "@/components/money/TransactionAmount";
 import { Button } from "@/components/button/base/Button";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { Text } from "@/components/typography/base/Text";
@@ -78,7 +78,7 @@ export function NeutralReviewListView({
               <Text variant="caption">
                 {formatDate(transaction.startDate)}
                 {" · "}
-                <Amount value={transaction.amount} type={transaction.type} />
+                <TransactionAmount amount={transaction.amount} type={transaction.type} variant="secondary" />
               </Text>
               <span className="flex">
                 <TransactionKindBadge kind={proposedKind} />

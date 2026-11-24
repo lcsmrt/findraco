@@ -1,8 +1,8 @@
 import type { Category } from "@/api/dtos";
 import { Button } from "@/components/button/base/Button";
+import { Money } from "@/components/money/Money";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
-import { formatMoney } from "@/utils/money";
 import { PencilIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import type { MemberColorOf } from "@/utils/memberColors";
 import { MemberDot } from "@/components/memberDot/MemberDot";
@@ -82,7 +82,7 @@ function MemberLimits({ category, colorOf }: MemberLimitsProps) {
         <span
           key={entry.memberId}
           className={cn(
-            "inline-flex items-center gap-1.5 whitespace-nowrap tabular-nums",
+            "inline-flex items-center gap-1.5 whitespace-nowrap",
             !entry.active && "text-muted-foreground",
           )}
         >
@@ -91,7 +91,7 @@ function MemberLimits({ category, colorOf }: MemberLimitsProps) {
               entry.active ? colorOf(entry.memberId) : "var(--muted-foreground)"
             }
           />
-          {entry.memberName} {formatMoney(entry.amount)}
+          {entry.memberName} <Money value={entry.amount} />
           {!entry.active && ` ${t("common.formerMember")}`}
         </span>
       ))}
@@ -147,16 +147,14 @@ export function CategoryTreeRow({
     <>
       <span className="flex w-full items-baseline justify-between gap-3">
         {name}
-        <Text className="shrink-0 tabular-nums">
-          {limit != null ? (
-            formatMoney(limit)
-          ) : (
-            <span className="text-muted-foreground">{EMPTY}</span>
-          )}
-        </Text>
+        {limit != null ? (
+          <Money value={limit} className="shrink-0" />
+        ) : (
+          <Text className="text-muted-foreground shrink-0">{EMPTY}</Text>
+        )}
       </span>
       {(hasOwner || hasMemberLimits) && (
-        <Text variant="caption" className="flex flex-col gap-0.5">
+        <Text variant="secondary" className="flex flex-col gap-0.5">
           {hasOwner && <OwnerLabel category={category} colorOf={colorOf} />}
           {hasMemberLimits && (
             <MemberLimits category={category} colorOf={colorOf} />
@@ -180,10 +178,10 @@ export function CategoryTreeRow({
             EMPTY
           )}
         </span>
-        <span className="text-right tabular-nums">
-          {limit != null ? formatMoney(limit) : EMPTY}
+        <span className="text-right">
+          {limit != null ? <Money value={limit} /> : EMPTY}
         </span>
-        <Text variant="caption" className="min-w-0">
+        <Text variant="secondary" className="min-w-0">
           {hasMemberLimits ? (
             <MemberLimits category={category} colorOf={colorOf} />
           ) : (

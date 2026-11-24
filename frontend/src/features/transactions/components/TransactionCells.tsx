@@ -4,7 +4,7 @@ import { PlanMember } from "@/api/dtos/plan";
 import { Avatar, AvatarFallback } from "@/components/avatar/base/Avatar";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
-import { Amount } from "@/components/amount/Amount";
+import { TransactionAmount } from "@/components/money/TransactionAmount";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { Input } from "@/components/input/base/Input";
@@ -95,7 +95,7 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
   }
 
   if (!transaction.permissions.edit) {
-    return <Amount value={amount} type={type} />;
+    return <TransactionAmount amount={amount} type={type} />;
   }
 
   if (!editing) {
@@ -107,7 +107,7 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
           setEditing(true);
         }}
       >
-        <Amount value={amount} type={type} />
+        <TransactionAmount amount={amount} type={type} />
       </div>
     );
   }
@@ -123,7 +123,7 @@ export function EditableAmountCell({ transaction, onSave }: EditableCellProps) {
         if (e.key === "Enter") commit();
         if (e.key === "Escape") setEditing(false);
       }}
-      className="h-7 w-32 font-mono"
+      className="h-7 w-32 tabular-nums"
     />
   );
 }

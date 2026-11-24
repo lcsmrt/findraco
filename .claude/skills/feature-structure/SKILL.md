@@ -86,7 +86,7 @@ it moves up again, possibly to the root.
 | 2 | the parent module's `components/` (only when features are grouped under a module) | the feature's `hooks/` or `utils/` (second consumer in the feature) |
 | 3 | `src/components/` | `src/hooks/`, `src/utils/` (second feature) |
 
-- The root accepts components with domain names (`MemberDot`, `TransactionTypeToggle`, `Amount`).
+- The root accepts components with domain names (`MemberDot`, `TransactionTypeToggle`, `Money`).
   Scope decides the folder, not vocabulary.
 - **Features never import from each other.** Anything two features need has been lifted. Enforced by
   lint `no-restricted-imports` on `@/features/*` everywhere outside `src/app/**`.

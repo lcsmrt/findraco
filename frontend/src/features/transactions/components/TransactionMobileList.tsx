@@ -1,5 +1,5 @@
 import type { Transaction } from "@/api/dtos/transaction";
-import { Amount } from "@/components/amount/Amount";
+import { TransactionAmount } from "@/components/money/TransactionAmount";
 import { Button } from "@/components/button/base/Button";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { TablePagination } from "@/components/table";
@@ -53,9 +53,11 @@ function TransactionMobileRow({ transaction, onEdit, onConfirm }: TransactionMob
             </Text>
           )}
         </span>
-        <Text className="shrink-0 whitespace-nowrap">
-          <Amount value={transaction.amount} type={transaction.type} />
-        </Text>
+        <TransactionAmount
+          amount={transaction.amount}
+          type={transaction.type}
+          className="shrink-0"
+        />
       </button>
       {onConfirm && (
         <Button

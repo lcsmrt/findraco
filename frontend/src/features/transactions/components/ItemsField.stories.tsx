@@ -90,10 +90,20 @@ export const OverTotal: Story = {
     itemsError: "Items cannot exceed the transaction total",
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("Remainder: -R$ 10,00")).toBeVisible();
+    await expect(canvas.getByText("Remainder: \u2212R$ 10,00")).toBeVisible();
     await expect(canvas.getByRole("alert")).toHaveTextContent(
       "Items cannot exceed the transaction total",
     );
+  },
+};
+
+export const OverAllocated: Story = {
+  args: {
+    amount: 10,
+    items: [{ description: "Snacks", amount: 15, category: null }],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Remainder: \u2212R$ 5,00")).toBeVisible();
   },
 };
 

@@ -1,7 +1,7 @@
 import type { DashboardSummaryResponse } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, within } from "storybook/test";
 import { SummaryCards } from "./SummaryCards";
 import { summaryView } from "../utils/summaryView";
 
@@ -106,6 +106,46 @@ export const WithForecast: Story = {
 };
 
 // Nothing is ahead, so the forecast equals the actual figures.
+// Below `sm` the phone card is the first card in the DOM and the three wide cards follow it.
+function cards(canvasElement: HTMLElement) {
+  const [phone, ...wide] = Array.from(canvasElement.querySelectorAll<HTMLElement>('[data-slot="card"]'));
+  return { phone: within(phone), wide: wide.map((card) => within(card)) };
+}
+
+function fontSize(element: HTMLElement) {
+  return parseFloat(getComputedStyle(element).fontSize);
+}
+
+export const FigureSizes: Story = {
+  play: async ({ canvasElement }) => {
+    const { phone } = cards(canvasElement);
+    await expect(fontSize(phone.getByText("R$ 11.000,00"))).toBe(20);
+    await expect(fontSize(phone.getByText("R$ 5.147,50"))).toBe(20);
+    await expect(fontSize(phone.getByText("R$ 5.852,50"))).toBe(24);
+  },
+};
+
+// Both layouts are in the DOM, so each text is found twice: once per layout.
+export const ReadableFigures: Story = {
+  args: { view: summaryView({ ...withForecast, neutralOut: 2000, neutralIn: 500 }, null, colorOf) },
+  play: async ({ canvas }) => {
+    const figures = [
+      canvas.getAllByText("R$ 500,00"), // a member's expense
+      canvas.getAllByText("R$ 300,00"),
+      canvas.getAllByText("R$ 6.200,00"), // a member's income
+      canvas.getAllByText("R$ 4.800,00"),
+      canvas.getAllByText("Forecast R$ 5.147,50"), // the forecast line
+      canvas.getAllByText("Forecast R$ 11.000,00"),
+      canvas.getAllByText("Forecast R$ 5.852,50"),
+      canvas.getAllByText("out R$ 2.000,00 · in R$ 500,00"), // the neutral line
+    ];
+    for (const matches of figures) {
+      await expect(matches).toHaveLength(2);
+      for (const figure of matches) await expect(fontSize(figure)).toBeGreaterThanOrEqual(14);
+    }
+  },
+};
+
 export const NoForecast: Story = {
   play: async ({ canvas }) => {
     await expect(visibleText(canvas, "R$ 5.852,50")).toBeVisible();

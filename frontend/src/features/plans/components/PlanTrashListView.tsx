@@ -1,5 +1,5 @@
 import type { TransactionTrashEntry } from "@/api/dtos";
-import { Amount } from "@/components/amount/Amount";
+import { TransactionAmount } from "@/components/money/TransactionAmount";
 import { Badge } from "@/components/badge/base/Badge";
 import { Button } from "@/components/button/base/Button";
 import {
@@ -75,7 +75,7 @@ export function PlanTrashListView({
                   <Text variant="caption">
                     {t("plans.planTrashListView.count", { count: entry.count })}
                     {" · "}
-                    <Amount value={entry.amount} type={entry.type} />
+                    <TransactionAmount amount={entry.amount} type={entry.type} variant="secondary" />
                   </Text>
                   <Text variant="caption">
                     {entry.deletedBy

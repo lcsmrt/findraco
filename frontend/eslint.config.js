@@ -83,7 +83,7 @@ const paletteSelectors = [
   { selector: `TemplateElement[value.raw=/${PALETTE_CLASS}/]`, message: PALETTE_MESSAGE },
 ]
 
-// Text is sized and weighted only through `Heading`/`Text` (one seven-step scale in
+// Text is sized and weighted only through `Heading`/`Text` (one eight-step scale in
 // typography/base/). A size or weight class elsewhere starts a new look outside the scale, so it is
 // banned in every string; alignment (`text-center`), family (`font-mono`) and colour stay free.
 // Arbitrary sizes (`text-[10rem]`) and undefined ones (`text-md`, which renders the inherited size)
@@ -104,6 +104,21 @@ const rawTextTagSelectors = [
     message: 'Raw <p>/<hN>: use <Text as="p" variant="…"> or <Heading level={n} variant="…"> (PageHeader, SectionHeader and FieldDescription for their roles).',
   },
 ]
+
+// A standalone figure is `<Money>`: one typeface, one minus, one colour rule. `formatMoney` called
+// straight into JSX brings back the look `Money` replaced; it stays for text (a translated sentence's
+// values, an input, an axis tick), where no component can stand in.
+// A child counts through a ternary, `&&`/`??` or a template literal, up to two levels deep; inside a
+// call's arguments (a translated sentence) it is text and stays allowed.
+const moneyMessage = 'Render money through <Money> (src/components/money/Money.tsx), not formatMoney(...) in JSX. formatMoney stays for translated sentences, input text and chart ticks.'
+const jsxChild = ':matches(JSXElement, JSXFragment) > JSXExpressionContainer'
+const wrapper = ':matches(ConditionalExpression, LogicalExpression, TemplateLiteral)'
+const formatMoneyCall = "CallExpression[callee.name='formatMoney']"
+const moneySelectors = [
+  `${jsxChild} > ${formatMoneyCall}`,
+  `${jsxChild} > ${wrapper} > ${formatMoneyCall}`,
+  `${jsxChild} > ${wrapper} > ${wrapper} > ${formatMoneyCall}`,
+].map((selector) => ({ selector, message: moneyMessage }))
 
 const testFiles = ['**/*.test.{ts,tsx}', 'src/test/**']
 
@@ -190,9 +205,11 @@ export default defineConfig({ ignores: ['dist'] }, {
 }, {
   // Augmenting a library's types (`declare module "axios" { interface … }`) needs declaration
   // merging, which only an interface does; augmentations live in `*.d.ts` files for that reason.
+  // An augmentation must repeat the library's type parameters, used or not, so those are not flagged.
   files: ['**/*.d.ts'],
   rules: {
     '@typescript-eslint/consistent-type-definitions': 'off',
+    '@typescript-eslint/no-unused-vars': 'off',
   },
 },
 // Import layers, from the widest to the narrowest; each spreads its parents' fragments.
@@ -203,14 +220,22 @@ export default defineConfig({ ignores: ['dist'] }, {
   [...appInternalsImports, ...crossFeatureImports, ...appAnyImports, ...apiImports],
 ),
 // Syntax layers, from the widest to the narrowest; each spreads its complete list.
-// base/ primitives keep their own built-in text styles, so they get the palette ban only.
+// base/ primitives keep their own built-in text styles, so they get the palette and money bans only.
 syntaxLayer(
   ['src/**/*.{ts,tsx}'],
-  [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors],
+  [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors, ...moneySelectors],
   ['src/app/**'],
 ),
-syntaxLayer(['src/app/**/*.{ts,tsx}'], [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors]),
-syntaxLayer(['src/components/**/base/**/*.{ts,tsx}'], [...paletteSelectors]),
+syntaxLayer(
+  ['src/app/**/*.{ts,tsx}'],
+  [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors, ...moneySelectors],
+),
+syntaxLayer(['src/components/**/base/**/*.{ts,tsx}'], [...paletteSelectors, ...moneySelectors]),
+// `Money` is where the rule's exception lives: it is the one component that formats a figure.
+syntaxLayer(
+  ['src/components/money/**/*.{ts,tsx}'],
+  [...paletteSelectors, ...typographySelectors, ...rawTextTagSelectors],
+),
 // Interface texts live in src/i18n/*.json: a literal in a component's JSX or in a user-facing
 // attribute would stay English for every reader. Tests and stories assert and render copy as it is.
 {

@@ -1,6 +1,6 @@
 ---
 name: component-creation
-description: Write or change a React component (.tsx) in the findraco frontend, and the code-style rules every frontend file follows. Covers function-declaration anatomy, what a component file may export and when logic must leave it (extraction triggers, 60-line logic cap, no IIFE in JSX), container vs presentational and when a story is required, shared component families with editable `base/` primitives, adding a shadcn/Base UI primitive, typography through `Heading`/`Text` (seven-step scale), token-only colours, money display (`Amount`, `formatMoney`), role checks (`usePlanPermissions`), overlay state and container choice, `type` over `interface`, comments that explain why, and the no-bypass lint policy. Use when writing or refactoring any .tsx component, a primitive, a page, a modal/drawer, or when styling text or colour. Triggers on "react component", "create a component", "tsx", "shadcn", "base ui", "primitive", "cva variant", "typography", "Heading", "Text", "colour token", "story needed", "container component", "extract a hook", "eslint-disable", "comment style".
+description: Write or change a React component (.tsx) in the findraco frontend, and the code-style rules every frontend file follows. Covers function-declaration anatomy, what a component file may export and when logic must leave it (extraction triggers, 60-line logic cap, no IIFE in JSX), container vs presentational and when a story is required, shared component families with editable `base/` primitives, adding a shadcn/Base UI primitive, typography through `Heading`/`Text` (eight-step scale and the `numeric` flag), token-only colours, money display (`Money`, `formatMoney`), role checks (`usePlanPermissions`), overlay state and container choice, `type` over `interface`, comments that explain why, and the no-bypass lint policy. Use when writing or refactoring any .tsx component, a primitive, a page, a modal/drawer, or when styling text or colour. Triggers on "react component", "create a component", "tsx", "shadcn", "base ui", "primitive", "cva variant", "typography", "Heading", "Text", "colour token", "story needed", "container component", "extract a hook", "eslint-disable", "comment style".
 metadata:
   type: reference
 ---
@@ -258,7 +258,7 @@ src/components/
 | Debit/credit choice | `TransactionTypeToggle` (composition of `ToggleGroup`) | a new toggle |
 | Integer input | `NumberField` (Base UI composed; `min`, `step`; binding in `form-creation`) | a text input filtering digits |
 | Money input | `CurrencyInput` (see `form-creation`) | `maskCurrency`, parsing strings |
-| Money display | `Amount` or `formatMoney` (see Money) | `Intl.NumberFormat`, `toLocaleString` |
+| Money display | `Money` (a figure) or `formatMoney` (inside a sentence; see Money) | `Intl.NumberFormat`, `toLocaleString`, `formatMoney` as a JSX child |
 | Page title | `PageHeader` | a styled `<h1>` |
 | Section title | `SectionHeader` | a styled `<span>` |
 | Field help text | `FieldDescription` | `<p className="text-muted-foreground text-xs">` |
@@ -281,8 +281,8 @@ Enforced outside `**/base/**` by lint `no-restricted-syntax`:
 - no font-size classes (`text-xs`…`text-9xl`, arbitrary `text-[…]`, undefined ones like `text-md`) and
   no font-weight classes (`font-thin`…`font-black`) in any string, `cn()` arguments included.
 
-Alignment (`text-left`, `text-center`, `text-right`), family (`font-mono`) and `tabular-nums` stay
-allowed. Colour stays free but token-only (see Colour).
+Alignment (`text-left`, `text-center`, `text-right`) and `tabular-nums` stay allowed (a figure that
+must line up takes the `numeric` flag instead). Colour stays free but token-only (see Colour).
 
 - `<Heading level={1..6} variant="…">`: `level` picks the tag from the document outline, `variant`
   picks the look from the design role. They are separate on purpose; never pick a level for its size.
@@ -292,7 +292,8 @@ allowed. Colour stays free but token-only (see Colour).
 | Variant | Classes | Used for |
 | --- | --- | --- |
 | `display` | decorative large numeral (`text-[10rem]`, responsive) | the 404 numeral |
-| `headline` | `text-2xl font-bold` | page titles, wordmark, metric figures |
+| `headline` | `text-2xl font-bold` | page titles, wordmark, the headline metric figure |
+| `figure` | `text-xl font-bold` | compact metric figures (the phone card's Income and Expense) |
 | `title` | `text-base font-semibold` | section titles, compact figures, period label |
 | `label` | `text-sm font-medium` | row titles, option labels |
 | `body` | `text-sm font-normal` | default text |
@@ -339,17 +340,25 @@ a palette class.
 
 ## Money
 
-- Display a transaction value with `Amount` (`value`, `type`): signed (debit "- "), toned (debit
-  destructive, credit success), monospace (`font-mono`), as the list and table show it today.
-- Format any other money value with `formatMoney(value)` from `@/utils/money`, or
-  `formatMoney(value, { compact: true })` for chart axes.
+- Display a standalone figure with `<Money value={signed} tone variant />`: the pt-BR format, a negative
+  with the typographic minus U+2212 ("−R$ 1.234,50"), tabular digits in the app typeface, never wrapped.
+  `value` is signed; `tone` is `income` (green), `expense` (red), `bySign` (green from zero up, as the
+  figure shows it, red below) or `default`; `variant` is a step of the type scale. A transaction row
+  uses `TransactionAmount` (`amount`, `type`), which signs a debit and tones it by sign.
+- A sentence that carries an amount stays one translated string with `formatMoney(value)` inside, in a
+  `Text` at 14 px or more with `numeric`: splitting it around a component breaks word order across
+  languages. `formatMoney(value, { compact: true })` serves chart axes. Lint refuses `formatMoney(...)`
+  as a JSX child outside `components/money/`.
+- A money figure or percentage reads at 14 px or more (`secondary`, `body`, `label` or larger), never
+  `caption`.
 - Never call `Intl.NumberFormat` or `toLocaleString`, and never write a locale or currency code, in a
   screen. Why: locale and currency come from one source in `money.ts`, so internationalisation changes
   that module and no screen.
 - Compare or sum money through `toCents(value)` from the same module. Why: reais as floats can be off by
   0.00000001, which breaks comparisons such as "items ≤ total".
 
-Enforced by review; `money.ts` and the components built on it carry the tests.
+Enforced by lint (`formatMoney` as a JSX child) and review; `money.ts` and the components built on it
+carry the tests.
 
 ---
 

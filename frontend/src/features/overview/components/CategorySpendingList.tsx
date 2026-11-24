@@ -1,5 +1,6 @@
 import { Badge } from "@/components/badge/base/Badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
+import { Money } from "@/components/money/Money";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatMoney } from "@/utils/money";
@@ -71,9 +72,10 @@ function StatusText({ usage, className }: StatusTextProps) {
   if (usage.status === "none") return null;
   return (
     <Text
-      variant="caption"
+      variant="secondary"
+      numeric
       className={cn(
-        "inline-flex items-center gap-1 whitespace-nowrap tabular-nums",
+        "inline-flex items-center gap-1 whitespace-nowrap",
         usage.status === "warning" && "text-warning",
         usage.status === "over" && "text-destructive",
         className,
@@ -91,24 +93,22 @@ function StatusText({ usage, className }: StatusTextProps) {
   );
 }
 
-type AmountProps = {
+type SpentOfLimitProps = {
   spent: number;
   limit: number | null;
-  /** A member sub-row's smaller figures, in normal weight. */
+  /** A member sub-row's figures, in normal weight. */
   compact?: boolean;
   className?: string;
 };
 
-function Amount({ spent, limit, compact = false, className }: AmountProps) {
+function SpentOfLimit({ spent, limit, compact = false, className }: SpentOfLimitProps) {
   const { t } = useTranslation();
 
   return (
-    <span className={cn("whitespace-nowrap tabular-nums", className)}>
-      <Text variant={compact ? "caption" : "label"} className={cn(compact && "text-foreground")}>
-        {formatMoney(spent)}
-      </Text>
+    <span className={cn("whitespace-nowrap", className)}>
+      <Money value={spent} variant={compact ? "body" : "label"} />
       {limit != null && (
-        <Text variant={compact ? "caption" : "secondary"}>
+        <Text variant="secondary" numeric>
           {" "}
           {t("overview.categorySpendingList.ofLimit", { amount: formatMoney(limit) })}
         </Text>
@@ -124,18 +124,18 @@ type MemberLineProps = {
 /** "● Lucas R$ 1.051 · ● Livia R$ 694". */
 function MemberLine({ members }: MemberLineProps) {
   return (
-    <Text variant="caption" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
+    <Text variant="secondary" className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-0.5">
       {members.map((member) => (
         // Only the dot fades for the other members: faded text would fall below readable contrast.
         <span
           key={member.memberId}
-          className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap tabular-nums"
+          className="inline-flex max-w-full min-w-0 items-center gap-1.5 whitespace-nowrap"
         >
           <MemberDot color={member.color} className={cn(member.dimmed && "opacity-25")} />
           <span className="min-w-0 truncate" title={member.name}>
             {getFirstName(member.name)}
           </span>
-          <span className="shrink-0">{formatMoney(member.amount)}</span>
+          <Money value={member.amount} className="shrink-0" />
         </span>
       ))}
     </Text>
@@ -151,7 +151,7 @@ function RowDetails({ row }: RowBodyProps) {
   const { t } = useTranslation();
 
   const detail = row.focus ? (
-    <Text variant="caption" className="inline-flex min-w-0 items-center gap-1.5 tabular-nums">
+    <Text variant="secondary" numeric className="inline-flex min-w-0 items-center gap-1.5">
       <MemberDot color={row.focus.color} />
       <span className="min-w-0">
         {t("overview.categorySpendingList.focus", {
@@ -216,7 +216,7 @@ function RowHeader({ row, expandable, expanded }: RowHeaderProps) {
           </Badge>
         )}
       </span>
-      <Amount spent={row.spent} limit={row.limit} className="ml-auto" />
+      <SpentOfLimit spent={row.spent} limit={row.limit} className="ml-auto" />
     </div>
   );
 }
@@ -243,7 +243,7 @@ function SubRow({ sub }: SubRowProps) {
         </span>
         <span className="flex items-center gap-3">
           <StatusText usage={sub} className="hidden sm:inline-flex" />
-          <Amount spent={sub.spent} limit={sub.limit} compact />
+          <SpentOfLimit spent={sub.spent} limit={sub.limit} compact />
         </span>
       </div>
       {sub.bar && <UsageBar bar={sub.bar} className="h-1" />}

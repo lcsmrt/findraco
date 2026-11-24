@@ -75,6 +75,23 @@ export const GroupedByDay: Story = {
   },
 };
 
+export const MoneyAmounts: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Groceries", "2026-10-14", { amount: 1234.5 }),
+      transaction(2, "Salary", "2026-10-14", {
+        type: "CREDIT",
+        amount: 1234.5,
+        category: { id: 9, version: 0, type: "CREDIT", description: "Income" },
+      }),
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("\u2212R$ 1.234,50")).toHaveClass("text-destructive");
+    await expect(canvas.getByText("R$ 1.234,50")).toHaveClass("text-success");
+  },
+};
+
 export const ForecastAndPending: Story = {
   args: {
     transactions: [

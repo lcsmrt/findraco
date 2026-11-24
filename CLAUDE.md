@@ -81,7 +81,7 @@ they are enforced. Read the matching skill before writing frontend code.
   (tokens, variants, loading state, a11y); domain behaviour goes in a composition. Check shadcn and Base
   UI before writing a component by hand. → `/component-creation`
 - Design system only: text through `Heading`/`Text` (no raw `<p>`/`<hN>`, no size or weight classes);
-  meaningful colour from theme tokens, never the raw palette; money through `Amount`, `formatMoney` and
+  meaningful colour from theme tokens, never the raw palette; money through `Money`, `formatMoney` and
   `CurrencyInput`. → `/component-creation`
 - Where code lives: born where it is used, lifted one rung when a second consumer appears; features
   never import each other; only `app/` imports features; providers are `XxxProvider.tsx` + `useXxx.ts`.
