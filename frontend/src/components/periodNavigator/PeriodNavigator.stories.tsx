@@ -157,3 +157,27 @@ export const SpansWidthPhone: Story = {
     });
   },
 };
+
+// The four presets wrap in a 320 px sheet. Two chip rows must sit far enough apart that a tap
+// 6 px below a first-row preset still lands on it, never on the row below.
+export const WrappedPresetsPhone: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(320, 640);
+    const dialog = await openPanel(canvas, userEvent);
+    const presets = ["This month", "Last 3 months", "Last 6 months", "This year"].map((name) =>
+      within(dialog).getByRole("button", { name }),
+    );
+    // The sheet slides in, so the rows are read once it has settled.
+    await waitFor(() => {
+      const tops = new Set(presets.map((preset) => Math.round(preset.getBoundingClientRect().top)));
+      expect(tops.size).toBeGreaterThan(1);
+      const firstTop = Math.min(...tops);
+      const firstRow = presets.filter((preset) => Math.round(preset.getBoundingClientRect().top) === firstTop);
+      for (const preset of firstRow) {
+        const box = preset.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.bottom + 6);
+        expect(hit && preset.contains(hit)).toBe(true);
+      }
+    });
+  },
+};

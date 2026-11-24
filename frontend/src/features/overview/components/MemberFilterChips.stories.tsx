@@ -79,6 +79,35 @@ export const ChipSizePhone: Story = {
   },
 };
 
+// Four members wrap onto two rows on a phone; a tap 6 px below a first-row chip lands on that chip,
+// never on the row below.
+export const WrappedRowsPhone: Story = {
+  args: {
+    members: [
+      { id: 1, name: "Lucas" },
+      { id: 2, name: "Livia" },
+      { id: 3, name: "Anastácia" },
+      { id: 4, name: "Bartholomeu" },
+    ],
+    initialSelectedId: null,
+  },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const chips = canvas.getAllByRole("button");
+    await expect(chips).toHaveLength(5);
+    await waitFor(() => {
+      const tops = chips.map((chip) => Math.round(chip.getBoundingClientRect().top));
+      const firstTop = Math.min(...tops);
+      expect(Math.max(...tops)).toBeGreaterThan(firstTop);
+      for (const chip of chips.filter((_, index) => tops[index] === firstTop)) {
+        const box = chip.getBoundingClientRect();
+        const hit = document.elementFromPoint(box.left + box.width / 2, box.bottom + 6);
+        expect(hit && chip.contains(hit)).toBe(true);
+      }
+    });
+  },
+};
+
 export const ChipSizeDesktop: Story = {
   args: { members: threeMembers, initialSelectedId: null },
   play: async ({ canvas }) => {

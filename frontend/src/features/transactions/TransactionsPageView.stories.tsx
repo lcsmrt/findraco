@@ -409,6 +409,37 @@ export const FilterChipSizePhone: Story = {
   },
 };
 
+// A removable chip's remove button owns its 44 px tap area even with another chip row below it.
+export const FilterChipRemoveTarget: Story = {
+  args: {
+    chips: [
+      { key: "type", label: "Debit", onRemove: fn() },
+      { key: "category", label: "Food › Restaurants", onRemove: fn() },
+      { key: "member", label: "Lucas Martins", onRemove: fn() },
+      { key: "from", label: "From 2026-01-01", onRemove: fn() },
+      { key: "to", label: "To 2026-10-31", onRemove: fn() },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const removes = canvas.getAllByRole("button", { name: /^Remove / });
+    await expect(removes).toHaveLength(5);
+    await waitFor(() => {
+      const tops = removes.map((remove) => Math.round(remove.getBoundingClientRect().top));
+      const firstTop = Math.min(...tops);
+      expect(Math.max(...tops)).toBeGreaterThan(firstTop);
+      for (const remove of removes.filter((_, index) => tops[index] === firstTop)) {
+        const box = remove.getBoundingClientRect();
+        const x = box.left + box.width / 2;
+        for (const y of [box.top - 6, box.bottom + 6]) {
+          const hit = document.elementFromPoint(x, y);
+          expect(hit && remove.contains(hit)).toBe(true);
+        }
+      }
+    });
+  },
+};
+
 export const ManyLongTransactions: Story = {
   tags: ["!test"],
   args: {

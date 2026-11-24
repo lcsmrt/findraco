@@ -57,7 +57,7 @@ function PeriodPanel({ period, isCustom, draft, onPresetSelect, onRangeSelect }:
 
   return (
     <div className="flex flex-col gap-1 pb-2">
-      <div className="flex flex-wrap gap-1.5 px-3 pt-3">
+      <div className="flex flex-wrap gap-1.5 px-3 pt-3 max-sm:gap-y-3.5">
         {PERIODS.map((preset) => (
           <Toggle
             key={preset}

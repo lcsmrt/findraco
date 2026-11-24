@@ -164,12 +164,13 @@ export function TransactionsPageView({
         </div>
 
         {chips.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 max-sm:gap-y-3">
+          <div className="flex flex-wrap items-center gap-2 max-sm:gap-y-3.5">
             {chips.map((chip) => (
               <Badge
                 key={chip.key}
                 variant="meta"
-                // 32 px visible below `sm`; the pseudo-element behind the content adds the 44 px tap area.
+                // 32 px visible below `sm`; the pseudo-element behind the content adds the 44 px tap area. The
+                // remove button has a 1 px border, so its own pseudo reaches 7.5 px to cover 6.5 px beyond it.
                 className="relative isolate gap-1 pr-1 max-sm:h-8 max-sm:overflow-visible max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:-inset-y-[6.5px] max-sm:after:-z-10"
               >
                 {chip.label}
@@ -177,7 +178,7 @@ export function TransactionsPageView({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="relative h-4 w-4 rounded max-sm:size-8 max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:-inset-y-[6.5px]"
+                  className="relative h-4 w-4 rounded max-sm:size-8 max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:-inset-y-[7.5px]"
                   aria-label={t("transactions.transactionsPageView.removeFilter", {
                     name: chip.label,
                   })}

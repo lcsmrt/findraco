@@ -370,11 +370,13 @@ primitive gets the tier in its own variants. Enforced by the `Touch Targets` sto
 **The one exception is a chip** (the `Toggle` `chip` variant and a removable filter chip): a pill that
 is 44 px tall looks swollen, so below `sm` it is 32 px visible (`max-sm:h-8`) with a 44 px hit area from
 a pseudo-element: `relative` plus `max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:-inset-y-[6.5px]`
-(7.5 px when the chip has a 1 px border, which the pseudo's containing block excludes). The element's
+(7.5 px when the chip or its remove button has a 1 px border, which the pseudo's containing block excludes). The element's
 own box stays 32 px, and `document.elementFromPoint` 6 px above or below it lands on the chip. A chip
 that holds a button (the filter chip's remove button) keeps the area behind its content (`isolate`,
 `after:-z-10`) so the pseudo never covers the button, and the button carries its own. Chips in a wrapped
-row get `max-sm:gap-y-3`, so the areas of two rows do not overlap. Enforced by the `Chip Size` stories.
+row get `max-sm:gap-y-3.5` (14 px, more than the two 6.5 px extensions), so the areas of two rows never
+overlap: the `chip` `ToggleGroup` carries it, and a hand-built chip row adds it. Enforced by the
+`Chip Size`, `Wrapped Rows Phone`, `Wrapped Presets Phone` and `Filter Chip Remove Target` stories.
 
 ---
 
