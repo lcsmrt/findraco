@@ -222,7 +222,7 @@ src/components/
 
 - The primitive pieces of a family (code that came from shadcn or Base UI) live in `<family>/base/`.
 - **Primitives are ours and editable, for changes that apply to the whole app only**: tokens, variants,
-  loading state, accessibility fixes (`Button` `isLoading` and `Badge` `success` are such changes).
+  loading state, accessibility fixes (`Button` `isLoading` and the `Badge` families are such changes).
   Domain or screen behaviour goes into a composition outside `base/`. Review enforces the split.
 - `base/` files never import `@/features/*`, `@/app/*` or `@/api/*`, and no file in `src/components/`
   imports `@/features/*`. Enforced by lint `no-restricted-imports`; the full layer table is in
@@ -259,7 +259,8 @@ src/components/
 | Integer input | `NumberField` (Base UI composed; `min`, `step`; binding in `form-creation`) | a text input filtering digits |
 | Money input | `CurrencyInput` (see `form-creation`) | `maskCurrency`, parsing strings |
 | Money display | `Money` (a figure) or `formatMoney` (inside a sentence; see Money) | `Intl.NumberFormat`, `toLocaleString`, `formatMoney` as a JSX child |
-| Page title | `PageHeader` | a styled `<h1>` |
+| Marker on a row or a card | `Badge` in its family (see Badges) | `outline` or `secondary` by habit, or a class override |
+| Page title | `PageHeader` (`title`, `context`, `actions`; see Page shell) | a styled `<h1>` |
 | Section title | `SectionHeader` | a styled `<span>` |
 | Field help text | `FieldDescription` | `<p className="text-muted-foreground text-xs">` |
 | Sheet form skeleton | `FormSheet` (see `form-creation`) | Sheet + footer rebuilt per form |
@@ -335,6 +336,48 @@ Enforced everywhere, `base/` included, by lint `no-restricted-syntax`: a class s
 `text-amber-600`, `bg-green-100` or `border-red-500` in a string or `cn()` argument is an error whose
 message points to the tokens. A missing meaning gets a new token in `src/index.css` (both themes), never
 a palette class.
+
+---
+
+## Badges
+
+A badge says what kind of thing it marks, through its `variant` family (`Badge` renders it as
+`data-variant`, and the tone of a status as `data-tone`). Enforced by review and by the stories that
+read the attributes.
+
+| Family | Marks | Look |
+| --- | --- | --- |
+| `status` + `tone` (`neutral`, `warning`, `success`, `destructive`) | the state of the thing: forecast, pending, an invitation's status | tinted background, no border, an icon when the state has one |
+| `tag` | a category, and nothing else | outline, no tint, no icon |
+| `meta` | a quiet fact: role, count, kind, series, owner, "ongoing" | muted fill |
+
+- A removable filter chip is a `meta` badge; `tag` is reserved for categories.
+- A marker shared by a table and a phone list lives in one component (`TransactionBadges`), so the two
+  never disagree.
+- Never override a badge's colour with classes: a missing meaning is a new family or tone.
+
+---
+
+## Touch tier
+
+Below `sm` (640 px) every control is a 44 px target; from `sm` up it keeps its desktop height. The tier
+sits inside each primitive's size variant, as `max-sm:h-11` (`max-sm:size-11` for icon sizes) before
+the desktop height: `Button`, `Toggle` (chip included), `Input`, `InputGroup`, `NumberField`, the
+`Select` trigger and the Combobox fields. A hard-coded `h-7` on a call site does not undo it. Why: the
+controls grow visibly, so neighbouring targets never overlap, which an invisible hit area cannot
+promise. A new control primitive gets the tier in its own variants. Enforced by the `Touch Targets`
+stories.
+
+---
+
+## Page shell
+
+Each destination renders `<PageHeader title context actions />` as its first child: the `h1` is the
+navigation label, `context` holds what frames the data (period, member filter) and `actions` the page's
+creates and tools. The layout (`MainLayoutView`) gives the content one `max-w-7xl` cap, centred, so the
+edge does not jump between tabs; a page never sets its own width. A page create (new category, new
+plan) is an `outline` button in `actions`: the global add in the tab row is the only filled primary
+button on a page. Dialogs and sheets keep their own filled primary.
 
 ---
 

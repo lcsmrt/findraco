@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useForm } from "react-hook-form";
 import { page } from "@vitest/browser/context";
 import { expect, waitFor } from "storybook/test";
+import { i18n } from "@/i18n/i18n";
 import { CategoryLimitFields } from "./CategoryLimitFields";
 import type { CategoryFormOutput, CategoryFormValues, MemberLimitRow } from "./categoryForm";
 
@@ -98,14 +99,22 @@ export const TouchTargets: Story = {
   },
 };
 
+// The share is written in the interface language: 61.8 reads "61.8%" in English, "61,8%" in Portuguese.
 export const SharePercent: Story = {
   args: {
     limitMode: "perMember",
-    memberLimits: [row(1, "Ana", 300), row(2, "Bia", 100)],
+    memberLimits: [row(1, "Ana", 618), row(2, "Bia", 382)],
   },
   play: async ({ canvas }) => {
-    for (const share of [canvas.getByText("75%"), canvas.getByText("25%")]) {
+    for (const share of [canvas.getByText("61.8%"), canvas.getByText("38.2%")]) {
       await expect(parseFloat(getComputedStyle(share).fontSize)).toBe(14);
+    }
+    try {
+      await i18n.changeLanguage("pt-BR");
+      await expect(await canvas.findByText("61,8%")).toBeVisible();
+      await expect(canvas.getByText("38,2%")).toBeVisible();
+    } finally {
+      await i18n.changeLanguage("en");
     }
   },
 };
