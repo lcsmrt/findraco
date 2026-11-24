@@ -1,7 +1,7 @@
 import { Text } from "@/components/typography/base/Text";
 import type { TypographyVariant } from "@/components/typography/base/typographyVariants";
 import { cn } from "@/lib/mergeClasses";
-import { formatMoney, toCents } from "@/utils/money";
+import { formatMoney, isShownNegative } from "@/utils/money";
 
 export type MoneyTone = "default" | "income" | "expense" | "bySign";
 
@@ -18,7 +18,7 @@ type MoneyProps = {
 function toneClass(tone: MoneyTone, value: number) {
   if (tone === "income") return "text-success";
   if (tone === "expense") return "text-destructive";
-  if (tone === "bySign") return toCents(value) >= 0 ? "text-success" : "text-destructive";
+  if (tone === "bySign") return isShownNegative(value) ? "text-destructive" : "text-success";
   return undefined;
 }
 

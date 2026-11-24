@@ -73,6 +73,16 @@ export const Tones: Story = {
   },
 };
 
+// Half a cent rounds to "−R$ 0,01", so the colour must say negative too.
+export const HalfCentTone: Story = {
+  args: { value: -0.005, tone: "bySign" },
+  play: async ({ canvasElement }) => {
+    const [figure] = figures(canvasElement);
+    await expect(figure.textContent).toBe(`\u2212R$${NBSP}0,01`);
+    await expect(figure).toHaveClass("text-destructive");
+  },
+};
+
 export const LargeValue: Story = {
   args: { value: 9999999999999.99 },
   play: async ({ canvasElement }) => {

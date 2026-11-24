@@ -87,6 +87,27 @@ export const TooltipSpacing: Story = {
   },
 };
 
+// A month with no expenses still shows its figure, at zero.
+export const TooltipZero: Story = {
+  args: {
+    months: trend(
+      { startDate: "2026-01-01", endDate: "2026-12-31" },
+      Array.from({ length: 12 }, (_, index) => ({ year: 2026, month: index + 1, income: 1000, expenses: 0 })),
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const plot = await waitFor(() => {
+      const surface = canvasElement.querySelector(".recharts-surface");
+      if (!surface || !canvasElement.querySelector(".recharts-line-curve")) throw new Error("not drawn yet");
+      return surface;
+    });
+    const box = plot.getBoundingClientRect();
+    fireEvent.mouseMove(plot, { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 });
+    const values = await within(canvasElement).findAllByText(/^R\$ /, { selector: ".recharts-tooltip-wrapper *" });
+    await expect(values.map((value) => value.textContent)).toEqual(["R$\u00a01.000,00", "R$\u00a00,00"]);
+  },
+};
+
 export const QuarterSelected: Story = {
   tags: ["!test"],
   args: { months: trend({ startDate: "2026-08-01", endDate: "2026-10-31" }, halfYear) },

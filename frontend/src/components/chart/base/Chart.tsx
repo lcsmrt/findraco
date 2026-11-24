@@ -220,10 +220,11 @@ function ChartTooltipContent({
                           {itemConfig?.label || item.name}
                         </span>
                       </div>
-                      {item.value && (
-                        typeof item.value === "number" ? (
-                          <Money value={item.value} variant="label" className="text-foreground" />
-                        ) : (
+                      {/* Zero is a figure too: a month with no expenses reads "R$ 0,00", not nothing. */}
+                      {typeof item.value === "number" ? (
+                        <Money value={item.value} variant="label" className="text-foreground" />
+                      ) : (
+                        item.value && (
                           <Text variant="label" numeric className="text-foreground">
                             {item.value}
                           </Text>

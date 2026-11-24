@@ -73,6 +73,21 @@ describe("eslint.config.js", () => {
       expect(ruleIds).not.toContain("@typescript-eslint/consistent-type-definitions");
     });
 
+    it("allows an augmentation to repeat a library's unused type parameters in a *.d.ts (money-display AC 6)", async () => {
+      const ruleIds = await ruleIdsFor(
+        'import "@tanstack/react-table";\n\ndeclare module "@tanstack/react-table" {\n  interface ColumnMeta<TData, TValue> {\n    probe?: boolean;\n  }\n}\n',
+        "src/components/table/configProbe.d.ts",
+      );
+
+      expect(ruleIds).not.toContain("@typescript-eslint/no-unused-vars");
+    });
+
+    it("reports an unused type parameter outside a *.d.ts (money-display AC 6)", async () => {
+      const ruleIds = await ruleIdsFor("export type Probe<TData> = { id: number };\n", "src/utils/configProbe.ts");
+
+      expect(ruleIds).toContain("@typescript-eslint/no-unused-vars");
+    });
+
     it("reports an arrow function, even with a type annotation (STD-09 AC 1)", async () => {
       const ruleIds = await ruleIdsFor(
         "const toProbe: (value: number) => number = (value) => value + 1;\n\nexport { toProbe };\n",
@@ -278,7 +293,17 @@ describe("eslint.config.js", () => {
     });
 
     it.each([
+      ["<span>{true ? formatMoney(1) : null}</span>", "a ternary"],
+      ["<span>{true && formatMoney(1)}</span>", "a logical and"],
+      ["<span>{`${formatMoney(1)} total`}</span>", "a template literal"],
+      ["<span>{true ? null : false || formatMoney(1)}</span>", "a nested ternary and logical"],
+    ])("reports formatMoney rendered as a JSX child through %s (money-display AC 15)", async (jsx) => {
+      expect(await moneyMessages(jsx, "src/features/x/ConfigProbe.tsx")).toHaveLength(1);
+    });
+
+    it.each([
       ['<span>{t("key", { amount: formatMoney(1) })}</span>', "a translated sentence's values"],
+      ['<span>{true ? t("key", { amount: formatMoney(1) }) : null}</span>', "a sentence inside a ternary"],
       ["<input value={formatMoney(1)} readOnly />", "an attribute"],
     ])("allows formatMoney in %s (money-display AC 15)", async (jsx) => {
       expect(await moneyMessages(jsx, "src/features/x/ConfigProbe.tsx")).toEqual([]);

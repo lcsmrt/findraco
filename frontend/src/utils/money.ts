@@ -19,6 +19,20 @@ const compactFormat = new Intl.NumberFormat(MONEY_LOCALE, {
 const MINUS_SIGN = "\u2212";
 const DIGIT_PARTS = new Set(["integer", "fraction"]);
 
+// Intl keeps the sign of a value that rounds to zero ("-R$ 0,00"), which would read as a debt of nothing.
+function showsOnlyZeros(parts: Intl.NumberFormatPart[]): boolean {
+  return parts.every((part) => !DIGIT_PARTS.has(part.type) || /^0+$/.test(part.value));
+}
+
+/**
+ * Whether `formatMoney` writes this value with a minus. Colour follows it, so a figure and its tone
+ * never disagree on half a cent, which the formatter rounds away from zero and `toCents` towards it.
+ */
+export function isShownNegative(value: number): boolean {
+  const parts = fullFormat.formatToParts(value);
+  return parts.some((part) => part.type === "minusSign") && !showsOnlyZeros(parts);
+}
+
 type FormatMoneyOptions = {
   /** Short form for tight spots such as chart axes ("R$ 1,5 mil"). */
   compact?: boolean;
@@ -30,8 +44,7 @@ type FormatMoneyOptions = {
  */
 export function formatMoney(value: number, { compact = false }: FormatMoneyOptions = {}): string {
   const parts = (compact ? compactFormat : fullFormat).formatToParts(value);
-  // Intl keeps the sign of a value that rounds to zero ("-R$ 0,00"), which would read as a debt of nothing.
-  const showsZero = parts.every((part) => !DIGIT_PARTS.has(part.type) || /^0+$/.test(part.value));
+  const showsZero = showsOnlyZeros(parts);
   return parts
     .map((part) => {
       if (part.type !== "minusSign") return part.value;

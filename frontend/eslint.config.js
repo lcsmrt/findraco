@@ -108,12 +108,17 @@ const rawTextTagSelectors = [
 // A standalone figure is `<Money>`: one typeface, one minus, one colour rule. `formatMoney` called
 // straight into JSX brings back the look `Money` replaced; it stays for text (a translated sentence's
 // values, an input, an axis tick), where no component can stand in.
+// A child counts through a ternary, `&&`/`??` or a template literal, up to two levels deep; inside a
+// call's arguments (a translated sentence) it is text and stays allowed.
+const moneyMessage = 'Render money through <Money> (src/components/money/Money.tsx), not formatMoney(...) in JSX. formatMoney stays for translated sentences, input text and chart ticks.'
+const jsxChild = ':matches(JSXElement, JSXFragment) > JSXExpressionContainer'
+const wrapper = ':matches(ConditionalExpression, LogicalExpression, TemplateLiteral)'
+const formatMoneyCall = "CallExpression[callee.name='formatMoney']"
 const moneySelectors = [
-  {
-    selector: ":matches(JSXElement, JSXFragment) > JSXExpressionContainer > CallExpression[callee.name='formatMoney']",
-    message: 'Render money through <Money> (src/components/money/Money.tsx), not formatMoney(...) in JSX. formatMoney stays for translated sentences, input text and chart ticks.',
-  },
-]
+  `${jsxChild} > ${formatMoneyCall}`,
+  `${jsxChild} > ${wrapper} > ${formatMoneyCall}`,
+  `${jsxChild} > ${wrapper} > ${wrapper} > ${formatMoneyCall}`,
+].map((selector) => ({ selector, message: moneyMessage }))
 
 const testFiles = ['**/*.test.{ts,tsx}', 'src/test/**']
 

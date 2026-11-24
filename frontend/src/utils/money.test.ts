@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { i18n } from "@/i18n/i18n";
-import { formatMoney, MONEY_CURRENCY, MONEY_LOCALE, toCents } from "./money";
+import { MONEY_CURRENCY, MONEY_LOCALE, formatMoney, isShownNegative, toCents } from "./money";
 
 // pt-BR separates the symbol (and the compact suffix) with a non-breaking space, U+00A0.
 const NBSP = "\u00a0";
@@ -28,18 +28,29 @@ describe("formatMoney", () => {
     expect(formatMoney(value)).toBe(expected);
   });
 
-  it("writes a negative with U+2212", () => {
+  it("writes a negative with U+2212 (money-display AC 1)", () => {
     expect(formatMoney(-1234.5)).toBe(`\u2212R$${NBSP}1.234,50`);
     expect(formatMoney(-12.34)).not.toContain("-");
   });
 
-  it("writes a value that rounds to zero without a minus", () => {
+  it("writes a value that rounds to zero without a minus (money-display AC 1)", () => {
     expect(formatMoney(-0.004)).toBe(`R$${NBSP}0,00`);
     expect(formatMoney(0)).toBe(`R$${NBSP}0,00`);
   });
 
-  it("writes a compact negative with U+2212", () => {
+  it("writes a compact negative with U+2212 (money-display AC 1)", () => {
     expect(formatMoney(-1500, { compact: true })).toBe(`\u2212R$${NBSP}1,5${NBSP}mil`);
+  });
+
+  it.each([
+    [-0.005, true],
+    [-0.01, true],
+    [-0.004, false],
+    [0, false],
+    [0.01, false],
+  ])("says %s shows as negative: %s, as the formatter rounds it (money-display AC 3)", (value, expected) => {
+    expect(isShownNegative(value)).toBe(expected);
+    expect(formatMoney(value).startsWith("\u2212")).toBe(expected);
   });
 
   it.each([
