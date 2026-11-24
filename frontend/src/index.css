@@ -28,28 +28,14 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
   --color-member-1: var(--member-1);
   --color-member-2: var(--member-2);
   --color-member-3: var(--member-3);
   --color-member-4: var(--member-4);
   --color-member-5: var(--member-5);
   --color-member-6: var(--member-6);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
 
   --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
@@ -94,11 +80,6 @@
   --border: #e0dbcf;
   --input: #d6d0c2;
   --ring: #f59e0b;
-  --chart-1: #d97706;
-  --chart-2: #f59e0b;
-  --chart-3: #fbbf24;
-  --chart-4: #b45309;
-  --chart-5: #78350f;
   /* Member identity colours (UX-04 AC 2): distinct hues, none amber/red so they never read as a status. */
   --member-1: #2a78d6;
   --member-2: #e87ba4;
@@ -106,16 +87,7 @@
   --member-4: #0891b2;
   --member-5: #6250d6;
   --member-6: #1baf7a;
-  --sidebar: #fcfbf8;
-  --sidebar-foreground: #1f1d1a;
-  --sidebar-primary: #f59e0b;
-  --sidebar-primary-foreground: #1f1405;
-  --sidebar-accent: #eeebe3;
-  --sidebar-accent-foreground: #3d2a0a;
-  --sidebar-border: #e0dbcf;
-  --sidebar-ring: #f59e0b;
   --font-sans: "Space Grotesk Variable", sans-serif;
-  --font-serif: Source Serif 4, serif;
   --radius: 0.375rem;
   --shadow-2xs: 0px 4px 8px -1px hsl(0 0% 10.1961% / 0.05);
   --shadow-xs: 0px 4px 8px -1px hsl(0 0% 10.1961% / 0.05);
@@ -162,25 +134,12 @@
   --border: #42413c;
   --input: #4a4943;
   --ring: #f59e0b;
-  --chart-1: #f59e0b;
-  --chart-2: #fbbf24;
-  --chart-3: #fcd34d;
-  --chart-4: #d97706;
-  --chart-5: #92400e;
   --member-1: #3987e5;
   --member-2: #d55181;
   --member-3: #3fae3f;
   --member-4: #1ba3c0;
   --member-5: #9085e9;
   --member-6: #199e70;
-  --sidebar: #222220;
-  --sidebar-foreground: #f5f4ef;
-  --sidebar-primary: #f59e0b;
-  --sidebar-primary-foreground: #1f1405;
-  --sidebar-accent: #3f3a2e;
-  --sidebar-accent-foreground: #fbbf24;
-  --sidebar-border: #42413c;
-  --sidebar-ring: #f59e0b;
 }
 
 /*

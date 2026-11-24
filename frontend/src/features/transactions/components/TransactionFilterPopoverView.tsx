@@ -101,7 +101,7 @@ export function TransactionFilterPopoverView({
       <PopoverTrigger render={<Button type="button" variant="outline" />}>
         <SlidersHorizontalIcon className="h-4 w-4" />
         {t("transactions.transactionFilterPopoverView.filters")}
-        {activeCount > 0 && <Badge>{activeCount}</Badge>}
+        {activeCount > 0 && <Badge variant="meta">{activeCount}</Badge>}
       </PopoverTrigger>
       <PopoverContent
         align="start"

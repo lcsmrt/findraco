@@ -48,6 +48,14 @@ export const Owner: Story = {
   },
 };
 
+// The role and the default marker are quiet facts about a plan, not states.
+export const MetaBadges: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Owner").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+    await expect(canvas.getByText("Default").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+  },
+};
+
 export const Member: Story = {
   args: { activePlan: plans[1], activePlanId: 2, canManagePlan: false },
   play: async ({ args, canvas, userEvent }) => {

@@ -837,6 +837,10 @@
       "thisOne": "Só esta",
       "thisOneHelp": "Somente esta ocorrência será alterada."
     },
+    "transactionBadges": {
+      "items_one": "{{count}} item",
+      "items_other": "{{count}} itens"
+    },
     "transactionCells": {
       "people_one": "{{count}} pessoa",
       "people_other": "{{count}} pessoas"

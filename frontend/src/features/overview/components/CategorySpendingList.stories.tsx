@@ -121,6 +121,15 @@ export const LimitStatuses: Story = {
   },
 };
 
+export const MetaBadges: Story = {
+  play: async ({ canvasElement }) => {
+    const owner = [...canvasElement.querySelectorAll("[data-variant]")].find((badge) =>
+      badge.textContent?.includes("Livia"),
+    );
+    await expect(owner).toHaveAttribute("data-variant", "meta");
+  },
+};
+
 export const MemberSelected: Story = {
   args: { view: view(tree, { id: 1, name: "Lucas Martins" }) },
 };

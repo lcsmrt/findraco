@@ -114,7 +114,7 @@ export function PlanMembersListView({
               </Button>
             </div>
           ) : (
-            <Badge variant="secondary" className="shrink-0">
+            <Badge variant="meta" className="shrink-0">
               {roleLabels[member.role]}
             </Badge>
           )}

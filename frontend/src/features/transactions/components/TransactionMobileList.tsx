@@ -8,7 +8,7 @@ import { Heading } from "@/components/typography/base/Heading";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatPattern } from "@/utils/dates";
-import { SeriesBadge, TransactionKindBadge, TransactionStatusBadge } from "./TransactionCells";
+import { TransactionBadges } from "./TransactionBadges";
 import { groupByDay } from "../utils/groupByDay";
 import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -43,9 +43,7 @@ function TransactionMobileRow({ transaction, onEdit, onConfirm }: TransactionMob
             <Text variant="label" className="truncate">
               {transaction.description}
             </Text>
-            {transaction.seriesId && <SeriesBadge />}
-            <TransactionKindBadge kind={transaction.kind} />
-            <TransactionStatusBadge status={transaction.status} />
+            <TransactionBadges transaction={transaction} />
           </span>
           {details.length > 0 && (
             <Text variant="caption" className="truncate">

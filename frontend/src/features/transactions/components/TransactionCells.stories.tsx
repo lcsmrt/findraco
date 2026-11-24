@@ -139,19 +139,83 @@ export const Income: Story = {
 
 export const Series: Story = { args: { transaction: { ...groceries, seriesId: "series-1" } } };
 
-export const Forecast: Story = {
+// What the page paints for the card token; a badge tinted differently stands out from the surface.
+function cardBackground() {
+  const probe = document.createElement("div");
+  probe.style.backgroundColor = "var(--card)";
+  document.body.append(probe);
+  const { backgroundColor } = getComputedStyle(probe);
+  probe.remove();
+  return backgroundColor;
+}
+
+function badgeOf(element: HTMLElement) {
+  const badge = element.closest<HTMLElement>("[data-variant]");
+  if (!badge) throw new Error("the label is not inside a badge");
+  return badge;
+}
+
+export const ForecastBadge: Story = {
   args: { transaction: { ...groceries, status: "FORECAST", requiresConfirmation: true } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Forecast")).toBeVisible();
     await expect(canvas.queryByText("Pending")).toBeNull();
+    const badge = badgeOf(canvas.getByText("Forecast"));
+    await expect(badge).toHaveAttribute("data-variant", "status");
+    await expect(badge).toHaveAttribute("data-tone", "neutral");
+    await expect(badge.querySelector("svg")).not.toBeNull();
+    await expect(getComputedStyle(badge).borderTopWidth).toBe("0px");
+    await expect(getComputedStyle(badge).backgroundColor).not.toBe(cardBackground());
   },
 };
 
-export const Pending: Story = {
+export const PendingBadge: Story = {
   args: { transaction: { ...groceries, status: "PENDING", requiresConfirmation: true } },
   play: async ({ canvas }) => {
     await expect(canvas.getByText("Pending")).toBeVisible();
     await expect(canvas.queryByText("Forecast")).toBeNull();
+    const badge = badgeOf(canvas.getByText("Pending"));
+    await expect(badge).toHaveAttribute("data-variant", "status");
+    await expect(badge).toHaveAttribute("data-tone", "warning");
+    await expect(badge.querySelector("svg")).not.toBeNull();
+  },
+};
+
+// The category is the one tag: outlined, with no icon, so it never reads as a status.
+export const CategoryTag: Story = {
+  play: async ({ canvas }) => {
+    const badge = badgeOf(canvas.getByText("Food"));
+    await expect(badge).toHaveAttribute("data-variant", "tag");
+    await expect(badge.querySelector("svg")).toBeNull();
+  },
+};
+
+const everyBadge: Transaction = {
+  ...groceries,
+  status: "FORECAST",
+  requiresConfirmation: true,
+  kind: "TRANSFER",
+  seriesId: "series-1",
+  items: [1, 2, 3].map((id) => ({ id, description: `Item ${id}`, amount: 10, quantity: 1 })),
+};
+
+// The description cell and the phone list share one badge row; this is its table half.
+export const BadgeRow: Story = {
+  args: { transaction: everyBadge },
+  play: async ({ canvas }) => {
+    const labels = ["Forecast", "Between members", "Series", "3 items"];
+    const positions = labels.map((label) => canvas.getByText(label).getBoundingClientRect().left);
+    await expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  },
+};
+
+// Series, kind and participants are quiet facts about the row, never a state or a category.
+export const MetaBadges: Story = {
+  args: { transaction: everyBadge },
+  play: async ({ canvas }) => {
+    for (const label of ["Series", "Between members", "2 people"]) {
+      await expect(badgeOf(canvas.getByText(label))).toHaveAttribute("data-variant", "meta");
+    }
   },
 };
 

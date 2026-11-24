@@ -207,7 +207,7 @@ function RowHeader({ row, expandable, expanded }: RowHeaderProps) {
         </Text>
         {row.owner && (
           <Badge
-            variant="outline"
+            variant="meta"
             className={cn(!row.owner.active && "text-muted-foreground opacity-70")}
           >
             <MemberDot color={row.owner.color} className="size-1.5" />

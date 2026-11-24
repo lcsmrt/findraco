@@ -69,7 +69,7 @@ export function PlanTrashListView({
                       {entry.description}
                     </Text>
                     {entry.kind === "SERIES" && (
-                      <Badge variant="secondary">{t("plans.planTrashListView.series")}</Badge>
+                      <Badge variant="meta">{t("plans.planTrashListView.series")}</Badge>
                     )}
                   </div>
                   <Text variant="caption">

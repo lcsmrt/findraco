@@ -27,7 +27,7 @@ export function EndDateField({ control, disabled }: EndDateFieldProps) {
           <div className="flex items-center justify-between">
             <FieldLabel htmlFor={id}>{t("transactions.endDateField.endDate")}</FieldLabel>
             {!field.value && (
-              <Badge variant="secondary">{t("transactions.endDateField.ongoing")}</Badge>
+              <Badge variant="meta">{t("transactions.endDateField.ongoing")}</Badge>
             )}
           </div>
           <DatePicker

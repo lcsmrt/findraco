@@ -106,6 +106,68 @@ export const ForecastAndPending: Story = {
   },
 };
 
+function badgeOf(element: HTMLElement) {
+  const badge = element.closest<HTMLElement>("[data-variant]");
+  if (!badge) throw new Error("the label is not inside a badge");
+  return badge;
+}
+
+// What the page paints for the card token; a badge tinted differently stands out from the surface.
+function cardBackground() {
+  const probe = document.createElement("div");
+  probe.style.backgroundColor = "var(--card)";
+  document.body.append(probe);
+  const { backgroundColor } = getComputedStyle(probe);
+  probe.remove();
+  return backgroundColor;
+}
+
+export const ForecastBadge: Story = {
+  args: {
+    transactions: [transaction(1, "Gym", "2026-10-20", { status: "FORECAST", requiresConfirmation: true })],
+  },
+  play: async ({ canvas }) => {
+    const badge = badgeOf(canvas.getByText("Forecast"));
+    await expect(badge).toHaveAttribute("data-variant", "status");
+    await expect(badge).toHaveAttribute("data-tone", "neutral");
+    await expect(badge.querySelector("svg")).not.toBeNull();
+    await expect(getComputedStyle(badge).borderTopWidth).toBe("0px");
+    await expect(getComputedStyle(badge).backgroundColor).not.toBe(cardBackground());
+  },
+};
+
+export const PendingBadge: Story = {
+  args: {
+    transactions: [transaction(1, "Rent", "2026-10-02", { status: "PENDING", requiresConfirmation: true })],
+  },
+  play: async ({ canvas }) => {
+    const badge = badgeOf(canvas.getByText("Pending"));
+    await expect(badge).toHaveAttribute("data-variant", "status");
+    await expect(badge).toHaveAttribute("data-tone", "warning");
+    await expect(badge.querySelector("svg")).not.toBeNull();
+  },
+};
+
+// The table's description cell renders the same row; this is the phone list's half of that claim.
+export const BadgeRow: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Gym", "2026-10-20", {
+        status: "FORECAST",
+        requiresConfirmation: true,
+        kind: "TRANSFER",
+        seriesId: "series-1",
+        items: [1, 2, 3].map((id) => ({ id, description: `Item ${id}`, amount: 10, quantity: 1 })),
+      }),
+    ],
+  },
+  play: async ({ canvas }) => {
+    const labels = ["Forecast", "Between members", "Series", "3 items"];
+    const positions = labels.map((label) => canvas.getByText(label).getBoundingClientRect().left);
+    await expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  },
+};
+
 // A tap on Confirm reaches the dialog without opening the edit drawer; a row the member may not
 // confirm shows no Confirm.
 export const Confirmable: Story = {

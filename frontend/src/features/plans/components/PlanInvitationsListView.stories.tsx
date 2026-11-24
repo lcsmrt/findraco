@@ -29,6 +29,25 @@ export const EveryStatus: Story = {
   },
 };
 
+// Each status is a badge of its own family: pending and expired neutral (only pending has a clock),
+// accepted success with a check, revoked destructive with an x.
+export const StatusBadges: Story = {
+  play: async ({ canvas }) => {
+    const statuses = [
+      { label: "Pending", tone: "neutral", icon: true },
+      { label: "Accepted", tone: "success", icon: true },
+      { label: "Expired", tone: "neutral", icon: false },
+      { label: "Revoked", tone: "destructive", icon: true },
+    ];
+    for (const { label, tone, icon } of statuses) {
+      const badge = canvas.getAllByText(label)[0].closest<HTMLElement>("[data-variant]");
+      await expect(badge).toHaveAttribute("data-variant", "status");
+      await expect(badge).toHaveAttribute("data-tone", tone);
+      await expect(badge?.querySelector("svg") !== null).toBe(icon);
+    }
+  },
+};
+
 export const Loading: Story = { args: { invitations: [], isLoading: true } };
 
 export const Empty: Story = {

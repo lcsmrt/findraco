@@ -4,20 +4,37 @@ import { Button } from "@/components/button/base/Button";
 import { Spinner } from "@/components/spinner/base/Spinner";
 import { Text } from "@/components/typography/base/Text";
 import { formatDateTime } from "@/utils/dates";
-import { Trash2Icon } from "lucide-react";
+import { CheckIcon, ClockIcon, Trash2Icon, XIcon, type LucideIcon } from "lucide-react";
 import { buildRoleLabels, buildStatusLabels } from "../utils/planLabels";
 import { invitationLabel } from "./invitationLabel";
 import { useTranslation } from "react-i18next";
 
-const STATUS_VARIANTS: Record<
+// An expired invitation is a fact, not an alarm, so it keeps the neutral tone and carries no icon.
+const STATUS_BADGES: Record<
   InvitationStatus,
-  "secondary" | "success" | "outline" | "destructive"
+  { tone: "neutral" | "success" | "destructive"; Icon?: LucideIcon }
 > = {
-  PENDING: "secondary",
-  ACCEPTED: "success",
-  EXPIRED: "outline",
-  REVOKED: "destructive",
+  PENDING: { tone: "neutral", Icon: ClockIcon },
+  ACCEPTED: { tone: "success", Icon: CheckIcon },
+  EXPIRED: { tone: "neutral" },
+  REVOKED: { tone: "destructive", Icon: XIcon },
 };
+
+type InvitationStatusBadgeProps = {
+  status: InvitationStatus;
+  label: string;
+};
+
+function InvitationStatusBadge({ status, label }: InvitationStatusBadgeProps) {
+  const { tone, Icon } = STATUS_BADGES[status];
+
+  return (
+    <Badge variant="status" tone={tone}>
+      {Icon && <Icon data-icon="inline-start" aria-hidden />}
+      {label}
+    </Badge>
+  );
+}
 
 type PlanInvitationsListViewProps = {
   invitations: Invitation[];
@@ -60,10 +77,11 @@ export function PlanInvitationsListView({
           <div className="flex flex-col gap-1">
             <Text variant="label">{invitationLabel(invitation)}</Text>
             <div className="flex flex-wrap items-center gap-1.5">
-              <Badge variant="outline">{roleLabels[invitation.role]}</Badge>
-              <Badge variant={STATUS_VARIANTS[invitation.status]}>
-                {statusLabels[invitation.status]}
-              </Badge>
+              <Badge variant="meta">{roleLabels[invitation.role]}</Badge>
+              <InvitationStatusBadge
+                status={invitation.status}
+                label={statusLabels[invitation.status]}
+              />
               {invitation.expiresAt && (
                 <Text variant="caption">
                   {t("plans.planInvitationsListView.expiresOn", {

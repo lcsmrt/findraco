@@ -15,10 +15,11 @@ import { datePlaceholder, formatDate, parseDate, toIsoDate } from "@/utils/dates
 import { getFirstAndLastInitials } from "@/utils/string/formatters";
 import { maskDate } from "@/utils/string/masks";
 import { isValid } from "date-fns";
-import { CheckIcon, CopyIcon, PencilIcon, RepeatIcon, Trash2Icon, UsersIcon } from "lucide-react";
+import { CheckIcon, CopyIcon, PencilIcon, Trash2Icon, UsersIcon } from "lucide-react";
 import { useState } from "react";
-import { categoryTypeFor, isNeutralKind, KIND_LABEL_KEYS } from "../utils/movementKind";
+import { categoryTypeFor, isNeutralKind } from "../utils/movementKind";
 import { CategoryCombobox } from "./CategoryCombobox";
+import { TransactionBadges } from "./TransactionBadges";
 import type { InlineSaveBody } from "./transactionColumns";
 import { useTranslation } from "react-i18next";
 
@@ -144,7 +145,7 @@ export function EditableCategoryCell({ transaction, onSave }: EditableCellProps)
   }
 
   const display = category ? (
-    <Badge variant="outline">{category.description}</Badge>
+    <Badge variant="tag">{category.description}</Badge>
   ) : (
     <Text variant="caption" className="text-muted-foreground/50">
       —
@@ -254,7 +255,7 @@ function ParticipantsSummary({ participants }: { participants: ParticipantShare[
   }
 
   return (
-    <Badge variant="secondary" className="gap-1" title={participants.map((p) => p.name).join(", ")}>
+    <Badge variant="meta" className="gap-1" title={participants.map((p) => p.name).join(", ")}>
       <UsersIcon className="h-3 w-3" />
       {t("transactions.transactionCells.people", { count: participants.length })}
     </Badge>
@@ -334,58 +335,13 @@ function EditableParticipantsCell({
   );
 }
 
-type TransactionStatusBadgeProps = {
-  status: Transaction["status"];
-};
-
-/** An actual row carries no badge: only what has not happened yet, or is overdue, is marked. */
-export function TransactionStatusBadge({ status }: TransactionStatusBadgeProps) {
-  const { t } = useTranslation();
-
-  if (status === "ACTUAL") return null;
-  if (status === "PENDING") {
-    return (
-      <Badge variant="outline" className="border-warning/30 bg-warning/10 text-warning">
-        {t("transactions.transactionStatusBadge.pending")}
-      </Badge>
-    );
-  }
-  return <Badge variant="outline">{t("transactions.transactionStatusBadge.forecast")}</Badge>;
-}
-
-type TransactionKindBadgeProps = {
-  kind: Transaction["kind"];
-};
-
-/** Names a row that counts as something other than income or expense; a normal row has none. */
-export function TransactionKindBadge({ kind }: TransactionKindBadgeProps) {
-  const { t } = useTranslation();
-
-  if (!kind) return null;
-  return <Badge variant="secondary">{t(KIND_LABEL_KEYS[kind])}</Badge>;
-}
-
-/** The marker of a transaction that belongs to a series; the table and the phone list share it. */
-export function SeriesBadge() {
-  const { t } = useTranslation();
-
-  return (
-    <Badge variant="secondary" className="gap-1">
-      <RepeatIcon />
-      {t("transactions.descriptionCell.series")}
-    </Badge>
-  );
-}
-
 type DescriptionCellProps = EditableCellProps;
 
 export function DescriptionCell({ transaction, onSave }: DescriptionCellProps) {
   return (
     <div className="flex items-center gap-1.5">
       <EditableDescriptionCell transaction={transaction} onSave={onSave} />
-      {transaction.seriesId && <SeriesBadge />}
-      <TransactionKindBadge kind={transaction.kind} />
-      <TransactionStatusBadge status={transaction.status} />
+      <TransactionBadges transaction={transaction} />
     </div>
   );
 }

@@ -104,9 +104,9 @@ export function PlansPageView({
                   {isActive && <CheckIcon className="text-primary-ink h-4 w-4" />}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="secondary">{roleLabels[plan.myRole]}</Badge>
+                  <Badge variant="meta">{roleLabels[plan.myRole]}</Badge>
                   {plan.isDefault && (
-                    <Badge variant="outline">{t("plans.plansPageView.default")}</Badge>
+                    <Badge variant="meta">{t("plans.plansPageView.default")}</Badge>
                   )}
                 </div>
               </button>

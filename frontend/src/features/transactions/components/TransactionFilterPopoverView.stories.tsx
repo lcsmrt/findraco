@@ -51,6 +51,14 @@ export const ActiveFilters: Story = {
   },
 };
 
+// The count of active filters is a quiet fact about the button, not a state.
+export const MetaBadges: Story = {
+  args: ActiveFilters.args,
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("4").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+  },
+};
+
 export const OpenSharedPlan: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: "Filters" }));
