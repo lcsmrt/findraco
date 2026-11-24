@@ -114,7 +114,7 @@ Proof: run walkfix | ✓ src/components/table/TablePagination.stories.tsx > Fits
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** build worker (Sonnet), all slices, at `19eca0b4`, returned (C1-C16 at `f394140f`); walk worker (Sonnet) at `d03ad4db`, returned; Verifier (Opus) at the walk-fix commit
-- **Boundary:** C1-C16 closed at `f394140f`; C18-C19 at the walk-fix commit
+- **Dispatched:** build worker (Sonnet), all slices, at `19eca0b4`, returned (C1-C16 at `f394140f`); walk worker (Sonnet) at `d03ad4db`, returned; Verifier (Opus) at `9396519e`
+- **Boundary:** C1-C16 closed at `f394140f`; C18-C19 at `9396519e`
 - **Abandoned:** none
 - **Walked:** none - C17 needs the local stack (backend and database), which the build worker did not start
