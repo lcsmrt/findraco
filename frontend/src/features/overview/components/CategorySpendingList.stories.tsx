@@ -1,7 +1,7 @@
 import type { CategorySpending, CategorySpendingMember, UsageStatus } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, waitFor } from "storybook/test";
 import { CategorySpendingList } from "./CategorySpendingList";
 import { buildSpendingRows, type SelectedMember } from "../utils/spendingRows";
 
@@ -127,6 +127,19 @@ export const MetaBadges: Story = {
       badge.textContent?.includes("Livia"),
     );
     await expect(owner).toHaveAttribute("data-variant", "meta");
+  },
+};
+
+// The Food row folds its subcategories, so it is a button; Tab reaches it and it draws the ring.
+export const RowFocus: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.tab();
+    const row = canvas.getByRole("button", { name: /Food/ });
+    await expect(row).toHaveFocus();
+    await waitFor(() => {
+      const { boxShadow, outlineColor } = getComputedStyle(row);
+      return expect(`${boxShadow} ${outlineColor}`).toContain("rgb(161, 74, 7)");
+    });
   },
 };
 

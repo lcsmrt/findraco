@@ -36,7 +36,7 @@ function TransactionMobileRow({ transaction, onEdit, onConfirm }: TransactionMob
         type="button"
         disabled={!transaction.permissions.edit}
         onClick={() => onEdit(transaction)}
-        className="active:bg-muted/60 flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
+        className="active:bg-muted/60 focus-visible:ring-ring flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-inset"
       >
         <span className="flex min-w-0 flex-col gap-0.5">
           <span className="flex items-center gap-1.5">

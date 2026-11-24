@@ -1,6 +1,6 @@
 import type { Transaction } from "@/api/dtos/transaction";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, within } from "storybook/test";
+import { expect, fn, waitFor, within } from "storybook/test";
 import { TransactionMobileList } from "./TransactionMobileList";
 
 function transaction(
@@ -165,6 +165,20 @@ export const BadgeRow: Story = {
     const labels = ["Forecast", "Between members", "Series", "3 items"];
     const positions = labels.map((label) => canvas.getByText(label).getBoundingClientRect().left);
     await expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  },
+};
+
+// A row is a button, so Tab reaches it and it draws the ring on keyboard focus.
+export const RowFocus: Story = {
+  args: { transactions: [transaction(1, "Groceries", "2026-10-14"), transaction(2, "Salary", "2026-10-14")] },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.tab();
+    const row = canvas.getByRole("button", { name: /Groceries/ });
+    await expect(row).toHaveFocus();
+    await waitFor(() => {
+      const { boxShadow, outlineColor } = getComputedStyle(row);
+      return expect(`${boxShadow} ${outlineColor}`).toContain("rgb(161, 74, 7)");
+    });
   },
 };
 

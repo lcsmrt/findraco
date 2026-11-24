@@ -3,7 +3,7 @@ import type { PlanMember } from "@/api/dtos/plan";
 import { Button } from "@/components/button/base/Button";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SlidersHorizontalIcon } from "lucide-react";
-import { expect, fn, within } from "storybook/test";
+import { expect, fn, waitFor, within } from "storybook/test";
 import PeriodNavigatorMeta from "@/components/periodNavigator/PeriodNavigator.stories";
 import { buildTransactionColumns } from "./components/transactionColumns";
 import { TransactionsPageView } from "./TransactionsPageView";
@@ -151,6 +151,24 @@ export const Empty: Story = {
     // The mobile list and the table both hold the message; CSS shows one per breakpoint.
     const visible = canvas.getAllByText("No transactions found.").find((element) => element.checkVisibility());
     await expect(visible).toBeVisible();
+  },
+};
+
+// Keyboard focus is a solid ring in the ring token, on a field and on a button alike.
+export const FocusRing: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const search = canvas.getByRole("textbox", { name: "Search transactions" });
+    const importButton = canvas.getByRole("button", { name: "Import CSV" });
+    for (const target of [search, importButton]) {
+      for (let presses = 0; presses < 20 && document.activeElement !== target; presses += 1) {
+        await userEvent.tab();
+      }
+      await expect(target).toHaveFocus();
+      // The field draws its ring on the group around it, a button on itself.
+      const ringed = target.closest("[data-slot=input-group]") ?? target;
+      // Buttons ease their shadow in, so the ring is read once the transition has settled.
+      await waitFor(() => expect(getComputedStyle(ringed).boxShadow).toContain("rgb(161, 74, 7)"));
+    }
   },
 };
 

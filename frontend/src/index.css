@@ -78,8 +78,9 @@
   --warning: #92400e;
   --warning-foreground: #fffbeb;
   --border: #e0dbcf;
-  --input: #d6d0c2;
-  --ring: #f59e0b;
+  /* Field borders and focus rings are UI components: WCAG 1.4.11 asks 3:1 against card and background. */
+  --input: #8a8578;
+  --ring: #a14a07;
   /* Member identity colours (UX-04 AC 2): distinct hues, none amber/red so they never read as a status. */
   --member-1: #2a78d6;
   --member-2: #e87ba4;
@@ -132,7 +133,7 @@
   --warning: #fbbf24;
   --warning-foreground: #1f1405;
   --border: #42413c;
-  --input: #4a4943;
+  --input: #807e74;
   --ring: #f59e0b;
   --member-1: #3987e5;
   --member-2: #d55181;
@@ -157,7 +158,7 @@
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border outline-ring;
   }
   body {
     @apply bg-background text-foreground;
@@ -169,7 +170,19 @@ input:-webkit-autofill:hover,
 input:-webkit-autofill:focus,
 input:-webkit-autofill:active {
   -webkit-background-clip: text;
-  box-shadow: 0 0 0 1000px var(--color-input) inset;
+  box-shadow: 0 0 0 1000px var(--color-muted) inset;
   -webkit-text-fill-color: var(--color-foreground);
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* The OS asks for less motion: every animation and transition collapses to an instant change. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

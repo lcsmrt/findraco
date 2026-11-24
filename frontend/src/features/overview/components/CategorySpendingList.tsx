@@ -290,7 +290,7 @@ function RootRow({ row, expanded, onToggle }: RootRowProps) {
           type="button"
           aria-expanded={expanded}
           onClick={onToggle}
-          className="hover:bg-muted/60 focus-visible:ring-ring/50 -mx-2 flex flex-col gap-2 rounded-lg px-2 py-1.5 text-left transition-colors outline-none focus-visible:ring-[3px]"
+          className="hover:bg-muted/60 focus-visible:ring-ring -mx-2 flex flex-col gap-2 rounded-lg px-2 py-1.5 text-left transition-colors outline-none focus-visible:ring-3"
         >
           {body}
         </button>

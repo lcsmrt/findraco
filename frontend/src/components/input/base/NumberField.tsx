@@ -40,7 +40,7 @@ export function NumberField({
       <NumberFieldPrimitive.Group
         className={cn(
           "border-input dark:bg-input/30 flex h-9 w-full min-w-0 items-center overflow-hidden rounded-md border bg-transparent shadow-xs transition-[color,box-shadow]",
-          "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-ring/50 has-[input:focus-visible]:ring-[3px]",
+          "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-ring has-[input:focus-visible]:ring-[3px]",
           "has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40",
           "data-disabled:opacity-50",
         )}
