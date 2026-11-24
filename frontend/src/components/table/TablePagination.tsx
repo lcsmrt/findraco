@@ -87,7 +87,7 @@ export function TablePagination({
         <div className="flex items-center gap-2">
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-sm"
             onClick={() => onPageChange(0)}
             aria-label={t("components.tablePagination.firstPage")}
             disabled={first}
@@ -96,7 +96,7 @@ export function TablePagination({
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-sm"
             onClick={() => onPageChange(Math.max(0, page - 1))}
             aria-label={t("components.tablePagination.previousPage")}
             disabled={first}
@@ -108,7 +108,7 @@ export function TablePagination({
           </Text>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-sm"
             onClick={() => onPageChange(Math.min(totalPages - 1, page + 1))}
             aria-label={t("components.tablePagination.nextPage")}
             disabled={last}
@@ -117,7 +117,7 @@ export function TablePagination({
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon-sm"
             onClick={() => onPageChange(totalPages - 1)}
             aria-label={t("components.tablePagination.lastPage")}
             disabled={last}

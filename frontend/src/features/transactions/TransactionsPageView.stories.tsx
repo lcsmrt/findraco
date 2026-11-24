@@ -216,6 +216,23 @@ export const TouchTargets: Story = {
   },
 };
 
+// An icon-only button is as wide as it is tall: the import and review buttons hide their label on a phone.
+export const IconButtonTargets: Story = {
+  args: { onReview: fn() },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const names = ["Import CSV", "Review movements", "First page", "Previous page", "Next page", "Last page"];
+    const buttons = names.flatMap((name) => visible(canvas.getAllByRole("button", { name })));
+    await expect(buttons).toHaveLength(names.length);
+    await waitFor(() => {
+      for (const button of buttons) {
+        const { width, height } = button.getBoundingClientRect();
+        expect([width, height]).toEqual([44, 44]);
+      }
+    });
+  },
+};
+
 // From 640 px up the sizes are the desktop ones: 36 px default, 28 px small, 32 px icon.
 export const DesktopSizes: Story = {
   play: async ({ canvas }) => {
