@@ -3,9 +3,10 @@
 Build: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true; cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/utils/percent.test.ts src/app/layout/MainLayout.test.tsx
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/transactions/components/TransactionBadges.stories.tsx src/features/transactions/components/EndDateField.stories.tsx src/features/transactions/components/TransactionFilterPopoverView.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/plans/PlansPageView.stories.tsx src/features/plans/components/PlanTrashListView.stories.tsx src/features/plans/components/PlanInvitationsListView.stories.tsx src/features/overview/OverviewPageView.stories.tsx src/features/overview/components/CategorySpendingList.stories.tsx src/features/categories/CategoriesPageView.stories.tsx src/features/categories/components/CategoryTreeRow.stories.tsx src/features/categories/components/CategoryLimitFields.stories.tsx src/components/input/StandardMultiCombobox.stories.tsx src/components/input/StandardCombobox.stories.tsx src/app/layout/MainLayoutView.stories.tsx
+Run walkfix: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/app/layout/NavbarView.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/transactions/components/TransactionFilterPopoverView.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/plans/PlansPageView.stories.tsx
 Plan: `.specs/features/phase2-foundations/plan.md`
 
-39 checks in 6 slices · 3 one-way doors · 0 open, of which 0 block
+44 checks in 6 slices · 3 one-way doors · 0 open, of which 0 block
 
 Story rules for every check below:
 - The storybook project runs at a 1200 × 900 browser viewport (measured mid-build; the 414 × 896 first written here was wrong). Every check about a width sets the viewport inside its story (`page.viewport` from `vitest/browser`): 414 px for the phone checks, 1280 or 1440 px for the desktop ones.
@@ -152,6 +153,23 @@ Proof: run stories | ✓ src/features/categories/components/CategoryLimitFields.
 **C39** - The local stack at 390 × 844 and 1280 × 800 shows the new badges, the focus ring, 44 px phone controls, the page titles and shared edges, with nothing clipped or overflowing; a pt-BR sign-up gets "Meu plano" (AC 1, 9, 13, 16, 17, 20)
 Proof: walk - Overview, Transactions, Categories and Plans at both widths, plus a sign-up with a pt-BR browser
 
+### Appended after the walk
+
+**C40** - The navbar avatar menu trigger draws the ring (rgb(161, 74, 7)) when focused with the keyboard, and measures 44 × 44 at 414 px (AC 9, AC 13; the walk found no ring and 40 × 40)
+Proof: run walkfix | ✓ src/app/layout/NavbarView.stories.tsx > Avatar Focus And Size
+
+**C41** - At 414 px, the transactions page's import and review icon buttons and the four pagination arrows each measure 44 × 44 (AC 13; the walk found 38 × 44 and 36 × 44)
+Proof: run walkfix | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Icon Button Targets
+
+**C42** - At 414 px, the filter popover's "Neutral" checkbox row (box and label) is a target 44 px tall that toggles the checkbox when tapped on its label (AC 14; the walk found a 19 px row)
+Proof: run walkfix | ✓ src/features/transactions/components/TransactionFilterPopoverView.stories.tsx > Checkbox Target
+
+**C43** - At 414 px, a phone list row whose description is "Internet" and which carries a pending and a series badge shows "Internet" whole, not truncated: the badges wrap below the title when they do not fit (AC 5; the walk found "Inter…")
+Proof: run walkfix | ✓ src/features/transactions/components/TransactionMobileList.stories.tsx > Title Not Squeezed
+
+**C44** - At 414 px, the plan members card header shows "Members of My plan" on one line, its edit, transfer, archive and invite actions each 44 px tall and at least 12 px inside the card's right edge (AC 13; the walk found the title on three lines and "Convidar" 4 px from the edge)
+Proof: run walkfix | ✓ src/features/plans/PlansPageView.stories.tsx > Members Header Phone
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -188,7 +206,7 @@ Proof: walk - Overview, Transactions, Categories and Plans at both widths, plus 
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from `8619b2cc`, returned (C1-C33, C37-C38 at `b9ea759f`); backend build worker (Sonnet), S5, at `b3d5e909`
+- **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from `8619b2cc`, returned (C1-C33, C37-C38 at `b9ea759f`); backend build worker (Sonnet), S5, at `d1e307da`, returned (C34-C36 at `587e22e7`); walk worker (Sonnet) at `770be630`, returned; walk-fix worker (Sonnet) at the appended-checks commit
 - **Boundary:** C1-C33, C37-C38 closed at `b9ea759f`; C34-C36 closed at `587e22e7`
 - **Abandoned:** none
-- **Walked:** none yet
+- **Walked:** C39 on the local stack at `770be630` (walk Postgres on 5434, db `walk`; backend `spring-boot:run` profile local on 3000; `pnpm dev` on 5173), Playwright pt-BR at 390x844, 1280x800 and 1440x900. Transações: h1 "Transações"; row badges in order status, kind, series, items: "Previsto" status neutral with clock (text 9.4:1), "Pendente" warning with triangle, "Série" meta with icon, "3 itens" and "Entre membros" meta; category an outline tag in the table; at 390 "Internet" truncated to "Inter…" beside two badges (C43). Focus: solid ring rgb(161,74,7) on tabs, buttons, search, select, filter button and the first phone row; none on the avatar trigger (C40). Touch at 390: everything 44 except the avatar 40x40, import/review icon buttons 38x44, pagination arrows 36x44 (C41), the "Neutros" checkbox row 19 px (C42); at 1280 unchanged (36/28/32). Form at 390 from the global + on Categorias: fields 44 px, border rgb(138,133,120) about 3.55:1. Width at 1440: content 80-1360 on all four pages. Categorias: outline "Nova categoria" in the header; global + filled and opens "Nova transação" at 390 and 1280. Planos: outline "Novo plano"; invitations Pendente neutral+clock, Aceito success+check, Revogado destructive+x, Expirado neutral; at 390 "Membros de My plan" on three lines, "Convidar" 4 px from the card edge (C44). Sign-up pt-BR with Europe/Lisbon: "Meu plano", zone Europe/Lisbon; en-US: "My plan"; no headers: America/Sao_Paulo. Users reach these from the Visão geral, Transações, Categorias and Planos tabs and the sign-up page.
