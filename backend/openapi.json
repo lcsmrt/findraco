@@ -6136,6 +6136,21 @@
     "/api/findraco/user" : {
       "post" : {
         "operationId" : "createUser",
+        "parameters" : [ {
+          "in" : "header",
+          "name" : "Time-Zone",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "in" : "header",
+          "name" : "Accept-Language",
+          "required" : false,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
         "requestBody" : {
           "content" : {
             "application/json" : {
@@ -6209,7 +6224,7 @@
           }
         },
         "security" : [ ],
-        "summary" : "Creates a new user",
+        "summary" : "Creates a new user; a valid Time-Zone header sets their zone and the Accept-Language header names their first plan",
         "tags" : [ "Users" ]
       },
       "put" : {
