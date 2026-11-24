@@ -350,6 +350,42 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: AC 17 / C25 (backend/series)
 - last seen: 2026-11-23T17:15:53Z
 
+### L-057 - A display criterion over numbers names zero as an example: a truthiness guard like {value && ...} hides a 0 figure while every non-zero test stays green.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/display` · harmful: 0
+- features: money-display
+- evidence: verification.md finding 1 / C26 (frontend/display)
+- last seen: 2026-11-24T01:03:12Z
+
+### L-058 - Colour or any rule keyed on a displayed value derives from the same rounding as the formatter that shows it, never a second rounding (toCents rounds half toward +inf, Intl away from zero).
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/money` · harmful: 0
+- features: money-display
+- evidence: verification.md finding 2 / C27 (frontend/money)
+- last seen: 2026-11-24T01:03:12Z
+
+### L-059 - A lint guard over a call in JSX is tested through ternary, logical and template-literal children too; a selector proven only on the bare call misses the common wrapped forms.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/lint` · harmful: 0
+- features: money-display
+- evidence: verification.md finding 3 / C28 (frontend/lint)
+- last seen: 2026-11-24T01:03:12Z
+
+### L-060 - A negative lone proof (absence of a string) must also prove the tool ran; prefer the repo's own config test that asserts an empty message list after a real lint.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `specs/checks` · harmful: 0
+- features: money-display
+- evidence: verification.md finding 4 / C29 (specs/checks)
+- last seen: 2026-11-24T01:03:12Z
+
+### L-061 - New and edited frontend test names cite the AC they prove, e.g. (money-display AC 1); prescribe the suffix in the check's proof line so the worker writes it.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/tests` · harmful: 0
+- features: money-display
+- evidence: verification.md finding 5 / C1 (frontend/tests)
+- last seen: 2026-11-24T01:03:12Z
+
+### L-062 - Any eslint.config.js behaviour change ships a valid and an invalid case in eslint.config.test.ts in the same commit, including rules turned off for a file glob.
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `frontend/lint` · harmful: 0
+- features: money-display
+- evidence: verification.md finding 6 / C30 (frontend/lint)
+- last seen: 2026-11-24T01:03:12Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

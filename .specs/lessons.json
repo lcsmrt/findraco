@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 57,
+  "next_id": 63,
   "lessons": [
     {
       "id": "L-001",
@@ -1012,6 +1012,114 @@
       ],
       "created": "2026-11-23T17:15:53Z",
       "last_seen": "2026-11-23T17:15:53Z"
+    },
+    {
+      "id": "L-057",
+      "key": "ac_gap::a display criterion over numbers names zero as an example a truthiness guard like value hides a 0 figure while every non zero test stays green",
+      "text": "A display criterion over numbers names zero as an example: a truthiness guard like {value && ...} hides a 0 figure while every non-zero test stays green.",
+      "signal": "ac_gap",
+      "scope": "frontend/display",
+      "status": "candidate",
+      "features": [
+        "money-display"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 1 / C26 (frontend/display)"
+      ],
+      "created": "2026-11-24T01:03:12Z",
+      "last_seen": "2026-11-24T01:03:12Z"
+    },
+    {
+      "id": "L-058",
+      "key": "ac_gap::colour or any rule keyed on a displayed value derives from the same rounding as the formatter that shows it never a second rounding tocents rounds half toward inf intl away from zero",
+      "text": "Colour or any rule keyed on a displayed value derives from the same rounding as the formatter that shows it, never a second rounding (toCents rounds half toward +inf, Intl away from zero).",
+      "signal": "ac_gap",
+      "scope": "frontend/money",
+      "status": "candidate",
+      "features": [
+        "money-display"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 2 / C27 (frontend/money)"
+      ],
+      "created": "2026-11-24T01:03:12Z",
+      "last_seen": "2026-11-24T01:03:12Z"
+    },
+    {
+      "id": "L-059",
+      "key": "weak_test::a lint guard over a call in jsx is tested through ternary logical and template literal children too a selector proven only on the bare call misses the common wrapped forms",
+      "text": "A lint guard over a call in JSX is tested through ternary, logical and template-literal children too; a selector proven only on the bare call misses the common wrapped forms.",
+      "signal": "weak_test",
+      "scope": "frontend/lint",
+      "status": "candidate",
+      "features": [
+        "money-display"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 3 / C28 (frontend/lint)"
+      ],
+      "created": "2026-11-24T01:03:12Z",
+      "last_seen": "2026-11-24T01:03:12Z"
+    },
+    {
+      "id": "L-060",
+      "key": "weak_test::a negative lone proof absence of a string must also prove the tool ran prefer the repo s own config test that asserts an empty message list after a real lint",
+      "text": "A negative lone proof (absence of a string) must also prove the tool ran; prefer the repo's own config test that asserts an empty message list after a real lint.",
+      "signal": "weak_test",
+      "scope": "specs/checks",
+      "status": "candidate",
+      "features": [
+        "money-display"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 4 / C29 (specs/checks)"
+      ],
+      "created": "2026-11-24T01:03:12Z",
+      "last_seen": "2026-11-24T01:03:12Z"
+    },
+    {
+      "id": "L-061",
+      "key": "weak_test::new and edited frontend test names cite the ac they prove e g money display ac 1 prescribe the suffix in the check s proof line so the worker writes it",
+      "text": "New and edited frontend test names cite the AC they prove, e.g. (money-display AC 1); prescribe the suffix in the check's proof line so the worker writes it.",
+      "signal": "weak_test",
+      "scope": "frontend/tests",
+      "status": "candidate",
+      "features": [
+        "money-display"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 5 / C1 (frontend/tests)"
+      ],
+      "created": "2026-11-24T01:03:12Z",
+      "last_seen": "2026-11-24T01:03:12Z"
+    },
+    {
+      "id": "L-062",
+      "key": "spec_deviation::any eslint config js behaviour change ships a valid and an invalid case in eslint config test ts in the same commit including rules turned off for a file glob",
+      "text": "Any eslint.config.js behaviour change ships a valid and an invalid case in eslint.config.test.ts in the same commit, including rules turned off for a file glob.",
+      "signal": "spec_deviation",
+      "scope": "frontend/lint",
+      "status": "candidate",
+      "features": [
+        "money-display"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "verification.md finding 6 / C30 (frontend/lint)"
+      ],
+      "created": "2026-11-24T01:03:12Z",
+      "last_seen": "2026-11-24T01:03:12Z"
     }
   ]
 }

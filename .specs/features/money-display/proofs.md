@@ -1,9 +1,9 @@
 # money-display proofs
 
-**HEAD**: e0c03d26
+**HEAD**: 27f037b3
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 28 pass, 0 fail
+**Result**: 42 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -32,6 +32,20 @@
 | C21 | `cd frontend && out=$(printf 'import { useTranslation } from "react-i18next";\nimport { formatMoney } from "@/u` | pass |
 | C22 | `cd frontend && ! grep -rnE "font-mono/jetbrains-mono/function Amount\b" src package.json && test ! -e src/comp` | pass |
 | C23 | `walk - open Overview, Transactions and Categories at those widths on the local stack` | pass (Walked) |
+| C24 | `run stories / ✓ src/features/overview/components/MonthlyTrendChart.stories.tsx > Tooltip Spacing` | pass |
+| C25 | `run stories / ✓ src/features/transactions/TransactionsPageView.stories.tsx > Amount Header Label Aligned` | pass |
+| C26 | `run stories / ✓ src/features/overview/components/MonthlyTrendChart.stories.tsx > Tooltip Zero` | pass |
+| C27 | `run stories / ✓ src/components/money/Money.stories.tsx > Half Cent Tone` | pass |
+| C27 | `run critical / ✓ src/utils/money.test.ts > formatMoney > says -0.005 shows as negative: true` | pass |
+| C27 | `run critical / ✓ src/utils/money.test.ts > formatMoney > says -0.004 shows as negative: false` | pass |
+| C28 | `run tooling / ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child thro` | pass |
+| C28 | `run tooling / ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child thro` | pass |
+| C28 | `run tooling / ✓ eslint.config.test.ts > money through Money > reports formatMoney rendered as a JSX child thro` | pass |
+| C29 | `run tooling / ✓ eslint.config.test.ts > money through Money > allows formatMoney in <span>{t("key", { amount: ` | pass |
+| C29 | `run tooling / ✓ eslint.config.test.ts > money through Money > allows formatMoney in <span>{true ? t("key", { a` | pass |
+| C29 | `run tooling / ✓ eslint.config.test.ts > money through Money > allows formatMoney in <input value={formatMoney(` | pass |
+| C30 | `run tooling / ✓ eslint.config.test.ts > code style > allows an augmentation to repeat a library's unused type ` | pass |
+| C30 | `run tooling / ✓ eslint.config.test.ts > code style > reports an unused type parameter outside a *.d.ts` | pass |
 | Build | `cd frontend && pnpm lint` | pass |
 | Build | `cd frontend && pnpm build` | pass |
 | Build | `cd frontend && node scripts/check-siblings.ts` | pass |
@@ -51,9 +65,9 @@
  ✓ |critical| src/utils/money.test.ts > toCents > converts 0 reais to 0 cents (STD-06 AC 6) 0ms
 
  Test Files  1 passed (1)
-      Tests  18 passed (18)
-   Start at  21:43:53
-   Duration  748ms (transform 77ms, setup 131ms, collect 28ms, tests 6ms, environment 384ms, prepare 53ms)
+      Tests  23 passed (23)
+   Start at  22:02:21
+   Duration  769ms (transform 72ms, setup 112ms, collect 33ms, tests 8ms, environment 402ms, prepare 54ms)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
@@ -61,12 +75,12 @@ No story files found for the specified pattern: src/**/*.mdx
 `Run stories` - exit 0
 
 ```
- ✓ |storybook (chromium)| src/features/transactions/components/ItemsField.stories.tsx > Over Allocated 38ms
+ ✓ |storybook (chromium)| src/features/transactions/components/NeutralReviewListView.stories.tsx > Newest Only 47ms
 
  Test Files  12 passed (12)
-      Tests  77 passed (77)
-   Start at  21:43:56
-   Duration  5.50s (transform 0ms, setup 4.04s, collect 3.95s, tests 10.19s, environment 0ms, prepare 53.78s)
+      Tests  81 passed (81)
+   Start at  22:02:24
+   Duration  6.07s (transform 0ms, setup 4.07s, collect 4.52s, tests 11.93s, environment 0ms, prepare 56.89s)
 
 No story files found for the specified pattern: src/**/*.mdx
 stderr | src/features/transactions/components/TransactionCells.stories.tsx > Edit Description
@@ -76,6 +90,26 @@ await act(() => ...)
 stderr | src/features/transactions/components/TransactionCells.stories.tsx > Edit Participants
 You are using Testing Library's `screen` object. Use `within(canvasElement)` instead.
 More info: https://storybook.js.org/docs/writing-tests/interaction-testing?ref=error
+```
+
+`Run tooling` - exit 0
+
+```
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > money through Money > allows formatMoney in <span>{t("key", { amount: formatMoney(1) })}</span> (money-display AC 15) 3ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > money through Money > allows formatMoney in <span>{true ? t("key", { amount: formatMoney(1) }) : null}</span> (money-display AC 15) 3ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > money through Money > allows formatMoney in <input value={formatMoney(1)} readOnly /> (money-display AC 15) 2ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > interface texts > reports literal interface texts in components 21ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > interface texts > leaves tests and stories to assert and render copy as it is 17ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > local rules > with 60 lines of logic before the return reports [] (STD-12 AC 3) 6ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > local rules > with 61 lines of logic before the return reports ["local/component-logic-cap"] (STD-12 AC 3) 5ms
+ ✓ |tooling| eslint.config.test.ts > eslint.config.js > local rules > reports an IIFE in a component's JSX (STD-12 AC 4) 2ms
+
+ Test Files  1 passed (1)
+      Tests  50 passed (50)
+   Start at  22:02:32
+   Duration  1.16s (transform 36ms, setup 0ms, collect 115ms, tests 813ms, environment 0ms, prepare 50ms)
+
+No story files found for the specified pattern: src/**/*.mdx
 ```
 
 `cd frontend && node -e "import('./src/components/typography/base/typographyVariants.ts').then(({ typographyVar` - exit 0
