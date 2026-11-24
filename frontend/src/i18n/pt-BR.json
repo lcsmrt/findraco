@@ -290,12 +290,10 @@
     "periodNavigator": {
       "chooseAPeriod": "Escolha um período",
       "choosePeriod": "Escolher período, {{period}}",
-      "custom": "Personalizado…",
       "last3Months": "Últimos 3 meses",
       "last6Months": "Últimos 6 meses",
       "nextPeriod": "Próximo período",
       "previousPeriod": "Período anterior",
-      "range": "Intervalo",
       "thisMonth": "Este mês",
       "thisYear": "Este ano"
     },

@@ -1,24 +1,13 @@
 import { Button } from "@/components/button/base/Button";
 import { Calendar } from "@/components/calendar/base/Calendar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/dropdown/base/Dropdown";
 import { Popover, PopoverContent } from "@/components/popover/base/Popover";
+import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from "@/components/sheet/base/Drawer";
+import { Toggle } from "@/components/toggle/base/Toggle";
 import { Text } from "@/components/typography/base/Text";
+import { useIsNarrowScreen } from "@/hooks/useIsNarrowScreen";
 import { isSameDay, parseISO } from "date-fns";
 import { dayPickerLocale, toIsoDate } from "@/utils/dates";
-import {
-  CalendarRangeIcon,
-  ChevronDownIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-} from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { useRef, useState } from "react";
 import type { DateRange } from "react-day-picker";
 import { PERIODS, periodLabel, shiftRange, type Period, type PeriodRange } from "@/utils/period";
@@ -54,10 +43,53 @@ function toCustom(range: PeriodRange): CustomRange {
   };
 }
 
+type PeriodPanelProps = {
+  period: Period;
+  isCustom: boolean;
+  draft: DateRange | undefined;
+  onPresetSelect: (period: Period) => void;
+  onRangeSelect: (range: DateRange | undefined) => void;
+};
+
+/** What the panel holds in both of its containers: the presets above the range calendar. */
+function PeriodPanel({ period, isCustom, draft, onPresetSelect, onRangeSelect }: PeriodPanelProps) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col gap-1 pb-2">
+      <div className="flex flex-wrap gap-1.5 px-3 pt-3">
+        {PERIODS.map((preset) => (
+          <Toggle
+            key={preset}
+            variant="chip"
+            pressed={!isCustom && period === preset}
+            // A preset is applied whether or not it is already the current one.
+            onPressedChange={() => onPresetSelect(preset)}
+          >
+            {t(PRESET_LABEL_KEYS[preset])}
+          </Toggle>
+        ))}
+      </div>
+      <Calendar
+        mode="range"
+        locale={dayPickerLocale()}
+        resetOnSelect
+        selected={draft}
+        defaultMonth={draft?.from}
+        captionLayout="dropdown"
+        numberOfMonths={1}
+        className="mx-auto max-sm:[--cell-size:--spacing(10)]"
+        autoFocus
+        onSelect={onRangeSelect}
+      />
+    </div>
+  );
+}
+
 /**
- * "‹ October 2026 ›" plus a Range menu. The arrows step the period by
- * its own length and report the range they land on; presets set the period.
- * The label opens the same range calendar as Custom…, so a custom range is one tap away.
+ * "‹ October 2026 ›". The arrows step the period by its own length and report the range they
+ * land on. The label opens one panel with the presets and the range calendar: a popover from `sm`,
+ * a bottom sheet on a phone. Below `sm` the control spans the content width so the row has no ragged end.
  */
 export function PeriodNavigator({
   range,
@@ -70,29 +102,46 @@ export function PeriodNavigator({
   const { t } = useTranslation();
 
   const anchorRef = useRef<HTMLDivElement>(null);
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
+  const isNarrow = useIsNarrowScreen();
 
   const label = periodLabel(range);
+  const title = t("components.periodNavigator.chooseAPeriod");
 
-  function openCalendar() {
+  function openPanel() {
     setDraft({ from: parseISO(range.startDate), to: parseISO(range.endDate) });
-    setIsCalendarOpen(true);
+    setIsOpen(true);
   }
 
-  function handleSelect(next: DateRange | undefined) {
+  function handlePresetSelect(next: Period) {
+    onPresetChange(next);
+    setIsOpen(false);
+  }
+
+  function handleRangeSelect(next: DateRange | undefined) {
     setDraft(next);
     if (next?.from && next.to && !isSameDay(next.from, next.to)) {
       onRangeChange({
         from: toIsoDate(next.from),
         to: toIsoDate(next.to),
       });
-      setIsCalendarOpen(false);
+      setIsOpen(false);
     }
   }
 
+  const panel = (
+    <PeriodPanel
+      period={period}
+      isCustom={isCustom}
+      draft={draft}
+      onPresetSelect={handlePresetSelect}
+      onRangeSelect={handleRangeSelect}
+    />
+  );
+
   return (
-    <div ref={anchorRef} className="flex items-center gap-1">
+    <div ref={anchorRef} className="flex w-full items-center gap-1 sm:w-fit">
       <Button
         variant="ghost"
         size="icon"
@@ -103,9 +152,9 @@ export function PeriodNavigator({
       </Button>
       <Button
         variant="ghost"
-        className="min-w-36 tabular-nums sm:min-w-40"
+        className="min-w-36 flex-1 tabular-nums sm:min-w-40 sm:flex-none"
         aria-label={t("components.periodNavigator.choosePeriod", { period: label })}
-        onClick={openCalendar}
+        onClick={openPanel}
       >
         <Text variant="title" aria-live="polite">
           {label}
@@ -120,57 +169,22 @@ export function PeriodNavigator({
         <ChevronRightIcon />
       </Button>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger
-          render={
-            <Button variant="outline" size="sm" className="ml-1 gap-1">
-              {t("components.periodNavigator.range")}
-              <ChevronDownIcon className="text-muted-foreground" />
-            </Button>
-          }
-        />
-        <DropdownMenuContent className="min-w-44" align="end">
-          <DropdownMenuRadioGroup
-            value={isCustom ? "" : period}
-            onValueChange={(value) => {
-              const preset = PERIODS.find((p) => p === value);
-              if (preset) onPresetChange(preset);
-            }}
-          >
-            {PERIODS.map((preset) => (
-              <DropdownMenuRadioItem key={preset} value={preset}>
-                {t(PRESET_LABEL_KEYS[preset])}
-              </DropdownMenuRadioItem>
-            ))}
-          </DropdownMenuRadioGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={openCalendar}>
-            <CalendarRangeIcon />
-            {t("components.periodNavigator.custom")}
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
-        <PopoverContent
-          className="w-auto p-0"
-          align="start"
-          anchor={anchorRef}
-          aria-label={t("components.periodNavigator.chooseAPeriod")}
-        >
-          <Calendar
-            mode="range"
-            locale={dayPickerLocale()}
-            resetOnSelect
-            selected={draft}
-            defaultMonth={draft?.from}
-            captionLayout="dropdown"
-            numberOfMonths={1}
-            autoFocus
-            onSelect={handleSelect}
-          />
-        </PopoverContent>
-      </Popover>
+      {isNarrow ? (
+        <Drawer open={isOpen} onOpenChange={setIsOpen}>
+          <DrawerContent>
+            <DrawerHeader>
+              <DrawerTitle>{title}</DrawerTitle>
+            </DrawerHeader>
+            {panel}
+          </DrawerContent>
+        </Drawer>
+      ) : (
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverContent className="w-auto p-0" align="start" anchor={anchorRef} aria-label={title}>
+            {panel}
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 }

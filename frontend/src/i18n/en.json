@@ -290,12 +290,10 @@
     "periodNavigator": {
       "chooseAPeriod": "Choose a period",
       "choosePeriod": "Choose period, {{period}}",
-      "custom": "Custom…",
       "last3Months": "Last 3 months",
       "last6Months": "Last 6 months",
       "nextPeriod": "Next period",
       "previousPeriod": "Previous period",
-      "range": "Range",
       "thisMonth": "This month",
       "thisYear": "This year"
     },
