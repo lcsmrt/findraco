@@ -189,6 +189,6 @@ Proof: walk - Overview, Transactions, Categories and Plans at both widths, plus 
 
 - **Settled mid-build:** none
 - **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from `8619b2cc`, returned (C1-C33, C37-C38 at `b9ea759f`); backend build worker (Sonnet), S5, at `b3d5e909`
-- **Boundary:** C1-C33, C37-C38 closed at `b9ea759f`
+- **Boundary:** C1-C33, C37-C38 closed at `b9ea759f`; C34-C36 closed at `587e22e7`
 - **Abandoned:** none
 - **Walked:** none yet
