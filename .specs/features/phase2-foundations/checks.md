@@ -4,9 +4,10 @@ Build: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dsk
 Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/utils/percent.test.ts src/app/layout/MainLayout.test.tsx
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/transactions/components/TransactionBadges.stories.tsx src/features/transactions/components/EndDateField.stories.tsx src/features/transactions/components/TransactionFilterPopoverView.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/plans/PlansPageView.stories.tsx src/features/plans/components/PlanTrashListView.stories.tsx src/features/plans/components/PlanInvitationsListView.stories.tsx src/features/overview/OverviewPageView.stories.tsx src/features/overview/components/CategorySpendingList.stories.tsx src/features/categories/CategoriesPageView.stories.tsx src/features/categories/components/CategoryTreeRow.stories.tsx src/features/categories/components/CategoryLimitFields.stories.tsx src/components/input/StandardMultiCombobox.stories.tsx src/components/input/StandardCombobox.stories.tsx src/app/layout/MainLayoutView.stories.tsx
 Run walkfix: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/app/layout/NavbarView.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/transactions/components/TransactionFilterPopoverView.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/plans/PlansPageView.stories.tsx
+Run verifyfix: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/plans/components/DeletePlanPermanentlyDialogView.stories.tsx src/components/input/CurrencyInput.stories.tsx src/features/overview/components/MemberFilterChips.stories.tsx
 Plan: `.specs/features/phase2-foundations/plan.md`
 
-44 checks in 6 slices · 3 one-way doors · 0 open, of which 0 block
+49 checks in 6 slices · 3 one-way doors · 0 open, of which 0 block
 
 Story rules for every check below:
 - The storybook project runs at a 1200 × 900 browser viewport (measured mid-build; the 414 × 896 first written here was wrong). Every check about a width sets the viewport inside its story (`page.viewport` from `vitest/browser`): 414 px for the phone checks, 1280 or 1440 px for the desktop ones.
@@ -170,6 +171,25 @@ Proof: run walkfix | ✓ src/features/transactions/components/TransactionMobileL
 **C44** - At 414 px, the plan members card header shows "Members of My plan" on one line, its edit, transfer, archive and invite actions each 44 px tall and at least 12 px inside the card's right edge (AC 13; the walk found the title on three lines and "Convidar" 4 px from the edge)
 Proof: run walkfix | ✓ src/features/plans/PlansPageView.stories.tsx > Members Header Phone
 
+### Appended after the Verifier
+
+**C45** - Focused with the keyboard, the destructive "delete permanently" button and a field marked invalid each draw a solid ring whose computed `box-shadow` contains rgb(161, 74, 7), with no partially transparent red ring (AC 9; finding 1)
+Proof: run verifyfix | ✓ src/features/plans/components/DeletePlanPermanentlyDialogView.stories.tsx > Focus Ring
+Proof: run verifyfix | ✓ src/components/input/CurrencyInput.stories.tsx > Invalid Focus Ring
+
+**C46** - No production file draws a ring at partial opacity: no `ring-ring/` and no `ring-destructive/` remain in `src` outside stories and tests (AC 9; finding 1)
+Proof: cd frontend && ! grep -rnE --include=*.ts --include=*.tsx 'ring-(ring|destructive)/' src | grep -v -E '\.stories\.|\.test\.'
+
+**C47** - In the dark theme, an empty currency field's placeholder text reaches 4.5:1 or more against the field's computed background (AC 11; finding 3)
+Proof: run verifyfix | ✓ src/components/input/CurrencyInput.stories.tsx > Dark Field Contrast
+
+**C48** - At 414 px, each member filter chip (`Toggle` chip) on the Overview measures 44 px tall (AC 14; finding 4)
+Proof: run verifyfix | ✓ src/features/overview/components/MemberFilterChips.stories.tsx > Touch Target
+
+**C49** - The status badges carry their own colour and icon: "Previsto" a `lucide-clock` icon, "Pendente" a `lucide-triangle-alert` icon with a computed text colour equal to `--warning`; invitations `ACCEPTED` `lucide-check` in `--success`, `REVOKED` `lucide-x` in `--destructive`, `PENDING` `lucide-clock` (AC 1, AC 2, AC 7; finding 5)
+Proof: run stories | ✓ src/features/transactions/components/TransactionCells.stories.tsx > Status Colours And Icons
+Proof: run stories | ✓ src/features/plans/components/PlanInvitationsListView.stories.tsx > Status Colours And Icons
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -180,7 +200,8 @@ Proof: run walkfix | ✓ src/features/plans/PlansPageView.stories.tsx > Members 
 | items examples, AC 4 (3) | 1 C7 · 3 C7 · 0 C7 | - |
 | dead tokens, AC 8 (3) | chart C18 · sidebar C18 · serif C18 | - |
 | themes × surfaces, AC 9 and AC 11 (8) | light and dark × ring and input × card and background, C19 table-driven over all 8 | - |
-| focusable rows, AC 10 (3) | phone transaction row C22 · category row C23 · category spending row C23 | - |
+| focusable rows, AC 10 (3) | phone transaction row C22 · category row C23 · category spending row C23 (box-shadow only, after finding 2) | - |
+| ring states, AC 9 (3) | default C21 · destructive C45 · invalid C45 C46 | - |
 | primitives, AC 13 and AC 14 (7) | `Button` C25 C26 C27 · icon `Button` C25 · `Toggle` chip C25 · `Toggle` C26 · `InputGroup` C25 · `NumberField` C26 · `Select` C27 · `Combobox` C27 C28 | - |
 | pages, AC 16 (4) | Overview C30 · Transactions C30 · Categories C30 · Plans C30 | - |
 | page creates, AC 18 (2) | "New category" C32 · "New plan" C32 | - |
@@ -206,7 +227,7 @@ Proof: run walkfix | ✓ src/features/plans/PlansPageView.stories.tsx > Members 
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from `8619b2cc`, returned (C1-C33, C37-C38 at `b9ea759f`); backend build worker (Sonnet), S5, at `d1e307da`, returned (C34-C36 at `587e22e7`); walk worker (Sonnet) at `770be630`, returned; walk-fix worker (Sonnet) at `3f600dd7`, returned (C40-C44 at `c3e95ab6`); Verifier (Opus) at the commit after this line
+- **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from `8619b2cc`, returned (C1-C33, C37-C38 at `b9ea759f`); backend build worker (Sonnet), S5, at `d1e307da`, returned (C34-C36 at `587e22e7`); walk worker (Sonnet) at `770be630`, returned; walk-fix worker (Sonnet) at `3f600dd7`, returned (C40-C44 at `c3e95ab6`); Verifier (Opus) at `1832920a`, returned (FAIL, 5 findings); verify-fix worker (Sonnet) at the next commit
 - **Boundary:** C1-C33, C37-C38 closed at `b9ea759f`; C34-C36 closed at `587e22e7`; C40-C44 closed at `c3e95ab6`
 - **Abandoned:** none
 - **Walked:** C39 on the local stack at `770be630` (walk Postgres on 5434, db `walk`; backend `spring-boot:run` profile local on 3000; `pnpm dev` on 5173), Playwright pt-BR at 390x844, 1280x800 and 1440x900. Transações: h1 "Transações"; row badges in order status, kind, series, items: "Previsto" status neutral with clock (text 9.4:1), "Pendente" warning with triangle, "Série" meta with icon, "3 itens" and "Entre membros" meta; category an outline tag in the table; at 390 "Internet" truncated to "Inter…" beside two badges (C43). Focus: solid ring rgb(161,74,7) on tabs, buttons, search, select, filter button and the first phone row; none on the avatar trigger (C40). Touch at 390: everything 44 except the avatar 40x40, import/review icon buttons 38x44, pagination arrows 36x44 (C41), the "Neutros" checkbox row 19 px (C42); at 1280 unchanged (36/28/32). Form at 390 from the global + on Categorias: fields 44 px, border rgb(138,133,120) about 3.55:1. Width at 1440: content 80-1360 on all four pages. Categorias: outline "Nova categoria" in the header; global + filled and opens "Nova transação" at 390 and 1280. Planos: outline "Novo plano"; invitations Pendente neutral+clock, Aceito success+check, Revogado destructive+x, Expirado neutral; at 390 "Membros de My plan" on three lines, "Convidar" 4 px from the card edge (C44). Sign-up pt-BR with Europe/Lisbon: "Meu plano", zone Europe/Lisbon; en-US: "My plan"; no headers: America/Sao_Paulo. Users reach these from the Visão geral, Transações, Categorias and Planos tabs and the sign-up page.
