@@ -1,5 +1,6 @@
 import type { Transaction } from "@/api/dtos/transaction";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { page } from "@vitest/browser/context";
 import { expect, fn, waitFor, within } from "storybook/test";
 import { TransactionMobileList } from "./TransactionMobileList";
 
@@ -165,6 +166,28 @@ export const BadgeRow: Story = {
     const labels = ["Forecast", "Between members", "Series", "3 items"];
     const positions = labels.map((label) => canvas.getByText(label).getBoundingClientRect().left);
     await expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  },
+};
+
+// Badges that do not fit beside the title drop below it, so a short description is never cut to an ellipsis.
+export const TitleNotSqueezed: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Internet", "2026-10-14", {
+        status: "PENDING",
+        requiresConfirmation: true,
+        seriesId: "series-1",
+      }),
+    ],
+  },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const title = canvas.getByText("Internet");
+    const badge = canvas.getByText("Pending");
+    await waitFor(() => {
+      expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+      expect(badge.getBoundingClientRect().top).toBeGreaterThanOrEqual(title.getBoundingClientRect().bottom);
+    });
   },
 };
 

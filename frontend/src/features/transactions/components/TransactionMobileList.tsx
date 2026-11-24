@@ -39,11 +39,14 @@ function TransactionMobileRow({ transaction, onEdit, onConfirm }: TransactionMob
         className="active:bg-muted/60 focus-visible:ring-ring flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-inset"
       >
         <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="flex items-center gap-1.5">
-            <Text variant="label" className="truncate">
+          {/* The badges wrap below the title rather than squeezing it into an ellipsis. */}
+          <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <Text variant="label" className="max-w-full truncate">
               {transaction.description}
             </Text>
-            <TransactionBadges transaction={transaction} />
+            <span className="flex flex-wrap items-center gap-1.5 empty:hidden">
+              <TransactionBadges transaction={transaction} />
+            </span>
           </span>
           {details.length > 0 && (
             <Text variant="caption" className="truncate">
