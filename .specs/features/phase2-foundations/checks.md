@@ -189,6 +189,6 @@ Proof: walk - Overview, Transactions, Categories and Plans at both widths, plus 
 
 - **Settled mid-build:** none
 - **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from the plan commit
-- **Boundary:** none yet
+- **Boundary:** C1-C33, C37-C38 closed at `b9ea759f`
 - **Abandoned:** none
 - **Walked:** none yet
