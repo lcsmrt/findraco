@@ -58,15 +58,34 @@ export const NoneSelected: Story = {
   },
 };
 
-// A phone finger needs 44 px: every member chip grows to it.
-export const TouchTarget: Story = {
+// A chip is 32 px tall on a phone; a tap 6 px above or below it still lands on it.
+export const ChipSizePhone: Story = {
   args: { members: threeMembers, initialSelectedId: null },
   play: async ({ canvas }) => {
     await page.viewport(414, 896);
     const chips = canvas.getAllByRole("button");
     await expect(chips).toHaveLength(4);
     await waitFor(() => {
-      for (const chip of chips) expect(chip.getBoundingClientRect().height).toBe(44);
+      for (const chip of chips) {
+        const box = chip.getBoundingClientRect();
+        expect(box.height).toBe(32);
+        const x = box.left + box.width / 2;
+        for (const y of [box.top - 6, box.bottom + 6]) {
+          const hit = document.elementFromPoint(x, y);
+          expect(hit && chip.contains(hit)).toBe(true);
+        }
+      }
+    });
+  },
+};
+
+export const ChipSizeDesktop: Story = {
+  args: { members: threeMembers, initialSelectedId: null },
+  play: async ({ canvas }) => {
+    await page.viewport(1280, 800);
+    const chips = canvas.getAllByRole("button");
+    await waitFor(() => {
+      for (const chip of chips) expect(chip.getBoundingClientRect().height).toBe(28);
     });
   },
 };
