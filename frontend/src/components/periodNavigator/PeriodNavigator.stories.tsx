@@ -181,3 +181,39 @@ export const WrappedPresetsPhone: Story = {
     });
   },
 };
+
+// Closing the panel hands keyboard focus back to the label that opened it, in both containers.
+export const FocusReturnsToLabel: Story = {
+  play: async ({ args, canvas, userEvent }) => {
+    const label = canvas.getByRole("button", { name: "Choose period, October 2026" });
+    function closed() {
+      return waitFor(() => expect(screen.queryByRole("dialog", { name: PANEL })).toBeNull());
+    }
+
+    await page.viewport(1280, 800);
+    let dialog = await openPanel(canvas, userEvent);
+    within(dialog).getByRole("button", { name: "Last 6 months" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onPresetChange).toHaveBeenLastCalledWith("last-6m");
+    await closed();
+    await waitFor(() => expect(label).toHaveFocus());
+
+    await openPanel(canvas, userEvent);
+    await userEvent.keyboard("{Escape}");
+    await closed();
+    await waitFor(() => expect(label).toHaveFocus());
+
+    await page.viewport(414, 896);
+    dialog = await openPanel(canvas, userEvent);
+    within(dialog).getByRole("button", { name: "This year" }).focus();
+    await userEvent.keyboard("{Enter}");
+    await expect(args.onPresetChange).toHaveBeenLastCalledWith("this-year");
+    await closed();
+    await waitFor(() => expect(label).toHaveFocus());
+
+    await openPanel(canvas, userEvent);
+    await userEvent.keyboard("{Escape}");
+    await closed();
+    await waitFor(() => expect(label).toHaveFocus());
+  },
+};

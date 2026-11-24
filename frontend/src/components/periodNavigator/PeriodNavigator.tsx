@@ -102,6 +102,7 @@ export function PeriodNavigator({
   const { t } = useTranslation();
 
   const anchorRef = useRef<HTMLDivElement>(null);
+  const labelRef = useRef<HTMLButtonElement>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [draft, setDraft] = useState<DateRange | undefined>();
   const isNarrow = useIsNarrowScreen();
@@ -151,6 +152,7 @@ export function PeriodNavigator({
         <ChevronLeftIcon />
       </Button>
       <Button
+        ref={labelRef}
         variant="ghost"
         className="min-w-36 flex-1 tabular-nums sm:min-w-40 sm:flex-none"
         aria-label={t("components.periodNavigator.choosePeriod", { period: label })}
@@ -171,7 +173,7 @@ export function PeriodNavigator({
 
       {isNarrow ? (
         <Drawer open={isOpen} onOpenChange={setIsOpen}>
-          <DrawerContent>
+          <DrawerContent finalFocus={labelRef}>
             <DrawerHeader>
               <DrawerTitle>{title}</DrawerTitle>
             </DrawerHeader>
@@ -180,7 +182,7 @@ export function PeriodNavigator({
         </Drawer>
       ) : (
         <Popover open={isOpen} onOpenChange={setIsOpen}>
-          <PopoverContent className="w-auto p-0" align="start" anchor={anchorRef} aria-label={title}>
+          <PopoverContent className="w-auto p-0" align="start" anchor={anchorRef} aria-label={title} finalFocus={labelRef}>
             {panel}
           </PopoverContent>
         </Popover>
