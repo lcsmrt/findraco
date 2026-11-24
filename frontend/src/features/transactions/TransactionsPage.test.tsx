@@ -1,6 +1,7 @@
 import type {
   Transaction,
   Category,
+  NeutralCandidate,
   PagedResponse,
   Plan,
   PlanMember,
@@ -62,6 +63,10 @@ function pageOf(content: Transaction[], page = 0): PagedResponse<Transaction> {
   return { content, page, size: 10, totalElements: 25, totalPages: 3, last: page === 2 };
 }
 
+function candidatePage(total: number): PagedResponse<NeutralCandidate> {
+  return { content: [], page: 0, size: 1, totalElements: total, totalPages: total, last: true };
+}
+
 function authValue(): AuthContextValue {
   return {
     user: { id: lucas.userId, name: lucas.name, email: lucas.email, timeZone: "America/Sao_Paulo", timeZoneMode: "AUTOMATIC", language: null },
@@ -105,14 +110,23 @@ type TabOptions = {
   categories?: Category[];
   /** False for a viewer, who may not set a kind. */
   canCreate?: boolean;
+  /** What the candidates endpoint answers for an editor; a viewer's page never asks. */
+  candidates?: PagedResponse<NeutralCandidate>;
 };
 
-function renderTab({ transactions = [rent], route = "/", categories = [], canCreate = true }: TabOptions = {}) {
+function renderTab({
+  transactions = [rent],
+  route = "/",
+  categories = [],
+  canCreate = true,
+  candidates = candidatePage(0),
+}: TabOptions = {}) {
   server.use(
     transactionHandlers.list(pageOf(transactions)),
     planHandlers.members([lucas, livia]),
     categoryHandlers.list(categoryPage(categories)),
   );
+  if (canCreate) server.use(transactionHandlers.neutralCandidates(candidates));
   const requests = recordRequests();
   renderWithProviders(
     <CategoryFormSheetContext.Provider value={categorySheet}>
@@ -191,13 +205,14 @@ afterEach(() => {
 });
 
 describe("TransactionsPage toolbar", () => {
-  it("shows search, filters and import, and neither New Transaction nor Manage Categories (NAV-02 AC 8; NAV-04 AC 1, 2)", async () => {
-    renderTab();
+  it("shows search, filters and the actions menu, and neither New Transaction nor Manage Categories (NAV-02 AC 8; NAV-04 AC 1, 2)", async () => {
+    const { user } = renderTab();
     await tableRow("Rent");
 
     expect(screen.getByRole("textbox", { name: "Search transactions" })).toBeTruthy();
     expect(screen.getByRole("button", { name: "Filters" })).toBeTruthy();
-    expect(screen.getByRole("button", { name: "Import CSV" })).toBeTruthy();
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    expect(await screen.findByRole("menuitem", { name: "Import CSV" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "New Transaction" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Manage Categories" })).toBeNull();
   });
@@ -345,29 +360,45 @@ describe("TransactionsPage", () => {
     expect(listQueries(requests).at(-1)).toEqual({ ...OCTOBER, page: "0", size: "10" });
   });
 
-  it("opens the review of movements from the toolbar, and offers it only to who may edit", async () => {
-    server.use(
-      transactionHandlers.neutralCandidates({
-        content: [{ transaction: { ...rent, description: "Pagamento de fatura" }, proposedKind: "CARD_BILL_PAYMENT" }],
-        page: 0,
-        size: 50,
-        totalElements: 1,
-        totalPages: 1,
-        last: true,
-      }),
-    );
-    const { user } = renderTab();
+  it("opens the review of movements from the actions menu, and offers it only to who may edit", async () => {
+    const candidate: NeutralCandidate = {
+      transaction: { ...rent, description: "Pagamento de fatura" },
+      proposedKind: "CARD_BILL_PAYMENT",
+    };
+    const { user } = renderTab({ candidates: { ...candidatePage(1), content: [candidate] } });
     await tableRow("Rent");
 
-    await user.click(screen.getByRole("button", { name: "Review movements" }));
+    await user.click(screen.getByRole("button", { name: "More actions" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Review movements" }));
 
     const sheet = await screen.findByRole("dialog", { name: "Review movements" });
     expect(await within(sheet).findByText("Pagamento de fatura")).toBeTruthy();
 
     cleanup();
-    renderTab({ canCreate: false });
+    const viewer = renderTab({ canCreate: false });
     await tableRow("Rent");
-    expect(screen.queryByRole("button", { name: "Review movements" })).toBeNull();
+    await viewer.user.click(screen.getByRole("button", { name: "More actions" }));
+    await screen.findByRole("menuitem", { name: "Import CSV" });
+    expect(screen.queryByRole("menuitem", { name: "Review movements" })).toBeNull();
+  });
+
+  it("shows the review notice with the candidates total for an editor", async () => {
+    const { requests } = renderTab({ candidates: candidatePage(4) });
+    await tableRow("Rent");
+
+    expect(await screen.findByText("4 movements to review")).toBeTruthy();
+    const candidateRequests = requests.filter(
+      (request) => new URL(request.url).pathname === `${API}/neutral-candidates`,
+    );
+    expect(candidateRequests.map((request) => new URL(request.url).searchParams.get("size"))).toEqual(["1"]);
+  });
+
+  it("shows no review notice to a viewer", async () => {
+    const { requests } = renderTab({ canCreate: false });
+    await tableRow("Rent");
+
+    expect(screen.queryByText(/to review/)).toBeNull();
+    expect(requests.some((request) => new URL(request.url).pathname === `${API}/neutral-candidates`)).toBe(false);
   });
 
   it("previous then next arrow returns to this month as a preset", async () => {
@@ -834,12 +865,12 @@ describe("TransactionsPage period navigator (PNAV-01, PNAV-02)", () => {
     );
   });
 
-  it("requests the range a Range menu option resolves to (PNAV-01 AC 4)", async () => {
+  it("requests the range a preset in the period panel resolves to (PNAV-01 AC 4)", async () => {
     const { requests, user } = renderTab();
     await label("October 2026");
 
-    await user.click(screen.getByRole("button", { name: "Range" }));
-    await user.click(await screen.findByRole("menuitemradio", { name: "Last 6 months" }));
+    await user.click(screen.getByRole("button", { name: "Choose period, October 2026" }));
+    await user.click(await screen.findByRole("button", { name: "Last 6 months" }));
 
     await label("May – Oct 2026");
     await waitFor(() =>
@@ -880,8 +911,8 @@ describe("TransactionsPage period navigator (PNAV-01, PNAV-02)", () => {
     });
     await label("September 2026");
 
-    await user.click(screen.getByRole("button", { name: "Range" }));
-    await user.click(await screen.findByRole("menuitemradio", { name: "This month" }));
+    await user.click(screen.getByRole("button", { name: "Choose period, September 2026" }));
+    await user.click(await screen.findByRole("button", { name: "This month" }));
 
     await label("October 2026");
     await waitFor(() =>

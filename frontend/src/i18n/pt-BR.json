@@ -290,12 +290,10 @@
     "periodNavigator": {
       "chooseAPeriod": "Escolha um período",
       "choosePeriod": "Escolher período, {{period}}",
-      "custom": "Personalizado…",
       "last3Months": "Últimos 3 meses",
       "last6Months": "Últimos 6 meses",
       "nextPeriod": "Próximo período",
       "previousPeriod": "Período anterior",
-      "range": "Intervalo",
       "thisMonth": "Este mês",
       "thisYear": "Este ano"
     },
@@ -521,7 +519,6 @@
       "invitationsFor": "Convites de {{name}}",
       "invite": "Convidar",
       "leavePlan": "Sair do plano",
-      "manageYourPlansAndSwitch": "Gerencie seus planos e alterne entre eles.",
       "membersOf": "Membros de {{name}}",
       "newPlan": "Novo plano",
       "plans": "Planos",
@@ -889,9 +886,13 @@
     "transactionsPageView": {
       "clearAll": "Limpar tudo",
       "importCsv": "Importar CSV",
-      "importing": "Importando...",
+      "importing": "Importando…",
+      "moreActions": "Mais ações",
       "removeFilter": "Remover {{name}}",
+      "review": "Revisar",
       "reviewMovements": "Revisar movimentos",
+      "reviewNotice_one": "{{count}} movimento para revisar",
+      "reviewNotice_other": "{{count}} movimentos para revisar",
       "searchTransactions": "Buscar transações...",
       "searchTransactions2": "Buscar transações"
     },

@@ -51,6 +51,8 @@ export function ToggleGroup<Value extends string>({
       style={style}
       className={cn(
         "group/toggle-group flex w-fit flex-row flex-wrap items-center gap-[--spacing(var(--gap))] rounded-lg data-vertical:flex-col data-vertical:items-stretch data-[size=sm]:rounded-[min(var(--radius-md),10px)]",
+        // Wrapped chip rows sit 14 px apart so the 6.5 px tap extensions of two rows never meet.
+        variant === "chip" && "max-sm:gap-y-3.5",
         className,
       )}
       {...props}

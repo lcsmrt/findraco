@@ -72,7 +72,6 @@ export function PlansPageView({
     <div className="flex w-full flex-col gap-6 px-4">
       <PageHeader
         title={t("plans.plansPageView.plans")}
-        description={t("plans.plansPageView.manageYourPlansAndSwitch")}
         actions={
           <Button variant="outline" onClick={onCreatePlan}>
             <PlusIcon className="h-4 w-4" />

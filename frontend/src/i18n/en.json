@@ -290,12 +290,10 @@
     "periodNavigator": {
       "chooseAPeriod": "Choose a period",
       "choosePeriod": "Choose period, {{period}}",
-      "custom": "Custom…",
       "last3Months": "Last 3 months",
       "last6Months": "Last 6 months",
       "nextPeriod": "Next period",
       "previousPeriod": "Previous period",
-      "range": "Range",
       "thisMonth": "This month",
       "thisYear": "This year"
     },
@@ -521,7 +519,6 @@
       "invitationsFor": "Invitations for {{name}}",
       "invite": "Invite",
       "leavePlan": "Leave plan",
-      "manageYourPlansAndSwitch": "Manage your plans and switch between them.",
       "membersOf": "Members of {{name}}",
       "newPlan": "New plan",
       "plans": "Plans",
@@ -889,9 +886,13 @@
     "transactionsPageView": {
       "clearAll": "Clear all",
       "importCsv": "Import CSV",
-      "importing": "Importing...",
+      "importing": "Importing…",
+      "moreActions": "More actions",
       "removeFilter": "Remove {{name}}",
+      "review": "Review",
       "reviewMovements": "Review movements",
+      "reviewNotice_one": "{{count}} movement to review",
+      "reviewNotice_other": "{{count}} movements to review",
       "searchTransactions": "Search transactions...",
       "searchTransactions2": "Search transactions"
     },

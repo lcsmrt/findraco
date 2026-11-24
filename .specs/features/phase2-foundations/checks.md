@@ -97,7 +97,7 @@ Proof: cd frontend && node -e "const css=require('fs').readFileSync('src/index.c
 
 ### S3 - Phone controls are 44 px targets
 
-**C25** - At 414 px, on the transactions page, every button (icon buttons included), the search field and every filter chip measure 44 px tall, and every icon button measures 44 × 44 (AC 13, AC 14)
+**C25** - At 414 px, on the transactions page, every button (icon buttons included), the search field and every filter chip measure 44 px tall, and every icon button measures 44 × 44 (AC 13, AC 14). Superseded for chips on 2026-11-24 by header-polish C14 and C15, where chips are 32 px visible with a 44 px hit area
 Proof: run stories | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Touch Targets
 
 **C26** - At 414 px, the category limit fields' number inputs, toggles and buttons measure 44 px tall (AC 14)
@@ -183,7 +183,7 @@ Proof: cd frontend && ! grep -rnE --include=*.ts --include=*.tsx 'ring-(ring|des
 **C47** - In the dark theme, an empty currency field's placeholder text reaches 4.5:1 or more against the field's computed background (AC 11; finding 3)
 Proof: run verifyfix | ✓ src/components/input/CurrencyInput.stories.tsx > Dark Field Contrast
 
-**C48** - At 414 px, each member filter chip (`Toggle` chip) on the Overview measures 44 px tall (AC 14; finding 4)
+**C48** - At 414 px, each member filter chip (`Toggle` chip) on the Overview measures 44 px tall (AC 14; finding 4). Superseded on 2026-11-24 by header-polish C14 (32 px visible, 44 px hit area); its `Touch Target` story was replaced by `Chip Size Phone`
 Proof: run verifyfix | ✓ src/features/overview/components/MemberFilterChips.stories.tsx > Touch Target
 
 **C49** - The status badges carry their own colour and icon: "Previsto" a `lucide-clock` icon, "Pendente" a `lucide-triangle-alert` icon with a computed text colour equal to `--warning`; invitations `ACCEPTED` `lucide-check` in `--success`, `REVOKED` `lucide-x` in `--destructive`, `PENDING` `lucide-clock` (AC 1, AC 2, AC 7; finding 5)

@@ -4,7 +4,7 @@ import { Button } from "@/components/button/base/Button";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { SlidersHorizontalIcon } from "lucide-react";
 import { page } from "@vitest/browser/context";
-import { expect, fn, waitFor, within } from "storybook/test";
+import { expect, fn, screen, waitFor, within } from "storybook/test";
 import PeriodNavigatorMeta from "@/components/periodNavigator/PeriodNavigator.stories";
 import { buildTransactionColumns } from "./components/transactionColumns";
 import { TransactionsPageView } from "./TransactionsPageView";
@@ -76,6 +76,7 @@ const meta = {
     onClearFilters: fn(),
     onImport: fn(),
     isImporting: false,
+    reviewTotal: 0,
     transactions,
     isLoading: false,
     pagination,
@@ -98,7 +99,7 @@ export const SharedPlan: Story = {
     await expect(canvas.getByRole("button", { name: "Choose period, October 2026" })).toBeVisible();
     await expect(canvas.getByRole("button", { name: "Previous period" })).toBeVisible();
     await expect(canvas.getByRole("columnheader", { name: /Attributed/ })).toBeVisible();
-    await expect(canvas.getByRole("button", { name: "Import CSV" })).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "More actions" })).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "New Transaction" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: "Manage Categories" })).toBeNull();
   },
@@ -165,8 +166,8 @@ export const Empty: Story = {
 export const FocusRing: Story = {
   play: async ({ canvas, userEvent }) => {
     const search = canvas.getByRole("textbox", { name: "Search transactions" });
-    const importButton = canvas.getByRole("button", { name: "Import CSV" });
-    for (const target of [search, importButton]) {
+    const moreActions = canvas.getByRole("button", { name: "More actions" });
+    for (const target of [search, moreActions]) {
       for (let presses = 0; presses < 20 && document.activeElement !== target; presses += 1) {
         await userEvent.tab();
       }
@@ -183,7 +184,8 @@ function visible(elements: Iterable<Element>) {
   return [...elements].filter((element) => element.checkVisibility());
 }
 
-// A phone finger needs 44 px: every button, the search field and each filter chip grow to it.
+// A phone finger needs 44 px: every button and the search field grow to it. The filter chips are the
+// exception: they stay 32 px with a 44 px tap area (FilterChipSizePhone).
 export const TouchTargets: Story = {
   args: {
     chips: [
@@ -194,15 +196,13 @@ export const TouchTargets: Story = {
   },
   play: async ({ canvas, canvasElement }) => {
     await page.viewport(414, 896);
-    const buttons = visible(canvasElement.querySelectorAll("[data-slot=button]"));
-    const iconButtons = canvas.getAllByRole("button", { name: /^Remove (Debit|Food)|^Previous period|^Next period/ });
-    const search = canvas.getByRole("textbox", { name: "Search transactions" });
-    const chips = visible(canvasElement.querySelectorAll("[data-variant=meta]")).filter((badge) =>
-      badge.querySelector("[data-slot=button]"),
+    const buttons = visible(canvasElement.querySelectorAll("[data-slot=button]")).filter(
+      (button) => !button.closest("[data-slot=badge]"),
     );
+    const iconButtons = canvas.getAllByRole("button", { name: /^More actions|^Previous period|^Next period/ });
+    const search = canvas.getByRole("textbox", { name: "Search transactions" });
     await expect(buttons.length).toBeGreaterThan(5);
-    await expect(iconButtons.length).toBeGreaterThan(2);
-    await expect(chips).toHaveLength(2);
+    await expect(iconButtons).toHaveLength(3);
     // Controls ease their size in (transition-all), so the sizes are read once they settle.
     await waitFor(() => {
       for (const button of buttons) expect(button.getBoundingClientRect().height).toBe(44);
@@ -211,17 +211,17 @@ export const TouchTargets: Story = {
         expect([width, height]).toEqual([44, 44]);
       }
       expect(search.getBoundingClientRect().height).toBe(44);
-      for (const chip of chips) expect(chip.getBoundingClientRect().height).toBe(44);
     });
   },
 };
 
-// An icon-only button is as wide as it is tall: the import and review buttons hide their label on a phone.
+// An icon-only button is as wide as it is tall: the actions menu hides its label behind the dots.
 export const IconButtonTargets: Story = {
   args: { onReview: fn() },
   play: async ({ canvas }) => {
     await page.viewport(414, 896);
-    const names = ["Import CSV", "Review movements", "First page", "Previous page", "Next page", "Last page"];
+    // First and last page step aside on a phone (header-polish); previous and next remain.
+    const names = ["More actions", "Previous page", "Next page"];
     const buttons = names.flatMap((name) => visible(canvas.getAllByRole("button", { name })));
     await expect(buttons).toHaveLength(names.length);
     await waitFor(() => {
@@ -233,17 +233,16 @@ export const IconButtonTargets: Story = {
   },
 };
 
-// From 640 px up the sizes are the desktop ones: 36 px default, 28 px small, 32 px icon.
+// From 640 px up the sizes are the desktop ones: 36 px default, 32 px icon.
 export const DesktopSizes: Story = {
   play: async ({ canvas }) => {
     await page.viewport(1280, 800);
-    const defaults = ["Import CSV", "Filters"].map((name) => canvas.getByRole("button", { name }));
-    // The period's "Range" menu is the page's small button; its arrows are the icon buttons.
-    const small = canvas.getByRole("button", { name: "Range" });
-    const icons = ["Previous period", "Next period"].map((name) => canvas.getByRole("button", { name }));
+    const filters = canvas.getByRole("button", { name: "Filters" });
+    const icons = ["More actions", "Previous period", "Next period"].map((name) =>
+      canvas.getByRole("button", { name }),
+    );
     await waitFor(() => {
-      for (const button of defaults) expect(button.getBoundingClientRect().height).toBe(36);
-      expect(small.getBoundingClientRect().height).toBe(28);
+      expect(filters.getBoundingClientRect().height).toBe(36);
       for (const button of icons) {
         const { width, height } = button.getBoundingClientRect();
         expect([width, height]).toEqual([32, 32]);
@@ -266,18 +265,178 @@ export const ActiveFilters: Story = {
   },
 };
 
-export const WithReview: Story = {
+// The menu renders in a portal, outside the story canvas, so its queries go through `screen`.
+async function openMenu(canvas: ReturnType<typeof within>, userEvent: { click: (element: Element) => Promise<void> }) {
+  await userEvent.click(canvas.getByRole("button", { name: "More actions" }));
+  return screen.findByRole("menu");
+}
+
+// The title row holds the title and the one menu button; everything else the page does sits below it.
+export const MoreActionsMenu: Story = {
   args: { onReview: fn() },
   play: async ({ args, canvas, userEvent }) => {
-    await userEvent.click(canvas.getByRole("button", { name: "Review movements" }));
+    const row = canvas.getByRole("heading", { level: 1, name: "Transactions" }).closest("[data-slot=page-header-row]");
+    if (!(row instanceof HTMLElement)) throw new Error("the title is not in a header row");
+    await expect(within(row).getAllByRole("button").map((button) => button.getAttribute("aria-label"))).toEqual([
+      "More actions",
+    ]);
+    const menu = within(await openMenu(canvas, userEvent));
+    await expect(menu.getByRole("menuitem", { name: "Import CSV" })).toBeVisible();
+    await userEvent.click(menu.getByRole("menuitem", { name: "Review movements" }));
+    await expect(args.onReview).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+// On a phone a menu item is a 44 px target like every other control.
+export const MenuItemsPhone: Story = {
+  args: { onReview: fn() },
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(414, 896);
+    const menu = within(await openMenu(canvas, userEvent));
+    for (const name of ["Import CSV", "Review movements"]) {
+      const item = menu.getByRole("menuitem", { name });
+      await waitFor(() => expect(item.getBoundingClientRect().height).toBeGreaterThanOrEqual(44));
+    }
+  },
+};
+
+export const ImportingDisabled: Story = {
+  args: { isImporting: true, onReview: fn() },
+  play: async ({ canvas, userEvent }) => {
+    const menu = within(await openMenu(canvas, userEvent));
+    await expect(menu.getByRole("menuitem", { name: "Importing…" })).toHaveAttribute("aria-disabled", "true");
+    await expect(menu.queryByRole("menuitem", { name: "Import CSV" })).toBeNull();
+  },
+};
+
+// A viewer has no `onReview`, so the menu offers the import only, whatever the review total says.
+export const ViewerHasNoReview: Story = {
+  args: { reviewTotal: 4 },
+  play: async ({ canvas, userEvent }) => {
+    const menu = within(await openMenu(canvas, userEvent));
+    await expect(menu.getByRole("menuitem", { name: "Import CSV" })).toBeVisible();
+    await expect(menu.queryByRole("menuitem", { name: "Review movements" })).toBeNull();
+    await userEvent.keyboard("{Escape}");
+    await expect(canvas.queryByText(/to review/)).toBeNull();
+    await expect(canvas.getByRole("button", { name: "More actions" }).querySelector("[data-slot=review-dot]")).toBeNull();
+  },
+};
+
+export const ReviewNotice: Story = {
+  args: { reviewTotal: 1, onReview: fn() },
+  play: async ({ args, canvas, userEvent }) => {
+    await expect(canvas.getByText("1 movement to review")).toBeVisible();
+    await expect(canvas.getByRole("button", { name: "More actions" }).querySelector("[data-slot=review-dot]")).not.toBeNull();
+    await userEvent.click(canvas.getByRole("button", { name: "Review" }));
     await expect(args.onReview).toHaveBeenCalledTimes(1);
   },
 };
 
-export const Importing: Story = {
-  args: { isImporting: true },
+export const ReviewNoticeMany: Story = {
+  args: { reviewTotal: 4, onReview: fn() },
   play: async ({ canvas }) => {
-    await expect(canvas.getByRole("button", { name: "Importing..." })).toBeDisabled();
+    await expect(canvas.getByText("4 movements to review")).toBeVisible();
+  },
+};
+
+export const NothingToReview: Story = {
+  args: { reviewTotal: 0, onReview: fn() },
+  play: async ({ canvas }) => {
+    await expect(canvas.queryByText(/to review/)).toBeNull();
+    await expect(canvas.queryByRole("button", { name: "Review" })).toBeNull();
+    await expect(canvas.getByRole("button", { name: "More actions" }).querySelector("[data-slot=review-dot]")).toBeNull();
+  },
+};
+
+// The period row, the search row and the list share the page's left and right edges at both widths.
+// On a wide screen the period control is as wide as its content, so its row is what reaches the right edge.
+export const EdgesAligned: Story = {
+  args: { onReview: fn(), reviewTotal: 2 },
+  play: async ({ canvas, canvasElement }) => {
+    function edges(element: Element | null | undefined) {
+      if (!element) throw new Error("an element of the page is missing");
+      const { left, right } = element.getBoundingClientRect();
+      return { left, right };
+    }
+    function listElement() {
+      const table = canvasElement.querySelector("#financialTransactionsPagele");
+      if (table?.checkVisibility()) return table;
+      return visible(canvas.getAllByText(/^\w{3}, \d+ \w{3} 2026$/))[0]?.closest("section")?.parentElement;
+    }
+    for (const width of [414, 1280]) {
+      await page.viewport(width, 900);
+      await waitFor(() => {
+        const control = canvas.getByRole("button", { name: "Previous period" }).parentElement;
+        const search = canvas.getByRole("textbox", { name: "Search transactions" }).closest("[data-slot=input-group]")?.parentElement;
+        const list = edges(listElement());
+        expect(Math.abs(edges(control).left - list.left)).toBeLessThanOrEqual(1);
+        expect(Math.abs(edges(control?.parentElement).right - list.right)).toBeLessThanOrEqual(1);
+        expect(Math.abs(edges(search).left - list.left)).toBeLessThanOrEqual(1);
+        expect(Math.abs(edges(search).right - list.right)).toBeLessThanOrEqual(1);
+      });
+    }
+  },
+};
+
+// The action of every page header sits on the title's row, not under it.
+export const ActionOnTitleRow: Story = {
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const title = canvas.getByRole("heading", { level: 1, name: "Transactions" }).getBoundingClientRect();
+    const action = canvas.getByRole("button", { name: "More actions" }).getBoundingClientRect();
+    await expect(action.top).toBeGreaterThanOrEqual(title.top);
+    await expect(action.top).toBeLessThanOrEqual(title.bottom);
+  },
+};
+
+// A filter chip is 32 px tall on a phone; a tap 6 px above or below it still lands on it.
+export const FilterChipSizePhone: Story = {
+  args: { chips: [{ key: "type", label: "Debit", onRemove: fn() }] },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const chip = canvas.getByRole("button", { name: "Remove Debit" }).closest("[data-slot=badge]");
+    if (!chip) throw new Error("the filter chip is missing");
+    await waitFor(() => {
+      const box = chip.getBoundingClientRect();
+      const x = box.left + box.width / 2;
+      expect(box.height).toBe(32);
+      for (const y of [box.top - 6, box.bottom + 6]) {
+        const hit = document.elementFromPoint(x, y);
+        expect(hit && chip.contains(hit)).toBe(true);
+      }
+    });
+  },
+};
+
+// A removable chip's remove button owns its 44 px tap area even with another chip row below it.
+export const FilterChipRemoveTarget: Story = {
+  args: {
+    chips: [
+      { key: "type", label: "Debit", onRemove: fn() },
+      { key: "category", label: "Food › Restaurants", onRemove: fn() },
+      { key: "member", label: "Lucas Martins", onRemove: fn() },
+      { key: "from", label: "From 2026-01-01", onRemove: fn() },
+      { key: "to", label: "To 2026-10-31", onRemove: fn() },
+    ],
+  },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const removes = canvas.getAllByRole("button", { name: /^Remove / });
+    await expect(removes).toHaveLength(5);
+    await waitFor(() => {
+      const tops = removes.map((remove) => Math.round(remove.getBoundingClientRect().top));
+      const firstTop = Math.min(...tops);
+      expect(Math.max(...tops)).toBeGreaterThan(firstTop);
+      for (const remove of removes.filter((_, index) => tops[index] === firstTop)) {
+        const box = remove.getBoundingClientRect();
+        const x = box.left + box.width / 2;
+        for (const y of [box.top - 6, box.bottom + 6]) {
+          const hit = document.elementFromPoint(x, y);
+          expect(hit && remove.contains(hit)).toBe(true);
+        }
+      }
+    });
   },
 };
 

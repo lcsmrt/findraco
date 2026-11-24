@@ -1,6 +1,7 @@
 import type { Category } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { page } from "@vitest/browser/context";
 import { expect, fn, within } from "storybook/test";
 import { buildCategoryTree } from "./utils/categoryTree";
 import { CategoriesPageView } from "./CategoriesPageView";
@@ -89,6 +90,17 @@ export const HeaderActions: Story = {
       (button) => getComputedStyle(button).backgroundColor === tokenColor("--primary"),
     );
     await expect(filled).toHaveLength(0);
+  },
+};
+
+// The create action sits on the title's row, not below it, on a phone.
+export const ActionOnTitleRow: Story = {
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const title = canvas.getByRole("heading", { level: 1, name: "Categories" }).getBoundingClientRect();
+    const action = canvas.getByRole("button", { name: "New Category" }).getBoundingClientRect();
+    await expect(action.top).toBeGreaterThanOrEqual(title.top);
+    await expect(action.top).toBeLessThanOrEqual(title.bottom);
   },
 };
 

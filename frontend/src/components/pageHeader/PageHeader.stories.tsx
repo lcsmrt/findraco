@@ -20,9 +20,8 @@ export const TitleOnly: Story = {
   },
 };
 
-export const WithDescriptionAndActions: Story = {
+export const WithActions: Story = {
   args: {
-    description: "Manage your plans and switch between them.",
     actions: (
       <Button size="sm">
         <PlusIcon />
@@ -31,7 +30,6 @@ export const WithDescriptionAndActions: Story = {
     ),
   },
   play: async ({ canvas }) => {
-    await expect(canvas.getByText("Manage your plans and switch between them.")).toBeVisible();
     await expect(canvas.getByRole("button", { name: "New plan" })).toBeVisible();
   },
 };
@@ -56,13 +54,12 @@ export const LongTitle: Story = {
   tags: ["!test"],
   args: {
     title: "Household finances shared with the whole family and two flatmates",
-    description: "Every member sees the same transactions, categories and limits.",
     actions: <Button size="sm">Invite</Button>,
   },
 };
 
 export const Mobile: Story = {
   tags: ["!test"],
-  args: WithDescriptionAndActions.args,
+  args: WithActions.args,
   globals: { viewport: { value: "mobile1" } },
 };

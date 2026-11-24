@@ -260,7 +260,7 @@ src/components/
 | Money input | `CurrencyInput` (see `form-creation`) | `maskCurrency`, parsing strings |
 | Money display | `Money` (a figure) or `formatMoney` (inside a sentence; see Money) | `Intl.NumberFormat`, `toLocaleString`, `formatMoney` as a JSX child |
 | Marker on a row or a card | `Badge` in its family (see Badges) | `outline` or `secondary` by habit, or a class override |
-| Page title | `PageHeader` (`title`, `context`, `actions`; see Page shell) | a styled `<h1>` |
+| Page title | `PageHeader` (`title`, `context`, `actions`; no description; see Page shell) | a styled `<h1>` |
 | Section title | `SectionHeader` | a styled `<span>` |
 | Field help text | `FieldDescription` | `<p className="text-muted-foreground text-xs">` |
 | Sheet form skeleton | `FormSheet` (see `form-creation`) | Sheet + footer rebuilt per form |
@@ -362,11 +362,21 @@ read the attributes.
 
 Below `sm` (640 px) every control is a 44 px target; from `sm` up it keeps its desktop height. The tier
 sits inside each primitive's size variant, as `max-sm:h-11` (`max-sm:size-11` for icon sizes) before
-the desktop height: `Button`, `Toggle` (chip included), `Input`, `InputGroup`, `NumberField`, the
-`Select` trigger and the Combobox fields. A hard-coded `h-7` on a call site does not undo it. Why: the
-controls grow visibly, so neighbouring targets never overlap, which an invisible hit area cannot
-promise. A new control primitive gets the tier in its own variants. Enforced by the `Touch Targets`
-stories.
+the desktop height: `Button`, `Toggle`, `Input`, `InputGroup`, `NumberField`, the `Select` trigger and
+the Combobox fields. A hard-coded `h-7` on a call site does not undo it. Why: the controls grow visibly,
+so neighbouring targets never overlap, which an invisible hit area cannot promise. A new control
+primitive gets the tier in its own variants. Enforced by the `Touch Targets` stories.
+
+**The one exception is a chip** (the `Toggle` `chip` variant and a removable filter chip): a pill that
+is 44 px tall looks swollen, so below `sm` it is 32 px visible (`max-sm:h-8`) with a 44 px hit area from
+a pseudo-element: `relative` plus `max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:-inset-y-[6.5px]`
+(7.5 px when the chip or its remove button has a 1 px border, which the pseudo's containing block excludes). The element's
+own box stays 32 px, and `document.elementFromPoint` 6 px above or below it lands on the chip. A chip
+that holds a button (the filter chip's remove button) keeps the area behind its content (`isolate`,
+`after:-z-10`) so the pseudo never covers the button, and the button carries its own. Chips in a wrapped
+row get `max-sm:gap-y-3.5` (14 px, more than the two 6.5 px extensions), so the areas of two rows never
+overlap: the `chip` `ToggleGroup` carries it, and a hand-built chip row adds it. Enforced by the
+`Chip Size`, `Wrapped Rows Phone`, `Wrapped Presets Phone` and `Filter Chip Remove Target` stories.
 
 ---
 
@@ -374,8 +384,11 @@ stories.
 
 Each destination renders `<PageHeader title context actions />` as its first child: the `h1` is the
 navigation label, `context` holds what frames the data (period, member filter) and `actions` the page's
-creates and tools. The layout (`MainLayoutView`) gives the content one `max-w-7xl` cap, centred, so the
-edge does not jump between tabs; a page never sets its own width. A page create (new category, new
+creates and tools. A page has no description under its title. The actions stay on the title's row at
+every width (the title truncates before they wrap), so the phone's 44 px action and the title share one
+row; a page with several tools folds them into one `⋯` menu (`DropdownMenu`) with an `aria-label`. A
+status that needs the user (movements to review) is a notice above the list, with a dot on the menu. The layout (`MainLayoutView`) gives the content one `max-w-7xl` cap, centred,
+so the edge does not jump between tabs; a page never sets its own width. A page create (new category, new
 plan) is an `outline` button in `actions`: the global add in the tab row is the only filled primary
 button on a page. Dialogs and sheets keep their own filled primary.
 

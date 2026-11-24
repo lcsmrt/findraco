@@ -59,6 +59,28 @@ export const Owner: Story = {
   },
 };
 
+// The title stands alone: what the page does is in its action and its cards, not in a subtitle.
+export const NoDescription: Story = {
+  play: async ({ canvas }) => {
+    const title = canvas.getByRole("heading", { level: 1, name: "Plans" });
+    const header = title.closest("header");
+    if (!header) throw new Error("the page title is not inside a header");
+    await expect(header.querySelector("p")).toBeNull();
+    await expect(header.textContent).toBe("PlansNew plan");
+  },
+};
+
+// The create action sits on the title's row, not below it, on a phone.
+export const ActionOnTitleRow: Story = {
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const title = canvas.getByRole("heading", { level: 1, name: "Plans" }).getBoundingClientRect();
+    const action = canvas.getByRole("button", { name: "New plan" }).getBoundingClientRect();
+    await expect(action.top).toBeGreaterThanOrEqual(title.top);
+    await expect(action.top).toBeLessThanOrEqual(title.bottom);
+  },
+};
+
 // The role and the default marker are quiet facts about a plan, not states.
 export const MetaBadges: Story = {
   play: async ({ canvas }) => {

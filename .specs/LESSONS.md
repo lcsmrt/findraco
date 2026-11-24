@@ -422,6 +422,30 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: walk C40-C44 (frontend/touch)
 - last seen: 2026-11-24T02:46:56Z
 
+### L-069 - An extended hit area is tested where neighbours exist: wrapped rows and adjacent targets, probing the smallest target itself (the remove button), not only a lone chip's centre.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/touch` · harmful: 0
+- features: header-polish
+- evidence: verification.md finding 1-2 / C20 C21 (frontend/touch)
+- last seen: 2026-11-24T04:36:54Z
+
+### L-070 - Replacing a menu or trigger-bound overlay with state-opened panels loses focus return; every panel opened from a control returns focus to it on close (finalFocus), with a story.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/a11y` · harmful: 0
+- features: header-polish
+- evidence: verification.md finding 3 / C22 (frontend/a11y)
+- last seen: 2026-11-24T04:36:54Z
+
+### L-071 - Write the Walked line by replacing whatever line is there, and confirm it in the file; a builder's placeholder 'none - …' does not match 'none yet' and leaves the walk unrecorded.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `specs/handoff` · harmful: 0
+- features: header-polish
+- evidence: verification.md finding 4 (specs/handoff)
+- last seen: 2026-11-24T04:36:54Z
+
+### L-072 - When a plan supersedes an earlier feature's claim, mark that earlier check superseded in the same commit that changes its test.
+- signal: `spec_deviation` · recurrence: 1 feature(s) · scope: `specs/checks` · harmful: 0
+- features: header-polish
+- evidence: verification.md finding 5 (specs/checks)
+- last seen: 2026-11-24T04:36:54Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
