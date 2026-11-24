@@ -5,7 +5,7 @@ Run critical: cd frontend && pnpm exec vitest run --project=critical --reporter=
 Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/money/Money.stories.tsx src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx src/features/transactions/components/NeutralReviewListView.stories.tsx src/features/plans/components/PlanTrashListView.stories.tsx src/features/transactions/TransactionsPageView.stories.tsx src/features/overview/components/SummaryCards.stories.tsx src/features/overview/components/CategorySpendingList.stories.tsx src/features/overview/components/MonthlyTrendChart.stories.tsx src/features/categories/components/CategoryTreeRow.stories.tsx src/features/categories/components/CategoryLimitFields.stories.tsx src/features/transactions/components/ItemsField.stories.tsx
 Plan: `.specs/features/money-display/plan.md`
 
-23 checks in 5 slices · 2 one-way doors · 0 open, of which 0 block
+25 checks in 5 slices · 2 one-way doors · 0 open, of which 0 block
 
 Size checks read the computed `font-size` in the browser (`getComputedStyle`), never a class name: 14 px or larger means `parseFloat(fontSize) >= 14`.
 
@@ -93,6 +93,14 @@ Proof: cd frontend && ! grep -rnE "font-mono|jetbrains-mono|function Amount\b" s
 **C23** - The Overview at 390 px and 1280 px, the Transactions table at 1280 px and the Categories tab at 390 px show every amount in the new format with nothing clipped or overflowing (AC 5, 8, 12)
 Proof: walk - open Overview, Transactions and Categories at those widths on the local stack
 
+### Appended after the walk
+
+**C24** - In the trend chart tooltip with the widest figures, each label and its amount are at least 8 px apart (AC 11; the walk found "Despesas" touching "R$ 2.322,15")
+Proof: run stories | ✓ src/features/overview/components/MonthlyTrendChart.stories.tsx > Tooltip Spacing
+
+**C25** - In the transactions table, the sort arrow of the amount header sits left of its label, and the label's right edge is within 8 px of the amounts' right edge (AC 6; the walk found the label 28 px left of the digits)
+Proof: run stories | ✓ src/features/transactions/TransactionsPageView.stories.tsx > Amount Header Label Aligned
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -122,7 +130,7 @@ Proof: walk - open Overview, Transactions and Categories at those widths on the 
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** build worker (Sonnet), all slices S1-S5, from `0ec112bf`, returned (C1-C22 at `e0c03d26`); walk worker (Sonnet) at `0d4f0cd1`
+- **Dispatched:** build worker (Sonnet), all slices S1-S5, from `0ec112bf`, returned (C1-C22 at `e0c03d26`); walk worker (Sonnet) at `ae7bba37`, returned
 - **Boundary:** C1-C22 closed at `e0c03d26` (C23 is the orchestrator walk)
 - **Abandoned:** none
-- **Walked:** none yet
+- **Walked:** C23 on the local stack at `ae7bba37` (walk Postgres container on 5434, db `walk`; backend `spring-boot:run` profile local on 3000; `pnpm dev` on 5173), Playwright pt-BR at 390x844 and 1280x800, shared plan with two members. Overview 390: Receitas and Despesas "R$ 1.234,50" at 20 px, green and red; Resultado "−R$ 100,00" at 24 px red (at zero "R$ 0,00" green); "Previsto −R$ 1.087,65", "saiu R$ 500,00 · entrou R$ 0,00", member amounts, "R$ 2.222,15 de R$ 3.234,75", "restam R$ 1.012,60 · 69%", "acima em R$ 370,40" all 14 px; no horizontal scroll. Overview 1280: figures 24 px, lines 14 px; tooltip amounts 14 px tabular, but "Despesas" touched its amount (0 px) - closed by C24. Transactions 1280: amounts "−R$ 987,65" red, "R$ 1.234,50" green, 14 px, right edges aligned at x=729; header "Valor" right-aligned but its label ended 28 px left of the digits behind the sort arrow - closed by C25; inline edit input Space Grotesk tabular, Escape closes. Phone list 390: same amounts, right edges aligned. Categories 390: "R$ 3.234,75" and member limits 14 px; edit sheet "Por membro" shares "61.8%" and "38.2%" at 14 px. Plan trash: "1 transação · −R$ 77,70" 14 px red. Users reach these from the Visão geral, Transações, Categorias and Planos tabs.

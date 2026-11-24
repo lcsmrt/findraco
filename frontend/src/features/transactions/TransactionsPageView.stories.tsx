@@ -114,6 +114,26 @@ export const AmountColumnAligned: Story = {
   },
 };
 
+// The sort arrow sits left of a right-aligned label, so the label's edge meets the figures' edge.
+export const AmountHeaderLabelAligned: Story = {
+  play: async ({ canvas }) => {
+    const table = within(canvas.getByRole("table"));
+    const header = table.getByRole("columnheader", { name: /Amount/ });
+    const labelNode = [...header.querySelectorAll("*")]
+      .flatMap((element) => [...element.childNodes])
+      .find((node) => node.nodeType === Node.TEXT_NODE && node.textContent?.includes("Amount"));
+    if (!labelNode) throw new Error("header has no Amount label");
+    const range = document.createRange();
+    range.selectNodeContents(labelNode);
+    const label = range.getBoundingClientRect();
+    const icon = header.querySelector("svg")?.getBoundingClientRect();
+    if (!icon) throw new Error("header has no sort arrow");
+    await expect(icon.right).toBeLessThanOrEqual(label.left);
+    const amount = table.getByText(/6\.200,00/).getBoundingClientRect();
+    await expect(Math.abs(amount.right - label.right)).toBeLessThanOrEqual(8);
+  },
+};
+
 export const SingleMember: Story = {
   tags: ["!test"],
   args: { columns: columns(false) },

@@ -54,6 +54,39 @@ export const Tooltip: Story = {
   },
 };
 
+// The widest figures in the fixtures: a long label must not touch its amount.
+export const TooltipSpacing: Story = {
+  args: {
+    months: trend(
+      { startDate: "2026-01-01", endDate: "2026-12-31" },
+      Array.from({ length: 12 }, (_, index) => ({
+        year: 2026,
+        month: index + 1,
+        income: 987654321,
+        expenses: 987654321,
+      })),
+    ),
+  },
+  play: async ({ canvasElement }) => {
+    const plot = await waitFor(() => {
+      const surface = canvasElement.querySelector(".recharts-surface");
+      if (!surface || !canvasElement.querySelector(".recharts-line-curve")) throw new Error("not drawn yet");
+      return surface;
+    });
+    const box = plot.getBoundingClientRect();
+    fireEvent.mouseMove(plot, { clientX: box.left + box.width / 2, clientY: box.top + box.height / 2 });
+    const values = await within(canvasElement).findAllByText(/^R\$ /, { selector: ".recharts-tooltip-wrapper *" });
+    await expect(values).toHaveLength(2);
+    for (const value of values) {
+      const row = value.parentElement;
+      const label = row?.querySelector(".text-muted-foreground");
+      if (!label) throw new Error("tooltip row has no label");
+      const gap = value.getBoundingClientRect().left - label.getBoundingClientRect().right;
+      await expect(gap).toBeGreaterThanOrEqual(8);
+    }
+  },
+};
+
 export const QuarterSelected: Story = {
   tags: ["!test"],
   args: { months: trend({ startDate: "2026-08-01", endDate: "2026-10-31" }, halfYear) },

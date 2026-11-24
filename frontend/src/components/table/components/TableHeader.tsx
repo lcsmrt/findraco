@@ -97,7 +97,8 @@ function SortableTableHeaderCell({
       onClick={onClick}
       className={cn(
         "group inline-flex w-full items-center gap-1 rounded px-2 py-1 select-none",
-        alignRight ? "justify-end" : "justify-between",
+        // Right-aligned: the arrow goes first so the label's edge meets the figures below it.
+        alignRight ? "flex-row-reverse justify-start" : "justify-between",
         "hover:bg-muted-foreground/10 hover:cursor-pointer truncate",
       )}
     >
