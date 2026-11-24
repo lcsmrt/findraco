@@ -69,12 +69,12 @@ export function PlansPageView({
 
   return (
     // The layout gives the page its vertical spacing under the tab row, as for the other destinations.
-    <div className="mx-auto flex w-full max-w-3xl flex-col gap-6 px-4">
+    <div className="flex w-full flex-col gap-6 px-4">
       <PageHeader
         title={t("plans.plansPageView.plans")}
         description={t("plans.plansPageView.manageYourPlansAndSwitch")}
         actions={
-          <Button size="sm" onClick={onCreatePlan}>
+          <Button variant="outline" onClick={onCreatePlan}>
             <PlusIcon className="h-4 w-4" />
             {t("plans.plansPageView.newPlan")}
           </Button>
@@ -104,9 +104,9 @@ export function PlansPageView({
                   {isActive && <CheckIcon className="text-primary-ink h-4 w-4" />}
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <Badge variant="secondary">{roleLabels[plan.myRole]}</Badge>
+                  <Badge variant="meta">{roleLabels[plan.myRole]}</Badge>
                   {plan.isDefault && (
-                    <Badge variant="outline">{t("plans.plansPageView.default")}</Badge>
+                    <Badge variant="meta">{t("plans.plansPageView.default")}</Badge>
                   )}
                 </div>
               </button>
@@ -117,9 +117,10 @@ export function PlansPageView({
 
       {activePlan && (
         <Card>
-          <CardHeader>
+          {/* On a phone the title takes the line and the actions wrap below it. */}
+          <CardHeader className="max-sm:has-data-[slot=card-action]:grid-cols-1">
             <CardTitle>{t("plans.plansPageView.membersOf", { name: activePlan.name })}</CardTitle>
-            <CardAction className="flex items-center gap-2">
+            <CardAction className="flex flex-wrap items-center gap-2 max-sm:col-start-1 max-sm:row-span-1 max-sm:row-start-2 max-sm:justify-self-start">
               {canManagePlan ? (
                 <>
                   <Button
@@ -149,7 +150,7 @@ export function PlansPageView({
                   >
                     <ArchiveIcon className="h-4 w-4" />
                   </Button>
-                  <Button size="sm" onClick={onInvite}>
+                  <Button variant="outline" size="sm" onClick={onInvite}>
                     <UserPlusIcon className="h-4 w-4" />
                     {t("plans.plansPageView.invite")}
                   </Button>

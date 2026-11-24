@@ -53,8 +53,12 @@ public class UserService {
         return load(userId).today(clock);
     }
 
+    /**
+     * Signs the user up. The device's {@code Time-Zone} is stored when it is an IANA id, and the first plan is
+     * named in the device's {@code Accept-Language}; a missing or unreadable header keeps the defaults.
+     */
     @Transactional
-    public UserResponse create(CreateUserRequest dto, String ip) {
+    public UserResponse create(CreateUserRequest dto, String ip, String deviceTimeZone, String acceptLanguage) {
         rateLimiter.consume(RateLimit.REGISTER_IP, ip);
 
         String email = EmailNormalizer.normalize(dto.email());
@@ -68,8 +72,13 @@ public class UserService {
         user.setEmail(email);
         user.setPassword(encoder.encode(PasswordNormalizer.normalize(dto.password())));
 
+        if (TimeZones.isIanaId(deviceTimeZone)) {
+            user.useDeviceTimeZone(deviceTimeZone);
+        }
+
         User savedUser = userRepository.save(user);
-        planService.provisionDefaultPlan(savedUser);
+        planService.provisionDefaultPlan(
+                savedUser, Language.fromAcceptLanguage(acceptLanguage).orElse(Language.EN));
         return UserResponse.from(savedUser);
     }
 

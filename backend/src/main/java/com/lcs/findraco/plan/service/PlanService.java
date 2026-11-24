@@ -11,6 +11,7 @@ import com.lcs.findraco.plan.response.ArchivedPlanResponse;
 import com.lcs.findraco.plan.response.PlanMemberResponse;
 import com.lcs.findraco.plan.response.PlanPermissionsResponse;
 import com.lcs.findraco.plan.response.PlanResponse;
+import com.lcs.findraco.user.model.Language;
 import com.lcs.findraco.user.model.User;
 import jakarta.persistence.EntityManager;
 import java.time.Clock;
@@ -48,18 +49,27 @@ public class PlanService {
     }
 
     @Transactional
-    public PlanMembership provisionDefaultPlan(User owner) {
-        return createPlanInternal("My plan", owner, true);
+    public PlanMembership provisionDefaultPlan(User owner, Language language) {
+        return createPlanInternal(defaultPlanName(language), owner, true);
+    }
+
+    private static String defaultPlanName(Language language) {
+        return switch (language) {
+            case PT_BR -> "Meu plano";
+            case EN -> "My plan";
+        };
     }
 
     /**
      * Every user keeps at least one plan: when losing a membership left the user with none, a personal
-     * plan is provisioned as at sign-up. Does nothing for a user who still has a live plan.
+     * plan is provisioned as at sign-up, named in the user's saved language (English when none). Does nothing
+     * for a user who still has a live plan.
      */
     @Transactional
     public void ensurePersonalPlan(long userId) {
         if (membershipRepository.findAllByUserId(userId).isEmpty()) {
-            provisionDefaultPlan(entityManager.getReference(User.class, userId));
+            User user = entityManager.find(User.class, userId);
+            provisionDefaultPlan(user, Language.fromTag(user.getLanguage()).orElse(Language.EN));
         }
     }
 

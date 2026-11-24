@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { Text } from "@/components/typography/base/Text";
 import { formatDate } from "@/utils/dates";
 import { useTranslation } from "react-i18next";
-import { TransactionKindBadge } from "./TransactionCells";
+import { TransactionKindBadge } from "./TransactionBadges";
 
 type NeutralReviewListViewProps = {
   candidates: NeutralCandidate[];

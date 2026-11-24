@@ -1,4 +1,5 @@
 import type { ComponentProps } from "react";
+import { PageHeader } from "@/components/pageHeader/PageHeader";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { CategorySpendingList } from "./components/CategorySpendingList";
 import { MemberFilterChips } from "./components/MemberFilterChips";
@@ -7,6 +8,7 @@ import { PeriodNavigator } from "@/components/periodNavigator/PeriodNavigator";
 import type { SpendingRowsView } from "./utils/spendingRows";
 import { SummaryCards } from "./components/SummaryCards";
 import type { SummaryView } from "./utils/summaryView";
+import { useTranslation } from "react-i18next";
 
 type OverviewPageViewProps = {
   navigator: ComponentProps<typeof PeriodNavigator>;
@@ -26,12 +28,19 @@ export function OverviewPageView({
   spending,
   trend,
 }: OverviewPageViewProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="flex flex-col gap-6 px-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <PeriodNavigator {...navigator} />
-        {memberFilter && <MemberFilterChips {...memberFilter} />}
-      </div>
+      <PageHeader
+        title={t("app.navigation.overview")}
+        context={
+          <>
+            <PeriodNavigator {...navigator} />
+            {memberFilter && <MemberFilterChips {...memberFilter} />}
+          </>
+        }
+      />
 
       {summary ? (
         <SummaryCards view={summary} />

@@ -24,7 +24,11 @@ export function MainLayoutView({ navbar, navigation, overlay, children }: MainLa
         )}
       >
         {navigation ? (
-          <div className="flex flex-1 flex-col gap-6 py-4">
+          // One cap for every destination, so the content edge does not jump between tabs.
+          <div
+            data-slot="page-content"
+            className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-6 py-4"
+          >
             {navigation.tabRow}
             {children}
           </div>

@@ -77,6 +77,13 @@ export const Overflow: Story = {
   },
 };
 
+export const MetaBadges: Story = {
+  args: { initialValue: members },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("+2").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+  },
+};
+
 export const NoResults: Story = {
   tags: ["!test"],
   play: async ({ canvas, userEvent }) => {

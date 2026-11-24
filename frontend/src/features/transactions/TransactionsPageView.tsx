@@ -1,6 +1,7 @@
 import type { ComponentProps, ReactNode } from "react";
 import type { Transaction } from "@/api/dtos/transaction";
 import { Badge } from "@/components/badge/base/Badge";
+import { PageHeader } from "@/components/pageHeader/PageHeader";
 import { PeriodNavigator } from "@/components/periodNavigator/PeriodNavigator";
 import { Button } from "@/components/button/base/Button";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/input/base/InputGroup";
@@ -83,66 +84,66 @@ export function TransactionsPageView({
   return (
     <>
       <div className="flex flex-col gap-2 px-4">
-        <div className="self-start">
-          <PeriodNavigator {...navigator} />
-        </div>
-
-        <div className="flex gap-2">
-          <div className="flex flex-1 justify-between gap-2">
-            <InputGroup className="flex-1 sm:max-w-sm">
-              <InputGroupInput
-                placeholder={t("transactions.transactionsPageView.searchTransactions")}
-                aria-label={t("transactions.transactionsPageView.searchTransactions2")}
-                value={search}
-                onChange={(e) => onSearchChange(e.target.value)}
-                className="w-full pl-9"
-              />
-              <InputGroupAddon>
-                <SearchIcon className="text-muted-foreground pointer-events-none h-4 w-4" />
-              </InputGroupAddon>
-            </InputGroup>
-
-            {filters}
-          </div>
-
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleImportClick}
-              disabled={isImporting}
-              // The label hides below `sm`; the button keeps its name there.
-              aria-label={importLabel}
-            >
-              <UploadIcon className="h-4 w-4" />
-              <span className="hidden sm:inline">{importLabel}</span>
-            </Button>
-            {onReview && (
+        <PageHeader
+          title={t("app.navigation.transactions")}
+          context={<PeriodNavigator {...navigator} />}
+          actions={
+            <>
               <Button
                 variant="outline"
-                onClick={onReview}
+                onClick={handleImportClick}
+                disabled={isImporting}
                 // The label hides below `sm`; the button keeps its name there.
-                aria-label={t("transactions.transactionsPageView.reviewMovements")}
+                aria-label={importLabel}
               >
-                <ListChecksIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">
-                  {t("transactions.transactionsPageView.reviewMovements")}
-                </span>
+                <UploadIcon className="h-4 w-4" />
+                <span className="hidden sm:inline">{importLabel}</span>
               </Button>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFileChange}
+              {onReview && (
+                <Button
+                  variant="outline"
+                  onClick={onReview}
+                  // The label hides below `sm`; the button keeps its name there.
+                  aria-label={t("transactions.transactionsPageView.reviewMovements")}
+                >
+                  <ListChecksIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {t("transactions.transactionsPageView.reviewMovements")}
+                  </span>
+                </Button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </>
+          }
+        />
+
+        <div className="flex justify-between gap-2">
+          <InputGroup className="flex-1 sm:max-w-sm">
+            <InputGroupInput
+              placeholder={t("transactions.transactionsPageView.searchTransactions")}
+              aria-label={t("transactions.transactionsPageView.searchTransactions2")}
+              value={search}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="w-full pl-9"
             />
-          </div>
+            <InputGroupAddon>
+              <SearchIcon className="text-muted-foreground pointer-events-none h-4 w-4" />
+            </InputGroupAddon>
+          </InputGroup>
+
+          {filters}
         </div>
 
         {chips.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
             {chips.map((chip) => (
-              <Badge key={chip.key} variant="outline" className="gap-1 pr-1">
+              <Badge key={chip.key} variant="meta" className="gap-1 pr-1 max-sm:h-11">
                 {chip.label}
                 <Button
                   type="button"

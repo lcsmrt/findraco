@@ -58,7 +58,7 @@ export function NavbarView({
         {themeToggle}
 
         <DropdownMenu>
-          <DropdownMenuTrigger className="hover:cursor-pointer focus:outline-none">
+          <DropdownMenuTrigger className="focus-visible:ring-ring inline-flex items-center justify-center rounded-full outline-none hover:cursor-pointer focus-visible:ring-3 max-sm:size-11">
             <Avatar size="lg">
               <AvatarFallback>{getFirstAndLastInitials(userName)}</AvatarFallback>
               {update && (

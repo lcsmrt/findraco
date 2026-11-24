@@ -71,7 +71,7 @@ function BarItem({ destination, current }: BarItemProps) {
       to={DESTINATION_PATHS[destination]}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex flex-col items-center justify-center gap-1 outline-none focus-visible:ring-3 focus-visible:ring-ring/50",
+        "flex flex-col items-center justify-center gap-1 outline-none focus-visible:ring-3 focus-visible:ring-ring",
         // primary-ink is the primary hue at a contrast text can use; plain primary is too light.
         active ? "text-primary-ink" : "text-muted-foreground",
       )}

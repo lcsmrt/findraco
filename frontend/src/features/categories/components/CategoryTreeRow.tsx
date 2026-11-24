@@ -234,7 +234,7 @@ export function CategoryTreeRow({
           type="button"
           onClick={() => onEdit(category)}
           className={cn(
-            "active:bg-muted/60 flex w-full cursor-pointer flex-col gap-1 py-2.5 text-left sm:hidden",
+            "active:bg-muted/60 focus-visible:ring-ring flex w-full cursor-pointer flex-col gap-1 rounded-md py-2.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-inset sm:hidden",
             isChild && "pl-7",
           )}
         >

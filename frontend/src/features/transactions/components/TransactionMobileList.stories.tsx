@@ -1,6 +1,7 @@
 import type { Transaction } from "@/api/dtos/transaction";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn, within } from "storybook/test";
+import { page } from "@vitest/browser/context";
+import { expect, fn, waitFor, within } from "storybook/test";
 import { TransactionMobileList } from "./TransactionMobileList";
 
 function transaction(
@@ -69,7 +70,7 @@ type Story = StoryObj<typeof meta>;
 
 export const GroupedByDay: Story = {
   play: async ({ args, canvas, userEvent }) => {
-    await expect(canvas.getAllByRole("heading", { level: 3 })).toHaveLength(2);
+    await expect(canvas.getAllByRole("heading", { level: 2 })).toHaveLength(2);
     await userEvent.click(canvas.getByRole("button", { name: /Groceries/ }));
     await expect(args.onEdit).toHaveBeenCalledWith(week[0]);
   },
@@ -103,6 +104,103 @@ export const ForecastAndPending: Story = {
   play: async ({ canvas }) => {
     await expect(canvas.getAllByText("Forecast")).toHaveLength(1);
     await expect(canvas.getAllByText("Pending")).toHaveLength(1);
+  },
+};
+
+function badgeOf(element: HTMLElement) {
+  const badge = element.closest<HTMLElement>("[data-variant]");
+  if (!badge) throw new Error("the label is not inside a badge");
+  return badge;
+}
+
+// What the page paints for the card token; a badge tinted differently stands out from the surface.
+function cardBackground() {
+  const probe = document.createElement("div");
+  probe.style.backgroundColor = "var(--card)";
+  document.body.append(probe);
+  const { backgroundColor } = getComputedStyle(probe);
+  probe.remove();
+  return backgroundColor;
+}
+
+export const ForecastBadge: Story = {
+  args: {
+    transactions: [transaction(1, "Gym", "2026-10-20", { status: "FORECAST", requiresConfirmation: true })],
+  },
+  play: async ({ canvas }) => {
+    const badge = badgeOf(canvas.getByText("Forecast"));
+    await expect(badge).toHaveAttribute("data-variant", "status");
+    await expect(badge).toHaveAttribute("data-tone", "neutral");
+    await expect(badge.querySelector("svg")).not.toBeNull();
+    await expect(getComputedStyle(badge).borderTopWidth).toBe("0px");
+    await expect(getComputedStyle(badge).backgroundColor).not.toBe(cardBackground());
+  },
+};
+
+export const PendingBadge: Story = {
+  args: {
+    transactions: [transaction(1, "Rent", "2026-10-02", { status: "PENDING", requiresConfirmation: true })],
+  },
+  play: async ({ canvas }) => {
+    const badge = badgeOf(canvas.getByText("Pending"));
+    await expect(badge).toHaveAttribute("data-variant", "status");
+    await expect(badge).toHaveAttribute("data-tone", "warning");
+    await expect(badge.querySelector("svg")).not.toBeNull();
+  },
+};
+
+// The table's description cell renders the same row; this is the phone list's half of that claim.
+export const BadgeRow: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Gym", "2026-10-20", {
+        status: "FORECAST",
+        requiresConfirmation: true,
+        kind: "TRANSFER",
+        seriesId: "series-1",
+        items: [1, 2, 3].map((id) => ({ id, description: `Item ${id}`, amount: 10, quantity: 1 })),
+      }),
+    ],
+  },
+  play: async ({ canvas }) => {
+    const labels = ["Forecast", "Between members", "Series", "3 items"];
+    const positions = labels.map((label) => canvas.getByText(label).getBoundingClientRect().left);
+    await expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  },
+};
+
+// Badges that do not fit beside the title drop below it, so a short description is never cut to an ellipsis.
+export const TitleNotSqueezed: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Internet", "2026-10-14", {
+        status: "PENDING",
+        requiresConfirmation: true,
+        seriesId: "series-1",
+      }),
+    ],
+  },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const title = canvas.getByText("Internet");
+    const badge = canvas.getByText("Pending");
+    await waitFor(() => {
+      expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+      expect(badge.getBoundingClientRect().top).toBeGreaterThanOrEqual(title.getBoundingClientRect().bottom);
+    });
+  },
+};
+
+// A row is a button, so Tab reaches it and it draws the ring on keyboard focus.
+export const RowFocus: Story = {
+  args: { transactions: [transaction(1, "Groceries", "2026-10-14"), transaction(2, "Salary", "2026-10-14")] },
+  play: async ({ canvas, userEvent }) => {
+    const row = canvas.getByRole("button", { name: /Groceries/ });
+    // The base layer sets the outline colour on every element, so only the box-shadow tells a ring.
+    await expect(getComputedStyle(row).boxShadow).not.toContain("rgb(161, 74, 7)");
+    await userEvent.tab();
+    await expect(row).toHaveFocus();
+    await waitFor(() => expect(getComputedStyle(row).boxShadow).toContain("rgb(161, 74, 7)"));
   },
 };
 

@@ -29,6 +29,51 @@ export const EveryStatus: Story = {
   },
 };
 
+// Each status is a badge of its own family: pending and expired neutral (only pending has a clock),
+// accepted success with a check, revoked destructive with an x.
+export const StatusBadges: Story = {
+  play: async ({ canvas }) => {
+    const statuses = [
+      { label: "Pending", tone: "neutral", icon: true },
+      { label: "Accepted", tone: "success", icon: true },
+      { label: "Expired", tone: "neutral", icon: false },
+      { label: "Revoked", tone: "destructive", icon: true },
+    ];
+    for (const { label, tone, icon } of statuses) {
+      const badge = canvas.getAllByText(label)[0].closest<HTMLElement>("[data-variant]");
+      await expect(badge).toHaveAttribute("data-variant", "status");
+      await expect(badge).toHaveAttribute("data-tone", tone);
+      await expect(badge?.querySelector("svg") !== null).toBe(icon);
+    }
+  },
+};
+
+// The colour of a theme token as an element painting it computes it.
+function tokenColor(token: string) {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${token})`;
+  document.body.append(probe);
+  const { color } = getComputedStyle(probe);
+  probe.remove();
+  return color;
+}
+
+// Each status carries its own icon and colour, read from the rendered svg and the badge's text colour.
+export const StatusColoursAndIcons: Story = {
+  play: async ({ canvas }) => {
+    const statuses = [
+      { label: "Pending", icon: "lucide-clock", token: "--secondary-foreground" },
+      { label: "Accepted", icon: "lucide-check", token: "--success" },
+      { label: "Revoked", icon: "lucide-x", token: "--destructive" },
+    ];
+    for (const { label, icon, token } of statuses) {
+      const badge = canvas.getAllByText(label)[0].closest<HTMLElement>("[data-variant]");
+      await expect(badge?.querySelector("svg")).toHaveClass(icon);
+      await expect(badge && getComputedStyle(badge).color).toBe(tokenColor(token));
+    }
+  },
+};
+
 export const Loading: Story = { args: { invitations: [], isLoading: true } };
 
 export const Empty: Story = {

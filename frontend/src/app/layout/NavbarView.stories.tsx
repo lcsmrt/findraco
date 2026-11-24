@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ChevronsUpDown, Moon } from "lucide-react";
+import { page } from "@vitest/browser/context";
 import { expect, fn, screen, waitFor } from "storybook/test";
 import { Button } from "@/components/button/base/Button";
 import { NavbarView } from "./NavbarView";
@@ -102,6 +103,26 @@ export const OpenLanguage: Story = {
     await userEvent.click(await screen.findByRole("menuitem", { name: "Language / Idioma" }));
     await expect(args.onOpenLanguage).toHaveBeenCalledTimes(1);
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
+  },
+};
+
+// The avatar is the only way to the menu: it draws the ring for the keyboard and is a 44 px target on a phone.
+export const AvatarFocusAndSize: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(414, 896);
+    const trigger = canvas.getByText("AL").closest("button");
+    if (!trigger) throw new Error("The avatar has no menu trigger");
+    // Tab walks from the start of the page: the plan switcher, the theme toggle, then the avatar.
+    await userEvent.tab();
+    await userEvent.tab();
+    await userEvent.tab();
+    await expect(trigger).toHaveFocus();
+    await waitFor(() => {
+      const { width, height } = trigger.getBoundingClientRect();
+      expect([width, height]).toEqual([44, 44]);
+      const style = getComputedStyle(trigger);
+      expect(style.boxShadow).toContain("rgb(161, 74, 7)");
+    });
   },
 };
 

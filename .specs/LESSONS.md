@@ -386,6 +386,42 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification.md finding 6 / C30 (frontend/lint)
 - last seen: 2026-11-24T01:03:12Z
 
+### L-063 - A focus-ring change covers every ring state (default, destructive, aria-invalid): grep all partial-opacity ring utilities, not one pattern, and test a destructive and an invalid control.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/a11y` · harmful: 0
+- features: phase2-foundations
+- evidence: verification.md finding 1 / C45 C46 (frontend/a11y)
+- last seen: 2026-11-24T02:46:56Z
+
+### L-064 - A focus test asserts a value that differs before and after focus; a global base style (outline-ring on *) makes outline-color always match and the test vacuous.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/a11y` · harmful: 0
+- features: phase2-foundations
+- evidence: verification.md finding 2 / C22 C23 (frontend/a11y)
+- last seen: 2026-11-24T02:46:56Z
+
+### L-065 - Before changing a colour token, list every utility that reads it (border, fill, alpha variants, dark: prefixes); a border token reused as a fill moves text contrast too.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/tokens` · harmful: 0
+- features: phase2-foundations
+- evidence: verification.md finding 3 / C47 (frontend/tokens)
+- last seen: 2026-11-24T02:46:56Z
+
+### L-066 - A coverage row names the component the proof actually renders; two things called chips (Badge filter chips, Toggle chips) are different members.
+- signal: `spec_precision_gap` · recurrence: 1 feature(s) · scope: `specs/checks` · harmful: 0
+- features: phase2-foundations
+- evidence: verification.md finding 4 / C48 (specs/checks)
+- last seen: 2026-11-24T02:46:56Z
+
+### L-067 - A visual-variant test asserts the computed colour and the specific icon, not a data attribute copied from the prop.
+- signal: `weak_test` · recurrence: 1 feature(s) · scope: `frontend/tests` · harmful: 0
+- features: phase2-foundations
+- evidence: verification.md finding 5 / C49 (frontend/tests)
+- last seen: 2026-11-24T02:46:56Z
+
+### L-068 - A touch-size change is walked on every page at phone width: one-off widths (hidden-label buttons, sm icon-only buttons, bare dropdown triggers, checkbox rows, crowded headers) escape primitive variants.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `frontend/touch` · harmful: 0
+- features: phase2-foundations
+- evidence: walk C40-C44 (frontend/touch)
+- last seen: 2026-11-24T02:46:56Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.

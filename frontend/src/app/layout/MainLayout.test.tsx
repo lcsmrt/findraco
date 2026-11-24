@@ -230,6 +230,16 @@ describe("MainLayout global add", () => {
     expect(within(form).getByRole("button", { name: "Credit" }).getAttribute("aria-pressed")).toBe("false");
   });
 
+  it("opens the new transaction form from the Categories page", async () => {
+    const user = userEvent.setup();
+    renderAt("/categories");
+
+    await user.click(within(bottomBar()).getByRole("button", { name: "New Transaction" }));
+
+    expect(await screen.findByRole("dialog", { name: "New Transaction" })).toBeTruthy();
+    expect(pathname).toBe("/categories");
+  });
+
   it("saving from the Overview closes the form, stays there, shows \"Transaction added.\" and refetches the summary (NAV-02 AC 1, 3, 4)", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();

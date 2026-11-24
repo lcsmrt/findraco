@@ -13,7 +13,7 @@ type NumberFieldProps = Omit<NumberFieldPrimitive.Root.Props, "onBlur" | "ref"> 
 };
 
 const stepButtonClass =
-  "text-muted-foreground hover:bg-muted hover:text-foreground flex h-full w-9 shrink-0 items-center justify-center transition-colors outline-none hover:cursor-pointer focus-visible:bg-muted disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4";
+  "text-muted-foreground hover:bg-muted hover:text-foreground flex h-full w-9 max-sm:w-11 shrink-0 items-center justify-center transition-colors outline-none hover:cursor-pointer focus-visible:bg-muted disabled:pointer-events-none disabled:opacity-50 [&_svg:not([class*='size-'])]:size-4";
 
 /**
  * An integer input: Base UI's accessible spinbutton (arrow keys, buttons) between a decrement and
@@ -39,9 +39,9 @@ export function NumberField({
     >
       <NumberFieldPrimitive.Group
         className={cn(
-          "border-input dark:bg-input/30 flex h-9 w-full min-w-0 items-center overflow-hidden rounded-md border bg-transparent shadow-xs transition-[color,box-shadow]",
-          "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-ring/50 has-[input:focus-visible]:ring-[3px]",
-          "has-[[aria-invalid=true]]:border-destructive has-[[aria-invalid=true]]:ring-destructive/20 dark:has-[[aria-invalid=true]]:ring-destructive/40",
+          "border-input dark:bg-field flex max-sm:h-11 h-9 w-full min-w-0 items-center overflow-hidden rounded-md border bg-transparent shadow-xs transition-[color,box-shadow]",
+          "has-[input:focus-visible]:border-ring has-[input:focus-visible]:ring-ring has-[input:focus-visible]:ring-[3px]",
+          "has-[[aria-invalid=true]]:border-destructive",
           "data-disabled:opacity-50",
         )}
       >

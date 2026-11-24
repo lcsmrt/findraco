@@ -5,6 +5,7 @@ import { CurrencyInput } from "@/components/input/CurrencyInput";
 import { ToggleGroup, ToggleGroupItem } from "@/components/toggleGroup/base/ToggleGroup";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
+import { formatPercent } from "@/utils/percent";
 import { Trash2Icon } from "lucide-react";
 import {
   Controller,
@@ -34,7 +35,7 @@ export function CategoryLimitFields({
   perMemberDisabledReason,
   disabled,
 }: CategoryLimitFieldsProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const { field: limitMode } = useController({ control, name: "limitMode" });
   const { fields, remove } = useFieldArray({ control, name: "memberLimits" });
@@ -130,7 +131,7 @@ export function CategoryLimitFields({
                     )}
                   />
                   <Text variant="secondary" numeric className="w-14 text-right">
-                    {share != null ? `${share}%` : "—"}
+                    {share != null ? formatPercent(share, i18n.language) : "—"}
                   </Text>
                   {!row.active ? (
                     <Button

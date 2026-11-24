@@ -1,13 +1,24 @@
 import type { Plan } from "@/api/dtos";
 import { Text } from "@/components/typography/base/Text";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn } from "storybook/test";
+import { page } from "@vitest/browser/context";
+import { expect, fn, waitFor, within } from "storybook/test";
 import { PlansPageView } from "./PlansPageView";
 
 const plans: Plan[] = [
   { id: 1, name: "Personal", isDefault: true, myRole: "OWNER", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true } },
   { id: 2, name: "Household", isDefault: false, myRole: "EDITOR", permissions: { createTransactions: true, attributeToOthers: true, manageCategories: false, managePlan: false } },
 ];
+
+// What the page paints for a theme token, as the computed colour a button's fill is compared to.
+function tokenColor(token: string) {
+  const probe = document.createElement("div");
+  probe.style.backgroundColor = `var(${token})`;
+  document.body.append(probe);
+  const { backgroundColor } = getComputedStyle(probe);
+  probe.remove();
+  return backgroundColor;
+}
 
 const meta = {
   title: "Plans/PlansPageView",
@@ -48,6 +59,39 @@ export const Owner: Story = {
   },
 };
 
+// The role and the default marker are quiet facts about a plan, not states.
+export const MetaBadges: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Owner").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+    await expect(canvas.getByText("Default").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+  },
+};
+
+export const PageTitle: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("heading", { level: 1, name: "Plans" })).toBeVisible();
+  },
+};
+
+// The page creates sit in the header as outline buttons (a border, no fill of their own): no filled
+// primary button is left on the page.
+export const HeaderActions: Story = {
+  play: async ({ canvas, canvasElement }) => {
+    const header = canvas.getByRole("heading", { level: 1, name: "Plans" }).closest("header");
+    if (!header) throw new Error("the page title is not inside a header");
+    const create = within(header).getByRole("button", { name: "New plan" });
+    await expect(create).toBeVisible();
+    await expect([tokenColor("--background"), "rgba(0, 0, 0, 0)"]).toContain(
+      getComputedStyle(create).backgroundColor,
+    );
+    await expect(parseFloat(getComputedStyle(create).borderTopWidth)).toBeGreaterThan(0);
+    const filled = [...canvasElement.querySelectorAll("[data-slot=button]")].filter(
+      (button) => getComputedStyle(button).backgroundColor === tokenColor("--primary"),
+    );
+    await expect(filled).toHaveLength(0);
+  },
+};
+
 export const Member: Story = {
   args: { activePlan: plans[1], activePlanId: 2, canManagePlan: false },
   play: async ({ args, canvas, userEvent }) => {
@@ -83,6 +127,30 @@ export const ManyLongPlans: Story = {
       myRole: "OWNER",
       permissions: { createTransactions: true, attributeToOthers: true, manageCategories: true, managePlan: true },
     },
+  },
+};
+
+// On a phone the title takes its own line and the actions wrap below it, clear of the card's edge.
+export const MembersHeaderPhone: Story = {
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const title = canvas.getByText("Members of Personal");
+    const card = title.closest("[data-slot=card]");
+    if (!card) throw new Error("The members title is outside a card");
+    const actions = ["Rename plan", "Transfer ownership", "Archive plan", "Invite"].map((name) =>
+      canvas.getByRole("button", { name }),
+    );
+    await waitFor(() => {
+      const lineHeight = parseFloat(getComputedStyle(title).lineHeight);
+      expect(title.getBoundingClientRect().height).toBeLessThan(lineHeight * 1.5);
+      const edge = card.getBoundingClientRect().right;
+      for (const action of actions) {
+        const box = action.getBoundingClientRect();
+        expect(box.height).toBe(44);
+        expect(box.top).toBeGreaterThanOrEqual(title.getBoundingClientRect().bottom);
+        expect(edge - box.right).toBeGreaterThanOrEqual(12);
+      }
+    });
   },
 };
 

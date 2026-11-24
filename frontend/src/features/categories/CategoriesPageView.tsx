@@ -1,6 +1,7 @@
 import type { Category } from "@/api/dtos";
 import { Text } from "@/components/typography/base/Text";
 import { Button } from "@/components/button/base/Button";
+import { PageHeader } from "@/components/pageHeader/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card/base/Card";
 import { Skeleton } from "@/components/skeleton/base/Skeleton";
 import { cn } from "@/lib/mergeClasses";
@@ -115,14 +116,17 @@ export function CategoriesPageView({
 
   return (
     <div className="flex flex-col gap-6 px-4">
-      {canManage && (
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <Button onClick={onCreate}>
-            <PlusIcon className="h-4 w-4" />
-            {t("categories.categoriesPageView.newCategory")}
-          </Button>
-        </div>
-      )}
+      <PageHeader
+        title={t("app.navigation.categories")}
+        actions={
+          canManage && (
+            <Button variant="outline" onClick={onCreate}>
+              <PlusIcon className="h-4 w-4" />
+              {t("categories.categoriesPageView.newCategory")}
+            </Button>
+          )
+        }
+      />
 
       {sections == null ? (
         <div className="flex flex-col gap-6">

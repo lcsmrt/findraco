@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { expect } from "storybook/test";
+import { page } from "@vitest/browser/context";
+import { expect, waitFor } from "storybook/test";
 import { memberColor } from "@/utils/memberColors";
 import type { MemberOption } from "../useOverviewMemberFilter";
 import { MemberFilterChips } from "./MemberFilterChips";
@@ -54,6 +55,19 @@ export const NoneSelected: Story = {
 
     await userEvent.keyboard("{ArrowRight}");
     await expect(canvas.getByRole("button", { name: "Ana" })).toHaveFocus();
+  },
+};
+
+// A phone finger needs 44 px: every member chip grows to it.
+export const TouchTarget: Story = {
+  args: { members: threeMembers, initialSelectedId: null },
+  play: async ({ canvas }) => {
+    await page.viewport(414, 896);
+    const chips = canvas.getAllByRole("button");
+    await expect(chips).toHaveLength(4);
+    await waitFor(() => {
+      for (const chip of chips) expect(chip.getBoundingClientRect().height).toBe(44);
+    });
   },
 };
 

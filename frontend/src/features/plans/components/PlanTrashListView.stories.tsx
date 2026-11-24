@@ -54,6 +54,12 @@ export const Entries: Story = {
   },
 };
 
+export const MetaBadges: Story = {
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Series").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+  },
+};
+
 export const MoneyAmounts: Story = {
   args: {
     entries: [

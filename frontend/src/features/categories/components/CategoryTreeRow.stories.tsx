@@ -1,7 +1,8 @@
 import type { Category } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect, fn } from "storybook/test";
+import { page } from "@vitest/browser/context";
+import { expect, fn, waitFor } from "storybook/test";
 import { CategoryTreeRow } from "./CategoryTreeRow";
 
 function colorOf(memberId: number) {
@@ -133,5 +134,18 @@ export const Mobile: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await userEvent.click(canvas.getByRole("button", { name: /Hobbies/ }));
     await expect(args.onEdit).toHaveBeenCalledWith(hobbies);
+  },
+};
+
+// At phone width the row is one button; Tab reaches it and it draws the ring.
+export const RowFocus: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(414, 896);
+    const row = canvas.getByRole("button", { name: /Food/ });
+    // The base layer sets the outline colour on every element, so only the box-shadow tells a ring.
+    await expect(getComputedStyle(row).boxShadow).not.toContain("rgb(161, 74, 7)");
+    await userEvent.tab();
+    await expect(row).toHaveFocus();
+    await waitFor(() => expect(getComputedStyle(row).boxShadow).toContain("rgb(161, 74, 7)"));
   },
 };

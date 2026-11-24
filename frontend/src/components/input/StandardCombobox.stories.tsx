@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
+import { page } from "@vitest/browser/context";
 import { expect, fn, screen } from "storybook/test";
 import { Field, FieldLabel } from "./base/Field";
 import { StandardCombobox } from "./StandardCombobox";
@@ -65,6 +66,18 @@ export const Empty: Story = {
     await userEvent.click(canvas.getByRole("combobox", { name: "Category" }));
     await userEvent.click(await screen.findByRole("option", { name: "Housing" }));
     await expect(canvas.getByRole("combobox", { name: "Category" })).toHaveTextContent("Housing");
+  },
+};
+
+// A phone finger needs 44 px: the field and the search box inside its list.
+export const TouchTarget: Story = {
+  play: async ({ canvas, userEvent }) => {
+    await page.viewport(414, 896);
+    const field = canvas.getByRole("combobox", { name: "Category" });
+    await expect(field.getBoundingClientRect().height).toBe(44);
+    await userEvent.click(field);
+    const search = await screen.findByPlaceholderText("Search...");
+    await expect(search.getBoundingClientRect().height).toBe(44);
   },
 };
 

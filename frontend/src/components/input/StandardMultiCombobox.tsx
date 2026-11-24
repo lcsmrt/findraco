@@ -128,7 +128,7 @@ export function StandardMultiCombobox<T extends WithId>({
             </Text>
           )}
           {overflowCount > 0 && (
-            <Badge variant="secondary">+{overflowCount}</Badge>
+            <Badge variant="meta">+{overflowCount}</Badge>
           )}
         </ComboboxTrigger>
       </div>

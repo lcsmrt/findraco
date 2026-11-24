@@ -8,7 +8,7 @@ import { Heading } from "@/components/typography/base/Heading";
 import { Text } from "@/components/typography/base/Text";
 import { cn } from "@/lib/mergeClasses";
 import { formatPattern } from "@/utils/dates";
-import { SeriesBadge, TransactionKindBadge, TransactionStatusBadge } from "./TransactionCells";
+import { TransactionBadges } from "./TransactionBadges";
 import { groupByDay } from "../utils/groupByDay";
 import { CheckIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -36,16 +36,17 @@ function TransactionMobileRow({ transaction, onEdit, onConfirm }: TransactionMob
         type="button"
         disabled={!transaction.permissions.edit}
         onClick={() => onEdit(transaction)}
-        className="active:bg-muted/60 flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left"
+        className="active:bg-muted/60 focus-visible:ring-ring flex min-w-0 flex-1 cursor-pointer items-center justify-between gap-3 px-3 py-2.5 text-left outline-none focus-visible:ring-3 focus-visible:ring-inset"
       >
         <span className="flex min-w-0 flex-col gap-0.5">
-          <span className="flex items-center gap-1.5">
-            <Text variant="label" className="truncate">
+          {/* The badges wrap below the title rather than squeezing it into an ellipsis. */}
+          <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
+            <Text variant="label" className="max-w-full truncate">
               {transaction.description}
             </Text>
-            {transaction.seriesId && <SeriesBadge />}
-            <TransactionKindBadge kind={transaction.kind} />
-            <TransactionStatusBadge status={transaction.status} />
+            <span className="flex flex-wrap items-center gap-1.5 empty:hidden">
+              <TransactionBadges transaction={transaction} />
+            </span>
           </span>
           {details.length > 0 && (
             <Text variant="caption" className="truncate">
@@ -118,7 +119,7 @@ export function TransactionMobileList({
       ) : (
         days.map((group) => (
           <section key={group.day}>
-            <Heading level={3} variant="caption" className="bg-muted/50 border-b px-3 py-1.5">
+            <Heading level={2} variant="caption" className="bg-muted/50 border-b px-3 py-1.5">
               {formatPattern(group.day, DAY_HEADING_PATTERN)}
             </Heading>
             <div className="divide-y border-b">

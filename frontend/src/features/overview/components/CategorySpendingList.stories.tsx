@@ -1,7 +1,7 @@
 import type { CategorySpending, CategorySpendingMember, UsageStatus } from "@/api/dtos";
 import { MEMBER_PALETTE } from "@/utils/memberColors";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { expect } from "storybook/test";
+import { expect, waitFor } from "storybook/test";
 import { CategorySpendingList } from "./CategorySpendingList";
 import { buildSpendingRows, type SelectedMember } from "../utils/spendingRows";
 
@@ -118,6 +118,27 @@ export const LimitStatuses: Story = {
     await expect(canvas.getByText("Restaurants")).toBeVisible();
     await userEvent.click(food);
     await expect(canvas.queryByText("Restaurants")).toBeNull();
+  },
+};
+
+export const MetaBadges: Story = {
+  play: async ({ canvasElement }) => {
+    const owner = [...canvasElement.querySelectorAll("[data-variant]")].find((badge) =>
+      badge.textContent?.includes("Livia"),
+    );
+    await expect(owner).toHaveAttribute("data-variant", "meta");
+  },
+};
+
+// The Food row folds its subcategories, so it is a button; Tab reaches it and it draws the ring.
+export const RowFocus: Story = {
+  play: async ({ canvas, userEvent }) => {
+    const row = canvas.getByRole("button", { name: /Food/ });
+    // The base layer sets the outline colour on every element, so only the box-shadow tells a ring.
+    await expect(getComputedStyle(row).boxShadow).not.toContain("rgb(161, 74, 7)");
+    await userEvent.tab();
+    await expect(row).toHaveFocus();
+    await waitFor(() => expect(getComputedStyle(row).boxShadow).toContain("rgb(161, 74, 7)"));
   },
 };
 

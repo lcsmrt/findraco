@@ -3,6 +3,7 @@ package com.lcs.findraco.user.controller;
 import com.lcs.findraco.shared.security.AuthenticatedUser;
 import com.lcs.findraco.shared.security.CurrentUser;
 import com.lcs.findraco.shared.web.ClientIp;
+import com.lcs.findraco.shared.web.RequestHeaders;
 import com.lcs.findraco.user.request.CreateUserRequest;
 import com.lcs.findraco.user.request.UpdateLanguageRequest;
 import com.lcs.findraco.user.request.UpdateTimeZoneRequest;
@@ -28,12 +29,18 @@ public class UserController {
         this.userService = userService;
     }
 
-    @Operation(summary = "Creates a new user")
+    @Operation(
+            summary =
+                    "Creates a new user; a valid Time-Zone header sets their zone and the Accept-Language header names their first plan")
     @SecurityRequirements
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public ResponseEntity<UserResponse> createUser(@RequestBody @Valid CreateUserRequest dto, @ClientIp String ip) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto, ip));
+    public ResponseEntity<UserResponse> createUser(
+            @RequestBody @Valid CreateUserRequest dto,
+            @ClientIp String ip,
+            @RequestHeader(name = RequestHeaders.TIME_ZONE, required = false) String timeZone,
+            @RequestHeader(name = RequestHeaders.ACCEPT_LANGUAGE, required = false) String acceptLanguage) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(userService.create(dto, ip, timeZone, acceptLanguage));
     }
 
     @Operation(summary = "Returns the authenticated user's data")

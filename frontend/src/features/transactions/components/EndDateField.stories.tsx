@@ -46,6 +46,13 @@ export const Ongoing: Story = {
   },
 };
 
+export const MetaBadges: Story = {
+  args: {},
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Ongoing").closest("[data-variant]")).toHaveAttribute("data-variant", "meta");
+  },
+};
+
 export const WithEndDate: Story = {
   args: { endDate: new Date(2026, 11, 31) },
   play: async ({ canvas }) => {
