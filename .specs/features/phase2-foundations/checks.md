@@ -8,7 +8,7 @@ Plan: `.specs/features/phase2-foundations/plan.md`
 39 checks in 6 slices · 3 one-way doors · 0 open, of which 0 block
 
 Story rules for every check below:
-- The storybook project runs at Vitest's default browser viewport, 414 × 896, which is below 640 px. A check about 640 px or wider sets the viewport inside its story (`page.viewport` from `vitest/browser`).
+- The storybook project runs at a 1200 × 900 browser viewport (measured mid-build; the 414 × 896 first written here was wrong). Every check about a width sets the viewport inside its story (`page.viewport` from `vitest/browser`): 414 px for the phone checks, 1280 or 1440 px for the desktop ones.
 - Sizes, colours and alignment are read with `getComputedStyle` or `getBoundingClientRect`, never from class names.
 - A badge's family is read from the `data-variant` attribute that `Badge` renders (`status`, `tag` or `meta`), and its tone from `data-tone`.
 - Stories render in English, so their labels are the `en` copy.
@@ -188,7 +188,7 @@ Proof: walk - Overview, Transactions, Categories and Plans at both widths, plus 
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from the plan commit
+- **Dispatched:** frontend build worker (Sonnet), S1-S4 and S6, from `8619b2cc`, returned (C1-C33, C37-C38 at `b9ea759f`); backend build worker (Sonnet), S5, at `b3d5e909`
 - **Boundary:** C1-C33, C37-C38 closed at `b9ea759f`
 - **Abandoned:** none
 - **Walked:** none yet
