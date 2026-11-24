@@ -886,9 +886,13 @@
     "transactionsPageView": {
       "clearAll": "Limpar tudo",
       "importCsv": "Importar CSV",
-      "importing": "Importando...",
+      "importing": "Importando…",
+      "moreActions": "Mais ações",
       "removeFilter": "Remover {{name}}",
+      "review": "Revisar",
       "reviewMovements": "Revisar movimentos",
+      "reviewNotice_one": "{{count}} movimento para revisar",
+      "reviewNotice_other": "{{count}} movimentos para revisar",
       "searchTransactions": "Buscar transações...",
       "searchTransactions2": "Buscar transações"
     },

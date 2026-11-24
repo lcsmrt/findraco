@@ -1,5 +1,6 @@
 import type {
   DashboardSummaryResponse,
+  NeutralCandidate,
   Transaction,
   Category,
   PagedResponse,
@@ -163,6 +164,7 @@ beforeEach(() => {
     categoryHandlers.spending([]),
     categoryHandlers.list(emptyPage<Category>()),
     transactionHandlers.list(emptyPage<Transaction>()),
+    transactionHandlers.neutralCandidates(emptyPage<NeutralCandidate>()),
     transactionHandlers.trash(emptyPage<TransactionTrashEntry>()),
   );
 });

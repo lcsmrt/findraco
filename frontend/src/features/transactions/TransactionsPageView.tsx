@@ -4,12 +4,19 @@ import { Badge } from "@/components/badge/base/Badge";
 import { PageHeader } from "@/components/pageHeader/PageHeader";
 import { PeriodNavigator } from "@/components/periodNavigator/PeriodNavigator";
 import { Button } from "@/components/button/base/Button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/dropdown/base/Dropdown";
+import { Text } from "@/components/typography/base/Text";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/input/base/InputGroup";
 import { Table, TableContent, TablePagination } from "@/components/table";
 import type { Sorting } from "@/components/table/components/TableHeader";
 import type { Pagination } from "@/components/table/TablePagination";
 import type { ColumnDef } from "@tanstack/react-table";
-import { ListChecksIcon, SearchIcon, UploadIcon, XIcon } from "lucide-react";
+import { EllipsisIcon, ListChecksIcon, SearchIcon, UploadIcon, XIcon } from "lucide-react";
 import { useRef } from "react";
 import type { FilterChip } from "./useTransactionFilterChips";
 import { TransactionMobileList } from "./components/TransactionMobileList";
@@ -27,6 +34,8 @@ type TransactionsPageViewProps = {
   isImporting: boolean;
   /** Opens the review of rows that look like neutral movements; absent for a member who may not apply. */
   onReview?: () => void;
+  /** How many movements wait for review; it drives the dot and the notice, for those who may review. */
+  reviewTotal: number;
   transactions: Transaction[];
   isLoading: boolean;
   pagination?: Partial<Pagination>;
@@ -50,6 +59,7 @@ export function TransactionsPageView({
   onImport,
   isImporting,
   onReview,
+  reviewTotal,
   transactions,
   isLoading,
   pagination,
@@ -66,6 +76,9 @@ export function TransactionsPageView({
   const importLabel = isImporting
     ? t("transactions.transactionsPageView.importing")
     : t("transactions.transactionsPageView.importCsv");
+
+  // Only those who may apply a kind are asked to review; the total alone says nothing to a viewer.
+  const showReview = onReview != null && reviewTotal > 0;
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -89,29 +102,39 @@ export function TransactionsPageView({
           context={<PeriodNavigator {...navigator} />}
           actions={
             <>
-              <Button
-                variant="outline"
-                onClick={handleImportClick}
-                disabled={isImporting}
-                // The label hides below `sm`; the button keeps its name there.
-                aria-label={importLabel}
-              >
-                <UploadIcon className="h-4 w-4" />
-                <span className="hidden sm:inline">{importLabel}</span>
-              </Button>
-              {onReview && (
-                <Button
-                  variant="outline"
-                  onClick={onReview}
-                  // The label hides below `sm`; the button keeps its name there.
-                  aria-label={t("transactions.transactionsPageView.reviewMovements")}
-                >
-                  <ListChecksIcon className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    {t("transactions.transactionsPageView.reviewMovements")}
-                  </span>
-                </Button>
-              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="relative"
+                      aria-label={t("transactions.transactionsPageView.moreActions")}
+                    >
+                      <EllipsisIcon />
+                      {showReview && (
+                        <span
+                          data-slot="review-dot"
+                          aria-hidden="true"
+                          className="bg-primary ring-background absolute top-1 right-1 size-2 rounded-full ring-2"
+                        />
+                      )}
+                    </Button>
+                  }
+                />
+                <DropdownMenuContent align="end" className="min-w-48">
+                  <DropdownMenuItem onClick={handleImportClick} disabled={isImporting}>
+                    <UploadIcon />
+                    {importLabel}
+                  </DropdownMenuItem>
+                  {onReview && (
+                    <DropdownMenuItem onClick={onReview}>
+                      <ListChecksIcon />
+                      {t("transactions.transactionsPageView.reviewMovements")}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <input
                 ref={fileInputRef}
                 type="file"
@@ -141,15 +164,20 @@ export function TransactionsPageView({
         </div>
 
         {chips.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 max-sm:gap-y-3">
             {chips.map((chip) => (
-              <Badge key={chip.key} variant="meta" className="gap-1 pr-1 max-sm:h-11">
+              <Badge
+                key={chip.key}
+                variant="meta"
+                // 32 px visible below `sm`; the pseudo-element behind the content adds the 44 px tap area.
+                className="relative isolate gap-1 pr-1 max-sm:h-8 max-sm:overflow-visible max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:-inset-y-[6.5px] max-sm:after:-z-10"
+              >
                 {chip.label}
                 <Button
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="h-4 w-4 rounded"
+                  className="relative h-4 w-4 rounded max-sm:size-8 max-sm:after:absolute max-sm:after:inset-x-0 max-sm:after:-inset-y-[6.5px]"
                   aria-label={t("transactions.transactionsPageView.removeFilter", {
                     name: chip.label,
                   })}
@@ -167,6 +195,20 @@ export function TransactionsPageView({
               onClick={onClearFilters}
             >
               {t("transactions.transactionsPageView.clearAll")}
+            </Button>
+          </div>
+        )}
+
+        {showReview && (
+          <div
+            data-slot="review-notice"
+            className="bg-muted/50 flex items-center justify-between gap-3 rounded-lg border px-3 py-2"
+          >
+            <Text variant="body" as="p">
+              {t("transactions.transactionsPageView.reviewNotice", { count: reviewTotal })}
+            </Text>
+            <Button variant="outline" size="sm" className="shrink-0" onClick={onReview}>
+              {t("transactions.transactionsPageView.review")}
             </Button>
           </div>
         )}

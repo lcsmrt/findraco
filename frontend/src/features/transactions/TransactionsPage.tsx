@@ -1,5 +1,6 @@
 import type { Transaction } from "@/api/dtos/transaction";
 import {
+  useGetNeutralCandidates,
   useGetTransactions,
   useUpdateTransaction,
 } from "@/api/services/useTransactionService";
@@ -53,6 +54,11 @@ export function TransactionsPage() {
   const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
   const { canAttributeToOthers, canCreateTransactions } = usePlanPermissions();
   const [reviewOpen, setReviewOpen] = useState(false);
+  // A page of one is enough: only the total is shown, and a viewer never asks.
+  const { data: candidates } = useGetNeutralCandidates(
+    { page: 0, size: 1 },
+    { enabled: canCreateTransactions },
+  );
   const { mutate: updateTransaction } = useUpdateTransaction();
   const sorting = useMemo(() => toSorting(sort), [sort]);
 
@@ -113,6 +119,7 @@ export function TransactionsPage() {
         onImport={importCsv}
         isImporting={isImporting}
         onReview={canCreateTransactions ? () => setReviewOpen(true) : undefined}
+        reviewTotal={candidates?.totalElements ?? 0}
         transactions={data?.content ?? []}
         isLoading={isLoading}
         pagination={data && toPagination(data)}
