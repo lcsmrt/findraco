@@ -28,15 +28,24 @@ describe("formatMoney", () => {
     expect(formatMoney(value)).toBe(expected);
   });
 
-  it("prefixes a negative value with a minus sign (STD-06 AC 6)", () => {
-    expect(formatMoney(-12.34)).toBe(`-R$${NBSP}12,34`);
+  it("writes a negative with U+2212", () => {
+    expect(formatMoney(-1234.5)).toBe(`\u2212R$${NBSP}1.234,50`);
+    expect(formatMoney(-12.34)).not.toContain("-");
+  });
+
+  it("writes a value that rounds to zero without a minus", () => {
+    expect(formatMoney(-0.004)).toBe(`R$${NBSP}0,00`);
+    expect(formatMoney(0)).toBe(`R$${NBSP}0,00`);
+  });
+
+  it("writes a compact negative with U+2212", () => {
+    expect(formatMoney(-1500, { compact: true })).toBe(`\u2212R$${NBSP}1,5${NBSP}mil`);
   });
 
   it.each([
     [0, `R$${NBSP}0`],
     [1500, `R$${NBSP}1,5${NBSP}mil`],
     [2000000, `R$${NBSP}2${NBSP}mi`],
-    [-1500, `-R$${NBSP}1,5${NBSP}mil`],
   ])("formats the chart axis value %s compactly as %j (STD-06 AC 6)", (value, expected) => {
     expect(formatMoney(value, { compact: true })).toBe(expected);
   });

@@ -16,14 +16,28 @@ const compactFormat = new Intl.NumberFormat(MONEY_LOCALE, {
   notation: "compact",
 });
 
+const MINUS_SIGN = "\u2212";
+const DIGIT_PARTS = new Set(["integer", "fraction"]);
+
 type FormatMoneyOptions = {
   /** Short form for tight spots such as chart axes ("R$ 1,5 mil"). */
   compact?: boolean;
 };
 
-/** Formats a value in reais for display ("R$ 12,34"). */
+/**
+ * Formats a value in reais for display ("R$ 12,34"). A negative value takes the typographic minus
+ * U+2212 where the locale puts its hyphen ("−R$ 12,34"), so a sentence and a figure show the same sign.
+ */
 export function formatMoney(value: number, { compact = false }: FormatMoneyOptions = {}): string {
-  return compact ? compactFormat.format(value) : fullFormat.format(value);
+  const parts = (compact ? compactFormat : fullFormat).formatToParts(value);
+  // Intl keeps the sign of a value that rounds to zero ("-R$ 0,00"), which would read as a debt of nothing.
+  const showsZero = parts.every((part) => !DIGIT_PARTS.has(part.type) || /^0+$/.test(part.value));
+  return parts
+    .map((part) => {
+      if (part.type !== "minusSign") return part.value;
+      return showsZero ? "" : MINUS_SIGN;
+    })
+    .join("");
 }
 
 /**
