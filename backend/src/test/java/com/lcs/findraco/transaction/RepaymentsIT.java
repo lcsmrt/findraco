@@ -292,6 +292,36 @@ class RepaymentsIT extends AbstractContactMoneyIT {
     }
 
     @Test
+    void aPurchaseRestoreWaitsForTheLockOnItsContact() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Contact mae = fixtures.aContact(plan, "Mãe");
+        Transaction dinner = purchase(plan, owner, mae, "200.00", 10);
+        created(plan, owner, withAllocations(repayment("200.00", mae), allocation(shareOf(dinner), "200.00")));
+        long deletionId = trash(plan, owner, dinner.getId());
+        ExecutorService pool = Executors.newSingleThreadExecutor();
+        try (Connection holder = dataSource.getConnection()) {
+            // A save of the same contact is in flight: the restore reads the purchase's allocations only after it.
+            holder.setAutoCommit(false);
+            try (Statement statement = holder.createStatement()) {
+                statement.execute("SELECT id FROM contacts WHERE id = " + mae.getId() + " FOR NO KEY UPDATE");
+            }
+
+            Future<?> waiting = pool.submit(() -> {
+                restore(plan, owner, deletionId);
+                return null;
+            });
+            assertThatThrownBy(() -> waiting.get(1500, TimeUnit.MILLISECONDS)).isInstanceOf(TimeoutException.class);
+            holder.commit();
+
+            waiting.get(30, TimeUnit.SECONDS);
+        } finally {
+            pool.shutdownNow();
+        }
+        assertThat(shareStatuses(statement(plan, owner, mae))).containsExactly("PAID");
+    }
+
+    @Test
     void editReplacesAndTrashSuspendsAllocations() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -141,11 +142,11 @@ public class TransactionTrashService {
         if (deletion.getRecurrenceDefinitionId() != null) {
             undoSeriesChange(deletion, ctx);
         }
-        // A restored repayment settles shares again, which others may have taken meanwhile: the contact is locked
-        // first, and what no longer fits is cut back, newest payment first.
+        // A restored repayment settles shares again, and a restored purchase brings back shares its payments may
+        // have to give up: both read allocations another save may be changing, so every contact either names is
+        // locked first, in id order, and what no longer fits is cut back, newest payment first.
         rows.stream()
-                .filter(row -> row.getKind() == TransactionKind.REPAYMENT)
-                .map(row -> row.getRepaymentContact().getId())
+                .flatMap(TransactionTrashService::contactIdsOf)
                 .distinct()
                 .sorted()
                 .forEach(contactId -> contactService.lockForUpdate(contactId, true, ctx));
@@ -154,6 +155,16 @@ public class TransactionTrashService {
         allocationService.fitToRestored(rows, ctx);
         deletionRepository.delete(deletion);
         return new TransactionRestoredResponse(rows.size());
+    }
+
+    /** The contacts a row names: the one a repayment came from, and each contact with a share in it. */
+    private static Stream<Long> contactIdsOf(Transaction row) {
+        Stream<Long> shares = row.getParticipants().stream()
+                .filter(participant -> participant.getContact() != null)
+                .map(participant -> participant.getContact().getId());
+        return row.getKind() == TransactionKind.REPAYMENT
+                ? Stream.concat(Stream.of(row.getRepaymentContact().getId()), shares)
+                : shares;
     }
 
     private static boolean visibleTo(TransactionDeletion deletion, PlanContext ctx) {

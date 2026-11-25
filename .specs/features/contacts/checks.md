@@ -7,7 +7,7 @@ Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=
 Run table: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions/TransactionsPage.test.tsx src/features/transactions/utils/showParticipantsColumn.test.ts
 Plan: `.specs/features/contacts/plan.md`
 
-54 checks in 5 slices · 4 one-way doors · 0 open, of which 0 block
+55 checks in 5 slices · 4 one-way doors · 0 open, of which 0 block
 
 Test rules:
 - Backend proofs are one IT method each, run alone with failsafe (the pattern of `neutral-movements`). A class name alone (`ContactRoleMatrixIT`, `ContactSchemaIT`, `OpenApiSnapshotIT`) runs every method in it.
@@ -214,6 +214,9 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 **C54** - An OWNER archiving a contact the API refuses with `contact-has-planned-shares` sees "End or remove the planned purchases before archiving" with the contact's name beside it, and the contact stays active (AC 6; finding 4)
 Proof: run unit | ✓ ContactsSection > refuses to archive a contact with planned purchases
 Proof: run stories | ✓ src/components/contact/ContactNoticeView.stories.tsx > Planned
+
+**C55** - Restoring a purchase with a contact share waits while another save holds that contact's lock (a connection holding `FOR NO KEY UPDATE` on the contact row): the restore is still running after 1.5 s, completes once the holder commits, and the share then reads `PAID` (AC 22, door 4; finding 6)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#aPurchaseRestoreWaitsForTheLockOnItsContact' -Dsurefire.skip=true
 
 ## Coverage
 
