@@ -3,11 +3,11 @@
 Build: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true; cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
 Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/plans/components/ContactsSection.test.tsx src/features/contacts/ContactStatementPage.test.tsx src/features/transactions/components/TransactionFormDrawer.test.tsx
 Run formunit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions/components/transactionForm.test.ts src/features/transactions/utils/suggestAllocations.test.ts
-Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/features/plans/components/ContactsSectionView.stories.tsx src/features/contacts/components/ContactStatementView.stories.tsx src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx
+Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/contact/ContactNoticeView.stories.tsx src/features/plans/components/ContactsSectionView.stories.tsx src/features/contacts/components/ContactStatementView.stories.tsx src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx
 Run table: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions/TransactionsPage.test.tsx src/features/transactions/utils/showParticipantsColumn.test.ts
 Plan: `.specs/features/contacts/plan.md`
 
-49 checks in 5 slices · 4 one-way doors · 0 open, of which 0 block
+54 checks in 5 slices · 4 one-way doors · 0 open, of which 0 block
 
 Test rules:
 - Backend proofs are one IT method each, run alone with failsafe (the pattern of `neutral-movements`). A class name alone (`ContactRoleMatrixIT`, `ContactSchemaIT`, `OpenApiSnapshotIT`) runs every method in it.
@@ -33,6 +33,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 
 **C5** - Archiving at balance zero moves the contact to the archived list, its past share still returns its name, and a new split naming it is 422 `contact-archived`; owing 0.01 or holding credit 5.00 is 409 `contact-balance-not-zero`; owing 0 with only planned shares archives (AC 5, 6)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#archivesOnlyAtZeroBalance' -Dsurefire.skip=true
+Note: the planned-only leg is superseded by C53 (user, 2026-11-25).
 
 **C6** - Unarchiving returns the contact to the active list; when another active contact took its name meanwhile it is 422 `contact-name-taken` (AC 7)
 Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#unarchiveRestoresUnlessTheNameIsTaken' -Dsurefire.skip=true
@@ -196,6 +197,24 @@ Proof: run table | ✓ TransactionsPage toolbar > names a contact on the table's
 Proof: run table | ✓ TransactionsPage toolbar > has no attribution column in a plan of one member whose rows have no contact
 Proof: run table | ✓ showParticipantsColumn > shows it in a plan of one member when a row has a contact's share, so her name reads on the table
 
+### Appended after the Verifier
+
+**C50** - A purchase of 100 with "Mãe", settled by a payment of 100, then edited to a date 40 days ahead: the share reads `PLANNED`, the payment's allocation is gone (no stored row), the payment shows 100.00 unallocated and her balance is a credit of 100.00 (AC 24, 27; finding 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#aSettledPurchaseMovedToAFutureDateReleasesItsAllocation' -Dsurefire.skip=true
+
+**C51** - A payment of 200 that settled a purchase of 200 now in the trash, edited (a new description, allocations sent empty as the form does) keeps that settlement: after the purchase is restored the share is `PAID`, the payment has 0 unallocated and her balance is 0.00; a payment of 300 edited down to 100 while its purchase is in the trash settles 100 of it once restored, never more than it paid (AC 23, 24; finding 2)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#editingAPaymentWhileItsPurchaseIsTrashedKeepsThatSettlement' -Dsurefire.skip=true
+
+**C52** - Marking a purchase split with "Mãe" as TRANSFER, CARD_BILL_PAYMENT, SAVINGS or REFUND is 422 `contact-share-not-allowed`, and the split, her share and the version stay as they were (AC 12; finding 3)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#markingAContactSplitWithAKindIsRefusedAndLeavesTheSplit' -Dsurefire.skip=true
+
+**C53** - Archiving a contact with a planned share (a purchase dated ahead) is 409 `contact-has-planned-shares`; so is a contact named by a live series (not trashed, not ended) whose past occurrences are all settled; once the series is ended or trashed and no planned share is left it archives (AC 5, 6; finding 4, user 2026-11-25)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#refusesArchiveWithPlannedShares' -Dsurefire.skip=true
+
+**C54** - An OWNER archiving a contact the API refuses with `contact-has-planned-shares` sees "End or remove the planned purchases before archiving" with the contact's name beside it, and the contact stays active (AC 6; finding 4)
+Proof: run unit | ✓ ContactsSection > refuses to archive a contact with planned purchases
+Proof: run stories | ✓ src/components/contact/ContactNoticeView.stories.tsx > Planned
+
 ## Coverage
 
 | Set (size) | Member -> proof | Unproven |
@@ -207,13 +226,13 @@ Proof: run table | ✓ showParticipantsColumn > shows it in a plan of one member
 | `POST /plan/{planId}/contacts/{id}/unarchive` statuses (4) | 200 C6 · 422 `contact-name-taken` C6 · 404 C8 · 403 C8 | - |
 | `DELETE /plan/{planId}/contacts/{id}` statuses (4) | 204 C7 · 409 `contact-in-use` C7 · 404 C8 · 403 C8 | - |
 | `GET /plan/{planId}/contacts/{id}/statement` statuses (2) | 200 C35 C8 · 404 C8 | - |
-| transactions and series routes, new statuses (6) | 403 contributor C19 · 422 `contact-archived` C18 · 422 `contact-share-not-allowed` C17 · 422 `allocation-exceeds-open` C27 C28 · 422 `allocation-exceeds-amount` C27 · 404 foreign contact C18 | - |
+| transactions and series routes, new statuses (6) | 403 contributor C19 · 422 `contact-archived` C18 · 422 `contact-share-not-allowed` C17 C52 · 422 `allocation-exceeds-open` C27 C28 · 422 `allocation-exceeds-amount` C27 · 404 foreign contact C18 | - |
 | Landing doors (4) | 1 contacts table C1 C2 C5 · 2 member-or-contact C13 C14 · 3 repayment kind C13 C24 · 4 allocations C25 C27 C28 | - |
 | roles × contact writes (4) | OWNER C8 · EDITOR C8 C19 · CONTRIBUTOR C8 C19 C10 C21 · VIEWER C8 C10 C40 | - |
 | totals a contact share leaves, AC 11 (7) | income/expense C15 · result C15 · trend C15 · person breakdown C15 · category total C16 · item allocation C16 · limit C16 | - |
-| kinds refusing a contact share, AC 12 (6) | income C17 · TRANSFER C17 · CARD_BILL_PAYMENT C17 · SAVINGS C17 · REFUND C17 · REPAYMENT C17 | - |
+| kinds refusing a contact share, AC 12 (6) | income C17 · TRANSFER C17 C52 · CARD_BILL_PAYMENT C17 C52 · SAVINGS C17 C52 · REFUND C17 C52 · REPAYMENT C17 | - |
 | split examples, AC 10 (4) | 80 equal C14 · 30/70 exact C14 · 100% contact C14 · 100.01 three-way C14 | - |
-| archive examples, AC 6 (3) | owes 0.01 C5 · credit 5 C5 · planned only C5 | - |
+| archive examples, AC 6 (4) | owes 0.01 C5 · credit 5 C5 · planned share C53 C54 · live series C53 | - |
 | allocation examples, AC 18/25 (3) | 300 over 200+300 C26 C31 C45 · 600 with excess C25 C26 C31 C45 · Nov only C25 C32 | - |
 | reduction examples, AC 24 (3) | 100 → 70 C30 · contact removed C30 · trash and restore C30 | - |
 | share statuses (4) | PAID C35 C38 · PARTIAL C35 C38 · OPEN C35 C38 · PLANNED C35 C38 | - |
