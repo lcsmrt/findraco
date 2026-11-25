@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.user.model.User;
@@ -22,6 +23,7 @@ class TransactionTest {
     private final Plan plan = new Plan();
     private final User owner = userWithId(1L);
     private final User partner = userWithId(2L);
+    private final Contact mae = contactWithId(1L);
 
     @Test
     void createWithoutParticipantsFails() {
@@ -327,6 +329,121 @@ class TransactionTest {
         assertThat(plain.getKind()).isNull();
     }
 
+    @Test
+    void aContactShareFitsOnlyAPlainExpense() {
+        List<Share> toTheContact = List.of(Share.ofContact(mae, null));
+
+        assertThat(Transaction.create(draft(details("100.00"), SplitMode.EQUAL, toTheContact, List.of()))
+                        .getParticipants())
+                .extracting(TransactionParticipant::getContact)
+                .containsExactly(mae);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(null, TransactionType.CREDIT, null), SplitMode.EQUAL, toTheContact, List.of())))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+        for (TransactionKind kind : TransactionKind.values()) {
+            // A neutral kind takes exactly one participant and would accept this one; the contact is what it refuses.
+            assertThatThrownBy(() -> Transaction.create(draft(
+                            kindDetails(kind, TransactionType.DEBIT, null), SplitMode.EQUAL, toTheContact, List.of())))
+                    .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+        }
+    }
+
+    @Test
+    void aMemberAndAContactOfTheSameNumberAreTwoParties() {
+        Transaction transaction = Transaction.create(draft(
+                details("100.00"),
+                SplitMode.EQUAL,
+                List.of(new Share(userWithId(1L), null), Share.ofContact(contactWithId(1L), null)),
+                List.of()));
+
+        assertThat(transaction.getParticipants())
+                .extracting(TransactionParticipant::getShareAmount)
+                .containsExactly(new BigDecimal("50.00"), new BigDecimal("50.00"));
+    }
+
+    @Test
+    void editingKeepsTheRowOfAContactThatStaysInTheSplit() {
+        Transaction transaction = Transaction.create(draft(
+                details("100.00"),
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null), Share.ofContact(mae, null)),
+                List.of()));
+        TransactionParticipant contactRow = transaction.getParticipants().get(1);
+
+        transaction.edit(
+                details("80.00"),
+                SplitMode.EXACT,
+                List.of(share(owner, "30.00"), Share.ofContact(mae, new BigDecimal("50.00"))));
+
+        assertThat(transaction.getParticipants()).hasSize(2).contains(contactRow);
+        assertThat(contactRow.getShareAmount()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
+    void takingTheContactOutOfTheSplitRemovesItsRow() {
+        Transaction transaction = Transaction.create(draft(
+                details("100.00"),
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null), Share.ofContact(mae, null)),
+                List.of()));
+
+        transaction.edit(details("100.00"), SplitMode.EQUAL, self());
+
+        assertThat(transaction.getParticipants())
+                .extracting(TransactionParticipant::getMember)
+                .containsExactly(owner);
+    }
+
+    @Test
+    void aNeutralKindOnARowOfOneContactTakesTheCreatorAsPayer() {
+        Transaction transaction = Transaction.create(
+                draft(details("100.00"), SplitMode.EQUAL, List.of(Share.ofContact(mae, null)), List.of()));
+
+        transaction.assignKind(TransactionKind.TRANSFER);
+
+        assertThat(transaction.getParticipants())
+                .extracting(TransactionParticipant::getMember)
+                .containsExactly(owner);
+    }
+
+    @Test
+    void aRefundCannotBeAssignedToARowWithAContactShare() {
+        Transaction transaction = Transaction.create(
+                draft(details("100.00"), SplitMode.EQUAL, List.of(Share.ofContact(mae, null)), List.of()));
+
+        assertThatThrownBy(() -> transaction.assignKind(TransactionKind.REFUND))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+    }
+
+    @Test
+    void confirmingRecomputesTheContactsShareToo() {
+        List<Share> shares = List.of(share(owner, "40.00"), Share.ofContact(mae, new BigDecimal("60.00")));
+        RecurrenceDefinition series = RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                owner,
+                null,
+                TransactionType.DEBIT,
+                new BigDecimal("100.00"),
+                "Gym",
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                DAY,
+                null,
+                SplitMode.EXACT,
+                shares,
+                true));
+        Transaction occurrence = Transaction.create(
+                new TransactionDraft(plan, owner, details("100.00"), SplitMode.EXACT, shares, List.of(), null, series));
+
+        occurrence.confirm(new BigDecimal("50.00"), DAY);
+
+        assertThat(occurrence.getParticipants())
+                .extracting(TransactionParticipant::getShareAmount)
+                .containsExactly(new BigDecimal("20.00"), new BigDecimal("30.00"));
+    }
+
     private TransactionDetails kindDetails(TransactionKind kind, TransactionType type, Category category) {
         return new TransactionDetails(category, type, new BigDecimal("100.00"), "Movement", DAY, null, null, kind);
     }
@@ -360,6 +477,18 @@ class TransactionTest {
 
     private static Category category(TransactionType type) {
         return Category.create(new Plan(), type, "Category", null);
+    }
+
+    private static Contact contactWithId(long id) {
+        Contact contact = Contact.create(new Plan(), "Mãe", java.time.Instant.EPOCH);
+        try {
+            Field field = Contact.class.getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(contact, id);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+        return contact;
     }
 
     private static User userWithId(long id) {

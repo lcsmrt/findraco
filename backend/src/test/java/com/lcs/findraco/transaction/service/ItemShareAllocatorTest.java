@@ -125,6 +125,31 @@ class ItemShareAllocatorTest {
         assertThat(sum(allocation.removed())).isEqualByComparingTo("35.00");
     }
 
+    @Test
+    void aContactsPortionOfAnItemLeavesWithItsShare() {
+        // R$ 80 transaction split 40 / 40 between member 10 and a contact (no member id), one R$ 20 item.
+        List<Object[]> rows = List.of(
+                row(100L, ITEM_CATEGORY, PARENT_CATEGORY, "20.00", 10L, "40.00"),
+                row(100L, ITEM_CATEGORY, PARENT_CATEGORY, "20.00", null, "40.00"));
+
+        Allocation allocation = allocator.allocate(rows);
+
+        assertThat(allocation.added()).containsExactly(fact(ITEM_CATEGORY, 10L, "10.00"));
+        assertThat(allocation.removed()).containsExactly(fact(PARENT_CATEGORY, 10L, "10.00"));
+    }
+
+    @Test
+    void theCentOfAnOddItemGoesToTheMemberBeforeTheContact() {
+        // R$ 0.01 over equal shares: the remainders tie, and a contact sorts after every member.
+        List<Object[]> rows = List.of(
+                row(100L, ITEM_CATEGORY, PARENT_CATEGORY, "0.01", null, "50.00"),
+                row(100L, ITEM_CATEGORY, PARENT_CATEGORY, "0.01", 10L, "50.00"));
+
+        Allocation allocation = allocator.allocate(rows);
+
+        assertThat(allocation.added()).containsExactly(fact(ITEM_CATEGORY, 10L, "0.01"));
+    }
+
     private static Object[] row(
             Long itemId,
             Long itemCategoryId,

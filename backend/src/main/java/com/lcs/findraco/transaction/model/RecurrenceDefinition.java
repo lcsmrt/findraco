@@ -175,6 +175,9 @@ public class RecurrenceDefinition {
         if (pattern.category() != null && pattern.category().getType() != type) {
             throw new TransactionExceptions.CategoryTypeMismatchException();
         }
+        if (type != TransactionType.DEBIT && pattern.participants().stream().anyMatch(Share::isContact)) {
+            throw new TransactionExceptions.ContactShareNotAllowedException();
+        }
         return SPLIT_RESOLVER.split(pattern.amount(), pattern.splitMode(), pattern.participants());
     }
 
@@ -194,22 +197,21 @@ public class RecurrenceDefinition {
                 || !Objects.equals(description, pattern.description())
                 || (mode == RecurrenceMode.INSTALLMENT && !Objects.equals(parcelsNumber, pattern.parcelsNumber()))
                 || splitMode != pattern.splitMode()
-                || !sharesByMember(participants.stream()
-                                .map(participant -> new Share(participant.getMember(), participant.getShareAmount()))
+                || !sharesByParty(participants.stream()
+                                .map(RecurrenceDefinitionParticipant::toShare)
                                 .toList())
-                        .equals(sharesByMember(split));
+                        .equals(sharesByParty(split));
     }
 
     private static Long categoryId(Category category) {
         return category != null ? category.getId() : null;
     }
 
-    /** Each member's share, scaled to cents so 60 and 60.00 are the same share. */
-    private static Map<Long, BigDecimal> sharesByMember(List<Share> shares) {
-        Map<Long, BigDecimal> byMember = new HashMap<>();
-        shares.forEach(
-                share -> byMember.put(share.member().getId(), share.amount().setScale(2, RoundingMode.HALF_UP)));
-        return byMember;
+    /** Each party's share, scaled to cents so 60 and 60.00 are the same share. */
+    private static Map<String, BigDecimal> sharesByParty(List<Share> shares) {
+        Map<String, BigDecimal> byParty = new HashMap<>();
+        shares.forEach(share -> byParty.put(share.key(), share.amount().setScale(2, RoundingMode.HALF_UP)));
+        return byParty;
     }
 
     /**
@@ -329,25 +331,22 @@ public class RecurrenceDefinition {
         }
     }
 
-    /** Updates kept members in place, so the (definition, member) unique key holds within one flush. */
+    /** Updates kept participants in place, so the unique keys hold within one flush. */
     private void applySplit(List<Share> split) {
-        Map<Long, RecurrenceDefinitionParticipant> existingByMemberId = new HashMap<>();
-        participants.forEach(
-                participant -> existingByMemberId.put(participant.getMember().getId(), participant));
+        Map<String, RecurrenceDefinitionParticipant> existingByParty = new HashMap<>();
+        participants.forEach(participant -> existingByParty.put(participant.key(), participant));
 
-        Set<Long> keptMemberIds = new HashSet<>();
+        Set<String> keptParties = new HashSet<>();
         for (Share share : split) {
-            keptMemberIds.add(share.member().getId());
-            RecurrenceDefinitionParticipant existing =
-                    existingByMemberId.get(share.member().getId());
+            keptParties.add(share.key());
+            RecurrenceDefinitionParticipant existing = existingByParty.get(share.key());
             if (existing != null) {
                 existing.changeShare(share.amount());
             } else {
-                participants.add(new RecurrenceDefinitionParticipant(this, share.member(), share.amount()));
+                participants.add(new RecurrenceDefinitionParticipant(this, share));
             }
         }
-        participants.removeIf(
-                participant -> !keptMemberIds.contains(participant.getMember().getId()));
+        participants.removeIf(participant -> !keptParties.contains(participant.key()));
     }
 
     public Long getId() {

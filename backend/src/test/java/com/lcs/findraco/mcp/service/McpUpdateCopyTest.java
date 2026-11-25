@@ -52,8 +52,8 @@ class McpUpdateCopyTest {
                 new TransactionCreatorResponse(1L, "Ana"),
                 SplitMode.EXACT,
                 List.of(
-                        new TransactionParticipantResponse(1L, "Ana", new BigDecimal("60.00")),
-                        new TransactionParticipantResponse(2L, "Bia", new BigDecimal("40.00"))),
+                        new TransactionParticipantResponse(1L, "Ana", new BigDecimal("60.00"), null, null),
+                        new TransactionParticipantResponse(2L, "Bia", new BigDecimal("40.00"), null, null)),
                 List.of(
                         new TransactionItemResponse(21L, "Base fee", new BigDecimal("30.00"), 2, category(8L, "Fees")),
                         new TransactionItemResponse(22L, "Extra", new BigDecimal("10.00"), null, null)),

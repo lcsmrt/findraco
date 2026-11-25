@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 /**
@@ -36,7 +37,7 @@ public class ItemShareAllocator {
      */
     public record Allocation(List<MemberFact> removed, List<MemberFact> added) {}
 
-    private record Portion(Long memberId, long shareCents) {}
+    private record Portion(@Nullable Long memberId, long shareCents) {}
 
     private record ItemRow(
             Long itemCategoryId, Long transactionCategoryId, long itemCents, List<Portion> participants) {}
@@ -46,7 +47,7 @@ public class ItemShareAllocator {
      *
      * @param rows one row per categorized item x participant:
      *             {@code [Long itemId, Long itemCategoryId, Long transactionCategoryId (nullable),
-     *             BigDecimal itemAmount, Long memberId, BigDecimal shareAmount]}
+     *             BigDecimal itemAmount, Long memberId (null for a contact), BigDecimal shareAmount]}
      */
     // SPEC_DEVIATION: design.md lists transactionAmount in the row and divides by it.
     // Reason: dividing by the sum of the shares (equal to the amount under SPLIT-01) keeps the
@@ -66,6 +67,10 @@ public class ItemShareAllocator {
         List<MemberFact> added = new ArrayList<>();
         for (ItemRow item : items.values()) {
             for (Portion portion : split(item.itemCents(), item.participants())) {
+                if (portion.memberId() == null) {
+                    // A contact's portion leaves the plan's spending with its share.
+                    continue;
+                }
                 BigDecimal amount = BigDecimal.valueOf(portion.shareCents(), 2);
                 added.add(new MemberFact(item.itemCategoryId(), portion.memberId(), amount));
                 if (item.transactionCategoryId() != null) {
@@ -98,7 +103,7 @@ public class ItemShareAllocator {
         }
         order.sort(Comparator.<Integer>comparingLong(i -> remainders[i])
                 .reversed()
-                .thenComparing(i -> participants.get(i).memberId()));
+                .thenComparing(i -> participants.get(i).memberId(), Comparator.nullsLast(Comparator.naturalOrder())));
         long leftover = itemCents - allocated;
         for (int k = 0; k < leftover; k++) {
             floors[order.get(k)]++;

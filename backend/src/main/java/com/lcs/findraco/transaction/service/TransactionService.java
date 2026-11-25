@@ -2,7 +2,9 @@ package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.service.CategoryService;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.plan.service.ContactService;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.plan.service.PlanService;
@@ -13,6 +15,7 @@ import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.transaction.model.ItemDraft;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
+import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.RecurrenceMode;
 import com.lcs.findraco.transaction.model.SeriesDraft;
 import com.lcs.findraco.transaction.model.SeriesEditScope;
@@ -23,6 +26,7 @@ import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionDeletion;
 import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
+import com.lcs.findraco.transaction.model.TransactionParticipant;
 import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
 import com.lcs.findraco.transaction.repository.TransactionDeletionRepository;
@@ -73,6 +77,7 @@ public class TransactionService {
     private final PlanAuthorization planAuthorization;
     private final PlanService planService;
     private final UserService userService;
+    private final ContactService contactService;
 
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final TransactionDeletionRepository transactionDeletionRepository;
@@ -89,6 +94,7 @@ public class TransactionService {
             PlanAuthorization planAuthorization,
             PlanService planService,
             UserService userService,
+            ContactService contactService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             TransactionDeletionRepository transactionDeletionRepository,
             SeriesRegenerator seriesRegenerator,
@@ -102,6 +108,7 @@ public class TransactionService {
         this.planAuthorization = planAuthorization;
         this.planService = planService;
         this.userService = userService;
+        this.contactService = contactService;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.transactionDeletionRepository = transactionDeletionRepository;
         this.seriesRegenerator = seriesRegenerator;
@@ -213,7 +220,7 @@ public class TransactionService {
     public TransactionResponse create(CreateTransactionRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
-        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), Set.of(), ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), KeptParties.NONE, ctx);
         TransactionDetails details = new TransactionDetails(
                 category(dto.categoryId(), ctx),
                 dto.type(),
@@ -235,7 +242,7 @@ public class TransactionService {
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
         claimVersion(transaction, transaction.getVersion(), dto.version());
 
-        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), participantIds(transaction), ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), KeptParties.of(transaction), ctx);
         TransactionDetails details = new TransactionDetails(
                 category(dto.categoryId(), ctx),
                 dto.type(),
@@ -294,16 +301,48 @@ public class TransactionService {
     /** The split a request asks for, with its members loaded; the aggregate computes and checks the shares. */
     private record RequestedSplit(SplitMode mode, List<Share> shares) {}
 
+    /** The members and contacts a row or series already carries; an edit may keep them though they could not join now. */
+    private record KeptParties(Set<Long> memberIds, Set<Long> contactIds) {
+
+        static final KeptParties NONE = new KeptParties(Set.of(), Set.of());
+
+        static KeptParties of(Transaction transaction) {
+            return of(transaction.getParticipants().stream()
+                    .map(TransactionParticipant::toShare)
+                    .toList());
+        }
+
+        static KeptParties of(RecurrenceDefinition definition) {
+            return of(definition.getParticipants().stream()
+                    .map(RecurrenceDefinitionParticipant::toShare)
+                    .toList());
+        }
+
+        private static KeptParties of(List<Share> shares) {
+            Set<Long> memberIds = new HashSet<>();
+            Set<Long> contactIds = new HashSet<>();
+            for (Share share : shares) {
+                if (share.member() != null) {
+                    memberIds.add(share.member().getId());
+                } else {
+                    contactIds.add(share.contact().getId());
+                }
+            }
+            return new KeptParties(memberIds, contactIds);
+        }
+    }
+
     /**
      * Without participants the creator takes the whole amount. An empty list is kept as sent, so the
-     * aggregate refuses it like any other split without a participant. A participant must be a member of the
-     * plan, or already be on the row or series being edited ({@code keptMemberIds}): someone who left the plan
-     * keeps their share until an edit removes it, but no row takes them on again.
+     * aggregate refuses it like any other split without a participant. A participant is a member of the plan or a
+     * contact of it, and is already on the row or series being edited ({@code kept}) or joins it now: someone who
+     * left the plan, or a contact archived since, keeps their share until an edit removes it, but no row takes them
+     * on again.
      */
     private RequestedSplit requestedSplit(
             List<TransactionParticipantRequest> participantInputs,
             SplitMode requestedSplitMode,
-            Set<Long> keptMemberIds,
+            KeptParties kept,
             PlanContext ctx) {
         if (participantInputs == null) {
             return new RequestedSplit(SplitMode.EQUAL, List.of(new Share(user(ctx), null)));
@@ -311,27 +350,33 @@ public class TransactionService {
 
         List<Share> shares = new ArrayList<>();
         for (TransactionParticipantRequest input : participantInputs) {
+            if ((input.memberId() == null) == (input.contactId() == null)) {
+                throw new TransactionExceptions.ParticipantMemberOrContactException();
+            }
+            if (input.contactId() != null) {
+                // A contact share takes money out of the plan's spending, so it needs the same role as
+                // attributing to another member; the role is judged before the contact is looked up.
+                planAuthorization.requireCanAttributeToOthers(ctx.role());
+                Contact contact = contactService.findForSplit(
+                        input.contactId(), kept.contactIds().contains(input.contactId()), ctx);
+                shares.add(Share.ofContact(contact, input.shareAmount()));
+                continue;
+            }
             User member = userService
                     .findById(input.memberId())
-                    .filter(u -> keptMemberIds.contains(u.getId()) || planService.isMember(ctx.planId(), u.getId()))
+                    .filter(u -> kept.memberIds().contains(u.getId()) || planService.isMember(ctx.planId(), u.getId()))
                     .orElseThrow(TransactionExceptions.ParticipantNotMemberException::new);
             shares.add(new Share(member, input.shareAmount()));
         }
 
-        boolean selfOnly = shares.size() == 1 && shares.get(0).member().getId().equals(ctx.userId());
+        boolean selfOnly = shares.size() == 1
+                && shares.get(0).member() != null
+                && shares.get(0).member().getId().equals(ctx.userId());
         if (!shares.isEmpty() && !selfOnly) {
             planAuthorization.requireCanAttributeToOthers(ctx.role());
         }
 
         return new RequestedSplit(requestedSplitMode != null ? requestedSplitMode : SplitMode.EQUAL, shares);
-    }
-
-    private static Set<Long> participantIds(Transaction transaction) {
-        Set<Long> ids = new HashSet<>();
-        transaction
-                .getParticipants()
-                .forEach(participant -> ids.add(participant.getMember().getId()));
-        return ids;
     }
 
     private List<ItemDraft> items(List<TransactionItemRequest> itemInputs, PlanContext ctx) {
@@ -375,7 +420,7 @@ public class TransactionService {
     public TransactionSeriesResponse createSeries(CreateSeriesRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
-        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), Set.of(), ctx);
+        RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), KeptParties.NONE, ctx);
         RecurrenceDefinition definition =
                 recurrenceDefinitionRepository.save(RecurrenceDefinition.create(new SeriesDraft(
                         plan(ctx),
@@ -576,16 +621,8 @@ public class TransactionService {
         }
 
         // An occurrence edited alone keeps who it carries; an edit of the series keeps who the series carries.
-        Set<Long> keptMemberIds = new HashSet<>();
-        if (dto.scope() == SeriesEditScope.THIS_ONE) {
-            keptMemberIds.addAll(participantIds(pivot));
-        } else {
-            definition
-                    .getParticipants()
-                    .forEach(participant ->
-                            keptMemberIds.add(participant.getMember().getId()));
-        }
-        RequestedSplit split = requestedSplit(series.participants(), series.splitMode(), keptMemberIds, ctx);
+        KeptParties kept = dto.scope() == SeriesEditScope.THIS_ONE ? KeptParties.of(pivot) : KeptParties.of(definition);
+        RequestedSplit split = requestedSplit(series.participants(), series.splitMode(), kept, ctx);
 
         List<Transaction> inScope;
         switch (dto.scope()) {

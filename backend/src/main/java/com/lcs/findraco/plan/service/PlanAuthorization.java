@@ -47,6 +47,11 @@ public class PlanAuthorization {
         return role == PlanRole.OWNER || role == PlanRole.EDITOR;
     }
 
+    /** OWNER/EDITOR may create, rename, archive and delete contacts; every member reads them. */
+    public boolean canManageContacts(PlanRole role) {
+        return canAttributeToOthers(role);
+    }
+
     public void requireCanCreateTransaction(PlanRole role) {
         if (!canCreateTransactions(role)) {
             throw new PlanExceptions.InsufficientPlanRoleException("Viewers cannot create transactions.");
@@ -83,6 +88,12 @@ public class PlanAuthorization {
         if (!canAttributeToOthers(role)) {
             throw new PlanExceptions.InsufficientPlanRoleException(
                     "Only owners and editors can attribute a transaction to other members.");
+        }
+    }
+
+    public void requireCanManageContacts(PlanRole role) {
+        if (!canManageContacts(role)) {
+            throw new PlanExceptions.InsufficientPlanRoleException("Only owners and editors can manage contacts.");
         }
     }
 }

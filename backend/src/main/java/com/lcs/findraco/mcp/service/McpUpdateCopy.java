@@ -77,8 +77,8 @@ public final class McpUpdateCopy {
                 stored.endDate(),
                 stored.splitMode(),
                 stored.participants().stream()
-                        .map(participant ->
-                                new TransactionParticipantRequest(participant.id(), participant.shareAmount()))
+                        .map(participant -> new TransactionParticipantRequest(
+                                participant.id(), participant.contactId(), participant.shareAmount()))
                         .toList(),
                 stored.items().stream()
                         .map(item -> new TransactionItemRequest(

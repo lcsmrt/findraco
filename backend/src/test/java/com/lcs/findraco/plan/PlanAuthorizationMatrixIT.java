@@ -11,6 +11,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.dashboard.controller.DashboardRoutes;
+import com.lcs.findraco.plan.controller.ContactRoutes;
 import com.lcs.findraco.plan.controller.PlanContextArgumentResolver;
 import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
@@ -323,7 +324,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
             String seriesId,
             long seriesVersion,
             long invitationId,
-            long deletionId) {}
+            long deletionId,
+            long contactId) {}
 
     /** A route and the status each role gets; a non-member always gets 404 (the plan does not exist for them). */
     record Row(String key, Function<Scene, RequestBuilder> call, int owner, int editor, int contributor, int viewer) {
@@ -343,6 +345,7 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
     private static final String PLAN_ID = ApiRoutes.PLAN + "/{id}";
     private static final String TX = TransactionRoutes.TRANSACTION;
     private static final String CAT = CategoryRoutes.CATEGORY;
+    private static final String CONTACT = ContactRoutes.CONTACT;
 
     /**
      * The routes that answer the same to every caller whatever their role on a plan: public, or about the caller
@@ -641,6 +644,46 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         200,
                         200,
                         200),
+                new Row("GET " + CONTACT, s -> get(CONTACT, s.cast().plan().getId()), 200, 200, 200, 200),
+                new Row(
+                        "POST " + CONTACT,
+                        s -> post(CONTACT, s.cast().plan().getId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":\"New contact\"}"),
+                        201,
+                        201,
+                        403,
+                        403),
+                new Row(
+                        "PUT " + CONTACT + "/{id}",
+                        s -> put(CONTACT + "/{id}", s.cast().plan().getId(), s.contactId())
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("{\"name\":\"Renamed\",\"version\":0}"),
+                        200,
+                        200,
+                        403,
+                        403),
+                new Row(
+                        "POST " + CONTACT + "/{id}/archive",
+                        s -> post(CONTACT + "/{id}/archive", s.cast().plan().getId(), s.contactId()),
+                        200,
+                        200,
+                        403,
+                        403),
+                new Row(
+                        "POST " + CONTACT + "/{id}/unarchive",
+                        s -> post(CONTACT + "/{id}/unarchive", s.cast().plan().getId(), s.contactId()),
+                        200,
+                        200,
+                        403,
+                        403),
+                new Row(
+                        "DELETE " + CONTACT + "/{id}",
+                        s -> delete(CONTACT + "/{id}", s.cast().plan().getId(), s.contactId()),
+                        204,
+                        204,
+                        403,
+                        403),
                 new Row("GET " + CAT, s -> get(CAT, s.cast().plan().getId()), 200, 200, 200, 200),
                 new Row(
                         "POST " + CAT,
@@ -824,7 +867,8 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                 seriesId,
                 fixtures.seriesVersion(seriesId),
                 invitationId,
-                deletionId);
+                deletionId,
+                fixtures.aContact(cast.plan(), "Matrix contact").getId());
     }
 
     private static Map<String, Object> editSeriesBody(Scene scene) {

@@ -20,7 +20,7 @@ public interface CategorySpendingRepository extends Repository<Transaction, Long
     @Query("SELECT ft.category.id, tp.member.id, COALESCE(SUM(tp.shareAmount), 0) "
             + "FROM Transaction ft JOIN ft.participants tp "
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.kind IS NULL AND ft.type = :type "
-            + "AND ft.category IS NOT NULL "
+            + "AND ft.category IS NOT NULL AND tp.member IS NOT NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "GROUP BY ft.category.id, tp.member.id")
     List<Object[]> findCategoryMemberFacts(
@@ -35,21 +35,22 @@ public interface CategorySpendingRepository extends Repository<Transaction, Long
             + "FROM Transaction ft JOIN ft.participants tp "
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL "
             + "AND ft.kind = com.lcs.findraco.transaction.model.TransactionKind.REFUND "
-            + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
+            + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate AND tp.member IS NOT NULL "
             + "GROUP BY ft.category.id, tp.member.id")
     List<Object[]> findCategoryMemberRefunds(
             @Param("plan") Plan plan, @Param("startDate") LocalDate startDate, @Param("endDate") LocalDate endDate);
 
     // One row per categorized item x participant of its transaction, unaggregated, for
     // ItemShareAllocator: [itemId, itemCategoryId, transactionCategoryId (nullable), itemAmount,
-    // memberId, shareAmount]. The transaction's category is LEFT-joined so uncategorized
-    // transactions still attribute their items.
+    // memberId (null for a contact), shareAmount]. A contact stays in the rows because the item is shared among all
+    // the participants; the allocator drops its portion. The transaction's category is LEFT-joined so
+    // uncategorized transactions still attribute their items.
     @Query("SELECT it.id, it.category.id, c.id, it.amount, tp.member.id, tp.shareAmount "
             + "FROM Transaction ft JOIN ft.items it JOIN ft.participants tp LEFT JOIN ft.category c "
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.kind IS NULL AND ft.type = :type "
             + "AND it.category IS NOT NULL "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
-            + "ORDER BY it.id, tp.member.id")
+            + "ORDER BY it.id, tp.member.id, tp.contact.id")
     List<Object[]> findCategorizedItemParticipantRows(
             @Param("plan") Plan plan,
             @Param("type") TransactionType type,

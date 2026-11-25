@@ -1,6 +1,7 @@
 package com.lcs.findraco.transaction.model;
 
 import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.user.model.User;
@@ -43,6 +44,11 @@ public class Transaction {
     /** What the row is besides income or expense; null for a normal one (see {@link TransactionKind}). */
     @Enumerated(EnumType.STRING)
     private TransactionKind kind;
+
+    /** The contact a repayment came from; null on every other row. */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "repayment_contact_id")
+    private Contact repaymentContact;
 
     private BigDecimal amount;
     private String description;
@@ -140,7 +146,9 @@ public class Transaction {
      */
     public void assignKind(TransactionKind newKind) {
         if (newKind.isNeutral()) {
-            User payer = participants.size() == 1 ? participants.getFirst().getMember() : createdBy;
+            User payer = participants.size() == 1 && participants.getFirst().getMember() != null
+                    ? participants.getFirst().getMember()
+                    : createdBy;
             category = null;
             items.clear();
             replaceSplit(SplitMode.EQUAL, List.of(new Share(payer, null)));
@@ -153,9 +161,7 @@ public class Transaction {
     }
 
     private List<Share> currentShares() {
-        return participants.stream()
-                .map(participant -> new Share(participant.getMember(), participant.getShareAmount()))
-                .toList();
+        return participants.stream().map(TransactionParticipant::toShare).toList();
     }
 
     /** Moves the transaction to the trash under {@code trashedBy}; every finder that serves a screen then skips it. */
@@ -248,7 +254,7 @@ public class Transaction {
     private List<Share> rescaledShares(BigDecimal newAmount) {
         if (splitMode == SplitMode.EQUAL) {
             return participants.stream()
-                    .map(participant -> new Share(participant.getMember(), null))
+                    .map(participant -> participant.toShare().withAmount(null))
                     .toList();
         }
         BigDecimal oldTotal = amount;
@@ -263,7 +269,7 @@ public class Transaction {
         List<Share> shares = new ArrayList<>();
         for (int i = 0; i < scaled.size(); i++) {
             BigDecimal extra = i < leftCents ? new BigDecimal("0.01") : BigDecimal.ZERO;
-            shares.add(new Share(participants.get(i).getMember(), scaled.get(i).add(extra)));
+            shares.add(participants.get(i).toShare().withAmount(scaled.get(i).add(extra)));
         }
         return shares;
     }
@@ -283,6 +289,7 @@ public class Transaction {
      * single participant, any member. A refund pays back a purchase: a credit with the expense category it lowers.
      */
     private void requireKindFits(TransactionDetails details, List<Share> shares, List<ItemDraft> candidateItems) {
+        requireContactSharesFit(details, shares);
         TransactionKind candidate = details.kind();
         if (candidate == null) {
             return;
@@ -311,6 +318,17 @@ public class Transaction {
         if (shares.size() != 1) {
             throw new TransactionExceptions.NeutralKindInvalidException(
                     candidate + " is a neutral kind and takes exactly one participant.");
+        }
+    }
+
+    /**
+     * A contact's share is money the plan lends out, so it exists only on a plain expense: an income, a neutral kind,
+     * a refund or a repayment has no share to give away.
+     */
+    private static void requireContactSharesFit(TransactionDetails details, List<Share> shares) {
+        boolean hasContact = shares.stream().anyMatch(Share::isContact);
+        if (hasContact && (details.type() != TransactionType.DEBIT || details.kind() != null)) {
+            throw new TransactionExceptions.ContactShareNotAllowedException();
         }
     }
 
@@ -351,26 +369,26 @@ public class Transaction {
         parcelsNumber = details.parcelsNumber();
     }
 
-    /** Updates kept members in place, so the (transaction, member) unique key holds within one flush. */
+    /**
+     * Updates kept participants in place, so the (transaction, member) and (transaction, contact) unique keys hold
+     * within one flush and whatever hangs from a participant row keeps hanging from it.
+     */
     private void applySplit(SplitMode mode, List<Share> split) {
         splitMode = mode;
-        Map<Long, TransactionParticipant> existingByMemberId = new HashMap<>();
-        participants.forEach(
-                participant -> existingByMemberId.put(participant.getMember().getId(), participant));
+        Map<String, TransactionParticipant> existingByParty = new HashMap<>();
+        participants.forEach(participant -> existingByParty.put(participant.key(), participant));
 
-        Set<Long> keptMemberIds = new HashSet<>();
+        Set<String> keptParties = new HashSet<>();
         for (Share share : split) {
-            keptMemberIds.add(share.member().getId());
-            TransactionParticipant existing =
-                    existingByMemberId.get(share.member().getId());
+            keptParties.add(share.key());
+            TransactionParticipant existing = existingByParty.get(share.key());
             if (existing != null) {
                 existing.changeShare(share.amount());
             } else {
-                participants.add(new TransactionParticipant(this, share.member(), share.amount()));
+                participants.add(new TransactionParticipant(this, share));
             }
         }
-        participants.removeIf(
-                participant -> !keptMemberIds.contains(participant.getMember().getId()));
+        participants.removeIf(participant -> !keptParties.contains(participant.key()));
     }
 
     public Long getId() {
@@ -399,6 +417,10 @@ public class Transaction {
 
     public TransactionKind getKind() {
         return kind;
+    }
+
+    public Contact getRepaymentContact() {
+        return repaymentContact;
     }
 
     public BigDecimal getAmount() {

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.user.model.User;
@@ -185,6 +186,34 @@ class RecurrenceDefinitionTest {
                 null,
                 SplitMode.EQUAL,
                 self());
+    }
+
+    @Test
+    void aSeriesGivesAContactAShareOfAnExpenseNeverOfAnIncome() {
+        Contact mae = Contact.create(plan, "Mae", java.time.Instant.EPOCH);
+        List<Share> toTheContact = List.of(Share.ofContact(mae, null));
+        SeriesDraft expense = recurring(RecurrenceInterval.MONTHLY, null, null, SplitMode.EQUAL, toTheContact);
+        SeriesDraft income = new SeriesDraft(
+                plan,
+                owner,
+                null,
+                TransactionType.CREDIT,
+                AMOUNT,
+                "Rent",
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                START,
+                null,
+                SplitMode.EQUAL,
+                toTheContact);
+
+        assertThat(RecurrenceDefinition.create(expense).getParticipants())
+                .extracting(RecurrenceDefinitionParticipant::getContact)
+                .containsExactly(mae);
+        assertThatThrownBy(() -> RecurrenceDefinition.create(income))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
     }
 
     private SeriesDraft recurring(

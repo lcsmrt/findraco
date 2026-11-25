@@ -3,6 +3,7 @@ package com.lcs.findraco.transaction.service;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.config.SeriesProperties;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
+import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
 import com.lcs.findraco.transaction.model.Share;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
@@ -73,7 +74,7 @@ public class OpenEndedSeriesTopUpService {
                 : definition.getStartDate().minusMonths(1);
 
         List<Share> shares = definition.getParticipants().stream()
-                .map(participant -> new Share(participant.getMember(), participant.getShareAmount()))
+                .map(RecurrenceDefinitionParticipant::toShare)
                 .toList();
 
         List<Transaction> candidates =

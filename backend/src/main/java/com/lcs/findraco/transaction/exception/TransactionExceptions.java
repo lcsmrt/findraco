@@ -110,6 +110,27 @@ public class TransactionExceptions {
         }
     }
 
+    public static class ParticipantMemberOrContactException extends DomainException {
+        public ParticipantMemberOrContactException() {
+            super(
+                    ProblemType.PARTICIPANT_MEMBER_OR_CONTACT,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "participants",
+                    "A participant names a member or a contact, not both and not neither.");
+        }
+    }
+
+    public static class ContactShareNotAllowedException extends DomainException {
+        public ContactShareNotAllowedException() {
+            super(
+                    ProblemType.CONTACT_SHARE_NOT_ALLOWED,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "participants",
+                    "A contact can take a share of an expense only, not of an income or of a transfer, card bill "
+                            + "payment, savings, refund or repayment.");
+        }
+    }
+
     public static class ParticipantsRequiredException extends DomainException {
         public ParticipantsRequiredException() {
             super(

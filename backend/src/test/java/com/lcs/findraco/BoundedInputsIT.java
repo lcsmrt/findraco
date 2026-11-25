@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 import com.lcs.findraco.category.controller.CategoryRoutes;
+import com.lcs.findraco.plan.controller.ContactRoutes;
 import com.lcs.findraco.plan.controller.PlanRoutes;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
@@ -45,6 +46,17 @@ class BoundedInputsIT extends AbstractIntegrationTest {
                         Map.of("type", "DEBIT", "description", "x".repeat(256)))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
                 .andExpect(jsonPath("$.errors[0].field").value("description"))
+                .andExpect(jsonPath("$.errors[0].code").value("Size"));
+    }
+
+    @Test
+    void aContactNameLongerThanItsColumnIsRefused() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+
+        send(post(ContactRoutes.CONTACT, plan.getId()), owner, Map.of("name", "x".repeat(61)))
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
+                .andExpect(jsonPath("$.errors[0].field").value("name"))
                 .andExpect(jsonPath("$.errors[0].code").value("Size"));
     }
 

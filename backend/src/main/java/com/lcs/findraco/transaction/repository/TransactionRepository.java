@@ -49,8 +49,9 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long>,
      * Loads the participants of transactions already read, in one query. Collections come by a second
      * query instead of the page query, so the page is cut by the database, not in memory.
      */
-    @Query("SELECT DISTINCT t FROM Transaction t LEFT JOIN FETCH t.participants p LEFT JOIN FETCH p.member "
-            + "WHERE t IN :transactions")
+    @Query(
+            "SELECT DISTINCT t FROM Transaction t LEFT JOIN FETCH t.participants p LEFT JOIN FETCH p.member LEFT JOIN FETCH p.contact "
+                    + "WHERE t IN :transactions")
     List<Transaction> fetchParticipants(@Param("transactions") Collection<Transaction> transactions);
 
     /** Loads the items of transactions already read, with their categories, in one query. */

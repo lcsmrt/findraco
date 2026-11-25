@@ -119,7 +119,7 @@ public class TransactionSpecification {
     }
 
     /**
-     * Search matches EITHER the transaction description OR a participant member's name
+     * Search matches EITHER the transaction description OR the name of a participant, member or contact
      * (case-insensitive substring). The name match is an EXISTS subquery so a row matching on both
      * still appears exactly once — no join-induced duplicates.
      */
@@ -133,10 +133,14 @@ public class TransactionSpecification {
 
             Subquery<Long> sub = query.subquery(Long.class);
             Root<TransactionParticipant> tp = sub.from(TransactionParticipant.class);
+            Join<Object, Object> member = tp.join("member", JoinType.LEFT);
+            Join<Object, Object> contact = tp.join("contact", JoinType.LEFT);
             sub.select(tp.get("id"));
             sub.where(
                     cb.equal(tp.get("transaction"), root),
-                    cb.like(cb.lower(tp.get("member").get("name")), pattern, LikePatterns.ESCAPE));
+                    cb.or(
+                            cb.like(cb.lower(member.get("name")), pattern, LikePatterns.ESCAPE),
+                            cb.like(cb.lower(contact.get("name")), pattern, LikePatterns.ESCAPE)));
 
             return cb.or(descriptionMatch, cb.exists(sub));
         };
@@ -193,7 +197,7 @@ public class TransactionSpecification {
     }
 
     /**
-     * Order each transaction by the name of its largest-share participant, ties broken deterministically
+     * Order each transaction by the name of its largest-share participant, member or contact, ties broken deterministically
      * by name (so paging is stable). Implemented as a correlated subquery selecting the least member name
      * among participants whose share equals the transaction's maximum share. This spec owns the ordering —
      * the caller passes an unsorted Pageable for this key.
@@ -212,7 +216,9 @@ public class TransactionSpecification {
             maxShareSub.select(cb.max(maxShare));
             maxShareSub.where(cb.equal(tpMax.get("transaction"), root));
 
-            Expression<String> memberName = tp.get("member").get("name");
+            Join<Object, Object> member = tp.join("member", JoinType.LEFT);
+            Join<Object, Object> contact = tp.join("contact", JoinType.LEFT);
+            Expression<String> memberName = cb.coalesce(member.<String>get("name"), contact.<String>get("name"));
             Expression<BigDecimal> tpShare = tp.get("shareAmount");
             nameSub.select(cb.least(memberName));
             nameSub.where(cb.equal(tp.get("transaction"), root), cb.equal(tpShare, maxShareSub));
