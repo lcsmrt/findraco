@@ -1,7 +1,7 @@
 # Contacts verification
 
 **Verdict**: FAIL
-**Proofs**: `proofs.md` at 0312a850 (HEAD 44c5430a adds only a docs line)
+**Proofs**: `proofs.md` at 29630779 (79 pass, 0 fail; HEAD 87cabb0e adds only docs). Round 1 judged at 0312a850; the closings and C50-C54 judged at 87cabb0e
 **Verifier**: independent sub-agent (author != verifier)
 
 ## Checks
@@ -57,6 +57,24 @@
 | C47 | `OpenApiSnapshotIT` | yes |
 | C48 | `ContactStatementView.stories.tsx` `Long Name Reads In Full` | yes - `scrollWidth <= clientWidth` fails on an ellipsis |
 | C49 | `TransactionsPage.test.tsx` two tests, `showParticipantsColumn.test.ts` | yes |
+| C50 | `RepaymentsIT#aSettledPurchaseMovedToAFutureDateReleasesItsAllocation` | yes - asserts `PLANNED`, no stored row, 100.00 unallocated and credit 100.00. Without the new `held = 0` for a non-actual share in `fitToShares`, the row stays and `allocationsOf` fails |
+| C51 | `RepaymentsIT#editingAPaymentWhileItsPurchaseIsTrashedKeepsThatSettlement` | yes - first leg: the stored row survives the edit, then `PAID`, 0 unallocated, owed 0.00 after restore. Second leg: 300 edited to 100 is cut to `lunchShare=100.00` on restore, then `PAID`/`PARTIAL`. Either half of the fix (`deleteReplaceableByRepayment`, `capAtAmounts`) removed fails it |
+| C52 | `ContactSharesIT#markingAContactSplitWithAKindIsRefusedAndLeavesTheSplit` | yes - four kinds each 422 `contact-share-not-allowed`, then the shares 40/40 and the version unchanged |
+| C53 | `ContactsIT#refusesArchiveWithPlannedShares` | yes - the planned purchase and the running series (no planned share left, balance paid to zero) are each 409 `contact-has-planned-shares`; the ended series archives, and so do the trashed series and the trashed purchase. Removing either new count fails one leg |
+| C54 | `ContactsSection.test.tsx` `refuses to archive a contact with planned purchases`, `ContactNoticeView.stories.tsx` `Planned` | yes - the notice text and "Caio has planned purchases…" are shown, and no Archived group appears. pt-BR copy and `problems.ts` were added; i18n parity holds |
+
+Closings judged at 87cabb0e:
+- Finding 1 (`13ad8e1c`) and finding 2 (`13ad8e1c`) are fixed and proven by C50 and C51.
+- Finding 3 (`b96ea2a4`) is fixed: `assignKind` refuses any kind on a split with a contact. C52 proves it.
+- Finding 4 (`101de709`, `efdcfb08`) follows the user's decision on the Handoff's Settled mid-build line ("Bloquear com previstas (Recomendado)": refuse while the contact has planned shares or a live series). The plan's AC 6 example is amended to match. C5's planned-only leg was removed from `archivesOnlyAtZeroBalance` and is noted as superseded by C53.
+- Finding 5 (`14ba3253`) is done:
+  - C28 now asserts `422 urn:findraco:problem:allocation-exceeds-open` for the loser.
+  - C9 scopes each label `within` its contact's row and counts three labels.
+  - C31 has the zero case in `fills oldest first up to the amount`.
+  - C40's `Read Only` checks the viewer, then switches to owner and finds "Record payment", "Rename", "Archive" and "Delete".
+  - C41's `Fits Phone` and `Fits Desktop` assert that the document is taller than the window, that no element clips its own overflow, and that the last month scrolls into view.
+
+The fix for finding 2 adds a new write path without the contact lock: finding 6.
 
 Probed beyond the checks, by code reading and one throwaway IT (deleted, not committed). These hold:
 - Every total query in `DashboardReportRepository` and `CategorySpendingRepository` (items and refunds included) filters `tp.member IS NOT NULL`. MCP `get_month_summary` reads `DashboardService`, and REPAYMENT appears only in `neutralIn`.
@@ -76,3 +94,4 @@ Probed beyond the checks, by code reading and one throwaway IT (deleted, not com
 | 3 (low-medium, AC 12) `POST /transactions/{id}/kind` with TRANSFER, CARD_BILL_PAYMENT or SAVINGS on a purchase split with a contact answers 200. It silently replaces the split with the creator alone, so the contact's share and any allocations on it disappear. AC 12 refuses a contact share on a neutral kind with 422. | Throwaway IT: R$ 80 split owner + "C" → set kind TRANSFER → 200, participants `[owner 80]`, C's balance 0. `Transaction.assignKind` calls `replaceSplit` with the payer only | In `assignKind`, refuse a neutral kind with `ContactShareNotAllowedException` when any participant is a contact. Add a `ContactSharesIT` case: set kind TRANSFER on a split with "Mãe" → 422 `contact-share-not-allowed`, shares unchanged | `b96ea2a4` - C52 `ContactSharesIT#markingAContactSplitWithAKindIsRefusedAndLeavesTheSplit` |
 | 4 (low, AC 5/6, plan gap) A contact archived with only planned shares (allowed by AC 6) starts owing when those shares become actual, for example the next occurrence of a series. It owes while archived: it is absent from the active list and the pickers, and its payment is refused. | Throwaway IT: planned 80 → archive 200 → purchase dated yesterday (kept on the row) → balance `owed 80.00`, `POST` repayment → 422 `contact-archived`. `ContactService.lockForUpdate` refuses archived contacts for new payments | Needs the user's call. Either refuse archiving while planned shares exist (changes AC 6's third example), or let a payment be recorded from an archived contact that owes. Either is provable with one `ContactsIT`/`RepaymentsIT` case | `101de709` backend, `efdcfb08` frontend - C53 `ContactsIT#refusesArchiveWithPlannedShares`, C54 (user decision 2026-11-25, C5 notes it) |
 | 5 (low) Assertions looser than their claims: C28 checks 422 by status, not `allocation-exceeds-open`; C9 does not pair each balance with its contact; C41 does not assert "scrolls with the page"; C31's zero case and C40's owner half sit in tests the proofs do not name | rows C9, C28, C31, C40, C41 above | Assert `problem(422, "allocation-exceeds-open")` for the loser in C28. Scope C9's labels `within` each contact row. Name `As Owner` and `suggests nothing for a payment of zero…` in the C40/C31 proofs | `14ba3253` - C28 `allocation-exceeds-open` asserted, C9 balances tied to rows, C41 page scroll asserted, C31 zero case in the named test, C40 owner half in `Read Only` |
+| 6 (low, AC 22, door 4) A purchase restore now writes allocations: `fitToRestored` → `fitToShares` and `capAtAmounts` on the restored purchase's shares and the payments that settle them. It does this without the contact lock door 4 requires. `TransactionTrashService.restore` locks only the contacts of restored REPAYMENT rows. So a restore racing a payment edit for the same contact can leave a payment allocating more than it paid. | Scenario: Pix A 300 settles P 200 and Q 100, and P is in the trash. An edit of A sending `[Q 300]` keeps P's 200 (`sumOnTrashedPurchases`) and checks only the 300 sent. A restore of P that reads A's allocations before that edit commits finds 300 ≤ 300 and cuts nothing. The edit then commits, leaving P 200 + Q 300 = 500 live on a payment of 300, a state that only a restore's cap would repair. Code reading at 87cabb0e. | In `restore`, also lock (sorted, with the repayment contacts) the contacts of the restored rows' contact shares, before `Transaction::restore`. Prove it like `aRepaymentWaitsForTheLockOnItsContact`: a connection holding `FOR NO KEY UPDATE` on the contact makes the restore of a purchase wait until it commits | |
