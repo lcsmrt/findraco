@@ -225,6 +225,35 @@ Status is against ROADMAP.md and IDEAS.md.
   aggregate reviewed, a contacts screen under "Mais", MCP parameters. The new columns are additive; what is costly to
   undo is the rule "a contact's share is not spending", so the spec settles it first.
 
+**R17 owner decisions** (one per round, 2026-11-24):
+
+1. A contact's share is not plan spending: it stays out of expenses, category totals and limits and adds to money to
+   receive from that contact. Owner: "Fora dos gastos (Recomendado)".
+2. One contact kind only, "to charge". No dependant mode: spending on a child or pet stays the plan's own, as today.
+   Owner: "Só \"a cobrar\"" (the survey noted the requester wanted both; a second kind can be added later cheaply).
+3. Repayments support both cases: a payment received may be linked to specific purchases, or recorded against the
+   contact's balance with no link. Neither is income nor spending. Owner: "Quero ambos os casos".
+   Refined: recording a payment lists the contact's open purchases with the oldest pre-selected up to the amount (as
+   QuickBooks "receive payment"); the user confirms or changes; the last one may be partial and any excess is credit.
+   The allocation is stored, so each purchase shows paid, partial or open. Through Claude, a payment is applied oldest
+   first. Splitwise and Tricount keep balance only (rejected: no per-purchase status). Owner: "Perguntar com sugestão
+   (Recomendado)".
+4. Collecting: the contact's screen only (purchases paid, partial and open, payments and the balance). No ready-to-send
+   text and no public link in R17. Owner: "Só a tela". Claude can still answer "quanto minha mãe me deve?" from the data.
+5. A contact is one more participant in the existing split (equal or exact): members' shares are spending, a contact's
+   share is money to receive; a purchase wholly for a contact is a 100% share. Owner: "Sim, na mesma divisão
+   (Recomendado)".
+6. A series' split accepts contacts like a single purchase; each generated occurrence adds the contact's share to money
+   to receive; changing the split follows the existing series edit rule. Owner: "Sim, como as compras (Recomendado)".
+7. Contacts live on the Plans page, in a "Contacts" section below the members, each with what they owe; tapping one
+   opens the contact's statement. No new tab; phase 7 ("Mais") may move it. Owner: "Junto dos membros (Recomendado)".
+8. The balance owed counts realized transactions only; planned ones show in the statement as planned, outside the total.
+   Owner: "Só quando realizada (Recomendado)".
+9. Removing a contact that has purchases archives it: hidden from splits and the Contacts list, its name kept on past
+   purchases, its statement under "Archived", reversible. Archiving requires a zero balance (as Splitwise); otherwise the
+   app asks to settle first. Quicken and QuickBooks also hide rather than delete. Owner: "Arquivar só com saldo zero
+   (Recomendado)". A contact never used may simply be deleted (default, not asked).
+
 **Do not build** (opinion of the survey): Open Finance and per-bank parsers; double-entry bookkeeping (R7 stays light);
 envelope rollover, goals, investments, net worth; multi-currency conversion; backend OCR or a classifier (Claude reads
 receipts); WhatsApp or Telegram bot, native app, widgets; tags, attachments, comments, activity feed; settlement between
