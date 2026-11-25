@@ -1,6 +1,7 @@
 package com.lcs.findraco.mcp.service;
 
 import com.lcs.findraco.transaction.model.TransactionKind;
+import com.lcs.findraco.transaction.request.RepaymentAllocationRequest;
 import com.lcs.findraco.transaction.request.TransactionItemRequest;
 import com.lcs.findraco.transaction.request.TransactionParticipantRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
@@ -67,6 +68,10 @@ public final class McpUpdateCopy {
             @Nullable TransactionKind kind) {
         Long keptCategoryId =
                 stored.category() == null ? null : stored.category().id();
+        TransactionKind resultingKind = changeKind ? kind : stored.kind();
+        // A payment from a contact keeps its contact and what it settled; a new amount settles the oldest again.
+        boolean staysRepayment = resultingKind == TransactionKind.REPAYMENT && stored.repayment() != null;
+        boolean amountChanges = amount != null && amount.compareTo(stored.amount()) != 0;
         return new UpdateTransactionRequest(
                 changeCategory ? categoryId : keptCategoryId,
                 stored.type(),
@@ -87,7 +92,14 @@ public final class McpUpdateCopy {
                                 item.category() == null ? null : item.category().id(),
                                 item.quantity()))
                         .toList(),
-                changeKind ? kind : stored.kind(),
+                resultingKind,
+                staysRepayment ? stored.repayment().contactId() : null,
+                staysRepayment && !amountChanges
+                        ? stored.repayment().allocations().stream()
+                                .map(allocation ->
+                                        new RepaymentAllocationRequest(allocation.participantId(), allocation.amount()))
+                                .toList()
+                        : null,
                 stored.version());
     }
 }
