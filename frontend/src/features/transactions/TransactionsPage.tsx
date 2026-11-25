@@ -23,6 +23,7 @@ import { NeutralReviewSheet } from "./components/NeutralReviewSheet";
 import { TransactionFormDrawer } from "./components/TransactionFormDrawer";
 import { buildTransactionColumns, InlineSaveBody } from "./components/transactionColumns";
 import { toInlineSavePayload } from "./components/transactionForm";
+import { showParticipantsColumn } from "./utils/showParticipantsColumn";
 import { toSorting, toTransactionSort } from "./utils/transactionSort";
 import { useCsvImport } from "./components/useCsvImport";
 import { useTransactionActions } from "./components/useTransactionActions";
@@ -96,7 +97,7 @@ export function TransactionsPage() {
     canConfirm: actions.canConfirm,
     onSave: onInlineSave,
     isDeleting: actions.isDeleting,
-    showParticipantsColumn: members.length > 1,
+    showParticipantsColumn: showParticipantsColumn(members.length, data?.content ?? []),
     canEditParticipants: canAttributeToOthers && members.length > 1,
     members,
   });

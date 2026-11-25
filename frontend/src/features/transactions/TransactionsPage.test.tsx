@@ -113,6 +113,8 @@ type TabOptions = {
   canCreate?: boolean;
   /** What the candidates endpoint answers for an editor; a viewer's page never asks. */
   candidates?: PagedResponse<NeutralCandidate>;
+  /** Who is in the plan; two members unless a test needs a plan of one. */
+  members?: PlanMember[];
 };
 
 function renderTab({
@@ -121,10 +123,11 @@ function renderTab({
   categories = [],
   canCreate = true,
   candidates = candidatePage(0),
+  members = [lucas, livia],
 }: TabOptions = {}) {
   server.use(
     transactionHandlers.list(pageOf(transactions)),
-    planHandlers.members([lucas, livia]),
+    planHandlers.members(members),
     contactHandlers.list([]),
     categoryHandlers.list(categoryPage(categories)),
   );
@@ -207,6 +210,30 @@ afterEach(() => {
 });
 
 describe("TransactionsPage toolbar", () => {
+  it("names a contact on the table's attribution column even in a plan of one member (contacts AC 16)", async () => {
+    const pizza: Transaction = {
+      ...rent,
+      description: "Pizza",
+      participants: [
+        { id: lucas.userId, name: "Lucas", shareAmount: 40 },
+        { id: null, name: "Mãe", shareAmount: 40, contactId: 3, contactName: "Mãe" },
+      ],
+    };
+    renderTab({ transactions: [pizza], members: [lucas] });
+
+    const row = await tableRow("Pizza");
+
+    expect(row.getByText("Lucas, Mãe")).toBeTruthy();
+  });
+
+  it("has no attribution column in a plan of one member whose rows have no contact", async () => {
+    renderTab({ transactions: [rent], members: [lucas] });
+
+    await tableRow("Rent");
+
+    expect(screen.queryByRole("columnheader", { name: "Attributed to" })).toBeNull();
+  });
+
   it("shows search, filters and the actions menu, and neither New Transaction nor Manage Categories (NAV-02 AC 8; NAV-04 AC 1, 2)", async () => {
     const { user } = renderTab();
     await tableRow("Rent");
