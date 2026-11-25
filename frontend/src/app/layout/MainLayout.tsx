@@ -1,44 +1,53 @@
-import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
-import { TransactionFormDrawer } from "@/features/transactions/components/TransactionFormDrawer";
+import { AddTransactionProvider } from "@/app/providers/AddTransactionProvider";
+import { useAddTransaction } from "@/app/providers/useAddTransaction";
 import { usePlanPermissions } from "@/hooks/usePlanPermissions";
 import { BottomBarView } from "./BottomBarView";
 import { MainLayoutView } from "./MainLayoutView";
 import { Navbar } from "./Navbar";
-import { currentDestination } from "./utils/navigation";
+import { currentDestination, type Destination } from "./utils/navigation";
 import { TabRowView } from "./TabRowView";
 
-export function MainLayout() {
-  const { pathname } = useLocation();
-  const current = currentDestination(pathname);
+type DestinationLayoutProps = {
+  current: Destination;
+};
+
+/** The shell of one of the four destinations, with the global add in its navigation. */
+function DestinationLayout({ current }: DestinationLayoutProps) {
   // False while the plan or its role loads, so a viewer never sees the add flash in.
   const { canCreateTransactions } = usePlanPermissions();
-  const [isAddOpen, setIsAddOpen] = useState(false);
+  const { openAdd } = useAddTransaction();
 
-  function openAdd() {
-    setIsAddOpen(true);
-  }
-
-  const onAdd = canCreateTransactions ? openAdd : null;
+  const onAdd = canCreateTransactions ? () => openAdd() : null;
 
   return (
     <MainLayoutView
       navbar={<Navbar />}
-      navigation={
-        current
-          ? {
-              tabRow: <TabRowView current={current} onAdd={onAdd} />,
-              bottomBar: <BottomBarView current={current} onAdd={onAdd} />,
-            }
-          : undefined
-      }
-      overlay={
-        current && (
-          <TransactionFormDrawer open={isAddOpen} onOpenChange={setIsAddOpen} mode="create" />
-        )
-      }
+      navigation={{
+        tabRow: <TabRowView current={current} onAdd={onAdd} />,
+        bottomBar: <BottomBarView current={current} onAdd={onAdd} />,
+      }}
     >
       <Outlet />
     </MainLayoutView>
+  );
+}
+
+export function MainLayout() {
+  const { pathname } = useLocation();
+  const current = currentDestination(pathname);
+
+  if (!current) {
+    return (
+      <MainLayoutView navbar={<Navbar />}>
+        <Outlet />
+      </MainLayoutView>
+    );
+  }
+
+  return (
+    <AddTransactionProvider>
+      <DestinationLayout current={current} />
+    </AddTransactionProvider>
   );
 }

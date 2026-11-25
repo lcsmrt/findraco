@@ -211,6 +211,22 @@ describe("MainLayout navigation", () => {
     expect(within(tabRow()).getByRole("link", { name: "Plans" }).getAttribute("aria-current")).toBe("page");
   });
 
+  it("a contact's statement keeps Plans as the current destination and the global add", async () => {
+    server.use(
+      contactHandlers.statement({
+        contact: { id: 7, name: "Mãe", archived: false, owed: 0, credit: 0, version: 0 },
+        owed: 0,
+        credit: 0,
+        months: [],
+      }),
+    );
+    renderAt("/plans/contacts/7");
+
+    expect(await screen.findByRole("heading", { level: 1, name: "Mãe" })).toBeTruthy();
+    expect(within(tabRow()).getByRole("link", { name: "Plans" }).getAttribute("aria-current")).toBe("page");
+    expect(within(bottomBar()).getByRole("button", { name: "New Transaction" })).toBeTruthy();
+  });
+
   it("the accept-invitation page shows neither the tab row nor the bottom bar (NAV-03 edge)", async () => {
     server.use(invitationHandlers.preview({ planName: "Parents", role: "VIEWER", invitedByName: "Bia" }));
     renderAt("/invitation/abc");

@@ -13,6 +13,7 @@ import { ResetPassword } from "@/features/auth/ResetPasswordPage";
 import { OAuthConsentPage } from "@/features/oauth/OAuthConsentPage";
 import { OAuthLoginPage } from "@/features/oauth/OAuthLoginPage";
 import { CategoriesPage } from "@/features/categories/CategoriesPage";
+import { ContactStatementPage } from "@/features/contacts/ContactStatementPage";
 import { OverviewPage } from "@/features/overview/OverviewPage";
 import { OVERVIEW_PARAM_KEYS } from "@/features/overview/filters/overviewParams";
 import { TransactionsPage } from "@/features/transactions/TransactionsPage";
@@ -66,6 +67,7 @@ export function AppRouter() {
             }
           />
           <Route path={PATHS.plans} element={<PlansPage />} />
+          <Route path={PATHS.contactStatement} element={<ContactStatementPage />} />
           <Route
             path={PATHS.acceptInvitation}
             element={<AcceptInvitationPage />}

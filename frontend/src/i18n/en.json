@@ -384,6 +384,7 @@
       "empty": "Nothing with this contact yet",
       "fallbackTitle": "Contact",
       "loadError": "Could not load this statement.",
+      "loading": "Loading statement",
       "moreActions": "More actions",
       "payment": "Payment",
       "paymentDescription": "Payment from {{name}}",

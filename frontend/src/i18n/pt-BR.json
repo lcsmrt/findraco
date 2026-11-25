@@ -384,6 +384,7 @@
       "empty": "Nada com este contato ainda",
       "fallbackTitle": "Contato",
       "loadError": "Não foi possível carregar este extrato.",
+      "loading": "Carregando extrato",
       "moreActions": "Mais ações",
       "payment": "Pagamento",
       "paymentDescription": "Pagamento de {{name}}",
