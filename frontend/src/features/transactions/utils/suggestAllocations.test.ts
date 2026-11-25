@@ -16,6 +16,7 @@ describe("suggestAllocations", () => {
       ],
       excess: 0,
     });
+    expect(suggestAllocations(shares, 0)).toEqual({ allocations: [], excess: 0 });
   });
 
   it("reports the excess", () => {

@@ -2,7 +2,7 @@ import type { Contact } from "@/api/dtos/contact";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { page } from "@vitest/browser/context";
 import { MemoryRouter } from "react-router-dom";
-import { expect, fn, screen, waitFor } from "storybook/test";
+import { expect, fn, screen, waitFor, within } from "storybook/test";
 import { ContactsSectionView } from "./ContactsSectionView";
 
 function contact(id: number, name: string, overrides: Partial<Contact> = {}): Contact {
@@ -62,9 +62,14 @@ export const Empty: Story = {
 export const WithBalances: Story = {
   play: async ({ args, canvas, userEvent }) => {
     await expect(canvas.getByText("Contacts")).toBeVisible();
-    await expect(canvas.getByText("Owes R$ 50,00")).toBeVisible();
-    await expect(canvas.getByText("Credit of R$ 20,00")).toBeVisible();
-    await expect(canvas.getByText("Settled")).toBeVisible();
+    // Each balance sits on its own contact's row.
+    function rowOf(name: string) {
+      return canvas.getByRole("link", { name: new RegExp(name) }).closest("li")!;
+    }
+    await expect(within(rowOf("Ana")).getByText("Owes R$ 50,00")).toBeVisible();
+    await expect(within(rowOf("Bia")).getByText("Credit of R$ 20,00")).toBeVisible();
+    await expect(within(rowOf("Caio")).getByText("Settled")).toBeVisible();
+    await expect(canvas.getAllByText(/Owes R\$|Credit of R\$|Settled/)).toHaveLength(3);
     // Each row opens that contact's statement.
     await expect(canvas.getByRole("link", { name: /Ana/ })).toHaveAttribute("href", "/plans/contacts/1");
     await userEvent.click(canvas.getByRole("button", { name: "New contact" }));

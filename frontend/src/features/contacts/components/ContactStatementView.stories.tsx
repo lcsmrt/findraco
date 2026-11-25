@@ -1,6 +1,8 @@
 import type { Contact, ContactStatement, ContactStatementMonth } from "@/api/dtos/contact";
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import { Button } from "@/components/button/base/Button";
 import { page } from "@vitest/browser/context";
+import { useState, type ComponentProps } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { expect, fn, screen, waitFor, within } from "storybook/test";
 import { ContactStatementView } from "./ContactStatementView";
@@ -38,6 +40,28 @@ function pastTheViewport() {
   return [...document.body.querySelectorAll<HTMLElement>("*")]
     .filter((element) => element.getBoundingClientRect().right > limit + 0.5)
     .map((element) => `${element.tagName.toLowerCase()} ${element.textContent?.slice(0, 30) ?? ""}`);
+}
+
+// The elements that hold their own overflowing content behind a scrollbar or a clip: a page that scrolls in
+// pieces instead of as a whole.
+function clippingScrollers() {
+  return [...document.body.querySelectorAll<HTMLElement>("*")]
+    .filter((element) => {
+      const { overflowY } = getComputedStyle(element);
+      return overflowY !== "visible" && element.scrollHeight > element.clientHeight + 1;
+    })
+    .map((element) => `${element.tagName.toLowerCase()} ${element.textContent?.slice(0, 30) ?? ""}`);
+}
+
+// The page itself is taller than the screen and scrolling it brings the last month into view.
+async function expectToScrollWithThePage() {
+  const root = document.documentElement;
+  await waitFor(() => expect(root.scrollHeight).toBeGreaterThan(window.innerHeight));
+  await expect(clippingScrollers()).toEqual([]);
+  window.scrollTo(0, root.scrollHeight);
+  const lastMonth = screen.getAllByRole("heading", { level: 2 }).at(-1)!;
+  await waitFor(() => expect(lastMonth.getBoundingClientRect().bottom).toBeLessThanOrEqual(window.innerHeight));
+  window.scrollTo(0, 0);
 }
 
 const meta = {
@@ -148,12 +172,36 @@ export const AsOwner: Story = {
   },
 };
 
+// A viewer's statement that one click turns into an owner's, so a single story shows what only the owner gets.
+function ViewerThenOwner(args: ComponentProps<typeof ContactStatementView>) {
+  const [isOwner, setIsOwner] = useState(false);
+  return (
+    <>
+      <Button type="button" variant="outline" onClick={() => setIsOwner(true)}>
+        Switch to owner
+      </Button>
+      <ContactStatementView {...args} canManage={isOwner} />
+    </>
+  );
+}
+
 export const ReadOnly: Story = {
   args: { canManage: false },
-  play: async ({ canvas }) => {
+  render: (args) => <ViewerThenOwner {...args} />,
+  play: async ({ canvas, userEvent }) => {
     await expect(canvas.getByText("Owes R$ 50,00")).toBeVisible();
     await expect(canvas.queryByRole("button", { name: "Record payment" })).toBeNull();
     await expect(canvas.queryByRole("button", { name: "More actions" })).toBeNull();
+
+    await userEvent.click(canvas.getByRole("button", { name: "Switch to owner" }));
+
+    await expect(canvas.getByRole("button", { name: "Record payment" })).toBeVisible();
+    await userEvent.click(canvas.getByRole("button", { name: "More actions" }));
+    for (const action of ["Rename", "Archive", "Delete"]) {
+      await expect(await screen.findByRole("menuitem", { name: action })).toBeVisible();
+    }
+    await userEvent.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull());
   },
 };
 
@@ -191,6 +239,7 @@ export const FitsPhone: Story = {
   play: async () => {
     await page.viewport(390, 844);
     await waitFor(() => expect(pastTheViewport()).toEqual([]));
+    await expectToScrollWithThePage();
   },
 };
 
@@ -199,6 +248,7 @@ export const FitsDesktop: Story = {
   play: async () => {
     await page.viewport(1280, 800);
     await waitFor(() => expect(pastTheViewport()).toEqual([]));
+    await expectToScrollWithThePage();
   },
 };
 

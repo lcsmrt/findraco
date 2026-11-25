@@ -225,20 +225,22 @@ class RepaymentsIT extends AbstractContactMoneyIT {
                 long share = shareOf(purchase(plan, owner, contact, "200.00", 10));
                 Map<String, Object> body = withAllocations(repayment("200.00", contact), allocation(share, "200.00"));
                 CountDownLatch go = new CountDownLatch(1);
-                Callable<Integer> save = () -> {
+                Callable<String> save = () -> {
                     go.await();
-                    return send(post(TransactionRoutes.TRANSACTION, plan.getId()), owner, body)
-                            .andReturn()
-                            .getResponse()
-                            .getStatus();
+                    ResultActions sent = send(post(TransactionRoutes.TRANSACTION, plan.getId()), owner, body);
+                    int status = sent.andReturn().getResponse().getStatus();
+                    // The loser is the rule's refusal, not some other 422.
+                    return status == 201
+                            ? "201"
+                            : status + " " + readBody(sent).path("type").asString();
                 };
-                Future<Integer> first = pool.submit(save);
-                Future<Integer> second = pool.submit(save);
+                Future<String> first = pool.submit(save);
+                Future<String> second = pool.submit(save);
                 go.countDown();
 
                 assertThat(List.of(first.get(30, TimeUnit.SECONDS), second.get(30, TimeUnit.SECONDS)))
                         .as("round %d", round)
-                        .containsExactlyInAnyOrder(201, 422);
+                        .containsExactlyInAnyOrder("201", "422 urn:findraco:problem:allocation-exceeds-open");
                 assertThat(jdbc.queryForObject(
                                 "SELECT SUM(amount) FROM repayment_allocations WHERE participant_id = ?",
                                 BigDecimal.class,
