@@ -8,6 +8,7 @@ import { InvitePlanDialog } from "./components/InvitePlanDialog";
 import { ArchivedPlansSection } from "./components/ArchivedPlansSection";
 import { PlanInvitationsList } from "./components/PlanInvitationsList";
 import { PlanTrashSection } from "./components/PlanTrashSection";
+import { ContactsSection } from "./components/ContactsSection";
 import { PlanMembersList } from "./components/PlanMembersList";
 import { TransferOwnershipDialog } from "./components/TransferOwnershipDialog";
 import { PlansPageView } from "./PlansPageView";
@@ -74,6 +75,7 @@ export function PlansPage() {
         onInvite={() => setIsInviteOpen(true)}
         onLeave={handleLeavePlan}
         membersList={activePlan && <PlanMembersList planId={activePlan.id} />}
+        contacts={<ContactsSection />}
         invitationsList={activePlan && <PlanInvitationsList planId={activePlan.id} />}
         trash={<PlanTrashSection />}
         archivedPlans={<ArchivedPlansSection />}

@@ -39,6 +39,7 @@ const meta = {
     onInvite: fn(),
     onLeave: fn(),
     membersList: <Text as="p">Members list</Text>,
+    contacts: <Text as="p">Contacts section</Text>,
     invitationsList: <Text as="p">Invitations list</Text>,
     trash: <Text as="p">Trash list</Text>,
     archivedPlans: <Text as="p">Archived plans list</Text>,

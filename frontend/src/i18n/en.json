@@ -341,6 +341,64 @@
       "transactionType": "Transaction type"
     }
   },
+  "contacts": {
+    "actions": {
+      "archive": "Archive",
+      "delete": "Delete",
+      "deleteDescription": "The contact is removed for good. A contact with shares or payments cannot be deleted.",
+      "deleteTitle": "Delete {{name}}?",
+      "rename": "Rename",
+      "unarchive": "Unarchive"
+    },
+    "balance": {
+      "credit": "Credit of {{amount}}",
+      "owes": "Owes {{amount}}",
+      "settled": "Settled"
+    },
+    "nameDialog": {
+      "newContact": "New contact",
+      "placeholder": "e.g. Mom",
+      "renameContact": "Rename contact"
+    },
+    "nameForm": {
+      "enterAName": "Enter a name",
+      "nameTooLong": "Use at most 60 characters"
+    },
+    "notice": {
+      "balance": "Settle the balance before archiving",
+      "balanceOf": "{{name}}: {{balance}}",
+      "dismiss": "Dismiss",
+      "inUse": "{{name}} has shares or payments, so it cannot be deleted. Archive it instead."
+    },
+    "section": {
+      "actionsFor": "Actions for {{name}}",
+      "archived": "Archived",
+      "emptyHint": "Contacts are people outside the plan who share purchases with you and pay you back.",
+      "emptyTitle": "No contacts yet",
+      "loadError": "Could not load the contacts.",
+      "newContact": "New contact",
+      "title": "Contacts"
+    },
+    "statement": {
+      "backToPlans": "Back to Plans",
+      "empty": "Nothing with this contact yet",
+      "fallbackTitle": "Contact",
+      "loadError": "Could not load this statement.",
+      "moreActions": "More actions",
+      "payment": "Payment",
+      "paymentDescription": "Payment from {{name}}",
+      "payments": "Payments",
+      "purchases": "Purchases",
+      "recordPayment": "Record payment",
+      "status": {
+        "open": "Open",
+        "paid": "Paid",
+        "partial": "Partial ({{allocated}} of {{share}})",
+        "planned": "Planned"
+      },
+      "unallocated": "{{amount}} unallocated"
+    }
+  },
   "notFound": {
     "notFoundView": {
       "backToTheHoard": "Back to the hoard",
