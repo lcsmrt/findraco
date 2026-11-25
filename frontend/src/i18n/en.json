@@ -368,7 +368,9 @@
       "balance": "Settle the balance before archiving",
       "balanceOf": "{{name}}: {{balance}}",
       "dismiss": "Dismiss",
-      "inUse": "{{name}} has shares or payments, so it cannot be deleted. Archive it instead."
+      "inUse": "{{name}} has shares or payments, so it cannot be deleted. Archive it instead.",
+      "planned": "End or remove the planned purchases before archiving",
+      "plannedOf": "{{name}} has planned purchases or a series still running."
     },
     "section": {
       "actionsFor": "Actions for {{name}}",
@@ -645,6 +647,7 @@
     },
     "contact-archived": "This contact is archived. Unarchive it or choose someone else.",
     "contact-balance-not-zero": "Settle the balance before archiving",
+    "contact-has-planned-shares": "End or remove the planned purchases before archiving",
     "contact-in-use": "This contact has shares or payments, so it cannot be deleted. Archive it instead.",
     "contact-name-taken": "A contact with that name already exists",
     "contact-not-found": "This contact was not found.",

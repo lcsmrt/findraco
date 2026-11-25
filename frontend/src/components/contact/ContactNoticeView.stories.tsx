@@ -28,6 +28,14 @@ export const BalanceCredit: Story = {
   },
 };
 
+export const Planned: Story = {
+  args: { notice: { kind: "planned", contact: { ...owing, owed: 0 } } },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("End or remove the planned purchases before archiving")).toBeVisible();
+    await expect(canvas.getByText("Mãe has planned purchases or a series still running.")).toBeVisible();
+  },
+};
+
 export const InUse: Story = {
   args: { notice: { kind: "in-use", contact: { ...owing, owed: 0 } } },
   play: async ({ args, canvas, userEvent }) => {

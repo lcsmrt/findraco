@@ -63,6 +63,7 @@ export type ProblemType =
   | "contact-not-found"
   | "contact-name-taken"
   | "contact-balance-not-zero"
+  | "contact-has-planned-shares"
   | "contact-in-use"
   | "contact-archived"
   | "contact-share-not-allowed"

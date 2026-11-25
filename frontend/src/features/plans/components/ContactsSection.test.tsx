@@ -116,6 +116,21 @@ describe("ContactsSection", () => {
     expect(screen.getByText("Owes R$ 50,00")).toBeTruthy();
   });
 
+  it("refuses to archive a contact with planned purchases", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(contactHandlers.list([caio]), contactHandlers.archiveRejected(409, "contact-has-planned-shares"));
+    renderSection();
+
+    await openMenu(user, "Caio", "Archive");
+
+    expect(await screen.findByText("End or remove the planned purchases before archiving")).toBeTruthy();
+    expect(screen.getByText("Caio has planned purchases or a series still running.")).toBeTruthy();
+    expect(sent(requests, "POST")).toEqual([`${CONTACTS}/9/archive`]);
+    // The contact stays active, with no archived group.
+    expect(screen.queryByText("Archived")).toBeNull();
+  });
+
   it("archives a settled contact", async () => {
     const user = userEvent.setup();
     const requests = recordRequests();

@@ -6,7 +6,10 @@ import { useTranslation } from "react-i18next";
 import { contactBalanceLabel } from "./contactBalance";
 
 /** Why an action on a contact was refused, and what to do instead. */
-export type ContactNotice = { kind: "balance"; contact: Contact } | { kind: "in-use"; contact: Contact };
+export type ContactNotice =
+  | { kind: "balance"; contact: Contact }
+  | { kind: "planned"; contact: Contact }
+  | { kind: "in-use"; contact: Contact };
 
 type ContactNoticeViewProps = {
   notice: ContactNotice;
@@ -14,7 +17,10 @@ type ContactNoticeViewProps = {
   onDismiss: () => void;
 };
 
-/** The refusal of an archive (settle the balance first) or of a delete (archive it instead). */
+/**
+ * The refusal of an archive (settle the balance, end the planned purchases first) or of a delete (archive it
+ * instead).
+ */
 export function ContactNoticeView({ notice, onArchive, onDismiss }: ContactNoticeViewProps) {
   const { t } = useTranslation();
 
@@ -29,6 +35,11 @@ export function ContactNoticeView({ notice, onArchive, onDismiss }: ContactNotic
             <Text variant="secondary" numeric>
               {t("contacts.notice.balanceOf", { name: contact.name, balance: contactBalanceLabel(t, contact) })}
             </Text>
+          </>
+        ) : notice.kind === "planned" ? (
+          <>
+            <Text variant="label">{t("contacts.notice.planned")}</Text>
+            <Text variant="secondary">{t("contacts.notice.plannedOf", { name: contact.name })}</Text>
           </>
         ) : (
           <>

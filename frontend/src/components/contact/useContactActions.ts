@@ -18,8 +18,8 @@ type UseContactActionsArgs = {
 };
 
 /**
- * Archives, unarchives and deletes contacts for a screen. The two refusals the user can act on (a balance
- * still open, a contact in use) become a notice that says what to do; any other failure is a toast.
+ * Archives, unarchives and deletes contacts for a screen. The refusals the user can act on (a balance
+ * still open, planned purchases, a contact in use) become a notice that says what to do; any other failure is a toast.
  */
 export function useContactActions({ onDeleted }: UseContactActionsArgs = {}) {
   const { t } = useTranslation();
@@ -43,7 +43,9 @@ export function useContactActions({ onDeleted }: UseContactActionsArgs = {}) {
       { params: { id: contact.id } },
       {
         onError: (error) => {
-          if (problemType(error) === "contact-balance-not-zero") setNotice({ kind: "balance", contact });
+          const type = problemType(error);
+          if (type === "contact-balance-not-zero") setNotice({ kind: "balance", contact });
+          else if (type === "contact-has-planned-shares") setNotice({ kind: "planned", contact });
           else reportError(error);
         },
       },

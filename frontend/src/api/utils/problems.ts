@@ -67,6 +67,7 @@ const PROBLEM_COPY = {
   "contact-not-found": "problems.contact-not-found",
   "contact-name-taken": "problems.contact-name-taken",
   "contact-balance-not-zero": "problems.contact-balance-not-zero",
+  "contact-has-planned-shares": "problems.contact-has-planned-shares",
   "contact-in-use": "problems.contact-in-use",
   "contact-archived": "problems.contact-archived",
   "contact-share-not-allowed": "problems.contact-share-not-allowed",

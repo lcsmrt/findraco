@@ -368,7 +368,9 @@
       "balance": "Quite o saldo antes de arquivar",
       "balanceOf": "{{name}}: {{balance}}",
       "dismiss": "Dispensar",
-      "inUse": "{{name}} tem compras ou pagamentos e não pode ser excluído. Arquive-o."
+      "inUse": "{{name}} tem compras ou pagamentos e não pode ser excluído. Arquive-o.",
+      "planned": "Encerre as compras previstas antes de arquivar",
+      "plannedOf": "{{name}} tem compras previstas ou uma série em andamento."
     },
     "section": {
       "actionsFor": "Ações de {{name}}",
@@ -645,6 +647,7 @@
     },
     "contact-archived": "Este contato está arquivado. Desarquive-o ou escolha outra pessoa.",
     "contact-balance-not-zero": "Quite o saldo antes de arquivar",
+    "contact-has-planned-shares": "Encerre as compras previstas antes de arquivar",
     "contact-in-use": "Este contato tem divisões ou pagamentos e não pode ser excluído. Arquive-o.",
     "contact-name-taken": "Já existe um contato com esse nome",
     "contact-not-found": "Este contato não foi encontrado.",
