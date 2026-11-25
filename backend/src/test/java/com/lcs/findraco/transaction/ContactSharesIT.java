@@ -226,6 +226,29 @@ class ContactSharesIT extends AbstractIntegrationTest {
     }
 
     @Test
+    void markingAContactSplitWithAKindIsRefusedAndLeavesTheSplit() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Contact mae = fixtures.aContact(plan, "Mãe");
+        JsonNode split = create(plan, owner, expense("80.00", "EQUAL", member(owner, null), contact(mae, null)));
+        long id = split.path("id").asLong();
+
+        for (String kind : List.of("TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND")) {
+            Map<String, Object> mark =
+                    Map.of("kind", kind, "version", split.path("version").asLong());
+            send(post(TransactionRoutes.TRANSACTION + "/{id}/kind", plan.getId(), id), owner, mark)
+                    .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "contact-share-not-allowed"));
+        }
+
+        JsonNode after = readBody(mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), id)
+                        .with(testAuthHelper.asUser(owner)))
+                .andExpect(status().isOk()));
+        assertShares(after, "member:" + owner.getId() + "=40.00", "contact:" + mae.getId() + "=40.00");
+        assertThat(after.path("version").asLong())
+                .isEqualTo(split.path("version").asLong());
+    }
+
+    @Test
     void archivedOrForeignContactsAreRefused() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);

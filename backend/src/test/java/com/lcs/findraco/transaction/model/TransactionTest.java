@@ -395,15 +395,15 @@ class TransactionTest {
     }
 
     @Test
-    void aNeutralKindOnARowOfOneContactTakesTheCreatorAsPayer() {
+    void aNeutralKindCannotBeAssignedToARowWithAContactShare() {
         Transaction transaction = Transaction.create(
                 draft(details("100.00"), SplitMode.EQUAL, List.of(Share.ofContact(mae, null)), List.of()));
 
-        transaction.assignKind(TransactionKind.TRANSFER);
-
+        assertThatThrownBy(() -> transaction.assignKind(TransactionKind.TRANSFER))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
         assertThat(transaction.getParticipants())
-                .extracting(TransactionParticipant::getMember)
-                .containsExactly(owner);
+                .extracting(TransactionParticipant::getContact)
+                .containsExactly(mae);
     }
 
     @Test

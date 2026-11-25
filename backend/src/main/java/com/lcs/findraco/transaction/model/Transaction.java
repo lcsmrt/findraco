@@ -142,12 +142,17 @@ public class Transaction {
     /**
      * Marks the row with {@code newKind}. A neutral kind takes what it cannot carry off the row: the category, the
      * items, and a split among several, which collapses to one payer (the only participant, otherwise the creator).
-     * A refund must fit the row as it is, with its other values untouched.
+     * A refund must fit the row as it is, with its other values untouched. A row split with a contact takes no kind:
+     * its share is money to receive, so the split is edited first.
      */
     public void assignKind(TransactionKind newKind) {
         if (newKind == TransactionKind.REPAYMENT || kind == TransactionKind.REPAYMENT) {
             throw new TransactionExceptions.NeutralKindInvalidException(
                     "A REPAYMENT names the contact it came from and is recorded or edited as such, never marked.");
+        }
+        if (participants.stream().anyMatch(share -> share.getContact() != null)) {
+            // Marking would collapse the split to one payer and drop the contact's share and what settled it.
+            throw new TransactionExceptions.ContactShareNotAllowedException();
         }
         if (newKind.isNeutral()) {
             User payer = participants.size() == 1 && participants.getFirst().getMember() != null
