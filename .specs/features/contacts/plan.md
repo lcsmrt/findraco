@@ -1,6 +1,6 @@
 # Contacts and money to receive
 
-**Approved**: pending
+**Approved**: 2026-11-25 - user: "Sim" (asked: "Aprova assim?", after the four unconfirmed defaults were named)
 
 ## Problem
 
@@ -247,13 +247,13 @@ Claude captures with contacts as it does with members.
 | Series | splits accept contacts | owner, 2026-11-24: "Sim, como as compras (Recomendado)" | y |
 | Where | a Contacts section on Plans, below members; the statement on its own page | owner, 2026-11-24: "Junto dos membros (Recomendado)" | y |
 | Planned shares | outside the balance, shown as planned | owner, 2026-11-24: "Só quando realizada (Recomendado)" | y |
-| Removing | archive with a zero balance only; delete when never used | owner, 2026-11-24: "Arquivar só com saldo zero (Recomendado)"; delete-when-unused is the default | y / n |
-| Who manages and uses contacts | OWNER and EDITOR create, rename, archive, use in splits and record payments; every member sees the section and statements | follows `canAttributeToOthers`: a contact share moves money out of the plan's spending, as attributing to another member does | n |
-| Credit | stays on the contact until a payment is edited to use it; there is no separate "use credit" action | editing a payment's allocation already covers it, with no new concept | n |
-| Contact names | 1-60 characters, unique among active contacts, ignoring case | matches category names; uniqueness keeps pickers and the MCP unambiguous | n |
-| Statement grouping | by calendar month of the transaction date | card-bill grouping needs R5, which comes later | n |
+| Removing | archive with a zero balance only; delete when never used | owner, 2026-11-24: "Arquivar só com saldo zero (Recomendado)"; delete-when-unused approved with the plan, 2026-11-25 | y |
+| Who manages and uses contacts | OWNER and EDITOR create, rename, archive, use in splits and record payments; every member sees the section and statements | follows `canAttributeToOthers`: a contact share moves money out of the plan's spending, as attributing to another member does | y - approved with the plan, 2026-11-25 |
+| Credit | stays on the contact until a payment is edited to use it; there is no separate "use credit" action | editing a payment's allocation already covers it, with no new concept | y - approved with the plan, 2026-11-25 |
+| Contact names | 1-60 characters, unique among active contacts, ignoring case | matches category names; uniqueness keeps pickers and the MCP unambiguous | y - approved with the plan, 2026-11-25 |
+| Statement grouping | by calendar month of the transaction date | card-bill grouping needs R5, which comes later | y - approved with the plan, 2026-11-25 |
 
-**Open questions:** none - the `n` rows are presented with the plan.
+**Open questions:** none - all resolved or logged above.
 
 ## Differences from the source
 
