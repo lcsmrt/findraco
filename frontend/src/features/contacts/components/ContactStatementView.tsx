@@ -124,6 +124,8 @@ export function ContactStatementView({
 
       <PageHeader
         title={contact?.name ?? t("contacts.statement.fallbackTitle")}
+        // The name is what the user typed, up to 60 characters: it wraps, since nothing else on the page shows it in full.
+        wrapTitle
         actions={
           showActions && (
             <>

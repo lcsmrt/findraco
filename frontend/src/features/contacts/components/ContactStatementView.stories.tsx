@@ -201,3 +201,17 @@ export const FitsDesktop: Story = {
     await waitFor(() => expect(pastTheViewport()).toEqual([]));
   },
 };
+
+// The longest name a contact can have reads in full on a phone, wrapped, with its actions still on screen.
+export const LongNameReadsInFull: Story = {
+  args: { statement: { ...owes, contact: { ...mae, name: "Tia Maria Antonieta de Albuquerque Cavalcanti Pereira" } } },
+  play: async ({ canvas }) => {
+    await page.viewport(390, 844);
+    await waitFor(() => {
+      const title = canvas.getByRole("heading", { level: 1 });
+      expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+      expect(canvas.getByRole("button", { name: "Record payment" }).getBoundingClientRect().right).toBeLessThanOrEqual(390);
+    });
+    await waitFor(() => expect(pastTheViewport()).toEqual([]));
+  },
+};

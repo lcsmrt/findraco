@@ -63,3 +63,24 @@ export const Mobile: Story = {
   args: WithActions.args,
   globals: { viewport: { value: "mobile1" } },
 };
+
+// A title the user typed wraps onto a second line and stays whole, with the action still on the row.
+export const WrappedLongTitle: Story = {
+  args: {
+    title: "Tia Maria Antonieta de Albuquerque Cavalcanti Pereira",
+    wrapTitle: true,
+    actions: <Button size="sm">Invite</Button>,
+  },
+  decorators: [
+    (Story) => (
+      <div className="w-[390px]">
+        <Story />
+      </div>
+    ),
+  ],
+  play: async ({ canvas }) => {
+    const title = canvas.getByRole("heading", { level: 1 });
+    await expect(title.scrollWidth).toBeLessThanOrEqual(title.clientWidth);
+    await expect(canvas.getByRole("button", { name: "Invite" })).toBeVisible();
+  },
+};
