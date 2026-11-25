@@ -1,7 +1,7 @@
 # Contacts verification
 
-**Verdict**: FAIL
-**Proofs**: `proofs.md` at 29630779 (79 pass, 0 fail; HEAD 87cabb0e adds only docs). Round 1 judged at 0312a850; the closings and C50-C54 judged at 87cabb0e
+**Verdict**: PASS
+**Proofs**: `proofs.md` at a2f3ebd2 (80 pass, 0 fail; HEAD db16445a adds only proofs.md). Round 1 judged at 0312a850, the closings and C50-C54 at 87cabb0e, finding 6's closing and C55 at db16445a
 **Verifier**: independent sub-agent (author != verifier)
 
 ## Checks
@@ -62,6 +62,7 @@
 | C52 | `ContactSharesIT#markingAContactSplitWithAKindIsRefusedAndLeavesTheSplit` | yes - four kinds each 422 `contact-share-not-allowed`, then the shares 40/40 and the version unchanged |
 | C53 | `ContactsIT#refusesArchiveWithPlannedShares` | yes - the planned purchase and the running series (no planned share left, balance paid to zero) are each 409 `contact-has-planned-shares`; the ended series archives, and so do the trashed series and the trashed purchase. Removing either new count fails one leg |
 | C54 | `ContactsSection.test.tsx` `refuses to archive a contact with planned purchases`, `ContactNoticeView.stories.tsx` `Planned` | yes - the notice text and "Caio has planned purchases…" are shown, and no Archived group appears. pt-BR copy and `problems.ts` were added; i18n parity holds |
+| C55 | `RepaymentsIT#aPurchaseRestoreWaitsForTheLockOnItsContact` | yes - a restore touches only `transactions` rows, which a `FOR NO KEY UPDATE` on the contact does not block, so without the new lock in `restore` the 1.5 s `TimeoutException` assertion fails; after the holder commits the share reads `PAID` |
 
 Closings judged at 87cabb0e:
 - Finding 1 (`13ad8e1c`) and finding 2 (`13ad8e1c`) are fixed and proven by C50 and C51.
@@ -74,7 +75,7 @@ Closings judged at 87cabb0e:
   - C40's `Read Only` checks the viewer, then switches to owner and finds "Record payment", "Rename", "Archive" and "Delete".
   - C41's `Fits Phone` and `Fits Desktop` assert that the document is taller than the window, that no element clips its own overflow, and that the last month scrolls into view.
 
-The fix for finding 2 adds a new write path without the contact lock: finding 6.
+The fix for finding 2 added a new write path without the contact lock: finding 6. `a46bc16f` closes it: `restore` now locks, in id order and before any row is restored, every contact a restored row names (the repayment's contact and each contact share). C55 proves it.
 
 Probed beyond the checks, by code reading and one throwaway IT (deleted, not committed). These hold:
 - Every total query in `DashboardReportRepository` and `CategorySpendingRepository` (items and refunds included) filters `tp.member IS NOT NULL`. MCP `get_month_summary` reads `DashboardService`, and REPAYMENT appears only in `neutralIn`.
