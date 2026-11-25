@@ -188,8 +188,11 @@ export type TransactionSeriesResponse = {
 
 export type SeriesEditScope = "THIS_ONE" | "THIS_AND_FOLLOWING" | "ALL";
 
+/** A series' share: a member's (`memberId`) or a contact's (`contactId`, with its name). */
 export type RecurrenceDefinitionParticipantTemplate = {
-  memberId: number;
+  memberId?: number | null;
+  contactId?: number | null;
+  contactName?: string | null;
   shareAmount: number;
 };
 

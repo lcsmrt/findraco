@@ -97,6 +97,8 @@ function seedLists(client: QueryClient) {
   client.setQueryData(["dashboardTrend", 5, { months: 6 }], []);
   client.setQueryData(["transactionTrash", 5, undefined], { content: [] });
   client.setQueryData(["neutralCandidates", 5, undefined], { content: [] });
+  client.setQueryData(["contacts", 5, false], []);
+  client.setQueryData(["contactStatement", 5, 7], { months: [] });
   client.setQueryData(["transactionSeries", 5, "s1"], definition);
   client.setQueryData(["transactionSeries", 5, "other"], definition);
 }
@@ -110,6 +112,8 @@ function invalidated(client: QueryClient) {
     trend: client.getQueryState(["dashboardTrend", 5, { months: 6 }])?.isInvalidated,
     trash: client.getQueryState(["transactionTrash", 5, undefined])?.isInvalidated,
     candidates: client.getQueryState(["neutralCandidates", 5, undefined])?.isInvalidated,
+    contacts: client.getQueryState(["contacts", 5, false])?.isInvalidated,
+    statement: client.getQueryState(["contactStatement", 5, 7])?.isInvalidated,
     series: client.getQueryState(["transactionSeries", 5, "s1"])?.isInvalidated,
     otherSeries: client.getQueryState(["transactionSeries", 5, "other"])?.isInvalidated,
   };
@@ -132,6 +136,9 @@ const transactionData = {
   trend: true,
   trash: true,
   candidates: true,
+  // A share or a payment moves a contact's balance and statement.
+  contacts: true,
+  statement: true,
 };
 
 describe("useGetTransactions", () => {
