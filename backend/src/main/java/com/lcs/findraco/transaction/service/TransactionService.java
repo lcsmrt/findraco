@@ -311,9 +311,12 @@ public class TransactionService {
         return ids;
     }
 
-    /** What an edit leaves of a purchase's allocations: a share cut below what repayments settled gives it back. */
-    private void fitAllocations(Transaction transaction) {
-        allocationService.fitToShares(RepaymentAllocationService.contactShareIds(transaction));
+    /**
+     * What an edit leaves of a purchase's allocations: a share cut below what repayments settled, or that became
+     * planned, gives it back.
+     */
+    private void fitAllocations(Transaction transaction, PlanContext ctx) {
+        allocationService.fitToShares(RepaymentAllocationService.contactShareIds(transaction), ctx);
     }
 
     @Transactional
@@ -349,7 +352,7 @@ public class TransactionService {
             if (wasRepayment) {
                 allocationService.release(saved);
             }
-            fitAllocations(saved);
+            fitAllocations(saved, ctx);
         }
         return response(saved, ctx);
     }
@@ -380,7 +383,7 @@ public class TransactionService {
         transaction.confirm(dto.amount(), dto.startDate());
 
         Transaction saved = transactionRepository.saveAndFlush(transaction);
-        fitAllocations(saved);
+        fitAllocations(saved, ctx);
         return response(saved, ctx);
     }
 
@@ -772,7 +775,7 @@ public class TransactionService {
             }
 
             transactionRepository.saveAndFlush(pivot);
-            fitAllocations(pivot);
+            fitAllocations(pivot, ctx);
             return TransactionSeriesResponse.from(
                     List.of(pivot), transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));
         }
@@ -838,7 +841,7 @@ public class TransactionService {
             coverOpenEndedSeries(definition);
         }
         recurrenceDefinitionRepository.saveAndFlush(definition);
-        combined.forEach(this::fitAllocations);
+        combined.forEach(row -> fitAllocations(row, ctx));
 
         return TransactionSeriesResponse.from(
                 combined, transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));

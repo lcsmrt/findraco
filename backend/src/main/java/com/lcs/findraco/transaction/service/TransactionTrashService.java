@@ -151,7 +151,7 @@ public class TransactionTrashService {
                 .forEach(contactId -> contactService.lockForUpdate(contactId, true, ctx));
         rows.forEach(Transaction::restore);
         entityManager.flush();
-        allocationService.fitToRestored(rows);
+        allocationService.fitToRestored(rows, ctx);
         deletionRepository.delete(deletion);
         return new TransactionRestoredResponse(rows.size());
     }

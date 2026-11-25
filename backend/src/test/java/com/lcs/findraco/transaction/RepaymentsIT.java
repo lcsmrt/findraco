@@ -332,6 +332,73 @@ class RepaymentsIT extends AbstractContactMoneyIT {
     }
 
     @Test
+    void aSettledPurchaseMovedToAFutureDateReleasesItsAllocation() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Contact mae = fixtures.aContact(plan, "Mãe");
+        Transaction dinner = purchase(plan, owner, mae, "100.00", 10);
+        long share = shareOf(dinner);
+        long pixId = created(plan, owner, withAllocations(repayment("100.00", mae), allocation(share, "100.00")))
+                .path("id")
+                .asLong();
+        assertThat(allocationsOf(pixId)).containsExactly(share + "=100.00");
+
+        editPurchase(plan, owner, dinner, "100.00", Map.of("contactId", mae.getId()), today().plusDays(40));
+
+        JsonNode after = statement(plan, owner, mae);
+        assertThat(shareStatuses(after)).containsExactly("PLANNED");
+        assertThat(allocationsOf(pixId)).isEmpty();
+        assertThat(unallocatedOf(after, pixId)).isEqualByComparingTo("100.00");
+        assertThat(balanceOf(plan, owner, mae)).isEqualTo("credit 100.00");
+    }
+
+    @Test
+    void editingAPaymentWhileItsPurchaseIsTrashedKeepsThatSettlement() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Contact mae = fixtures.aContact(plan, "Mãe");
+        Transaction dinner = purchase(plan, owner, mae, "200.00", 10);
+        long share = shareOf(dinner);
+        JsonNode pix = created(plan, owner, withAllocations(repayment("200.00", mae), allocation(share, "200.00")));
+        long pixId = pix.path("id").asLong();
+        long deletionId = trash(plan, owner, dinner.getId());
+
+        // What the form sends back: the response's allocations, which leave out the trashed purchase.
+        Map<String, Object> rename = new LinkedHashMap<>(withAllocations(repayment("200.00", mae)));
+        rename.put("description", "Pix, renamed");
+        rename.put("items", List.of());
+        rename.put("version", pix.path("version").asLong());
+        send(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), pixId), owner, rename)
+                .andExpect(status().isOk());
+        assertThat(allocationsOf(pixId)).containsExactly(share + "=200.00");
+
+        restore(plan, owner, deletionId);
+
+        JsonNode restored = statement(plan, owner, mae);
+        assertThat(shareStatuses(restored)).containsExactly("PAID");
+        assertThat(unallocatedOf(restored, pixId)).isEqualByComparingTo("0");
+        assertThat(balanceOf(plan, owner, mae)).isEqualTo("owed 0.00");
+
+        // A payment edited down meanwhile never settles more than it paid once the purchase is back.
+        Transaction lunch = purchase(plan, owner, mae, "300.00", 8);
+        long lunchShare = shareOf(lunch);
+        JsonNode second =
+                created(plan, owner, withAllocations(repayment("300.00", mae), allocation(lunchShare, "300.00")));
+        long secondId = second.path("id").asLong();
+        long lunchDeletion = trash(plan, owner, lunch.getId());
+        Map<String, Object> lower = new LinkedHashMap<>(withAllocations(repayment("100.00", mae)));
+        lower.put("items", List.of());
+        lower.put("version", second.path("version").asLong());
+        send(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), secondId), owner, lower)
+                .andExpect(status().isOk());
+
+        restore(plan, owner, lunchDeletion);
+
+        assertThat(allocationsOf(secondId)).containsExactly(lunchShare + "=100.00");
+        assertThat(shareStatuses(statement(plan, owner, mae))).containsExactly("PAID", "PARTIAL");
+    }
+
+    @Test
     void reducingAShareCutsNewestPaymentsFirst() throws Exception {
         User owner = fixtures.aUser();
         Plan plan = fixtures.aPlan(owner);
@@ -479,11 +546,22 @@ class RepaymentsIT extends AbstractContactMoneyIT {
     private void editPurchase(
             Plan plan, User caller, Transaction purchase, String amount, Map<String, Object> participant)
             throws Exception {
+        editPurchase(plan, caller, purchase, amount, participant, purchase.getStartDate());
+    }
+
+    private void editPurchase(
+            Plan plan,
+            User caller,
+            Transaction purchase,
+            String amount,
+            Map<String, Object> participant,
+            LocalDate date)
+            throws Exception {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("type", "DEBIT");
         body.put("amount", new BigDecimal(amount));
         body.put("description", purchase.getDescription());
-        body.put("startDate", purchase.getStartDate().toString());
+        body.put("startDate", date.toString());
         body.put("splitMode", "EQUAL");
         body.put("participants", List.of(participant));
         body.put("items", List.of());
@@ -491,6 +569,30 @@ class RepaymentsIT extends AbstractContactMoneyIT {
         send(put(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), purchase.getId()), caller, body)
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.amount").value(Double.parseDouble(amount)));
+    }
+
+    private long trash(Plan plan, User caller, long transactionId) throws Exception {
+        return readBody(send(delete(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), transactionId), caller, null)
+                        .andExpect(status().isOk()))
+                .path("deletionId")
+                .asLong();
+    }
+
+    private void restore(Plan plan, User caller, long deletionId) throws Exception {
+        send(post(TransactionRoutes.TRASH + "/{deletionId}/restore", plan.getId(), deletionId), caller, null)
+                .andExpect(status().isOk());
+    }
+
+    /** What the statement says the payment left unallocated, the contact's credit from it. */
+    private static BigDecimal unallocatedOf(JsonNode statement, long repaymentId) {
+        for (JsonNode month : statement.path("months")) {
+            for (JsonNode payment : month.path("repayments")) {
+                if (payment.path("transactionId").asLong() == repaymentId) {
+                    return payment.path("unallocated").decimalValue();
+                }
+            }
+        }
+        throw new AssertionError("payment " + repaymentId + " not on the statement " + statement);
     }
 
     private static List<String> shareStatuses(JsonNode statement) {

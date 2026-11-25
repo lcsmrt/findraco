@@ -17,7 +17,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,15 +56,19 @@ public class RepaymentAllocationService {
     /**
      * Replaces what {@code repayment} settles, whether it is new or edited. {@code requested} lists the shares and
      * amounts; omitted, the payment settles the contact's oldest open shares first, the last one possibly in part.
-     * Any amount beyond what is allocated is the contact's credit, which has no row.
+     * Any amount beyond what is allocated is the contact's credit, which has no row. What the payment settles on a
+     * purchase in the trash is kept, not replaced: an edit cannot see it, and the purchase comes back settled.
      */
     @Transactional
     public void allocate(Transaction repayment, @Nullable List<RepaymentAllocationRequest> requested, PlanContext ctx) {
-        allocationRepository.deleteByRepayment(repayment);
+        allocationRepository.deleteReplaceableByRepayment(
+                repayment, repayment.getRepaymentContact().getId());
+        BigDecimal kept = allocationRepository.sumOnTrashedPurchases(repayment);
 
         Map<Long, Open> open = openShares(repayment, ctx);
-        Map<TransactionParticipant, BigDecimal> chosen =
-                requested == null ? oldestFirst(repayment.getAmount(), open) : explicit(requested, open);
+        Map<TransactionParticipant, BigDecimal> chosen = requested == null
+                ? oldestFirst(repayment.getAmount().subtract(kept).max(ZERO), open)
+                : explicit(requested, open);
 
         BigDecimal total = chosen.values().stream().reduce(ZERO, BigDecimal::add);
         if (total.compareTo(repayment.getAmount()) > 0) {
@@ -148,15 +154,17 @@ public class RepaymentAllocationService {
     }
 
     /**
-     * Cuts the allocations of {@code shares} back to what each share still holds, newest repayment first: a share
-     * reduced below what repayments settled of it gives back the most recent payments' part, which becomes the
-     * contact's credit. Callers flush the change to the shares first.
+     * Cuts the allocations of the shares back to what each share holds, newest repayment first: a share reduced
+     * below what repayments settled of it gives back the most recent payments' part, which becomes the contact's
+     * credit. A share that is not actual (planned, or waiting to be confirmed) holds nothing, so all its allocations
+     * go back. Callers flush the change to the shares first.
      */
     @Transactional
-    public void fitToShares(Collection<Long> participantIds) {
+    public void fitToShares(Collection<Long> participantIds, PlanContext ctx) {
         if (participantIds.isEmpty()) {
             return;
         }
+        LocalDate today = userService.today(ctx.userId());
         Map<Long, BigDecimal> excess = new HashMap<>();
         List<RepaymentAllocation> newestFirst = allocationRepository.findLiveByParticipantNewestFirst(participantIds);
         for (RepaymentAllocation allocation : newestFirst) {
@@ -165,30 +173,87 @@ public class RepaymentAllocationService {
         }
         for (RepaymentAllocation allocation : newestFirst) {
             TransactionParticipant share = allocation.getParticipant();
-            BigDecimal over = excess.get(share.getId()).subtract(share.getShareAmount());
+            BigDecimal held =
+                    share.getTransaction().status(today) == TransactionStatus.ACTUAL ? share.getShareAmount() : ZERO;
+            BigDecimal over = excess.get(share.getId()).subtract(held);
             if (over.signum() <= 0) {
                 continue;
             }
             BigDecimal cut = over.min(allocation.getAmount());
             excess.put(share.getId(), excess.get(share.getId()).subtract(cut));
-            if (cut.compareTo(allocation.getAmount()) == 0) {
-                allocationRepository.delete(allocation);
-            } else {
-                allocation.cutBackTo(allocation.getAmount().subtract(cut));
-            }
+            cutBack(allocation, cut);
         }
     }
 
-    /** After a restore: the shares the restored repayments settle may have been given to others meanwhile. */
+    private void cutBack(RepaymentAllocation allocation, BigDecimal cut) {
+        if (cut.compareTo(allocation.getAmount()) == 0) {
+            allocationRepository.delete(allocation);
+        } else {
+            allocation.cutBackTo(allocation.getAmount().subtract(cut));
+        }
+    }
+
+    /**
+     * After a restore: the shares of the restored purchases and those the restored repayments settle may have been
+     * given to others meanwhile, and a payment edited while a purchase was in the trash may now settle more than it
+     * paid. Shares are cut back first; then a payment over its amount gives back what it settled on the restored
+     * purchases before anything else, as the person editing could not see those.
+     */
     @Transactional
-    public void fitToRestored(Collection<Transaction> restored) {
+    public void fitToRestored(Collection<Transaction> restored, PlanContext ctx) {
         List<Long> repaymentIds = restored.stream()
                 .filter(row -> row.getKind() == TransactionKind.REPAYMENT)
                 .map(Transaction::getId)
                 .toList();
+        Set<Long> restoredShares = new HashSet<>();
+        restored.stream()
+                .filter(row -> row.getKind() != TransactionKind.REPAYMENT)
+                .forEach(row -> restoredShares.addAll(contactShareIds(row)));
+        Set<Long> shares = new HashSet<>(restoredShares);
         if (!repaymentIds.isEmpty()) {
-            fitToShares(allocationRepository.findParticipantIdsOf(repaymentIds));
+            shares.addAll(allocationRepository.findParticipantIdsOf(repaymentIds));
         }
+        fitToShares(shares, ctx);
+
+        Set<Long> payments = new HashSet<>(repaymentIds);
+        if (!restoredShares.isEmpty()) {
+            allocationRepository
+                    .findLiveByParticipantNewestFirst(restoredShares)
+                    .forEach(
+                            allocation -> payments.add(allocation.getRepayment().getId()));
+        }
+        capAtAmounts(payments, restoredShares);
+    }
+
+    private void capAtAmounts(Collection<Long> repaymentIds, Set<Long> restoredShares) {
+        if (repaymentIds.isEmpty()) {
+            return;
+        }
+        Map<Long, List<RepaymentAllocation>> byRepayment = new HashMap<>();
+        for (RepaymentAllocation allocation : allocationRepository.findLiveByRepaymentIn(repaymentIds)) {
+            byRepayment
+                    .computeIfAbsent(allocation.getRepayment().getId(), id -> new ArrayList<>())
+                    .add(allocation);
+        }
+        Comparator<RepaymentAllocation> restoredFirstThenNewest = Comparator.comparing(
+                        (RepaymentAllocation allocation) -> !restoredShares.contains(
+                                allocation.getParticipant().getId()))
+                .thenComparing(Comparator.comparing(RepaymentAllocation::getId).reversed());
+        byRepayment.values().forEach(allocations -> {
+            BigDecimal over = allocations.stream()
+                    .map(RepaymentAllocation::getAmount)
+                    .reduce(ZERO, BigDecimal::add)
+                    .subtract(allocations.getFirst().getRepayment().getAmount());
+            for (RepaymentAllocation allocation :
+                    allocations.stream().sorted(restoredFirstThenNewest).toList()) {
+                if (over.signum() <= 0) {
+                    break;
+                }
+                BigDecimal cut = over.min(allocation.getAmount());
+                over = over.subtract(cut);
+                cutBack(allocation, cut);
+            }
+        });
     }
 
     /** The ids of the shares that go to contacts, for {@link #fitToShares}. */

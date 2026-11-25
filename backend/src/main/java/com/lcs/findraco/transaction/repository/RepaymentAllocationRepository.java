@@ -2,6 +2,7 @@ package com.lcs.findraco.transaction.repository;
 
 import com.lcs.findraco.transaction.model.RepaymentAllocation;
 import com.lcs.findraco.transaction.model.Transaction;
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,6 +15,21 @@ import org.springframework.data.repository.query.Param;
  * purchase in the trash are kept but count for nothing until it is restored (AD-028).
  */
 public interface RepaymentAllocationRepository extends JpaRepository<RepaymentAllocation, Long> {
+
+    /**
+     * Frees what an edit of the repayment replaces: its allocations on live purchases, and any on a share of another
+     * contact. Those on a purchase in the trash stay, as the edit's form cannot show them to send back.
+     */
+    @Modifying(flushAutomatically = true)
+    @Query("DELETE FROM RepaymentAllocation a WHERE a.repayment = :repayment AND a.participant IN "
+            + "(SELECT p FROM TransactionParticipant p WHERE p.transaction.deletion IS NULL "
+            + "OR p.contact.id <> :contactId)")
+    int deleteReplaceableByRepayment(@Param("repayment") Transaction repayment, @Param("contactId") Long contactId);
+
+    /** What the repayment settles on purchases in the trash: kept until they come back. */
+    @Query("SELECT COALESCE(SUM(a.amount), 0) FROM RepaymentAllocation a WHERE a.repayment = :repayment "
+            + "AND a.participant.transaction.deletion IS NOT NULL")
+    BigDecimal sumOnTrashedPurchases(@Param("repayment") Transaction repayment);
 
     /** Frees everything a repayment settled, before it settles again or is edited into something else. */
     @Modifying(flushAutomatically = true)
