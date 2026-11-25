@@ -45,6 +45,7 @@ public enum ProblemType {
     CONTACT_NOT_FOUND("contact-not-found"),
     CONTACT_NAME_TAKEN("contact-name-taken"),
     CONTACT_BALANCE_NOT_ZERO("contact-balance-not-zero"),
+    CONTACT_HAS_PLANNED_SHARES("contact-has-planned-shares"),
     CONTACT_IN_USE("contact-in-use"),
     CONTACT_ARCHIVED("contact-archived"),
 

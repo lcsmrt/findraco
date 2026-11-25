@@ -25,6 +25,7 @@ import com.lcs.findraco.user.model.User;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
@@ -176,12 +177,10 @@ class ContactsIT extends AbstractIntegrationTest {
         Contact settled = fixtures.aContact(plan, "Settled");
         Contact owes = fixtures.aContact(plan, "Owes");
         Contact credit = fixtures.aContact(plan, "Credit");
-        Contact planned = fixtures.aContact(plan, "Planned");
         Transaction paid = contactRow(plan, owner, settled, "30.00", today().minusDays(10));
         aRepayment(plan, owner, settled, "30.00");
         contactRow(plan, owner, owes, "0.01", today().minusDays(1));
         aRepayment(plan, owner, credit, "5.00");
-        contactRow(plan, owner, planned, "80.00", today().plusDays(40));
 
         send(post(ContactRoutes.CONTACT + "/{id}/archive", plan.getId(), owes.getId()), owner, null)
                 .andExpect(problem(HttpStatus.CONFLICT, "contact-balance-not-zero"));
@@ -193,11 +192,9 @@ class ContactsIT extends AbstractIntegrationTest {
                 readBody(send(post(ContactRoutes.CONTACT + "/{id}/archive", plan.getId(), settled.getId()), owner, null)
                         .andExpect(status().isOk()));
         assertThat(archived.path("archived").asBoolean()).isTrue();
-        send(post(ContactRoutes.CONTACT + "/{id}/archive", plan.getId(), planned.getId()), owner, null)
-                .andExpect(status().isOk());
 
         assertThat(names(list(plan, owner, false))).containsExactly("Credit", "Owes");
-        assertThat(names(list(plan, owner, true))).containsExactly("Credit", "Owes", "Planned", "Settled");
+        assertThat(names(list(plan, owner, true))).containsExactly("Credit", "Owes", "Settled");
         JsonNode stored =
                 readBody(mockMvc.perform(get(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), paid.getId())
                                 .with(testAuthHelper.asUser(owner)))
@@ -207,6 +204,43 @@ class ContactsIT extends AbstractIntegrationTest {
 
         send(post(TransactionRoutes.TRANSACTION, plan.getId()), owner, expenseWithContact("10.00", settled.getId()))
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "contact-archived"));
+    }
+
+    @Test
+    void refusesArchiveWithPlannedShares() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Contact planned = fixtures.aContact(plan, "Planned");
+        Contact gym = fixtures.aContact(plan, "Gym");
+        Contact ended = fixtures.aContact(plan, "Ended");
+        Transaction plannedRow = contactRow(plan, owner, planned, "80.00", today().plusDays(40));
+        // Every occurrence so far is past and paid: no share is planned, yet the series is still running.
+        String running = createSeries(plan, owner, gym, today().minusDays(70), today().plusDays(1));
+        aRepayment(plan, owner, gym, owed(plan, owner, "Gym"));
+        createSeries(plan, owner, ended, today().minusDays(70), today().minusDays(5));
+        aRepayment(plan, owner, ended, owed(plan, owner, "Ended"));
+
+        send(post(ContactRoutes.CONTACT + "/{id}/archive", plan.getId(), planned.getId()), owner, null)
+                .andExpect(problem(HttpStatus.CONFLICT, "contact-has-planned-shares"));
+        send(post(ContactRoutes.CONTACT + "/{id}/archive", plan.getId(), gym.getId()), owner, null)
+                .andExpect(problem(HttpStatus.CONFLICT, "contact-has-planned-shares"));
+        assertThat(names(list(plan, owner, false))).containsExactly("Ended", "Gym", "Planned");
+
+        archive(plan, owner, ended);
+
+        send(
+                        delete(TransactionRoutes.TRANSACTION + "/series/{seriesId}", plan.getId(), running)
+                                .param("scope", "ALL"),
+                        owner,
+                        null)
+                .andExpect(status().isOk());
+        jdbc.update("DELETE FROM transactions WHERE repayment_contact_id = ?", gym.getId());
+        archive(plan, owner, gym);
+
+        send(delete(TransactionRoutes.TRANSACTION + "/{id}", plan.getId(), plannedRow.getId()), owner, null)
+                .andExpect(status().isOk());
+        archive(plan, owner, planned);
+        assertThat(names(list(plan, owner, false))).isEmpty();
     }
 
     @Test
@@ -315,6 +349,28 @@ class ContactsIT extends AbstractIntegrationTest {
                 "interval", "MONTHLY",
                 "startDate", today().plusDays(2).toString(),
                 "participants", List.of(Map.of("contactId", contact.getId())));
+    }
+
+    /** What the plan's list says the contact owes, to pay exactly that, whatever the calendar generated. */
+    private String owed(Plan plan, User owner, String name) throws Exception {
+        for (JsonNode contact : list(plan, owner, false)) {
+            if (name.equals(contact.path("name").asString())) {
+                return contact.path("owed").decimalValue().toPlainString();
+            }
+        }
+        throw new AssertionError("no contact " + name);
+    }
+
+    private String createSeries(Plan plan, User owner, Contact contact, LocalDate start, LocalDate end)
+            throws Exception {
+        Map<String, Object> body = new LinkedHashMap<>(monthlySeriesWith(contact));
+        body.put("startDate", start.toString());
+        body.put("endDate", end.toString());
+        body.put("requiresConfirmation", false);
+        return readBody(send(post(TransactionRoutes.TRANSACTION + "/series", plan.getId()), owner, body)
+                        .andExpect(status().isCreated()))
+                .path("seriesId")
+                .asString();
     }
 
     private JsonNode list(Plan plan, User caller, boolean archived) throws Exception {

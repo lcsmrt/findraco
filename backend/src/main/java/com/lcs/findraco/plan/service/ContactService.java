@@ -87,13 +87,22 @@ public class ContactService {
         return response(saveCheckingTheName(contact), ctx);
     }
 
-    /** A contact with a balance, owed or credit, stays: only a settled one leaves the pickers. */
+    /**
+     * A contact with a balance, owed or credit, stays: only a settled one leaves the pickers. So does one with
+     * planned shares or a series still running, which would start to owe once they come due, after it has left the
+     * pickers and can no longer record a payment.
+     */
     @Transactional
     public ContactResponse archive(Long id, PlanContext ctx) {
         planAuthorization.requireCanManageContacts(ctx.role());
         Contact contact = find(id, ctx);
         if (!balance(contact.getId(), ctx).isSettled()) {
             throw new ContactExceptions.ContactBalanceNotZeroException();
+        }
+        LocalDate today = userService.today(ctx.userId());
+        if (ledgerRepository.countPlannedShares(contact.getId(), today) > 0
+                || ledgerRepository.countRunningSeries(contact.getId(), today) > 0) {
+            throw new ContactExceptions.ContactHasPlannedSharesException();
         }
 
         contact.archive(clock.instant());

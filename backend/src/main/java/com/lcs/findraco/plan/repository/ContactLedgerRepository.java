@@ -29,6 +29,23 @@ public interface ContactLedgerRepository extends Repository<Contact, Long> {
     List<Object[]> sumActualSharesByContact(@Param("plan") Plan plan, @Param("today") LocalDate today);
 
     /**
+     * How many live shares of the contact are not actual on {@code today}: planned, or waiting for a confirmation.
+     * The complement of {@link #sumActualSharesByContact}, so each share is counted by exactly one of the two.
+     */
+    @Query("SELECT COUNT(tp) FROM TransactionParticipant tp WHERE tp.contact.id = :contactId "
+            + "AND tp.transaction.deletion IS NULL "
+            + "AND NOT (tp.transaction.confirmation = com.lcs.findraco.transaction.model.Confirmation.CONFIRMED "
+            + "OR (tp.transaction.confirmation = com.lcs.findraco.transaction.model.Confirmation.BY_DATE "
+            + "AND tp.transaction.startDate <= :today))")
+    long countPlannedShares(@Param("contactId") long contactId, @Param("today") LocalDate today);
+
+    /** How many series that name the contact are still running: not in the trash and not ended before {@code today}. */
+    @Query(
+            "SELECT COUNT(rp) FROM RecurrenceDefinitionParticipant rp WHERE rp.contact.id = :contactId "
+                    + "AND rp.definition.deletion IS NULL AND (rp.definition.endDate IS NULL OR rp.definition.endDate > :today)")
+    long countRunningSeries(@Param("contactId") long contactId, @Param("today") LocalDate today);
+
+    /**
      * The rows are [contactId, sum]: what each contact has paid back, the amounts of the live repayments that came
      * from it. A repayment counts whatever its date and however it is allocated; a trashed one counts no more.
      */

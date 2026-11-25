@@ -35,6 +35,16 @@ public class ContactExceptions {
         }
     }
 
+    public static class ContactHasPlannedSharesException extends DomainException {
+        public ContactHasPlannedSharesException() {
+            super(
+                    ProblemType.CONTACT_HAS_PLANNED_SHARES,
+                    HttpStatus.CONFLICT,
+                    "A contact with planned purchases, or in a series still running, cannot be archived. "
+                            + "End or remove them first.");
+        }
+    }
+
     public static class ContactInUseException extends DomainException {
         public ContactInUseException() {
             super(
