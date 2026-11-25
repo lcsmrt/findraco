@@ -144,6 +144,7 @@ A plan has contacts that members manage on the Plans page.
 5. WHEN an OWNER or EDITOR archives a contact whose balance is zero THEN the system SHALL move it to "Arquivados" in the same section, remove it from the split and payment pickers, and keep its name on past transactions.
 6. IF the contact's balance is not zero (owed or credit) THEN archiving SHALL be refused with 409 `contact-balance-not-zero`, and the page SHALL say "Quite o saldo antes de arquivar" with the amount.
    - Owes R$ 0.01 → refused; credit R$ 5 → refused; owes R$ 0 with planned shares only → archived.
+   - Amended 2026-11-25 (user: "Bloquear com previstas (Recomendado)"): owes R$ 0 with planned shares, or a live series naming the contact → refused with 409 `contact-has-planned-shares`.
 7. WHEN an OWNER or EDITOR unarchives a contact THEN the system SHALL return it to the active list and the pickers.
    - IF another active contact has the same name THEN 422 `contact-name-taken`.
 8. WHEN an OWNER or EDITOR deletes a contact that has no participant row, live or in the trash, and no repayment THEN the system SHALL remove it. IF it has any THEN 409 `contact-in-use`, and the page offers "Arquivar" instead.
