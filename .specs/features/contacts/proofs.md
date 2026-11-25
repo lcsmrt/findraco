@@ -1,9 +1,9 @@
 # contacts proofs
 
-**HEAD**: 0312a850
+**HEAD**: 29630779
 **Tree**: clean
 **Shell**: /bin/sh
-**Result**: 73 pass, 0 fail
+**Result**: 79 pass, 0 fail
 
 | Check | Proof | Result |
 | --- | --- | --- |
@@ -76,6 +76,12 @@
 | C49 | `run table / ✓ TransactionsPage toolbar > names a contact on the table's attribution column even in a plan of o` | pass |
 | C49 | `run table / ✓ TransactionsPage toolbar > has no attribution column in a plan of one member whose rows have no ` | pass |
 | C49 | `run table / ✓ showParticipantsColumn > shows it in a plan of one member when a row has a contact's share, so h` | pass |
+| C50 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#aSettledPurchaseM` | pass |
+| C51 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#editingAPaymentWh` | pass |
+| C52 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#markingAContac` | pass |
+| C53 | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#refusesArchiveWithP` | pass |
+| C54 | `run unit / ✓ ContactsSection > refuses to archive a contact with planned purchases` | pass |
+| C54 | `run stories / ✓ src/components/contact/ContactNoticeView.stories.tsx > Planned` | pass |
 | Build | `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true` | pass |
 | Build | `cd frontend && pnpm lint` | pass |
 | Build | `cd frontend && pnpm build` | pass |
@@ -106,19 +112,19 @@ More info: https://storybook.js.org/docs/writing-tests/interaction-testing?ref=e
 `Run unit` - exit 0
 
 ```
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer contacts > offers a plan of one member the split when it has a contact 69ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer contacts > offers no contact to a contributor 38ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > turns an income into a contact payment 473ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > gives the payment one receiving member whatever split came before, and lets the user choose who 512ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > shows the excess as credit 378ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > keeps what the user ticked when the amount changes afterwards 387ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > loads the allocations of the payment being edited 76ms
- ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > offers no contact payment to a contributor 116ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer contacts > offers a plan of one member the split when it has a contact 67ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer contacts > offers no contact to a contributor 41ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > turns an income into a contact payment 463ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > gives the payment one receiving member whatever split came before, and lets the user choose who 511ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > shows the excess as credit 396ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > keeps what the user ticked when the amount changes afterwards 394ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > loads the allocations of the payment being edited 73ms
+ ✓ |unit| src/features/transactions/components/TransactionFormDrawer.test.tsx > TransactionFormDrawer repayment > offers no contact payment to a contributor 115ms
 
  Test Files  3 passed (3)
-      Tests  69 passed (69)
-   Start at  02:18:14
-   Duration  13.32s (transform 503ms, setup 315ms, collect 6.39s, tests 11.69s, environment 1.13s, prepare 121ms)
+      Tests  70 passed (70)
+   Start at  07:37:21
+   Duration  13.98s (transform 636ms, setup 407ms, collect 7.65s, tests 11.81s, environment 1.56s, prepare 132ms)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
@@ -137,8 +143,8 @@ No story files found for the specified pattern: src/**/*.mdx
 
  Test Files  2 passed (2)
       Tests  88 passed (88)
-   Start at  02:18:29
-   Duration  2.42s (transform 121ms, setup 204ms, collect 1.81s, tests 23ms, environment 696ms, prepare 78ms)
+   Start at  07:37:37
+   Duration  2.48s (transform 118ms, setup 227ms, collect 1.76s, tests 24ms, environment 879ms, prepare 83ms)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
@@ -148,17 +154,17 @@ No story files found for the specified pattern: src/**/*.mdx
 ```
 Creating Table Instance...
 
- ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > replaces a custom range with the This month preset (PNAV-03 AC 1) 258ms
+ ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > replaces a custom range with the This month preset (PNAV-03 AC 1) 239ms
 stdout | src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > ignores the pre-feature from and to params and opens on the current month (PNAV-05)
 Creating Table Instance...
 
- ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > keeps the period when all filters are cleared (PNAV-02 AC 4) 122ms
- ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > ignores the pre-feature from and to params and opens on the current month (PNAV-05) 26ms
+ ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > keeps the period when all filters are cleared (PNAV-02 AC 4) 119ms
+ ✓ |unit| src/features/transactions/TransactionsPage.test.tsx > TransactionsPage period navigator (PNAV-01, PNAV-02) > ignores the pre-feature from and to params and opens on the current month (PNAV-05) 27ms
 
  Test Files  2 passed (2)
       Tests  53 passed (53)
-   Start at  02:18:34
-   Duration  13.32s (transform 705ms, setup 174ms, collect 3.17s, tests 9.53s, environment 697ms, prepare 86ms)
+   Start at  07:37:41
+   Duration  13.23s (transform 675ms, setup 187ms, collect 3.18s, tests 9.45s, environment 684ms, prepare 82ms)
 
 No story files found for the specified pattern: src/**/*.mdx
 ```
@@ -166,15 +172,15 @@ No story files found for the specified pattern: src/**/*.mdx
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#createsTrimsAndBoun` - exit 0
 
 ```
-2026-11-25T02:19:09.521-03:00  INFO 3493080 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-25T02:19:09.577-03:00  INFO 3493080 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 11.782 seconds (process running for 12.983)
-2026-11-25T02:19:10.336-03:00  INFO 3493080 --- [           main] [525c1f6a-2941-49dc-87d1-b13847d3db64] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 237ms userId=1 planId=1
-2026-11-25T02:19:10.424-03:00  INFO 3493080 --- [           main] [cba87ccc-b0d1-4334-93be-c9d940403c32] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 17ms userId=1 planId=1
-2026-11-25T02:19:10.443-03:00  INFO 3493080 --- [           main] [cd922dd6-94a4-449c-97ac-b29d4c9fe3a5] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 17ms userId=1 planId=1
-2026-11-25T02:19:10.480-03:00  INFO 3493080 --- [           main] [87095dfd-5348-4f33-94d1-d039039cd40f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 5ms userId=1 planId=1
-2026-11-25T02:19:10.487-03:00  INFO 3493080 --- [           main] [00ef9e33-36e1-4c41-a0cd-4c8c7833ebcc] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 5ms userId=1 planId=1
-2026-11-25T02:19:10.506-03:00  INFO 3493080 --- [           main] [810d9446-7d43-4422-b09b-5a4d5c441b32] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 17ms userId=1 planId=1
-2026-11-25T02:19:10.529-03:00  INFO 3493080 --- [           main] [0af719ab-e197-481a-8ec2-be3314858a1b] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 21ms userId=1 planId=1
+2026-11-25T07:38:21.644-03:00  INFO 3570831 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-25T07:38:21.717-03:00  INFO 3570831 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 15.493 seconds (process running for 17.178)
+2026-11-25T07:38:22.744-03:00  INFO 3570831 --- [           main] [2704a0a4-88ee-4fd0-9e83-7698324eb412] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 483ms userId=1 planId=1
+2026-11-25T07:38:22.891-03:00  INFO 3570831 --- [           main] [3c5acf8a-4475-4339-875e-57ea6c35d713] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 29ms userId=1 planId=1
+2026-11-25T07:38:22.917-03:00  INFO 3570831 --- [           main] [5a46791c-db69-4264-acb1-70607ec94c8d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 24ms userId=1 planId=1
+2026-11-25T07:38:22.961-03:00  INFO 3570831 --- [           main] [32291bec-b9c6-4a4b-a69c-b2ed878fbf1a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 7ms userId=1 planId=1
+2026-11-25T07:38:22.969-03:00  INFO 3570831 --- [           main] [99c4c6a4-466d-4fb5-b02f-8183bc7cc77b] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 6ms userId=1 planId=1
+2026-11-25T07:38:22.993-03:00  INFO 3570831 --- [           main] [6b967160-20ee-4c2c-9194-f59c0673ef55] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 21ms userId=1 planId=1
+2026-11-25T07:38:23.034-03:00  INFO 3570831 --- [           main] [4c1caebe-2c47-4c5a-adc1-877a686bfc1b] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 39ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -186,15 +192,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#rejectsADuplicateAc` - exit 0
 
 ```
-2026-11-25T02:19:31.258-03:00  INFO 3493535 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-25T02:19:31.258-03:00  INFO 3493535 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-25T02:19:31.259-03:00  INFO 3493535 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-25T02:19:31.315-03:00  INFO 3493535 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 9.592 seconds (process running for 10.85)
-2026-11-25T02:19:32.017-03:00  INFO 3493535 --- [           main] [d693b72f-870c-441f-a5e9-592b087e886d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 225ms userId=1 planId=1
-2026-11-25T02:19:32.137-03:00  INFO 3493535 --- [           main] [653e408d-eaae-4915-8f9c-d4b5cc1a5e68] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 34ms userId=1 planId=2
-2026-11-25T02:19:32.160-03:00  INFO 3493535 --- [           main] [455062b7-e551-4eb1-9bf9-1302efdfd1cd] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 13ms userId=1 planId=1
-2026-11-25T02:19:32.193-03:00  INFO 3493535 --- [           main] [f723cb4c-787c-4433-9830-12498b87c407] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 31ms userId=1 planId=1
-2026-11-25T02:19:32.211-03:00  INFO 3493535 --- [           main] [26ff5317-3249-4b5a-a1b5-3b3dabf99ad2] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 16ms userId=1 planId=1
+2026-11-25T07:38:54.133-03:00  INFO 3572948 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-25T07:38:54.133-03:00  INFO 3572948 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-25T07:38:54.135-03:00  INFO 3572948 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-25T07:38:54.201-03:00  INFO 3572948 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 14.37 seconds (process running for 16.081)
+2026-11-25T07:38:54.974-03:00  INFO 3572948 --- [           main] [f39253c5-705e-461c-9e08-eaa94e0878ff] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 422 222ms userId=1 planId=1
+2026-11-25T07:38:55.118-03:00  INFO 3572948 --- [           main] [54f509ae-4ae0-4a51-8c8b-a7d5c0e8d70d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 40ms userId=1 planId=2
+2026-11-25T07:38:55.161-03:00  INFO 3572948 --- [           main] [48ee2dee-bf7c-4d05-991f-72e2ffc34e3e] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 31ms userId=1 planId=1
+2026-11-25T07:38:55.248-03:00  INFO 3572948 --- [           main] [5eb56e7b-94f2-4d41-b065-05f617eb027d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 84ms userId=1 planId=1
+2026-11-25T07:38:55.318-03:00  INFO 3572948 --- [           main] [2de4480b-71eb-40ee-8a72-59dea3c3fa6e] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 66ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -206,15 +212,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#renameReachesTheSha` - exit 0
 
 ```
-2026-11-25T02:19:52.853-03:00  INFO 3494009 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-25T02:19:52.854-03:00  INFO 3494009 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-25T02:19:52.855-03:00  INFO 3494009 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-25T02:19:52.921-03:00  INFO 3494009 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 9.891 seconds (process running for 11.124)
-2026-11-25T02:19:53.649-03:00  INFO 3494009 --- [           main] [7ac23e8e-1827-4b1f-9cdd-2112b0ac6e4e] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/contacts/{id} 200 232ms userId=1 planId=1
-2026-11-25T02:19:53.750-03:00  INFO 3494009 --- [           main] [3afadfaf-f1f1-4d85-aa52-3043e0b34342] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 41ms userId=1 planId=1
-2026-11-25T02:19:53.771-03:00  INFO 3494009 --- [           main] [982786a8-4760-4e90-a2d0-c9b9ffa2a80c] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/contacts/{id} 409 19ms userId=1 planId=1
-2026-11-25T02:19:53.825-03:00  INFO 3494009 --- [           main] [c45212d6-727a-4444-8c4c-2723fec40c26] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 26ms userId=1 planId=1
-2026-11-25T02:19:53.846-03:00  INFO 3494009 --- [           main] [37b3b03d-bbb9-4ae9-b178-6ad89b77b03b] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/contacts/{id} 422 10ms userId=1 planId=1
+2026-11-25T07:39:26.446-03:00  INFO 3575011 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-25T07:39:26.447-03:00  INFO 3575011 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-25T07:39:26.450-03:00  INFO 3575011 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 3 ms
+2026-11-25T07:39:26.526-03:00  INFO 3575011 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 14.196 seconds (process running for 16.085)
+2026-11-25T07:39:27.407-03:00  INFO 3575011 --- [           main] [b8b1e3e7-e4d4-45da-9d28-1f109affc93c] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/contacts/{id} 200 256ms userId=1 planId=1
+2026-11-25T07:39:27.523-03:00  INFO 3575011 --- [           main] [06b5a3d5-99a7-4b62-93b4-2f84facec75d] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 49ms userId=1 planId=1
+2026-11-25T07:39:27.550-03:00  INFO 3575011 --- [           main] [202720ba-dfff-4c63-85ed-752ee92c2071] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/contacts/{id} 409 25ms userId=1 planId=1
+2026-11-25T07:39:27.613-03:00  INFO 3575011 --- [           main] [a3e0cae3-0fb1-4617-9bd3-e264eeb93cd3] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 30ms userId=1 planId=1
+2026-11-25T07:39:27.640-03:00  INFO 3575011 --- [           main] [b63fdc10-99f8-4eb6-8e72-98c732a0a31e] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/contacts/{id} 422 16ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -226,15 +232,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#listsActiveContacts` - exit 0
 
 ```
-2026-11-25T02:20:16.176-03:00  INFO 3494458 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-25T02:20:16.178-03:00  INFO 3494458 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-25T02:20:16.314-03:00  INFO 3494458 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-25T02:20:16.315-03:00  INFO 3494458 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-25T02:20:16.316-03:00  INFO 3494458 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-25T02:20:16.372-03:00  INFO 3494458 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 10.987 seconds (process running for 12.234)
-2026-11-25T02:20:17.109-03:00  INFO 3494458 --- [           main] [0b20ae9d-8fe5-443c-bd18-94cd210908e5] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 221ms userId=1 planId=1
-2026-11-25T02:20:17.166-03:00  INFO 3494458 --- [           main] [ca781a81-b92e-4b71-96f6-9d2124287f1a] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 42ms userId=1 planId=1
-2026-11-25T02:20:17.242-03:00  INFO 3494458 --- [           main] [1055fe94-50c6-47da-b190-ff6a8fd7793f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 16ms userId=1 planId=1
+2026-11-25T07:39:56.203-03:00  INFO 3577015 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-25T07:39:56.205-03:00  INFO 3577015 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-25T07:39:56.411-03:00  INFO 3577015 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-25T07:39:56.411-03:00  INFO 3577015 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-25T07:39:56.413-03:00  INFO 3577015 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-25T07:39:56.475-03:00  INFO 3577015 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 13.092 seconds (process running for 14.855)
+2026-11-25T07:39:57.407-03:00  INFO 3577015 --- [           main] [7983e91d-7404-419d-ac78-5ef9956eef7c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 341ms userId=1 planId=1
+2026-11-25T07:39:57.480-03:00  INFO 3577015 --- [           main] [a5fee6f4-a271-466c-8c05-cb164d780caf] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 61ms userId=1 planId=1
+2026-11-25T07:39:57.570-03:00  INFO 3577015 --- [           main] [df01f39b-2101-41dc-a8fc-8f3cfee4924e] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 19ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -246,35 +252,35 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#archivesOnlyAtZeroB` - exit 0
 
 ```
-2026-11-25T02:20:38.656-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
-2026-11-25T02:20:38.656-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
-2026-11-25T02:20:38.656-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-25T02:20:38.657-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:20:38.657-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:20:38.657-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:20:38.657-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:20:38.657-03:00  WARN 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-25T02:20:38.679-03:00  INFO 3494895 --- [           main] [1764dd05-bdf2-41cc-8be5-4ea3466d2435] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 50ms userId=1 planId=1
+2026-11-25T07:40:28.384-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:40:28.384-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:40:28.385-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
+2026-11-25T07:40:28.385-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:40:28.385-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:40:28.386-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:40:28.386-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:40:28.386-03:00  WARN 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-25T07:40:28.420-03:00  INFO 3578980 --- [           main] [4e7bf899-e4d5-404b-9a62-bd8c555eaa58] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 96ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#unarchiveRestoresUn` - exit 0
 
 ```
-2026-11-25T02:20:59.360-03:00  INFO 3495331 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-25T02:20:59.418-03:00  INFO 3495331 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 9.41 seconds (process running for 10.596)
-2026-11-25T02:21:00.147-03:00  INFO 3495331 --- [           main] [efaa1f8b-bf7b-4751-9fd4-eeb9a13e5047] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 250ms userId=1 planId=1
-2026-11-25T02:21:00.178-03:00  INFO 3495331 --- [           main] [3616e9f6-02d7-4d8d-9dff-b3b4e7fe5a8f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 23ms userId=1 planId=1
-2026-11-25T02:21:00.217-03:00  INFO 3495331 --- [           main] [5f922f9d-528b-427b-90c4-9093578affc8] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 35ms userId=1 planId=1
-2026-11-25T02:21:00.239-03:00  INFO 3495331 --- [           main] [6fbe2afc-9cbe-443f-bb1b-2f5624c69bea] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 422 20ms userId=1 planId=1
-2026-11-25T02:21:00.293-03:00  INFO 3495331 --- [           main] [0cecb673-8e62-40cd-8b54-d201ee4a3ae4] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 24ms userId=1 planId=1
-2026-11-25T02:21:00.380-03:00  INFO 3495331 --- [           main] [b3ad643e-9648-4092-aa5c-93f4efb5114d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 200 18ms userId=1 planId=1
-2026-11-25T02:21:00.396-03:00  INFO 3495331 --- [           main] [7fb6b772-a64c-46e8-aa2c-76bf3011e249] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 14ms userId=1 planId=1
+2026-11-25T07:40:57.826-03:00  INFO 3580993 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-25T07:40:57.912-03:00  INFO 3580993 --- [           main] [] com.lcs.findraco.plan.ContactsIT         : Started ContactsIT in 13.218 seconds (process running for 14.679)
+2026-11-25T07:40:58.854-03:00  INFO 3580993 --- [           main] [96d32065-9120-487c-8326-f22036114868] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 348ms userId=1 planId=1
+2026-11-25T07:40:58.927-03:00  INFO 3580993 --- [           main] [b8657f74-193a-4fdf-9633-9fda2cdabe21] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 64ms userId=1 planId=1
+2026-11-25T07:40:58.999-03:00  INFO 3580993 --- [           main] [b48deac9-efa6-4bcd-82a0-72643664cc53] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts 201 66ms userId=1 planId=1
+2026-11-25T07:40:59.047-03:00  INFO 3580993 --- [           main] [63e6198d-cb45-469e-906c-d83298767e31] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 422 45ms userId=1 planId=1
+2026-11-25T07:40:59.160-03:00  INFO 3580993 --- [           main] [2cca9ab6-a975-4e03-a16b-fd70e795979e] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 46ms userId=1 planId=1
+2026-11-25T07:40:59.257-03:00  INFO 3580993 --- [           main] [eb4261c0-81dd-42fe-843b-c757d7e56c41] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 200 23ms userId=1 planId=1
+2026-11-25T07:40:59.275-03:00  INFO 3580993 --- [           main] [7ae0b17d-25f1-48f0-b770-d7a23e9fb535] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 16ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -286,15 +292,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#deletesOnlyAnUnused` - exit 0
 
 ```
-2026-11-25T02:21:21.803-03:00  INFO 3495772 --- [           main] [2b9bb01f-493a-4787-9d99-c425a7484f14] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 201 286ms userId=1 planId=1
-2026-11-25T02:21:21.835-03:00  INFO 3495772 --- [           main] [eb195bf1-df07-49a8-8121-c71850e0c590] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 26ms userId=1 planId=1
-2026-11-25T02:21:21.863-03:00  INFO 3495772 --- [           main] [9860d6b4-472f-4592-9d30-ac58c7dd62b3] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 25ms userId=1 planId=1
-2026-11-25T02:21:21.899-03:00  INFO 3495772 --- [           main] [585b6f66-93b9-45d7-8e26-52159cd874c0] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 11ms userId=1 planId=1
-2026-11-25T02:21:21.913-03:00  INFO 3495772 --- [           main] [4f53e8b6-867c-4ddc-adb0-56f24dd4e50b] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 12ms userId=1 planId=1
-2026-11-25T02:21:21.923-03:00  INFO 3495772 --- [           main] [ee5cedce-517c-4933-82b7-761e787271b3] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 9ms userId=1 planId=1
-2026-11-25T02:21:21.961-03:00  INFO 3495772 --- [           main] [2b5679a5-9cec-4f19-83b4-bb18887ca676] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 36ms userId=1 planId=1
-2026-11-25T02:21:22.059-03:00  INFO 3495772 --- [           main] [98906c4b-7309-405e-b685-a7ee32cf3599] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 204 29ms userId=1 planId=1
-2026-11-25T02:21:22.074-03:00  INFO 3495772 --- [           main] [984ab271-17b7-4de6-b89d-53aab1e450dc] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 13ms userId=1 planId=1
+2026-11-25T07:41:29.202-03:00  INFO 3582922 --- [           main] [72e44525-0316-4ef1-988c-792853cc3dc8] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 201 340ms userId=1 planId=1
+2026-11-25T07:41:29.264-03:00  INFO 3582922 --- [           main] [80f47886-4f39-468e-b183-d97b6f7f568e] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 54ms userId=1 planId=1
+2026-11-25T07:41:29.328-03:00  INFO 3582922 --- [           main] [1d2af3bd-2bd7-43e0-937f-58ad88ea8d82] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 59ms userId=1 planId=1
+2026-11-25T07:41:29.401-03:00  INFO 3582922 --- [           main] [032d184a-2e94-484d-a05e-3ace3355def7] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 21ms userId=1 planId=1
+2026-11-25T07:41:29.427-03:00  INFO 3582922 --- [           main] [89e5fde2-3501-4d22-ab1f-9d84032a1c82] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 24ms userId=1 planId=1
+2026-11-25T07:41:29.441-03:00  INFO 3582922 --- [           main] [041497c7-4942-4982-878f-9e3c9a932f59] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 409 12ms userId=1 planId=1
+2026-11-25T07:41:29.491-03:00  INFO 3582922 --- [           main] [a95f1eb7-3a8d-4d7a-8db4-0c8d332c3e2f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 48ms userId=1 planId=1
+2026-11-25T07:41:29.669-03:00  INFO 3582922 --- [           main] [df53d33f-c8c0-45eb-b6ab-ef9ce6438081] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 204 59ms userId=1 planId=1
+2026-11-25T07:41:29.696-03:00  INFO 3582922 --- [           main] [feadb9ca-4c92-4506-b6f7-7fa0f8f292a4] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 24ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -306,15 +312,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactRoleMatrixIT' -Dsurefir` - exit 0
 
 ```
-2026-11-25T02:21:46.341-03:00  INFO 3496218 --- [           main] [39bdaf02-7345-49e5-a89e-a07216d637c4] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 200 11ms userId=2 planId=1
-2026-11-25T02:21:46.405-03:00  INFO 3496218 --- [           main] [0e9881e7-f6a6-40ba-9363-7b86227b4931] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 403 6ms userId=3 planId=1
-2026-11-25T02:21:46.469-03:00  INFO 3496218 --- [           main] [5fad5985-4cfe-4d75-ab71-52549aefd6cf] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 403 5ms userId=4 planId=1
-2026-11-25T02:21:46.531-03:00  INFO 3496218 --- [           main] [8dc54768-00c6-4aed-89a6-280247f8535b] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 404 5ms userId=5 planId=1
-2026-11-25T02:21:46.610-03:00  INFO 3496218 --- [           main] [82f18215-3547-4da5-ba69-0296f3459736] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 204 24ms userId=1 planId=1
-2026-11-25T02:21:46.687-03:00  INFO 3496218 --- [           main] [5c0e3445-916a-4d5a-84db-9bc4942040d9] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 204 15ms userId=2 planId=1
-2026-11-25T02:21:46.756-03:00  INFO 3496218 --- [           main] [02cd9acc-e414-432b-bac7-77e9a0449214] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 403 8ms userId=3 planId=1
-2026-11-25T02:21:46.824-03:00  INFO 3496218 --- [           main] [0ed5f416-04cc-4e03-8997-8c2c98a069af] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 403 7ms userId=4 planId=1
-2026-11-25T02:21:46.884-03:00  INFO 3496218 --- [           main] [71a2b436-7dd3-46d4-a69b-68fd6c885ef8] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 404 5ms userId=5 planId=1
+2026-11-25T07:42:02.408-03:00  INFO 3584945 --- [           main] [81d397f8-5c94-4b11-bd1e-febbb021a3ce] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 200 11ms userId=2 planId=1
+2026-11-25T07:42:02.470-03:00  INFO 3584945 --- [           main] [5018845f-50c3-400a-ac9c-86e80a4f50d1] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 403 6ms userId=3 planId=1
+2026-11-25T07:42:02.538-03:00  INFO 3584945 --- [           main] [f966781a-81c9-407e-8771-53ba36b929a2] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 403 6ms userId=4 planId=1
+2026-11-25T07:42:02.605-03:00  INFO 3584945 --- [           main] [ec54ef32-7ac6-4fe5-ac3b-bd3d1db25b91] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/unarchive 404 6ms userId=5 planId=1
+2026-11-25T07:42:02.692-03:00  INFO 3584945 --- [           main] [a5932424-ad14-470d-be6a-b36879c2358b] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 204 23ms userId=1 planId=1
+2026-11-25T07:42:02.769-03:00  INFO 3584945 --- [           main] [1749108c-84c9-4324-9a70-69a182411151] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 204 13ms userId=2 planId=1
+2026-11-25T07:42:02.836-03:00  INFO 3584945 --- [           main] [5bb0d35a-bd20-435b-9465-fce177a2329d] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 403 7ms userId=3 planId=1
+2026-11-25T07:42:02.903-03:00  INFO 3584945 --- [           main] [7a1db0ee-4373-446b-b6b6-fc2aea69a8e4] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 403 5ms userId=4 planId=1
+2026-11-25T07:42:02.970-03:00  INFO 3584945 --- [           main] [55da4534-0d9d-4fee-b3c4-896d6845bb9b] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/contacts/{id} 404 6ms userId=5 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -326,35 +332,35 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSchemaIT' -Dsurefire.sk` - exit 0
 
 ```
-2026-11-25T02:22:06.527-03:00  INFO 3496722 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 11
-2026-11-25T02:22:06.527-03:00  INFO 3496722 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
-2026-11-25T02:22:06.528-03:00  INFO 3496722 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-25T02:22:06.529-03:00  INFO 3496722 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-25T02:22:06.530-03:00  INFO 3496722 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-25T02:22:06.666-03:00  INFO 3496722 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-25T02:22:06.666-03:00  INFO 3496722 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-25T02:22:06.667-03:00  INFO 3496722 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-25T02:22:06.723-03:00  INFO 3496722 --- [           main] [] com.lcs.findraco.plan.ContactSchemaIT    : Started ContactSchemaIT in 9.427 seconds (process running for 10.514)
+2026-11-25T07:42:24.750-03:00  INFO 3585970 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Registered tools: 11
+2026-11-25T07:42:24.750-03:00  INFO 3585970 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources capabilities, notification: true
+2026-11-25T07:42:24.752-03:00  INFO 3585970 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-25T07:42:24.753-03:00  INFO 3585970 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-25T07:42:24.754-03:00  INFO 3585970 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-25T07:42:24.893-03:00  INFO 3585970 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-25T07:42:24.893-03:00  INFO 3585970 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-25T07:42:24.895-03:00  INFO 3585970 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-25T07:42:24.957-03:00  INFO 3585970 --- [           main] [] com.lcs.findraco.plan.ContactSchemaIT    : Started ContactSchemaIT in 9.706 seconds (process running for 10.86)
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#splitsWithCont` - exit 0
 
 ```
-2026-11-25T02:22:28.517-03:00  WARN 3497153 --- [           main] [c4f3b6c1-27e1-487c-80ff-fb888fa79832] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
-2026-11-25T02:22:28.517-03:00  WARN 3497153 --- [           main] [c4f3b6c1-27e1-487c-80ff-fb888fa79832] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
-2026-11-25T02:22:28.517-03:00  WARN 3497153 --- [           main] [c4f3b6c1-27e1-487c-80ff-fb888fa79832] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:22:28.517-03:00  WARN 3497153 --- [           main] [c4f3b6c1-27e1-487c-80ff-fb888fa79832] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:22:28.517-03:00  WARN 3497153 --- [           main] [c4f3b6c1-27e1-487c-80ff-fb888fa79832] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:22:28.671-03:00  INFO 3497153 --- [           main] [c4f3b6c1-27e1-487c-80ff-fb888fa79832] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 263ms userId=1 planId=1
-2026-11-25T02:22:28.747-03:00  INFO 3497153 --- [           main] [2a0d8507-2044-48f9-a41f-d301145215fd] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 19ms userId=1 planId=1
-2026-11-25T02:22:28.764-03:00  INFO 3497153 --- [           main] [e3fb5cad-59c8-43ee-ad1a-7f04099f3acb] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 14ms userId=1 planId=1
-2026-11-25T02:22:28.795-03:00  INFO 3497153 --- [           main] [b1930a4b-01a7-4ffd-b5c2-120f54a23bb7] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 24ms userId=1 planId=1
+2026-11-25T07:42:49.566-03:00  WARN 3586415 --- [           main] [b0904bf9-6100-4e24-89d6-3a0603493ce0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:42:49.566-03:00  WARN 3586415 --- [           main] [b0904bf9-6100-4e24-89d6-3a0603493ce0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:42:49.566-03:00  WARN 3586415 --- [           main] [b0904bf9-6100-4e24-89d6-3a0603493ce0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:42:49.566-03:00  WARN 3586415 --- [           main] [b0904bf9-6100-4e24-89d6-3a0603493ce0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:42:49.566-03:00  WARN 3586415 --- [           main] [b0904bf9-6100-4e24-89d6-3a0603493ce0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:42:49.707-03:00  INFO 3586415 --- [           main] [b0904bf9-6100-4e24-89d6-3a0603493ce0] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 260ms userId=1 planId=1
+2026-11-25T07:42:49.786-03:00  INFO 3586415 --- [           main] [2d620e7d-7ce3-47d7-855d-2a09f18a8ce9] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 19ms userId=1 planId=1
+2026-11-25T07:42:49.805-03:00  INFO 3586415 --- [           main] [ec66e9cb-65c2-4b8f-8e73-407a56fb45aa] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 16ms userId=1 planId=1
+2026-11-25T07:42:49.830-03:00  INFO 3586415 --- [           main] [626eafae-4b7e-4df3-b093-d86b7462c71e] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 19ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -366,15 +372,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#contactSharesL` - exit 0
 
 ```
-2026-11-25T02:22:49.512-03:00  WARN 3497642 --- [           main] [5ee91f31-64c0-4386-8138-f13ddf57c108] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:22:49.513-03:00  WARN 3497642 --- [           main] [5ee91f31-64c0-4386-8138-f13ddf57c108] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:22:49.513-03:00  WARN 3497642 --- [           main] [5ee91f31-64c0-4386-8138-f13ddf57c108] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:22:49.513-03:00  WARN 3497642 --- [           main] [5ee91f31-64c0-4386-8138-f13ddf57c108] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:22:49.513-03:00  WARN 3497642 --- [           main] [5ee91f31-64c0-4386-8138-f13ddf57c108] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-25T02:22:49.652-03:00  INFO 3497642 --- [           main] [5ee91f31-64c0-4386-8138-f13ddf57c108] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 273ms userId=1 planId=1
-2026-11-25T02:22:49.748-03:00  INFO 3497642 --- [           main] [e4889fa3-9b6d-4b89-8fbd-33da2f157830] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 85ms userId=1 planId=1
-2026-11-25T02:22:49.825-03:00  INFO 3497642 --- [           main] [24127749-3734-4825-97f3-1176ef9d2ad9] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard/trend 200 23ms userId=1 planId=1
-2026-11-25T02:22:49.861-03:00  INFO 3497642 --- [           main] [54a312c2-317a-4ef8-ae9c-d52b6491f563] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 27ms userId=1 planId=1
+2026-11-25T07:43:12.266-03:00  WARN 3586870 --- [           main] [10a2d954-e00e-45a8-8199-cea60d1d6dc2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:43:12.266-03:00  WARN 3586870 --- [           main] [10a2d954-e00e-45a8-8199-cea60d1d6dc2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:43:12.266-03:00  WARN 3586870 --- [           main] [10a2d954-e00e-45a8-8199-cea60d1d6dc2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:43:12.266-03:00  WARN 3586870 --- [           main] [10a2d954-e00e-45a8-8199-cea60d1d6dc2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:43:12.266-03:00  WARN 3586870 --- [           main] [10a2d954-e00e-45a8-8199-cea60d1d6dc2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-25T07:43:12.413-03:00  INFO 3586870 --- [           main] [10a2d954-e00e-45a8-8199-cea60d1d6dc2] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 260ms userId=1 planId=1
+2026-11-25T07:43:12.516-03:00  INFO 3586870 --- [           main] [33716184-9893-4286-be5c-68c88bf72bff] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 91ms userId=1 planId=1
+2026-11-25T07:43:12.591-03:00  INFO 3586870 --- [           main] [5826e00c-edc7-4e33-89e0-b92ac600ff13] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard/trend 200 20ms userId=1 planId=1
+2026-11-25T07:43:12.626-03:00  INFO 3586870 --- [           main] [b464c86e-c3cd-4363-89e1-995ea466fd46] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 27ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -386,15 +392,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#contactSharesL` - exit 0
 
 ```
-2026-11-25T02:23:11.070-03:00  WARN 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
-2026-11-25T02:23:11.071-03:00  WARN 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
-2026-11-25T02:23:11.071-03:00  WARN 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
-2026-11-25T02:23:11.071-03:00  WARN 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-25T02:23:11.071-03:00  WARN 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:23:11.072-03:00  WARN 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-25T02:23:11.072-03:00  WARN 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-25T02:23:11.125-03:00  INFO 3498090 --- [           main] [4619bc19-bd95-453f-bbe3-71f453af8bb6] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 200 73ms userId=1 planId=1
-2026-11-25T02:23:11.155-03:00  INFO 3498090 --- [           main] [d1b2eb4a-87c4-4e5b-b2a9-ccc0d16949eb] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/category/spending 200 28ms userId=1 planId=1
+2026-11-25T07:43:34.752-03:00  WARN 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-25T07:43:34.752-03:00  WARN 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:43:34.753-03:00  WARN 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-25T07:43:34.753-03:00  WARN 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:43:34.753-03:00  WARN 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:43:34.753-03:00  WARN 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:43:34.753-03:00  WARN 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#allocations()
+2026-11-25T07:43:34.815-03:00  INFO 3587363 --- [           main] [106d66d8-0e9f-41e0-8725-714221c63f71] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 200 76ms userId=1 planId=1
+2026-11-25T07:43:34.846-03:00  INFO 3587363 --- [           main] [3890a1b6-3380-4b02-a451-68b35e09e2a2] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/category/spending 200 29ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -406,15 +412,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#contactSharesO` - exit 0
 
 ```
-2026-11-25T02:23:32.461-03:00  INFO 3498529 --- [           main] [d1627f3b-ce48-40ce-b9f3-9ab899869c0a] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 422 15ms userId=1 planId=1
-2026-11-25T02:23:32.475-03:00  INFO 3498529 --- [           main] [3fd1f839-5bf3-4fc7-9f0c-baae81ed515a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 11ms userId=1 planId=1
-2026-11-25T02:23:32.491-03:00  INFO 3498529 --- [           main] [fa80203d-ead4-4536-9079-f3e8180f158f] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 422 14ms userId=1 planId=1
-2026-11-25T02:23:32.500-03:00  INFO 3498529 --- [           main] [af7d0a29-bf15-49e3-9a56-6c28df0dffa7] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 8ms userId=1 planId=1
-2026-11-25T02:23:32.516-03:00  INFO 3498529 --- [           main] [ec2d8919-68fd-45d4-bc23-a93707546fcc] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 422 14ms userId=1 planId=1
-2026-11-25T02:23:32.592-03:00  WARN 3498529 --- [           main] [08339db6-3cee-4000-bd84-aa9882c5620a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:23:32.592-03:00  WARN 3498529 --- [           main] [08339db6-3cee-4000-bd84-aa9882c5620a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#com.lcs.findraco.transaction.request.CreateSeriesRequest(TransactionType, BigDecimal, String, Long, RecurrenceMode, LocalDate, Integer, Integer, RecurrenceInterval, LocalDate, SplitMode, List, Boolean)
-2026-11-25T02:23:32.593-03:00  WARN 3498529 --- [           main] [08339db6-3cee-4000-bd84-aa9882c5620a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#participants()
-2026-11-25T02:23:32.601-03:00  INFO 3498529 --- [           main] [08339db6-3cee-4000-bd84-aa9882c5620a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 422 19ms userId=1 planId=1
+2026-11-25T07:43:57.446-03:00  INFO 3587845 --- [           main] [c05300bb-6ca3-4f52-bbd5-91569c338f19] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 422 11ms userId=1 planId=1
+2026-11-25T07:43:57.459-03:00  INFO 3587845 --- [           main] [957906fa-e716-4374-8a2c-86ab357a2019] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 11ms userId=1 planId=1
+2026-11-25T07:43:57.477-03:00  INFO 3587845 --- [           main] [f4a1e058-ed82-4e20-b2da-11778579ea0b] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 422 16ms userId=1 planId=1
+2026-11-25T07:43:57.490-03:00  INFO 3587845 --- [           main] [07891f7c-8a29-42c1-9681-afbefb8bf902] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 11ms userId=1 planId=1
+2026-11-25T07:43:57.507-03:00  INFO 3587845 --- [           main] [e4319b18-ffdb-4b96-9879-712f31c02e63] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 422 15ms userId=1 planId=1
+2026-11-25T07:43:57.566-03:00  WARN 3587845 --- [           main] [d683ec20-af04-435d-8c70-f938861a32fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:43:57.567-03:00  WARN 3587845 --- [           main] [d683ec20-af04-435d-8c70-f938861a32fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#com.lcs.findraco.transaction.request.CreateSeriesRequest(TransactionType, BigDecimal, String, Long, RecurrenceMode, LocalDate, Integer, Integer, RecurrenceInterval, LocalDate, SplitMode, List, Boolean)
+2026-11-25T07:43:57.567-03:00  WARN 3587845 --- [           main] [d683ec20-af04-435d-8c70-f938861a32fc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#participants()
+2026-11-25T07:43:57.575-03:00  INFO 3587845 --- [           main] [d683ec20-af04-435d-8c70-f938861a32fc] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 422 18ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -426,15 +432,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#archivedOrFore` - exit 0
 
 ```
-2026-11-25T02:23:53.824-03:00  WARN 3498987 --- [           main] [8651c999-8a57-4ef4-84dc-7b32d3859214] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:23:53.824-03:00  WARN 3498987 --- [           main] [8651c999-8a57-4ef4-84dc-7b32d3859214] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-25T02:23:53.853-03:00  INFO 3498987 --- [           main] [8651c999-8a57-4ef4-84dc-7b32d3859214] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 66ms userId=1 planId=1
-2026-11-25T02:23:53.892-03:00  INFO 3498987 --- [           main] [1e885e10-c203-41d2-adf0-c50a23fa9ca7] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 404 11ms userId=1 planId=1
-2026-11-25T02:23:53.902-03:00  WARN 3498987 --- [           main] [0fd95c19-fc1d-4f7c-991b-75ffac2f327a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#com.lcs.findraco.transaction.request.CreateSeriesRequest(TransactionType, BigDecimal, String, Long, RecurrenceMode, LocalDate, Integer, Integer, RecurrenceInterval, LocalDate, SplitMode, List, Boolean)
-2026-11-25T02:23:53.903-03:00  WARN 3498987 --- [           main] [0fd95c19-fc1d-4f7c-991b-75ffac2f327a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:23:53.903-03:00  WARN 3498987 --- [           main] [0fd95c19-fc1d-4f7c-991b-75ffac2f327a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#participants()
-2026-11-25T02:23:53.911-03:00  INFO 3498987 --- [           main] [0fd95c19-fc1d-4f7c-991b-75ffac2f327a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 422 17ms userId=1 planId=1
-2026-11-25T02:23:53.922-03:00  INFO 3498987 --- [           main] [f75e9a5a-f791-4cec-aaf9-ead04cac2f89] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 404 9ms userId=1 planId=1
+2026-11-25T07:44:19.255-03:00  WARN 3588293 --- [           main] [0dab05eb-d2c1-466c-8824-a481987d9147] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-25T07:44:19.255-03:00  WARN 3588293 --- [           main] [0dab05eb-d2c1-466c-8824-a481987d9147] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:44:19.284-03:00  INFO 3588293 --- [           main] [0dab05eb-d2c1-466c-8824-a481987d9147] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 65ms userId=1 planId=1
+2026-11-25T07:44:19.323-03:00  INFO 3588293 --- [           main] [472282da-2721-4cba-bc2a-ea08d7492f4f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 404 15ms userId=1 planId=1
+2026-11-25T07:44:19.336-03:00  WARN 3588293 --- [           main] [ecd5cab2-b82d-4d8d-882f-19b92e1797ec] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:44:19.336-03:00  WARN 3588293 --- [           main] [ecd5cab2-b82d-4d8d-882f-19b92e1797ec] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#participants()
+2026-11-25T07:44:19.336-03:00  WARN 3588293 --- [           main] [ecd5cab2-b82d-4d8d-882f-19b92e1797ec] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#com.lcs.findraco.transaction.request.CreateSeriesRequest(TransactionType, BigDecimal, String, Long, RecurrenceMode, LocalDate, Integer, Integer, RecurrenceInterval, LocalDate, SplitMode, List, Boolean)
+2026-11-25T07:44:19.344-03:00  INFO 3588293 --- [           main] [ecd5cab2-b82d-4d8d-882f-19b92e1797ec] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 422 19ms userId=1 planId=1
+2026-11-25T07:44:19.355-03:00  INFO 3588293 --- [           main] [2dcc20c8-e518-43cc-8c33-d6fddfc6a2eb] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 404 9ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -446,15 +452,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#onlyOwnerAndEd` - exit 0
 
 ```
-2026-11-25T02:24:15.070-03:00  WARN 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
-2026-11-25T02:24:15.070-03:00  WARN 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
-2026-11-25T02:24:15.070-03:00  WARN 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
-2026-11-25T02:24:15.071-03:00  WARN 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
-2026-11-25T02:24:15.071-03:00  WARN 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
-2026-11-25T02:24:15.071-03:00  WARN 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:24:15.071-03:00  WARN 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
-2026-11-25T02:24:15.096-03:00  INFO 3499461 --- [           main] [ff160927-c583-4d9a-8db4-0afc9d7b1a3a] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 403 40ms userId=3 planId=1
-2026-11-25T02:24:15.121-03:00  INFO 3499461 --- [           main] [1bc3be4e-c274-4956-a159-c3c334454a11] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 22ms userId=2 planId=1
+2026-11-25T07:44:41.570-03:00  WARN 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-25T07:44:41.570-03:00  WARN 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:44:41.570-03:00  WARN 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#items()
+2026-11-25T07:44:41.570-03:00  WARN 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:44:41.570-03:00  WARN 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:44:41.571-03:00  WARN 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:44:41.571-03:00  WARN 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
+2026-11-25T07:44:41.597-03:00  INFO 3588755 --- [           main] [c57cc755-6471-4c89-b815-fd559c710b2a] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 403 40ms userId=3 planId=1
+2026-11-25T07:44:41.626-03:00  INFO 3588755 --- [           main] [22e372ca-750c-49e2-bef4-c93df033611c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 26ms userId=2 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -466,15 +472,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#seriesCarryCon` - exit 0
 
 ```
-2026-11-25T02:24:35.092-03:00  INFO 3499906 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
-2026-11-25T02:24:35.147-03:00  INFO 3499906 --- [           main] [] c.l.f.transaction.ContactSharesIT        : Started ContactSharesIT in 9.061 seconds (process running for 10.227)
-2026-11-25T02:24:35.742-03:00  WARN 3499906 --- [           main] [158e1288-9ab3-47d4-8ac3-57acad48500f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#com.lcs.findraco.transaction.request.CreateSeriesRequest(TransactionType, BigDecimal, String, Long, RecurrenceMode, LocalDate, Integer, Integer, RecurrenceInterval, LocalDate, SplitMode, List, Boolean)
-2026-11-25T02:24:35.746-03:00  WARN 3499906 --- [           main] [158e1288-9ab3-47d4-8ac3-57acad48500f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:24:35.746-03:00  WARN 3499906 --- [           main] [158e1288-9ab3-47d4-8ac3-57acad48500f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#participants()
-2026-11-25T02:24:35.916-03:00  INFO 3499906 --- [           main] [158e1288-9ab3-47d4-8ac3-57acad48500f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 201 293ms userId=1 planId=1
-2026-11-25T02:24:36.014-03:00  INFO 3499906 --- [           main] [7382ef2e-9a2f-49a0-a498-ced68f227e96] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/series/{seriesId} 200 30ms userId=1 planId=1
-2026-11-25T02:24:36.079-03:00  INFO 3499906 --- [           main] [af63ced3-0f38-4437-aaed-12c393116018] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/{id}/confirm 200 62ms userId=1 planId=1
-2026-11-25T02:24:36.183-03:00  INFO 3499906 --- [           main] [8a8cb8d6-5836-4848-bbca-b09010252bb8] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/series/{seriesId} 200 99ms userId=1 planId=1
+2026-11-25T07:45:02.824-03:00  INFO 3589216 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 2 ms
+2026-11-25T07:45:02.880-03:00  INFO 3589216 --- [           main] [] c.l.f.transaction.ContactSharesIT        : Started ContactSharesIT in 9.313 seconds (process running for 10.655)
+2026-11-25T07:45:03.451-03:00  WARN 3589216 --- [           main] [0440eef5-757e-46e9-883b-c6d3db0fdc68] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#com.lcs.findraco.transaction.request.CreateSeriesRequest(TransactionType, BigDecimal, String, Long, RecurrenceMode, LocalDate, Integer, Integer, RecurrenceInterval, LocalDate, SplitMode, List, Boolean)
+2026-11-25T07:45:03.454-03:00  WARN 3589216 --- [           main] [0440eef5-757e-46e9-883b-c6d3db0fdc68] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateSeriesRequest#participants()
+2026-11-25T07:45:03.455-03:00  WARN 3589216 --- [           main] [0440eef5-757e-46e9-883b-c6d3db0fdc68] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:45:03.632-03:00  INFO 3589216 --- [           main] [0440eef5-757e-46e9-883b-c6d3db0fdc68] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/series 201 291ms userId=1 planId=1
+2026-11-25T07:45:03.738-03:00  INFO 3589216 --- [           main] [4a7a9e19-2519-41be-96ae-8f8b8a389775] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/series/{seriesId} 200 29ms userId=1 planId=1
+2026-11-25T07:45:03.798-03:00  INFO 3589216 --- [           main] [49c41039-f426-4cd5-b846-d7cccf6e364a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/{id}/confirm 200 57ms userId=1 planId=1
+2026-11-25T07:45:03.895-03:00  INFO 3589216 --- [           main] [645f6eb8-7595-49eb-81c3-29279286ac4a] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/series/{seriesId} 200 92ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -486,15 +492,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#repaymentCountsIn` - exit 0
 
 ```
-2026-11-25T02:24:57.445-03:00  WARN 3500388 --- [           main] [748121a4-435a-492b-94ff-b4ab14d50fa2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-25T02:24:57.445-03:00  WARN 3500388 --- [           main] [748121a4-435a-492b-94ff-b4ab14d50fa2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
-2026-11-25T02:24:57.445-03:00  WARN 3500388 --- [           main] [748121a4-435a-492b-94ff-b4ab14d50fa2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:24:57.445-03:00  WARN 3500388 --- [           main] [748121a4-435a-492b-94ff-b4ab14d50fa2] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
-2026-11-25T02:24:57.591-03:00  INFO 3500388 --- [           main] [748121a4-435a-492b-94ff-b4ab14d50fa2] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 284ms userId=1 planId=1
-2026-11-25T02:24:57.734-03:00  INFO 3500388 --- [           main] [4dad7c19-3d87-4254-be0c-144cae0951d4] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 85ms userId=1 planId=1
-2026-11-25T02:24:57.763-03:00  INFO 3500388 --- [           main] [eca3f3c2-9ae8-4001-a495-2098c61e3ea2] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard/trend 200 20ms userId=1 planId=1
-2026-11-25T02:24:57.850-03:00  INFO 3500388 --- [           main] [0350a262-c508-431b-ab02-f29bda612df9] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction 200 85ms userId=1 planId=1
-2026-11-25T02:24:57.885-03:00  INFO 3500388 --- [           main] [8061d249-937b-423c-abea-3d4bc85ded69] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction 200 33ms userId=1 planId=1
+2026-11-25T07:45:25.479-03:00  WARN 3589674 --- [           main] [fa978419-4679-4290-9466-292ef2d068ce] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:45:25.479-03:00  WARN 3589674 --- [           main] [fa978419-4679-4290-9466-292ef2d068ce] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-25T07:45:25.479-03:00  WARN 3589674 --- [           main] [fa978419-4679-4290-9466-292ef2d068ce] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:45:25.479-03:00  WARN 3589674 --- [           main] [fa978419-4679-4290-9466-292ef2d068ce] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:45:25.644-03:00  INFO 3589674 --- [           main] [fa978419-4679-4290-9466-292ef2d068ce] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 276ms userId=1 planId=1
+2026-11-25T07:45:25.767-03:00  INFO 3589674 --- [           main] [c1d2b3bb-4f00-424f-a945-2e6ec7dcb0a4] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard 200 72ms userId=1 planId=1
+2026-11-25T07:45:25.796-03:00  INFO 3589674 --- [           main] [6052ed22-b47d-4c88-8c73-9c4570d084d1] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/dashboard/trend 200 21ms userId=1 planId=1
+2026-11-25T07:45:25.872-03:00  INFO 3589674 --- [           main] [13a37d40-6a1f-47b4-b70d-5e314bd2cb13] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction 200 74ms userId=1 planId=1
+2026-11-25T07:45:25.902-03:00  INFO 3589674 --- [           main] [c61e3ade-2914-4b43-a32a-c427727e59ac] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction 200 29ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -506,15 +512,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#storesExplicitAll` - exit 0
 
 ```
-2026-11-25T02:25:19.110-03:00  WARN 3500838 --- [           main] [c8488ebe-e68d-446a-8328-ad816813a505] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:25:19.111-03:00  WARN 3500838 --- [           main] [c8488ebe-e68d-446a-8328-ad816813a505] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-25T02:25:19.111-03:00  WARN 3500838 --- [           main] [c8488ebe-e68d-446a-8328-ad816813a505] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
-2026-11-25T02:25:19.111-03:00  WARN 3500838 --- [           main] [c8488ebe-e68d-446a-8328-ad816813a505] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
-2026-11-25T02:25:19.111-03:00  WARN 3500838 --- [           main] [c8488ebe-e68d-446a-8328-ad816813a505] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-25T02:25:19.279-03:00  INFO 3500838 --- [           main] [c8488ebe-e68d-446a-8328-ad816813a505] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 283ms userId=1 planId=1
-2026-11-25T02:25:19.397-03:00  INFO 3500838 --- [           main] [7ba3bc68-f300-46f5-8678-2cc48087007b] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 32ms userId=1 planId=1
-2026-11-25T02:25:19.438-03:00  INFO 3500838 --- [           main] [a68a6574-a2c4-47a9-b055-d7a7e40d3c7e] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 33ms userId=1 planId=1
-2026-11-25T02:25:19.457-03:00  INFO 3500838 --- [           main] [fe7331fb-d4e3-4250-ba24-6d5fa1bf6616] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 13ms userId=1 planId=1
+2026-11-25T07:45:47.580-03:00  WARN 3590134 --- [           main] [8f3dbd80-d63e-4eb9-a0c4-4fafa7926923] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:45:47.580-03:00  WARN 3590134 --- [           main] [8f3dbd80-d63e-4eb9-a0c4-4fafa7926923] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:45:47.580-03:00  WARN 3590134 --- [           main] [8f3dbd80-d63e-4eb9-a0c4-4fafa7926923] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-25T07:45:47.580-03:00  WARN 3590134 --- [           main] [8f3dbd80-d63e-4eb9-a0c4-4fafa7926923] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:45:47.580-03:00  WARN 3590134 --- [           main] [8f3dbd80-d63e-4eb9-a0c4-4fafa7926923] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:45:47.763-03:00  INFO 3590134 --- [           main] [8f3dbd80-d63e-4eb9-a0c4-4fafa7926923] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 293ms userId=1 planId=1
+2026-11-25T07:45:47.867-03:00  INFO 3590134 --- [           main] [216ab10c-4956-4bdd-99ee-060167997b99] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 32ms userId=1 planId=1
+2026-11-25T07:45:47.908-03:00  INFO 3590134 --- [           main] [4c733a8d-b536-41be-b7ff-6ab1b56f4200] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 32ms userId=1 planId=1
+2026-11-25T07:45:47.926-03:00  INFO 3590134 --- [           main] [f9da6892-cd71-42cc-b86b-d20c1f0a619a] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 15ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -526,15 +532,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#omittedAllocation` - exit 0
 
 ```
-2026-11-25T02:25:40.475-03:00  WARN 3501283 --- [           main] [bd37a1d9-f7c6-4778-94f5-44754662d7b1] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:25:40.476-03:00  WARN 3501283 --- [           main] [bd37a1d9-f7c6-4778-94f5-44754662d7b1] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:25:40.476-03:00  WARN 3501283 --- [           main] [bd37a1d9-f7c6-4778-94f5-44754662d7b1] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:25:40.654-03:00  INFO 3501283 --- [           main] [bd37a1d9-f7c6-4778-94f5-44754662d7b1] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 297ms userId=1 planId=1
-2026-11-25T02:25:40.755-03:00  INFO 3501283 --- [           main] [3a4a58cc-88c3-4d44-98b7-1a099150845d] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 30ms userId=1 planId=1
-2026-11-25T02:25:40.788-03:00  INFO 3501283 --- [           main] [4449145a-c7dc-4d49-95c3-76e0e078edce] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 28ms userId=1 planId=1
-2026-11-25T02:25:40.802-03:00  INFO 3501283 --- [           main] [2d2e3130-833d-4ae5-92d4-604d895a512c] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 10ms userId=1 planId=1
-2026-11-25T02:25:40.828-03:00  INFO 3501283 --- [           main] [32c33263-4a41-4891-a607-a42361d8675a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 24ms userId=1 planId=1
-2026-11-25T02:25:40.841-03:00  INFO 3501283 --- [           main] [d923af67-7dd9-460d-ab03-f872fcc13ccb] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 10ms userId=1 planId=1
+2026-11-25T07:46:09.271-03:00  WARN 3590627 --- [           main] [82ce8abe-1e98-4b71-83d6-836910f02e18] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
+2026-11-25T07:46:09.271-03:00  WARN 3590627 --- [           main] [82ce8abe-1e98-4b71-83d6-836910f02e18] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:46:09.271-03:00  WARN 3590627 --- [           main] [82ce8abe-1e98-4b71-83d6-836910f02e18] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:46:09.442-03:00  INFO 3590627 --- [           main] [82ce8abe-1e98-4b71-83d6-836910f02e18] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 286ms userId=1 planId=1
+2026-11-25T07:46:09.543-03:00  INFO 3590627 --- [           main] [e38d8682-13eb-4a72-9442-cdf3c340511b] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 32ms userId=1 planId=1
+2026-11-25T07:46:09.610-03:00  INFO 3590627 --- [           main] [70b67aaa-b40e-4460-8c4b-c68cfec90156] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 52ms userId=1 planId=1
+2026-11-25T07:46:09.631-03:00  INFO 3590627 --- [           main] [8529ed01-8b2e-4f91-a09c-e671796328ca] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 16ms userId=1 planId=1
+2026-11-25T07:46:09.667-03:00  INFO 3590627 --- [           main] [1651a13f-79cb-416f-94f4-6a750859481c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 34ms userId=1 planId=1
+2026-11-25T07:46:09.683-03:00  INFO 3590627 --- [           main] [a3778875-1780-4972-8600-eeb06d928e79] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 12ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -546,95 +552,95 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#allocationLimitsA` - exit 0
 
 ```
-2026-11-25T02:26:01.853-03:00  WARN 3501733 --- [           main] [3fc5ca8b-875e-4804-a5ad-cbeecbff5da8] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-25T02:26:02.030-03:00  INFO 3501733 --- [           main] [3fc5ca8b-875e-4804-a5ad-cbeecbff5da8] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 299ms userId=1 planId=1
-2026-11-25T02:26:02.071-03:00  INFO 3501733 --- [           main] [f615c2d8-be22-442a-b138-98459ca5d2fe] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 28ms userId=1 planId=1
-2026-11-25T02:26:02.141-03:00  INFO 3501733 --- [           main] [24f95735-e666-43de-a365-9b3bb2c72412] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 34ms userId=1 planId=1
-2026-11-25T02:26:02.169-03:00  INFO 3501733 --- [           main] [3df2171e-b7a8-463f-978c-3cabf928d6f5] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 25ms userId=1 planId=1
-2026-11-25T02:26:02.193-03:00  INFO 3501733 --- [           main] [0240e5a5-92fd-488e-972d-3db3a7a05dbd] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 23ms userId=1 planId=1
-2026-11-25T02:26:02.219-03:00  INFO 3501733 --- [           main] [1cecd009-a063-4499-8031-f70c1d2d6ec7] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 24ms userId=1 planId=1
-2026-11-25T02:26:02.294-03:00  INFO 3501733 --- [           main] [89cf8c34-1463-451c-afda-822cdb7e6f0d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 25ms userId=1 planId=1
-2026-11-25T02:26:02.329-03:00  INFO 3501733 --- [           main] [aef73453-a3d3-4932-9b3e-c9331580576c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 32ms userId=1 planId=1
+2026-11-25T07:46:31.124-03:00  WARN 3591127 --- [           main] [ff9c404d-8262-4e2d-8d14-3e3723f77abc] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:46:31.305-03:00  INFO 3591127 --- [           main] [ff9c404d-8262-4e2d-8d14-3e3723f77abc] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 292ms userId=1 planId=1
+2026-11-25T07:46:31.359-03:00  INFO 3591127 --- [           main] [137ad0d6-aa13-48f1-a549-8c229d63a97c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 40ms userId=1 planId=1
+2026-11-25T07:46:31.417-03:00  INFO 3591127 --- [           main] [352c3498-b5ee-4f97-a53d-fb487173ce2d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 30ms userId=1 planId=1
+2026-11-25T07:46:31.439-03:00  INFO 3591127 --- [           main] [c208ffea-837f-4239-8f8c-a958067269db] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 20ms userId=1 planId=1
+2026-11-25T07:46:31.461-03:00  INFO 3591127 --- [           main] [37e93dcd-ecac-4023-9272-7b8c4fedeee4] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 20ms userId=1 planId=1
+2026-11-25T07:46:31.487-03:00  INFO 3591127 --- [           main] [c73a33ea-e1d0-4fae-9eae-7c98bffdf323] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 24ms userId=1 planId=1
+2026-11-25T07:46:31.572-03:00  INFO 3591127 --- [           main] [b109aea7-9198-4498-8157-878a7171da44] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 25ms userId=1 planId=1
+2026-11-25T07:46:31.600-03:00  INFO 3591127 --- [           main] [6c474e75-61d5-4ae1-bab8-8752495574a4] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 27ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#concurrentRepayme` - exit 0
 
 ```
-2026-11-25T02:26:23.361-03:00  INFO 3502199 --- [pool-3-thread-2] [9cf6c3f9-446e-4ef2-b1d9-e0dd05c85246] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 334ms userId=1 planId=1
-2026-11-25T02:26:23.456-03:00  INFO 3502199 --- [pool-3-thread-2] [e018777f-0163-4594-a180-788dc061edc1] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 28ms userId=1 planId=1
-2026-11-25T02:26:23.468-03:00  INFO 3502199 --- [pool-3-thread-1] [d0964640-b803-40ad-9bb6-ddb3298edbde] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 40ms userId=1 planId=1
-2026-11-25T02:26:23.509-03:00  INFO 3502199 --- [pool-3-thread-2] [d0cdc062-66f8-4659-9ee2-d25318ba2322] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 30ms userId=1 planId=1
-2026-11-25T02:26:23.523-03:00  INFO 3502199 --- [pool-3-thread-1] [bac13f73-5b42-40ed-be8b-16fcdf1cc83c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 43ms userId=1 planId=1
-2026-11-25T02:26:23.565-03:00  INFO 3502199 --- [pool-3-thread-1] [5647f65d-4be9-40ad-9884-87ff745017d4] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 30ms userId=1 planId=1
-2026-11-25T02:26:23.582-03:00  INFO 3502199 --- [pool-3-thread-2] [d4720d1c-2f28-45d8-9459-aff08ce190cd] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 47ms userId=1 planId=1
-2026-11-25T02:26:23.619-03:00  INFO 3502199 --- [pool-3-thread-1] [5baef3b7-160f-458c-8e5d-29fa27d4d5fc] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 25ms userId=1 planId=1
-2026-11-25T02:26:23.631-03:00  INFO 3502199 --- [pool-3-thread-2] [2bcf61d1-0a8e-4937-8b63-55ba594e6722] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 37ms userId=1 planId=1
+2026-11-25T07:46:53.661-03:00  INFO 3591594 --- [pool-3-thread-2] [da0ca067-ee3c-4718-af53-1cd556c4f7f0] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 349ms userId=1 planId=1
+2026-11-25T07:46:53.753-03:00  INFO 3591594 --- [pool-3-thread-2] [8df25fd6-a325-4490-b1de-e5d64601fe78] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 31ms userId=1 planId=1
+2026-11-25T07:46:53.769-03:00  INFO 3591594 --- [pool-3-thread-1] [20aacc96-dcf5-423e-99dc-e1ccfe7c5dce] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 47ms userId=1 planId=1
+2026-11-25T07:46:53.815-03:00  INFO 3591594 --- [pool-3-thread-2] [7e1392c7-2d3e-48bc-8535-c7ca61668c5e] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 36ms userId=1 planId=1
+2026-11-25T07:46:53.831-03:00  INFO 3591594 --- [pool-3-thread-1] [49af17b7-77dc-48f4-8f60-6ffcb0177d80] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 52ms userId=1 planId=1
+2026-11-25T07:46:53.869-03:00  INFO 3591594 --- [pool-3-thread-1] [fb60b877-86ad-44c9-ada3-7a9c98a8c11c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 27ms userId=1 planId=1
+2026-11-25T07:46:53.884-03:00  INFO 3591594 --- [pool-3-thread-2] [6c3eedb8-6f29-4ebd-b7e6-19d190a8e831] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 41ms userId=1 planId=1
+2026-11-25T07:46:53.919-03:00  INFO 3591594 --- [pool-3-thread-2] [3fe504d5-931c-4381-ad6d-41e91841d05c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 25ms userId=1 planId=1
+2026-11-25T07:46:53.931-03:00  INFO 3591594 --- [pool-3-thread-1] [6a0d7321-5ddc-4bb9-a259-9eec89b1b1e1] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 422 37ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#editReplacesAndTr` - exit 0
 
 ```
-2026-11-25T02:26:44.871-03:00  INFO 3502647 --- [           main] [c1945d1c-3d07-4a26-8080-1565490c34c0] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 40ms userId=1 planId=1
-2026-11-25T02:26:44.898-03:00  INFO 3502647 --- [           main] [39a90779-250a-433e-8347-58f6fb0f588b] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 25ms userId=1 planId=1
-2026-11-25T02:26:44.923-03:00  INFO 3502647 --- [           main] [9f162eed-fc0b-4f1b-a71c-3760c0c15978] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 20ms userId=1 planId=1
-2026-11-25T02:26:44.943-03:00  INFO 3502647 --- [           main] [769cd521-8c16-4e5a-8338-3ecbe642c905] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 18ms userId=1 planId=1
-2026-11-25T02:26:44.963-03:00  INFO 3502647 --- [           main] [5a05c851-9af6-451b-9166-8f9f9cb1999c] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 19ms userId=1 planId=1
-2026-11-25T02:26:44.977-03:00  INFO 3502647 --- [           main] [8d50ee9e-7d77-42b8-870f-892f89bfa4fc] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 12ms userId=1 planId=1
-2026-11-25T02:26:45.022-03:00  INFO 3502647 --- [           main] [efe7a71e-f6ae-4e6a-b747-a8b5d585acf4] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 42ms userId=1 planId=1
-2026-11-25T02:26:45.043-03:00  INFO 3502647 --- [           main] [bdc91bf7-081a-4bb1-bd09-5688320c4145] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 19ms userId=1 planId=1
-2026-11-25T02:26:45.055-03:00  INFO 3502647 --- [           main] [3e064764-812c-451c-897c-1579493f16ae] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 10ms userId=1 planId=1
+2026-11-25T07:47:16.629-03:00  INFO 3592087 --- [           main] [ffc4e8ba-b9aa-4387-91cf-01a189404527] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 42ms userId=1 planId=1
+2026-11-25T07:47:16.651-03:00  INFO 3592087 --- [           main] [e23d37c1-8be1-41dc-8fb9-89ca880149c6] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 20ms userId=1 planId=1
+2026-11-25T07:47:16.673-03:00  INFO 3592087 --- [           main] [b8b8372b-db04-441d-9b23-d60b87b469c8] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 17ms userId=1 planId=1
+2026-11-25T07:47:16.694-03:00  INFO 3592087 --- [           main] [a42d4621-53ac-40f4-afe0-0ad7fd3b6a15] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 20ms userId=1 planId=1
+2026-11-25T07:47:16.719-03:00  INFO 3592087 --- [           main] [4597099d-b7e8-407c-aa43-a16e3cdfc532] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 23ms userId=1 planId=1
+2026-11-25T07:47:16.736-03:00  INFO 3592087 --- [           main] [e877918b-c2e8-4085-bcff-8a02c351250e] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 14ms userId=1 planId=1
+2026-11-25T07:47:16.794-03:00  INFO 3592087 --- [           main] [ae8a561c-3c92-4190-8d5f-2e974c843090] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 54ms userId=1 planId=1
+2026-11-25T07:47:16.815-03:00  INFO 3592087 --- [           main] [511a2f8b-b2f2-462c-960f-712bfa287e56] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 20ms userId=1 planId=1
+2026-11-25T07:47:16.830-03:00  INFO 3592087 --- [           main] [d841b85d-5e4b-46f0-9063-f09c7c25a6f8] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 13ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#reducingAShareCut` - exit 0
 
 ```
-2026-11-25T02:27:06.669-03:00  INFO 3503089 --- [           main] [5a1c9923-6845-41f5-a513-de87805e1f3f] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 200 34ms userId=1 planId=1
-2026-11-25T02:27:06.687-03:00  INFO 3503089 --- [           main] [a4f55f29-23f8-4e9b-91a9-6455623338de] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 14ms userId=1 planId=1
-2026-11-25T02:27:06.721-03:00  INFO 3503089 --- [           main] [da706e4f-d8c0-4244-a30a-6e8eb20d0901] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 27ms userId=1 planId=1
-2026-11-25T02:27:06.737-03:00  INFO 3503089 --- [           main] [f13adcc1-11c2-4658-98e2-4621bd28b5f3] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 14ms userId=1 planId=1
-2026-11-25T02:27:06.770-03:00  INFO 3503089 --- [           main] [e7adcf4f-60cc-46e8-8742-45331e612b70] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 31ms userId=1 planId=1
-2026-11-25T02:27:06.791-03:00  INFO 3503089 --- [           main] [0469c839-7ccb-4380-bfc4-e1e4bcc07756] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 16ms userId=1 planId=1
-2026-11-25T02:27:06.826-03:00  INFO 3503089 --- [           main] [ab5ed612-2c4a-48d3-af88-ba2d2b0570fe] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 32ms userId=1 planId=1
-2026-11-25T02:27:06.850-03:00  INFO 3503089 --- [           main] [d1a38ee5-8695-4d7f-bcfa-2603461628f9] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 22ms userId=1 planId=1
-2026-11-25T02:27:06.865-03:00  INFO 3503089 --- [           main] [cf5f22a5-e6af-44ce-8eac-ac1b35ac8bf2] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 12ms userId=1 planId=1
+2026-11-25T07:47:39.456-03:00  INFO 3592549 --- [           main] [00470f8e-2aa1-400c-a456-c9457a4d10f4] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 200 30ms userId=1 planId=1
+2026-11-25T07:47:39.475-03:00  INFO 3592549 --- [           main] [a341b87f-0136-45d0-bbed-4ed1dc496c40] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 15ms userId=1 planId=1
+2026-11-25T07:47:39.509-03:00  INFO 3592549 --- [           main] [2c40e652-563b-48d0-b95f-27b62a9d8b05] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 27ms userId=1 planId=1
+2026-11-25T07:47:39.523-03:00  INFO 3592549 --- [           main] [edcbce55-2960-4835-8d31-0a58d31be51f] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 12ms userId=1 planId=1
+2026-11-25T07:47:39.550-03:00  INFO 3592549 --- [           main] [4fdda023-6025-44a0-af11-fd1486b1bc4f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 25ms userId=1 planId=1
+2026-11-25T07:47:39.569-03:00  INFO 3592549 --- [           main] [3906ac4c-a070-4b54-b62c-72310bc95cf9] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 15ms userId=1 planId=1
+2026-11-25T07:47:39.622-03:00  INFO 3592549 --- [           main] [a5545370-5616-4b88-b06b-a53792fadc15] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 49ms userId=1 planId=1
+2026-11-25T07:47:39.645-03:00  INFO 3592549 --- [           main] [ceab3278-a4b5-42cc-8d11-6d9f68a0918e] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 21ms userId=1 planId=1
+2026-11-25T07:47:39.662-03:00  INFO 3592549 --- [           main] [619c80ab-aac5-4e55-b41a-f581581c63b8] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 14ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
-OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 ```
 
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactStatementIT#groupsByMon` - exit 0
 
 ```
-2026-11-25T02:27:28.868-03:00  WARN 3503532 --- [           main] [8c438ebf-4ca8-4419-b985-2ba9f6059734] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-25T02:27:28.868-03:00  WARN 3503532 --- [           main] [8c438ebf-4ca8-4419-b985-2ba9f6059734] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-25T02:27:28.868-03:00  WARN 3503532 --- [           main] [8c438ebf-4ca8-4419-b985-2ba9f6059734] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-25T02:27:28.868-03:00  WARN 3503532 --- [           main] [8c438ebf-4ca8-4419-b985-2ba9f6059734] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:27:28.868-03:00  WARN 3503532 --- [           main] [8c438ebf-4ca8-4419-b985-2ba9f6059734] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:27:28.868-03:00  WARN 3503532 --- [           main] [8c438ebf-4ca8-4419-b985-2ba9f6059734] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:27:29.045-03:00  INFO 3503532 --- [           main] [8c438ebf-4ca8-4419-b985-2ba9f6059734] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 288ms userId=1 planId=1
-2026-11-25T02:27:29.082-03:00  INFO 3503532 --- [           main] [9bf58a57-ec38-4b28-b0ad-97294942402f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 30ms userId=1 planId=1
-2026-11-25T02:27:29.146-03:00  INFO 3503532 --- [           main] [ac6dc3a3-44f4-4f1e-8304-3352bbfaffbf] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 56ms userId=1 planId=1
+2026-11-25T07:48:01.012-03:00  WARN 3593052 --- [           main] [d07660ec-9fa7-4910-9d21-cd6405743a4f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:48:01.013-03:00  WARN 3593052 --- [           main] [d07660ec-9fa7-4910-9d21-cd6405743a4f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:48:01.013-03:00  WARN 3593052 --- [           main] [d07660ec-9fa7-4910-9d21-cd6405743a4f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:48:01.013-03:00  WARN 3593052 --- [           main] [d07660ec-9fa7-4910-9d21-cd6405743a4f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:48:01.013-03:00  WARN 3593052 --- [           main] [d07660ec-9fa7-4910-9d21-cd6405743a4f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:48:01.013-03:00  WARN 3593052 --- [           main] [d07660ec-9fa7-4910-9d21-cd6405743a4f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:48:01.186-03:00  INFO 3593052 --- [           main] [d07660ec-9fa7-4910-9d21-cd6405743a4f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 312ms userId=1 planId=1
+2026-11-25T07:48:01.224-03:00  INFO 3593052 --- [           main] [05e84342-9e9d-493f-a2b2-d6150a93a81e] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 31ms userId=1 planId=1
+2026-11-25T07:48:01.276-03:00  INFO 3593052 --- [           main] [690af7ae-06eb-4de8-8377-8f9873dc2ace] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 44ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -646,15 +652,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactStatementIT#balanceLeav` - exit 0
 
 ```
-2026-11-25T02:27:51.702-03:00  WARN 3504022 --- [           main] [9af68f19-5bea-428d-86c7-15099c1a264f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:27:51.702-03:00  WARN 3504022 --- [           main] [9af68f19-5bea-428d-86c7-15099c1a264f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-25T02:27:51.702-03:00  WARN 3504022 --- [           main] [9af68f19-5bea-428d-86c7-15099c1a264f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
-2026-11-25T02:27:51.702-03:00  WARN 3504022 --- [           main] [9af68f19-5bea-428d-86c7-15099c1a264f] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:27:51.874-03:00  INFO 3504022 --- [           main] [9af68f19-5bea-428d-86c7-15099c1a264f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 291ms userId=1 planId=1
-2026-11-25T02:27:51.924-03:00  INFO 3504022 --- [           main] [a5c0d24b-e61d-4628-ae85-40debfb613d1] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 44ms userId=1 planId=1
-2026-11-25T02:27:52.000-03:00  INFO 3504022 --- [           main] [0376200e-7f87-4ae3-bc1f-05f089a403ea] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 30ms userId=1 planId=1
-2026-11-25T02:27:52.024-03:00  INFO 3504022 --- [           main] [6c9a94fa-e8f2-4a56-b488-b49024608506] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 22ms userId=1 planId=1
-2026-11-25T02:27:52.051-03:00  INFO 3504022 --- [           main] [330af1b7-dba3-4e24-93db-3fe4d45fd56d] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 25ms userId=1 planId=1
+2026-11-25T07:48:22.604-03:00  WARN 3593509 --- [           main] [57b8999d-bd41-46c3-aec0-f3068c09476a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:48:22.604-03:00  WARN 3593509 --- [           main] [57b8999d-bd41-46c3-aec0-f3068c09476a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:48:22.604-03:00  WARN 3593509 --- [           main] [57b8999d-bd41-46c3-aec0-f3068c09476a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:48:22.605-03:00  WARN 3593509 --- [           main] [57b8999d-bd41-46c3-aec0-f3068c09476a] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:48:22.775-03:00  INFO 3593509 --- [           main] [57b8999d-bd41-46c3-aec0-f3068c09476a] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 291ms userId=1 planId=1
+2026-11-25T07:48:22.830-03:00  INFO 3593509 --- [           main] [08bfb55a-e010-454e-a441-b1f964b67404] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 50ms userId=1 planId=1
+2026-11-25T07:48:22.923-03:00  INFO 3593509 --- [           main] [9a249812-9297-4506-a5aa-d466f03032e3] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 38ms userId=1 planId=1
+2026-11-25T07:48:22.948-03:00  INFO 3593509 --- [           main] [dc336c75-2c9f-4abd-8b1b-a4ae261e5ac4] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 23ms userId=1 planId=1
+2026-11-25T07:48:22.969-03:00  INFO 3593509 --- [           main] [3ca7028e-f727-4ddf-8720-fe00d3f4c96a] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 19ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -666,15 +672,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactStatementIT#trashedRows` - exit 0
 
 ```
-2026-11-25T02:28:13.769-03:00  INFO 3504459 --- [           main] [d4b94d97-6d53-4e6c-a735-f8a122b80f7f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 281ms userId=1 planId=1
-2026-11-25T02:28:13.805-03:00  INFO 3504459 --- [           main] [e8136618-57b7-41a9-bb84-9e41ca93742b] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 26ms userId=1 planId=1
-2026-11-25T02:28:13.848-03:00  INFO 3504459 --- [           main] [0f9308ba-9d54-4484-989a-44f08ed3c8b2] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 41ms userId=1 planId=1
-2026-11-25T02:28:13.936-03:00  INFO 3504459 --- [           main] [2f2a4708-1324-4b93-8a04-8c9ddace5380] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 38ms userId=1 planId=1
-2026-11-25T02:28:13.957-03:00  INFO 3504459 --- [           main] [d5fb1873-6c76-4b28-9106-4f1533434276] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 20ms userId=1 planId=1
-2026-11-25T02:28:13.972-03:00  INFO 3504459 --- [           main] [3cc15235-489e-4507-a6a6-f697ce376632] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 13ms userId=1 planId=1
-2026-11-25T02:28:13.994-03:00  INFO 3504459 --- [           main] [da9a5ec1-6a00-41cb-9ae8-49aaf2b835a6] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 20ms userId=1 planId=1
-2026-11-25T02:28:14.027-03:00  INFO 3504459 --- [           main] [ad149ac6-9f08-4462-be7d-d1964b41a16d] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 26ms userId=1 planId=1
-2026-11-25T02:28:14.043-03:00  INFO 3504459 --- [           main] [97a36396-6e81-4f58-961d-9068da4cbf4f] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 14ms userId=1 planId=1
+2026-11-25T07:48:44.942-03:00  INFO 3593970 --- [           main] [1766bf96-ad3f-44aa-bf3d-6e702a63c6a2] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 307ms userId=1 planId=1
+2026-11-25T07:48:44.978-03:00  INFO 3593970 --- [           main] [a1e396e7-8ab7-42df-8e3f-4474733c0063] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 25ms userId=1 planId=1
+2026-11-25T07:48:45.019-03:00  INFO 3593970 --- [           main] [fb21be1b-3c3e-4216-b77e-3b00b360bbe1] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 39ms userId=1 planId=1
+2026-11-25T07:48:45.142-03:00  INFO 3593970 --- [           main] [6bf65de9-01bc-4904-93b2-eb5f8817c53f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 68ms userId=1 planId=1
+2026-11-25T07:48:45.164-03:00  INFO 3593970 --- [           main] [3c02bd40-7509-4871-9ef4-202269a21f48] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 21ms userId=1 planId=1
+2026-11-25T07:48:45.183-03:00  INFO 3593970 --- [           main] [372c68d2-73e0-4678-9e59-934003ef556e] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 16ms userId=1 planId=1
+2026-11-25T07:48:45.218-03:00  INFO 3593970 --- [           main] [4c7e9472-a3ac-4977-a08d-4391ccafe052] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 33ms userId=1 planId=1
+2026-11-25T07:48:45.262-03:00  INFO 3593970 --- [           main] [6b8fa8f1-049a-4e83-8d23-1294ff505240] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 38ms userId=1 planId=1
+2026-11-25T07:48:45.286-03:00  INFO 3593970 --- [           main] [d70f996e-408b-4a03-a623-b73fec274e54] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 21ms userId=1 planId=1
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -686,15 +692,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpContactsIT#attributedToReso` - exit 0
 
 ```
-2026-11-25T02:28:35.732-03:00  INFO 3504896 --- [           main] [5463acf7-7c93-4146-a865-9685ea4f0645] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 244ms userId=- planId=-
-2026-11-25T02:28:35.783-03:00  INFO 3504896 --- [           main] [e6d6131e-a080-455d-bfdf-2faa006db4c3] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=46
-2026-11-25T02:28:35.783-03:00  INFO 3504896 --- [           main] [e6d6131e-a080-455d-bfdf-2faa006db4c3] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 49ms userId=- planId=-
-2026-11-25T02:28:35.862-03:00  INFO 3504896 --- [           main] [007a3c5a-c89e-4cc1-a5de-bd20cc0cca45] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=21
-2026-11-25T02:28:35.863-03:00  INFO 3504896 --- [           main] [007a3c5a-c89e-4cc1-a5de-bd20cc0cca45] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 25ms userId=- planId=-
-2026-11-25T02:28:35.904-03:00  INFO 3504896 --- [           main] [8948cbef-61b7-4de5-9cd5-67abd4d85c5a] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=21
-2026-11-25T02:28:35.905-03:00  INFO 3504896 --- [           main] [8948cbef-61b7-4de5-9cd5-67abd4d85c5a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 26ms userId=- planId=-
-2026-11-25T02:28:35.927-03:00  INFO 3504896 --- [           main] [443e2fa3-50e8-4abe-b9b9-a393b43f42be] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=17
-2026-11-25T02:28:35.927-03:00  INFO 3504896 --- [           main] [443e2fa3-50e8-4abe-b9b9-a393b43f42be] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 21ms userId=- planId=-
+2026-11-25T07:49:07.346-03:00  INFO 3594438 --- [           main] [304e9833-98fa-4433-926c-5b707c59b28a] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 256ms userId=- planId=-
+2026-11-25T07:49:07.389-03:00  INFO 3594438 --- [           main] [9481f371-4f28-4713-b2a6-227db61b7682] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=38
+2026-11-25T07:49:07.389-03:00  INFO 3594438 --- [           main] [9481f371-4f28-4713-b2a6-227db61b7682] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 41ms userId=- planId=-
+2026-11-25T07:49:07.462-03:00  INFO 3594438 --- [           main] [ebc3f20a-265f-4965-8628-f0a6c2c40655] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=18
+2026-11-25T07:49:07.462-03:00  INFO 3594438 --- [           main] [ebc3f20a-265f-4965-8628-f0a6c2c40655] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 22ms userId=- planId=-
+2026-11-25T07:49:07.496-03:00  INFO 3594438 --- [           main] [532c1755-f079-423b-b525-e0cf7e97c203] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=15
+2026-11-25T07:49:07.496-03:00  INFO 3594438 --- [           main] [532c1755-f079-423b-b525-e0cf7e97c203] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 18ms userId=- planId=-
+2026-11-25T07:49:07.515-03:00  INFO 3594438 --- [           main] [11e023f5-58f2-4237-b119-0faf929cb8f2] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=error durationMs=15
+2026-11-25T07:49:07.515-03:00  INFO 3594438 --- [           main] [11e023f5-58f2-4237-b119-0faf929cb8f2] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 18ms userId=- planId=-
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -706,15 +712,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpContactsIT#repaymentApplies` - exit 0
 
 ```
-2026-11-25T02:28:57.338-03:00  WARN 3505388 --- [           main] [cede9fa4-0e52-431c-a1a9-e5febb661f1e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
-2026-11-25T02:28:57.338-03:00  WARN 3505388 --- [           main] [cede9fa4-0e52-431c-a1a9-e5febb661f1e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
-2026-11-25T02:28:57.339-03:00  WARN 3505388 --- [           main] [cede9fa4-0e52-431c-a1a9-e5febb661f1e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
-2026-11-25T02:28:57.339-03:00  WARN 3505388 --- [           main] [cede9fa4-0e52-431c-a1a9-e5febb661f1e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
-2026-11-25T02:28:57.339-03:00  WARN 3505388 --- [           main] [cede9fa4-0e52-431c-a1a9-e5febb661f1e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-25T02:28:57.423-03:00  INFO 3505388 --- [           main] [cede9fa4-0e52-431c-a1a9-e5febb661f1e] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=242
-2026-11-25T02:28:57.438-03:00  INFO 3505388 --- [           main] [cede9fa4-0e52-431c-a1a9-e5febb661f1e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 281ms userId=- planId=-
-2026-11-25T02:28:57.563-03:00  INFO 3505388 --- [           main] [a8c68b16-e4b2-4c09-8251-1f0c6b7f3a29] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=51
-2026-11-25T02:28:57.564-03:00  INFO 3505388 --- [           main] [a8c68b16-e4b2-4c09-8251-1f0c6b7f3a29] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 56ms userId=- planId=-
+2026-11-25T07:49:29.572-03:00  WARN 3594963 --- [           main] [d9597c52-0cec-4924-b009-48f0ed086c2e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
+2026-11-25T07:49:29.572-03:00  WARN 3594963 --- [           main] [d9597c52-0cec-4924-b009-48f0ed086c2e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:49:29.572-03:00  WARN 3594963 --- [           main] [d9597c52-0cec-4924-b009-48f0ed086c2e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:49:29.572-03:00  WARN 3594963 --- [           main] [d9597c52-0cec-4924-b009-48f0ed086c2e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:49:29.572-03:00  WARN 3594963 --- [           main] [d9597c52-0cec-4924-b009-48f0ed086c2e] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#com.lcs.findraco.transaction.request.CreateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List)
+2026-11-25T07:49:29.656-03:00  INFO 3594963 --- [           main] [d9597c52-0cec-4924-b009-48f0ed086c2e] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=244
+2026-11-25T07:49:29.670-03:00  INFO 3594963 --- [           main] [d9597c52-0cec-4924-b009-48f0ed086c2e] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 283ms userId=- planId=-
+2026-11-25T07:49:29.787-03:00  INFO 3594963 --- [           main] [ec86afbc-9a56-4a1a-8a36-1f818f703042] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=58
+2026-11-25T07:49:29.788-03:00  INFO 3594963 --- [           main] [ec86afbc-9a56-4a1a-8a36-1f818f703042] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 62ms userId=- planId=-
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -726,15 +732,15 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpContactsIT#listsContactsAnd` - exit 0
 
 ```
-2026-11-25T02:29:18.983-03:00  WARN 3505827 --- [           main] [29571d6c-de8f-4cca-a26b-75e836d4e2e0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
-2026-11-25T02:29:18.983-03:00  WARN 3505827 --- [           main] [29571d6c-de8f-4cca-a26b-75e836d4e2e0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
-2026-11-25T02:29:18.983-03:00  WARN 3505827 --- [           main] [29571d6c-de8f-4cca-a26b-75e836d4e2e0] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
-2026-11-25T02:29:19.060-03:00  INFO 3505827 --- [           main] [29571d6c-de8f-4cca-a26b-75e836d4e2e0] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=249
-2026-11-25T02:29:19.074-03:00  INFO 3505827 --- [           main] [29571d6c-de8f-4cca-a26b-75e836d4e2e0] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 295ms userId=- planId=-
-2026-11-25T02:29:19.095-03:00  INFO 3505827 --- [           main] [08da8f3e-455b-4915-9afe-0371a3f428ae] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_contacts user=1 plan=1 outcome=ok durationMs=16
-2026-11-25T02:29:19.096-03:00  INFO 3505827 --- [           main] [08da8f3e-455b-4915-9afe-0371a3f428ae] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 20ms userId=- planId=-
-2026-11-25T02:29:19.209-03:00  INFO 3505827 --- [           main] [25f184ea-c1f1-41f2-b43f-87bf4d11231b] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=56
-2026-11-25T02:29:19.209-03:00  INFO 3505827 --- [           main] [25f184ea-c1f1-41f2-b43f-87bf4d11231b] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 61ms userId=- planId=-
+2026-11-25T07:49:51.831-03:00  WARN 3595426 --- [           main] [f40fd532-fd0d-490a-9686-11dacbf7f1e7] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#allocations()
+2026-11-25T07:49:51.831-03:00  WARN 3595426 --- [           main] [f40fd532-fd0d-490a-9686-11dacbf7f1e7] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: participants
+2026-11-25T07:49:51.831-03:00  WARN 3595426 --- [           main] [f40fd532-fd0d-490a-9686-11dacbf7f1e7] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:49:51.931-03:00  INFO 3595426 --- [           main] [f40fd532-fd0d-490a-9686-11dacbf7f1e7] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=create_transaction user=1 plan=1 outcome=ok durationMs=253
+2026-11-25T07:49:51.945-03:00  INFO 3595426 --- [           main] [f40fd532-fd0d-490a-9686-11dacbf7f1e7] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 291ms userId=- planId=-
+2026-11-25T07:49:51.968-03:00  INFO 3595426 --- [           main] [4fb0ec77-bc12-4980-be12-b602299c4599] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_contacts user=1 plan=1 outcome=ok durationMs=19
+2026-11-25T07:49:51.969-03:00  INFO 3595426 --- [           main] [4fb0ec77-bc12-4980-be12-b602299c4599] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 22ms userId=- planId=-
+2026-11-25T07:49:52.080-03:00  INFO 3595426 --- [           main] [6f134645-5c27-47d4-9c14-300fcdd49165] c.l.findraco.mcp.service.McpToolRunner   : MCP tool=list_transactions user=1 plan=1 outcome=ok durationMs=56
+2026-11-25T07:49:52.080-03:00  INFO 3595426 --- [           main] [6f134645-5c27-47d4-9c14-300fcdd49165] c.l.f.shared.web.RequestLogFilter        : POST /mcp 200 61ms userId=- planId=-
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
@@ -746,19 +752,99 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 `cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='OpenApiSnapshotIT' -Dsurefire.` - exit 0
 
 ```
-2026-11-25T02:29:40.034-03:00  INFO 3506311 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
-2026-11-25T02:29:40.035-03:00  INFO 3506311 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
-2026-11-25T02:29:40.036-03:00  INFO 3506311 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
-2026-11-25T02:29:40.163-03:00  INFO 3506311 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
-2026-11-25T02:29:40.163-03:00  INFO 3506311 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
-2026-11-25T02:29:40.165-03:00  INFO 3506311 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
-2026-11-25T02:29:40.229-03:00  INFO 3506311 --- [           main] [] c.lcs.findraco.shared.OpenApiSnapshotIT  : Started OpenApiSnapshotIT in 9.297 seconds (process running for 10.642)
-2026-11-25T02:29:41.194-03:00  INFO 3506311 --- [           main] [620b08b0-17c8-4903-b51f-60eb06731428] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 613 ms
-2026-11-25T02:29:41.237-03:00  INFO 3506311 --- [           main] [620b08b0-17c8-4903-b51f-60eb06731428] c.l.f.shared.web.RequestLogFilter        : GET /v3/api-docs 200 687ms userId=- planId=-
+2026-11-25T07:50:13.378-03:00  INFO 3595902 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable resources templates capabilities, notification: true
+2026-11-25T07:50:13.379-03:00  INFO 3595902 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable prompts capabilities, notification: true
+2026-11-25T07:50:13.380-03:00  INFO 3595902 --- [           main] [] o.s.a.m.s.c.a.McpServerAutoConfiguration : Enable completions capabilities
+2026-11-25T07:50:13.508-03:00  INFO 3595902 --- [           main] [] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2026-11-25T07:50:13.508-03:00  INFO 3595902 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-25T07:50:13.509-03:00  INFO 3595902 --- [           main] [] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2026-11-25T07:50:13.564-03:00  INFO 3595902 --- [           main] [] c.lcs.findraco.shared.OpenApiSnapshotIT  : Started OpenApiSnapshotIT in 9.295 seconds (process running for 10.649)
+2026-11-25T07:50:14.568-03:00  INFO 3595902 --- [           main] [ba7e7b36-4362-4b53-b569-59e469dc5327] o.springdoc.api.AbstractOpenApiResource  : Init duration for springdoc-openapi is: 648 ms
+2026-11-25T07:50:14.611-03:00  INFO 3595902 --- [           main] [ba7e7b36-4362-4b53-b569-59e469dc5327] c.l.f.shared.web.RequestLogFilter        : GET /v3/api-docs 200 719ms userId=- planId=-
 Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
 OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
 WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
 WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
 WARNING: Dynamic loading of agents will be disallowed by default in a future release
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#aSettledPurchaseM` - exit 0
+
+```
+2026-11-25T07:50:36.790-03:00  WARN 3596404 --- [           main] [15f10382-4fe6-415b-b596-731c501fb906] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: items
+2026-11-25T07:50:36.790-03:00  WARN 3596404 --- [           main] [15f10382-4fe6-415b-b596-731c501fb906] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
+2026-11-25T07:50:36.790-03:00  WARN 3596404 --- [           main] [15f10382-4fe6-415b-b596-731c501fb906] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:50:36.790-03:00  WARN 3596404 --- [           main] [15f10382-4fe6-415b-b596-731c501fb906] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:50:36.791-03:00  WARN 3596404 --- [           main] [15f10382-4fe6-415b-b596-731c501fb906] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#com.lcs.findraco.transaction.request.UpdateTransactionRequest(Long, TransactionType, BigDecimal, String, Integer, LocalDate, LocalDate, SplitMode, List, List, TransactionKind, Long, List, Long)
+2026-11-25T07:50:36.791-03:00  WARN 3596404 --- [           main] [15f10382-4fe6-415b-b596-731c501fb906] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: UpdateTransactionRequest#participants()
+2026-11-25T07:50:36.841-03:00  INFO 3596404 --- [           main] [15f10382-4fe6-415b-b596-731c501fb906] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 200 68ms userId=1 planId=1
+2026-11-25T07:50:36.899-03:00  INFO 3596404 --- [           main] [7c856674-7a2f-48d1-8441-ee54fa6622bf] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 34ms userId=1 planId=1
+2026-11-25T07:50:36.924-03:00  INFO 3596404 --- [           main] [fe07d8ba-0e04-4ce9-a4e0-713152e679d5] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 19ms userId=1 planId=1
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#editingAPaymentWh` - exit 0
+
+```
+2026-11-25T07:50:59.674-03:00  INFO 3596878 --- [           main] [780f981e-8a37-4a61-8358-7040d33f9c07] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 200 48ms userId=1 planId=1
+2026-11-25T07:50:59.786-03:00  INFO 3596878 --- [           main] [2122c7ad-0e0b-4dad-aa4d-6b54cda44a37] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 57ms userId=1 planId=1
+2026-11-25T07:50:59.839-03:00  INFO 3596878 --- [           main] [2c450778-cea8-47bc-83c6-9966db1b77f2] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 51ms userId=1 planId=1
+2026-11-25T07:50:59.869-03:00  INFO 3596878 --- [           main] [bd55acdb-a6a4-439a-b6f9-1c71653ff27e] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 26ms userId=1 planId=1
+2026-11-25T07:50:59.920-03:00  INFO 3596878 --- [           main] [cb61976a-689b-49f1-ba64-d71db4ea4d6c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 39ms userId=1 planId=1
+2026-11-25T07:50:59.939-03:00  INFO 3596878 --- [           main] [05fa875a-d6f2-4013-b89e-54c21b2b0e8f] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 17ms userId=1 planId=1
+2026-11-25T07:50:59.980-03:00  INFO 3596878 --- [           main] [0d26a8fe-d1ae-404c-81c2-f650d80d0a06] c.l.f.shared.web.RequestLogFilter        : PUT /api/findraco/plan/{planId}/transaction/{id} 200 38ms userId=1 planId=1
+2026-11-25T07:51:00.013-03:00  INFO 3596878 --- [           main] [013a4214-dd26-4985-85e5-620e194d0c40] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/trash/{deletionId}/restore 200 31ms userId=1 planId=1
+2026-11-25T07:51:00.037-03:00  INFO 3596878 --- [           main] [51035be9-81fc-4c86-bdc3-6a66548c3064] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts/{id}/statement 200 21ms userId=1 planId=1
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#markingAContac` - exit 0
+
+```
+2026-11-25T07:51:23.001-03:00  WARN 3597352 --- [           main] [a3b18a67-4487-4606-b784-e3326bc8eed7] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#items()
+2026-11-25T07:51:23.002-03:00  WARN 3597352 --- [           main] [a3b18a67-4487-4606-b784-e3326bc8eed7] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: CreateTransactionRequest#participants()
+2026-11-25T07:51:23.002-03:00  WARN 3597352 --- [           main] [a3b18a67-4487-4606-b784-e3326bc8eed7] o.h.v.i.m.a.CascadingMetaDataBuilder     : HV000271: Using `@Valid` on a container (java.util.List) is deprecated. You should apply the annotation on the type argument(s). Affected element: allocations
+2026-11-25T07:51:23.160-03:00  INFO 3597352 --- [           main] [a3b18a67-4487-4606-b784-e3326bc8eed7] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction 201 279ms userId=1 planId=1
+2026-11-25T07:51:23.217-03:00  INFO 3597352 --- [           main] [36682dad-35cb-497c-a4a3-f98dcf9e6255] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/{id}/kind 422 43ms userId=1 planId=1
+2026-11-25T07:51:23.261-03:00  INFO 3597352 --- [           main] [461320e5-19ce-4608-a242-8c71f52d43f5] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/{id}/kind 422 16ms userId=1 planId=1
+2026-11-25T07:51:23.276-03:00  INFO 3597352 --- [           main] [67476bb0-c36b-4504-b682-0c889f90538f] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/{id}/kind 422 13ms userId=1 planId=1
+2026-11-25T07:51:23.293-03:00  INFO 3597352 --- [           main] [1c8502d8-c5d6-44de-b049-8411ea139132] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/transaction/{id}/kind 422 14ms userId=1 planId=1
+2026-11-25T07:51:23.313-03:00  INFO 3597352 --- [           main] [fb354f6b-8769-43db-a06b-8ce8484d4c2d] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/transaction/{id} 200 18ms userId=1 planId=1
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+```
+
+`cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#refusesArchiveWithP` - exit 0
+
+```
+2026-11-25T07:51:47.699-03:00  INFO 3597846 --- [           main] [d371daa6-3b21-46e5-8fe9-a4f3b84a4df1] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 409 41ms userId=1 planId=1
+2026-11-25T07:51:47.744-03:00  INFO 3597846 --- [           main] [c9734c58-1cb3-4dd4-9d5a-706089f29b80] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 409 21ms userId=1 planId=1
+2026-11-25T07:51:47.764-03:00  INFO 3597846 --- [           main] [b3f97dc5-1bb6-4b0b-b225-435af054dad5] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 18ms userId=1 planId=1
+2026-11-25T07:51:47.836-03:00  INFO 3597846 --- [           main] [b1d7b787-ce6e-4666-a0ef-f6afd784d13b] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 23ms userId=1 planId=1
+2026-11-25T07:51:47.897-03:00  INFO 3597846 --- [           main] [2022602e-318b-4d67-9e44-bad22ac276e1] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/series/{seriesId} 200 59ms userId=1 planId=1
+2026-11-25T07:51:47.924-03:00  INFO 3597846 --- [           main] [605cd169-a427-48b6-897b-d988b0ffb6ad] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 23ms userId=1 planId=1
+2026-11-25T07:51:47.941-03:00  INFO 3597846 --- [           main] [c8e3d7d9-b73b-4a58-9e3c-2e6d561f252e] c.l.f.shared.web.RequestLogFilter        : DELETE /api/findraco/plan/{planId}/transaction/{id} 200 15ms userId=1 planId=1
+2026-11-25T07:51:47.959-03:00  INFO 3597846 --- [           main] [928153f7-fcd9-4b7f-a05b-e6a30c07d71c] c.l.f.shared.web.RequestLogFilter        : POST /api/findraco/plan/{planId}/contacts/{id}/archive 200 16ms userId=1 planId=1
+2026-11-25T07:51:47.971-03:00  INFO 3597846 --- [           main] [19470d4e-3ac9-4492-9c4f-3261c6817494] c.l.f.shared.web.RequestLogFilter        : GET /api/findraco/plan/{planId}/contacts 200 11ms userId=1 planId=1
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (/home/lcs/.m2/repository/net/bytebuddy/byte-buddy-agent/1.18.15/byte-buddy-agent-1.18.15.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
 ```
