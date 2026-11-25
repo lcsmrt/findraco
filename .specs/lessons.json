@@ -3,7 +3,7 @@
   "promote_threshold": 2,
   "window_days": 45,
   "quarantine_threshold": 2,
-  "next_id": 73,
+  "next_id": 76,
   "lessons": [
     {
       "id": "L-001",
@@ -1300,6 +1300,60 @@
       ],
       "created": "2026-11-24T04:36:54Z",
       "last_seen": "2026-11-24T04:36:54Z"
+    },
+    {
+      "id": "L-073",
+      "key": "ac_gap::an archive guard that checks a balance must also check what is still planned future shares live series or the archived thing starts owing later",
+      "text": "An archive guard that checks a balance must also check what is still planned (future shares, live series), or the archived thing starts owing later.",
+      "signal": "ac_gap",
+      "scope": "backend/archive",
+      "status": "candidate",
+      "features": [
+        "contacts"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 6; finding 4 (backend/archive)"
+      ],
+      "created": "2026-11-25T11:27:33Z",
+      "last_seen": "2026-11-25T11:27:33Z"
+    },
+    {
+      "id": "L-074",
+      "key": "ac_gap::stored allocations must be re fitted on every path that changes a share s weight edit date move to planned trash restore kind change and each of those paths takes the same lock",
+      "text": "Stored allocations must be re-fitted on every path that changes a share's weight: edit, date move to planned, trash, restore, kind change - and each of those paths takes the same lock.",
+      "signal": "ac_gap",
+      "scope": "backend/allocations",
+      "status": "candidate",
+      "features": [
+        "contacts"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "AC 24; findings 1, 2, 6 (backend/allocations)"
+      ],
+      "created": "2026-11-25T11:27:33Z",
+      "last_seen": "2026-11-25T11:27:33Z"
+    },
+    {
+      "id": "L-075",
+      "key": "gate_fail::run validate verification py with proofs md staged but uncommitted then commit it with the lessons committing proofs md first moves head and reds the gate",
+      "text": "Run validate_verification.py with proofs.md staged but uncommitted, then commit it with the lessons; committing proofs.md first moves HEAD and reds the gate.",
+      "signal": "gate_fail",
+      "scope": "tlc-spec-lean",
+      "status": "candidate",
+      "features": [
+        "contacts"
+      ],
+      "recurrence": 1,
+      "harmful": 0,
+      "evidence": [
+        "check_proofs.py / validate_verification.py (tlc-spec-lean)"
+      ],
+      "created": "2026-11-25T11:27:33Z",
+      "last_seen": "2026-11-25T11:27:33Z"
     }
   ]
 }

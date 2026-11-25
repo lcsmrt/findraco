@@ -446,6 +446,24 @@ Seen once or not yet corroborated. Tracked, not trusted.
 - evidence: verification.md finding 5 (specs/checks)
 - last seen: 2026-11-24T04:36:54Z
 
+### L-073 - An archive guard that checks a balance must also check what is still planned (future shares, live series), or the archived thing starts owing later.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backend/archive` · harmful: 0
+- features: contacts
+- evidence: AC 6; finding 4 (backend/archive)
+- last seen: 2026-11-25T11:27:33Z
+
+### L-074 - Stored allocations must be re-fitted on every path that changes a share's weight: edit, date move to planned, trash, restore, kind change - and each of those paths takes the same lock.
+- signal: `ac_gap` · recurrence: 1 feature(s) · scope: `backend/allocations` · harmful: 0
+- features: contacts
+- evidence: AC 24; findings 1, 2, 6 (backend/allocations)
+- last seen: 2026-11-25T11:27:33Z
+
+### L-075 - Run validate_verification.py with proofs.md staged but uncommitted, then commit it with the lessons; committing proofs.md first moves HEAD and reds the gate.
+- signal: `gate_fail` · recurrence: 1 feature(s) · scope: `tlc-spec-lean` · harmful: 0
+- features: contacts
+- evidence: check_proofs.py / validate_verification.py (tlc-spec-lean)
+- last seen: 2026-11-25T11:27:33Z
+
 ## Quarantined (failed when applied - ignore)
 
 A confirmed lesson that recurred alongside failure. Kept for the maintainer to review.
