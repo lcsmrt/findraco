@@ -2,15 +2,25 @@ import type { TransactionKind, TransactionType } from "@/api/dtos/transaction";
 
 type MaybeKind = TransactionKind | null | undefined;
 
-/** Kinds that count in no total and take no category, split or items. */
+/**
+ * Kinds that count in no total and take no category, split or items. A contact payment is one: the
+ * money was already counted as spending when the purchase was made.
+ */
 export function isNeutralKind(kind: MaybeKind): boolean {
-  return kind === "TRANSFER" || kind === "CARD_BILL_PAYMENT" || kind === "SAVINGS";
+  return (
+    kind === "TRANSFER" || kind === "CARD_BILL_PAYMENT" || kind === "SAVINGS" || kind === "REPAYMENT"
+  );
 }
 
-/** The kinds a row of this type can take; a refund is money coming back, so only a credit. */
+/** A contact paying back what it owes: the kind with a contact and the purchases it settles. */
+export function isRepayment(kind: MaybeKind): boolean {
+  return kind === "REPAYMENT";
+}
+
+/** The kinds a row of this type can take; a refund and a contact payment are money coming in, so only a credit. */
 export function kindsForType(type: TransactionType): TransactionKind[] {
   const neutral: TransactionKind[] = ["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS"];
-  return type === "CREDIT" ? [...neutral, "REFUND"] : neutral;
+  return type === "CREDIT" ? [...neutral, "REFUND", "REPAYMENT"] : neutral;
 }
 
 /** The kind a row keeps when its type changes: none when the new type cannot take it. */

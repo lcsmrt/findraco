@@ -261,6 +261,7 @@
     "optional": "(opcional)",
     "r000": "R$ 0,00",
     "save": "Salvar",
+    "tryAgain": "Tentar de novo",
     "type": "Tipo",
     "yearPlaceholder": "aaaa",
     "youExampleCom": "voce@exemplo.com"
@@ -714,6 +715,7 @@
       "edit": "Editar"
     },
     "attributionFields": {
+      "archivedContact": "{{name}} (arquivado)",
       "attributedTo": "Atribuído a",
       "equal": "Igual",
       "exact": "Exato",
@@ -776,8 +778,13 @@
       "ongoing": "Em andamento"
     },
     "form": {
+      "allocationAboveOpen": "É mais do que está em aberto na compra",
+      "allocationNeedsAmount": "Informe um valor para cada compra marcada",
+      "allocationsAboveAmount": "As compras marcadas somam mais do que o pagamento",
       "amountMustBePositive": "O valor deve ser positivo",
+      "choosePayingContact": "Escolha quem pagou",
       "choosePerson": "Escolha a pessoa",
+      "contactsOnExpensesOnly": "Só uma despesa pode ser dividida com um contato.",
       "dateAndInstallmentsInSeparateEdits": "Mude a data e o número de parcelas em edições separadas. Salve uma, depois a outra.",
       "dateIsRequired": "A data é obrigatória",
       "descriptionIsRequired": "A descrição é obrigatória",
@@ -837,6 +844,18 @@
       "mode": "Modo",
       "recurring": "Recorrente",
       "repeatOrSplitIntoInstallments": "Repetir ou dividir em parcelas?"
+    },
+    "repaymentFields": {
+      "amountFor": "Valor para {{description}}",
+      "becomesCredit": "{{amount}} vira crédito",
+      "contact": "Pago por",
+      "loadFailed": "Não foi possível carregar as compras deste contato.",
+      "loading": "Carregando compras",
+      "nothingOpen": "Nada em aberto para este contato: o pagamento vira crédito.",
+      "open": "{{amount}} em aberto",
+      "purchases": "Compras que quita",
+      "receivedBy": "Recebido por",
+      "selectAContact": "Selecione um contato"
     },
     "seriesScopeDialog": {
       "all": "Todas",

@@ -254,10 +254,15 @@ function ParticipantsSummary({ participants }: { participants: ParticipantShare[
     );
   }
 
+  const names = participants.map((p) => p.name).join(", ");
+  // A contact is not a member to count: her name is on the row, so the split reads at a glance.
+  const hasContact = participants.some((p) => p.contactId != null);
   return (
-    <Badge variant="meta" className="gap-1" title={participants.map((p) => p.name).join(", ")}>
-      <UsersIcon className="h-3 w-3" />
-      {t("transactions.transactionCells.people", { count: participants.length })}
+    <Badge variant="meta" className="max-w-48 gap-1" title={names}>
+      <UsersIcon className="h-3 w-3 shrink-0" />
+      <span className="truncate">
+        {hasContact ? names : t("transactions.transactionCells.people", { count: participants.length })}
+      </span>
     </Badge>
   );
 }
@@ -354,8 +359,10 @@ type ParticipantsCellProps = {
 };
 
 export function ParticipantsCell({ transaction, members, canEdit, onSave }: ParticipantsCellProps) {
-  // A neutral movement is the user's own: the API refuses anyone else on it.
-  if (!canEdit || !transaction.permissions.edit || isNeutralKind(transaction.kind)) {
+  // A neutral movement is the user's own: the API refuses anyone else on it. The cell lists members only, so
+  // saving a row with a contact's share from here would drop that share: its form changes it instead.
+  const hasContactShare = transaction.participants.some((participant) => participant.contactId != null);
+  if (!canEdit || !transaction.permissions.edit || isNeutralKind(transaction.kind) || hasContactShare) {
     return <ParticipantsSummary participants={transaction.participants} />;
   }
   return <EditableParticipantsCell transaction={transaction} members={members} onSave={onSave} />;

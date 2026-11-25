@@ -257,6 +257,44 @@ export const MovementKinds: Story = {
   },
 };
 
+// Her name shows with the members, as the table's participants cell lists it.
+export const WithContactShare: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Dinner", "2026-10-14", {
+        participants: [
+          { id: 1, name: "Lucas Martins", shareAmount: 50 },
+          { id: null, name: "Mãe", contactId: 7, contactName: "Mãe", shareAmount: 50 },
+        ],
+      }),
+    ],
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("button", { name: /Dinner/ })).toHaveTextContent("Lucas Martins, Mãe");
+  },
+};
+
+// A contact payment carries its kind badge and the contact it came from.
+export const Repayment: Story = {
+  args: {
+    transactions: [
+      transaction(1, "Pix from Mãe", "2026-10-14", {
+        type: "CREDIT",
+        kind: "REPAYMENT",
+        category: undefined,
+        repayment: { contactId: 7, contactName: "Mãe", allocations: [] },
+      }),
+      transaction(2, "Groceries", "2026-10-13"),
+    ],
+  },
+  play: async ({ canvas }) => {
+    const [payment, groceries] = canvas.getAllByRole("button");
+    await expect(within(payment).getByText("Contact payment")).toBeVisible();
+    await expect(within(payment).getByText("Mãe")).toBeVisible();
+    await expect(within(groceries).queryByText("Contact payment")).toBeNull();
+  },
+};
+
 export const Loading: Story = { args: { transactions: [], isLoading: true, pagination: undefined } };
 
 export const Empty: Story = {

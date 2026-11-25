@@ -12,6 +12,7 @@ describe("movementKind", () => {
     ["TRANSFER", true],
     ["CARD_BILL_PAYMENT", true],
     ["SAVINGS", true],
+    ["REPAYMENT", true],
     ["REFUND", false],
     [null, false],
     [undefined, false],
@@ -19,14 +20,15 @@ describe("movementKind", () => {
     expect(isNeutralKind(kind)).toBe(neutral);
   });
 
-  it("offers a refund only on a credit", () => {
-    expect(kindsForType("CREDIT")).toEqual(["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND"]);
+  it("offers a refund and a contact payment only on a credit", () => {
+    expect(kindsForType("CREDIT")).toEqual(["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND", "REPAYMENT"]);
     expect(kindsForType("DEBIT")).toEqual(["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS"]);
   });
 
   it("drops a refund when the type turns to debit and keeps every other kind", () => {
     expect(kindForType("REFUND", "DEBIT")).toBeNull();
     expect(kindForType("REFUND", "CREDIT")).toBe("REFUND");
+    expect(kindForType("REPAYMENT", "DEBIT")).toBeNull();
     expect(kindForType("SAVINGS", "DEBIT")).toBe("SAVINGS");
     expect(kindForType(undefined, "DEBIT")).toBeNull();
   });
@@ -40,6 +42,7 @@ describe("movementKind", () => {
   it("hides the items of a neutral movement and of a refund", () => {
     expect(hidesItems("TRANSFER")).toBe(true);
     expect(hidesItems("REFUND")).toBe(true);
+    expect(hidesItems("REPAYMENT")).toBe(true);
     expect(hidesItems(null)).toBe(false);
   });
 });

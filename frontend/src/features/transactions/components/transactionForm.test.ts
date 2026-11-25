@@ -5,6 +5,8 @@ import {
   TransactionFormValues,
   buildDefaultValues,
   categoryAttribution,
+  contactSplitRows,
+  initialFormValues,
   itemsRemainderCents,
   ownerDefaultAttribution,
   participantsForMode,
@@ -934,5 +936,217 @@ describe("transactionForm", () => {
 
     expect(body.kind).toBe("SAVINGS");
     expect(toInlineSavePayload(baseTransaction, { description: "Rent" }).body.kind).toBeUndefined();
+  });
+});
+
+describe("transactionForm contacts", () => {
+  const sharedWithMae: Transaction = {
+    ...baseTransaction,
+    splitMode: "EXACT",
+    participants: [
+      { id: 1, name: "Lucas", shareAmount: 30 },
+      { id: null, name: "Mãe", contactId: 7, contactName: "Mãe", shareAmount: 70 },
+    ],
+    amount: 100,
+    items: [],
+  };
+
+  it("round-trips a contact share", () => {
+    const defaults = buildDefaultValues(sharedWithMae, 1);
+
+    expect(defaults.attributionMode).toBe("SPLIT");
+    expect(defaults.participants).toEqual([
+      { memberId: 1, memberName: "Lucas", shareAmount: 30 },
+      { contactId: 7, memberName: "Mãe", shareAmount: 70 },
+    ]);
+
+    const parsed = transactionFormSchema.parse(defaults);
+    const body = toPayload(parsed, true, 1);
+
+    expect(body.participants).toEqual([
+      { memberId: 1, shareAmount: 30 },
+      { contactId: 7, shareAmount: 70 },
+    ]);
+    expect(body.participants?.[1]).not.toHaveProperty("memberId");
+  });
+
+  it("reads a row shared with only a contact as a split, not as someone else", () => {
+    const onlyMae: Transaction = {
+      ...baseTransaction,
+      participants: [{ id: null, name: "Mãe", contactId: 7, contactName: "Mãe", shareAmount: 150.5 }],
+    };
+
+    const defaults = buildDefaultValues(onlyMae, 1);
+
+    expect(defaults.attributionMode).toBe("SPLIT");
+    expect(toPayload(transactionFormSchema.parse(defaults), true, 1).participants).toEqual([{ contactId: 7 }]);
+  });
+
+  it("keeps a contact share when a table cell edits another field", () => {
+    const { body } = toInlineSavePayload(sharedWithMae, { description: "Dinner" });
+
+    expect(body.participants).toEqual([
+      { memberId: 1, shareAmount: 30 },
+      { contactId: 7, shareAmount: 70 },
+    ]);
+  });
+
+  it("refuses a contact share on an income or a refund", () => {
+    const withMae = [{ contactId: 7, memberName: "Mãe", shareAmount: null }];
+    const split = { ...validValues, attributionMode: "SPLIT" as const, participants: withMae };
+
+    expect(transactionFormSchema.safeParse(split).success).toBe(true);
+    for (const patch of [{ type: "CREDIT" as const, category: null }, { kind: "REFUND" as const }]) {
+      const result = transactionFormSchema.safeParse({ ...split, ...patch });
+      expect(result.error?.issues.map((issue) => [issue.path[0], issue.message])).toContainEqual([
+        "participants",
+        "transactions.form.contactsOnExpensesOnly",
+      ]);
+    }
+  });
+
+  it("lists the active contacts, then an archived one the row carries", () => {
+    const participants = [
+      { memberId: 1, memberName: "Lucas", shareAmount: null },
+      { contactId: 8, memberName: "Tio", shareAmount: null },
+    ];
+
+    expect(contactSplitRows([{ id: 7, name: "Mãe" }], participants)).toEqual([
+      { contactId: 7, name: "Mãe", isArchived: false },
+      { contactId: 8, name: "Tio", isArchived: true },
+    ]);
+    expect(contactSplitRows([{ id: 7, name: "Mãe" }], [])).toEqual([{ contactId: 7, name: "Mãe", isArchived: false }]);
+  });
+
+  it("lists no contact among the former members of a split", () => {
+    const lucas: PlanMember = { userId: 1, name: "Lucas", email: "l@example.com", role: "OWNER" };
+
+    expect(splitRows([lucas], [{ contactId: 7, memberName: "Mãe", shareAmount: null }])).toEqual([
+      { userId: 1, name: "Lucas", isFormer: false },
+    ]);
+  });
+
+  it("offers the split in a plan of one member only when it has a contact to split with", () => {
+    const lucas: PlanMember = { userId: 1, name: "Lucas", email: "l@example.com", role: "OWNER" };
+    const input = { canAttributeToOthers: true, members: [lucas], participants: [], currentUserId: 1 };
+
+    expect(showsAttribution(input)).toBe(false);
+    expect(showsAttribution({ ...input, hasContacts: true })).toBe(true);
+  });
+
+  it("never turns a contact into the person of 'someone else'", () => {
+    const participants = [{ contactId: 7, memberName: "Mãe", shareAmount: null }];
+
+    expect(participantsForMode("SOMEONE", participants, [], 1)).toEqual([]);
+  });
+});
+
+describe("transactionForm contact payment", () => {
+  const rows = [
+    { participantId: 10, date: "2026-10-05", description: "Market", open: 200, checked: true, amount: 200 },
+    { participantId: 11, date: "2026-11-10", description: "Dinner", open: 300, checked: false, amount: null },
+  ];
+  const payment: TransactionFormOutput = {
+    ...validValues,
+    type: "CREDIT",
+    kind: "REPAYMENT",
+    description: "Payment from Mãe",
+    amount: 300,
+    category: null,
+    repaymentContact: { id: 7, name: "Mãe" },
+    allocations: rows,
+  };
+
+  it("sends the contact and only the ticked allocations, with no category or items", () => {
+    const body = toPayload(payment, false, 1);
+
+    expect(body).toMatchObject({
+      type: "CREDIT",
+      kind: "REPAYMENT",
+      amount: 300,
+      contactId: 7,
+      allocations: [{ participantId: 10, amount: 200 }],
+      items: [],
+    });
+    expect(body.categoryId).toBeUndefined();
+  });
+
+  it("sends an empty allocation list when nothing is ticked, so the whole payment becomes credit", () => {
+    const body = toPayload({ ...payment, allocations: rows.map((row) => ({ ...row, checked: false })) }, false, 1);
+
+    expect(body.allocations).toEqual([]);
+  });
+
+  it("sends the member who received it when the user chose one", () => {
+    const received = { ...payment, attributionMode: "SOMEONE" as const, participants: [{ memberId: 2, memberName: "Livia", shareAmount: null }] };
+
+    expect(toPayload(received, true, 1).participants).toEqual([{ memberId: 2 }]);
+  });
+
+  it("asks for the paying contact and keeps each ticked amount within what is open", () => {
+    function messages(values: unknown) {
+      return transactionFormSchema.safeParse(values).error?.issues.map((issue) => [issue.path.join("."), issue.message]);
+    }
+
+    expect(transactionFormSchema.safeParse(payment).success).toBe(true);
+    expect(messages({ ...payment, repaymentContact: null })).toContainEqual([
+      "repaymentContact",
+      "transactions.form.choosePayingContact",
+    ]);
+    expect(messages({ ...payment, allocations: [{ ...rows[0], amount: 250 }, rows[1]] })).toContainEqual([
+      "allocations.0.amount",
+      "transactions.form.allocationAboveOpen",
+    ]);
+    expect(messages({ ...payment, allocations: [{ ...rows[0], amount: null }, rows[1]] })).toContainEqual([
+      "allocations.0.amount",
+      "transactions.form.allocationNeedsAmount",
+    ]);
+  });
+
+  it("refuses ticked amounts that add up to more than the payment, and accepts a payment that leaves credit", () => {
+    const all = rows.map((row) => ({ ...row, checked: true, amount: row.open }));
+
+    const over = transactionFormSchema.safeParse({ ...payment, amount: 400, allocations: all });
+    const credit = transactionFormSchema.safeParse({ ...payment, amount: 700, allocations: all });
+
+    expect(over.error?.issues.map((issue) => [issue.path.join("."), issue.message])).toContainEqual([
+      "allocations",
+      "transactions.form.allocationsAboveAmount",
+    ]);
+    expect(credit.success).toBe(true);
+  });
+
+  it("loads the contact of a stored payment and keeps its settled purchases on an inline edit", () => {
+    const stored: Transaction = {
+      ...baseTransaction,
+      type: "CREDIT",
+      kind: "REPAYMENT",
+      amount: 300,
+      participants: [{ id: 1, name: "Lucas", shareAmount: 300 }],
+      repayment: {
+        contactId: 7,
+        contactName: "Mãe",
+        allocations: [{ participantId: 10, transactionId: 3, amount: 200 }],
+      },
+    };
+
+    expect(buildDefaultValues(stored, 1).repaymentContact).toEqual({ id: 7, name: "Mãe" });
+    const { body } = toInlineSavePayload(stored, { description: "Pix" });
+    expect(body).toMatchObject({ kind: "REPAYMENT", contactId: 7, allocations: [{ participantId: 10, amount: 200 }] });
+  });
+
+  it("opens a new row as a contact payment from the preset contact, and leaves an existing row alone", () => {
+    const preset = { contact: { id: 7, name: "Mãe" }, description: "Payment from Mãe" };
+
+    const created = initialFormValues("create", undefined, 1, undefined, preset);
+
+    expect(created).toMatchObject({
+      type: "CREDIT",
+      kind: "REPAYMENT",
+      description: "Payment from Mãe",
+      repaymentContact: { id: 7, name: "Mãe" },
+    });
+    expect(initialFormValues("edit", baseTransaction, 1, undefined, preset).kind).toBeNull();
+    expect(initialFormValues("create", undefined, 1, undefined, undefined).kind).toBeNull();
   });
 });

@@ -7,6 +7,7 @@ import type {
   PlanMember,
   SeriesEditScope,
 } from "@/api/dtos";
+import { contactHandlers } from "@/api/services/contact.handlers";
 import { transactionHandlers } from "@/api/services/transaction.handlers";
 import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
@@ -124,6 +125,7 @@ function renderTab({
   server.use(
     transactionHandlers.list(pageOf(transactions)),
     planHandlers.members([lucas, livia]),
+    contactHandlers.list([]),
     categoryHandlers.list(categoryPage(categories)),
   );
   if (canCreate) server.use(transactionHandlers.neutralCandidates(candidates));

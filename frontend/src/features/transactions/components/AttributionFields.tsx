@@ -1,3 +1,4 @@
+import type { Contact } from "@/api/dtos/contact";
 import { PlanMember } from "@/api/dtos/plan";
 import { Checkbox } from "@/components/input/base/Checkbox";
 import { Field, FieldError, FieldLabel } from "@/components/input/base/Field";
@@ -14,8 +15,10 @@ import {
   type UseFieldArrayReturn,
 } from "react-hook-form";
 import {
+  contactSplitRows,
   participantsForMode,
   splitRows,
+  type ContactSplitRow,
   type SplitRow,
   type TransactionFormOutput,
   type TransactionFormValues,
@@ -35,15 +38,65 @@ type AttributionFieldsProps = {
   /** Called on every change made here: a hand edit stops the category from setting participants. */
   onEdit: () => void;
   members: PlanMember[];
+  /** The plan's active contacts, which an expense may be split with; empty for a role that may not. */
+  contacts: Contact[];
   currentUserId?: number;
   disabled?: boolean;
 };
+
+type ParticipantRowProps = {
+  control: AttributionFieldsProps["control"];
+  label: string;
+  /** The name an exact share's field is announced with. */
+  name: string;
+  /** The row's index in the participants list; -1 when the person is not in the split. */
+  index: number;
+  isExact: boolean;
+  disabled?: boolean;
+  onToggle: (isChecked: boolean) => void;
+  onEdit: () => void;
+};
+
+/** One person of the split: ticked or not, with the share to enter when the split is exact. */
+function ParticipantRow({ control, label, name, index, isExact, disabled, onToggle, onEdit }: ParticipantRowProps) {
+  const { t } = useTranslation();
+
+  const isIn = index >= 0;
+
+  return (
+    <div className="flex items-center gap-2">
+      <Checkbox aria-label={label} checked={isIn} onCheckedChange={onToggle} disabled={disabled} />
+      <Text className="min-w-0 flex-1 truncate">{label}</Text>
+      {isExact && isIn && (
+        <Controller
+          control={control}
+          name={`participants.${index}.shareAmount`}
+          render={({ field, fieldState }) => (
+            <CurrencyInput
+              {...field}
+              onValueChange={(shareAmount) => {
+                onEdit();
+                field.onChange(shareAmount);
+              }}
+              aria-label={t("transactions.attributionFields.share", { name })}
+              aria-invalid={fieldState.invalid}
+              placeholder={t("common.r000")}
+              className="h-8 w-28 shrink-0"
+              disabled={disabled}
+            />
+          )}
+        />
+      )}
+    </div>
+  );
+}
 
 export function AttributionFields({
   control,
   participants,
   onEdit,
   members,
+  contacts,
   currentUserId,
   disabled,
 }: AttributionFieldsProps) {
@@ -60,6 +113,9 @@ export function AttributionFields({
   const participantsError = errors.participants?.root ?? errors.participants;
   const otherMembers = members.filter((member) => member.userId !== currentUserId);
   const rows = splitRows(members, values);
+  // A contact's share leaves the plan's spending, so only a plain expense may carry one.
+  const [type, kind] = useWatch({ control, name: ["type", "kind"] });
+  const contactRows = contactSplitRows(type === "DEBIT" && !kind ? contacts : [], values);
   const personLabel =
     person && rows.some((row) => row.isFormer && row.userId === person.memberId)
       ? t("transactions.attributionFields.formerMember", { name: person.memberName })
@@ -76,6 +132,15 @@ export function AttributionFields({
     onEdit();
     if (isChecked) {
       append({ memberId: row.userId, memberName: row.name, shareAmount: null });
+    } else {
+      remove(index);
+    }
+  }
+
+  function handleContactToggle(row: ContactSplitRow, index: number, isChecked: boolean) {
+    onEdit();
+    if (isChecked) {
+      append({ contactId: row.contactId, memberName: row.name, shareAmount: null });
     } else {
       remove(index);
     }
@@ -110,7 +175,7 @@ export function AttributionFields({
           <StandardCombobox
             id="transaction-attributed-person"
             items={otherMembers.map((member) => ({ id: member.userId, name: member.name }))}
-            value={person ? { id: person.memberId, name: personLabel } : null}
+            value={person?.memberId !== undefined ? { id: person.memberId, name: personLabel } : null}
             onValueChange={(value) => {
               onEdit();
               replace(
@@ -156,44 +221,42 @@ export function AttributionFields({
             <div className="flex flex-col gap-2">
               {rows.map((row) => {
                 const index = fields.findIndex((field) => field.memberId === row.userId);
-                const participant = fields[index];
                 const label = row.isFormer
                   ? t("transactions.attributionFields.formerMember", { name: row.name })
                   : row.name;
 
                 return (
-                  <div key={row.userId} className="flex items-center gap-2">
-                    <Checkbox
-                      aria-label={label}
-                      checked={participant !== undefined}
-                      onCheckedChange={(isChecked) => handleParticipantToggle(row, index, isChecked)}
-                      disabled={disabled}
-                    />
-                    <Text className="flex-1">{label}</Text>
-                    {splitMode.value === "EXACT" && participant && (
-                      <Controller
-                        key={participant.id}
-                        control={control}
-                        name={`participants.${index}.shareAmount`}
-                        render={({ field, fieldState }) => (
-                          <CurrencyInput
-                            {...field}
-                            onValueChange={(shareAmount) => {
-                              onEdit();
-                              field.onChange(shareAmount);
-                            }}
-                            aria-label={t("transactions.attributionFields.share", {
-                              name: row.name,
-                            })}
-                            aria-invalid={fieldState.invalid}
-                            placeholder={t("common.r000")}
-                            className="h-8 w-28"
-                            disabled={disabled}
-                          />
-                        )}
-                      />
-                    )}
-                  </div>
+                  <ParticipantRow
+                    key={`member-${row.userId}`}
+                    control={control}
+                    label={label}
+                    name={row.name}
+                    index={index}
+                    isExact={splitMode.value === "EXACT"}
+                    disabled={disabled}
+                    onToggle={(isChecked) => handleParticipantToggle(row, index, isChecked)}
+                    onEdit={onEdit}
+                  />
+                );
+              })}
+              {contactRows.map((row) => {
+                const index = fields.findIndex((field) => field.contactId === row.contactId);
+                const label = row.isArchived
+                  ? t("transactions.attributionFields.archivedContact", { name: row.name })
+                  : row.name;
+
+                return (
+                  <ParticipantRow
+                    key={`contact-${row.contactId}`}
+                    control={control}
+                    label={label}
+                    name={row.name}
+                    index={index}
+                    isExact={splitMode.value === "EXACT"}
+                    disabled={disabled}
+                    onToggle={(isChecked) => handleContactToggle(row, index, isChecked)}
+                    onEdit={onEdit}
+                  />
                 );
               })}
             </div>

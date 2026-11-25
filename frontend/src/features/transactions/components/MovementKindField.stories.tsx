@@ -11,18 +11,19 @@ import {
 type DemoFormProps = {
   type?: TransactionFormValues["type"];
   kind?: TransactionFormValues["kind"];
+  allowRepayment?: boolean;
   disabled?: boolean;
 };
 
 // MovementKindField needs a live form, so each story renders it inside a small test form.
-function DemoForm({ type = "DEBIT", kind = null, disabled }: DemoFormProps) {
+function DemoForm({ type = "DEBIT", kind = null, allowRepayment = true, disabled }: DemoFormProps) {
   const { control, setValue } = useForm<TransactionFormValues, unknown, TransactionFormOutput>({
     defaultValues: { ...buildDefaultValues(), type, kind },
   });
 
   return (
     <form className="w-80">
-      <MovementKindField control={control} setValue={setValue} disabled={disabled} />
+      <MovementKindField control={control} setValue={setValue} allowRepayment={allowRepayment} disabled={disabled} />
     </form>
   );
 }
@@ -59,6 +60,18 @@ export const Credit: Story = {
     await userEvent.click(canvas.getByRole("combobox", { name: "Movement kind" }));
 
     await expect(await within(document.body).findByRole("option", { name: "Refund" })).toBeVisible();
+    await expect(await within(document.body).findByRole("option", { name: "Contact payment" })).toBeVisible();
+  },
+};
+
+// Recording a payment from a contact is for a role that may attribute to others.
+export const CreditWithoutRepayment: Story = {
+  args: { type: "CREDIT", allowRepayment: false },
+  play: async ({ canvas, userEvent }) => {
+    await userEvent.click(canvas.getByRole("combobox", { name: "Movement kind" }));
+
+    await expect(await within(document.body).findByRole("option", { name: "Refund" })).toBeVisible();
+    await expect(within(document.body).queryByRole("option", { name: "Contact payment" })).toBeNull();
   },
 };
 

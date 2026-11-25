@@ -1,8 +1,10 @@
 import type { Category } from "@/api/dtos";
 import { Transaction } from "@/api/dtos/transaction";
+import { useGetContacts } from "@/api/services/useContactService";
 import { useGetTransactionSeries } from "@/api/services/useTransactionService";
 import { useGetPlanMembers } from "@/api/services/usePlanService";
 import { useAuth } from "@/app/providers/useAuth";
+import type { AddTransactionPreset } from "@/app/providers/useAddTransaction";
 import { usePlanContext } from "@/app/providers/usePlanContext";
 import { Button } from "@/components/button/base/Button";
 import { FormField } from "@/components/form/FormField";
@@ -34,16 +36,18 @@ import { EndDateField } from "./EndDateField";
 import { InstallmentsField } from "./InstallmentsField";
 import { ItemsField } from "./ItemsField";
 import { MovementKindField } from "./MovementKindField";
+import { RepaymentFields } from "./RepaymentFields";
 import {
   TransactionFormMode,
   TransactionFormOutput,
   TransactionFormValues,
-  buildDefaultValues,
   categoryAttribution,
+  initialFormValues,
   occurrenceParcel,
   showsAttribution,
   transactionFormSchema,
 } from "./transactionForm";
+import { useRepaymentAllocations } from "./useRepaymentAllocations";
 import { useSeriesScope } from "./useSeriesScope";
 import { useTransactionFormSubmit } from "./useTransactionFormSubmit";
 import { useTranslation } from "react-i18next";
@@ -51,6 +55,7 @@ import {
   categoryTypeFor,
   hidesItems,
   isNeutralKind,
+  isRepayment,
   kindForType,
 } from "../utils/movementKind";
 
@@ -68,6 +73,8 @@ type TransactionFormDrawerProps = {
   onOpenChange: (open: boolean) => void;
   transaction?: Transaction;
   mode: TransactionFormMode;
+  /** A new row that starts as a contact payment from a contact; ignored when editing. */
+  preset?: AddTransactionPreset;
   /** Edit footer, narrow screens. */
   onDuplicate?: (transaction: Transaction) => void;
   onDelete?: (transaction: Transaction) => void;
@@ -78,6 +85,7 @@ export function TransactionFormDrawer({
   onOpenChange,
   transaction,
   mode,
+  preset,
   onDuplicate,
   onDelete,
 }: TransactionFormDrawerProps) {
@@ -88,9 +96,12 @@ export function TransactionFormDrawer({
   const currentUserId = useAuth().user?.id;
   const { data: members = [] } = useGetPlanMembers(activePlanId ?? undefined);
   const { canAttributeToOthers } = usePlanPermissions();
+  // A contact share moves money out of the plan's spending, so only a role that may attribute to others sees them.
+  const { data: contacts = [] } = useGetContacts(undefined, { enabled: open && canAttributeToOthers });
   const showAttribution = showsAttribution({
     canAttributeToOthers,
     members,
+    hasContacts: contacts.length > 0,
     participants: transaction?.participants ?? [],
     currentUserId,
   });
@@ -99,16 +110,17 @@ export function TransactionFormDrawer({
     enabled: open && isSeriesEdit,
   });
 
-  const { control, handleSubmit, setValue, reset } = useForm<
+  const { control, handleSubmit, setValue, reset, getValues } = useForm<
     TransactionFormValues,
     unknown,
     TransactionFormOutput
   >({
     resolver: zodResolver(transactionFormSchema),
-    defaultValues: buildDefaultValues(transaction, currentUserId, definition),
+    defaultValues: initialFormValues(mode, transaction, currentUserId, definition, preset),
   });
   // The form owns the participants list: choosing an owned category replaces it too.
   const participants = useFieldArray({ control, name: "participants" });
+  const allocations = useFieldArray({ control, name: "allocations" });
   // Set by any change in AttributionFields: hand-edited participants win over the category's owner.
   const participantsTouchedRef = useRef(false);
 
@@ -116,7 +128,7 @@ export function TransactionFormDrawer({
     if (!canAttributeToOthers) return;
     const attribution = categoryAttribution({
       mode,
-      defaults: buildDefaultValues(transaction, currentUserId, definition),
+      defaults: initialFormValues(mode, transaction, currentUserId, definition, preset),
       category,
       members,
       currentUserId,
@@ -130,8 +142,11 @@ export function TransactionFormDrawer({
 
   useEffect(() => {
     participantsTouchedRef.current = false;
-    reset(buildDefaultValues(transaction, currentUserId, definition));
-  }, [transaction, open, reset, currentUserId, definition]);
+    reset(initialFormValues(mode, transaction, currentUserId, definition, preset));
+  }, [transaction, open, reset, currentUserId, definition, preset, mode]);
+
+  // After the reset above: it rebuilds the list the reset has just emptied.
+  const repayment = useRepaymentAllocations({ control, allocations, getValues, mode, transaction, open });
 
   const { submit, isSubmitting: isPending } = useTransactionFormSubmit({
     mode,
@@ -154,7 +169,9 @@ export function TransactionFormDrawer({
       isSubmitting={isPending}
       submitLabel={mode === "edit" ? t("common.save") : t("common.create")}
       // An edit moves the series' end date, so a definition being reloaded is not the one to send back.
-      submitDisabled={isSeriesEdit && (!definition || isDefinitionFetching)}
+      submitDisabled={
+        (isSeriesEdit && (!definition || isDefinitionFetching)) || repayment.isLoading || repayment.isError
+      }
       mobileActions={
         mode === "edit" &&
         transaction &&
@@ -223,7 +240,12 @@ export function TransactionFormDrawer({
         </FormField>
 
         {!isSeriesEdit && (
-          <MovementKindField control={control} setValue={setValue} disabled={isPending} />
+          <MovementKindField
+            control={control}
+            setValue={setValue}
+            allowRepayment={canAttributeToOthers}
+            disabled={isPending}
+          />
         )}
 
         <CategoryField
@@ -277,11 +299,30 @@ export function TransactionFormDrawer({
                 participantsTouchedRef.current = true;
               }}
               members={members}
+              contacts={contacts}
               currentUserId={currentUserId}
               disabled={isPending}
             />
           </HiddenForKinds>
         )}
+
+        <HiddenForKinds control={control} hiddenFor={(kind) => !isRepayment(kind)}>
+          <RepaymentFields
+            control={control}
+            setValue={setValue}
+            allocations={allocations}
+            participants={participants}
+            contacts={contacts}
+            members={members}
+            currentUserId={currentUserId}
+            canChooseReceiver={canAttributeToOthers && members.length > 1}
+            isLoading={repayment.isLoading}
+            isError={repayment.isError}
+            onRetry={repayment.retry}
+            onAllocationEdit={repayment.markTouched}
+            disabled={isPending}
+          />
+        </HiddenForKinds>
 
         {transaction && isSeriesEdit && definition?.mode === "INSTALLMENT" && (
           <InstallmentsField

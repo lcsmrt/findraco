@@ -8,6 +8,7 @@ import type {
   PlanMember,
   TransactionTrashEntry,
 } from "@/api/dtos";
+import { contactHandlers } from "@/api/services/contact.handlers";
 import { dashboardHandlers } from "@/api/services/dashboard.handlers";
 import { transactionHandlers } from "@/api/services/transaction.handlers";
 import { categoryHandlers } from "@/api/services/category.handlers";
@@ -159,6 +160,7 @@ beforeEach(() => {
   server.use(
     planHandlers.members([ana]),
     planHandlers.archived([]),
+    contactHandlers.list([]),
     dashboardHandlers.summary(emptySummary),
     dashboardHandlers.trend([]),
     categoryHandlers.spending([]),

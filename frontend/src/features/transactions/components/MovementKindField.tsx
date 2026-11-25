@@ -18,6 +18,8 @@ const NORMAL = "NORMAL";
 type MovementKindFieldProps = {
   control: Control<TransactionFormValues, unknown, TransactionFormOutput>;
   setValue: UseFormSetValue<TransactionFormValues>;
+  /** Whether a contact payment is on offer: recording one is for a role that may attribute to others. */
+  allowRepayment: boolean;
   disabled?: boolean;
 };
 
@@ -25,11 +27,12 @@ type MovementKindFieldProps = {
  * How the row counts: a normal income or expense, a neutral movement, or (on a credit) a refund.
  * The kind decides which other fields the form shows, so changing it drops what no longer fits.
  */
-export function MovementKindField({ control, setValue, disabled }: MovementKindFieldProps) {
+export function MovementKindField({ control, setValue, allowRepayment, disabled }: MovementKindFieldProps) {
   const { t } = useTranslation();
 
-  const [type, recurring] = useWatch({ control, name: ["type", "recurring"] });
-  const kinds = kindsForType(type);
+  const [type, recurring, current] = useWatch({ control, name: ["type", "recurring", "kind"] });
+  // A row already of this kind keeps it on the list, so editing it still shows what it is.
+  const kinds = kindsForType(type).filter((kind) => kind !== "REPAYMENT" || allowRepayment || current === kind);
   const labels = {
     [NORMAL]: t("transactions.kinds.normal"),
     ...Object.fromEntries(kinds.map((kind) => [kind, t(KIND_LABEL_KEYS[kind])])),
@@ -45,6 +48,16 @@ export function MovementKindField({ control, setValue, disabled }: MovementKindF
     // A refund sits in an expense category, so crossing it makes the chosen category the wrong type.
     if (categoryTypeFor(type, next) !== categoryTypeFor(type, current)) setValue("category", null);
     if (hidesItems(next)) setValue("items", []);
+    // A contact payment has one member, who received it: the split chosen before no longer applies.
+    if (next === "REPAYMENT") {
+      setValue("attributionMode", "ME");
+      setValue("splitMode", "EQUAL");
+      setValue("participants", []);
+    }
+    if (current === "REPAYMENT" && next !== "REPAYMENT") {
+      setValue("repaymentContact", null);
+      setValue("allocations", []);
+    }
   }
 
   // A series carries no kind; turning repetition on clears it.

@@ -261,6 +261,7 @@
     "optional": "(optional)",
     "r000": "R$ 0,00",
     "save": "Save",
+    "tryAgain": "Try again",
     "type": "Type",
     "yearPlaceholder": "yyyy",
     "youExampleCom": "you@example.com"
@@ -714,6 +715,7 @@
       "edit": "Edit"
     },
     "attributionFields": {
+      "archivedContact": "{{name}} (archived)",
       "attributedTo": "Attributed to",
       "equal": "Equal",
       "exact": "Exact",
@@ -776,8 +778,13 @@
       "ongoing": "Ongoing"
     },
     "form": {
+      "allocationAboveOpen": "That is more than what is open on the purchase",
+      "allocationNeedsAmount": "Enter an amount for each ticked purchase",
+      "allocationsAboveAmount": "The ticked purchases add up to more than the payment",
       "amountMustBePositive": "Amount must be positive",
+      "choosePayingContact": "Choose who paid",
       "choosePerson": "Choose the person",
+      "contactsOnExpensesOnly": "Only an expense can be shared with a contact.",
       "dateAndInstallmentsInSeparateEdits": "Change the date and the number of installments in separate edits. Save one, then the other.",
       "dateIsRequired": "Date is required",
       "descriptionIsRequired": "Description is required",
@@ -837,6 +844,18 @@
       "mode": "Mode",
       "recurring": "Recurring",
       "repeatOrSplitIntoInstallments": "Repeat or split into installments?"
+    },
+    "repaymentFields": {
+      "amountFor": "Amount for {{description}}",
+      "becomesCredit": "{{amount}} becomes credit",
+      "contact": "Paid by",
+      "loadFailed": "Could not load this contact's purchases.",
+      "loading": "Loading purchases",
+      "nothingOpen": "Nothing is open for this contact: the payment becomes credit.",
+      "open": "{{amount}} open",
+      "purchases": "Purchases it settles",
+      "receivedBy": "Received by",
+      "selectAContact": "Select a contact"
     },
     "seriesScopeDialog": {
       "all": "All",

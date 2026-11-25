@@ -1,11 +1,14 @@
 import type {
   Transaction,
   Category,
+  Contact,
+  ContactStatement,
   Plan,
   PlanMember,
   RecurrenceDefinitionResponse,
   SeriesEditScope,
 } from "@/api/dtos";
+import { contactHandlers } from "@/api/services/contact.handlers";
 import { transactionHandlers } from "@/api/services/transaction.handlers";
 import { categoryHandlers } from "@/api/services/category.handlers";
 import { planHandlers } from "@/api/services/plan.handlers";
@@ -65,13 +68,18 @@ function authValue(): AuthContextValue {
   };
 }
 
-function planValue(manageCategories: boolean): PlanContextValue {
+function planValue(manageCategories: boolean, myRole: Plan["myRole"] = "OWNER"): PlanContextValue {
   const plan: Plan = {
     id: PLAN_ID,
     name: "Home",
     isDefault: true,
-    myRole: "OWNER",
-    permissions: { createTransactions: true, attributeToOthers: true, manageCategories, managePlan: true },
+    myRole,
+    permissions: {
+      createTransactions: true,
+      attributeToOthers: myRole !== "CONTRIBUTOR",
+      manageCategories,
+      managePlan: true,
+    },
   };
   return {
     activePlanId: PLAN_ID,
@@ -88,6 +96,9 @@ type RenderDrawerOptions = {
   /** Two or more members show the attribution fields to an owner. */
   members: PlanMember[];
   categories?: Category[];
+  /** The plan's active contacts; a role that may not attribute to others never asks for them. */
+  contacts?: Contact[];
+  role?: Plan["myRole"];
   onDelete?: (transaction: Transaction) => void;
   onDuplicate?: (transaction: Transaction) => void;
   manageCategories?: boolean;
@@ -98,12 +109,15 @@ function renderDrawer({
   transaction,
   members,
   categories = [],
+  contacts = [],
+  role = "OWNER",
   onDelete,
   onDuplicate,
   manageCategories = true,
 }: RenderDrawerOptions) {
   server.use(
     planHandlers.members(members),
+    ...(role === "CONTRIBUTOR" ? [] : [contactHandlers.list(contacts)]),
     categoryHandlers.list({
       content: categories,
       page: 0,
@@ -125,7 +139,7 @@ function renderDrawer({
         onDuplicate={onDuplicate}
       />
     </SeriesScopeDialogProvider>,
-    { auth: authValue(), plan: planValue(manageCategories) },
+    { auth: authValue(), plan: planValue(manageCategories, role) },
   );
   return { onOpenChange };
 }
@@ -1167,5 +1181,234 @@ describe("TransactionFormDrawer", () => {
 
     expect(screen.queryByRole("switch", { name: "Requires confirmation" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Forecast" })).toBeNull();
+  });
+});
+
+const mae: Contact = { id: 7, name: "Mãe", archived: false, owed: 500, credit: 0, version: 0 };
+
+// The amount field writes a no-break space after the currency symbol.
+function fieldAmount(label: string) {
+  return screen.getByLabelText<HTMLInputElement>(label).value.replace(/\s/g, " ");
+}
+
+function isChecked(name: string) {
+  return screen.getByRole("checkbox", { name }).getAttribute("aria-checked") === "true";
+}
+
+describe("TransactionFormDrawer contacts", () => {
+  afterEach(cleanup);
+
+  async function openSplit(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(await screen.findByRole("button", { name: "Split" }));
+    // The contacts load beside the members: wait for the list this test is about.
+    await screen.findByRole("checkbox", { name: "Mãe" });
+  }
+
+  it("offers contacts after members in the split", async () => {
+    const user = userEvent.setup();
+    renderDrawer({ members: [lucas, livia], contacts: [mae] });
+
+    await openSplit(user);
+
+    const names = screen.getAllByRole("checkbox").map((box) => box.getAttribute("aria-label"));
+    expect(names.filter((name) => name !== null)).toEqual([
+      "Lucas",
+      "Livia",
+      "Mãe",
+    ]);
+    await user.click(screen.getByRole("button", { name: "Exact" }));
+    await user.click(screen.getByRole("checkbox", { name: "Mãe" }));
+    expect(screen.getByLabelText("Mãe's share")).toBeTruthy();
+  });
+
+  it("sends the contact share", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(transactionHandlers.create(savedTransaction));
+    renderDrawer({ members: [lucas, livia], contacts: [mae] });
+    await user.type(screen.getByLabelText("Description"), "Dinner");
+    await user.type(screen.getByLabelText("Amount"), "8000");
+
+    await openSplit(user);
+    await user.click(screen.getByRole("checkbox", { name: "Livia" }));
+    await user.click(screen.getByRole("checkbox", { name: "Mãe" }));
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body).toMatchObject({ amount: 80, splitMode: "EQUAL" });
+    expect(body.participants).toEqual([{ memberId: lucas.userId }, { contactId: mae.id }]);
+  });
+
+  it("offers a plan of one member the split when it has a contact", async () => {
+    renderDrawer({ members: [lucas], contacts: [mae] });
+
+    expect(await screen.findByRole("button", { name: "Split" })).toBeTruthy();
+  });
+
+  it("offers no contact to a contributor", async () => {
+    const requests = recordRequests();
+    renderDrawer({ members: [lucas, livia], contacts: [mae], role: "CONTRIBUTOR" });
+
+    await screen.findByLabelText("Description");
+
+    expect(screen.queryByRole("button", { name: "Split" })).toBeNull();
+    expect(screen.queryByText("Mãe")).toBeNull();
+    expect(requests.some((request) => new URL(request.url).pathname.endsWith("/contacts"))).toBe(false);
+  });
+});
+
+describe("TransactionFormDrawer repayment", () => {
+  afterEach(cleanup);
+
+  // October's R$ 200 and November's R$ 300 are open, as the contact's statement lists them.
+  const statement: ContactStatement = {
+    contact: mae,
+    owed: 500,
+    credit: 0,
+    months: [
+      {
+        month: "2026-11",
+        repayments: [],
+        shares: [
+          { participantId: 21, transactionId: 2, date: "2026-11-10", description: "Dinner", share: 300, allocated: 0, status: "OPEN" },
+        ],
+      },
+      {
+        month: "2026-10",
+        repayments: [],
+        shares: [
+          { participantId: 20, transactionId: 1, date: "2026-10-05", description: "Market", share: 200, allocated: 0, status: "OPEN" },
+        ],
+      },
+    ],
+  };
+
+  async function chooseKind(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByRole("button", { name: "Credit" }));
+    await user.click(screen.getByRole("combobox", { name: "Movement kind" }));
+    await user.click(await screen.findByRole("option", { name: "Contact payment" }));
+  }
+
+  async function chooseContact(user: ReturnType<typeof userEvent.setup>) {
+    await user.click(screen.getByLabelText("Paid by"));
+    await user.click(await screen.findByRole("option", { name: "Mãe" }));
+    await screen.findByRole("checkbox", { name: "Market" });
+  }
+
+  it("turns an income into a contact payment", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(contactHandlers.statement(statement), transactionHandlers.create({ ...savedTransaction, type: "CREDIT" }));
+    renderDrawer({ members: [lucas], contacts: [mae] });
+    await user.type(screen.getByLabelText("Description"), "Pix from Mãe");
+
+    await chooseKind(user);
+
+    // A contact payment has no category, items or split of its own.
+    expect(screen.queryByLabelText("Category")).toBeNull();
+    expect(screen.queryByText("Items")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Split" })).toBeNull();
+    await chooseContact(user);
+    await user.type(screen.getByLabelText("Amount"), "30000");
+
+    // Oldest first: October in full, then the rest of the amount on November.
+    expect(isChecked("Market")).toBe(true);
+    expect(isChecked("Dinner")).toBe(true);
+    expect(fieldAmount("Amount for Market")).toBe("R$ 200,00");
+    expect(fieldAmount("Amount for Dinner")).toBe("R$ 100,00");
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body).toMatchObject({
+      type: "CREDIT",
+      kind: "REPAYMENT",
+      amount: 300,
+      contactId: mae.id,
+      allocations: [
+        { participantId: 20, amount: 200 },
+        { participantId: 21, amount: 100 },
+      ],
+      items: [],
+    });
+    expect(body).not.toHaveProperty("categoryId");
+  });
+
+  it("shows the excess as credit", async () => {
+    const user = userEvent.setup();
+    server.use(contactHandlers.statement(statement));
+    renderDrawer({ members: [lucas], contacts: [mae] });
+    await chooseKind(user);
+    await chooseContact(user);
+
+    await user.type(screen.getByLabelText("Amount"), "60000");
+
+    expect(await screen.findByText("R$ 100,00 becomes credit")).toBeTruthy();
+    await user.click(screen.getByRole("checkbox", { name: "Dinner" }));
+    expect(screen.getByText("R$ 400,00 becomes credit")).toBeTruthy();
+  });
+
+  it("keeps what the user ticked when the amount changes afterwards", async () => {
+    const user = userEvent.setup();
+    server.use(contactHandlers.statement(statement));
+    renderDrawer({ members: [lucas], contacts: [mae] });
+    await chooseKind(user);
+    await chooseContact(user);
+    await user.type(screen.getByLabelText("Amount"), "30000");
+
+    await user.click(screen.getByRole("checkbox", { name: "Market" }));
+    await user.type(screen.getByLabelText("Amount"), "0");
+
+    expect(isChecked("Market")).toBe(false);
+    expect(fieldAmount("Amount for Dinner")).toBe("R$ 100,00");
+  });
+
+  it("loads the allocations of the payment being edited", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    // This payment already settles the whole of October: the statement shows it paid, and the form
+    // gives it back to be settled again.
+    const settled: ContactStatement = {
+      ...statement,
+      months: [
+        statement.months[0],
+        { ...statement.months[1], shares: [{ ...statement.months[1].shares[0], allocated: 200, status: "PAID" }] },
+      ],
+    };
+    const stored: Transaction = {
+      ...savedTransaction,
+      type: "CREDIT",
+      kind: "REPAYMENT",
+      amount: 200,
+      participants: [{ id: lucas.userId, name: "Lucas", shareAmount: 200 }],
+      repayment: {
+        contactId: mae.id,
+        contactName: "Mãe",
+        allocations: [{ participantId: 20, transactionId: 1, amount: 200 }],
+      },
+    };
+    server.use(contactHandlers.statement(settled), transactionHandlers.update(stored));
+    renderDrawer({ mode: "edit", transaction: stored, members: [lucas], contacts: [mae] });
+
+    await screen.findByRole("checkbox", { name: "Market" });
+    expect(isChecked("Market")).toBe(true);
+    expect(isChecked("Dinner")).toBe(false);
+    await user.click(screen.getByRole("button", { name: "Save" }));
+
+    expect(await sentBody(requests, "PUT")).toMatchObject({
+      kind: "REPAYMENT",
+      contactId: mae.id,
+      allocations: [{ participantId: 20, amount: 200 }],
+    });
+  });
+
+  it("offers no contact payment to a contributor", async () => {
+    const user = userEvent.setup();
+    renderDrawer({ members: [lucas], role: "CONTRIBUTOR" });
+
+    await user.click(screen.getByRole("button", { name: "Credit" }));
+    await user.click(screen.getByRole("combobox", { name: "Movement kind" }));
+
+    expect(await screen.findByRole("option", { name: "Refund" })).toBeTruthy();
+    expect(screen.queryByRole("option", { name: "Contact payment" })).toBeNull();
   });
 });

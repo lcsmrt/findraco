@@ -3,13 +3,17 @@ import {
   CreateTransactionSeriesRequest,
   Transaction,
   ParticipantInput,
+  ParticipantShare,
   RecurrenceDefinitionResponse,
+  RepaymentAllocationInput,
   SeriesEditScope,
   SplitMode,
   UpdateTransactionRequest,
   UpdateTransactionSeriesRequest,
 } from "@/api/dtos/transaction";
+import type { Contact } from "@/api/dtos/contact";
 import type { PlanMember } from "@/api/dtos/plan";
+import type { AddTransactionPreset } from "@/app/providers/useAddTransaction";
 import { toCents } from "@/utils/money";
 import { addMonths, differenceInCalendarMonths, isSameDay } from "date-fns";
 import { toIsoDate } from "@/utils/dates";
@@ -30,6 +34,44 @@ function isPositiveAmount(value: number | null): value is number {
  */
 function centsOf(value: number | null | undefined): number {
   return value == null ? 0 : toCents(value);
+}
+
+type RepaymentCheckValues = {
+  amount: number | null;
+  repaymentContact?: { id: number } | null;
+  allocations?: { checked: boolean; open: number; amount: number | null }[];
+};
+
+/** What a contact payment must hold to be saved: its contact, and ticked amounts that fit. */
+function addRepaymentIssues(values: RepaymentCheckValues, ctx: z.RefinementCtx) {
+  if (!values.repaymentContact) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "transactions.form.choosePayingContact",
+      path: ["repaymentContact"],
+    });
+  }
+
+  const ticked = (values.allocations ?? []).flatMap((row, index) => (row.checked ? [{ row, index }] : []));
+  for (const { row, index } of ticked) {
+    const cents = centsOf(row.amount);
+    if (cents <= 0 || cents > toCents(row.open)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: cents <= 0 ? "transactions.form.allocationNeedsAmount" : "transactions.form.allocationAboveOpen",
+        path: ["allocations", index, "amount"],
+      });
+    }
+  }
+
+  const tickedCents = ticked.reduce((sum, { row }) => sum + centsOf(row.amount), 0);
+  if (tickedCents > centsOf(values.amount)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "transactions.form.allocationsAboveAmount",
+      path: ["allocations"],
+    });
+  }
 }
 
 export const transactionFormSchema = z
@@ -71,13 +113,30 @@ export const transactionFormSchema = z
       .optional(),
     attributionMode: z.enum(["ME", "SOMEONE", "SPLIT"]),
     splitMode: z.enum(["EQUAL", "EXACT"]),
+    /** A person of the split: a member (`memberId`) or a contact (`contactId`); `memberName` is the name shown. */
     participants: z.array(
       z.object({
-        memberId: z.number(),
+        memberId: z.number().optional(),
+        contactId: z.number().optional(),
         memberName: z.string(),
         shareAmount: z.number().nullable(),
       }),
     ),
+    /** The contact a contact payment came from. */
+    repaymentContact: z.object({ id: z.number(), name: z.string() }).nullish(),
+    /** The purchases of that contact the payment may settle, ticked or not. */
+    allocations: z
+      .array(
+        z.object({
+          participantId: z.number(),
+          date: z.string(),
+          description: z.string(),
+          open: z.number(),
+          checked: z.boolean(),
+          amount: z.number().nullable(),
+        }),
+      )
+      .optional(),
     items: z.array(
       z.object({
         description: z.string().min(1, "transactions.form.descriptionIsRequired"),
@@ -118,6 +177,23 @@ export const transactionFormSchema = z
 
     // A neutral movement hides the attribution, so a choice left behind there must not block saving.
     const attributed = !isNeutralKind(values.kind);
+
+    if (values.kind === "REPAYMENT") {
+      addRepaymentIssues(values, ctx);
+    }
+
+    if (
+      attributed &&
+      values.attributionMode === "SPLIT" &&
+      values.participants.some((participant) => participant.contactId !== undefined) &&
+      (values.type === "CREDIT" || values.kind)
+    ) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "transactions.form.contactsOnExpensesOnly",
+        path: ["participants"],
+      });
+    }
 
     if (attributed && values.attributionMode === "SOMEONE" && values.participants.length === 0) {
       ctx.addIssue({
@@ -252,6 +328,8 @@ function deriveAttributionMode(
   currentUserId?: number,
 ): TransactionFormValues["attributionMode"] {
   if (participants.length === 0) return "ME";
+  // A contact is only ever one of a split: the single-person picker lists members.
+  if (participants.some((participant) => participant.contactId != null)) return "SPLIT";
   if (participants.length === 1) {
     return participants[0].id === currentUserId ? "ME" : "SOMEONE";
   }
@@ -389,7 +467,10 @@ export function participantsForMode(
 ): TransactionFormValues["participants"] {
   if (mode === "ME") return [];
   if (mode === "SOMEONE") {
-    const chosen = participants.find((participant) => participant.memberId !== currentUserId);
+    // A contact is never "someone else": that picker lists members only.
+    const chosen = participants.find(
+      (participant) => participant.memberId !== undefined && participant.memberId !== currentUserId,
+    );
     if (chosen) return [chosen];
     const first = members.find((member) => member.userId !== currentUserId);
     return first
@@ -407,24 +488,30 @@ export function participantsForMode(
 type AttributionVisibilityInput = {
   canAttributeToOthers: boolean;
   members: PlanMember[];
+  /** Whether the plan has an active contact to split with, which a plan of one member has use for. */
+  hasContacts?: boolean;
   /** Who the edited row is already split with; empty when creating. */
   participants: Transaction["participants"];
   currentUserId?: number;
 };
 
 /**
- * Whether the form shows the attribution fields. A plan with one member left hides them, unless the row
- * already has someone else on it: saving a form whose participants were never shown would drop them.
+ * Whether the form shows the attribution fields. A plan with one member left hides them, unless it has a
+ * contact to split with or the row already has someone else on it: saving a form whose participants were
+ * never shown would drop them.
  */
 export function showsAttribution({
   canAttributeToOthers,
   members,
+  hasContacts = false,
   participants,
   currentUserId,
 }: AttributionVisibilityInput): boolean {
   return (
     canAttributeToOthers &&
-    (members.length > 1 || participants.some((participant) => participant.id !== currentUserId))
+    (members.length > 1 ||
+      hasContacts ||
+      participants.some((participant) => participant.id !== currentUserId))
   );
 }
 
@@ -443,13 +530,33 @@ export function splitRows(
   const memberIds = new Set(members.map((member) => member.userId));
   return [
     ...members.map((member) => ({ userId: member.userId, name: member.name, isFormer: false })),
-    ...participants
-      .filter((participant) => !memberIds.has(participant.memberId))
-      .map((participant) => ({
-        userId: participant.memberId,
-        name: participant.memberName,
-        isFormer: true,
-      })),
+    ...participants.flatMap((participant) =>
+      participant.memberId === undefined || memberIds.has(participant.memberId)
+        ? []
+        : [{ userId: participant.memberId, name: participant.memberName, isFormer: true }],
+    ),
+  ];
+}
+
+/** One line of the participants list for a contact the split can include. */
+export type ContactSplitRow = { contactId: number; name: string; isArchived: boolean };
+
+/**
+ * The contacts the split lists: the active ones, then an archived contact the row already carries, so
+ * its share can be seen, changed or removed. An archived contact never appears on a row without it.
+ */
+export function contactSplitRows(
+  contacts: Pick<Contact, "id" | "name">[],
+  participants: TransactionFormValues["participants"],
+): ContactSplitRow[] {
+  const activeIds = new Set(contacts.map((contact) => contact.id));
+  return [
+    ...contacts.map((contact) => ({ contactId: contact.id, name: contact.name, isArchived: false })),
+    ...participants.flatMap((participant) =>
+      participant.contactId === undefined || activeIds.has(participant.contactId)
+        ? []
+        : [{ contactId: participant.contactId, name: participant.memberName, isArchived: true }],
+    ),
   ];
 }
 
@@ -486,7 +593,10 @@ function attributionToPayload(
 
   return {
     participants: values.participants.map((participant) => ({
-      memberId: participant.memberId,
+      // Exactly one of the two travels: a contact's share names no member.
+      ...(participant.contactId !== undefined
+        ? { contactId: participant.contactId }
+        : { memberId: participant.memberId }),
       shareAmount:
         values.splitMode === "EXACT" ? (participant.shareAmount ?? undefined) : undefined,
     })),
@@ -518,6 +628,14 @@ function neutralAttribution(
   };
 }
 
+function tickedAllocations(
+  rows: NonNullable<TransactionFormOutput["allocations"]>,
+): RepaymentAllocationInput[] {
+  return rows.flatMap((row) =>
+    row.checked && row.amount !== null ? [{ participantId: row.participantId, amount: row.amount }] : [],
+  );
+}
+
 function datePart(isoDate: string | null | undefined): string | undefined {
   return isoDate ? isoDate.split("T")[0] : undefined;
 }
@@ -535,8 +653,10 @@ export function toPayload(
 ): Omit<UpdateTransactionRequest["body"], "version"> {
   // A neutral movement has no category or items and one payer; the backend refuses anything else.
   const neutral = isNeutralKind(values.kind);
+  const repayment = values.kind === "REPAYMENT";
+  // A contact payment's one member is who received it, which its form lets the user choose.
   const { participants, splitMode } = attributionToPayload(
-    neutral ? neutralAttribution(values, stored, currentUserId) : values,
+    neutral && !repayment ? neutralAttribution(values, stored, currentUserId) : values,
     showAttribution,
     currentUserId,
   );
@@ -553,6 +673,9 @@ export function toPayload(
     endDate: datePart(stored?.endDate),
     splitMode,
     participants,
+    contactId: repayment ? values.repaymentContact?.id : undefined,
+    // Sent explicitly, ticked or not: an omitted list would have the server settle the oldest first.
+    allocations: repayment ? tickedAllocations(values.allocations ?? []) : undefined,
     items: hidesItems(values.kind)
       ? []
       : values.items.map((item) => ({
@@ -597,6 +720,13 @@ export function toInlineSavePayload(
         amount: item.amount,
         quantity: item.quantity,
         categoryId: item.category?.id,
+      })),
+      // A contact payment keeps who paid and what it settles: the PUT replaces the whole row, and an
+      // omitted list would have the server settle the oldest purchases again.
+      contactId: transaction.repayment?.contactId,
+      allocations: transaction.repayment?.allocations.map(({ participantId, amount }) => ({
+        participantId,
+        amount,
       })),
       version: transaction.version,
     },
@@ -682,6 +812,23 @@ export function toSeriesEditPayload(
   };
 }
 
+/** A stored share as the form holds it: a member's by `memberId`, a contact's by `contactId`. */
+function participantToFormValues(participant: ParticipantShare): TransactionFormValues["participants"] {
+  if (participant.id !== null) {
+    return [
+      { memberId: participant.id, memberName: participant.name, shareAmount: participant.shareAmount },
+    ];
+  }
+  if (participant.contactId == null) return [];
+  return [
+    {
+      contactId: participant.contactId,
+      memberName: participant.contactName ?? participant.name,
+      shareAmount: participant.shareAmount,
+    },
+  ];
+}
+
 export function buildDefaultValues(
   transaction?: Transaction,
   currentUserId?: number,
@@ -727,17 +874,11 @@ export function buildDefaultValues(
       participants:
         attributionMode === "ME"
           ? []
-          : transaction.participants.flatMap((participant) =>
-              participant.id === null
-                ? []
-                : [
-                    {
-                      memberId: participant.id,
-                      memberName: participant.name,
-                      shareAmount: participant.shareAmount,
-                    },
-                  ],
-            ),
+          : transaction.participants.flatMap(participantToFormValues),
+      repaymentContact: transaction.repayment
+        ? { id: transaction.repayment.contactId, name: transaction.repayment.contactName }
+        : null,
+      allocations: [],
       items: isSeriesEdit
         ? []
         : transaction.items.map((item) => ({
@@ -761,6 +902,30 @@ export function buildDefaultValues(
     attributionMode: "ME",
     splitMode: "EQUAL",
     participants: [],
+    repaymentContact: null,
+    allocations: [],
     items: [],
+  };
+}
+
+/**
+ * What the form opens with: the row edited or duplicated, or a new row, which a preset may start as a
+ * contact payment from its contact. A preset never changes a row that already exists.
+ */
+export function initialFormValues(
+  mode: TransactionFormMode,
+  transaction: Transaction | undefined,
+  currentUserId: number | undefined,
+  definition: RecurrenceDefinitionResponse | undefined,
+  preset: AddTransactionPreset | undefined,
+): TransactionFormValues {
+  const defaults = buildDefaultValues(transaction, currentUserId, definition);
+  if (mode !== "create" || !preset) return defaults;
+  return {
+    ...defaults,
+    type: "CREDIT",
+    kind: "REPAYMENT",
+    description: preset.description,
+    repaymentContact: preset.contact,
   };
 }

@@ -1,6 +1,6 @@
 import type { Transaction } from "@/api/dtos/transaction";
 import { Badge } from "@/components/badge/base/Badge";
-import { ClockIcon, RepeatIcon, TriangleAlertIcon } from "lucide-react";
+import { ClockIcon, RepeatIcon, TriangleAlertIcon, UserIcon } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { KIND_LABEL_KEYS } from "../utils/movementKind";
 
@@ -41,6 +41,21 @@ export function TransactionKindBadge({ kind }: TransactionKindBadgeProps) {
   return <Badge variant="meta">{t(KIND_LABEL_KEYS[kind])}</Badge>;
 }
 
+type RepaymentContactBadgeProps = {
+  repayment: Transaction["repayment"];
+};
+
+/** Who a contact payment came from, beside its kind. */
+function RepaymentContactBadge({ repayment }: RepaymentContactBadgeProps) {
+  if (!repayment) return null;
+  return (
+    <Badge variant="meta">
+      <UserIcon data-icon="inline-start" aria-hidden />
+      {repayment.contactName}
+    </Badge>
+  );
+}
+
 function SeriesBadge() {
   const { t } = useTranslation();
 
@@ -68,14 +83,15 @@ type TransactionBadgesProps = {
 };
 
 /**
- * The markers of one transaction, in the order of how much they change its meaning: status, kind,
- * series, items. The table and the phone list render this one row so they never disagree.
+ * The markers of one transaction, in the order of how much they change its meaning: status, kind (and
+ * the contact of a contact payment), series, items. The table and the phone list render this one row so they never disagree.
  */
 export function TransactionBadges({ transaction }: TransactionBadgesProps) {
   return (
     <>
       <TransactionStatusBadge status={transaction.status} />
       <TransactionKindBadge kind={transaction.kind} />
+      <RepaymentContactBadge repayment={transaction.repayment} />
       {transaction.seriesId && <SeriesBadge />}
       <TransactionItemsBadge count={transaction.items.length} />
     </>
