@@ -17,12 +17,12 @@ import org.springframework.data.repository.query.Param;
 public interface DashboardReportRepository extends Repository<Transaction, Long> {
 
     // Participant-based aggregation: sums share_amount via the participants join, with an optional
-    // memberId (null → whole plan). Under the SPLIT-01 invariant (every tx has >=1 participation whose
-    // shares sum to amount) the unfiltered totals are identical to summing ft.amount (AGG-02).
+    // memberId (null → whole plan). Every query counts member shares only: a contact's share is money to receive,
+    // not the plan's spending, so the totals are the amount less the contacts' shares.
     @Query("SELECT COALESCE(SUM(tp.shareAmount), 0) FROM Transaction ft JOIN ft.participants tp "
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.kind IS NULL AND ft.type = :type "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId)")
+            + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId)")
     BigDecimal sumByPlanAndTypeAndDateRange(
             @Param("plan") Plan plan,
             @Param("type") TransactionType type,
@@ -35,7 +35,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL "
             + "AND ft.kind = com.lcs.findraco.transaction.model.TransactionKind.REFUND "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId)")
+            + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId)")
     BigDecimal sumRefundsByPlanAndDateRange(
             @Param("plan") Plan plan,
             @Param("startDate") LocalDate startDate,
@@ -43,16 +43,17 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             @Param("memberId") Long memberId);
 
     /**
-     * What moved without earning or spending, of one type: a transfer, a card bill payment or a move to savings.
+     * What moved without earning or spending, of one type: a transfer, a card bill payment, a move to savings or a contact's repayment.
      * Outside every total, shown apart.
      */
     @Query("SELECT COALESCE(SUM(tp.shareAmount), 0) FROM Transaction ft JOIN ft.participants tp "
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.type = :type "
             + "AND ft.kind IN (com.lcs.findraco.transaction.model.TransactionKind.TRANSFER, "
             + "com.lcs.findraco.transaction.model.TransactionKind.CARD_BILL_PAYMENT, "
-            + "com.lcs.findraco.transaction.model.TransactionKind.SAVINGS) "
+            + "com.lcs.findraco.transaction.model.TransactionKind.SAVINGS, "
+            + "com.lcs.findraco.transaction.model.TransactionKind.REPAYMENT) "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId)")
+            + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId)")
     BigDecimal sumNeutralByPlanAndTypeAndDateRange(
             @Param("plan") Plan plan,
             @Param("type") TransactionType type,
@@ -70,7 +71,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             + "AND (ft.confirmation = com.lcs.findraco.transaction.model.Confirmation.CONFIRMED "
             + "OR (ft.confirmation = com.lcs.findraco.transaction.model.Confirmation.BY_DATE "
             + "AND ft.startDate <= :today)) "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId)")
+            + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId)")
     BigDecimal sumActualByPlanAndTypeAndDateRange(
             @Param("plan") Plan plan,
             @Param("type") TransactionType type,
@@ -87,7 +88,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             + "AND (ft.confirmation = com.lcs.findraco.transaction.model.Confirmation.CONFIRMED "
             + "OR (ft.confirmation = com.lcs.findraco.transaction.model.Confirmation.BY_DATE "
             + "AND ft.startDate <= :today)) "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId)")
+            + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId)")
     BigDecimal sumActualRefundsByPlanAndDateRange(
             @Param("plan") Plan plan,
             @Param("startDate") LocalDate startDate,
@@ -101,7 +102,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL "
             + "AND (ft.kind IS NULL OR ft.kind = com.lcs.findraco.transaction.model.TransactionKind.REFUND) "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId) "
+            + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId) "
             + "GROUP BY year(ft.startDate), month(ft.startDate), ft.type, ft.kind "
             + "ORDER BY year(ft.startDate), month(ft.startDate)")
     List<Object[]> findMonthlyTrend(
@@ -122,7 +123,7 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL "
             + "AND (ft.kind IS NULL OR ft.kind = com.lcs.findraco.transaction.model.TransactionKind.REFUND) "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
-            + "AND (:memberId IS NULL OR tp.member.id = :memberId) "
+            + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId) "
             + "GROUP BY tp.member.id, tp.member.name, ft.type, ft.kind")
     List<Object[]> findPersonBreakdown(
             @Param("plan") Plan plan,

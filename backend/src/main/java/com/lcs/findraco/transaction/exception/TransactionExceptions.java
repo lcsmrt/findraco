@@ -110,6 +110,49 @@ public class TransactionExceptions {
         }
     }
 
+    public static class ParticipantMemberOrContactException extends DomainException {
+        public ParticipantMemberOrContactException() {
+            super(
+                    ProblemType.PARTICIPANT_MEMBER_OR_CONTACT,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "participants",
+                    "A participant names a member or a contact, not both and not neither.");
+        }
+    }
+
+    /** An allocation asks for more than the share has left: it is settled already, planned, trashed or not the contact's. */
+    public static class AllocationExceedsOpenException extends DomainException {
+        public AllocationExceedsOpenException() {
+            super(
+                    ProblemType.ALLOCATION_EXCEEDS_OPEN,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "allocations",
+                    "An allocation is larger than what is still open on that share of the contact, or the share "
+                            + "is not an actual share of this contact.");
+        }
+    }
+
+    public static class AllocationExceedsAmountException extends DomainException {
+        public AllocationExceedsAmountException() {
+            super(
+                    ProblemType.ALLOCATION_EXCEEDS_AMOUNT,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "allocations",
+                    "The allocations add up to more than the payment.");
+        }
+    }
+
+    public static class ContactShareNotAllowedException extends DomainException {
+        public ContactShareNotAllowedException() {
+            super(
+                    ProblemType.CONTACT_SHARE_NOT_ALLOWED,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "participants",
+                    "A contact can take a share of an expense only, not of an income or of a transfer, card bill "
+                            + "payment, savings, refund or repayment.");
+        }
+    }
+
     public static class ParticipantsRequiredException extends DomainException {
         public ParticipantsRequiredException() {
             super(

@@ -174,7 +174,9 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "fk_transactions_categories",
                         "fk_transactions_recurrence_definitions",
                         "fk_transactions_deletion",
-                        "ck_transactions_kind");
+                        "ck_transactions_kind",
+                        "fk_transactions_repayment_contact",
+                        "ck_transactions_repayment_contact");
         assertThat(namesOf(jdbc, "SELECT conname FROM pg_constraint WHERE conrelid = 'public.categories'::regclass"))
                 .containsExactlyInAnyOrder(
                         "pk_categories",
@@ -194,6 +196,7 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "idx_transactions_created_by",
                         "idx_transactions_category_id",
                         "idx_transactions_deletion_id",
+                        "idx_transactions_repayment_contact_id",
                         "uk_transactions_plan_source_ref");
         assertThat(namesOf(jdbc, "SELECT indexname FROM pg_indexes WHERE tablename = 'categories'"))
                 .containsExactlyInAnyOrder(
@@ -230,6 +233,8 @@ class MigrationsIT extends AbstractIntegrationTest {
                         "user_sessions.created_at",
                         "plans.deleted_at",
                         "transaction_deletions.deleted_at",
+                        "contacts.archived_at",
+                        "contacts.created_at",
                         "plan_invitations.expires_at",
                         "oauth2_authorization.authorization_code_issued_at",
                         "oauth2_authorization.authorization_code_expires_at",

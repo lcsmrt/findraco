@@ -45,6 +45,9 @@ function invalidateTransactionData(queryClient: QueryClient) {
   queryClient.invalidateQueries({ queryKey: ["transactionTrash"] });
   // A row that gained a kind, or a new import, changes what the review still lists.
   queryClient.invalidateQueries({ queryKey: ["neutralCandidates"] });
+  // A share or a payment moves a contact's balance and its statement.
+  queryClient.invalidateQueries({ queryKey: ["contacts"] });
+  queryClient.invalidateQueries({ queryKey: ["contactStatement"] });
 }
 
 /**

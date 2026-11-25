@@ -14,6 +14,7 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
 /**
  * The body of a transaction edit; it replaces every editable field, participants and items included.
@@ -21,6 +22,9 @@ import java.util.List;
  * list removes them. Omitted {@code participants} keep their meaning on create: the caller pays it all. An omitted
  * {@code kind} makes the row a normal income or expense again.
  *
+ * @param contactId the contact a REPAYMENT came from; sent with that kind only.
+ * @param allocations the contact shares a REPAYMENT settles; omitted, the payment settles the oldest first again,
+ *     and an empty list settles none.
  * @param version the version the caller read; an edit of a version that changed since answers 409.
  */
 public record UpdateTransactionRequest(
@@ -56,4 +60,41 @@ public record UpdateTransactionRequest(
 
         TransactionKind kind,
 
-        @NotNull(message = "Version cannot be null.") Long version) {}
+        @Nullable Long contactId,
+
+        @Valid @Size(max = 100, message = "A repayment takes at most 100 allocations.")
+        List<RepaymentAllocationRequest> allocations,
+
+        @NotNull(message = "Version cannot be null.") Long version) {
+
+    /** An edit of a row that is no repayment. */
+    public UpdateTransactionRequest(
+            Long categoryId,
+            TransactionType type,
+            BigDecimal amount,
+            String description,
+            Integer parcelsNumber,
+            LocalDate startDate,
+            LocalDate endDate,
+            SplitMode splitMode,
+            List<TransactionParticipantRequest> participants,
+            List<TransactionItemRequest> items,
+            TransactionKind kind,
+            Long version) {
+        this(
+                categoryId,
+                type,
+                amount,
+                description,
+                parcelsNumber,
+                startDate,
+                endDate,
+                splitMode,
+                participants,
+                items,
+                kind,
+                null,
+                null,
+                version);
+    }
+}

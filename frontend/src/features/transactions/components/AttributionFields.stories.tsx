@@ -1,3 +1,4 @@
+import type { Contact } from "@/api/dtos/contact";
 import type { PlanMember } from "@/api/dtos/plan";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useFieldArray, useForm } from "react-hook-form";
@@ -26,13 +27,15 @@ const manyMembers = [
 
 type DemoFormProps = Pick<TransactionFormValues, "attributionMode" | "splitMode" | "participants"> & {
   members: PlanMember[];
+  contacts: Contact[];
   onEdit: () => void;
+  type?: TransactionFormValues["type"];
 };
 
 // AttributionFields needs a live form that owns the participants list, as the drawer does.
-function DemoForm({ attributionMode, splitMode, participants, members, onEdit }: DemoFormProps) {
+function DemoForm({ attributionMode, splitMode, participants, members, contacts, onEdit, type = "DEBIT" }: DemoFormProps) {
   const { control } = useForm<TransactionFormValues, unknown, TransactionFormOutput>({
-    defaultValues: { ...buildDefaultValues(), amount: 100, attributionMode, splitMode, participants },
+    defaultValues: { ...buildDefaultValues(), type, amount: 100, attributionMode, splitMode, participants },
   });
   const participantsArray = useFieldArray({ control, name: "participants" });
 
@@ -43,6 +46,7 @@ function DemoForm({ attributionMode, splitMode, participants, members, onEdit }:
         participants={participantsArray}
         onEdit={onEdit}
         members={members}
+        contacts={contacts}
         currentUserId={ana.userId}
       />
     </form>
@@ -63,6 +67,12 @@ function asParticipant(person: PlanMember, shareAmount: number | null = null) {
   return { memberId: person.userId, memberName: person.name, shareAmount };
 }
 
+function contact(id: number, name: string, archived = false): Contact {
+  return { id, name, archived, owed: 0, credit: 0, version: 0 };
+}
+
+const mae = contact(7, "Mãe");
+
 const meta = {
   title: "Transactions/AttributionFields",
   component: DemoForm,
@@ -71,6 +81,7 @@ const meta = {
     splitMode: "EQUAL",
     participants: [],
     members: [ana, bia],
+    contacts: [],
     onEdit: fn(),
   },
 } satisfies Meta<typeof DemoForm>;
@@ -109,6 +120,43 @@ export const Split: Story = {
     await userEvent.click(canvas.getByRole("button", { name: "Exact" }));
     await expect(canvas.getByLabelText("Ana's share")).toBeVisible();
     await expect(canvas.queryByLabelText("Bia's share")).toBeNull();
+  },
+};
+
+// The contacts come after the members, in the equal and the exact split alike.
+export const SplitWithContact: Story = {
+  args: { attributionMode: "SPLIT", participants: [asParticipant(ana)], contacts: [mae] },
+  play: async ({ canvas, userEvent }) => {
+    const names = canvas.getAllByRole("checkbox").map((box) => box.getAttribute("aria-label"));
+    await expect(names).toEqual(["Ana", "Bia", "Mãe"]);
+    await userEvent.click(canvas.getByRole("checkbox", { name: "Mãe" }));
+    await expect(canvas.getByRole("checkbox", { name: "Mãe" })).toBeChecked();
+    await userEvent.click(canvas.getByRole("button", { name: "Exact" }));
+    await expect(canvas.getByLabelText("Mãe's share")).toBeVisible();
+  },
+};
+
+// An income cannot be shared with a contact, so none is offered on one.
+export const NoContactOnAnIncome: Story = {
+  args: { attributionMode: "SPLIT", participants: [asParticipant(ana)], contacts: [mae], type: "CREDIT" },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByRole("checkbox", { name: "Bia" })).toBeVisible();
+    await expect(canvas.queryByRole("checkbox", { name: "Mãe" })).toBeNull();
+  },
+};
+
+// A contact archived after the row was saved still shows on it, so its share can be changed or removed.
+export const ArchivedContactOnTheRow: Story = {
+  args: {
+    attributionMode: "SPLIT",
+    participants: [asParticipant(ana), { contactId: 8, memberName: "Tio", shareAmount: null }],
+    contacts: [mae],
+  },
+  play: async ({ canvas, userEvent }) => {
+    const archived = canvas.getByRole("checkbox", { name: "Tio (archived)" });
+    await expect(archived).toBeChecked();
+    await userEvent.click(archived);
+    await expect(canvas.queryByRole("checkbox", { name: /Tio/ })).toBeNull();
   },
 };
 

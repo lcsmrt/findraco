@@ -19,6 +19,20 @@ class PlanAuthorizationTest {
     private static final long BOB = 2L;
 
     @Test
+    void ownersAndEditorsManageContactsTheOthersOnlyRead() {
+        assertThat(authorization.canManageContacts(PlanRole.OWNER)).isTrue();
+        assertThat(authorization.canManageContacts(PlanRole.EDITOR)).isTrue();
+        assertThat(authorization.canManageContacts(PlanRole.CONTRIBUTOR)).isFalse();
+        assertThat(authorization.canManageContacts(PlanRole.VIEWER)).isFalse();
+        assertThatCode(() -> authorization.requireCanManageContacts(PlanRole.EDITOR))
+                .doesNotThrowAnyException();
+        assertThatThrownBy(() -> authorization.requireCanManageContacts(PlanRole.CONTRIBUTOR))
+                .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
+        assertThatThrownBy(() -> authorization.requireCanManageContacts(PlanRole.VIEWER))
+                .isInstanceOf(PlanExceptions.InsufficientPlanRoleException.class);
+    }
+
+    @Test
     void createAllowedForOwner() {
         assertThatCode(() -> authorization.requireCanCreateTransaction(PlanRole.OWNER))
                 .doesNotThrowAnyException();

@@ -6,5 +6,6 @@ public enum TransactionKindFilter {
     TRANSFER,
     CARD_BILL_PAYMENT,
     SAVINGS,
-    REFUND
+    REFUND,
+    REPAYMENT
 }

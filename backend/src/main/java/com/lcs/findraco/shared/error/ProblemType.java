@@ -41,6 +41,14 @@ public enum ProblemType {
     INVITATION_EXPIRED("invitation-expired"),
     INVITATION_EMAIL_REQUIRED("invitation-email-required"),
 
+    // Contacts
+    CONTACT_NOT_FOUND("contact-not-found"),
+    CONTACT_NAME_TAKEN("contact-name-taken"),
+    CONTACT_BALANCE_NOT_ZERO("contact-balance-not-zero"),
+    CONTACT_HAS_PLANNED_SHARES("contact-has-planned-shares"),
+    CONTACT_IN_USE("contact-in-use"),
+    CONTACT_ARCHIVED("contact-archived"),
+
     // Categories
     CATEGORY_NOT_FOUND("category-not-found"),
     CATEGORY_PARENT_IS_ITSELF("category-parent-is-itself"),
@@ -72,6 +80,10 @@ public enum ProblemType {
     PARTICIPANT_SHARES_MISMATCH("participant-shares-mismatch"),
     PARTICIPANT_DUPLICATE("participant-duplicate"),
     PARTICIPANT_NOT_MEMBER("participant-not-member"),
+    PARTICIPANT_MEMBER_OR_CONTACT("participant-member-or-contact"),
+    CONTACT_SHARE_NOT_ALLOWED("contact-share-not-allowed"),
+    ALLOCATION_EXCEEDS_OPEN("allocation-exceeds-open"),
+    ALLOCATION_EXCEEDS_AMOUNT("allocation-exceeds-amount"),
     PARTICIPANTS_REQUIRED("participants-required"),
     EXACT_SHARE_INVALID("exact-share-invalid"),
     ITEM_INVALID("item-invalid"),

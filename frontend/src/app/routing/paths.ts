@@ -10,5 +10,6 @@ export const PATHS = {
   transactions: "/transactions",
   categories: "/categories",
   plans: "/plans",
+  contactStatement: "/plans/contacts/:contactId",
   acceptInvitation: "/invitation/:token",
 };

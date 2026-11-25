@@ -1,0 +1,266 @@
+# Contacts checks
+
+Build: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -DskipITs -Dsurefire.skip=true; cd frontend && pnpm lint; cd frontend && pnpm build; cd frontend && node scripts/check-siblings.ts
+Run unit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/plans/components/ContactsSection.test.tsx src/features/contacts/ContactStatementPage.test.tsx src/features/transactions/components/TransactionFormDrawer.test.tsx
+Run formunit: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions/components/transactionForm.test.ts src/features/transactions/utils/suggestAllocations.test.ts
+Run stories: cd frontend && pnpm exec vitest run --project=storybook --reporter=verbose src/components/contact/ContactNoticeView.stories.tsx src/features/plans/components/ContactsSectionView.stories.tsx src/features/contacts/components/ContactStatementView.stories.tsx src/features/transactions/components/TransactionCells.stories.tsx src/features/transactions/components/TransactionMobileList.stories.tsx
+Run table: cd frontend && pnpm exec vitest run --project=unit --reporter=verbose src/features/transactions/TransactionsPage.test.tsx src/features/transactions/utils/showParticipantsColumn.test.ts
+Plan: `.specs/features/contacts/plan.md`
+
+55 checks in 5 slices · 4 one-way doors · 0 open, of which 0 block
+
+Test rules:
+- Backend proofs are one IT method each, run alone with failsafe (the pattern of `neutral-movements`). A class name alone (`ContactRoleMatrixIT`, `ContactSchemaIT`, `OpenApiSnapshotIT`) runs every method in it.
+- Stories and flow tests render in English. The pt-BR copy is the plan's: "Contatos", "Novo contato", "Nenhum contato ainda", "Deve R$ X", "Crédito de R$ X", "Em dia", "Arquivados", "Já existe um contato com esse nome", "Quite o saldo antes de arquivar", "Registrar pagamento", "Pagamento de contato", "R$ X vira crédito", "Pago", "Parcial (R$ Y de R$ X)", "Em aberto", "Previsto", "Nada com este contato ainda". en: "Contacts", "New contact", "No contacts yet", "Owes R$ X", "Credit of R$ X", "Settled", "Archived", "A contact with that name already exists", "Settle the balance before archiving", "Record payment", "Contact payment", "R$ X becomes credit", "Paid", "Partial (R$ Y of R$ X)", "Open", "Planned", "Nothing with this contact yet", "Rename", "Archive", "Delete", "Try again".
+- Width stories set their viewport with `page.viewport` from `@vitest/browser/context` and read rects inside `waitFor`.
+- `suggestAllocations` lives in `src/features/transactions/utils/` and is the form's suggestion only; the backend's oldest-first fill (C26, C45) is the rule for requests that omit allocations.
+
+## Checks
+
+### S1 - Contacts
+
+**C1** - An OWNER creates "Mãe": 201 with `name` "Mãe", listed by `GET /contacts` with owed 0 and credit 0; "  Mãe  " is saved as "Mãe"; an empty or 61-character name is 422 with a `name` field error and no row (AC 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#createsTrimsAndBoundsTheName' -Dsurefire.skip=true
+
+**C2** - A second active "mãe" in the same plan is 422 `contact-name-taken`; the same name is accepted when the first is archived, when it belongs to another plan, and when a member has that name (AC 2)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#rejectsADuplicateActiveNameOnly' -Dsurefire.skip=true
+
+**C3** - Renaming "Mãe" to "Mamãe" with its `version` returns the new name, and the transaction that has her share then returns `contactName` "Mamãe"; a stale `version` is 409 (AC 3)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#renameReachesTheSharesAndChecksTheVersion' -Dsurefire.skip=true
+
+**C4** - `GET /contacts` lists active contacts by name with owed and credit: "Ana" owes 50.00, "Bia" has credit 20.00, "Caio" 0 - and omits archived ones unless `archived=true` (AC 4)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#listsActiveContactsByNameWithTheirBalances' -Dsurefire.skip=true
+
+**C5** - Archiving at balance zero moves the contact to the archived list, its past share still returns its name, and a new split naming it is 422 `contact-archived`; owing 0.01 or holding credit 5.00 is 409 `contact-balance-not-zero`; owing 0 with only planned shares archives (AC 5, 6)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#archivesOnlyAtZeroBalance' -Dsurefire.skip=true
+Note: the planned-only leg is superseded by C53 (user, 2026-11-25).
+
+**C6** - Unarchiving returns the contact to the active list; when another active contact took its name meanwhile it is 422 `contact-name-taken` (AC 7)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#unarchiveRestoresUnlessTheNameIsTaken' -Dsurefire.skip=true
+
+**C7** - Deleting a contact with no share, live or trashed, and no repayment is 204 and the row is gone; with a share in the trash, a live share or a repayment it is 409 `contact-in-use` (AC 8)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#deletesOnlyAnUnusedContact' -Dsurefire.skip=true
+
+**C8** - Each contact route answers by role: list and statement 200 for OWNER, EDITOR, CONTRIBUTOR and VIEWER; create, rename, archive, unarchive and delete 2xx for OWNER and EDITOR and 403 for CONTRIBUTOR and VIEWER; every route 404 for a user outside the plan and for a contact of another plan (AC 9, 29)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactRoleMatrixIT' -Dsurefire.skip=true
+
+**C9** - The Plans page shows "Contacts" below the members: with no contacts "No contacts yet" and its explanation line; with contacts each name and "Owes R$ 50,00", "Credit of R$ 20,00" or "Settled"; archived ones under "Archived" (AC 4, 5)
+Proof: run stories | ✓ src/features/plans/components/ContactsSectionView.stories.tsx > Empty
+Proof: run stories | ✓ src/features/plans/components/ContactsSectionView.stories.tsx > With Balances
+Proof: run stories | ✓ src/features/plans/components/ContactsSectionView.stories.tsx > With Archived
+
+**C10** - A VIEWER and a CONTRIBUTOR see the Contacts section with no "New contact" button and no row menu; an OWNER sees both (AC 4)
+Proof: run stories | ✓ src/features/plans/components/ContactsSectionView.stories.tsx > Read Only
+
+**C11** - An OWNER uses "New contact", types "Mãe" and saves: the POST carries `name` "Mãe" and "Mãe" appears in the section; a taken name shows "A contact with that name already exists" on the field (AC 1, 2)
+Proof: run unit | ✓ ContactsSection > creates a contact and lists it
+Proof: run unit | ✓ ContactsSection > shows the taken-name error on the field
+
+**C12** - An OWNER archives a contact with a balance: the page shows "Settle the balance before archiving" with the amount, and the contact stays active; archiving at zero moves it to "Archived"; deleting a used contact offers "Archive" instead (AC 5, 6, 8)
+Proof: run unit | ✓ ContactsSection > refuses to archive a contact with a balance
+Proof: run unit | ✓ ContactsSection > archives a settled contact
+Proof: run unit | ✓ ContactsSection > offers archive when delete is refused
+
+**C13** - The schema refuses a participant row with both a member and a contact, or neither, and a REPAYMENT row without `repayment_contact_id` or a non-repayment row with one (doors 2, 3)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSchemaIT' -Dsurefire.skip=true
+
+### S2 - A contact's share is not plan spending
+
+**C14** - Splits with contacts save: R$ 80 equal "Eu"+"Mãe" gives 40.00/40.00; R$ 100 exact 30/70 as sent; R$ 50 with only "Mãe" one share of 50.00; R$ 100.01 equal "Eu", "Livia", "Mãe" gives 33.34, 33.34, 33.33 (AC 10)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#splitsWithContactsUseTheExistingRules' -Dsurefire.skip=true
+
+**C15** - An R$ 80 "Restaurante" expense split 40 "Eu" / 40 "Mãe": the summary reports expenses 40.00 and result −40.00, the monthly trend 40.00, the person breakdown only "Eu" with 40.00 (AC 11)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#contactSharesLeaveTotalsTrendAndPeople' -Dsurefire.skip=true
+
+**C16** - The same expense: "Restaurante" spends 40.00 and its 50.00 limit has 10.00 left; with R$ 20 of items in "Bebidas", "Bebidas" spends 10.00 and "Restaurante" 30.00 (AC 11)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#contactSharesLeaveCategoriesItemsAndLimits' -Dsurefire.skip=true
+
+**C17** - A contact share on an income, on each neutral kind (TRANSFER, CARD_BILL_PAYMENT, SAVINGS), on a REFUND and on a REPAYMENT is 422 `contact-share-not-allowed`, on create and on edit (AC 12)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#contactSharesOnlyOnPlainExpenses' -Dsurefire.skip=true
+
+**C18** - A split naming an archived contact is 422 `contact-archived`; a contact of another plan is 404 (AC 13)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#archivedOrForeignContactsAreRefused' -Dsurefire.skip=true
+
+**C19** - A CONTRIBUTOR saving a split with a contact is 403 and no row is written; an EDITOR is 201 (AC 14)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#onlyOwnerAndEditorSplitWithContacts' -Dsurefire.skip=true
+
+**C20** - A monthly series of R$ 120 with "Irmã" 100% generates each occurrence with her share of 120.00; changing the split to 60/60 with "this and following" from March changes March on and leaves January, February and a confirmed occurrence untouched (AC 15)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#seriesCarryContactSharesThroughEdits' -Dsurefire.skip=true
+
+**C21** - In the transaction form an OWNER sees the active contacts after the members in both equal and exact splits, and saving R$ 80 equal with "Mãe" sends `participants` with her `contactId`; a CONTRIBUTOR is offered no contact (AC 10, 14)
+Proof: run unit | ✓ TransactionFormDrawer contacts > offers contacts after members in the split
+Proof: run unit | ✓ TransactionFormDrawer contacts > sends the contact share
+Proof: run unit | ✓ TransactionFormDrawer contacts > offers no contact to a contributor
+
+**C22** - A row split with "Mãe" shows her name with the members in the table and the phone list (AC 16)
+Proof: run stories | ✓ src/features/transactions/components/TransactionCells.stories.tsx > With Contact Share
+Proof: run stories | ✓ src/features/transactions/components/TransactionMobileList.stories.tsx > With Contact Share
+
+**C23** - The form maps a contact participant both ways: a loaded share with `contactId` comes back into the form and the payload carries `contactId`, never `memberId`, for it (AC 10, 16)
+Proof: run formunit | ✓ transactionForm contacts > round-trips a contact share
+
+### S3 - Payments from a contact
+
+**C24** - A REPAYMENT of R$ 150 from "Mãe" received by "Eu" counts in no income, result, trend or person breakdown, and the summary reports 150.00 in `neutralIn` (AC 20)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#repaymentCountsInNoTotal' -Dsurefire.skip=true
+
+**C25** - Explicit allocations are stored: owing 200 (Oct) and 300 (Nov), paying 100 with only Nov gives Nov 100 allocated and Oct untouched; paying 600 with both in full stores 200 and 300 and leaves 100 credit (AC 18, 21)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#storesExplicitAllocationsAndKeepsExcessAsCredit' -Dsurefire.skip=true
+
+**C26** - A repayment with no allocations fills oldest first: paying 300 gives Oct 200 and Nov 100; paying 600 gives 200, 300 and 100 credit (AC 25)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#omittedAllocationsFillOldestFirst' -Dsurefire.skip=true
+
+**C27** - An allocation above the share's open amount is 422 `allocation-exceeds-open`; allocations adding up above the payment are 422 `allocation-exceeds-amount`; an allocation to a planned share or to another contact's share is 422 `allocation-exceeds-open` (AC 21)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#allocationLimitsAreEnforced' -Dsurefire.skip=true
+
+**C28** - Two repayments that each allocate the full 200 of the same share, sent at the same moment from two threads: one is 201, the other 422 `allocation-exceeds-open`, and the share's allocations total 200.00 (AC 22)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#concurrentRepaymentsNeverOverAllocate' -Dsurefire.skip=true
+
+**C29** - Editing a repayment replaces its allocations with the ones sent; moving it to the trash drops its allocations from the share's status and the balance, and restoring it brings them back (AC 23)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#editReplacesAndTrashSuspendsAllocations' -Dsurefire.skip=true
+
+**C30** - A share of 100 settled 60 by Pix A and 40 by Pix B, reduced to 70: A keeps 60, B 10, credit 30; removing the contact from the split frees all 100; trashing the purchase frees it and restoring it counts it again (AC 24)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#reducingAShareCutsNewestPaymentsFirst' -Dsurefire.skip=true
+
+**C31** - The allocation suggestion fills from the oldest open share up to the amount: 300 over 200 (Oct) and 300 (Nov) gives 200 and 100; 600 gives 200, 300 and an excess of 100; 0 gives nothing (AC 18)
+Proof: run formunit | ✓ suggestAllocations > fills oldest first up to the amount
+Proof: run formunit | ✓ suggestAllocations > reports the excess
+
+**C32** - From the statement, "Record payment" opens the form as an income of kind "Contact payment" with the contact chosen; typing 300 pre-ticks October 200 and November 100; unticking October and saving sends only November's allocation (AC 17, 18)
+Proof: run unit | ✓ ContactStatementPage > records a payment with the suggested allocation
+Proof: run unit | ✓ ContactStatementPage > sends only the ticked allocations
+
+**C33** - In the form, an income can take the kind "Contact payment"; choosing a contact lists its open shares oldest first and shows "R$ 100,00 becomes credit" when the amount exceeds them (AC 19, 18)
+Proof: run unit | ✓ TransactionFormDrawer repayment > turns an income into a contact payment
+Proof: run unit | ✓ TransactionFormDrawer repayment > shows the excess as credit
+
+**C34** - A repayment row shows its kind badge and the contact's name in the table and the phone list (AC 20)
+Proof: run stories | ✓ src/features/transactions/components/TransactionCells.stories.tsx > Repayment
+Proof: run stories | ✓ src/features/transactions/components/TransactionMobileList.stories.tsx > Repayment
+
+### S4 - The contact's statement
+
+**C35** - The statement groups by month, newest first, each share with date, description, share, allocated and status: 200 with 200 allocated `PAID`, 300 with 100 `PARTIAL`, 50 with 0 `OPEN`, a planned 120 `PLANNED`; each repayment with its `unallocated` part (AC 26)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactStatementIT#groupsByMonthWithStatuses' -Dsurefire.skip=true
+
+**C36** - The balance counts actual shares minus live repayments: shares 200 actual + 120 planned and a payment of 150 give owed 50.00, credit 0; a payment of 250 gives owed 0, credit 50.00 (AC 27)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactStatementIT#balanceLeavesPlannedOutAndShowsCredit' -Dsurefire.skip=true
+
+**C37** - A trashed purchase and a trashed payment leave the statement and the balance, and come back on restore (AC 28)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactStatementIT#trashedRowsLeaveTheStatement' -Dsurefire.skip=true
+
+**C38** - The statement view shows the balance first ("Owes R$ 50,00", "Credit of R$ 50,00", "Settled"), then months with each status label "Paid", "Partial (R$ 100,00 of R$ 300,00)", "Open", "Planned", and the payments (AC 26, 27)
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Owes
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Credit
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Settled
+
+**C39** - The statement view shows "Nothing with this contact yet" when empty, the skeleton while loading and the error state with "Try again" (AC 30)
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Empty
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Loading
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Error
+
+**C40** - An OWNER sees "Record payment", "Rename", "Archive" and "Delete" on the statement; a VIEWER sees none of them (AC 29)
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Read Only
+
+**C41** - At 390 px and 1280 px the Contacts section and the statement fit their width: no element's right edge past the viewport, and a 12-month statement scrolls with the page (AC 31)
+Proof: run stories | ✓ src/features/plans/components/ContactsSectionView.stories.tsx > Fits Phone
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Fits Phone
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Fits Desktop
+
+**C42** - Tapping a contact in the Contacts section opens its statement at its own route under Plans, and the browser back returns to Plans (AC 26)
+Proof: run unit | ✓ ContactsSection > opens the statement route
+
+**C43** - On the local stack at 390 × 844 and 1280 × 800: create "Mãe", split a purchase with her, see expenses drop, record a payment from the statement, see statuses and balance, archive at zero; the Plans page, statement, form and Overview show nothing clipped (AC 1-31)
+Proof: walk - each step at both widths
+
+### S5 - The MCP
+
+**C44** - `create_transaction` with `attributedTo` ["Mãe"] puts the whole amount on her; ["Lucas", "Mãe"] splits equally; an unknown name is refused listing members and contacts; a name shared by a member and a contact is refused as ambiguous (AC 32)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpContactsIT#attributedToResolvesContacts' -Dsurefire.skip=true
+
+**C45** - `create_transaction` with `kind` REPAYMENT and `contact` "Mãe" of 300 over 200 (Oct) and 300 (Nov) allocates 200 and 100, and the response states the settled purchases and a credit of 0; 600 states a credit of 100 (AC 33)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpContactsIT#repaymentAppliesOldestFirst' -Dsurefire.skip=true
+
+**C46** - `list_contacts` returns each active contact with name, owed and credit; `list_transactions` names "Mãe" in `attributedTo` of her purchase (AC 34)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='McpContactsIT#listsContactsAndNamesThemInTransactions' -Dsurefire.skip=true
+
+**C47** - The committed `backend/openapi.json` matches the running API, with the contact routes, `contactId` on participants and `REPAYMENT` (Surface)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='OpenApiSnapshotIT' -Dsurefire.skip=true
+
+### Appended after the walk
+
+**C48** - A contact's name of the longest length (60 characters, "Tia Maria Antonieta de Albuquerque Cavalcanti Pereira") reads in full as the statement's title at 390 px: it wraps onto lines instead of shrinking to an ellipsis, with the actions still on screen (AC 31)
+Proof: run stories | ✓ src/features/contacts/components/ContactStatementView.stories.tsx > Long Name Reads In Full
+
+**C49** - In a plan of one member the transactions table shows the attribution column when a row has a contact's share, so "Lucas, Mãe" reads on the Pizza row; with no contact on the page it stays hidden (AC 16)
+Proof: run table | ✓ TransactionsPage toolbar > names a contact on the table's attribution column even in a plan of one member (contacts AC 16)
+Proof: run table | ✓ TransactionsPage toolbar > has no attribution column in a plan of one member whose rows have no contact
+Proof: run table | ✓ showParticipantsColumn > shows it in a plan of one member when a row has a contact's share, so her name reads on the table
+
+### Appended after the Verifier
+
+**C50** - A purchase of 100 with "Mãe", settled by a payment of 100, then edited to a date 40 days ahead: the share reads `PLANNED`, the payment's allocation is gone (no stored row), the payment shows 100.00 unallocated and her balance is a credit of 100.00 (AC 24, 27; finding 1)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#aSettledPurchaseMovedToAFutureDateReleasesItsAllocation' -Dsurefire.skip=true
+
+**C51** - A payment of 200 that settled a purchase of 200 now in the trash, edited (a new description, allocations sent empty as the form does) keeps that settlement: after the purchase is restored the share is `PAID`, the payment has 0 unallocated and her balance is 0.00; a payment of 300 edited down to 100 while its purchase is in the trash settles 100 of it once restored, never more than it paid (AC 23, 24; finding 2)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#editingAPaymentWhileItsPurchaseIsTrashedKeepsThatSettlement' -Dsurefire.skip=true
+
+**C52** - Marking a purchase split with "Mãe" as TRANSFER, CARD_BILL_PAYMENT, SAVINGS or REFUND is 422 `contact-share-not-allowed`, and the split, her share and the version stay as they were (AC 12; finding 3)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactSharesIT#markingAContactSplitWithAKindIsRefusedAndLeavesTheSplit' -Dsurefire.skip=true
+
+**C53** - Archiving a contact with a planned share (a purchase dated ahead) is 409 `contact-has-planned-shares`; so is a contact named by a live series (not trashed, not ended) whose past occurrences are all settled; once the series is ended or trashed and no planned share is left it archives (AC 5, 6; finding 4, user 2026-11-25)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='ContactsIT#refusesArchiveWithPlannedShares' -Dsurefire.skip=true
+
+**C54** - An OWNER archiving a contact the API refuses with `contact-has-planned-shares` sees "End or remove the planned purchases before archiving" with the contact's name beside it, and the contact stays active (AC 6; finding 4)
+Proof: run unit | ✓ ContactsSection > refuses to archive a contact with planned purchases
+Proof: run stories | ✓ src/components/contact/ContactNoticeView.stories.tsx > Planned
+
+**C55** - Restoring a purchase with a contact share waits while another save holds that contact's lock (a connection holding `FOR NO KEY UPDATE` on the contact row): the restore is still running after 1.5 s, completes once the holder commits, and the share then reads `PAID` (AC 22, door 4; finding 6)
+Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit.test='RepaymentsIT#aPurchaseRestoreWaitsForTheLockOnItsContact' -Dsurefire.skip=true
+
+## Coverage
+
+| Set (size) | Member -> proof | Unproven |
+| --- | --- | --- |
+| `GET /plan/{planId}/contacts` statuses (2) | 200 C4 C8 · 404 C8 | - |
+| `POST /plan/{planId}/contacts` statuses (5) | 201 C1 · 422 `contact-name-taken` C2 · 422 name bounds C1 · 403 C8 · 404 C8 | - |
+| `PUT /plan/{planId}/contacts/{id}` statuses (5) | 200 C3 · 422 `contact-name-taken` C2 · 409 stale C3 · 404 C8 · 403 C8 | - |
+| `POST /plan/{planId}/contacts/{id}/archive` statuses (4) | 200 C5 · 409 `contact-balance-not-zero` C5 · 404 C8 · 403 C8 | - |
+| `POST /plan/{planId}/contacts/{id}/unarchive` statuses (4) | 200 C6 · 422 `contact-name-taken` C6 · 404 C8 · 403 C8 | - |
+| `DELETE /plan/{planId}/contacts/{id}` statuses (4) | 204 C7 · 409 `contact-in-use` C7 · 404 C8 · 403 C8 | - |
+| `GET /plan/{planId}/contacts/{id}/statement` statuses (2) | 200 C35 C8 · 404 C8 | - |
+| transactions and series routes, new statuses (6) | 403 contributor C19 · 422 `contact-archived` C18 · 422 `contact-share-not-allowed` C17 C52 · 422 `allocation-exceeds-open` C27 C28 · 422 `allocation-exceeds-amount` C27 · 404 foreign contact C18 | - |
+| Landing doors (4) | 1 contacts table C1 C2 C5 · 2 member-or-contact C13 C14 · 3 repayment kind C13 C24 · 4 allocations C25 C27 C28 | - |
+| roles × contact writes (4) | OWNER C8 · EDITOR C8 C19 · CONTRIBUTOR C8 C19 C10 C21 · VIEWER C8 C10 C40 | - |
+| totals a contact share leaves, AC 11 (7) | income/expense C15 · result C15 · trend C15 · person breakdown C15 · category total C16 · item allocation C16 · limit C16 | - |
+| kinds refusing a contact share, AC 12 (6) | income C17 · TRANSFER C17 C52 · CARD_BILL_PAYMENT C17 C52 · SAVINGS C17 C52 · REFUND C17 C52 · REPAYMENT C17 | - |
+| split examples, AC 10 (4) | 80 equal C14 · 30/70 exact C14 · 100% contact C14 · 100.01 three-way C14 | - |
+| archive examples, AC 6 (4) | owes 0.01 C5 · credit 5 C5 · planned share C53 C54 · live series C53 | - |
+| allocation examples, AC 18/25 (3) | 300 over 200+300 C26 C31 C45 · 600 with excess C25 C26 C31 C45 · Nov only C25 C32 | - |
+| reduction examples, AC 24 (3) | 100 → 70 C30 · contact removed C30 · trash and restore C30 | - |
+| share statuses (4) | PAID C35 C38 · PARTIAL C35 C38 · OPEN C35 C38 · PLANNED C35 C38 | - |
+| balance labels (3) | owes C38 C9 · credit C38 C9 · settled C38 C9 | - |
+| statement states (4) | data C38 · empty C39 · loading C39 · error C39 | - |
+| widths, AC 31 (2) | 390 C41 C43 · 1280 C41 C43 | - |
+| MCP names, AC 32 (4) | contact only C44 · member + contact C44 · unknown C44 · ambiguous C44 | - |
+| contact controls (7) | "New contact" C11 · row open C42 · "Archive" C12 · "Delete" C12 · "Record payment" C32 · "Rename" C3 C40 · split picker C21 | - |
+
+## Swept
+
+- validation: C1 (name bounds and trim), C17, C18, C27
+- failure modes: C28 (the losing request writes nothing), C19 (a refused split leaves no row)
+- idempotency: n/a - no request is retried by a client; a duplicate repayment is a second payment, as a duplicate expense is today
+- authorization: C8, C10, C19, C21, C40
+- concurrency: C28 (two repayments on one share), C3 (stale version on rename)
+- data lifecycle: C5, C6, C7, C29, C30, C37; what a user entered comes back: C23
+- dependency failure: n/a - no external call
+- state transitions: C5 (archive guard), C6 (unarchive), C7 (delete guard); share status is derived, C35
+- observability: n/a - no logging requirement; the existing request log covers the new routes
+
+## Handoff
+
+- **Settled mid-build:** 2026-11-25, Verifier finding 4: archiving is refused while the contact has planned shares or a live series naming it (supersedes AC 6's "planned only → archived" example and that leg of C5). User, asked "O que fazer?", chose "Bloquear com previstas (Recomendado)".
+- **Dispatched:** backend worker 1 (Sonnet), contacts + contact shares (C1-C8, C13-C20, C47), at `c8027bc9`, returned (`9dfea332`, `4f7abd42`; C8 statement row and C17 REPAYMENT case left to worker 2); backend worker 2 (Sonnet), repayments + statement + MCP (C24-C30, C35-C37, C44-C46, C8/C17 legs, C47 refresh), at `4f7abd42`, returned (`8fdfda0c`, `f0f63149`); frontend worker 3 (Sonnet), C9-C12, C21-C23, C31-C34, C38-C42, at `f0f63149`, returned (`04da30ad`..`4ffd6ba2`); walk worker (Sonnet), C43, at `f9ad640a`, returned (C48 `ea8d1ae3`, C49 `8f338115`); Verifier (Opus) at `44c5430a`, returned (FAIL, 5 findings, `ca4acbf0`); verify-fix worker (Sonnet) at `ca4acbf0`
+- **Boundary:** C1-C7, C13-C16, C18-C20, C47 closed at `4f7abd42`; C8, C17, C24-C30, C35-C37, C44-C47 closed at `f0f63149`; C9-C12, C21-C23, C31-C34, C38-C42 closed at `4ffd6ba2`
+- **Abandoned:** none
+- **Walked:** C43 at `f9ad640a` on the local stack (walk database on Flyway V32, backend :3000, `pnpm dev` :5173), pt-BR, Playwright at 390 x 844 (phone, touch) and 1280 x 800, light and dark both glanced; a fresh user "Lucas Walk" with a plan of one member, categories Alimentação (limit R$ 500), Saúde (R$ 300), Lazer. Reached each state as a user does: Planos tab > "Contatos" > "Novo contato" > type > "Criar"; "Nova transação" > "Dividir" > tick members and contacts (contacts sit after the members); the Planos row of a contact (tap) opens its statement; "Registrar pagamento" on the statement; the "..." menu on the statement or "Ações de <nome>" on the Planos row for "Renomear", "Arquivar"/"Desarquivar", "Excluir"; the Transações row (tap on the phone, pencil on the table) edits a payment. Planos with no contacts: "Nenhum contato ainda" and the explanation line; "Mãe" created at 1280 and "Irmã" at 390 (both "Em dia"), "mãe"/"irmã" again shows "Já existe um contato com esse nome" on the field, a 61-character name "Use no máximo 60 caracteres"; "Novo contato" is 126 x 28 on the table and 126 x 44 on the phone. Purchases: "Pizza" R$ 80 split "Lucas Walk" + "Mãe", "Mercado outubro" R$ 200 (10/10) and "Mercado novembro" R$ 300 (05/11) 100% "Mãe", series "Academia" R$ 120 monthly 100% "Irmã". Overview (November) at both widths: Despesas R$ 40,00, Receitas R$ 0,00, Resultado -R$ 40,00, person "Lucas" R$ 40,00 with no contact, Alimentação "R$ 40,00 de R$ 500,00", "restam R$ 460,00 · 8%", Saúde "R$ 0,00 de R$ 300,00"; after payments the Overview adds "Neutros: saiu R$ 0,00 · entrou R$ 540,00" and nothing in Receitas. Statement of "Mãe": "Deve R$ 540,00", months newest first (Novembro 2026, Outubro 2026), each share "Em aberto"; "Irmã": "Em dia", 13 months from Novembro 2026 to Novembro 2027 each "Previsto" (the November one is "Pendente" in Transações, a series occurrence not yet confirmed). "Registrar pagamento" opens as "Pagamento de contato", "Pago por" Mãe, description "Pagamento de Mãe"; typing R$ 300 pre-ticks "Mercado outubro" R$ 200,00 and "Mercado novembro" R$ 100,00; saved: "Deve R$ 240,00", "Mercado novembro" "Parcial (R$ 100,00 de R$ 300,00)", "Mercado outubro" "Pago", the payment under Novembro 2026. At 390 a second payment of R$ 500 pre-ticked Mercado novembro R$ 200 and Pizza R$ 40 and showed "R$ 260,00 vira crédito"; the statement then read "Crédito de R$ 260,00" with "R$ 260,00 não alocado" on that payment; "Arquivar" showed "Quite o saldo antes de arquivar" with "Mãe: Crédito de R$ 260,00" and the contact stayed active. Editing that payment (table at 1280, tap at 390) loaded its two allocations ticked with R$ 200,00 and R$ 40,00 and its kind "Pagamento de contato"; changing the amount to R$ 240,00 and saving gave "Em dia". "Arquivar" then toasted "Contato arquivado", the contact moved under "Arquivados" on Planos and was gone from the split picker (Lucas Walk, Irmã only), its statement lost "Registrar pagamento"; "Desarquivar" in its row menu brought it back. Deleting a never-used contact ("Prima Maria Antonieta de Albuquerque Cavalcanti Pereira") asked "O contato é removido de vez..." and removed it; deleting "Irmã" (used) showed "Irmã tem compras ou pagamentos e não pode ser excluído. Arquive-o." with "Arquivar". No page overflowed horizontally at either width (scrollWidth equal to clientWidth on Planos, the dialogs, the form, Transações, Overview, Categorias, both statements); touch targets are 44 px on the phone; the transaction form (Débito, "Tipo de movimento", "Dividir" with contacts, "Compras que quita" rows) fits at both widths. Two defects no check covered, both fixed and appended: C48 (a 60-character contact name was cut to "Tia Mar..." as the statement title at 390; fixed by `wrapTitle` on `PageHeader`, now it wraps in full with the actions below, `ea8d1ae3`) and C49 (a plan of one member had no attribution column on the Transações table, so "Pizza" and "Academia" showed no contact at 1280 while the phone list named her; fixed in `8f338115`, now "Lucas Walk, Mãe" and "Irmã" show). Seen and left alone, outside the plan: ticking "Repetir ou dividir em parcelas?" on a contact payment clears its kind (the form's rule that a series carries no kind, as for a transfer), so it saves a plain income series with no contact. Not seen: archiving a contact on its own statement page at 1280 (done at 390), the pt-BR copy of the 409 on the Planos row at 1280, the MCP (S5, no screen).

@@ -137,6 +137,46 @@ export const Income: Story = {
   },
 };
 
+// A split with a contact lists her by name beside the members, and the cell leaves it to the form to
+// change, since the inline picker lists members only.
+export const WithContactShare: Story = {
+  args: {
+    canEditParticipants: true,
+    transaction: {
+      ...groceries,
+      participants: [
+        { id: 1, name: "Lucas Martins", shareAmount: 160 },
+        { id: null, name: "Mãe", contactId: 7, contactName: "Mãe", shareAmount: 160 },
+      ],
+    },
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Lucas Martins, Mãe")).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: /Lucas Martins, Mãe/ })).toBeNull();
+  },
+};
+
+// A contact payment says what it is and who paid; it has no category to pick and no one to attribute.
+export const Repayment: Story = {
+  args: {
+    canEditParticipants: true,
+    transaction: {
+      ...groceries,
+      type: "CREDIT",
+      kind: "REPAYMENT",
+      category: undefined,
+      description: "Pix from Mãe",
+      participants: [{ id: 1, name: "Lucas Martins", shareAmount: 320 }],
+      repayment: { contactId: 7, contactName: "Mãe", allocations: [] },
+    },
+  },
+  play: async ({ canvas }) => {
+    await expect(canvas.getByText("Contact payment")).toBeVisible();
+    await expect(canvas.getByText("Mãe")).toBeVisible();
+    await expect(canvas.queryByRole("button", { name: "Lucas Martins" })).toBeNull();
+  },
+};
+
 export const Series: Story = { args: { transaction: { ...groceries, seriesId: "series-1" } } };
 
 // What the page paints for the card token; a badge tinted differently stands out from the surface.

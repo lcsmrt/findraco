@@ -10,6 +10,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.model.CategoryMemberLimit;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.shared.security.ValidPassword;
 import com.lcs.findraco.transaction.model.RecurrenceDefinition;
 import com.lcs.findraco.transaction.model.RecurrenceDefinitionParticipant;
@@ -198,7 +199,8 @@ class ArchitectureTest {
         RecurrenceDefinition.class,
         RecurrenceDefinitionParticipant.class,
         Category.class,
-        CategoryMemberLimit.class
+        CategoryMemberLimit.class,
+        Contact.class
     };
 
     /** The parts of an aggregate, written only through their root. */

@@ -2,9 +2,11 @@ package com.lcs.findraco.support;
 
 import com.lcs.findraco.category.model.Category;
 import com.lcs.findraco.category.repository.CategoryRepository;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanMembership;
 import com.lcs.findraco.plan.model.PlanRole;
+import com.lcs.findraco.plan.repository.ContactRepository;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
 import com.lcs.findraco.plan.repository.PlanRepository;
 import com.lcs.findraco.transaction.model.Share;
@@ -46,6 +48,9 @@ public class Fixtures {
 
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private ContactRepository contactRepository;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -135,6 +140,34 @@ public class Fixtures {
 
     public Transaction aTransaction(TransactionDraft draft) {
         return transactionRepository.save(Transaction.create(draft));
+    }
+
+    /** An active contact of the plan. */
+    public Contact aContact(Plan plan, String name) {
+        return contactRepository.save(Contact.create(plan, name, now()));
+    }
+
+    /**
+     * A debit whose whole amount is {@code contact}'s share, paid by {@code creator} and dated {@code date}: money the
+     * contact owes once the date has come.
+     */
+    public Transaction aContactPurchase(
+            Plan plan, User creator, Contact contact, String amount, LocalDate date, String description) {
+        return aTransaction(new TransactionDraft(
+                plan,
+                creator,
+                new TransactionDetails(
+                        null, TransactionType.DEBIT, new BigDecimal(amount), description, date, null, null),
+                SplitMode.EQUAL,
+                List.of(Share.ofContact(contact, null)),
+                List.of(),
+                null,
+                null));
+    }
+
+    /** The stored version of a contact, which a rename sends back; 0 when there is no such row. */
+    public long contactVersion(long id) {
+        return version("SELECT version FROM contacts WHERE id = ?", id);
     }
 
     public Category aCategory(Plan plan, TransactionType type, String description) {

@@ -13,6 +13,11 @@
       "categoryCreated": "Category created.",
       "categoryDeleted": "Category deleted.",
       "categoryUpdated": "Category updated.",
+      "contactArchived": "Contact archived.",
+      "contactCreated": "Contact created.",
+      "contactDeleted": "Contact deleted.",
+      "contactRenamed": "Contact renamed.",
+      "contactUnarchived": "Contact unarchived.",
       "invitationCreated": "Invitation created.",
       "invitationRevoked": "Invitation revoked.",
       "kindApplied": "Movement marked.",
@@ -256,6 +261,7 @@
     "optional": "(optional)",
     "r000": "R$ 0,00",
     "save": "Save",
+    "tryAgain": "Try again",
     "type": "Type",
     "yearPlaceholder": "yyyy",
     "youExampleCom": "you@example.com"
@@ -333,6 +339,67 @@
       "credit": "Credit",
       "debit": "Debit",
       "transactionType": "Transaction type"
+    }
+  },
+  "contacts": {
+    "actions": {
+      "archive": "Archive",
+      "delete": "Delete",
+      "deleteDescription": "The contact is removed for good. A contact with shares or payments cannot be deleted.",
+      "deleteTitle": "Delete {{name}}?",
+      "rename": "Rename",
+      "unarchive": "Unarchive"
+    },
+    "balance": {
+      "credit": "Credit of {{amount}}",
+      "owes": "Owes {{amount}}",
+      "settled": "Settled"
+    },
+    "nameDialog": {
+      "newContact": "New contact",
+      "placeholder": "e.g. Mom",
+      "renameContact": "Rename contact"
+    },
+    "nameForm": {
+      "enterAName": "Enter a name",
+      "nameTooLong": "Use at most 60 characters"
+    },
+    "notice": {
+      "balance": "Settle the balance before archiving",
+      "balanceOf": "{{name}}: {{balance}}",
+      "dismiss": "Dismiss",
+      "inUse": "{{name}} has shares or payments, so it cannot be deleted. Archive it instead.",
+      "planned": "End or remove the planned purchases before archiving",
+      "plannedOf": "{{name}} has planned purchases or a series still running."
+    },
+    "section": {
+      "actionsFor": "Actions for {{name}}",
+      "archived": "Archived",
+      "emptyHint": "Contacts are people outside the plan who share purchases with you and pay you back.",
+      "emptyTitle": "No contacts yet",
+      "loadError": "Could not load the contacts.",
+      "newContact": "New contact",
+      "title": "Contacts"
+    },
+    "statement": {
+      "backToPlans": "Back to Plans",
+      "empty": "Nothing with this contact yet",
+      "fallbackTitle": "Contact",
+      "loadError": "Could not load this statement.",
+      "loading": "Loading statement",
+      "moreActions": "More actions",
+      "payment": "Payment",
+      "paymentDescription": "Payment from {{name}}",
+      "payments": "Payments",
+      "purchases": "Purchases",
+      "recordPayment": "Record payment",
+      "status": {
+        "open": "Open",
+        "paid": "Paid",
+        "partial": "Partial ({{allocated}} of {{share}})",
+        "planned": "Planned"
+      },
+      "unallocated": "{{amount}} unallocated"
     }
   },
   "notFound": {
@@ -541,6 +608,8 @@
     }
   },
   "problems": {
+    "allocation-exceeds-amount": "The allocations add up to more than the payment.",
+    "allocation-exceeds-open": "A share cannot be paid more than what is still open on it.",
     "andMore": "...and {{remaining}} more",
     "category-has-subcategories": "This category now has subcategories. Move or delete them before deleting it.",
     "category-in-use": "This category is now in use. Choose a category to receive its transactions.",
@@ -576,6 +645,13 @@
       "PositiveOrZero": "cannot be negative",
       "Size": "has the wrong length"
     },
+    "contact-archived": "This contact is archived. Unarchive it or choose someone else.",
+    "contact-balance-not-zero": "Settle the balance before archiving",
+    "contact-has-planned-shares": "End or remove the planned purchases before archiving",
+    "contact-in-use": "This contact has shares or payments, so it cannot be deleted. Archive it instead.",
+    "contact-name-taken": "A contact with that name already exists",
+    "contact-not-found": "This contact was not found.",
+    "contact-share-not-allowed": "Only an expense can be shared with a contact.",
     "csv-encoding-invalid": "The file is not UTF-8 text. Export it again as UTF-8 and try again.",
     "csv-format-not-supported": "This looks like a card bill, which cannot be imported yet. Import the account statement.",
     "csv-too-large": "The file is too large. Split it and import the parts.",
@@ -637,6 +713,7 @@
     "owner-role-needs-transfer": "To make someone the owner, transfer ownership.",
     "ownership-transfer-to-self": "You already own this plan.",
     "participant-duplicate": "A person is listed twice in the split.",
+    "participant-member-or-contact": "Each person in the split is a member or a contact.",
     "participant-not-member": "The split names someone who is not a member of the plan.",
     "participant-shares-mismatch": "The shares must add up to the transaction amount.",
     "participants-required": "Choose at least one person for this transaction.",
@@ -700,6 +777,7 @@
       "edit": "Edit"
     },
     "attributionFields": {
+      "archivedContact": "{{name}} (archived)",
       "attributedTo": "Attributed to",
       "equal": "Equal",
       "exact": "Exact",
@@ -762,8 +840,13 @@
       "ongoing": "Ongoing"
     },
     "form": {
+      "allocationAboveOpen": "That is more than what is open on the purchase",
+      "allocationNeedsAmount": "Enter an amount for each ticked purchase",
+      "allocationsAboveAmount": "The ticked purchases add up to more than the payment",
       "amountMustBePositive": "Amount must be positive",
+      "choosePayingContact": "Choose who paid",
       "choosePerson": "Choose the person",
+      "contactsOnExpensesOnly": "Only an expense can be shared with a contact.",
       "dateAndInstallmentsInSeparateEdits": "Change the date and the number of installments in separate edits. Save one, then the other.",
       "dateIsRequired": "Date is required",
       "descriptionIsRequired": "Description is required",
@@ -799,6 +882,7 @@
       "cardBillPayment": "Card bill",
       "normal": "Normal",
       "refund": "Refund",
+      "repayment": "Contact payment",
       "savings": "Savings",
       "transfer": "Between members"
     },
@@ -822,6 +906,18 @@
       "mode": "Mode",
       "recurring": "Recurring",
       "repeatOrSplitIntoInstallments": "Repeat or split into installments?"
+    },
+    "repaymentFields": {
+      "amountFor": "Amount for {{description}}",
+      "becomesCredit": "{{amount}} becomes credit",
+      "contact": "Paid by",
+      "loadFailed": "Could not load this contact's purchases.",
+      "loading": "Loading purchases",
+      "nothingOpen": "Nothing is open for this contact: the payment becomes credit.",
+      "open": "{{amount}} open",
+      "purchases": "Purchases it settles",
+      "receivedBy": "Received by",
+      "selectAContact": "Select a contact"
     },
     "seriesScopeDialog": {
       "all": "All",

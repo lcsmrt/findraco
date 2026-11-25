@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.lcs.findraco.category.model.Category;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
 import com.lcs.findraco.user.model.User;
@@ -22,6 +23,7 @@ class TransactionTest {
     private final Plan plan = new Plan();
     private final User owner = userWithId(1L);
     private final User partner = userWithId(2L);
+    private final Contact mae = contactWithId(1L);
 
     @Test
     void createWithoutParticipantsFails() {
@@ -327,6 +329,229 @@ class TransactionTest {
         assertThat(plain.getKind()).isNull();
     }
 
+    @Test
+    void aContactShareFitsOnlyAPlainExpense() {
+        List<Share> toTheContact = List.of(Share.ofContact(mae, null));
+
+        assertThat(Transaction.create(draft(details("100.00"), SplitMode.EQUAL, toTheContact, List.of()))
+                        .getParticipants())
+                .extracting(TransactionParticipant::getContact)
+                .containsExactly(mae);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        kindDetails(null, TransactionType.CREDIT, null), SplitMode.EQUAL, toTheContact, List.of())))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+        for (TransactionKind kind : TransactionKind.values()) {
+            // A neutral kind takes exactly one participant and would accept this one; the contact is what it refuses.
+            assertThatThrownBy(() -> Transaction.create(draft(
+                            kindDetails(kind, TransactionType.DEBIT, null), SplitMode.EQUAL, toTheContact, List.of())))
+                    .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+        }
+    }
+
+    @Test
+    void aMemberAndAContactOfTheSameNumberAreTwoParties() {
+        Transaction transaction = Transaction.create(draft(
+                details("100.00"),
+                SplitMode.EQUAL,
+                List.of(new Share(userWithId(1L), null), Share.ofContact(contactWithId(1L), null)),
+                List.of()));
+
+        assertThat(transaction.getParticipants())
+                .extracting(TransactionParticipant::getShareAmount)
+                .containsExactly(new BigDecimal("50.00"), new BigDecimal("50.00"));
+    }
+
+    @Test
+    void editingKeepsTheRowOfAContactThatStaysInTheSplit() {
+        Transaction transaction = Transaction.create(draft(
+                details("100.00"),
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null), Share.ofContact(mae, null)),
+                List.of()));
+        TransactionParticipant contactRow = transaction.getParticipants().get(1);
+
+        transaction.edit(
+                details("80.00"),
+                SplitMode.EXACT,
+                List.of(share(owner, "30.00"), Share.ofContact(mae, new BigDecimal("50.00"))));
+
+        assertThat(transaction.getParticipants()).hasSize(2).contains(contactRow);
+        assertThat(contactRow.getShareAmount()).isEqualByComparingTo("50.00");
+    }
+
+    @Test
+    void takingTheContactOutOfTheSplitRemovesItsRow() {
+        Transaction transaction = Transaction.create(draft(
+                details("100.00"),
+                SplitMode.EQUAL,
+                List.of(new Share(owner, null), Share.ofContact(mae, null)),
+                List.of()));
+
+        transaction.edit(details("100.00"), SplitMode.EQUAL, self());
+
+        assertThat(transaction.getParticipants())
+                .extracting(TransactionParticipant::getMember)
+                .containsExactly(owner);
+    }
+
+    @Test
+    void aNeutralKindCannotBeAssignedToARowWithAContactShare() {
+        Transaction transaction = Transaction.create(
+                draft(details("100.00"), SplitMode.EQUAL, List.of(Share.ofContact(mae, null)), List.of()));
+
+        assertThatThrownBy(() -> transaction.assignKind(TransactionKind.TRANSFER))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+        assertThat(transaction.getParticipants())
+                .extracting(TransactionParticipant::getContact)
+                .containsExactly(mae);
+    }
+
+    @Test
+    void aRefundCannotBeAssignedToARowWithAContactShare() {
+        Transaction transaction = Transaction.create(
+                draft(details("100.00"), SplitMode.EQUAL, List.of(Share.ofContact(mae, null)), List.of()));
+
+        assertThatThrownBy(() -> transaction.assignKind(TransactionKind.REFUND))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+    }
+
+    @Test
+    void confirmingRecomputesTheContactsShareToo() {
+        List<Share> shares = List.of(share(owner, "40.00"), Share.ofContact(mae, new BigDecimal("60.00")));
+        RecurrenceDefinition series = RecurrenceDefinition.create(new SeriesDraft(
+                plan,
+                owner,
+                null,
+                TransactionType.DEBIT,
+                new BigDecimal("100.00"),
+                "Gym",
+                RecurrenceMode.RECURRING,
+                RecurrenceInterval.MONTHLY,
+                null,
+                null,
+                DAY,
+                null,
+                SplitMode.EXACT,
+                shares,
+                true));
+        Transaction occurrence = Transaction.create(
+                new TransactionDraft(plan, owner, details("100.00"), SplitMode.EXACT, shares, List.of(), null, series));
+
+        occurrence.confirm(new BigDecimal("50.00"), DAY);
+
+        assertThat(occurrence.getParticipants())
+                .extracting(TransactionParticipant::getShareAmount)
+                .containsExactly(new BigDecimal("20.00"), new BigDecimal("30.00"));
+    }
+
+    @Test
+    void aRepaymentIsAMembersCreditFromOneContact() {
+        Transaction repayment = Transaction.create(
+                draft(repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, self(), List.of()));
+
+        assertThat(repayment.getKind()).isEqualTo(TransactionKind.REPAYMENT);
+        assertThat(repayment.getRepaymentContact()).isSameAs(mae);
+        assertThat(repayment.getParticipants()).hasSize(1);
+        assertThat(repayment.getParticipants().getFirst().getMember()).isSameAs(owner);
+    }
+
+    @Test
+    void aRepaymentBreakingItsShapeIsRefused() {
+        Category income = category(TransactionType.CREDIT);
+        List<ItemDraft> items = List.of(item("10.00", null));
+        List<Share> withContact = List.of(Share.ofContact(mae, null));
+
+        assertThat(List.of(
+                        shapeFails(repaymentDetails(TransactionType.DEBIT, mae, null), self(), List.of()),
+                        shapeFails(repaymentDetails(TransactionType.CREDIT, null, null), self(), List.of()),
+                        shapeFails(repaymentDetails(TransactionType.CREDIT, mae, income), self(), List.of()),
+                        shapeFails(repaymentDetails(TransactionType.CREDIT, mae, null), self(), items),
+                        shapeFails(
+                                repaymentDetails(TransactionType.CREDIT, mae, null),
+                                List.of(new Share(owner, null), new Share(partner, null)),
+                                List.of())))
+                .containsOnly(true);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, withContact, List.of())))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+    }
+
+    @Test
+    void onlyARepaymentNamesTheContactItCameFrom() {
+        TransactionDetails refund = new TransactionDetails(
+                category(TransactionType.DEBIT),
+                TransactionType.CREDIT,
+                new BigDecimal("100.00"),
+                "Back",
+                DAY,
+                null,
+                null,
+                TransactionKind.REFUND,
+                mae);
+        TransactionDetails plain = new TransactionDetails(
+                null, TransactionType.CREDIT, new BigDecimal("100.00"), "Pix", DAY, null, null, null, mae);
+
+        for (TransactionDetails details : List.of(refund, plain)) {
+            assertThatThrownBy(() -> Transaction.create(draft(details, SplitMode.EQUAL, self(), List.of())))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        }
+    }
+
+    @Test
+    void aRepaymentIsNeverMarkedOrUnmarkedAsAKind() {
+        Transaction repayment = Transaction.create(
+                draft(repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, self(), List.of()));
+        Transaction income = Transaction.create(draft(
+                new TransactionDetails(null, TransactionType.CREDIT, new BigDecimal("100.00"), "Pix", DAY, null, null),
+                SplitMode.EQUAL,
+                self(),
+                List.of()));
+
+        assertThatThrownBy(() -> income.assignKind(TransactionKind.REPAYMENT))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThatThrownBy(() -> repayment.assignKind(TransactionKind.TRANSFER))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThat(repayment.getRepaymentContact()).isSameAs(mae);
+        assertThat(income.getKind()).isNull();
+    }
+
+    @Test
+    void aRepaymentEditedIntoAPlainIncomeLetsGoOfItsContact() {
+        Transaction repayment = Transaction.create(
+                draft(repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, self(), List.of()));
+
+        repayment.edit(
+                new TransactionDetails(null, TransactionType.CREDIT, new BigDecimal("100.00"), "Pix", DAY, null, null),
+                SplitMode.EQUAL,
+                self(),
+                List.of());
+
+        assertThat(repayment.getKind()).isNull();
+        assertThat(repayment.getRepaymentContact()).isNull();
+    }
+
+    private boolean shapeFails(TransactionDetails details, List<Share> shares, List<ItemDraft> items) {
+        try {
+            Transaction.create(draft(details, SplitMode.EQUAL, shares, items));
+            return false;
+        } catch (TransactionExceptions.NeutralKindInvalidException e) {
+            return true;
+        }
+    }
+
+    private static TransactionDetails repaymentDetails(TransactionType type, Contact contact, Category category) {
+        return new TransactionDetails(
+                category,
+                type,
+                new BigDecimal("100.00"),
+                "Pix from Mãe",
+                DAY,
+                null,
+                null,
+                TransactionKind.REPAYMENT,
+                contact);
+    }
+
     private TransactionDetails kindDetails(TransactionKind kind, TransactionType type, Category category) {
         return new TransactionDetails(category, type, new BigDecimal("100.00"), "Movement", DAY, null, null, kind);
     }
@@ -360,6 +585,18 @@ class TransactionTest {
 
     private static Category category(TransactionType type) {
         return Category.create(new Plan(), type, "Category", null);
+    }
+
+    private static Contact contactWithId(long id) {
+        Contact contact = Contact.create(new Plan(), "Mãe", java.time.Instant.EPOCH);
+        try {
+            Field field = Contact.class.getDeclaredField("id");
+            field.setAccessible(true);
+            field.set(contact, id);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException(e);
+        }
+        return contact;
     }
 
     private static User userWithId(long id) {

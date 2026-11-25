@@ -30,11 +30,21 @@ public record TransactionResponse(
         List<TransactionItemResponse> items,
         TransactionStatus status,
         boolean requiresConfirmation,
-        TransactionPermissionsResponse permissions) {
+        TransactionPermissionsResponse permissions,
+        @Nullable RepaymentResponse repayment) {
 
     /** The response for a reader whose calendar day is {@code today}, which decides whether it is actual yet. */
     public static TransactionResponse from(
             Transaction transaction, TransactionPermissionsResponse permissions, LocalDate today) {
+        return from(transaction, permissions, today, null);
+    }
+
+    /** As above, for a repayment with the allocations it stores. */
+    public static TransactionResponse from(
+            Transaction transaction,
+            TransactionPermissionsResponse permissions,
+            LocalDate today,
+            @Nullable RepaymentResponse repayment) {
         return new TransactionResponse(
                 transaction.getId(),
                 transaction.getVersion(),
@@ -57,6 +67,7 @@ public record TransactionResponse(
                         .toList(),
                 transaction.status(today),
                 transaction.getConfirmation() != Confirmation.BY_DATE,
-                permissions);
+                permissions,
+                repayment);
     }
 }

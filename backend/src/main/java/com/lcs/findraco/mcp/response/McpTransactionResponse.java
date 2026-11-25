@@ -14,7 +14,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A transaction as Claude reads it: what it was, how much, when, whether it already counts as actual, whose it is
- * (first names) and its place in a series.
+ * (first names) and its place in a series. A payment from a contact names the contact.
  */
 public record McpTransactionResponse(
         long id,
@@ -26,7 +26,8 @@ public record McpTransactionResponse(
         @Nullable String category,
         TransactionStatus status,
         List<String> attributedTo,
-        @Nullable String series) {
+        @Nullable String series,
+        @Nullable String contact) {
 
     private static final Pattern INSTALLMENT = Pattern.compile("\\((\\d+)/(\\d+)\\)$");
 
@@ -44,7 +45,8 @@ public record McpTransactionResponse(
                         .map(participant -> McpNames.firstName(participant.name()))
                         .sorted()
                         .toList(),
-                series(transaction));
+                series(transaction),
+                transaction.repayment() == null ? null : transaction.repayment().contactName());
     }
 
     /** "k/N" for an installment, "monthly" for a recurring series, null for a single row. */

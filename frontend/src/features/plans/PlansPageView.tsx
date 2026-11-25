@@ -37,6 +37,8 @@ type PlansPageViewProps = {
   onLeave: () => void;
   // Slots: both lists load their own data for the active plan.
   membersList: ReactNode;
+  // The plan's contacts, which sit below the members.
+  contacts: ReactNode;
   invitationsList: ReactNode;
   // The active plan's trash of deleted transactions.
   trash: ReactNode;
@@ -60,6 +62,7 @@ export function PlansPageView({
   onInvite,
   onLeave,
   membersList,
+  contacts,
   invitationsList,
   trash,
   archivedPlans,
@@ -171,6 +174,8 @@ export function PlansPageView({
           <CardContent>{membersList}</CardContent>
         </Card>
       )}
+
+      {activePlan && contacts}
 
       {activePlan && canManagePlan && (
         <Card>
