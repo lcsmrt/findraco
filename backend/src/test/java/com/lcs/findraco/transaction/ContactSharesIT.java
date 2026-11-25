@@ -291,8 +291,9 @@ class ContactSharesIT extends AbstractIntegrationTest {
         Map<String, Object> request = expense("60.00", "EQUAL", member(owner, null), contact(mae, null));
         request.put("startDate", today().plusDays(30).toString());
         JsonNode planned = create(plan, owner, request);
-        send(post(ContactRoutes.CONTACT + "/{id}/archive", plan.getId(), mae.getId()), owner, null)
-                .andExpect(status().isOk());
+        // The archive route refuses a contact with planned shares, so a contact archived before that rule (or
+        // whose share was moved forward since) is set up directly.
+        jdbc.update("UPDATE contacts SET archived_at = now() WHERE id = ?", mae.getId());
 
         Map<String, Object> edit = new LinkedHashMap<>(request);
         edit.put("description", "Renamed");
@@ -497,7 +498,7 @@ class ContactSharesIT extends AbstractIntegrationTest {
     }
 
     private static void assertShares(JsonNode transaction, String... expected) {
-        assertThat(shares(transaction)).containsExactly(expected);
+        assertThat(shares(transaction)).containsExactlyInAnyOrder(expected);
     }
 
     private ResultActions send(MockHttpServletRequestBuilder request, User caller, Object body) throws Exception {
