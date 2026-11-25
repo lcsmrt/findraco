@@ -278,10 +278,10 @@ function EditableParticipantsCell({
 
   function handleOpenChange(next: boolean) {
     if (next) {
-      setDraft(transaction.participants.map((p) => p.id));
+      setDraft(transaction.participants.flatMap((p) => (p.id === null ? [] : [p.id])));
     } else {
       const original = transaction.participants
-        .map((p) => p.id)
+        .flatMap((p) => (p.id === null ? [] : [p.id]))
         .sort()
         .join(",");
       const current = [...draft].sort().join(",");

@@ -4,10 +4,14 @@ export type TransactionType = "CREDIT" | "DEBIT";
 
 export type SplitMode = "EQUAL" | "EXACT";
 
+/** A share of a transaction: a member's (`id` is the member's user id) or a contact's (`id` is null). */
 export type ParticipantShare = {
-  id: number;
+  id: number | null;
+  /** The name to show, whether the share goes to a member or to a contact. */
   name: string;
   shareAmount: number;
+  contactId?: number | null;
+  contactName?: string | null;
 };
 
 export type TransactionItem = {
@@ -65,7 +69,9 @@ export type TransactionPermissions = {
 };
 
 export type ParticipantInput = {
-  memberId: number;
+  /** Exactly one of `memberId` and `contactId` is sent. */
+  memberId?: number;
+  contactId?: number;
   /** Only used when splitMode is EXACT. */
   shareAmount?: number;
 };

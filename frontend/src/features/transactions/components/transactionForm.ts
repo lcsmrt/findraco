@@ -508,7 +508,7 @@ function neutralAttribution(
   currentUserId: number | undefined,
 ): TransactionFormOutput {
   const payer = stored?.participants?.length === 1 ? stored.participants[0] : undefined;
-  if (!payer || payer.id === currentUserId) {
+  if (!payer || payer.id === null || payer.id === currentUserId) {
     return { ...values, attributionMode: "ME" };
   }
   return {
@@ -588,7 +588,7 @@ export function toInlineSavePayload(
       participants:
         change.participants ??
         transaction.participants.map((p) => ({
-          memberId: p.id,
+          ...(p.id === null ? { contactId: p.contactId ?? undefined } : { memberId: p.id }),
           shareAmount:
             transaction.splitMode === "EXACT" ? p.shareAmount : undefined,
         })),
@@ -727,11 +727,17 @@ export function buildDefaultValues(
       participants:
         attributionMode === "ME"
           ? []
-          : transaction.participants.map((participant) => ({
-              memberId: participant.id,
-              memberName: participant.name,
-              shareAmount: participant.shareAmount,
-            })),
+          : transaction.participants.flatMap((participant) =>
+              participant.id === null
+                ? []
+                : [
+                    {
+                      memberId: participant.id,
+                      memberName: participant.name,
+                      shareAmount: participant.shareAmount,
+                    },
+                  ],
+            ),
       items: isSeriesEdit
         ? []
         : transaction.items.map((item) => ({
