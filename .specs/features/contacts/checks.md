@@ -227,7 +227,7 @@ Proof: cd backend && JAVA_HOME=$HOME/.jdks/jdk-25.0.5+8 ./mvnw -B -q verify -Dit
 ## Handoff
 
 - **Settled mid-build:** none
-- **Dispatched:** none yet
-- **Boundary:** none yet
+- **Dispatched:** backend worker 1 (Sonnet), contacts + contact shares (C1-C8, C13-C20, C47), at `c8027bc9`, returned (`9dfea332`, `4f7abd42`; C8 statement row and C17 REPAYMENT case left to worker 2); backend worker 2 (Sonnet), repayments + statement + MCP (C24-C30, C35-C37, C44-C46, C8/C17 legs, C47 refresh), at `4f7abd42`
+- **Boundary:** C1-C7, C13-C16, C18-C20, C47 closed at `4f7abd42`
 - **Abandoned:** none
 - **Walked:** none yet
