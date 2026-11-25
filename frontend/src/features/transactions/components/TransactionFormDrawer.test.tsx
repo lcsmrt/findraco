@@ -1333,6 +1333,28 @@ describe("TransactionFormDrawer repayment", () => {
     expect(body).not.toHaveProperty("categoryId");
   });
 
+  it("gives the payment one receiving member whatever split came before, and lets the user choose who", async () => {
+    const user = userEvent.setup();
+    const requests = recordRequests();
+    server.use(contactHandlers.statement(statement), transactionHandlers.create({ ...savedTransaction, type: "CREDIT" }));
+    renderDrawer({ members: [lucas, livia], contacts: [mae] });
+    await user.type(screen.getByLabelText("Description"), "Pix from Mãe");
+    await user.type(screen.getByLabelText("Amount"), "10000");
+    await user.click(await screen.findByRole("button", { name: "Split" }));
+
+    await chooseKind(user);
+    await chooseContact(user);
+
+    // Lucas is saving, so he receives it until the user says otherwise.
+    expect(screen.getByLabelText("Received by").textContent).toContain("Lucas");
+    await user.click(screen.getByLabelText("Received by"));
+    await user.click(await screen.findByRole("option", { name: "Livia" }));
+    await user.click(screen.getByRole("button", { name: "Create" }));
+
+    const body = await sentBody(requests, "POST");
+    expect(body).toMatchObject({ kind: "REPAYMENT", splitMode: "EQUAL", participants: [{ memberId: livia.userId }] });
+  });
+
   it("shows the excess as credit", async () => {
     const user = userEvent.setup();
     server.use(contactHandlers.statement(statement));
