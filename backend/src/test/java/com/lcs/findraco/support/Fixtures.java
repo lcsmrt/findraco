@@ -147,6 +147,24 @@ public class Fixtures {
         return contactRepository.save(Contact.create(plan, name, now()));
     }
 
+    /**
+     * A debit whose whole amount is {@code contact}'s share, paid by {@code creator} and dated {@code date}: money the
+     * contact owes once the date has come.
+     */
+    public Transaction aContactPurchase(
+            Plan plan, User creator, Contact contact, String amount, LocalDate date, String description) {
+        return aTransaction(new TransactionDraft(
+                plan,
+                creator,
+                new TransactionDetails(
+                        null, TransactionType.DEBIT, new BigDecimal(amount), description, date, null, null),
+                SplitMode.EQUAL,
+                List.of(Share.ofContact(contact, null)),
+                List.of(),
+                null,
+                null));
+    }
+
     /** The stored version of a contact, which a rename sends back; 0 when there is no such row. */
     public long contactVersion(long id) {
         return version("SELECT version FROM contacts WHERE id = ?", id);

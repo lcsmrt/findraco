@@ -70,6 +70,8 @@ const PROBLEM_COPY = {
   "contact-in-use": "problems.contact-in-use",
   "contact-archived": "problems.contact-archived",
   "contact-share-not-allowed": "problems.contact-share-not-allowed",
+  "allocation-exceeds-open": "problems.allocation-exceeds-open",
+  "allocation-exceeds-amount": "problems.allocation-exceeds-amount",
   "participant-member-or-contact": "problems.participant-member-or-contact",
   "exact-share-invalid": "problems.exact-share-invalid",
   "item-invalid": "problems.item-invalid",

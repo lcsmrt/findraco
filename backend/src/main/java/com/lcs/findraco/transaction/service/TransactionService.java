@@ -26,6 +26,7 @@ import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionDeletion;
 import com.lcs.findraco.transaction.model.TransactionDetails;
 import com.lcs.findraco.transaction.model.TransactionDraft;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionParticipant;
 import com.lcs.findraco.transaction.model.TransactionSortField;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
@@ -36,6 +37,7 @@ import com.lcs.findraco.transaction.request.ConfirmTransactionRequest;
 import com.lcs.findraco.transaction.request.CreateSeriesRequest;
 import com.lcs.findraco.transaction.request.CreateTransactionRequest;
 import com.lcs.findraco.transaction.request.NeutralCandidateFilter;
+import com.lcs.findraco.transaction.request.RepaymentAllocationRequest;
 import com.lcs.findraco.transaction.request.SetTransactionKindRequest;
 import com.lcs.findraco.transaction.request.TransactionFilter;
 import com.lcs.findraco.transaction.request.TransactionItemRequest;
@@ -44,6 +46,7 @@ import com.lcs.findraco.transaction.request.UpdateSeriesRequest;
 import com.lcs.findraco.transaction.request.UpdateTransactionRequest;
 import com.lcs.findraco.transaction.response.NeutralCandidateResponse;
 import com.lcs.findraco.transaction.response.RecurrenceDefinitionResponse;
+import com.lcs.findraco.transaction.response.RepaymentResponse;
 import com.lcs.findraco.transaction.response.TransactionDeletedResponse;
 import com.lcs.findraco.transaction.response.TransactionPermissionsResponse;
 import com.lcs.findraco.transaction.response.TransactionResponse;
@@ -55,8 +58,10 @@ import jakarta.persistence.LockModeType;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -78,6 +83,7 @@ public class TransactionService {
     private final PlanService planService;
     private final UserService userService;
     private final ContactService contactService;
+    private final RepaymentAllocationService allocationService;
 
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final TransactionDeletionRepository transactionDeletionRepository;
@@ -95,6 +101,7 @@ public class TransactionService {
             PlanService planService,
             UserService userService,
             ContactService contactService,
+            RepaymentAllocationService allocationService,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             TransactionDeletionRepository transactionDeletionRepository,
             SeriesRegenerator seriesRegenerator,
@@ -109,6 +116,7 @@ public class TransactionService {
         this.planService = planService;
         this.userService = userService;
         this.contactService = contactService;
+        this.allocationService = allocationService;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.transactionDeletionRepository = transactionDeletionRepository;
         this.seriesRegenerator = seriesRegenerator;
@@ -137,7 +145,13 @@ public class TransactionService {
     }
 
     private TransactionResponse response(Transaction transaction, PlanContext ctx, LocalDate today) {
-        return TransactionResponse.from(transaction, permissions(transaction, ctx), today);
+        return response(transaction, ctx, today, allocationService.responsesOf(List.of(transaction)));
+    }
+
+    private TransactionResponse response(
+            Transaction transaction, PlanContext ctx, LocalDate today, Map<Long, RepaymentResponse> repayments) {
+        return TransactionResponse.from(
+                transaction, permissions(transaction, ctx), today, repayments.get(transaction.getId()));
     }
 
     /** Edit and delete follow the same rule: the caller's role and, for a contributor, who created the row. */
@@ -203,7 +217,8 @@ public class TransactionService {
             transactionRepository.fetchParticipants(page.getContent());
             transactionRepository.fetchItems(page.getContent());
         }
-        return page.map(transaction -> response(transaction, ctx, today));
+        Map<Long, RepaymentResponse> repayments = allocationService.responsesOf(page.getContent());
+        return page.map(transaction -> response(transaction, ctx, today, repayments));
     }
 
     /** The review of movements: rows with no kind whose bank text looks neutral, with the kind proposed for each. */
@@ -220,6 +235,7 @@ public class TransactionService {
     public TransactionResponse create(CreateTransactionRequest dto, PlanContext ctx) {
         planAuthorization.requireCanCreateTransaction(ctx.role());
 
+        Contact repaymentContact = repaymentContact(dto.kind(), dto.contactId(), dto.allocations(), null, ctx);
         RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), KeptParties.NONE, ctx);
         TransactionDetails details = new TransactionDetails(
                 category(dto.categoryId(), ctx),
@@ -229,11 +245,75 @@ public class TransactionService {
                 dto.startDate(),
                 dto.endDate(),
                 dto.parcelsNumber(),
-                dto.kind());
+                dto.kind(),
+                repaymentContact);
         Transaction transaction = Transaction.create(new TransactionDraft(
                 plan(ctx), user(ctx), details, split.mode(), split.shares(), items(dto.items(), ctx), null, null));
 
-        return response(transactionRepository.save(transaction), ctx);
+        Transaction saved = transactionRepository.save(transaction);
+        if (repaymentContact != null) {
+            allocationService.allocate(saved, dto.allocations(), ctx);
+        }
+        return response(saved, ctx);
+    }
+
+    /**
+     * The contact a repayment comes from, locked until the save ends, or null for a row that is no repayment. Only a
+     * repayment takes {@code contactId} and allocations, and only an owner or editor records one, as they alone
+     * attribute money to others. A repayment that already comes from {@code currentContactId} keeps it even when it
+     * was archived since.
+     */
+    private Contact repaymentContact(
+            TransactionKind kind,
+            Long contactId,
+            List<RepaymentAllocationRequest> allocations,
+            Long currentContactId,
+            PlanContext ctx) {
+        if (kind != TransactionKind.REPAYMENT) {
+            if (contactId != null || allocations != null) {
+                throw new TransactionExceptions.NeutralKindInvalidException(
+                        "contactId and allocations belong to a REPAYMENT only.");
+            }
+            return null;
+        }
+        planAuthorization.requireCanAttributeToOthers(ctx.role());
+        if (contactId == null) {
+            throw new TransactionExceptions.NeutralKindInvalidException("A REPAYMENT needs the contact it came from.");
+        }
+        return contactService.lockForUpdate(contactId, contactId.equals(currentContactId), ctx);
+    }
+
+    /**
+     * Locks the contacts whose shares a save may change, in id order so two saves never wait on each other: what
+     * a contact owes and what repayments settled of it are then read after any other save of it has committed.
+     */
+    private void lockContacts(Collection<Long> contactIds, PlanContext ctx) {
+        contactIds.stream().sorted().forEach(id -> contactService.lockForUpdate(id, true, ctx));
+    }
+
+    private static Set<Long> contactIds(RequestedSplit split) {
+        Set<Long> ids = new HashSet<>();
+        for (Share share : split.shares()) {
+            if (share.contact() != null) {
+                ids.add(share.contact().getId());
+            }
+        }
+        return ids;
+    }
+
+    private static Set<Long> contactIds(Transaction transaction) {
+        Set<Long> ids = new HashSet<>();
+        for (TransactionParticipant participant : transaction.getParticipants()) {
+            if (participant.getContact() != null) {
+                ids.add(participant.getContact().getId());
+            }
+        }
+        return ids;
+    }
+
+    /** What an edit leaves of a purchase's allocations: a share cut below what repayments settled gives it back. */
+    private void fitAllocations(Transaction transaction) {
+        allocationService.fitToShares(RepaymentAllocationService.contactShareIds(transaction));
     }
 
     @Transactional
@@ -242,7 +322,14 @@ public class TransactionService {
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
         claimVersion(transaction, transaction.getVersion(), dto.version());
 
+        boolean wasRepayment = transaction.getKind() == TransactionKind.REPAYMENT;
+        Long currentContactId = wasRepayment ? transaction.getRepaymentContact().getId() : null;
+        Contact repaymentContact =
+                repaymentContact(dto.kind(), dto.contactId(), dto.allocations(), currentContactId, ctx);
         RequestedSplit split = requestedSplit(dto.participants(), dto.splitMode(), KeptParties.of(transaction), ctx);
+        Set<Long> contactIds = contactIds(split);
+        contactIds.addAll(contactIds(transaction));
+        lockContacts(contactIds, ctx);
         TransactionDetails details = new TransactionDetails(
                 category(dto.categoryId(), ctx),
                 dto.type(),
@@ -251,10 +338,20 @@ public class TransactionService {
                 dto.startDate(),
                 dto.endDate(),
                 dto.parcelsNumber(),
-                dto.kind());
+                dto.kind(),
+                repaymentContact);
         transaction.edit(details, split.mode(), split.shares(), items(dto.items(), ctx));
 
-        return response(transactionRepository.saveAndFlush(transaction), ctx);
+        Transaction saved = transactionRepository.saveAndFlush(transaction);
+        if (repaymentContact != null) {
+            allocationService.allocate(saved, dto.allocations(), ctx);
+        } else {
+            if (wasRepayment) {
+                allocationService.release(saved);
+            }
+            fitAllocations(saved);
+        }
+        return response(saved, ctx);
     }
 
     /** Marks a row with a kind, as the review of movements does; the row's other values stay as they are. */
@@ -279,9 +376,12 @@ public class TransactionService {
         planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(transaction), ctx.userId());
         claimVersion(transaction, transaction.getVersion(), dto.version());
 
+        lockContacts(contactIds(transaction), ctx);
         transaction.confirm(dto.amount(), dto.startDate());
 
-        return response(transactionRepository.saveAndFlush(transaction), ctx);
+        Transaction saved = transactionRepository.saveAndFlush(transaction);
+        fitAllocations(saved);
+        return response(saved, ctx);
     }
 
     /**
@@ -641,6 +741,12 @@ public class TransactionService {
             planAuthorization.requireCanModifyTransaction(ctx.role(), createdById(occurrence), ctx.userId());
         }
 
+        // A share that shrinks gives back what repayments settled of it, so every contact the edit may touch is
+        // locked before the split changes.
+        Set<Long> contactIds = contactIds(split);
+        inScope.forEach(occurrence -> contactIds.addAll(contactIds(occurrence)));
+        lockContacts(contactIds, ctx);
+
         // Refused before anything changes, so a refused date change stores nothing.
         LocalDate pivotDate = requestedPivotDate(dto, pivot, occurrences);
         SeriesDateChange dateChange = dto.scope() == SeriesEditScope.THIS_AND_FOLLOWING && pivotDate != null
@@ -666,6 +772,7 @@ public class TransactionService {
             }
 
             transactionRepository.saveAndFlush(pivot);
+            fitAllocations(pivot);
             return TransactionSeriesResponse.from(
                     List.of(pivot), transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));
         }
@@ -731,6 +838,7 @@ public class TransactionService {
             coverOpenEndedSeries(definition);
         }
         recurrenceDefinitionRepository.saveAndFlush(definition);
+        combined.forEach(this::fitAllocations);
 
         return TransactionSeriesResponse.from(
                 combined, transaction -> permissions(transaction, ctx), userService.today(ctx.userId()));

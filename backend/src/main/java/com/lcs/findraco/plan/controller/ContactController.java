@@ -4,7 +4,9 @@ import com.lcs.findraco.plan.request.ContactFilter;
 import com.lcs.findraco.plan.request.CreateContactRequest;
 import com.lcs.findraco.plan.request.UpdateContactRequest;
 import com.lcs.findraco.plan.response.ContactResponse;
+import com.lcs.findraco.plan.response.ContactStatementResponse;
 import com.lcs.findraco.plan.service.ContactService;
+import com.lcs.findraco.plan.service.ContactStatementService;
 import com.lcs.findraco.plan.service.PlanContext;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -21,9 +23,11 @@ import org.springframework.web.bind.annotation.*;
 public class ContactController {
 
     private final ContactService contactService;
+    private final ContactStatementService statementService;
 
-    public ContactController(ContactService contactService) {
+    public ContactController(ContactService contactService, ContactStatementService statementService) {
         this.contactService = contactService;
+        this.statementService = statementService;
     }
 
     @Operation(summary = "Lists the plan's contacts by name, each with what it owes or its credit")
@@ -31,6 +35,12 @@ public class ContactController {
     public ResponseEntity<List<ContactResponse>> getContacts(
             @ParameterObject @ModelAttribute @Valid ContactFilter filter, PlanContext ctx) {
         return ResponseEntity.ok(contactService.findAll(filter, ctx));
+    }
+
+    @Operation(summary = "A contact's statement: its shares and payments by month, each share with its status")
+    @GetMapping("/{id}/statement")
+    public ResponseEntity<ContactStatementResponse> getStatement(@PathVariable Long id, PlanContext ctx) {
+        return ResponseEntity.ok(statementService.statement(id, ctx));
     }
 
     @Operation(summary = "Creates a contact of the plan")

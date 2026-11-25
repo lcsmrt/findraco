@@ -81,6 +81,8 @@ public enum ProblemType {
     PARTICIPANT_NOT_MEMBER("participant-not-member"),
     PARTICIPANT_MEMBER_OR_CONTACT("participant-member-or-contact"),
     CONTACT_SHARE_NOT_ALLOWED("contact-share-not-allowed"),
+    ALLOCATION_EXCEEDS_OPEN("allocation-exceeds-open"),
+    ALLOCATION_EXCEEDS_AMOUNT("allocation-exceeds-amount"),
     PARTICIPANTS_REQUIRED("participants-required"),
     EXACT_SHARE_INVALID("exact-share-invalid"),
     ITEM_INVALID("item-invalid"),

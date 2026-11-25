@@ -14,7 +14,15 @@ import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import org.jspecify.annotations.Nullable;
 
+/**
+ * The body of a new transaction.
+ *
+ * @param contactId the contact a REPAYMENT came from; sent with that kind only.
+ * @param allocations the contact shares a REPAYMENT settles. Omitted, the payment settles the oldest first; an empty
+ *     list settles none and leaves the whole amount as credit.
+ */
 public record CreateTransactionRequest(
         Long categoryId,
 
@@ -44,4 +52,39 @@ public record CreateTransactionRequest(
         @Valid @Size(max = 100, message = "A transaction takes at most 100 items.")
         List<TransactionItemRequest> items,
 
-        TransactionKind kind) {}
+        TransactionKind kind,
+
+        @Nullable Long contactId,
+
+        @Valid @Size(max = 100, message = "A repayment takes at most 100 allocations.")
+        List<RepaymentAllocationRequest> allocations) {
+
+    /** A request that is no repayment. */
+    public CreateTransactionRequest(
+            Long categoryId,
+            TransactionType type,
+            BigDecimal amount,
+            String description,
+            Integer parcelsNumber,
+            LocalDate startDate,
+            LocalDate endDate,
+            SplitMode splitMode,
+            List<TransactionParticipantRequest> participants,
+            List<TransactionItemRequest> items,
+            TransactionKind kind) {
+        this(
+                categoryId,
+                type,
+                amount,
+                description,
+                parcelsNumber,
+                startDate,
+                endDate,
+                splitMode,
+                participants,
+                items,
+                kind,
+                null,
+                null);
+    }
+}

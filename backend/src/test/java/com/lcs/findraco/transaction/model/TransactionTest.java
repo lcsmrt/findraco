@@ -444,6 +444,114 @@ class TransactionTest {
                 .containsExactly(new BigDecimal("20.00"), new BigDecimal("30.00"));
     }
 
+    @Test
+    void aRepaymentIsAMembersCreditFromOneContact() {
+        Transaction repayment = Transaction.create(
+                draft(repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, self(), List.of()));
+
+        assertThat(repayment.getKind()).isEqualTo(TransactionKind.REPAYMENT);
+        assertThat(repayment.getRepaymentContact()).isSameAs(mae);
+        assertThat(repayment.getParticipants()).hasSize(1);
+        assertThat(repayment.getParticipants().getFirst().getMember()).isSameAs(owner);
+    }
+
+    @Test
+    void aRepaymentBreakingItsShapeIsRefused() {
+        Category income = category(TransactionType.CREDIT);
+        List<ItemDraft> items = List.of(item("10.00", null));
+        List<Share> withContact = List.of(Share.ofContact(mae, null));
+
+        assertThat(List.of(
+                        shapeFails(repaymentDetails(TransactionType.DEBIT, mae, null), self(), List.of()),
+                        shapeFails(repaymentDetails(TransactionType.CREDIT, null, null), self(), List.of()),
+                        shapeFails(repaymentDetails(TransactionType.CREDIT, mae, income), self(), List.of()),
+                        shapeFails(repaymentDetails(TransactionType.CREDIT, mae, null), self(), items),
+                        shapeFails(
+                                repaymentDetails(TransactionType.CREDIT, mae, null),
+                                List.of(new Share(owner, null), new Share(partner, null)),
+                                List.of())))
+                .containsOnly(true);
+        assertThatThrownBy(() -> Transaction.create(draft(
+                        repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, withContact, List.of())))
+                .isInstanceOf(TransactionExceptions.ContactShareNotAllowedException.class);
+    }
+
+    @Test
+    void onlyARepaymentNamesTheContactItCameFrom() {
+        TransactionDetails refund = new TransactionDetails(
+                category(TransactionType.DEBIT),
+                TransactionType.CREDIT,
+                new BigDecimal("100.00"),
+                "Back",
+                DAY,
+                null,
+                null,
+                TransactionKind.REFUND,
+                mae);
+        TransactionDetails plain = new TransactionDetails(
+                null, TransactionType.CREDIT, new BigDecimal("100.00"), "Pix", DAY, null, null, null, mae);
+
+        for (TransactionDetails details : List.of(refund, plain)) {
+            assertThatThrownBy(() -> Transaction.create(draft(details, SplitMode.EQUAL, self(), List.of())))
+                    .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        }
+    }
+
+    @Test
+    void aRepaymentIsNeverMarkedOrUnmarkedAsAKind() {
+        Transaction repayment = Transaction.create(
+                draft(repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, self(), List.of()));
+        Transaction income = Transaction.create(draft(
+                new TransactionDetails(null, TransactionType.CREDIT, new BigDecimal("100.00"), "Pix", DAY, null, null),
+                SplitMode.EQUAL,
+                self(),
+                List.of()));
+
+        assertThatThrownBy(() -> income.assignKind(TransactionKind.REPAYMENT))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThatThrownBy(() -> repayment.assignKind(TransactionKind.TRANSFER))
+                .isInstanceOf(TransactionExceptions.NeutralKindInvalidException.class);
+        assertThat(repayment.getRepaymentContact()).isSameAs(mae);
+        assertThat(income.getKind()).isNull();
+    }
+
+    @Test
+    void aRepaymentEditedIntoAPlainIncomeLetsGoOfItsContact() {
+        Transaction repayment = Transaction.create(
+                draft(repaymentDetails(TransactionType.CREDIT, mae, null), SplitMode.EQUAL, self(), List.of()));
+
+        repayment.edit(
+                new TransactionDetails(null, TransactionType.CREDIT, new BigDecimal("100.00"), "Pix", DAY, null, null),
+                SplitMode.EQUAL,
+                self(),
+                List.of());
+
+        assertThat(repayment.getKind()).isNull();
+        assertThat(repayment.getRepaymentContact()).isNull();
+    }
+
+    private boolean shapeFails(TransactionDetails details, List<Share> shares, List<ItemDraft> items) {
+        try {
+            Transaction.create(draft(details, SplitMode.EQUAL, shares, items));
+            return false;
+        } catch (TransactionExceptions.NeutralKindInvalidException e) {
+            return true;
+        }
+    }
+
+    private static TransactionDetails repaymentDetails(TransactionType type, Contact contact, Category category) {
+        return new TransactionDetails(
+                category,
+                type,
+                new BigDecimal("100.00"),
+                "Pix from Mãe",
+                DAY,
+                null,
+                null,
+                TransactionKind.REPAYMENT,
+                contact);
+    }
+
     private TransactionDetails kindDetails(TransactionKind kind, TransactionType type, Category category) {
         return new TransactionDetails(category, type, new BigDecimal("100.00"), "Movement", DAY, null, null, kind);
     }

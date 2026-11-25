@@ -2,6 +2,8 @@ package com.lcs.findraco.plan.repository;
 
 import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
+import com.lcs.findraco.transaction.model.Transaction;
+import com.lcs.findraco.transaction.model.TransactionParticipant;
 import java.time.LocalDate;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
@@ -34,6 +36,30 @@ public interface ContactLedgerRepository extends Repository<Contact, Long> {
             + "WHERE t.plan = :plan AND t.repaymentContact IS NOT NULL AND t.deletion IS NULL "
             + "GROUP BY t.repaymentContact.id")
     List<Object[]> sumLiveRepaymentsByContact(@Param("plan") Plan plan);
+
+    /** The contact's shares on live transactions, with each transaction, for a statement. */
+    @Query("SELECT tp FROM TransactionParticipant tp JOIN FETCH tp.transaction t "
+            + "WHERE tp.contact.id = :contactId AND t.deletion IS NULL ORDER BY t.startDate, t.id")
+    List<TransactionParticipant> findLiveShares(@Param("contactId") long contactId);
+
+    /** The contact's live repayments, oldest first. */
+    @Query("SELECT t FROM Transaction t WHERE t.repaymentContact.id = :contactId AND t.deletion IS NULL "
+            + "ORDER BY t.startDate, t.id")
+    List<Transaction> findLiveRepayments(@Param("contactId") long contactId);
+
+    /**
+     * The rows are [shareId, sum]: what live repayments settled of each of the contact's shares on live purchases.
+     */
+    @Query("SELECT a.participant.id, SUM(a.amount) FROM RepaymentAllocation a "
+            + "WHERE a.participant.contact.id = :contactId AND a.repayment.deletion IS NULL "
+            + "AND a.participant.transaction.deletion IS NULL GROUP BY a.participant.id")
+    List<Object[]> sumLiveAllocationsByShare(@Param("contactId") long contactId);
+
+    /** The rows are [repaymentId, sum]: what each live repayment of the contact settled on live purchases. */
+    @Query("SELECT a.repayment.id, SUM(a.amount) FROM RepaymentAllocation a "
+            + "WHERE a.repayment.repaymentContact.id = :contactId AND a.repayment.deletion IS NULL "
+            + "AND a.participant.transaction.deletion IS NULL GROUP BY a.repayment.id")
+    List<Object[]> sumLiveAllocationsByRepayment(@Param("contactId") long contactId);
 
     /** How many shares of transactions, trashed or not, refer to the contact. */
     @Query("SELECT COUNT(tp) FROM TransactionParticipant tp WHERE tp.contact.id = :contactId")

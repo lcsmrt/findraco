@@ -62,6 +62,14 @@ class ContactRoleMatrixIT extends AbstractIntegrationTest {
         return List.of(
                 new Row("GET " + CONTACT, (plan, contact) -> get(CONTACT, plan.getId()), 200, 200, 200, 200, false),
                 new Row(
+                        "GET " + CONTACT + "/{id}/statement",
+                        (plan, contact) -> get(CONTACT + "/{id}/statement", plan.getId(), contact.getId()),
+                        200,
+                        200,
+                        200,
+                        200,
+                        true),
+                new Row(
                         "POST " + CONTACT,
                         (plan, contact) -> post(CONTACT, plan.getId())
                                 .contentType(MediaType.APPLICATION_JSON)

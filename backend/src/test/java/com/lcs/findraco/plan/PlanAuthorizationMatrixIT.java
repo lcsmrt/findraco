@@ -646,6 +646,13 @@ class PlanAuthorizationMatrixIT extends AbstractIntegrationTest {
                         200),
                 new Row("GET " + CONTACT, s -> get(CONTACT, s.cast().plan().getId()), 200, 200, 200, 200),
                 new Row(
+                        "GET " + CONTACT + "/{id}/statement",
+                        s -> get(CONTACT + "/{id}/statement", s.cast().plan().getId(), s.contactId()),
+                        200,
+                        200,
+                        200,
+                        200),
+                new Row(
                         "POST " + CONTACT,
                         s -> post(CONTACT, s.cast().plan().getId())
                                 .contentType(MediaType.APPLICATION_JSON)

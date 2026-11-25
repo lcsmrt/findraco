@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.lcs.findraco.category.controller.CategoryRoutes;
 import com.lcs.findraco.plan.controller.ContactRoutes;
 import com.lcs.findraco.plan.controller.PlanRoutes;
+import com.lcs.findraco.plan.model.Contact;
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
 import com.lcs.findraco.plan.repository.PlanMembershipRepository;
@@ -15,6 +16,8 @@ import com.lcs.findraco.shared.web.ApiRoutes;
 import com.lcs.findraco.support.AbstractIntegrationTest;
 import com.lcs.findraco.transaction.controller.TransactionRoutes;
 import com.lcs.findraco.user.model.User;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.IntStream;
@@ -58,6 +61,32 @@ class BoundedInputsIT extends AbstractIntegrationTest {
                 .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
                 .andExpect(jsonPath("$.errors[0].field").value("name"))
                 .andExpect(jsonPath("$.errors[0].code").value("Size"));
+    }
+
+    @Test
+    void aRepaymentTakesAtMostAHundredPositiveAllocations() throws Exception {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Contact mae = fixtures.aContact(plan, "Mãe");
+        Map<String, Object> repayment = new LinkedHashMap<>(Map.of(
+                "type", "CREDIT",
+                "amount", "10.00",
+                "description", "Pix",
+                "startDate", today().toString(),
+                "kind", "REPAYMENT",
+                "contactId", mae.getId()));
+
+        repayment.put("allocations", Collections.nCopies(101, Map.of("participantId", 1, "amount", "1.00")));
+        send(post(TransactionRoutes.TRANSACTION, plan.getId()), owner, repayment)
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
+                .andExpect(jsonPath("$.errors[0].field").value("allocations"))
+                .andExpect(jsonPath("$.errors[0].code").value("Size"));
+
+        repayment.put("allocations", List.of(Map.of("participantId", 1, "amount", "0.00")));
+        send(post(TransactionRoutes.TRANSACTION, plan.getId()), owner, repayment)
+                .andExpect(problem(HttpStatus.UNPROCESSABLE_CONTENT, "validation-failed"))
+                .andExpect(jsonPath("$.errors[0].field").value("allocations[0].amount"))
+                .andExpect(jsonPath("$.errors[0].code").value("Positive"));
     }
 
     @Test

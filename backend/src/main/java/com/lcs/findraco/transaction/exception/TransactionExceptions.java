@@ -120,6 +120,28 @@ public class TransactionExceptions {
         }
     }
 
+    /** An allocation asks for more than the share has left: it is settled already, planned, trashed or not the contact's. */
+    public static class AllocationExceedsOpenException extends DomainException {
+        public AllocationExceedsOpenException() {
+            super(
+                    ProblemType.ALLOCATION_EXCEEDS_OPEN,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "allocations",
+                    "An allocation is larger than what is still open on that share of the contact, or the share "
+                            + "is not an actual share of this contact.");
+        }
+    }
+
+    public static class AllocationExceedsAmountException extends DomainException {
+        public AllocationExceedsAmountException() {
+            super(
+                    ProblemType.ALLOCATION_EXCEEDS_AMOUNT,
+                    HttpStatus.UNPROCESSABLE_CONTENT,
+                    "allocations",
+                    "The allocations add up to more than the payment.");
+        }
+    }
+
     public static class ContactShareNotAllowedException extends DomainException {
         public ContactShareNotAllowedException() {
             super(

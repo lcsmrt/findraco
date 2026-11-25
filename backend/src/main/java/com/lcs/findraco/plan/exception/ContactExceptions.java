@@ -45,12 +45,14 @@ public class ContactExceptions {
     }
 
     public static class ContactArchivedException extends DomainException {
+        /** An archived contact in a split. */
         public ContactArchivedException() {
-            super(
-                    ProblemType.CONTACT_ARCHIVED,
-                    HttpStatus.UNPROCESSABLE_CONTENT,
-                    "participants",
-                    "An archived contact cannot take a new share.");
+            this("participants", "An archived contact cannot take a new share.");
+        }
+
+        /** An archived contact named in {@code field} of a request that is no split. */
+        public ContactArchivedException(String field, String detail) {
+            super(ProblemType.CONTACT_ARCHIVED, HttpStatus.UNPROCESSABLE_CONTENT, field, detail);
         }
     }
 }

@@ -145,6 +145,10 @@ public class Transaction {
      * A refund must fit the row as it is, with its other values untouched.
      */
     public void assignKind(TransactionKind newKind) {
+        if (newKind == TransactionKind.REPAYMENT || kind == TransactionKind.REPAYMENT) {
+            throw new TransactionExceptions.NeutralKindInvalidException(
+                    "A REPAYMENT names the contact it came from and is recorded or edited as such, never marked.");
+        }
         if (newKind.isNeutral()) {
             User payer = participants.size() == 1 && participants.getFirst().getMember() != null
                     ? participants.getFirst().getMember()
@@ -291,7 +295,15 @@ public class Transaction {
     private void requireKindFits(TransactionDetails details, List<Share> shares, List<ItemDraft> candidateItems) {
         requireContactSharesFit(details, shares);
         TransactionKind candidate = details.kind();
+        if (candidate != TransactionKind.REPAYMENT && details.repaymentContact() != null) {
+            throw new TransactionExceptions.NeutralKindInvalidException(
+                    "Only a REPAYMENT names the contact it came from.");
+        }
         if (candidate == null) {
+            return;
+        }
+        if (candidate == TransactionKind.REPAYMENT) {
+            requireRepaymentFits(details, shares, candidateItems);
             return;
         }
         if (!candidate.isNeutral()) {
@@ -318,6 +330,33 @@ public class Transaction {
         if (shares.size() != 1) {
             throw new TransactionExceptions.NeutralKindInvalidException(
                     candidate + " is a neutral kind and takes exactly one participant.");
+        }
+    }
+
+    /**
+     * A repayment is a credit from one contact, received by one member: no category, no items, not part of a series
+     * (a series regenerates its rows, which would drop what the repayment allocates).
+     */
+    private void requireRepaymentFits(TransactionDetails details, List<Share> shares, List<ItemDraft> candidateItems) {
+        if (details.type() != TransactionType.CREDIT) {
+            throw new TransactionExceptions.NeutralKindInvalidException("A REPAYMENT must be a CREDIT.");
+        }
+        if (details.repaymentContact() == null) {
+            throw new TransactionExceptions.NeutralKindInvalidException("A REPAYMENT needs the contact it came from.");
+        }
+        if (details.category() != null) {
+            throw new TransactionExceptions.NeutralKindInvalidException("A REPAYMENT takes no category.");
+        }
+        if (!candidateItems.isEmpty()) {
+            throw new TransactionExceptions.NeutralKindInvalidException("A REPAYMENT takes no items.");
+        }
+        if (shares.size() != 1) {
+            throw new TransactionExceptions.NeutralKindInvalidException(
+                    "A REPAYMENT takes exactly one participant, the member who received it.");
+        }
+        if (recurrenceDefinition != null) {
+            throw new TransactionExceptions.NeutralKindInvalidException(
+                    "An occurrence of a series cannot be a REPAYMENT.");
         }
     }
 
@@ -362,6 +401,7 @@ public class Transaction {
         category = details.category();
         type = details.type();
         kind = details.kind();
+        repaymentContact = details.repaymentContact();
         amount = details.amount();
         description = details.description();
         startDate = details.startDate();

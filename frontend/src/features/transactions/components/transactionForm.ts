@@ -36,7 +36,7 @@ export const transactionFormSchema = z
   .object({
     type: z.enum(["DEBIT", "CREDIT"]),
     /** Empty for a normal income or expense. */
-    kind: z.enum(["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND"]).nullish(),
+    kind: z.enum(["TRANSFER", "CARD_BILL_PAYMENT", "SAVINGS", "REFUND", "REPAYMENT"]).nullish(),
     description: z.string().min(1, "transactions.form.descriptionIsRequired"),
     amount: z.number().nullable().refine(isPositiveAmount, "transactions.form.amountMustBePositive"),
     category: z

@@ -59,7 +59,8 @@ class McpUpdateCopyTest {
                         new TransactionItemResponse(22L, "Extra", new BigDecimal("10.00"), null, null)),
                 TransactionStatus.FORECAST,
                 true,
-                new TransactionPermissionsResponse(true, true));
+                new TransactionPermissionsResponse(true, true),
+                null);
     }
 
     private static UpdateTransactionRequest unchangedExcept(

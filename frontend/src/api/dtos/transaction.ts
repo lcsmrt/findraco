@@ -26,10 +26,30 @@ export type TransactionItem = {
 export type TransactionStatus = "ACTUAL" | "FORECAST" | "PENDING";
 
 /**
- * What a row is besides income or expense. TRANSFER, CARD_BILL_PAYMENT and SAVINGS count in no total;
- * REFUND is a credit that lowers the spending of its (expense) category.
+ * What a row is besides income or expense. TRANSFER, CARD_BILL_PAYMENT, SAVINGS and REPAYMENT (a contact
+ * paying back) count in no total; REFUND is a credit that lowers the spending of its (expense) category.
  */
-export type TransactionKind = "TRANSFER" | "CARD_BILL_PAYMENT" | "SAVINGS" | "REFUND";
+export type TransactionKind = "TRANSFER" | "CARD_BILL_PAYMENT" | "SAVINGS" | "REFUND" | "REPAYMENT";
+
+/** How much of one contact share, on one purchase, a repayment settles. */
+export type RepaymentAllocation = {
+  /** The id of the contact's share (`ParticipantShare` of the purchase, as the statement lists it). */
+  participantId: number;
+  transactionId: number;
+  amount: number;
+};
+
+/** What a REPAYMENT adds to its transaction: the contact it came from and the shares it settles. */
+export type Repayment = {
+  contactId: number;
+  contactName: string;
+  allocations: RepaymentAllocation[];
+};
+
+export type RepaymentAllocationInput = {
+  participantId: number;
+  amount: number;
+};
 
 /** The list filter: `NEUTRAL` matches every kind, a kind matches itself. */
 export type TransactionKindFilter = "NEUTRAL" | TransactionKind;
@@ -61,6 +81,8 @@ export type Transaction = {
   requiresConfirmation: boolean;
   /** What the current member may do with this row, as the server decides it. */
   permissions: TransactionPermissions;
+  /** Only on a REPAYMENT. */
+  repayment?: Repayment | null;
 };
 
 export type TransactionPermissions = {
@@ -118,6 +140,13 @@ export type CreateTransactionRequest = {
     splitMode?: SplitMode;
     participants?: ParticipantInput[];
     items?: ItemInput[];
+    /** The contact a REPAYMENT came from; sent with that kind only. */
+    contactId?: number;
+    /**
+     * The contact shares a REPAYMENT settles. Omitted, the server settles the oldest first; an empty list
+     * settles none and the whole amount becomes credit.
+     */
+    allocations?: RepaymentAllocationInput[];
   };
 };
 

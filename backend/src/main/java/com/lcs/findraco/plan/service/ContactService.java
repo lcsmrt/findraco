@@ -138,6 +138,29 @@ public class ContactService {
     }
 
     /**
+     * The contact a repayment comes from, locked, for the transaction feature: 404 outside the plan, 422 when archived
+     * unless the repayment being edited already comes from it. The lock serializes this save with every other save
+     * that changes what the contact owes or has paid, so the allocations the caller checks next are not stale.
+     */
+    @Transactional
+    public Contact lockForUpdate(Long id, boolean alreadyOnRow, PlanContext ctx) {
+        Contact contact = contactRepository
+                .findByIdAndPlanForUpdate(id, plan(ctx))
+                .orElseThrow(() -> new ContactExceptions.ContactNotFoundException(id));
+        if (contact.isArchived() && !alreadyOnRow) {
+            throw new ContactExceptions.ContactArchivedException(
+                    "contactId", "An archived contact cannot take a new payment.");
+        }
+        return contact;
+    }
+
+    /** One contact with its balance; 404 outside the plan. */
+    @Transactional(readOnly = true)
+    public ContactResponse get(Long id, PlanContext ctx) {
+        return response(find(id, ctx), ctx);
+    }
+
+    /**
      * What each contact of the plan owes or holds in credit, by contact id; a contact absent from the map has a
      * zero balance. The one place the balance is computed: the contact's shares on the transactions actual for the
      * reader today (AD-025), less what its live repayments paid. A positive result is owed, a negative one credit.

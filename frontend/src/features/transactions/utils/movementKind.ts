@@ -37,4 +37,5 @@ export const KIND_LABEL_KEYS = {
   CARD_BILL_PAYMENT: "transactions.kinds.cardBillPayment",
   SAVINGS: "transactions.kinds.savings",
   REFUND: "transactions.kinds.refund",
+  REPAYMENT: "transactions.kinds.repayment",
 } as const satisfies Record<TransactionKind, string>;

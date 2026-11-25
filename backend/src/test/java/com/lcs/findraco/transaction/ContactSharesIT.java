@@ -192,6 +192,11 @@ class ContactSharesIT extends AbstractIntegrationTest {
         refund.put("kind", "REFUND");
         refund.put("categoryId", refunded.getId());
         refused.add(refund);
+        Map<String, Object> repayment = expense("80.00", "EQUAL", contact(mae, null));
+        repayment.put("type", "CREDIT");
+        repayment.put("kind", "REPAYMENT");
+        repayment.put("contactId", mae.getId());
+        refused.add(repayment);
 
         for (Map<String, Object> request : refused) {
             send(post(TransactionRoutes.TRANSACTION, plan.getId()), owner, request)

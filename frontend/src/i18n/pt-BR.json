@@ -541,6 +541,8 @@
     }
   },
   "problems": {
+    "allocation-exceeds-amount": "As alocações somam mais do que o pagamento.",
+    "allocation-exceeds-open": "Uma parte não pode receber mais do que o que ainda está em aberto nela.",
     "andMore": "...e mais {{remaining}}",
     "category-has-subcategories": "Esta categoria agora tem subcategorias. Mova-as ou exclua-as antes de excluir esta.",
     "category-in-use": "Esta categoria agora está em uso. Escolha uma categoria para receber as transações dela.",
@@ -806,6 +808,7 @@
       "cardBillPayment": "Fatura",
       "normal": "Normal",
       "refund": "Reembolso",
+      "repayment": "Pagamento de contato",
       "savings": "Guardar",
       "transfer": "Entre membros"
     },

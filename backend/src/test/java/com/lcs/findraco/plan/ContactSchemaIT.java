@@ -99,6 +99,60 @@ class ContactSchemaIT extends AbstractIntegrationTest {
                 .isEqualTo(3);
     }
 
+    @Test
+    void anAllocationIsPositiveOncePerPairAndFollowsItsRepaymentAndShare() {
+        User owner = fixtures.aUser();
+        Plan plan = fixtures.aPlan(owner);
+        Contact mae = fixtures.aContact(plan, "Mãe");
+        Transaction purchase = fixtures.aTransaction(plan, owner, new BigDecimal("50.00"), TransactionType.DEBIT);
+        insertParticipant(purchase.getId(), null, mae.getId());
+        long share =
+                jdbc.queryForObject("SELECT id FROM transaction_participants WHERE contact_id IS NOT NULL", Long.class);
+        long first = insertRepayment(plan, owner, mae);
+        long second = insertRepayment(plan, owner, mae);
+
+        assertThatThrownBy(() -> insertAllocation(first, share, "0.00"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_repayment_allocations_amount");
+        assertThatThrownBy(() -> insertAllocation(first, share, "-1.00"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("ck_repayment_allocations_amount");
+        insertAllocation(first, share, "10.00");
+        assertThatThrownBy(() -> insertAllocation(first, share, "5.00"))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasMessageContaining("uk_repayment_allocations_repayment_participant");
+        insertAllocation(second, share, "5.00");
+        assertThat(allocationCount()).isEqualTo(2);
+
+        jdbc.update("DELETE FROM transactions WHERE id = ?", first);
+        assertThat(allocationCount()).isEqualTo(1);
+        jdbc.update("DELETE FROM transaction_participants WHERE id = ?", share);
+        assertThat(allocationCount()).isZero();
+    }
+
+    private long insertRepayment(Plan plan, User owner, Contact contact) {
+        return jdbc.queryForObject(
+                "INSERT INTO transactions (plan_id, created_by, amount, description, type, start_date, "
+                        + "confirmation, kind, repayment_contact_id) "
+                        + "VALUES (?, ?, 10.00, 'Pix', 'CREDIT', '2026-01-01', 'BY_DATE', 'REPAYMENT', ?) RETURNING id",
+                Long.class,
+                plan.getId(),
+                owner.getId(),
+                contact.getId());
+    }
+
+    private void insertAllocation(long repaymentId, long participantId, String amount) {
+        jdbc.update(
+                "INSERT INTO repayment_allocations (repayment_id, participant_id, amount) VALUES (?, ?, ?::numeric)",
+                repaymentId,
+                participantId,
+                amount);
+    }
+
+    private long allocationCount() {
+        return jdbc.queryForObject("SELECT count(*) FROM repayment_allocations", Long.class);
+    }
+
     private void insertParticipant(long transactionId, Long memberId, Long contactId) {
         jdbc.update(
                 "INSERT INTO transaction_participants (transaction_id, member_user_id, contact_id, share_amount) "

@@ -66,6 +66,8 @@ export type ProblemType =
   | "contact-in-use"
   | "contact-archived"
   | "contact-share-not-allowed"
+  | "allocation-exceeds-open"
+  | "allocation-exceeds-amount"
   | "participant-member-or-contact"
   | "exact-share-invalid"
   | "item-invalid"

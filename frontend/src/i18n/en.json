@@ -541,6 +541,8 @@
     }
   },
   "problems": {
+    "allocation-exceeds-amount": "The allocations add up to more than the payment.",
+    "allocation-exceeds-open": "A share cannot be paid more than what is still open on it.",
     "andMore": "...and {{remaining}} more",
     "category-has-subcategories": "This category now has subcategories. Move or delete them before deleting it.",
     "category-in-use": "This category is now in use. Choose a category to receive its transactions.",
@@ -806,6 +808,7 @@
       "cardBillPayment": "Card bill",
       "normal": "Normal",
       "refund": "Refund",
+      "repayment": "Contact payment",
       "savings": "Savings",
       "transfer": "Between members"
     },

@@ -43,14 +43,15 @@ public interface DashboardReportRepository extends Repository<Transaction, Long>
             @Param("memberId") Long memberId);
 
     /**
-     * What moved without earning or spending, of one type: a transfer, a card bill payment or a move to savings.
+     * What moved without earning or spending, of one type: a transfer, a card bill payment, a move to savings or a contact's repayment.
      * Outside every total, shown apart.
      */
     @Query("SELECT COALESCE(SUM(tp.shareAmount), 0) FROM Transaction ft JOIN ft.participants tp "
             + "WHERE ft.plan = :plan AND ft.deletion IS NULL AND ft.type = :type "
             + "AND ft.kind IN (com.lcs.findraco.transaction.model.TransactionKind.TRANSFER, "
             + "com.lcs.findraco.transaction.model.TransactionKind.CARD_BILL_PAYMENT, "
-            + "com.lcs.findraco.transaction.model.TransactionKind.SAVINGS) "
+            + "com.lcs.findraco.transaction.model.TransactionKind.SAVINGS, "
+            + "com.lcs.findraco.transaction.model.TransactionKind.REPAYMENT) "
             + "AND ft.startDate >= :startDate AND ft.startDate <= :endDate "
             + "AND tp.member IS NOT NULL AND (:memberId IS NULL OR tp.member.id = :memberId)")
     BigDecimal sumNeutralByPlanAndTypeAndDateRange(

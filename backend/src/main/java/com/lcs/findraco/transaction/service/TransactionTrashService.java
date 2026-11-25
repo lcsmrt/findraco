@@ -2,6 +2,7 @@ package com.lcs.findraco.transaction.service;
 
 import com.lcs.findraco.plan.model.Plan;
 import com.lcs.findraco.plan.model.PlanRole;
+import com.lcs.findraco.plan.service.ContactService;
 import com.lcs.findraco.plan.service.PlanAuthorization;
 import com.lcs.findraco.plan.service.PlanContext;
 import com.lcs.findraco.transaction.exception.TransactionExceptions;
@@ -11,6 +12,7 @@ import com.lcs.findraco.transaction.model.SeriesEditScope;
 import com.lcs.findraco.transaction.model.Transaction;
 import com.lcs.findraco.transaction.model.TransactionDeletion;
 import com.lcs.findraco.transaction.model.TransactionDeletionKind;
+import com.lcs.findraco.transaction.model.TransactionKind;
 import com.lcs.findraco.transaction.model.TransactionRetention;
 import com.lcs.findraco.transaction.model.TransactionType;
 import com.lcs.findraco.transaction.repository.RecurrenceDefinitionRepository;
@@ -44,6 +46,8 @@ public class TransactionTrashService {
     private final TransactionRepository transactionRepository;
     private final RecurrenceDefinitionRepository recurrenceDefinitionRepository;
     private final PlanAuthorization planAuthorization;
+    private final ContactService contactService;
+    private final RepaymentAllocationService allocationService;
     private final EntityManager entityManager;
 
     public TransactionTrashService(
@@ -51,11 +55,15 @@ public class TransactionTrashService {
             TransactionRepository transactionRepository,
             RecurrenceDefinitionRepository recurrenceDefinitionRepository,
             PlanAuthorization planAuthorization,
+            ContactService contactService,
+            RepaymentAllocationService allocationService,
             EntityManager entityManager) {
         this.deletionRepository = deletionRepository;
         this.transactionRepository = transactionRepository;
         this.recurrenceDefinitionRepository = recurrenceDefinitionRepository;
         this.planAuthorization = planAuthorization;
+        this.contactService = contactService;
+        this.allocationService = allocationService;
         this.entityManager = entityManager;
     }
 
@@ -133,8 +141,17 @@ public class TransactionTrashService {
         if (deletion.getRecurrenceDefinitionId() != null) {
             undoSeriesChange(deletion, ctx);
         }
+        // A restored repayment settles shares again, which others may have taken meanwhile: the contact is locked
+        // first, and what no longer fits is cut back, newest payment first.
+        rows.stream()
+                .filter(row -> row.getKind() == TransactionKind.REPAYMENT)
+                .map(row -> row.getRepaymentContact().getId())
+                .distinct()
+                .sorted()
+                .forEach(contactId -> contactService.lockForUpdate(contactId, true, ctx));
         rows.forEach(Transaction::restore);
         entityManager.flush();
+        allocationService.fitToRestored(rows);
         deletionRepository.delete(deletion);
         return new TransactionRestoredResponse(rows.size());
     }
